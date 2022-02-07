@@ -38,7 +38,7 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     hipError_t hipstat;
-    hipstat = hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
+    hipstat = hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser|hipMemAttachGlobal);
     RmgGpuError(fname, line, hipstat, "Error: hipHostMalloc failed.\n");
     return ptr;
 }

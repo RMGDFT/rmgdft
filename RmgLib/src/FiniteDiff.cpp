@@ -3141,7 +3141,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
             if(use_gpu)
             {
                 /* Return the diagonal component of the operator */

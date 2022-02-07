@@ -50,6 +50,7 @@ struct fdparms_o8 {
 #include <cublas_v2.h>
 #include <complex>
 
+void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void gramsch_update_psi(double *V,
@@ -58,18 +59,16 @@ void gramsch_update_psi(double *V,
                         int eig_start,
                         int eig_stop,
                         cublasHandle_t cublasH);
+void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream);
+void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream);
 template <typename T>
-double app8_del2_gpu(const T * __restrict__ a,
+void app8_del2_gpu(T * __restrict__ a,
                    T *b,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   T h2x,
-                   T h2y,
-                   T h2z,
-                   cudaStream_t cstream);
-void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream);
-void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream);
+                   const fdparms_o8<T> &c,
+                   int tid);
 
 #endif
 

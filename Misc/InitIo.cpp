@@ -772,13 +772,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     size_t factor = 2;
     if(ct.is_gamma) factor = 1;
     int images = ct.kohn_sham_fd_order / 2;
     size_t bufsize = factor * pct.coalesce_factor *
                      (Rmg_G->get_PX0_GRID(1) + 2*images) * (Rmg_G->get_PY0_GRID(1) + 2*images) * (Rmg_G->get_PZ0_GRID(1) + 2*images)*sizeof(double);
+#if HIP_ENABLED
     init_hip_fd(ct.MG_THREADS_PER_NODE, bufsize);
+#endif
+#if CUDA_ENABLED
+    init_cuda_fd(ct.MG_THREADS_PER_NODE, bufsize);
+#endif
+
 #endif
 }
 

@@ -28,66 +28,70 @@
 #include <cuda_runtime_api.h>
 #include <cuda_device_runtime_api.h>
 #include <stdio.h>
+#include <vector>
+#include <complex>
+#include <cuComplex.h>
+#include <thrust/complex.h>
+#include "Gpufuncs.h"
+
+//extern "C" void *BeginRmgTimer(const char *what);
+//extern "C" void EndRmgTimer(void *ptr);
+
+void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 
 #define IMAGES 4
 
-template <int BLOCKX, int BLOCKY>
-__global__ void app8_del2_kernel(const double * __restrict__ a, 
-                                                double *b, 
+
+// Version with shared memory slice
+template <typename T>
+__global__ void app8_del2_kernel(const T * __restrict__ a, 
+                                                T *b, 
                                                 const int dimx,
                                                 const int dimy,
                                                 const int dimz,
-                                                const double h2x,
-                                                const double h2y,
-                                                const double h2z)
+                                                fdparms_o8<T> c)
 
 {
 
-    __shared__ double slice[BLOCKX + 2*IMAGES][BLOCKY + 2*IMAGES];
-    double c0 = -(205.0 / 72.0) * (h2x + h2y + h2z);
-    double c1x = 8.0 * h2x / 5.0;
-    double c2x = -1.0 * h2x / 5.0;
-    double c3x = 8.0 * h2x / 315.0;
-    double c4x = -1.0 * h2x / 560.0;
-    double c1y = 8.0 * h2y / 5.0;
-    double c2y = -1.0 * h2y / 5.0;
-    double c3y = 8.0 * h2y / 315.0;
-    double c4y = -1.0 * h2y / 560.0;
-
-    double c1z = 8.0 * h2z / 5.0;
-    double c2z = -1.0 * h2z / 5.0;
-    double c3z = 8.0 * h2z / 315.0;
-    double c4z = -1.0 * h2z / 560.0;
+    extern __shared__ unsigned char sbuf[];
+    T *slice = reinterpret_cast<T *>(sbuf);
 
     // iy and iz map to the x and y coordinates of the thread
     // within a block
-    int iy = blockIdx.x * blockDim.x + threadIdx.x;
-    int iz = blockIdx.y * blockDim.y + threadIdx.y;
+    const int iy = blockIdx.x * (blockDim.x-2*IMAGES) + threadIdx.x;
+    const int iz = blockIdx.y * (blockDim.y-2*IMAGES) + threadIdx.y;
 
     // thread y-index into shared memory tile
-    int ty = threadIdx.x + IMAGES;
-    int tz = threadIdx.y + IMAGES;
+    const int ty = threadIdx.x;
+    const int tz = threadIdx.y;
 
-    int in_idx = (iy + IMAGES)*(dimz + 2*IMAGES) + iz + IMAGES;
+    int in_idx = iy*(dimz + 2*IMAGES) + iz;
     int in_stride = (dimy + 2*IMAGES) * (dimz + 2*IMAGES);
-    int out_idx = iy*dimz + iz;
-    int out_stride = dimy*dimz;
 
-    double acc_b4 = 0.0;
-    double acc_b3 = a[in_idx];in_idx += in_stride;
-    double acc_b2 = a[in_idx];in_idx += in_stride;
-    double acc_b1 = a[in_idx];in_idx += in_stride;
-    double acc    = a[in_idx];in_idx += in_stride;
-    double acc_a1 = a[in_idx];in_idx += in_stride;
-    double acc_a2 = a[in_idx];in_idx += in_stride;
-    double acc_a3 = a[in_idx];in_idx += in_stride;
-    double acc_a4 = a[in_idx];in_idx += in_stride;
+    int out_idx = (iy-IMAGES)*dimz + (iz-IMAGES);
+
+    // All threads load array to shared memory. This bool is
+    // used to identify which threads compute and write results
+    bool execute = ((threadIdx.x >= IMAGES) &&
+           (threadIdx.y >= IMAGES) &&
+           (threadIdx.x < (blockDim.x-IMAGES)) &&
+           (threadIdx.y < (blockDim.y-IMAGES)));
+
+
+    T acc_b4 = 0.0;
+    T acc_b3 = a[in_idx];in_idx += in_stride;
+    T acc_b2 = a[in_idx];in_idx += in_stride;
+    T acc_b1 = a[in_idx];in_idx += in_stride;
+    T acc    = a[in_idx];in_idx += in_stride;
+    T acc_a1 = a[in_idx];in_idx += in_stride;
+    T acc_a2 = a[in_idx];in_idx += in_stride;
+    T acc_a3 = a[in_idx];in_idx += in_stride;
+    T acc_a4 = a[in_idx];in_idx += in_stride;
 
     __syncthreads();
 
     for (int ix = 0; ix < dimx; ix++)
     {
-
         // Advance the central point data
         acc_b4 = acc_b3;
         acc_b3 = acc_b2;
@@ -100,171 +104,105 @@ __global__ void app8_del2_kernel(const double * __restrict__ a,
         acc_a4 = a[in_idx];
 
         __syncthreads();
-        // Update the data slice in shared memory
-        if(threadIdx.x < IMAGES)
-        {
-            slice[threadIdx.x][tz] = a[in_idx - IMAGES*in_stride - IMAGES*(dimz+2*IMAGES)];
-            slice[threadIdx.x+blockDim.x+IMAGES][tz] = a[in_idx - IMAGES*in_stride + blockDim.x*(dimz+2*IMAGES)];
-        }
-        if(threadIdx.y < IMAGES)
-        {
-            slice[ty][threadIdx.y] = a[in_idx - IMAGES*in_stride - IMAGES];
-            slice[ty][threadIdx.y+blockDim.y+IMAGES] = a[in_idx - IMAGES*in_stride + blockDim.y];
-        }
-
-        slice[ty][tz] = acc;
+        slice[threadIdx.x*blockDim.y + threadIdx.y] = acc;
         __syncthreads();
 
         in_idx += in_stride;
-
-        double tsum = c4z*slice[ty][tz-4] + c4z*slice[ty][tz+4] +
-                      c3z*slice[ty][tz-3] + c3z*slice[ty][tz+3] +
-                      c2z*slice[ty][tz-2] + c2z*slice[ty][tz+2] +
-                      c1z*slice[ty][tz-1] + c1z*slice[ty][tz+1] +
-                      c4y*slice[ty-4][tz] + c4y*slice[ty+4][tz] +
-                      c3y*slice[ty-3][tz] + c3y*slice[ty+3][tz] +
-                      c2y*slice[ty-2][tz] + c2y*slice[ty+2][tz] +
-                      c1y*slice[ty-1][tz] + c1y*slice[ty+1][tz];
-
-        // Write back the results
-        b[out_idx] = tsum +
-                      c4x * acc_b4 +
-                      c3x * acc_b3 +
-                      c2x * acc_b2 +
-                      c1x * acc_b1 +
-                      c0 * acc +
-                      c1x * acc_a1 +
-                      c2x * acc_a2 +
-                      c3x * acc_a3 +
-                      c4x * acc_a4;
-
-        out_idx += out_stride;
+        if(execute)
+        {
+                T tsum =      c.gmt4z*slice[ty*blockDim.y+tz-4] + c.gpt4z*slice[ty*blockDim.y+tz+4] +
+                              c.gmt3z*slice[ty*blockDim.y+tz-3] + c.gpt3z*slice[ty*blockDim.y+tz+3] +
+                              c.gmt2z*slice[ty*blockDim.y+tz-2] + c.gpt2z*slice[ty*blockDim.y+tz+2] +
+                              c.gmt1z*slice[ty*blockDim.y+tz-1] + c.gpt1z*slice[ty*blockDim.y+tz+1] +
+                              c.gmt4y*slice[(ty-4)*blockDim.y+tz] + c.gpt4y*slice[(ty+4)*blockDim.y+tz] +
+                              c.gmt3y*slice[(ty-3)*blockDim.y+tz] + c.gpt3y*slice[(ty+3)*blockDim.y+tz] +
+                              c.gmt2y*slice[(ty-2)*blockDim.y+tz] + c.gpt2y*slice[(ty+2)*blockDim.y+tz] +
+                              c.gmt1y*slice[(ty-1)*blockDim.y+tz] + c.gpt1y*slice[(ty+1)*blockDim.y+tz];
+                // Write back the results
+                b[out_idx] = tsum +
+                              c.gmt4x * acc_b4 +
+                              c.gmt3x * acc_b3 +
+                              c.gmt2x * acc_b2 +
+                              c.gmt1x * acc_b1 +
+                              c.a0 * acc +
+                              c.gpt1x * acc_a1 +
+                              c.gpt2x * acc_a2 +
+                              c.gpt3x * acc_a3 +
+                              c.gpt4x * acc_a4;
+        }
+        out_idx += dimy*dimz;
     }                   /* end for */
 
 }
+#endif
+
+static std::vector<cudaStream_t> streams;
+static std::vector<double *> abufs;
+static std::vector<double *> bbufs;
+
+void init_cuda_fd(int max_threads, size_t bufsize)
+{
+    streams.resize(max_threads);
+    abufs.resize(max_threads);
+    bbufs.resize(max_threads);
+
+    for(int i=0;i < max_threads;i++)
+    {
+        cudaStreamCreateWithFlags(&streams[i], cudaStreamNonBlocking);
+        cudaMalloc((void **)&abufs[i], bufsize);
+        cudaMalloc((void **)&bbufs[i], bufsize);
+    }
+}
+
+template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<float> &, int);
+template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &, int);
+template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &, int);
+template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &, int);
 
 
-double app8_del2_gpu(const double * __restrict__ a, 
-                   double *b, 
+
+template <typename T>
+void app8_del2_gpu(T *a, 
+                   T *b, 
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   double h2x,
-                   double h2y,
-                   double h2z,
-                   cudaStream_t cstream)
+                   const fdparms_o8<T> &c,
+                   int tid)
 {
     dim3 Grid, Block;
-    double retval = -(205.0 / 72.0) * (h2x + h2y + h2z);
+    std::vector<int> yf, zf;
+    GetPrimeFactors(yf, dimy, 19);
+    GetPrimeFactors(zf, dimy, 19);
 
-    double xside = Rmg_L->get_xside();
-    double yside = Rmg_L->get_yside();
-    double zside = Rmg_L->get_zside();
+    // Block and grid layout can definitely use some optimization
+    int xchunk = yf.back();
+    if(yf[0] == 2 && yf[1] == 2) xchunk = 4;
+    if(yf[0] == 2 && yf[1] == 3) xchunk = 6;
+    int ychunk = zf.back();
+    if(zf[0] == 2 && zf[1] == 2) ychunk = 4;
+    if(zf[0] == 2 && zf[1] == 3) ychunk = 6;
+    Grid.x = dimy / xchunk;
+    Block.x = xchunk + 2*IMAGES;
+    Grid.y = dimz / ychunk;
+    Block.y = ychunk+2*IMAGES;
+    int smem_siz = Block.x*Block.y*sizeof(T);
 
-    h2x = h2x * h2x * xside * xside;
-    h2y = h2y * h2y * yside * yside;
-    h2z = h2z * h2z * zside * zside;
+fdparms_o8<double> cd;
+fdparms_o8<float> cf;
+if(typeid(T) == typeid(double))
+    memcpy(&cd, &c, sizeof(cd));
+if(typeid(T) == typeid(float))
+    memcpy(&cf, &c, sizeof(cf));
 
-    if(!(dimy % 16) && !(dimz % 32))
-    {
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 32;
-        Block.y = 32;
-        app8_del2_kernel<16, 32><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 4) && !(dimz % 64))
-    {
-        Grid.x = dimy / 4;
-        Block.x = 4;
-        Grid.y = dimz / 64;
-        Block.y = 64;
-        app8_del2_kernel<4, 64><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 8) && !(dimz % 64))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 64;
-        Block.y = 64;
-        app8_del2_kernel<8, 64><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 8) && !(dimz % 32))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 32;
-        Block.y = 32;
-        app8_del2_kernel<8, 32><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 16) && !(dimz % 16))
-    {
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 16;
-        Block.y = 16;
-        app8_del2_kernel<16, 16><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 16) && !(dimz % 24))
-    {
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 24;
-        Block.y = 24;
-        app8_del2_kernel<16, 24><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 24) && !(dimz % 16))
-    {
-        Grid.x = dimy / 24;
-        Block.x = 24;
-        Grid.y = dimz / 16;
-        Block.y = 16;
-        app8_del2_kernel<24, 16><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 24) && !(dimz % 24))
-    {
-        Grid.x = dimy / 24;
-        Block.x = 24;
-        Grid.y = dimz / 24;
-        Block.y = 24;
-        app8_del2_kernel<24, 24><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 10) && !(dimz % 10))
-    {
-        Grid.x = dimy / 10;
-        Block.x = 10;
-        Grid.y = dimz / 10;
-        Block.y = 10;
-        app8_del2_kernel<10, 10><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 8) && !(dimz % 8))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 8;
-        Block.y = 8;
-        app8_del2_kernel<8, 8><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 12) && !(dimz % 12))
-    {
-        Grid.x = dimy / 12;
-        Block.x = 12;
-        Grid.y = dimz / 12;
-        Block.y = 12;
-        app8_del2_kernel<12, 12><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
+    cudaStreamSynchronize(streams[tid]);
+cudaMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), cudaMemcpyDefault, streams[tid]);
+if(typeid(T) == typeid(double))
+    app8_del2_kernel<double><<<Grid, Block, smem_siz, streams[tid]>>>((double *)abufs[tid], (double *)bbufs[tid], dimx, dimy, dimz, cd);
+else if(typeid(T) == typeid(float))
+    app8_del2_kernel<float><<<Grid, Block, smem_siz, streams[tid]>>>((float *)abufs[tid], (float *)bbufs[tid], dimx, dimy, dimz, cf);
+cudaMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), cudaMemcpyDefault, streams[tid]);
+    cudaStreamSynchronize(streams[tid]);
+    return;
 
-    return retval;
 }
-#endif
