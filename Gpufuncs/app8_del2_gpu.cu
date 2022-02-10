@@ -200,7 +200,7 @@ if(typeid(T) == typeid(double))
 else if(typeid(T) == typeid(float))
     app8_del2_kernel<float><<<Grid, Block, smem_siz, stream>>>((float *)abufs[tid], (float *)bbufs[tid], dimx, dimy, dimz, cf);
 cudaMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), cudaMemcpyDefault, stream);
-    cudaStreamSynchronize(streams);
+    cudaStreamSynchronize(stream);
     return;
 
 }
