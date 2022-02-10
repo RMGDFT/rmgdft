@@ -32,7 +32,6 @@
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
-#include <hip/hip_ext.h>
 
 hipStream_t getGpuStream(void)
 {

@@ -64,6 +64,7 @@ RmgSymm.cpp
 RmgSyrkx.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
+GpuStreams.cpp
 RmgMallocHost.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
