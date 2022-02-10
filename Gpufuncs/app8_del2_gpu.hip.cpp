@@ -135,28 +135,25 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 }
 #endif
 
-static std::vector<hipStream_t> streams;
 static std::vector<double *> abufs;
 static std::vector<double *> bbufs;
 
 void init_hip_fd(int max_threads, size_t bufsize)
 {
-    streams.resize(max_threads);
     abufs.resize(max_threads);
     bbufs.resize(max_threads);
 
     for(int i=0;i < max_threads;i++)
     {
-        hipStreamCreateWithFlags(&streams[i], hipStreamNonBlocking);
         hipMalloc((void **)&abufs[i], bufsize);
         hipMalloc((void **)&bbufs[i], bufsize);
     }
 }
 
-template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<float> &, int);
-template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &, int);
-template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &, int);
-template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &, int);
+template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<float> &);
+template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &);
+template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &);
+template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &);
 
 
 
@@ -166,10 +163,11 @@ void app8_del2_gpu(T *a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   const fdparms_o8<T> &c,
-                   int tid)
+                   const fdparms_o8<T> &c)
 {
     dim3 Grid, Block;
+    hipStream_t stream = getGpuStream();
+    int tid = getThreadId();
     std::vector<int> yf, zf;
     GetPrimeFactors(yf, dimy, 19);
     GetPrimeFactors(zf, dimy, 19);
@@ -188,10 +186,10 @@ void app8_del2_gpu(T *a,
     int smem_siz = Block.x*Block.y*sizeof(T);
 
 
-    hipStreamSynchronize(streams[tid]);
-    hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, streams[tid],
+    hipStreamSynchronize(stream);
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, stream,
                a, b, dimx, dimy, dimz, c);
-    hipStreamSynchronize(streams[tid]);
+    hipStreamSynchronize(stream);
     return;
 
 }

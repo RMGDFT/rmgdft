@@ -136,28 +136,25 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 }
 #endif
 
-static std::vector<cudaStream_t> streams;
 static std::vector<double *> abufs;
 static std::vector<double *> bbufs;
 
 void init_cuda_fd(int max_threads, size_t bufsize)
 {
-    streams.resize(max_threads);
     abufs.resize(max_threads);
     bbufs.resize(max_threads);
 
     for(int i=0;i < max_threads;i++)
     {
-        cudaStreamCreateWithFlags(&streams[i], cudaStreamNonBlocking);
         cudaMalloc((void **)&abufs[i], bufsize);
         cudaMalloc((void **)&bbufs[i], bufsize);
     }
 }
 
-template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<float> &, int);
-template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &, int);
-template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &, int);
-template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &, int);
+template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<float> &);
+template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &);
+template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &);
+template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &);
 
 
 
@@ -167,10 +164,11 @@ void app8_del2_gpu(T *a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   const fdparms_o8<T> &c,
-                   int tid)
+                   const fdparms_o8<T> &c)
 {
     dim3 Grid, Block;
+    cudaStream_t stream = getGpuStream();
+    int tid = getThreadId();
     std::vector<int> yf, zf;
     GetPrimeFactors(yf, dimy, 19);
     GetPrimeFactors(zf, dimy, 19);
@@ -195,14 +193,14 @@ if(typeid(T) == typeid(double))
 if(typeid(T) == typeid(float))
     memcpy(&cf, &c, sizeof(cf));
 
-    cudaStreamSynchronize(streams[tid]);
-cudaMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), cudaMemcpyDefault, streams[tid]);
+    cudaStreamSynchronize(stream);
+cudaMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), cudaMemcpyDefault, stream);
 if(typeid(T) == typeid(double))
-    app8_del2_kernel<double><<<Grid, Block, smem_siz, streams[tid]>>>((double *)abufs[tid], (double *)bbufs[tid], dimx, dimy, dimz, cd);
+    app8_del2_kernel<double><<<Grid, Block, smem_siz, stream>>>((double *)abufs[tid], (double *)bbufs[tid], dimx, dimy, dimz, cd);
 else if(typeid(T) == typeid(float))
-    app8_del2_kernel<float><<<Grid, Block, smem_siz, streams[tid]>>>((float *)abufs[tid], (float *)bbufs[tid], dimx, dimy, dimz, cf);
-cudaMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), cudaMemcpyDefault, streams[tid]);
-    cudaStreamSynchronize(streams[tid]);
+    app8_del2_kernel<float><<<Grid, Block, smem_siz, stream>>>((float *)abufs[tid], (float *)bbufs[tid], dimx, dimy, dimz, cf);
+cudaMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), cudaMemcpyDefault, stream);
+    cudaStreamSynchronize(streams);
     return;
 
 }

@@ -2,6 +2,7 @@
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
 
+#include <complex>
 template <typename T>
 struct fdparms_o8 {
     T a0;
@@ -46,9 +47,10 @@ struct fdparms_o8 {
     T gmt4xh;
 };
 
+int getThreadId(void);
+
 #if CUDA_ENABLED
 #include <cublas_v2.h>
-#include <complex>
 
 void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
@@ -67,8 +69,8 @@ void app8_del2_gpu(T * __restrict__ a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   const fdparms_o8<T> &c,
-                   int tid);
+                   const fdparms_o8<T> &c);
+cudaStream_t getGpuStream(void);
 
 #endif
 
@@ -86,8 +88,8 @@ void app8_del2_gpu(T * __restrict__ a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   const fdparms_o8<T> &c,
-                   int tid);
+                   const fdparms_o8<T> &c);
+hipStream_t getGpuStream(void);
 #endif
 
 #endif

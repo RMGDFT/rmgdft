@@ -64,13 +64,14 @@ BaseThread::BaseThread(int nthreads)
     if(nthreads > MAX_RMG_THREADS)
         rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
 
-    if(!BaseThread::init_flag) {
-
+    if(!BaseThread::init_flag)
+    {
         BaseThread::THREADS_PER_NODE = nthreads;
         BaseThread::in_threaded_region.store(false);
         BaseThread::in_omp_threaded_region.store(false);
         BaseThread::init_flag = 1;
-
+        streams.resize(nthreads);
+        for(int i=0;i < nthreads;i++) streams[i] = 0;
     }
 
 }
@@ -247,6 +248,23 @@ int BaseThread::get_thread_tid(void) {
 
     return ss->tid;
 }
+
+#if HIP_ENABLED
+    hipStream_t BaseThread::getGpuStream(void)
+    {
+        int tid = BaseThread::get_thread_tid();
+        if(tid < 0) tid=0;
+        return this->streams[tid];
+    }
+#endif
+#if CUDA_ENABLED
+    cudaStream_t BaseThread::getGpuStream(void)
+    {
+        int tid = BaseThread::get_thread_tid();
+        if(tid < 0) tid=0;
+        return this->streams[tid];
+    }
+#endif
 
 MPI_Comm BaseThread::get_grid_comm(void) {
     if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return this->parent_grid_comm;
