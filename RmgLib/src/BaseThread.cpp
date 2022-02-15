@@ -70,8 +70,10 @@ BaseThread::BaseThread(int nthreads)
         BaseThread::in_threaded_region.store(false);
         BaseThread::in_omp_threaded_region.store(false);
         BaseThread::init_flag = 1;
+#if HIP_ENABLED || CUDA_ENABLED
         streams.resize(nthreads);
         for(int i=0;i < nthreads;i++) streams[i] = 0;
+#endif
     }
 
 }
