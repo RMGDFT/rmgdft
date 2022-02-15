@@ -29,6 +29,8 @@
 
 #include "BaseThread.h"
 #include "Gpufuncs.h"
+#include "transition.h"
+
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
@@ -40,16 +42,11 @@ hipStream_t getGpuStream(void)
     if(tid < 0) tid = 0;
     if(!T->streams[tid])
     {
+        gpuSetDevice(ct.hip_dev);
         hipStreamCreateWithFlags(&T->streams[tid], hipStreamNonBlocking);
     }
     return T->streams[tid];
 }
-
-
-#endif
-
-#if HIP_ENABLED
-#include <hip/hip_runtime.h>
 #endif
 
 #if CUDA_ENABLED
@@ -63,6 +60,7 @@ cudaStream_t getGpuStream(void)
     if(tid < 0) tid = 0;
     if(!T->streams[tid])
     {
+        cudaSetDevice(ct.cu_dev);
         cudaStreamCreateWithFlags(&T->streams[tid], cudaStreamNonBlocking);
     }
     return T->streams[tid];

@@ -179,6 +179,7 @@ void app8_del2_gpu(T *a,
     int ychunk = zf.back();
     if(zf[0] == 2 && zf[1] == 2) ychunk = 4;
     if(zf[0] == 2 && zf[1] == 3) ychunk = 6;
+
     Grid.x = dimy / xchunk;
     Block.x = xchunk + 2*IMAGES;
     Grid.y = dimz / ychunk;
@@ -187,9 +188,9 @@ void app8_del2_gpu(T *a,
 
 
     hipStreamSynchronize(stream);
+    hipMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), hipMemcpyDefault, stream);
     hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, stream,
-               a, b, dimx, dimy, dimz, c);
+               (T *)abufs[tid], (T *)bbufs[tid], dimx, dimy, dimz, c);
+    hipMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), hipMemcpyDefault, stream);
     hipStreamSynchronize(stream);
-    return;
-
 }

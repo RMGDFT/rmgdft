@@ -59,7 +59,7 @@ template double ApplyAOperator<std::complex<float> >(Lattice *, TradeImages *, s
 template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
 
-void *rbufs[MAX_RMG_THREADS];
+static void *rbufs[MAX_RMG_THREADS];
 
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, double *kvec)
@@ -142,6 +142,12 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     if(!rbufs[tid])
     {
 #if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
+        hipSetDevice(ct.hip_dev);
+#endif
+#if CUDA_ENABLED
+        cudaSetDevice(ct.cu_dev);
+#endif
         gpuMallocHost((void **)&rbufs[tid], alloc);
 #else
         MPI_Alloc_mem(alloc, MPI_INFO_NULL, &rbufs[tid]);

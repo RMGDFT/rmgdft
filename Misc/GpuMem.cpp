@@ -55,7 +55,7 @@ hipError_t gpuMalloc(void **ptr, size_t size)
 hipError_t gpuMallocManaged(void **ptr, size_t size)
 {
     //hipError_t hiperr = hipMallocManaged(ptr, size);
-    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser|hipMemAttachGlobal);
+    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
 
     if(hiperr != hipSuccess)
     rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
@@ -64,7 +64,7 @@ hipError_t gpuMallocManaged(void **ptr, size_t size)
 
 hipError_t gpuMallocHost(void **ptr, size_t size)
 {
-    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser|hipMemAttachGlobal);
+    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
     if(hiperr != hipSuccess)
     rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
     return hiperr;

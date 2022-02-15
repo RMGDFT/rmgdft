@@ -47,7 +47,7 @@ char inline *rmg_pool_malloc(const size_t bytes)
     {
     #if HIP_ENABLED
         void *ptr;
-        hipHostMalloc(&ptr, bytes, hipHostMallocNumaUser|hipMemAttachGlobal);
+        hipHostMalloc(&ptr, bytes, hipHostMallocNumaUser);
         return reinterpret_cast<char *>(ptr);
     #elif CUDA_ENABLED
         void *ptr;
