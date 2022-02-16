@@ -162,7 +162,7 @@ include (FortranCInterface)
 
 # Fortran C interface mangling
 FortranCInterface_VERIFY(CXX QUIET)
-FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h
+FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling_in.h
                          MACRO_NAMESPACE RMG_FC_
                          SYMBOL_NAMESPACE RMG_FC_)
 
