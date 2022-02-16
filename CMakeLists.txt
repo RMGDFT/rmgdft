@@ -165,6 +165,10 @@ FortranCInterface_VERIFY(CXX QUIET)
 FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling_in.h
                          MACRO_NAMESPACE RMG_FC_
                          SYMBOL_NAMESPACE RMG_FC_)
+# Used in Headers/rmg_mangling.h
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Cray)$")
+    add_definitions(-DRMG_CRAY_FORTRAN=1)
+endif()
 
 
 # Modify this if you need some special compiler flags.
