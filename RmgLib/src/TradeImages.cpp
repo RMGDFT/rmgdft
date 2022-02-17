@@ -44,6 +44,15 @@
 #include "zfp.h"
 #include "zfp/macros.h"
 
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#endif
+
+#if CUDA_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#endif
+
 
 #define ASYNC_MODE      0
 #define SYNC_MODE       1
@@ -1140,6 +1149,27 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     int ACTIVE_THREADS = 1;
     if(T->is_loop_over_states()) ACTIVE_THREADS = T->barrier->barrier_count();
 
+#if CUDA_ENABLED
+    cudaPointerAttributes attr;
+    cudaError_t cudaerr;
+    cudaerr = cudaPointerGetAttributes(&attr, w);
+    src_is_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) src_is_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, f);
+    dst_is_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) dst_is_dev = true;
+#endif
+
+#if HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, w);
+    src_is_dev = false;
+    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) src_is_dev = true;
+    hiperr = hipPointerGetAttributes(&attr, f);
+    dst_is_dev = false;
+    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) dst_is_dev = true;
+#endif
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
 

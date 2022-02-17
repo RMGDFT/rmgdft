@@ -106,6 +106,11 @@ private:
     MPI_Request sreqs[26];
     MPI_Request rreqs[26];
 
+#if  HIP_ENABLED || CUDA_ENABLED
+    bool src_is_dev;
+    bool dst_is_dev;
+#endif
+
     void init_trade_imagesx_async(size_t elem_len);
     template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, int extra_tag, MPI_Request *req);
 

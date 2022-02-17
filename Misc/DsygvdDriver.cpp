@@ -57,8 +57,27 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(devInfo);
 }
 
-//#elif HIP_ENABLED
-#elif 0
+#elif HIP_ENABLED
+#if MAGMA_LIBS
+#include <magma_v2.h>
+
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
+{
+    int itype = 1, info;
+    int liwork = 6*n;
+    int *iwork = new int[liwork];
+
+    magma_dsygvd(itype, MagmaVec, MagmaLower, n, (double *)A, ld, (double *)B, ld, eigs, work, worksize, iwork, liwork, &info);
+
+//    double vl = 0.0, vu = 0.0;
+//    int eigs_found;
+//    magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeAll, MagmaLower, n,
+//             (double *)A, ld, (double *)B, ld, vl, vu, 1, n, &eigs_found,
+//    eigs, work, worksize, iwork, liwork, &info);
+
+    delete [] iwork;
+}
+#else
 #include <rocsolver.h>
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
@@ -71,7 +90,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     gpuSetDevice(ct.hip_dev);
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    status = rocsolver_dsygv(ct.roc_handle, itype, jobz, uplo, n, A, ld,
+    status = rocsolver_dsygvd(ct.roc_handle, itype, jobz, uplo, n, A, ld,
                              B, ld, eigs, work, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
@@ -79,6 +98,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     gpuFree(devInfo);
 }
+#endif
 
 #else
 

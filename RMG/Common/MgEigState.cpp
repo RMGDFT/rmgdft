@@ -74,11 +74,13 @@ template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std
         double *, std::complex<double> *, std::complex<double> *, int);
 
 
-
 template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
+    BaseThread *Thread = BaseThread::getBaseThread(0);
+    int tid = Thread->get_thread_tid();
+
     bool freeze_occupied = true;
 
     // We want a clean exit if user terminates early
@@ -124,25 +126,24 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
-    int sbasis_noncoll = sbasis * ct.noncoll_factor;
 
     size_t aratio = sizeof(OrbitalType) / sizeof(CalcType);
 
-    // Boost pool only makes a single call to system allocation routines and manages the blocks
-    // after that which reduces contention when many threads are running. Automatically frees
-    // the allocated memory when it goes out of scope.
-    int pool_blocks = 24;
-    boost::pool<> p(sbasis_noncoll*aratio*sizeof(CalcType), pool_blocks);
-    CalcType *res2_t = (CalcType *)p.ordered_malloc(1);
-    CalcType *work2_t = (CalcType *)p.ordered_malloc(4);
-    CalcType *work1_t = (CalcType *)p.ordered_malloc(4);
-    CalcType *sg_twovpsi_t  =  (CalcType *)p.ordered_malloc(4);
-    OrbitalType *saved_psi  = (OrbitalType *)p.ordered_malloc(aratio);
-    double *dvtot_psi = (double *)p.ordered_malloc(aratio);
-    CalcType *tmp_psi_t  = (CalcType *)p.ordered_malloc(1);
-    CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
-    CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
-    OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
+    // Per thread memory pool in Kpoint class. If you need more than 32 chunks modify
+    // pool creation code in Kpoint.cpp. Done like this to enable changing the type
+    // of memory allocated in one place.
+    int pool_blocks = 0;
+    boost::pool<rmg_user_allocator> *p = kptr->kalloc[tid];
+    CalcType *res2_t = (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *work2_t = (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
+    CalcType *work1_t = (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
+    CalcType *sg_twovpsi_t  =  (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
+    OrbitalType *saved_psi  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
+    double *dvtot_psi = (double *)p->ordered_malloc(aratio);pool_blocks+=aratio;
+    CalcType *tmp_psi_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *res_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
 
     // Copy double precision psi into correct precison array
     GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t, pct.coalesce_factor);
@@ -346,6 +347,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
         ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
+
+    p->free(res2_t, pool_blocks);
 
 } // end MgEigState
 

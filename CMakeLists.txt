@@ -78,11 +78,11 @@ if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     set (CRAY_HOST 1)
 endif()
 
-
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
 set(RMG_CUDA_ENABLED OFF CACHE BOOL "Enable CUDA support.")
 set(RMG_HIP_ENABLED OFF CACHE BOOL "Enable HIP support.")
+set(RMG_MAGMA_ENABLED OFF CACHE BOOL "Enable MAGMA support.")
 set(QMCPACK_SUPPORT ON CACHE BOOL "Generates a QMCPACK restart file.")
 set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentials in binary.")
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
@@ -162,9 +162,13 @@ include (FortranCInterface)
 
 # Fortran C interface mangling
 FortranCInterface_VERIFY(CXX QUIET)
-FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h
+FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling_in.h
                          MACRO_NAMESPACE RMG_FC_
                          SYMBOL_NAMESPACE RMG_FC_)
+# Used in Headers/rmg_mangling.h
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Cray)$")
+    add_definitions(-DRMG_CRAY_FORTRAN=1)
+endif()
 
 
 # Modify this if you need some special compiler flags.
@@ -286,8 +290,23 @@ if(RMG_HIP_ENABLED)
         include_directories("${rocsolver_INCLUDE_DIR}")
     endif()
 
+    find_package(hipsolver REQUIRED)
+    if(hipsolver_FOUND)
+        message(STATUS "Found hipsolver: " ${hipsolver_VERSION})
+        list(APPEND RMGLIBS ${hipsolver_LIBRARY})
+        include_directories("${hipsolver_INCLUDE_DIR}")
+    endif()
+
     if(NOT DEFINED __HIP_PLATFORM_HCC__)
         add_definitions(-D__HIP_PLATFORM_HCC__=1)
+    endif()
+    if(RMG_MAGMA_ENABLED)
+        find_package(MAGMA)
+        if(MAGMA_FOUND)
+            add_definitions(-DMAGMA_LIBS=1)
+            include_directories(${MAGMA_INCLUDES})
+            list(APPEND RMGLIBS ${MAGMA_LIBRARIES})
+        endif()
     endif()
 endif()
 

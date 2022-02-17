@@ -28,6 +28,18 @@ void FreeHostOrDevice(void *ptr);
 // the underlying functions.
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
+
+#define gpublasDcopy hipblasDcopy
+#define gpublasDdgmm hipblasDdgmm
+#define gpublasDgeam hipblasDgeam
+#define gpublasDscal hipblasDscal
+#define gpublasDaxpy hipblasDaxpy
+#define GPUBLAS_SIDE_LEFT HIPBLAS_SIDE_LEFT
+#define GPUBLAS_SIDE_RIGHT HIPBLAS_SIDE_RIGHT
+#define GPUBLAS_OP_N HIPBLAS_OP_N
+#define gpuCpuDeviceId hipCpuDeviceId
+#define gpuStream_t hipStream_t
+
 hipError_t gpuMalloc(void **ptr, size_t size);
 hipError_t gpuMallocManaged(void **ptr, size_t size);
 hipError_t gpuMallocHost(void **ptr, size_t size);
@@ -47,9 +59,22 @@ hipError_t gpuSetDeviceFlags (unsigned flags);
 hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
 hipError_t gpuHostUnregister(void *hostPtr);
 hipError_t gpuGetDeviceCount(int *count);
+
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+
+#define gpublasDcopy cublasDcopy
+#define gpublasDdgmm cublasDdgmm
+#define gpublasDgeam cublasDgeam
+#define gpublasDscal cublasDscal
+#define gpublasDaxpy cublasDaxpy
+#define GPUBLAS_SIDE_LEFT CUBLAS_SIDE_LEFT
+#define GPUBLAS_SIDE_RIGHT CUBLAS_SIDE_RIGHT
+#define GPUBLAS_OP_N CUBLAS_OP_N
+#define gpuCpuDeviceId cudaCpuDeviceId
+#define gpuStream_t hipStream_t
+
 cudaError_t gpuMalloc(void **ptr, size_t size);
 cudaError_t gpuMallocManaged(void **ptr, size_t size);
 cudaError_t gpuMallocHost(void **ptr, size_t size);
@@ -69,6 +94,8 @@ cudaError_t gpuSetDeviceFlags (unsigned flags);
 cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
 cudaError_t gpuHostUnregister(void *hostPtr);
 cudaError_t gpuGetDeviceCount(int *count); 
+
+
 #else
 void gpuMalloc(void **ptr, size_t size);
 void gpuFree(void *ptr);

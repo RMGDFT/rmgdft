@@ -43,6 +43,13 @@
     #include <cublas_v2.h>
 #endif
 
+#if MAGMA_LIBS
+    #include <magma_v2.h>
+#endif
+#if HIP_ENABLED
+#include <hipsolver.h>
+#endif
+
 // Gram-Schmidt ortho for eigenvectors.
 // n = dimensions of the square matrix
 // index of the starting eigenvector this node is responsible for
@@ -84,10 +91,17 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     else {
         // Multiply G by V and leave result in C. Should probably make this a tunable option instead of 256.
-       if(n < 4192) {
+//       if(n < 14192) {
+        if(1) {  // Seems to be some sort of bug in the second part
 
-            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+// AMD Symm peformance is absymal right now so use the GEMM
+#if HIP_ENABLED
+            RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
             RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
+#else
+            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n);
+#endif
 
         }
         else {
@@ -124,6 +138,15 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     //DeviceSynchronize();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
     gpuFree(dev_info);
+    delete(RT1);
+#elif HIP_ENABLED && MAGMA_LIBS
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
+    DeviceSynchronize();
+    int device = -1;
+    hipGetDevice(&device);
+    gpuMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
+    DeviceSynchronize();
+    magma_dpotrf(MagmaLower, n, C, n, &info);		
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
@@ -181,7 +204,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #endif
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
-    // greatly reduces the network bandwith required at the cost of doing local transposes.
+    // greatly reduces the network bandwith required at the cost of doing local transpose above.
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-allreduce");
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT1);

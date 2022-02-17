@@ -56,11 +56,35 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
     gpuFree(devInfo);
 }
 
-//#elif HIP_ENABLED
-#elif 0
+#elif HIP_ENABLED
 #include <rocsolver.h>
 
+void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize, int n, int ld);
+void DsyevdDriver_magma(double *A, double *eigs, double *work, int worksize, int n, int ld);
+
 void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
+{
+    static int warning_printed;
+    if(ct.subdiag_driver == SUBDIAG_ROCSOLVER)
+    {
+        DsyevdDriver_rocsolver(A, eigs, work, worksize, n, ld);
+    }
+    if(ct.subdiag_driver == SUBDIAG_MAGMA)
+    {
+#if MAGMA_LIBS
+        DsyevdDriver_magma(A, eigs, work, worksize, n, ld);
+#else
+        if(!warning_printed)
+        {
+            printf("Warning: This version of RMG was not built with magma. Switching to rocsolver");
+        }
+        DsyevdDriver_rocsolver(A, eigs, work, worksize, n, ld);
+#endif
+    }
+    warning_printed++;
+}
+
+void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize, int n, int ld)
 {
     rocblas_status status;
     rocblas_int *devInfo;
@@ -77,6 +101,27 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
     gpuFree(devInfo);
 }
+
+#if MAGMA_LIBS
+#include <magma_v2.h>
+
+void DsyevdDriver_magma(double *A, double *eigs, double *work, int worksize, int n, int ld)
+{
+    int info;
+    int liwork = 6*n;
+    int *iwork = new int[liwork];
+
+    magma_dsyevd(  MagmaVec, MagmaLower, n, A, ld, eigs,
+                              work,  worksize,
+                              iwork, liwork,
+                              &info );
+//double vl = 0.0, vu = 0.0;
+//magma_dsyevdx_2stage(MagmaVec, MagmaRangeAll,
+//MagmaLower, n, A, ld, vl, vu, 1, n, &eigs_found, eigs, work, worksize, iwork, liwork, &info);
+
+    delete [] iwork;
+}
+#endif
 
 #else
 

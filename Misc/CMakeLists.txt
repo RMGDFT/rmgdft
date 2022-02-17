@@ -44,6 +44,7 @@ CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
 Smooth.cpp
+Thread_Cbindings.cpp
 Elpa.cpp
 open_restart_file.cpp
 cnpy.cpp
@@ -63,6 +64,7 @@ RmgSymm.cpp
 RmgSyrkx.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
+GpuStreams.cpp
 RmgMallocHost.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp

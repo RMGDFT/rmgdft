@@ -43,12 +43,22 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <vector>
 #include <condition_variable>
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
 #include "BaseThreadControl.h"
 #include <boost/lockfree/queue.hpp>
 #include "MpiQueue.h"
+
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#endif
+
+#if CUDA_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#endif
 
 // Singleton class used to manage a thread pool
 class BaseThread {
@@ -131,6 +141,14 @@ public:
     void rmg_enter_omp_region(MpiQueue *Queue);
     void rmg_leave_omp_region(MpiQueue *Queue);
 
+#if HIP_ENABLED
+    std::vector<hipStream_t> streams;
+    hipStream_t getGpuStream(void);
+#endif
+#if CUDA_ENABLED
+    std::vector<cudaStream_t> streams;
+    cudaStream_t getGpuStream(void);
+#endif
 };
 
 void rmg_set_tsd(BaseThreadControl *p);

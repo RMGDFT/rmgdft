@@ -779,7 +779,7 @@ template <class KpointType> void LdaU<KpointType>::Hubbard_matrix()
     //  f: U, J = J(1),  E2 = J(2), E3 = J(3)
 
 
-    double F[6];
+    double F[7];
     //-- Set up the F_2k coefficients k = 0, 1, ... L
 
     int max_lm = 7; // for maximum L=3, f channel, max_lm = 2 * L +1

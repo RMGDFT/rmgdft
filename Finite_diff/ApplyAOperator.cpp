@@ -26,6 +26,9 @@
 #include "FiniteDiff.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
+#include "GpuAlloc.h"
+#include "Gpufuncs.h"
+#include "ErrorFuncs.h"
 #include "rmg_complex.h"
 
 //  Applies the A operator to a wavefunction. The A operator is defined as
@@ -56,6 +59,8 @@ template double ApplyAOperator<std::complex<float> >(Lattice *, TradeImages *, s
 template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
 
+static void *rbufs[MAX_RMG_THREADS];
+
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 {
@@ -73,9 +78,15 @@ double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 
 }
 
+
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, double *kvec)
 {
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+
+
     if(ct.kohn_sham_ke_fft || Rmg_L.get_ibrav_type() == None)
     {
         FftLaplacianCoarse(a, b);    
@@ -119,28 +130,36 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         return 2.0*fd_diag;
     }
+
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-    int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    int sbasis = (pct.coalesce_factor*Rmg_G->get_PX0_GRID(1) + order) * (dimy + order) * (dimz + order);
+    size_t alloc = (sbasis + 64) * sizeof(double);
+    if(!ct.is_gamma) alloc *= 2;
     int images = order / 2;
-    size_t alloc = (sbasis + 64) * sizeof(DataType);
-    DataType *rptr;
+
+    // Allocate per thread buffers if not done yet
+    if(!rbufs[tid])
+    {
+#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
+        hipSetDevice(ct.hip_dev);
+#endif
+#if CUDA_ENABLED
+        cudaSetDevice(ct.cu_dev);
+#endif
+        gpuMallocHost((void **)&rbufs[tid], alloc);
+#else
+        MPI_Alloc_mem(alloc, MPI_INFO_NULL, &rbufs[tid]);
+#endif
+    }
+    DataType *rptr = (DataType *)rbufs[tid];
+
     int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) ||
                    (Rmg_L.get_ibrav_type() == HEXAGONAL2) || 
                    (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
-
-    // while alloca is dangerous it's very fast for small arrays and the 110k limit
-    // is fine for linux and 64bit power
-    if(alloc <= 110592)
-    {
-        rptr = (DataType *)alloca(alloc);
-    }
-    else
-    {
-        rptr = new DataType[sbasis + 64];
-    }
 
 
 
@@ -153,8 +172,26 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     // Handle special combined operator first
     if(special && (order == APP_CI_EIGHT))
     {
+        RmgTimer *RTA=NULL;
+#if HIP_ENABLED || CUDA_ENABLED
+        if(ct.use_gpu_fd)
+        {
+            if(ct.verbose) RTA = new RmgTimer("GPUFD");
+            cc = FD.app8_combined(rptr, (DataType *)b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, true);
+            if(ct.verbose) delete RTA;
+        }
+        else
+        {
+            if(ct.verbose) RTA = new RmgTimer("CPUFD");
+            cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+            if(ct.verbose) delete RTA;
+        }
+#else
+        if(ct.verbose) RTA = new RmgTimer("CPUFD");
         cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
-        if(alloc > 110592) delete [] rptr;
+        if(ct.verbose) delete RTA;
+#endif
+
         return cc;
     }
 
@@ -196,7 +233,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         if(special)
             FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         else
-            FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+            FiniteDiffGrad((DataType *)rptr, gx, gy, gz, dimx, dimy, dimz, LC);
 
         // if complex orbitals compute dot products as well
         std::complex<double> I_t(0.0, 1.0);
@@ -222,8 +259,6 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         delete [] gy;
         delete [] gx;
     }
-
-    if(alloc > 110592) delete [] rptr;
 
     return cc;
 

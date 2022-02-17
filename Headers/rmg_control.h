@@ -359,6 +359,9 @@ public:
     int force_grad_order;
     bool kohn_sham_ke_fft;
 
+    // Flag indicating whether or not to use gpu finite differencing for the hamiltonian
+    bool use_gpu_fd;
+
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
     int max_lpoints;
@@ -707,6 +710,7 @@ public:
 
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
+    cublasHandle_t gpublas_handle;
     cublasXtHandle_t cublasxt_handle;
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
@@ -728,6 +732,7 @@ public:
 
     // hipblas library handles
     hipblasHandle_t hipblas_handle;
+    hipblasHandle_t gpublas_handle;
     hipStream_t rocsolver_stream;
     rocsolver_handle roc_handle;
 

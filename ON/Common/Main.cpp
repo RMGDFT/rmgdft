@@ -281,6 +281,8 @@ int main(int argc, char **argv)
                 if(!ct.restart_tddft) 
                 {
                     quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                    write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
+
                 }
 
                 OnTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, *LocalOrbital, 

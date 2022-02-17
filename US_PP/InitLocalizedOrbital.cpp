@@ -122,7 +122,7 @@ void SPECIES::InitLocalizedOrbital (void)
         }
     }
 
-    delete this->phase;
+    delete [] this->phase;
 
     delete RT4;
 

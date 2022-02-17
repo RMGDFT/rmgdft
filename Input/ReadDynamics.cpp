@@ -193,12 +193,15 @@ void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std:
                         HUBBARD_INFO h;
                         h.U = std::stod(fields[1]) / Ha_eV;
                         h.index = isp;
-                        h.label = "3d"; //default d orbital
+                        //h.label = "3d"; //default d orbital
                         h.J[0] = 0.0;
                         h.J[1] = 0.0;
                         h.J[2] = 0.0;
 
-                        if(fields.size() >= 3) h.label = fields[2];
+                        if(fields.size() < 3)
+                            throw RmgFatalException() << "Missing orbital label in Hubbard_U specification. The label must match the orbital label from the pseudopotential. Terminating.\n";
+
+                        h.label = fields[2];
                         if(fields.size() >= 4) h.J[0] = std::stod(fields[3]) / Ha_eV;
                         if(fields.size() >= 5) h.J[1] = std::stod(fields[4]) / Ha_eV;
                         if(fields.size() >= 6) h.J[2] = std::stod(fields[5]) / Ha_eV;

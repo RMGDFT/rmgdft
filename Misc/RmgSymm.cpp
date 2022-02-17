@@ -181,6 +181,86 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     }
     DeviceSynchronize();
 
+#elif HIP_ENABLED
+
+    hipblasStatus_t custat;
+    hipblasSideMode_t cu_side = HIPBLAS_SIDE_LEFT;
+    hipblasFillMode_t cu_uplo = HIPBLAS_FILL_MODE_LOWER;
+
+
+    if(!strcmp(side, "l")) cu_side = HIPBLAS_SIDE_LEFT;
+    if(!strcmp(side, "L")) cu_side = HIPBLAS_SIDE_LEFT;
+    if(!strcmp(side, "r")) cu_side = HIPBLAS_SIDE_RIGHT;
+    if(!strcmp(side, "R")) cu_side = HIPBLAS_SIDE_RIGHT;
+
+    if(!strcmp(uplo, "l")) cu_uplo = HIPBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "L")) cu_uplo = HIPBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "u")) cu_uplo = HIPBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) cu_uplo = HIPBLAS_FILL_MODE_UPPER;
+
+    int ka = m;
+    if(!strcmp("r", side)) ka = n;
+    if(!strcmp("R", side)) ka = n;
+
+    DeviceSynchronize();
+    hipPointerAttribute_t attr;
+    hipError_t cudaerr;
+    cudaerr = hipPointerGetAttributes(&attr, A);
+    bool a_dev = false;
+
+    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) a_dev = true;
+    cudaerr = hipPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) b_dev = true;
+    cudaerr = hipPointerGetAttributes(&attr, C);
+    bool c_dev = false;
+    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) c_dev = true;
+
+    size_t a_size = (size_t)lda * (size_t)ka;
+    size_t b_size = (size_t)ldb * (size_t)n;
+    size_t c_size = (size_t)ldc * (size_t)n;
+
+    if(typeid(DataType) == typeid(std::complex<double>)) {
+        std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!a_dev) hipMemcpy(dA, A, a_size * sizeof(std::complex<double>), hipMemcpyDefault);
+        if(!b_dev) hipMemcpy(dB, B, b_size * sizeof(std::complex<double>), hipMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) hipMemcpy(dC, C, c_size * sizeof(std::complex<double>), hipMemcpyDefault);
+        custat = hipblasZsymm(ct.hipblas_handle, cu_side, cu_uplo, m, n,
+                            (hipblasDoubleComplex *)&alpha,
+                            (hipblasDoubleComplex*)dA, lda,
+                            (hipblasDoubleComplex*)dB, ldb,
+                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing hipblasZsymm");
+        if(!c_dev) hipMemcpy(C, dC, c_size * sizeof(std::complex<double>), hipMemcpyDefault);
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
+    }
+    else {
+        double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) hipMemcpy(dA, A, a_size * sizeof(double), hipMemcpyDefault);
+        if(!b_dev) hipMemcpy(dB, B, b_size * sizeof(double), hipMemcpyDefault);
+        if(!c_dev && beta != 0.0) hipMemcpy(dC, C, c_size * sizeof(double), hipMemcpyDefault);
+        custat = hipblasDsymm(ct.hipblas_handle, cu_side, cu_uplo, m, n,
+                            (double*)&alpha,
+                            (double*)dA, lda,
+                            (double*)dB, ldb,
+                            (double*)&beta, (double*)dC, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing hipblasDsymm");
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(double), gpuMemcpyDefault);
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
+    }
+    DeviceSynchronize();
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {

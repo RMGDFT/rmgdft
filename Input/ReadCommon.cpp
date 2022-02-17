@@ -811,6 +811,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "of some additional computational expense.",
             "kohn_sham_fd_order must lie in the range (6,10). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
+    If.RegisterInputKey("use_gpu_fd", &lc.use_gpu_fd, false, 
+            "Use gpus for kohn-sham orbital finite differencing. Experimental.", MISC_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
             CHECK_AND_FIX, OPTIONAL,

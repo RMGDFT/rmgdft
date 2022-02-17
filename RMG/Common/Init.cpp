@@ -410,8 +410,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*Subspace diagonalization: Use magma if GPU-enabled, otherwise switch between lapack and Scalapack according to number of states*/
     if (ct.subdiag_driver ==  SUBDIAG_AUTO)
     {
-#if CUDA_ENABLED && MAGMA_LIBS
-        ct.subdiag_driver = SUBDIAG_MAGMA;
+#if CUDA_ENABLED
+        ct.subdiag_driver = SUBDIAG_CUSOLVER;
 #else
         if (ct.num_states < 128) 
             ct.subdiag_driver = SUBDIAG_LAPACK;

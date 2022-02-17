@@ -50,6 +50,7 @@
 #include "InputOpts.h"
 #include "Functional.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 
 #if CUDA_ENABLED
     #include <cuda.h>
@@ -62,6 +63,9 @@
     #include <hip/hip_vector_types.h>
     #include <rocfft.h>
     #include <rocsolver.h>
+    #if MAGMA_LIBS
+        #include <magma_v2.h>
+    #endif
 #endif
 
 #if LINUX
@@ -558,6 +562,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
         cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[pct.local_rank]);
         cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
+        ct.gpublas_handle = ct.cublas_handle;
 #endif
 #if HIP_ENABLED
         ct.hip_dev = ct.gpu_device_ids[pct.local_rank];
@@ -566,6 +571,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+        ct.gpublas_handle = ct.hipblas_handle;
 #endif
 
     }
@@ -587,6 +593,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 }
                 cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[next_gpu]);
                 cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
+                ct.gpublas_handle = ct.cublas_handle;
 #endif
 #if HIP_ENABLED
                 ct.hip_dev = ct.gpu_device_ids[next_gpu];
@@ -595,6 +602,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
                 }
+                ct.gpublas_handle = ct.hipblas_handle;
 #endif
             }
             next_gpu++;
@@ -618,6 +626,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+        ct.gpublas_handle = ct.hipblas_handle;
 #endif
     }
 
@@ -638,6 +647,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if HIP_ENABLED
     rocfft_setup();
     rocsolver_create_handle(&ct.roc_handle);
+#if MAGMA_LIBS
+    magma_init();
+    magma_setdevice(ct.hip_dev);
+#endif
 #endif
 
 #endif
@@ -757,6 +770,22 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.exx_fraction = F.get_exx_fraction_rmg();
     else
         F.set_exx_fraction_rmg(ct.exx_fraction);
+
+
+#if HIP_ENABLED || CUDA_ENABLED
+    size_t factor = 2;
+    if(ct.is_gamma) factor = 1;
+    int images = ct.kohn_sham_fd_order / 2;
+    size_t bufsize = factor * pct.coalesce_factor *
+                     (Rmg_G->get_PX0_GRID(1) + 2*images) * (Rmg_G->get_PY0_GRID(1) + 2*images) * (Rmg_G->get_PZ0_GRID(1) + 2*images)*sizeof(double);
+#if HIP_ENABLED
+    init_hip_fd(ct.MG_THREADS_PER_NODE, bufsize);
+#endif
+#if CUDA_ENABLED
+    init_cuda_fd(ct.MG_THREADS_PER_NODE, bufsize);
+#endif
+
+#endif
 }
 
 

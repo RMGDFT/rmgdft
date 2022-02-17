@@ -336,7 +336,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     {
 
         ReadData (ct.infile, vh, rho, vxc, Kptr);
-        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
+        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps, n2);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
     }
@@ -584,7 +584,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             RT2a = new RmgTimer("2-TDDFT: Write");
             my_sync_device();
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
-                    Hmatrix_m1, Hmatrix_0, tot_steps+1);
+                    Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);
             delete RT2a;
             if(pct.gridpe == 0)fflush(dfi);
         }
@@ -598,7 +598,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
     my_sync_device();
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
-            Hmatrix_m1, Hmatrix_0, tot_steps+1);
+            Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);
     delete RT2a;
     delete RT0;
 }

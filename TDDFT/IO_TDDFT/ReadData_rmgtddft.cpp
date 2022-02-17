@@ -42,7 +42,7 @@
 
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
-        double *Cmatrix, double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps)
+        double *Cmatrix, double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2)
 {
     int fhand, fgrid_size, size;
     char newname[MAX_PATH];
@@ -65,7 +65,6 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
     read (fhand, vxc, fgrid_size * sizeof(double));
     read (fhand, vh_corr, fgrid_size * sizeof(double));
 
-    int n2 = ct.num_states * ct.num_states;
     
     read (fhand, Pn0, 2* n2 * sizeof(double));
     read (fhand, Hmatrix, n2 * sizeof(double));
