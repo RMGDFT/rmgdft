@@ -108,7 +108,6 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
 
     RmgTimer *RT= new RmgTimer("BlockTr");
     for(int ib = 0; ib < num_blocks; ib++) {
-        int jb = ib + 1;
         for(int st1 = 0; st1 < m_block_dim[ib]; st1++) {
             int st1_glob = m_block_idx0[ib] + st1;
             int st1_local = A.index_global_to_proj[st1_glob];
@@ -121,7 +120,14 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
 
                 diag_blocks[ib][st2 * m_block_dim[ib] + st1] += mat_local[st2_local * A.num_thispe + st1_local];
             }
+        }
 
+        int jb = ib + 1;
+        if(jb >= num_blocks) continue;
+        for(int st1 = 0; st1 < m_block_dim[ib]; st1++) {
+            int st1_glob = m_block_idx0[ib] + st1;
+            int st1_local = A.index_global_to_proj[st1_glob];
+            if (st1_local < 0 ) continue;
             for(int st2 = 0; st2 < n_block_dim[jb]; st2++) {
                 int st2_glob = n_block_idx0[jb] + st2;
                 int st2_local = B.index_global_to_proj[st2_glob];
