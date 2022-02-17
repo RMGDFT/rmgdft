@@ -200,10 +200,10 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
-                Cmatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
+        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
+                Cmatrix, Hmatrix_m1, Hmatrix_0, &pre_steps, n2);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
-        Phi.ReadOrbitalsFromSingleFiles(std::string(ct.infile), *Rmg_G);
+        
     }
     else
     {
@@ -241,7 +241,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         Sp->CopySquareMatrixToDistArray(Hmatrix_glob, Hmatrix, numst, desca);
         Sp->CopySquareMatrixToDistArray(Smatrix_glob, Smatrix, numst, desca);
 
-//        DiagScalapack(states, ct.num_states, Hmatrix, Smatrix);
+        //        DiagScalapack(states, ct.num_states, Hmatrix, Smatrix);
 
 #if CUDA_ENABLED
         mat_dist_to_global(zz_dis, pct.desca, Cmatrix);
@@ -249,33 +249,14 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         dcopy(&n2, zz_dis, &ione, Cmatrix, &ione);
 #endif
         dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
-            Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
+                Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
         dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
-            Cmatrix, ione, ione, desca, zero, Hmatrix_old, ione, ione, desca);
+                Cmatrix, ione, ione, desca, zero, Hmatrix_old, ione, ione, desca);
         dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
-            Smatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
+                Smatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
         dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
-            Cmatrix, ione, ione, desca, zero, Smatrix, ione, ione, desca);
+                Cmatrix, ione, ione, desca, zero, Smatrix, ione, ione, desca);
         my_sync_device();
-
-        if(pct.gridpe == 0 && ct.verbose)
-        { 
-            printf("\nHMa\n");
-            for(i = 0; i < 10; i++) 
-            {
-
-                printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Hmatrix_old[i*numst + j]);
-            }
-
-            printf("\nSMa\n");
-            for(i = 0; i < 10; i++) 
-            {
-
-                printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Smatrix[i*numst + j]);
-            }
-        }
 
 
         pre_steps = 0;
@@ -304,25 +285,10 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
-        //         for(int i = 0; i < 10; i++) 
-        //         { printf("Akick\n");
-        //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
-        //       }
         dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
         dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Hmatrix, ione, ione, desca);
-
-        if(pct.gridpe == 0 && ct.verbose)
-        { 
-            printf("\nHMc\n");
-            for(i = 0; i < 10; i++) 
-            {
-
-                printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Hmatrix[i*MXLLDA + j]);
-            }
-        }
 
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
@@ -337,6 +303,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     {
 
         tot_steps = pre_steps + tddft_steps;
+
 
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
@@ -358,6 +325,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             RT2a = new RmgTimer("2-TDDFT: ELDYN");
             magnus (Hmatrix_0,    Hmatrix_1 , time_step, Hmatrix_dt , n2) ; 
+
             /* --- fortran version:  --*/
             // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             /* --- C++  version:  --*/
@@ -365,17 +333,6 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
-
-            //if(pct.gridpe == 0 && ct.verbose)
-            //{ 
-            //    printf("\nPn1\n");
-            //    for(i = 0; i < 10; i++) 
-            //    {
-//
- //                   printf("\n");
-  //                  for(int j = 0; j < 10; j++) printf(" %8.1e",  Pn1[i*MXLLDA + j]);
-   //             }
-    //        }
 
             RT2a = new RmgTimer("2-TDDFT: transform of H to Cij *H * Cij");
             dgemm_driver ("N", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
@@ -403,17 +360,10 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             my_sync_device();
 
 
-            //      printf("\n PPP \n");
-            //      for(i = 0; i < 10; i++) 
-            //      { printf("\n");
-            //          for(int j = 0; j < 10; j++) printf(" %8.2e", Pn1[i*numst + j]);
-            //      }
-            //      printf("\n\n");
-
-
             RT2a = new RmgTimer("2-TDDFT: mat_glob_to_local");
 
             mat_global_to_local(Phi, H_Phi, Hmatrix_glob, rho_matrix_local);
+
             delete(RT2a);
             RT2a = new RmgTimer("2-TDDFT: Rho");
             GetNewRho_proj(Phi, H_Phi, rho, rho_matrix_local);
@@ -514,7 +464,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: WriteData");
             my_sync_device();
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
-                    Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps);
+                    Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps, n2);
             delete RT1;
             fflush(NULL);
         }
@@ -525,7 +475,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 
     my_sync_device();
+    dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
-            Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1);
+            Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);
     delete RT0;
 }
