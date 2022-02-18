@@ -60,8 +60,7 @@ void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_
         RmgTimer RT1("Mix LdaU: Linear");
         for(int i = 0; i < ns_size; i++)
         {
-            ns_occ[i] = ct.ldau_mix * new_ns_occ[i] + (1.0-ct.mix) * ns_occ[i]; 
-            ns_occ[i] = new_ns_occ[i];
+            ns_occ[i] = ct.ldau_mix * new_ns_occ[i] + (1.0-ct.ldau_mix) * ns_occ[i]; 
         }
     }
     else 
