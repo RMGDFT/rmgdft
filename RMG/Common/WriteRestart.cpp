@@ -163,24 +163,6 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         fclose (fhandle);
         fflush(NULL);
 
-
-        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-        {
-            sprintf (newname, "%s_spin%d_nsocc", name, pct.spinpe);
-            amode = S_IREAD | S_IWRITE;
-            fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
-            if (fhand < 0) {
-                rmg_printf("Can't open restart file %s", newname);
-                rmg_error_handler(__FILE__, __LINE__, "Terminating.");
-            }
-
-            int pstride = Kptr[0]->ldaU->ldaU_m;
-            size_t occ_size = ct.nspin * Atoms.size() * pstride * pstride * sizeof(std::complex<double>);
-            write(fhand, Kptr[0]->ldaU->ns_occ.data(), occ_size);
-            close(fhand);
-
-        }
-
     } /*end if (pct.imgpe == 0) */
 
     fflush(NULL);

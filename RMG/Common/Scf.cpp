@@ -293,6 +293,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         {
             ct.ns_occ_rms += std::norm (old_ns_occ.data()[idx] - new_ns_occ.data()[idx]);
         }
+        ct.ns_occ_rms = sqrt(ct.ns_occ_rms / occ_size);
 
         MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
 

@@ -548,13 +548,19 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+            if(ct.runflag == RESTART)
+            {
+                Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+                Kptr[kpt]->ldaU->calc_energy();
+            }
         }
         delete RT3;
     }
 
 
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
-    if(ct.runflag != RESTART ){
+    if(ct.runflag != RESTART )
+    {
 
         /*dnmI has to be stup before calling subdiag */
         vtot = new double[FP0_BASIS];
@@ -670,7 +676,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete [] vtot;
         if(ct.noncoll) delete [] vxc_psi;
 
-
     }
 
 
@@ -700,7 +705,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         }
     }
-
 }                               /* end init */
 
 
