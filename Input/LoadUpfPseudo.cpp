@@ -167,6 +167,9 @@ void LoadUpfPseudo(SPECIES *sp)
     sp->zvalence = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.z_valence");
     if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
+    sp->generated = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.generated");
+    sp->author = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.author");
+
     // Store UPF functional string for later processing
     sp->functional = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
 

@@ -61,6 +61,10 @@ public:
     /* pseudopotential filename */
     std::string pseudo_filename;
 
+    /* upf generated and author strings */
+    std::string generated;
+    std::string author;
+
     /* Pseudopotential file format. Types are UPF (0) and XML (QMC) (1) */
     int ftype;
 

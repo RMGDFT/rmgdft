@@ -586,6 +586,14 @@ void WriteHeader (void)
     printf("\n");
     /**********  End Species Table  ************/
     
+    printf("\n");
+    printf("Pseudopotential generation information:\n");
+    for (auto& sp : Species)
+    {
+        printf("  %2s pseudopotential file: %s\n", sp.atomic_symbol, sp.pseudo_filename.c_str());
+        printf("      Generation info     : %s\n", sp.generated.c_str());
+        printf("      Author info         : %s\n", sp.author.c_str());
+    }
 
     printf("\n\n");
     printf("Memory usage (Mbytes):     Min        Max       Total\n");
