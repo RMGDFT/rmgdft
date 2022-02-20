@@ -619,6 +619,9 @@ public:
     /** Type of atomic orbitals used for LCAO inits and projections */
     int atomic_orbital_type;
 
+    /** If interntal pseudopotential is wanted which type */
+    int internal_pseudo_type;
+
     /** The maximum l quantum number for any species */
     int max_l;
 

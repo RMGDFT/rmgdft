@@ -258,3 +258,8 @@
 #define EXX_DIV_GYGI_BALDERESCHI 0
 #define EXX_DIV_NONE 1
 #endif /* CONST_H_INCLUDED */
+
+// Internal pseudopotential types
+#define ULTRASOFT_GBRV  0
+#define NORM_CONSERVING_STANDARD  1
+#define NORM_CONSERVING_ACCURACY  2
