@@ -11,6 +11,12 @@ atoms=
  Mg     0.333333333333    0.333333333333    0.500000000000      1
 "
 
+# The normal process is to set thread counts via environment variables
+# but since the tests run in a batch via CTest we set some of them in
+# the input files.
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+
 kpoint_mesh = "5 5 3"
 kpoint_distribution = "2"
 renormalize_forces="false"

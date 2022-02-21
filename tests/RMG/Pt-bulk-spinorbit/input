@@ -15,6 +15,11 @@ compressed_outfile = "false"
 wavefunction_grid="32 32 32"
 potential_grid_refinement = "2"
 
+# The normal process is to set thread counts via environment variables
+# but since the tests run in a batch via CTest we set some of them in
+# the input files.
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
 
 
 #write_pseudopotential_plots = "true"

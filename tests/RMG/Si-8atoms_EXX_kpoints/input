@@ -4,6 +4,12 @@ test_energy = "-33.43040768"
 
 #spin_polarization="true"
 
+# The normal process is to set thread counts via environment variables
+# but since the tests run in a batch via CTest we set some of them in
+# the input files.
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+
 localize_localpp = "false"
 localize_projectors = "false"
 

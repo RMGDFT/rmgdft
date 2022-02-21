@@ -2,6 +2,12 @@
 #
 test_energy="-250.34715085"
 
+# The normal process is to set thread counts via environment variables
+# but since the tests run in a batch via CTest we set some of them in
+# the input files.
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+
 a_length="      2.83351000"
 b_length="      2.83351000"
 c_length="      2.83351000"

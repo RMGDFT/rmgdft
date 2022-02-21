@@ -7,6 +7,12 @@ wavefunction_grid="24 24 64"
 test_energy="-22.98280508"
 test_energy_tolerance = "1.00000000e-06"
 
+# The normal process is to set thread counts via environment variables
+# but since the tests run in a batch via CTest we set some of them in
+# the input files.
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+
 
 
 occupations_type = "Fixed"
