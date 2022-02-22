@@ -3,7 +3,7 @@
 |---------|--------------|
 |Ultrasoft pseudopotentials (USPP)|Yes using UPF2 format.|
 |Norm conserving pseudopotentials (NCPP)|Yes using UPF2 format.|
-|GPU accelerators|Nvidia hardware supported. AMD hardware in progress.|
+|GPU accelerators|Nvidia and AMD hardware supported.|
 |Crystal lattice types|Simple Cubic, Simple Orthorhombic, FCC, BCC and Hexagonal have fully optimized support. Other lattice types are in progress.
 |Structure optimization|Yes.|
 |Molecular dynamics|Yes including both Constant Volume and Energy and Constant Temperature and Energy.|
