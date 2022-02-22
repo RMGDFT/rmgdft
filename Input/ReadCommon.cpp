@@ -537,7 +537,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<double> def_lattice_vector({{0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0}});
     Ri::ReadVector<double> lattice_vector;
     If.RegisterInputKey("lattice_vector", &lattice_vector, &def_lattice_vector, 9, OPTIONAL,
-            "Lattice vectors, a0, a1, a2 ",
+            "The simulation cell may be specified using either lattice vectors, "
+            "a0, a1, a2 or by lattice constants and a bravais lattice type. "
+            "If lattice vectors are used they should be entered as a 3x3 matrix.",
             "Optional Lattice vector input as 3x3 matrix or 9 numbers", CELL_OPTIONS);
 
     If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
@@ -817,7 +819,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "kohn_sham_fd_order must lie in the range (6,10). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("use_gpu_fd", &lc.use_gpu_fd, false, 
-            "Use gpus for kohn-sham orbital finite differencing. Experimental.", MISC_OPTIONS|EXPERIMENTAL_OPTION);
+            "Use gpus for kohn-sham orbital finite differencing. Depending on the "
+            "balance of hardware characteristics this can provide a significant "
+            "speedup but individual testing is required. Experimental.", MISC_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
             CHECK_AND_FIX, OPTIONAL,
@@ -1155,13 +1159,27 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
 
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
-            "Use internal numa setup if available.", PERF_OPTIONS);
+            "Numa stands for Non Uniform Memory Access and means that the main "
+            "memory of a computer is organized into seperate distinct banks. "
+            "Each bank is then attached to a CPU core or group of cores and "
+            "while all cores can normally access all banks the access speed "
+            "is faster for directly attached banks. Ensuring that individual "
+            "CPU cores mostly access memory in banks they are directly attached "
+            "to can have a large impact on performance. Process mapping that "
+            "does this can normally be done when jobs are submitted and run "
+            "via arguments to mpirun/mpiexec but if this is not done RMG will "
+            "attempt to provide an optimal mapping if use_numa is set to true. ",
+            PERF_OPTIONS);
 
     If.RegisterInputKey("use_hwloc", &lc.use_hwloc, false, 
             "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.", PERF_OPTIONS);
 
     If.RegisterInputKey("use_async_allreduce", &lc.use_async_allreduce, true, 
-            "Use asynchronous allreduce if available.", PERF_OPTIONS);
+            "RMG uses MPI_Allreduce function calls in several places and for "
+            "large problems these can account for a significant fraction of the "
+            "total run time. In most cases using the asynchronous MPI versions "
+            "of the functions is faster but this is not true for all platforms "
+            "and in that casesetting this flag to false can improve performance.", PERF_OPTIONS);
 
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, true, 
             "Use mpi queue mode.", PERF_OPTIONS);
