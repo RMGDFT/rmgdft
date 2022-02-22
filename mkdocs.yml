@@ -1,0 +1,4 @@
+site_name: RMGDFT
+repo_url: https://github.com/RMGDFT/rmgdft
+theme:
+    name: readthedocs
