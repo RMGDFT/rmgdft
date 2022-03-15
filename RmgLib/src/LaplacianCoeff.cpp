@@ -60,18 +60,27 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     this->plane_dist_xy = 1000000.0;
     this->plane_dist_xz = 1000000.0;
     this->plane_dist_yz = 1000000.0;
+    this->plane_dist_nxy = 1000000.0;
+    this->plane_dist_nxz = 1000000.0;
+    this->plane_dist_nyz = 1000000.0;
     this->plane_center_x = 0.0;
     this->plane_center_y = 0.0;
     this->plane_center_z = 0.0;
     this->plane_center_xy = 0.0;
     this->plane_center_xz = 0.0;
     this->plane_center_yz = 0.0;
+    this->plane_center_nxy = 0.0;
+    this->plane_center_nxz = 0.0;
+    this->plane_center_nyz = 0.0;
     this->axis_x.resize(Lorder);
     this->axis_y.resize(Lorder);
     this->axis_z.resize(Lorder);
     this->axis_xy.resize(Lorder);
     this->axis_xz.resize(Lorder);
     this->axis_yz.resize(Lorder);
+    this->axis_nxy.resize(Lorder);
+    this->axis_nxz.resize(Lorder);
+    this->axis_nyz.resize(Lorder);
 
     std::vector<GridPoint>  points, points1;
 
@@ -233,24 +242,43 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
                 this->axis_z[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_z -= a.coeff;
             }
-            else if((a.index[0] != 0) && (a.index[1] != 0) && (a.index[2] == 0))
+            else if((a.index[0] == a.index[1]) && (a.index[2] == 0))
             {
                 this->plane_dist_xy = std::min(this->plane_dist_xy, std::abs(a.dist));
                 this->axis_xy[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_xy -= a.coeff;
             }
-            else if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] != 0))
+            else if((a.index[0] == a.index[2]) && (a.index[1] == 0))
             {
                 this->plane_dist_xz = std::min(this->plane_dist_xz, std::abs(a.dist));
                 this->axis_xz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_xz -= a.coeff;
             }
-            else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] != 0))
+            else if((a.index[0] == 0) && (a.index[1] == a.index[2]))
             {
                 this->plane_dist_yz = std::min(this->plane_dist_yz, std::abs(a.dist));
                 this->axis_yz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_yz -= a.coeff;
             }
+            else if((a.index[0] == -a.index[1]) && (a.index[2] == 0))
+            {
+                this->plane_dist_nxy = std::min(this->plane_dist_nxy, std::abs(a.dist));
+                this->axis_nxy[a.index[1]+Lorder/2] = a.coeff;
+                this->plane_center_nxy -= a.coeff;
+            }
+            else if((a.index[0] == -a.index[2]) && (a.index[1] == 0))
+            {
+                this->plane_dist_nxz = std::min(this->plane_dist_nxz, std::abs(a.dist));
+                this->axis_nxz[a.index[2]+Lorder/2] = a.coeff;
+                this->plane_center_nxz -= a.coeff;
+            }
+            else if((a.index[0] == 0) && (a.index[1] == -a.index[2]))
+            {
+                this->plane_dist_nyz = std::min(this->plane_dist_nyz, std::abs(a.dist));
+                this->axis_nyz[a.index[2]+Lorder/2] = a.coeff;
+                this->plane_center_nyz -= a.coeff;
+            }
+
         }
     }
 
@@ -344,18 +372,18 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
 
-                // This next set of conditions forces TRICLINIC to use three axes/plane
+                // This next set of conditions forces TRICLINIC to use four axes/plane
                 if((i!=0) && (j!=0) && (k==0))
                 {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i != -j)) continue;
+                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != j*j)) continue;
                 }
                 if((i!=0) && (j==0) && (k!=0))
                 {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i != -k)) continue;
+                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != k*k)) continue;
                 }
                 if((i==0) && (j!=0) && (k!=0))
                 {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (j != -k)) continue;
+                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (j*j != k*k)) continue;
                 }
                 if((i!=0) && (j!=0) && (k!=0))
                 {
@@ -640,7 +668,8 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     points.resize(point_end);
 
-    if(iprint)
+//    if(iprint)
+if(1)
     {
         index  =0;
         for(auto a:points)

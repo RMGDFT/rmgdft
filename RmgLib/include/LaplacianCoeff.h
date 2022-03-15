@@ -49,8 +49,10 @@ public:
     // Used for monoclinic
     double plane_dist_x, plane_dist_y, plane_dist_z;
     double plane_dist_xy, plane_dist_xz, plane_dist_yz;
+    double plane_dist_nxy, plane_dist_nxz, plane_dist_nyz;
     double plane_center_x, plane_center_y, plane_center_z;
     double plane_center_xy, plane_center_xz, plane_center_yz;
+    double plane_center_nxy, plane_center_nxz, plane_center_nyz;
 
     std::vector<double> axis_x;
     std::vector<double> axis_y;
@@ -58,6 +60,10 @@ public:
     std::vector<double> axis_xy;
     std::vector<double> axis_xz;
     std::vector<double> axis_yz;
+    std::vector<double> axis_nxy;
+    std::vector<double> axis_nxz;
+    std::vector<double> axis_nyz;
+
     std::vector<CoeffList> coeff_and_index;
     std::vector<CoeffList> gx_coeff_and_index;
     std::vector<CoeffList> gy_coeff_and_index;
