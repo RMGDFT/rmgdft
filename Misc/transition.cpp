@@ -10,6 +10,7 @@
 #include "MpiQueue.h"
 
 LaplacianCoeff *LC;
+LaplacianCoeff *LC_6;
 LaplacianCoeff *HLC;
 BaseGrid *Rmg_G;
 BaseGrid *Rmg_halfgrid;

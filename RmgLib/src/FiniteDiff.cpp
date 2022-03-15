@@ -33,6 +33,7 @@
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "Gpufuncs.h"
+#include "LaplacianCoeff.h"
 #include "RmgTimer.h"
 #include "rmg_error.h"
 
@@ -1027,6 +1028,7 @@ double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
         case TRICLINIC_PRIMITIVE:
+        case MONOCLINIC_PRIMITIVE:
         case None:
             if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
@@ -1652,7 +1654,6 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2x);
     RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2x);
     RmgType t4x (c1*w1[ic+4] * hf / h2x);
-
     hadj = sqrt(h2y / maxh);
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
     c1 = 1.0 + c2;
@@ -3032,6 +3033,11 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2=0.0;
+    double t0x, t0y, t0z, t0xy, t0xz, t0yz;
+    double h2x = gridhx * gridhx * xside * xside;
+    double h2y = gridhy * gridhy * yside * yside;
+    double h2z = gridhz * gridhz * zside * zside;
+  
     if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hf = 2.0/3.0;
 
     double d1 = 6.0/560.0;
@@ -3039,9 +3045,6 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     double dr = d1 / d2;
     double k2 = PI*PI/8.0;
 
-    double h2x = gridhx * gridhx * xside * xside;
-    double h2y = gridhy * gridhy * yside * yside;
-    double h2z = gridhz * gridhz * zside * zside;
 
     double maxh = std::max(h2x, h2y);
     maxh = std::max(maxh, h2z);
@@ -3050,6 +3053,9 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
     c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
+    t0x = th2;
+    RmgType t1xy, t2xy, t3xy, t4xy, t1xz, t2xz, t3xz, t4xz, t1yz, t2yz, t3yz, t4yz;
+
     RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2x);
     RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2x);
     RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2x);
@@ -3058,16 +3064,19 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     hadj = sqrt(h2y / maxh);
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
     c1 = 1.0 + c2;
-    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2y;
-    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) / h2y);
-    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) / h2y);
-    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) / h2y);
-    RmgType t4y (c1*w1[ic+4] / h2y);
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) / h2y;
+    t0y = (c1*w1[ic] - c2*w2[ic-1]) /  h2y;
+
+    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2y);
+    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2y);
+    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2y);
+    RmgType t4y (c1*w1[ic+4] * hf / h2y);
 
     hadj = sqrt(h2z / maxh);
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
+    t0z = (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
     RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) / h2z);
     RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) / h2z);
@@ -3076,6 +3085,88 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     RmgType t0 (th2);
     RmgType hex_t = 1.0;
     if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hex_t = (0.5*1.154700538379);
+
+    if(ibrav == MONOCLINIC_PRIMITIVE || ibrav == TRICLINIC_PRIMITIVE)
+    {
+        // Need to setup 4 axes
+        c2 = 0.0;
+        th2 = 0.0;
+        maxh = std::max(LC->plane_dist_x, LC->plane_dist_y);
+        maxh = std::max(maxh, LC->plane_dist_xy);
+        maxh = std::max(maxh, LC->plane_dist_z);
+        if(ibrav == TRICLINIC_PRIMITIVE)
+        {
+            maxh = std::max(maxh, LC->plane_dist_xz);
+            maxh = std::max(maxh, LC->plane_dist_yz);
+        }
+
+        hadj = sqrt(LC->plane_dist_x / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0x = c1*LC->plane_center_x - c2*LC_6->plane_center_x;
+        th2 += t0x;
+        t1x = c1*LC->axis_x[3] - c2*LC_6->axis_x[2];
+        t2x = c1*LC->axis_x[2] - c2*LC_6->axis_x[1];
+        t3x = c1*LC->axis_x[1] - c2*LC_6->axis_x[0];
+        t4x = c1*LC->axis_x[0];
+
+        hadj = sqrt(LC->plane_dist_y / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0y = c1*LC->plane_center_y - c2*LC_6->plane_center_y;
+        th2 += t0y;
+        t1y = c1*LC->axis_y[3] - c2*LC_6->axis_y[2];
+        t2y = c1*LC->axis_y[2] - c2*LC_6->axis_y[1];
+        t3y = c1*LC->axis_y[1] - c2*LC_6->axis_y[0];
+        t4y = c1*LC->axis_y[0];
+
+        hadj = sqrt(LC->plane_dist_z / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0z = c1*LC->plane_center_z - c2*LC_6->plane_center_z;
+        th2 += t0z;
+        t1z = c1*LC->axis_z[3] - c2*LC_6->axis_z[2];
+        t2z = c1*LC->axis_z[2] - c2*LC_6->axis_z[1];
+        t3z = c1*LC->axis_z[1] - c2*LC_6->axis_z[0];
+        t4z = c1*LC->axis_z[0];
+
+        hadj = sqrt(LC->plane_dist_xy / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0xy = c1*LC->plane_center_xy - c2*LC_6->plane_center_xy;
+        th2 += t0xy;
+        t1xy = c1*LC->axis_xy[3] - c2*LC_6->axis_xy[2];
+        t2xy = c1*LC->axis_xy[2] - c2*LC_6->axis_xy[1];
+        t3xy = c1*LC->axis_xy[1] - c2*LC_6->axis_xy[0];
+        t4xy = c1*LC->axis_xy[0];
+
+        t0 = th2;
+    }
+    if(ibrav == TRICLINIC_PRIMITIVE)
+    {
+        // Triclinic adds two more after monoclinic
+        c2 = 0.0;
+        hadj = sqrt(LC->plane_dist_xz / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0xz = c1*LC->plane_center_xz - c2*LC_6->plane_center_xz;
+        th2 += t0xz;
+        t1xz = c1*LC->axis_xz[3] - c2*LC_6->axis_xz[2];
+        t2xz = c1*LC->axis_xz[2] - c2*LC_6->axis_xz[1];
+        t3xz = c1*LC->axis_xz[1] - c2*LC_6->axis_xz[0];
+        t4xz = c1*LC->axis_xz[0];
+
+        hadj = sqrt(LC->plane_dist_yz / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0yz = c1*LC->plane_center_yz - c2*LC_6->plane_center_yz;
+        th2 += t0yz;
+        t1yz = c1*LC->axis_yz[3] - c2*LC_6->axis_yz[2];
+        t2yz = c1*LC->axis_yz[2] - c2*LC_6->axis_yz[1];
+        t3yz = c1*LC->axis_yz[1] - c2*LC_6->axis_yz[0];
+        t4yz = c1*LC->axis_yz[0];
+        t0 = th2;
+    }
 
     fdparms_o8<RmgType> c;
 
@@ -3117,21 +3208,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     RmgType t3hy (4.0 * s1*kvec[1] * I_t / (105.0 * gridhy * yside));
     RmgType t4hy (-1.0 * s1*kvec[1] * I_t / (280.0 * gridhy * yside));
 
-    RmgType gpt1xh = t1x + hex_t * t1hy;
-    RmgType gpt2xh = t2x + hex_t * t2hy;
-    RmgType gpt3xh = t3x + hex_t * t3hy;
-    RmgType gpt4xh = t4x + hex_t * t4hy;
+    c.gpt1xh = t1x + hex_t * t1hy;
+    c.gpt2xh = t2x + hex_t * t2hy;
+    c.gpt3xh = t3x + hex_t * t3hy;
+    c.gpt4xh = t4x + hex_t * t4hy;
 
-    RmgType gmt1xh = t1x - hex_t * t1hy;
-    RmgType gmt2xh = t2x - hex_t * t2hy;
-    RmgType gmt3xh = t3x - hex_t * t3hy;
-    RmgType gmt4xh = t4x - hex_t * t4hy;
+    c.gmt1xh = t1x - hex_t * t1hy;
+    c.gmt2xh = t2x - hex_t * t2hy;
+    c.gmt3xh = t3x - hex_t * t3hy;
+    c.gmt4xh = t4x - hex_t * t4hy;
 
     
 
     // NULL b means we just want the diagonal component.
     if(b == NULL) return (double)std::real(t0);
     int id = 1;
+    int idxy=1, idxz=1,idyz=1;
     switch(ibrav)
     {
         case CUBIC_PRIMITIVE:
@@ -3187,6 +3279,58 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
             }                           /* end for */
             break;
 
+        case MONOCLINIC_PRIMITIVE:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &a[iy*iys + ix*ixs];
+                    RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                    // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] = t0 * A[iz] +
+                                t1z * A[iz + 1] + t1z * A[iz - 1] +
+                                t2z * A[iz + 2] + t2z * A[iz - 2] +
+                                t3z * A[iz + 3] + t3z * A[iz - 3] +
+                                t4z * A[iz + 4] + t4z * A[iz - 4];
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1y * A[iz + iys] + t1y * A[iz - iys] +
+                                t2y * A[iz + 2*iys] + t2y * A[iz - 2*iys] +
+                                t3y * A[iz + 3*iys] + t3y * A[iz - 3*iys] +
+                                t4y * A[iz + 4*iys] + t4y * A[iz - 4*iys];
+
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * A[iz + ixs] + t1x * A[iz - ixs] +
+                                t2x * A[iz + 2*ixs] + t2x * A[iz - 2*ixs] +
+                                t3x * A[iz + 3*ixs] + t3x * A[iz - 3*ixs] +
+                                t4x * A[iz + 4*ixs] + t4x * A[iz - 4*ixs];
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1xy * A[iz + ixs - iys] + t1xy * A[iz - ixs + iys] +
+                                t2xy * A[iz + 2*ixs - 2*iys] + t2xy * A[iz - 2*ixs + 2*iys] +
+                                t3xy * A[iz + 3*ixs - 3*iys] + t3xy * A[iz - 3*ixs + 3*iys] +
+                                t4xy * A[iz + 4*ixs - 4*iys] + t4xy * A[iz - 4*ixs + 4*iys];
+                    }                   /* end for */
+                }
+            }
+
+            break;
+
         case HEXAGONAL2:
             id = -1;
         case HEXAGONAL:
@@ -3212,10 +3356,10 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                gpt1xh * A[iz + iys] + gmt1xh * A[iz - iys] +
-                                gpt2xh * A[iz + 2*iys] + gmt2xh * A[iz - 2*iys] +
-                                gpt3xh * A[iz + 3*iys] + gmt3xh * A[iz - 3*iys] +
-                                gpt4xh * A[iz + 4*iys] + gmt4xh * A[iz - 4*iys];
+                                c.gpt1xh * A[iz + iys] + c.gmt1xh * A[iz - iys] +
+                                c.gpt2xh * A[iz + 2*iys] + c.gmt2xh * A[iz - 2*iys] +
+                                c.gpt3xh * A[iz + 3*iys] + c.gmt3xh * A[iz - 3*iys] +
+                                c.gpt4xh * A[iz + 4*iys] + c.gmt4xh * A[iz - 4*iys];
                     }
 
                     for (int iz = 4; iz < dimz + 4; iz++)
@@ -3230,15 +3374,86 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                gpt1xh * A[iz + id*ixs + iys] + gmt1xh * A[iz - id*ixs - iys] +
-                                gpt2xh * A[iz + id*2*ixs + 2*iys] + gmt2xh * A[iz - id*2*ixs - 2*iys] +
-                                gpt3xh * A[iz + id*3*ixs + 3*iys] + gmt3xh * A[iz - id*3*ixs - 3*iys] +
-                                gpt4xh * A[iz + id*4*ixs + 4*iys] + gmt4xh * A[iz - id*4*ixs - 4*iys];
+                                c.gpt1xh * A[iz + id*ixs + iys] + c.gmt1xh * A[iz - id*ixs - iys] +
+                                c.gpt2xh * A[iz + id*2*ixs + 2*iys] + c.gmt2xh * A[iz - id*2*ixs - 2*iys] +
+                                c.gpt3xh * A[iz + id*3*ixs + 3*iys] + c.gmt3xh * A[iz - id*3*ixs - 3*iys] +
+                                c.gpt4xh * A[iz + id*4*ixs + 4*iys] + c.gmt4xh * A[iz - id*4*ixs - 4*iys];
                     }                   /* end for */
+                }
+            }
+            break;
+
+        case TRICLINIC_PRIMITIVE:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &a[iy*iys + ix*ixs];
+                    RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                    // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] = t0 * A[iz] +
+                                t1z * A[iz + 1] + t1z * A[iz - 1] +
+                                t2z * A[iz + 2] + t2z * A[iz - 2] +
+                                t3z * A[iz + 3] + t3z * A[iz - 3] +
+                                t4z * A[iz + 4] + t4z * A[iz - 4];
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1y * A[iz + iys] + t1y * A[iz - iys] +
+                                t2y * A[iz + 2*iys] + t2y * A[iz - 2*iys] +
+                                t3y * A[iz + 3*iys] + t3y * A[iz - 3*iys] +
+                                t4y * A[iz + 4*iys] + t4y * A[iz - 4*iys];
+
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * A[iz + ixs] + t1x * A[iz - ixs] +
+                                t2x * A[iz + 2*ixs] + t2x * A[iz - 2*ixs] +
+                                t3x * A[iz + 3*ixs] + t3x * A[iz - 3*ixs] +
+                                t4x * A[iz + 4*ixs] + t4x * A[iz - 4*ixs];
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1xy * A[iz + idxy*ixs - iys] + t1xy * A[iz - idxy*ixs + iys] +
+                                t2xy * A[iz + idxy*2*ixs - 2*iys] + t2xy * A[iz - idxy*2*ixs + 2*iys] +
+                                t3xy * A[iz + idxy*3*ixs - 3*iys] + t3xy * A[iz - idxy*3*ixs + 3*iys] +
+                                t4xy * A[iz + idxy*4*ixs - 4*iys] + t4xy * A[iz - idxy*4*ixs + 4*iys];
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1xz * A[iz + idxz*ixs - 1] + t1xz * A[iz - idxz*ixs + 1] +
+                                t2xz * A[iz + idxz*2*ixs - 2] + t2xz * A[iz - idxz*2*ixs + 2] +
+                                t3xz * A[iz + idxz*3*ixs - 3] + t3xz * A[iz - idxz*3*ixs + 3] +
+                                t4xz * A[iz + idxz*4*ixs - 4] + t4xz * A[iz - idxz*4*ixs + 4];
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1yz * A[iz + idyz*iys - 1] + t1yz * A[iz - idyz*iys + 1] +
+                                t2yz * A[iz + idyz*2*iys - 2] + t2yz * A[iz - idyz*2*iys + 2] +
+                                t3yz * A[iz + idyz*3*iys - 3] + t3yz * A[iz - idyz*3*iys + 3] +
+                                t4yz * A[iz + idyz*4*iys - 4] + t4yz * A[iz - idyz*4*iys + 4];
+                    }                   /* end for */
+
                 }
             }
 
             break;
+
         default:
             rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 

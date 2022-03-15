@@ -893,8 +893,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             // Case: alpha /= 90,  beta = gamma = 90
             // Monoclinic P, unique axis c
             ibrav = 12;
-            // Force to triclinic until special operators coded
-            ibrav = 14;
         }
         else if ( eqq(cosab,0.0) && neqq(cosac,0.0) && eqq(cosbc,0.0) )
         {

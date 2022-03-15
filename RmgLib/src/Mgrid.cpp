@@ -434,6 +434,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
         case CUBIC_PRIMITIVE:
         case CUBIC_FC:
         case ORTHORHOMBIC_PRIMITIVE:
+        case MONOCLINIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
         case TRICLINIC_PRIMITIVE:
         case None:
@@ -709,6 +710,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
         case CUBIC_FC:
         case CUBIC_BC:
         case ORTHORHOMBIC_PRIMITIVE:
+        case MONOCLINIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
         case TRICLINIC_PRIMITIVE:
         case None:

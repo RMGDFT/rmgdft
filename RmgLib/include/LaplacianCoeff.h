@@ -46,6 +46,18 @@ public:
     void CalculateCoeff ();
     ~LaplacianCoeff(void);
 
+    // Used for monoclinic
+    double plane_dist_x, plane_dist_y, plane_dist_z;
+    double plane_dist_xy, plane_dist_xz, plane_dist_yz;
+    double plane_center_x, plane_center_y, plane_center_z;
+    double plane_center_xy, plane_center_xz, plane_center_yz;
+
+    std::vector<double> axis_x;
+    std::vector<double> axis_y;
+    std::vector<double> axis_z;
+    std::vector<double> axis_xy;
+    std::vector<double> axis_xz;
+    std::vector<double> axis_yz;
     std::vector<CoeffList> coeff_and_index;
     std::vector<CoeffList> gx_coeff_and_index;
     std::vector<CoeffList> gy_coeff_and_index;
@@ -99,6 +111,7 @@ template <typename T>
 void FiniteDiffGrad(T * __restrict__ a, T * __restrict__ gx, T * __restrict__ gy, T * __restrict__ gz, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
 extern LaplacianCoeff *LC;
+extern LaplacianCoeff *LC_6;
 extern LaplacianCoeff *HLC;
 
 #endif

@@ -48,8 +48,13 @@ void SetLaplacian()
     LC->SetBrav(Rmg_L.get_ibrav_type());
     if(Rmg_L.get_ibrav_type() == CUBIC_BC) LC->SetWeightPower(1);
     LC->SetOffdiag(ct.laplacian_offdiag);
-
     LC->CalculateCoeff();
+
+    LC_6 = new LaplacianCoeff(a, Ngrid, 6, dim);
+    LC_6->SetBrav(Rmg_L.get_ibrav_type());
+    if(Rmg_L.get_ibrav_type() == CUBIC_BC) LC_6->SetWeightPower(1);
+    LC_6->SetOffdiag(ct.laplacian_offdiag);
+    LC_6->CalculateCoeff();
 
     Ngrid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     Ngrid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);

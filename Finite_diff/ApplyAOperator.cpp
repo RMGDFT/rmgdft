@@ -159,11 +159,16 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
                    (Rmg_L.get_ibrav_type() == HEXAGONAL2) || 
                    (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
+                   (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE) ||
+                   (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
 
 
 
-    if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL) || (Rmg_L.get_ibrav_type() == HEXAGONAL2))
+    if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL) || 
+                   (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
+                   (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
+                   (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE))
         Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
