@@ -668,8 +668,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     points.resize(point_end);
 
-//    if(iprint)
-if(1)
+    if(iprint)
     {
         index  =0;
         for(auto a:points)
