@@ -150,8 +150,8 @@ private:
     int Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec,
         std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
         double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
-    void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus);
-    void write_waves_afqmc(hid_t h_grp);
+    void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus, int nel_up, int nel_down);
+    void write_waves_afqmc(hid_t h_grp, const int nup, const int ndown, std::vector<std::vector<double>>& kpt_occ_up, std::vector<std::vector<double>>& kpt_occ_down);
     void WriteForAFQMC_gamma2complex(std::string &hdf_file, int ns_occ, int Nchol, int Nup, int Ndown,
         std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore, std::vector<double> &Hcore_kin);
 
@@ -189,6 +189,8 @@ public:
     void ReadWfsFromSingleFile(void);
     void kpoints_setup();
     void Remap(T *inbuf, T *rbuf);
+    double ReadEigOcc(std::string& wfname);
+    void GetKptOccs(std::vector<std::vector<double>>& kpt_occs, double& nel_spin, const int spinidx);
 
     // Plane wave object for local grids
     Pw *pwave;

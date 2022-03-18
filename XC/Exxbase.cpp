@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <iterator>
 #include <omp.h>
+#include <algorithm>
 
 #include "WriteEshdf.h"
 
@@ -975,6 +976,39 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     delete RT0;
 }
 
+template double Exxbase<double>::ReadEigOcc(std::string& wfname);
+template double Exxbase<std::complex<double>>::ReadEigOcc(std::string& wfname);
+template<class T> double Exxbase<T>::ReadEigOcc(std::string& wfname)
+{
+    OrbitalHeader H;
+    int fhand = open(wfname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+    if (fhand < 0) {
+        rmg_printf("Can't open restart file %s", wfname.c_str());
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+    }
+    size_t rsize = read(fhand, &H, sizeof(OrbitalHeader));
+    if (rsize != sizeof(OrbitalHeader))
+        rmg_error_handler(__FILE__, __LINE__, "error reading");
+    return H.occ;
+}
+
+template void Exxbase<double>::GetKptOccs(std::vector<std::vector<double>>& kpt_occs, double& nel_spin, const int spinidx);
+template void Exxbase<std::complex<double>>::GetKptOccs(std::vector<std::vector<double>>& kpt_occs, double& nel_spin, const int spinidx);
+template <class T> void Exxbase<T>::GetKptOccs(std::vector<std::vector<double>>& kpt_occs, double& nel_spin, const int spinidx) 
+{
+    kpt_occs.resize(ct.klist.num_k_all);
+    for (int ik = 0; ik < ct.klist.num_k_all; ik++) {
+        kpt_occs[ik].resize(ct.qmc_nband);
+        for (int ib = 0; ib < ct.qmc_nband; ib++) {
+            std::string wfname(ct.infile);
+            wfname += "_spin" + std::to_string(spinidx) + "_kpt" + std::to_string(ik) + "_wf" + std::to_string(ib);
+            double occ = ReadEigOcc(wfname);
+            nel_spin += occ;
+            kpt_occs[ik][ib] = occ;
+        }
+    }
+}
+
 // This computes exact exchange integrals
 // and writes the result into vfile.
 template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
@@ -1283,15 +1317,35 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     hid_t wf_group = 0;
     hid_t kpf_group = 0;
     if(pct.worldrank == 0) {
-    
+
         hdf_filename += ".h5";
+        //first read the occcupations. used to count electrons and define TWF
+        double nel_up = 0;
+        double nel_down = 0;
+        std::vector<std::vector<double>> kpt_occs_up, kpt_occs_down;
+        GetKptOccs(kpt_occs_up, nel_up, 0);
+        if (ct.nspin == 1) {
+           //closed shell, convert to only spin-up info. 
+           nel_up *= 0.5;
+           nel_down = nel_up;
+           for (int i = 0; i < kpt_occs_up.size(); i++)
+               for (int j = 0; j < kpt_occs_up[i].size(); j++)
+                   kpt_occs_up[i][j] *= 0.5;
+        }
+        else
+          GetKptOccs(kpt_occs_down, nel_down, 1);
+        nel_up /= static_cast<double>(ct.klist.num_k_all);
+        nel_down /= static_cast<double>(ct.klist.num_k_all);
+        int nup = static_cast<int>(std::floor(nel_up+0.1));
+        int ndown = static_cast<int>(std::floor(nel_down+0.1));
+
         remove(hdf_filename.c_str());
         h5file = H5Fcreate(hdf_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
         hamil_group = makeHDFGroup("Hamiltonian", h5file);
         wf_group = makeHDFGroup("Wavefunction", h5file);
         kpf_group = makeHDFGroup("KPFactorized", hamil_group);
-        write_basics(hamil_group, QKtoK2, kminus);
-        write_waves_afqmc(wf_group);
+        write_basics(hamil_group, QKtoK2, kminus, nup, ndown);
+        write_waves_afqmc(wf_group, nup, ndown, kpt_occs_up, kpt_occs_down);
     }
     int Ncho_max = ct.exxchol_max * ct.qmc_nband * nkpts;
     int ij_tot = ct.qmc_nband * ct.qmc_nband;
@@ -2330,23 +2384,24 @@ template <class T> void Exxbase<T>::SetHcore(T *Hij, T *Hij_kin, int lda)
 
 }
 
-template void Exxbase<double>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus);
-template void Exxbase<std::complex<double>>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus);
-template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus)
+template void Exxbase<double>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus, int nel_up, int nel_down);
+template void Exxbase<std::complex<double>>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus, int nel_up, int nel_down);
+template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus, int nel_up, int nel_down)
 {
     std::vector<int> dims;
     dims.resize(8, 0);
     dims[2] = ct.klist.num_k_all;
     dims[3] = ct.qmc_nband * dims[2];
-    dims[4] = ct.qmc_nband;
-    dims[5] = ct.qmc_nband;
+    dims[4] = nel_up * dims[2];
+    dims[5] = nel_down * dims[2];
     dims[7] = 0;
 
     writeNumsToHDF("dims", dims, h_group);
 
     std::vector<double> Energies;
 
-    Energies.push_back(ct.II);
+    //AFQMC E0 energy should be of supercell
+    Energies.push_back(ct.II * ct.klist.num_k_all);
     Energies.push_back(0.0);
     writeNumsToHDF("Energies", Energies, h_group);
 
@@ -2380,63 +2435,151 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
 
 }
 
-template void Exxbase<double>::write_waves_afqmc(hid_t wf_group);
-template void Exxbase<std::complex<double>>::write_waves_afqmc(hid_t wf_group);
-template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
+template void Exxbase<double>::write_waves_afqmc(hid_t wf_group, const int nup, const int ndown, std::vector<std::vector<double>>& kpt_occ_up, std::vector<std::vector<double>>& kpt_occ_down);
+template void Exxbase<std::complex<double>>::write_waves_afqmc(hid_t wf_group, const int nup, const int ndown, std::vector<std::vector<double>>& kpt_occ_up, std::vector<std::vector<double>>& kpt_occ_down);
+template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group, const int nup, const int ndown, std::vector<std::vector<double>>& kpt_occ_up, std::vector<std::vector<double>>& kpt_occ_down)
 {
     hid_t msd_group = makeHDFGroup("NOMSD", wf_group);
 
-    int M = ct.qmc_nband;
-    int Nalpha = ct.qmc_nband;
-    int Nbeta = ct.qmc_nband;
-    int nnz = ct.qmc_nband;
+    //make WF for supercell built from kpoint
+    int M = ct.klist.num_k_all * ct.qmc_nband; //total bands
+    int Nalpha = nup * ct.klist.num_k_all; //total num el up
+    int Nbeta  = ndown * ct.klist.num_k_all; //total num el down
     int Nd = 1;
-    int walker_type = 1;
-    
+    int walker_type = 1; //default closed
+    if (ct.nspin == 2)
+      walker_type = 2;
+    if (ct.noncoll)
+      rmg_error_handler(__FILE__, __LINE__, "AFQMC not implemented for noncollinear yet");
+
+    double full_thresh = 0.8;
+    double part_thresh = 0.2;
+
     //for spin 0
     {
-        std::vector<double> psi0_alpha;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nalpha; j++) {
-                if(i == j) {
-                    psi0_alpha.push_back(1.0);
-                    psi0_alpha.push_back(0.0);
-                }
-                else {
-                    psi0_alpha.push_back(0.0);
-                    psi0_alpha.push_back(0.0);
-                }
+        int M = ct.klist.num_k_all * ct.qmc_nband;
 
+        //create integer occupations for non-idempotent cases (i.e. fractional occupations)
+        int wfSize = M * Nalpha * 2; //for complex
+        std::vector<double> psi0_alpha(wfSize, 0.0);
+
+        //data in COO format, easy to take transpose and store in CSR format
+        std::vector<double> nz_data;
+        std::vector<int> nz_row;
+        std::vector<int> nz_col;
+
+        double pocc = 0.0;
+        int nelec = 0;
+        for (int ik = 0; ik < ct.klist.num_k_all; ik++) {
+            for (int ib = 0; ib < ct.qmc_nband; ib++) {
+                double occ = std::abs(kpt_occ_up[ik][ib]);
+                int mo_idx = ik * ct.qmc_nband + ib;
+                if (occ >= full_thresh) {
+                   psi0_alpha[mo_idx * Nalpha * 2 + nelec * 2 + 0] = 1.0;
+                   psi0_alpha[mo_idx * Nalpha * 2 + nelec * 2 + 1] = 0.0;
+                   nz_data.push_back(1.0);
+                   nz_data.push_back(0.0);
+                   nz_row.push_back(mo_idx);
+                   nz_col.push_back(nelec);
+                   nelec++;
+                }
+                else if (occ >= part_thresh) {
+                    pocc += occ;
+                    if (pocc >= full_thresh) {
+                        psi0_alpha[mo_idx * Nalpha * 2 + nelec * 2 + 0] = 1.0;
+                        psi0_alpha[mo_idx * Nalpha * 2 + nelec * 2 + 1] = 0.0;
+                        nz_data.push_back(1.0);
+                        nz_data.push_back(0.0);
+                        nz_row.push_back(mo_idx);
+                        nz_col.push_back(nelec);
+                        pocc = 0.0;
+                        nelec++;
+                    }
+                }
             }
         }
+        assert(Nalpha == nelec);
 
         hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nalpha), 2};
         writeNumsToHDF("Psi0_alpha", psi0_alpha, msd_group, 3, dims);
 
         hid_t T0_group = makeHDFGroup("PsiT_0", msd_group);
-        hsize_t dims_t0[]={static_cast<hsize_t>(nnz),2};
-        std::vector<double> t0_data;
-        for(int i = 0; i < nnz; i++) {
-            t0_data.push_back(1.0);
-            t0_data.push_back(0.0);
-        }
-        writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
+        hsize_t dims_t0[]={static_cast<hsize_t>(Nalpha),2};
+        writeNumsToHDF("data_", nz_data, T0_group, 2, dims_t0);
 
         std::vector<int> dims_t;
+        dims_t.push_back(Nalpha);
         dims_t.push_back(M);
         dims_t.push_back(Nalpha);
-        dims_t.push_back(nnz);
         writeNumsToHDF("dims", dims_t, T0_group);
+        writeNumsToHDF("jdata_", nz_row, T0_group);
+        writeNumsToHDF("pointers_begin_", nz_col, T0_group);
+        std::transform(nz_col.begin(), nz_col.end(), nz_col.begin(), [](const int& idx) { return idx + 1; });
+        writeNumsToHDF("pointers_end_", nz_col, T0_group);
+    }
 
-        std::vector<int> jdata, ptr_begin, ptr_end;
-        for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
-            ptr_begin.push_back(i);
-            ptr_end.push_back(i+1);
+    //for spin 1
+    if(ct.nspin == 2)
+    {
+        int M = ct.klist.num_k_all * ct.qmc_nband;
+
+        //create integer occupations for non-idempotent cases (i.e. fractional occupations)
+        int wfSize = M * Nbeta * 2; //for complex
+        std::vector<double> psi0_beta(wfSize, 0.0);
+
+        //data in COO format, easy to take transpose and store in CSR format
+        std::vector<double> nz_data;
+        std::vector<int> nz_row;
+        std::vector<int> nz_col;
+
+        double pocc = 0.0;
+        int nelec = 0;
+        for (int ik = 0; ik < ct.klist.num_k_all; ik++) {
+            for (int ib = 0; ib < ct.qmc_nband; ib++) {
+                double occ = std::abs(kpt_occ_down[ik][ib]);
+                int mo_idx = ik * ct.qmc_nband + ib;
+                if (occ >= full_thresh) {
+                   psi0_beta[mo_idx * Nbeta * 2 + nelec * 2 + 0] = 1.0;
+                   psi0_beta[mo_idx * Nbeta * 2 + nelec * 2 + 1] = 0.0;
+                   nz_data.push_back(1.0);
+                   nz_data.push_back(0.0);
+                   nz_row.push_back(mo_idx);
+                   nz_col.push_back(nelec);
+                   nelec++;
+                }
+                else if (occ >= part_thresh) {
+                    pocc += occ;
+                    if (pocc >= full_thresh) {
+                        psi0_beta[mo_idx * Nbeta * 2 + nelec * 2 + 0] = 1.0;
+                        psi0_beta[mo_idx * Nbeta * 2 + nelec * 2 + 1] = 0.0;
+                        nz_data.push_back(1.0);
+                        nz_data.push_back(0.0);
+                        nz_row.push_back(mo_idx);
+                        nz_col.push_back(nelec);
+                        pocc = 0.0;
+                        nelec++;
+                    }
+                }
+            }
         }
-        writeNumsToHDF("jdata_", jdata, T0_group);
-        writeNumsToHDF("pointers_begin_", ptr_begin, T0_group);
-        writeNumsToHDF("pointers_end_", ptr_end, T0_group);
+        assert(Nbeta == nelec);
+
+        hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nbeta), 2};
+        writeNumsToHDF("Psi0_beta", psi0_beta, msd_group, 3, dims);
+
+        hid_t T0_group = makeHDFGroup("PsiT_1", msd_group);
+        hsize_t dims_t0[]={static_cast<hsize_t>(Nbeta),2};
+        writeNumsToHDF("data_", nz_data, T0_group, 2, dims_t0);
+
+        std::vector<int> dims_t;
+        dims_t.push_back(Nbeta);
+        dims_t.push_back(M);
+        dims_t.push_back(Nbeta);
+        writeNumsToHDF("dims", dims_t, T0_group);
+        writeNumsToHDF("jdata_", nz_row, T0_group);
+        writeNumsToHDF("pointers_begin_", nz_col, T0_group);
+        std::transform(nz_col.begin(), nz_col.end(), nz_col.begin(), [](const int& idx) { return idx + 1; });
+        writeNumsToHDF("pointers_end_", nz_col, T0_group);
     }
 
     std::vector<double> coef;
@@ -2453,53 +2596,6 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     for(int i = 0; i < 5; i++) dims_v5.push_back(dims_5[i]);
 
     writeNumsToHDF("dims", dims_v5, msd_group);
-
-    //for spin 1
-    if(ct.nspin == 2)
-    {
-        std::vector<double> psi0_beta;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nbeta; j++) {
-                if(i == j) {
-                    psi0_beta.push_back(1.0);
-                    psi0_beta.push_back(0.0);
-                }
-                else {
-                    psi0_beta.push_back(0.0);
-                    psi0_beta.push_back(0.0);
-                }
-
-            }
-        }
-
-        hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nbeta), 2};
-        writeNumsToHDF("Psi0_beta", psi0_beta, msd_group, 3, dims);
-
-        hid_t T1_group = makeHDFGroup("PsiT_1", msd_group);
-        hsize_t dims_t1[]={static_cast<hsize_t>(nnz),2};
-        std::vector<double> t1_data;
-        for(int i = 0; i < nnz; i++) {
-            t1_data.push_back(1.0);
-            t1_data.push_back(0.0);
-        }
-        writeNumsToHDF("data_", t1_data, T1_group, 2, dims_t1);
-
-        std::vector<int> dims_t;
-        dims_t.push_back(M);
-        dims_t.push_back(Nbeta);
-        dims_t.push_back(nnz);
-        writeNumsToHDF("dims", dims_t, T1_group);
-
-        std::vector<int> jdata, ptr_begin, ptr_end;
-        for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
-            ptr_begin.push_back(i);
-            ptr_end.push_back(i+1);
-        }
-        writeNumsToHDF("jdata_", jdata, T1_group);
-        writeNumsToHDF("pointers_begin_", ptr_begin, T1_group);
-        writeNumsToHDF("pointers_end_", ptr_end, T1_group);
-    }
 }
 
 template void Exxbase<double>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
@@ -2527,8 +2623,8 @@ template <class T> void Exxbase<T>::WriteForAFQMC_gamma2complex(std::string &hdf
     kminus.resize(1, -1);
     QKtoK2[0][0] = 0;
     kminus[0] = 0;
-    write_basics(hamil_group, QKtoK2, kminus);
-    write_waves_afqmc(wf_group);
+    write_basics(hamil_group, QKtoK2, kminus, Nup, Ndown);
+//    write_waves_afqmc(wf_group);
 
     hsize_t h_dims[3];
     h_dims[0] = 1;
