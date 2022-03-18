@@ -51,6 +51,8 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvjDriver: provided workspace too small.");
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    //double tolerance = 1.0e-5;
+    //cusolverDnXsyevjSetTolerance( dsygvj_params, tolerance);
 
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
     int info;
