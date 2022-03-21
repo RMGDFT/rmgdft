@@ -95,6 +95,24 @@ cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 cudaError_t gpuHostUnregister(void *hostPtr);
 cudaError_t gpuGetDeviceCount(int *count); 
 
+#define Cuda_error(err)                                                                     \
+{                                                                                           \
+    cudaError_t err_ = (err);                                                               \
+    if (err_ != cudaSuccess) {                                                              \
+        printf("CUDA error %d at %s:%d\n", err_, __FILE__, __LINE__);                       \
+        throw std::runtime_error("CUDA error");                                             \
+    }                                                                                       \
+}
+#define Cusolver_status(custat)                                                             \
+{                                                                                           \
+    cusolverStatus_t custat_ = (custat);                                                    \
+    if (custat_ != CUSOLVER_STATUS_SUCCESS) {                                               \
+        printf("cusolver error %d at %s:%d\n", custat_, __FILE__, __LINE__);                \
+        throw std::runtime_error("cusolver error");                                         \
+    }                                                                                       \
+}
+
+
 
 #else
 void gpuMalloc(void **ptr, size_t size);
