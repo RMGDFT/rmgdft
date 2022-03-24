@@ -140,11 +140,17 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
                 this->axis_y[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_y -= a.coeff;
             }
-            else if(a.index[0] != 0 && a.index[1] != 0)
+            else if(a.index[0] == a.index[1])
             {
                 this->plane_dist_xy = std::min(this->plane_dist_xy, std::abs(a.dist));
                 this->axis_xy[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_xy -= a.coeff;
+            }
+            else if(a.index[0] == -a.index[1])
+            {
+                this->plane_dist_nxy = std::min(this->plane_dist_nxy, std::abs(a.dist));
+                this->axis_nxy[a.index[0]+Lorder/2] = a.coeff;
+                this->plane_center_nxy -= a.coeff;
             }
         }
 
@@ -325,8 +331,8 @@ void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][
             {
                 if((this->ibrav == HEXAGONAL) && (i != j)) continue;
                 if((this->ibrav == HEXAGONAL2) && (i != -j)) continue;
-                if((this->ibrav == MONOCLINIC_PRIMITIVE) && (i != -j)) continue;
-                if((this->ibrav == -MONOCLINIC_PRIMITIVE) && (i != j)) continue;
+                if((this->ibrav == MONOCLINIC_PRIMITIVE) && (i*i != j*j)) continue;
+                if((this->ibrav == -MONOCLINIC_PRIMITIVE) && (i*i != j*j)) continue;
             }
             dist = sqrt(dx * dx  + dy * dy);
             point.dist = dist;

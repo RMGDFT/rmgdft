@@ -3093,12 +3093,15 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
         c2 = 0.0;
         th2 = 0.0;
         maxh = std::max(LC->plane_dist_x, LC->plane_dist_y);
-        maxh = std::max(maxh, LC->plane_dist_xy);
         maxh = std::max(maxh, LC->plane_dist_z);
+        maxh = std::max(maxh, LC->plane_dist_xy);
+        maxh = std::max(maxh, LC->plane_dist_nxy);
         if(ibrav == TRICLINIC_PRIMITIVE)
         {
             maxh = std::max(maxh, LC->plane_dist_xz);
             maxh = std::max(maxh, LC->plane_dist_yz);
+            maxh = std::max(maxh, LC->plane_dist_nxz);
+            maxh = std::max(maxh, LC->plane_dist_nyz);
         }
 
         hadj = sqrt(LC->plane_dist_x / maxh);
@@ -3141,6 +3144,16 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
         t3xy = c1*LC->axis_xy[1] - c2*LC_6->axis_xy[0];
         t4xy = c1*LC->axis_xy[0];
 
+        hadj = sqrt(LC->plane_dist_nxy / maxh);
+        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+        c1 = 1.0 + c2;
+        t0nxy = c1*LC->plane_center_nxy - c2*LC_6->plane_center_nxy;
+        th2 += t0nxy;
+        t1nxy = c1*LC->axis_nxy[3] - c2*LC_6->axis_nxy[2];
+        t2nxy = c1*LC->axis_nxy[2] - c2*LC_6->axis_nxy[1];
+        t3nxy = c1*LC->axis_nxy[1] - c2*LC_6->axis_nxy[0];
+        t4nxy = c1*LC->axis_nxy[0];
+
         t0 = th2;
     }
     if(ibrav == TRICLINIC_PRIMITIVE)
@@ -3166,16 +3179,6 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
         t2yz = c1*LC->axis_yz[2] - c2*LC_6->axis_yz[1];
         t3yz = c1*LC->axis_yz[1] - c2*LC_6->axis_yz[0];
         t4yz = c1*LC->axis_yz[0];
-
-        hadj = sqrt(LC->plane_dist_nxy / maxh);
-        if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-        c1 = 1.0 + c2;
-        t0nxy = c1*LC->plane_center_nxy - c2*LC_6->plane_center_nxy;
-        th2 += t0nxy;
-        t1nxy = c1*LC->axis_nxy[3] - c2*LC_6->axis_nxy[2];
-        t2nxy = c1*LC->axis_nxy[2] - c2*LC_6->axis_nxy[1];
-        t3nxy = c1*LC->axis_nxy[1] - c2*LC_6->axis_nxy[0];
-        t4nxy = c1*LC->axis_nxy[0];
 
         hadj = sqrt(LC->plane_dist_nxz / maxh);
         if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
@@ -3352,10 +3355,19 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1xy * A[iz + ixs - iys] + t1xy * A[iz - ixs + iys] +
-                                t2xy * A[iz + 2*ixs - 2*iys] + t2xy * A[iz - 2*ixs + 2*iys] +
-                                t3xy * A[iz + 3*ixs - 3*iys] + t3xy * A[iz - 3*ixs + 3*iys] +
-                                t4xy * A[iz + 4*ixs - 4*iys] + t4xy * A[iz - 4*ixs + 4*iys];
+                                t1xy * A[iz + ixs + iys] + t1xy * A[iz - ixs - iys] +
+                                t2xy * A[iz + 2*ixs + 2*iys] + t2xy * A[iz - 2*ixs - 2*iys] +
+                                t3xy * A[iz + 3*ixs + 3*iys] + t3xy * A[iz - 3*ixs - 3*iys] +
+                                t4xy * A[iz + 4*ixs + 4*iys] + t4xy * A[iz - 4*ixs - 4*iys];
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1nxy * A[iz + ixs - iys] + t1nxy * A[iz - ixs + iys] +
+                                t2nxy * A[iz + 2*ixs - 2*iys] + t2nxy * A[iz - 2*ixs + 2*iys] +
+                                t3nxy * A[iz + 3*ixs - 3*iys] + t3nxy * A[iz - 3*ixs + 3*iys] +
+                                t4nxy * A[iz + 4*ixs - 4*iys] + t4nxy * A[iz - 4*ixs + 4*iys];
                     }                   /* end for */
                 }
             }
@@ -3506,8 +3518,6 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                                 t3nyz * A[iz - 3*iys + 3] + t3nyz * A[iz + 3*iys - 3] +
                                 t4nyz * A[iz - 4*iys + 4] + t4nyz * A[iz + 4*iys - 4];
                     }                   /* end for */
-
-
                 }
             }
 

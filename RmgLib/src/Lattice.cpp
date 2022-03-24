@@ -748,7 +748,8 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     if(fabs(cosbc) < 1.0e-5) cosbc = 0.0;
     if(fabs(cosab - cosac) < 1.0e-5) cosac = cosab;
     if(fabs(cosab - cosbc) < 1.0e-5) cosbc = cosab;
-
+    //printf("AAAA  %f  %f  %f\n",a,b,c);
+    //printf("BBBB  %f  %f  %f\n",cosab,cosac,cosbc);
     //
     // Assume triclinic if nothing suitable found
     //
