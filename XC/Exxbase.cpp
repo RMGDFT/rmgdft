@@ -2617,14 +2617,33 @@ template <class T> void Exxbase<T>::WriteForAFQMC_gamma2complex(std::string &hdf
     wf_group = makeHDFGroup("Wavefunction", h5file);
     kpf_group = makeHDFGroup("KPFactorized", hamil_group);
 
+    double nel_up = 0;
+    double nel_down = 0;
+    std::vector<std::vector<double>> kpt_occs_up, kpt_occs_down;
+    GetKptOccs(kpt_occs_up, nel_up, 0);
+    if (ct.nspin == 1) {
+       //closed shell, convert to only spin-up info. 
+       nel_up *= 0.5;
+       nel_down = nel_up;
+       for (int i = 0; i < kpt_occs_up.size(); i++)
+           for (int j = 0; j < kpt_occs_up[i].size(); j++)
+               kpt_occs_up[i][j] *= 0.5;
+    }
+    else
+      GetKptOccs(kpt_occs_down, nel_down, 1);
+    nel_up /= static_cast<double>(ct.klist.num_k_all);
+    nel_down /= static_cast<double>(ct.klist.num_k_all);
+    int nup = static_cast<int>(std::floor(nel_up+0.1));
+    int ndown = static_cast<int>(std::floor(nel_down+0.1));
+
     int_2d_array QKtoK2;
     std::vector<int> kminus;
     QKtoK2.resize(boost::extents[1][1]);
     kminus.resize(1, -1);
     QKtoK2[0][0] = 0;
     kminus[0] = 0;
-    write_basics(hamil_group, QKtoK2, kminus, Nup, Ndown);
-//    write_waves_afqmc(wf_group);
+    write_basics(hamil_group, QKtoK2, kminus, nup, ndown);
+    write_waves_afqmc(wf_group, nup, ndown, kpt_occs_up, kpt_occs_down);
 
     hsize_t h_dims[3];
     h_dims[0] = 1;
