@@ -74,6 +74,7 @@ DsyevdDriver.cpp
 DsygvdDriver.cpp
 DsygvjDriver.cpp
 ZhegvdDriver.cpp
+DgetrftrsDriver.cpp
 #BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp

@@ -161,22 +161,42 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
          Exx_onscf->HijExx(Hij_glob, *LocalOrbital);
     }
-    mat_global_to_dist(Hij, pct.desca, Hij_glob);
-    mat_global_to_dist(matB, pct.desca, Sij_glob);
+    delete RT0;
+
+
+    switch(ct.subdiag_driver) {
+        case SUBDIAG_CUSOLVER:
+            {
+                RT0 = new RmgTimer("2-SCF: DiagGpu");
+                double *rho_matrix_glob = new double[ct.num_states * ct.num_states];
+                double *theta_glob = new double[ct.num_states * ct.num_states];
+                DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_glob, theta_glob);
+                mat_global_to_local(*LocalOrbital, *LocalOrbital, rho_matrix_glob, rho_matrix_local); 
+                mat_global_to_local(*LocalOrbital, *LocalOrbital, theta_glob, theta_local); 
+                delete [] rho_matrix_glob;
+                delete [] theta_glob;
+                delete RT0;
+                break;
+            }
+        default:
+            {
+
+                RT0 = new RmgTimer("2-SCF: DiagScalapack");
+                mat_global_to_dist(Hij, pct.desca, Hij_glob);
+                mat_global_to_dist(matB, pct.desca, Sij_glob);
+
+                DiagScalapack(states, ct.num_states, Hij, matB);
+
+                mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
+                mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
+                delete RT0;
+            }
+    }
+
     delete [] Hij_glob;
     delete [] Sij_glob;
 
-    delete RT0;
-
-    RT0 = new RmgTimer("2-SCF: DiagScalapack");
-
-    DiagScalapack(states, ct.num_states, Hij, matB);
-
-    mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
-    mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
-    delete RT0;
-
-
+    if(pct.gridpe == 0) write_eigs(states);
     if(ct.num_ldaU_ions > 0)
     {
         RT0 = new RmgTimer("2-SCF: LDA+U");
@@ -194,7 +214,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
 
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-    if(pct.gridpe == 0) write_eigs(states);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
         rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
