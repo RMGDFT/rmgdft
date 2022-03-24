@@ -14,6 +14,7 @@ add_library (ON_Common
  UpdatePot.cpp
  OrbitalOptimize.cpp
  DiagScalapack.cpp
+ DiagGpu.cpp
  DiagElemental.cpp
  ReadPermInfo.cpp
  WritePermInfo.cpp
