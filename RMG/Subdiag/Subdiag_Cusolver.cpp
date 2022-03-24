@@ -64,14 +64,15 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
     int num_states = kptr->nstates;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     RmgTimer *DiagTimer;
-    if(ct.num_usable_gpu_devices == 1 || pct.local_rank == 0)
-    {
 #if !CUDA_ENABLED
         rmg_printf("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
         return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
 #if CUDA_ENABLED
+
+    if(ct.num_usable_gpu_devices == 1 || pct.local_rank == 0)
+    {
 
 
 #if SCALAPACK_LIBS
@@ -171,7 +172,6 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
         cudaFree(Sij_gpu);
         cudaFree(eigvectors_gpu);
         delete DiagTimer;
-#endif
     }
 
     if(ct.num_usable_gpu_devices > 1)
@@ -190,6 +190,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
     if(use_folded) return trans_t;
     return trans_n;
+#endif
 }
 
 
