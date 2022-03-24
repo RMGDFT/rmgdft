@@ -868,9 +868,14 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     {
         // Case: a=c/=b
         // Monoclinic bco (unique axis c)
-        ibrav = 13;
-        // Force to triclinic until special operators coded
-        ibrav = 14;
+        // QE calls this monoclinic bco but we treat it as Monoclinic
+        // ibrav = 13;
+        if ( neqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Case: alpha /= 90,  beta = gamma = 90
+            // Monoclinic P, unique axis c
+            ibrav = 12;
+        }
     }
     else if ( eqq(b,c) && neqq(a,b) )
     {
