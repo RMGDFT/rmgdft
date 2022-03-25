@@ -2509,6 +2509,9 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
     RmgType hex_t(0.5*1.154700538379);
 
+    RmgType t1xy, t2xy, t3xy, t4xy;
+    RmgType t1nxy, t2nxy, t3nxy, t4nxy;
+
     int id = 1;
     switch (ibrav)
     {
@@ -2612,8 +2615,6 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                             hex_t * t3y * ( -B[iz - id*3*ixs - 3*iys] + B[iz + id*3*ixs + 3*iys]) +
                             hex_t * t2y * ( -B[iz - id*2*ixs - 2*iys] + B[iz + id*2*ixs + 2*iys]) +
                             hex_t * t1y * ( -B[iz - id*ixs - iys] + B[iz + id*ixs + iys]);
-
-                    
                     }
 
                     A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
@@ -2630,6 +2631,73 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
             }                       /* end for */
 
             break;
+
+        case MONOCLINIC_PRIMITIVE:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &wxr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    RmgType *B = &rptr[ix * ixs + iy * iys];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            LC->axis_x_gx[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            LC->axis_x_gx[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            LC->axis_x_gx[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            LC->axis_x_gx[0] * ( B[iz + ixs] - B[iz - ixs]) +
+                            LC->axis_y_gx[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            LC->axis_y_gx[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            LC->axis_y_gx[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            LC->axis_y_gx[0] * ( B[iz + iys] - B[iz - iys]) +
+                            LC->axis_xy_gx[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
+                            LC->axis_xy_gx[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
+                            LC->axis_xy_gx[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
+                            LC->axis_xy_gx[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
+                            LC->axis_nxy_gx[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
+                            LC->axis_nxy_gx[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
+                            LC->axis_nxy_gx[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
+                            LC->axis_nxy_gx[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
+
+
+                    }
+
+                    A = &wyr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            LC->axis_x_gy[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            LC->axis_x_gy[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            LC->axis_x_gy[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            LC->axis_x_gy[0] * ( B[iz + ixs] - B[iz - ixs]) +
+                            LC->axis_y_gy[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            LC->axis_y_gy[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            LC->axis_y_gy[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            LC->axis_y_gy[0] * ( B[iz + iys] - B[iz - iys]) +
+                            LC->axis_xy_gy[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
+                            LC->axis_xy_gy[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
+                            LC->axis_xy_gy[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
+                            LC->axis_xy_gy[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
+                            LC->axis_nxy_gy[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
+                            LC->axis_nxy_gy[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
+                            LC->axis_nxy_gy[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
+                            LC->axis_nxy_gy[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
+                    }
+
+                    A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            t4z * ( B[iz + 4] - B[iz - 4]) +
+                            t3z * ( B[iz + 3] - B[iz - 3]) +
+                            t2z * ( B[iz + 2] - B[iz - 2]) +
+                            t1z * ( B[iz + 1] - B[iz - 1]);
+                    }                   /* end for */
+                }
+            }
 
             break;
 

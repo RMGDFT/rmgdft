@@ -20,6 +20,12 @@ struct GridPoint{
     double coeff_gx;
     double coeff_gy;
     double coeff_gz;
+    double coeff_gxy;
+    double coeff_gxz;
+    double coeff_gyz;
+    double coeff_ngxy;
+    double coeff_ngxz;
+    double coeff_ngyz;
 };
 typedef GridPoint GridPoint;
 
@@ -54,6 +60,7 @@ public:
     double plane_center_xy, plane_center_xz, plane_center_yz;
     double plane_center_nxy, plane_center_nxz, plane_center_nyz;
 
+    // For laplacian
     std::vector<double> axis_x;
     std::vector<double> axis_y;
     std::vector<double> axis_z;
@@ -63,6 +70,36 @@ public:
     std::vector<double> axis_nxy;
     std::vector<double> axis_nxz;
     std::vector<double> axis_nyz;
+
+    // For gradients
+    std::vector<double> axis_x_gx;
+    std::vector<double> axis_x_gy;
+    std::vector<double> axis_x_gz;
+    std::vector<double> axis_y_gx;
+    std::vector<double> axis_y_gy;
+    std::vector<double> axis_y_gz;
+    std::vector<double> axis_z_gx;
+    std::vector<double> axis_z_gy;
+    std::vector<double> axis_z_gz;
+    std::vector<double> axis_xy_gx;
+    std::vector<double> axis_xy_gy;
+    std::vector<double> axis_xy_gz;
+    std::vector<double> axis_xz_gx;
+    std::vector<double> axis_xz_gy;
+    std::vector<double> axis_xz_gz;
+    std::vector<double> axis_yz_gx;
+    std::vector<double> axis_yz_gy;
+    std::vector<double> axis_yz_gz;
+
+    std::vector<double> axis_nxy_gx;
+    std::vector<double> axis_nxy_gy;
+    std::vector<double> axis_nxy_gz;
+    std::vector<double> axis_nxz_gx;
+    std::vector<double> axis_nxz_gy;
+    std::vector<double> axis_nxz_gz;
+    std::vector<double> axis_nyz_gx;
+    std::vector<double> axis_nyz_gy;
+    std::vector<double> axis_nyz_gz;
 
     std::vector<CoeffList> coeff_and_index;
     std::vector<CoeffList> gx_coeff_and_index;
