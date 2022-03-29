@@ -40,6 +40,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld);
 void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n, int ld);
 void DgetrftrsDriver(int n, int m, double *A, double *B);
+void DsygvdMgDriver(double *A, double *B, double *eigs, int n);
 
 void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr);
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr);

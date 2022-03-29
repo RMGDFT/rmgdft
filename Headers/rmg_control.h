@@ -676,10 +676,10 @@ public:
     double potential_acceleration_constant_step;
 
     // Some GPU information.
-#if CUDA_ENABLED || HIP_ENABLED
-
     // Total number of gpu devices present in the node
     int num_gpu_devices;
+#if CUDA_ENABLED || HIP_ENABLED
+
 
     // Total number of usable gpu devices present in the node
     int num_usable_gpu_devices;

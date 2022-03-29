@@ -99,7 +99,7 @@ cudaError_t gpuGetDeviceCount(int *count);
 {                                                                                           \
     cudaError_t err_ = (err);                                                               \
     if (err_ != cudaSuccess) {                                                              \
-        printf("CUDA error %d at %s:%d\n", err_, __FILE__, __LINE__);                       \
+        printf("CUDA error %d at %s: line %d\n", err_, __FILE__, __LINE__);                       \
         throw std::runtime_error("CUDA error");                                             \
     }                                                                                       \
 }
@@ -107,7 +107,7 @@ cudaError_t gpuGetDeviceCount(int *count);
 {                                                                                           \
     cusolverStatus_t custat_ = (custat);                                                    \
     if (custat_ != CUSOLVER_STATUS_SUCCESS) {                                               \
-        printf("cusolver error %d at %s:%d\n", custat_, __FILE__, __LINE__);                \
+        printf("cusolver error %d at %s: line %d\n", custat_, __FILE__, __LINE__);                \
         throw std::runtime_error("cusolver error");                                         \
     }                                                                                       \
 }

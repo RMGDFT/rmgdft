@@ -612,6 +612,8 @@ if(RMG_CUDA_ENABLED)
     list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
     include_directories(${CUDA_INCLUDE_DIRS})
 
+    find_library (cusolverMg_LIBRARY NAMES cusolverMg PATHS ${CUDA_TOOLKIT_ROOT_DIR})
+    list(APPEND RMGLIBS ${cusolverMg_LIBRARY})
     # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
     add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
     add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})

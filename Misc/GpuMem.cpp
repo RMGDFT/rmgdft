@@ -154,7 +154,10 @@ cudaError_t gpuMalloc(void **ptr, size_t size)
 {
     cudaError_t cuerr = cudaMalloc(ptr, size);
     if(cuerr != cudaSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+    {
+        std::cout << "size to be allocated " << size/1024.0/1024.0 <<" MB"<< std::endl;
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+    }
     return cuerr;
 }
 

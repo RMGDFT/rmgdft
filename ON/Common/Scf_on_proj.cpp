@@ -197,6 +197,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete [] Sij_glob;
 
     if(pct.gridpe == 0) write_eigs(states);
+    fflush(NULL);
     if(ct.num_ldaU_ions > 0)
     {
         RT0 = new RmgTimer("2-SCF: LDA+U");

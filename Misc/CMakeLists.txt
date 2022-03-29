@@ -72,6 +72,7 @@ InvertMatrix.cpp
 DsyevjDriver.cpp
 DsyevdDriver.cpp
 DsygvdDriver.cpp
+DsygvdMgDriver.cpp
 DsygvjDriver.cpp
 ZhegvdDriver.cpp
 DgetrftrsDriver.cpp
