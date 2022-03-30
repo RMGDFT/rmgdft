@@ -36,6 +36,16 @@ struct fdparms_o8 {
     T gmt3xy;
     T gmt4xy;
 
+    T gpt1nxy;
+    T gpt2nxy;
+    T gpt3nxy;
+    T gpt4nxy;
+
+    T gmt1nxy;
+    T gmt2nxy;
+    T gmt3nxy;
+    T gmt4nxy;
+
     T gpt1z;
     T gpt2z;
     T gpt3z;
