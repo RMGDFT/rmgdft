@@ -881,9 +881,16 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     {
         // Case: a/=b=c
         // Orthorhombic 1-face bco
-        ibrav = 91;
-        // Force to triclinic until special operators coded
-        ibrav = 14;
+        if ( eqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Orthorhombic P
+            ibrav = 8;
+        }
+        else
+        {
+            // Force to triclinic until special operators coded
+            ibrav = 14;
+        }
     }
     else if ( neqq(a,b) && neqq(a,c) && neqq(b,c) )
     {
