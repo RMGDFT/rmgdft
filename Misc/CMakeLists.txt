@@ -69,12 +69,6 @@ RmgMallocHost.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
 InvertMatrix.cpp
-DsyevjDriver.cpp
-DsyevdDriver.cpp
-DsygvdDriver.cpp
-DsygvdMgDriver.cpp
-DsygvjDriver.cpp
-ZhegvdDriver.cpp
 DgetrftrsDriver.cpp
 #BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp

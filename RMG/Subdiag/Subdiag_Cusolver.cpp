@@ -62,7 +62,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
     static char *trans_n = "n";
     static int call_count, folded_call_count;
     int num_states = kptr->nstates;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 0)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     RmgTimer *DiagTimer;
 #if !CUDA_ENABLED
         rmg_printf("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
@@ -77,7 +77,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
 #if SCALAPACK_LIBS
         // For folded spectrum start with scalapack if available since cusolver is slow on really large problems
-        if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART) && (num_states > 10000))
+        if(ct.use_folded_spectrum && (ct.scf_steps <= 0)  && (ct.runflag != RESTART) && (num_states > 10000))
             return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 

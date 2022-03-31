@@ -657,6 +657,7 @@ list(APPEND RMGLIBS Finite_diff)
 list(APPEND RMGLIBS US_PP)
 list(APPEND RMGLIBS zfp)
 list(APPEND RMGLIBS symspg_static)
+list(APPEND RMGLIBS Diagonalization)
 
 
 
@@ -688,6 +689,7 @@ add_subdirectory (spglib EXCLUDE_FROM_ALL)
 add_subdirectory (XC EXCLUDE_FROM_ALL) 
 add_subdirectory (dftd3 EXCLUDE_FROM_ALL) 
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
+add_subdirectory (Diagonalization EXCLUDE_FROM_ALL) 
 if(RMG_CUDA_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
 endif()
