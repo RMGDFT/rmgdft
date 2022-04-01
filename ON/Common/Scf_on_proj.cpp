@@ -196,8 +196,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete [] Hij_glob;
     delete [] Sij_glob;
 
-    if(pct.gridpe == 0) write_eigs(states);
-    fflush(NULL);
     if(ct.num_ldaU_ions > 0)
     {
         RT0 = new RmgTimer("2-SCF: LDA+U");
@@ -205,14 +203,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         delete RT0;
 
     }
-
-    if(ct.spin_flag)
-    {
-        get_opposite_eigvals( states );
-    }
-    /* Generate new density */
-
-    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
 
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
 

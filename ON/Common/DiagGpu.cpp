@@ -55,7 +55,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
 
     delete(RT1b);
 
-    if(ct.num_gpu_devices == 1 )
+    if(ct.num_gpu_devices == 1 || 1)
     {
         int lwork = 3 * numst * numst + 8 * numst;
         lwork = std::max(lwork, 128000);
@@ -98,6 +98,38 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     delete [] eigs;
 
 
+    if(pct.gridpe == 0) write_eigs(states);
+    fflush(NULL);
+    if(ct.spin_flag)
+    {
+        get_opposite_eigvals( states );
+    }
+    /* Generate new density */
+
+    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
+
+
+    int num_occ_states = 0;
+    int num_res_states;
+    for(int st1 = 0; st1 <  numst; st1++)
+    {
+        if( std::abs(states[st1].occupation[0]) < 1.0e-5 )
+        {
+            num_occ_states = st1;
+            break;
+        } 
+    }
+
+    double one = 1.0, zero = 0.0;
+    num_res_states = num_occ_states + ct.num_unocc_states;
+    num_res_states = std::min(num_res_states, numst);
+
+   // RmgGemm("N", "T", numst, numst, num_res_states, one, eigvector_gpu, numst, eigvector_gpu, numst, zero, S_gpu, numst);
+   // DgetrftrsDriver(numst, numst, S_gpu, H_gpu);
+   // dscal_driver(numst2, t1, H_gpu, ione);
+   // MemcpyDeviceHost(size, H_gpu, theta_glob);
+
+
     dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
     for(int st1 = 0; st1 <  numst; st1++)
     {
@@ -107,7 +139,6 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
 
 
     RmgTimer *RT3 = new RmgTimer("3-DiagGpu: gemm ");
-    double one = 1.0, zero = 0.0;
     RmgGemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
     MemcpyDeviceHost(size, H_gpu, rho_matrix_glob);
     delete(RT3);
