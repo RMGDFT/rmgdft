@@ -168,13 +168,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         case SUBDIAG_CUSOLVER:
             {
                 RT0 = new RmgTimer("2-SCF: DiagGpu");
-                double *rho_matrix_glob = new double[ct.num_states * ct.num_states];
-                double *theta_glob = new double[ct.num_states * ct.num_states];
-                DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_glob, theta_glob);
-                mat_global_to_local(*LocalOrbital, *LocalOrbital, rho_matrix_glob, rho_matrix_local); 
-                mat_global_to_local(*LocalOrbital, *LocalOrbital, theta_glob, theta_local); 
-                delete [] rho_matrix_glob;
-                delete [] theta_glob;
+                DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_local, theta_local);
                 delete RT0;
                 break;
             }

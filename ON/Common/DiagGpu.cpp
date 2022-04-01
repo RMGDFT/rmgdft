@@ -25,7 +25,7 @@
 
 
 void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob, 
-        double *rho_matrix_glob, double *theta_glob)
+        double *rho_matrix_local, double *theta_local)
 {
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagGpu");
@@ -33,6 +33,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     int numst2 = numst * numst;
     int ione = 1;
     double *eigs= new double[numst];
+    double *mat_glob = new double[numst * numst];
     double *H_gpu, *S_gpu, *eigs_gpu, *eigvector_gpu, *work_gpu;
     size_t size = numst * numst * sizeof(double);
     gpuMalloc((void **)&H_gpu, size);
@@ -51,7 +52,9 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     DgetrftrsDriver(numst, numst, S_gpu, H_gpu);
     double t1 = 2.0;
     dscal_driver(numst2, t1, H_gpu, ione);
-    MemcpyDeviceHost(size, H_gpu, theta_glob);
+    MemcpyDeviceHost(size, H_gpu, mat_glob);
+    mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, theta_local);
+
 
     delete(RT1b);
 
@@ -95,7 +98,6 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
         states[st1].eig[0] = eigs[st1];
     }
 
-    delete [] eigs;
 
 
     if(pct.gridpe == 0) write_eigs(states);
@@ -140,14 +142,17 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
 
     RmgTimer *RT3 = new RmgTimer("3-DiagGpu: gemm ");
     RmgGemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
-    MemcpyDeviceHost(size, H_gpu, rho_matrix_glob);
+    MemcpyDeviceHost(size, H_gpu, mat_glob);
     delete(RT3);
 
+    mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, rho_matrix_local);
 
     gpuFree(H_gpu);
     gpuFree(S_gpu);
     gpuFree(eigvector_gpu);
     gpuFree(eigs_gpu);
+    delete [] eigs;
+    delete [] mat_glob;
 
     delete(RT0);
 }
