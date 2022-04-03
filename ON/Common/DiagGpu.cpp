@@ -25,7 +25,7 @@
 
 
 void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob, 
-        double *rho_matrix_local, double *theta_local)
+        double *rho_matrix_local, double *theta_local, double *CC_res_local)
 {
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagGpu");
@@ -126,12 +126,6 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     num_res_states = num_occ_states + ct.num_unocc_states;
     num_res_states = std::min(num_res_states, numst);
 
-   // RmgGemm("N", "T", numst, numst, num_res_states, one, eigvector_gpu, numst, eigvector_gpu, numst, zero, S_gpu, numst);
-   // DgetrftrsDriver(numst, numst, S_gpu, H_gpu);
-   // dscal_driver(numst2, t1, H_gpu, ione);
-   // MemcpyDeviceHost(size, H_gpu, theta_glob);
-
-
     dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
     for(int st1 = 0; st1 <  numst; st1++)
     {
@@ -146,6 +140,21 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     delete(RT3);
 
     mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, rho_matrix_local);
+
+    // S_gpu = Cij
+    // H_gpu = Cij^-1
+    dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
+    InvertMatrix(S_gpu, H_gpu, numst);
+    RmgGemm("N", "N", numst, numst, num_res_states, one, eigvector_gpu, numst, H_gpu, numst, zero, S_gpu, numst);
+    // S_gpu = Cij * Cij^-1
+    MemcpyDeviceHost(size, S_gpu, mat_glob);
+    
+    if(pct.gridpe == 0) 
+    {
+        printf("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
+        print_matrix(mat_glob, 6, numst);
+    }
+    mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, CC_res_local);
 
     gpuFree(H_gpu);
     gpuFree(S_gpu);

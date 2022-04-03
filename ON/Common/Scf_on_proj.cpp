@@ -111,11 +111,12 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RT0 = new RmgTimer("2-SCF: HS mat");
     // mat_X charge density matrix in distributed way
     // uu_dis theta = (S^-1 H) in distributed way.
-    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local;
+    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local, *CC_res_local;
 
     int num_orb = LocalOrbital->num_thispe;
     rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
     theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+    CC_res_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
     Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
     Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
 
@@ -168,7 +169,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         case SUBDIAG_CUSOLVER:
             {
                 RT0 = new RmgTimer("2-SCF: DiagGpu");
-                DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_local, theta_local);
+                DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_local, theta_local, CC_res_local);
                 delete RT0;
                 break;
             }
@@ -176,6 +177,14 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
             {
 
                 RT0 = new RmgTimer("2-SCF: DiagScalapack");
+                for(int i = 0; i < num_orb; i++) 
+                {
+                    for(int j = 0; j < num_orb; j++) 
+                    {
+                        if(i == j) CC_res_local[i*num_orb + j] = 1.0;
+                        else CC_res_local[i*num_orb + j] = 0.0;
+                    }
+                }
                 mat_global_to_dist(Hij, pct.desca, Hij_glob);
                 mat_global_to_dist(matB, pct.desca, Sij_glob);
 
@@ -289,7 +298,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
             ct.restart_mix = 0;
 
         RT0 = new RmgTimer("2-SCF: Residual calculation");
-        CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat);
+        CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat, CC_res_local);
         delete RT0;
 
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
@@ -312,6 +321,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete [] rho_pre;
     RmgFreeHost(rho_matrix_local);
     RmgFreeHost(theta_local);
+    RmgFreeHost(CC_res_local);
     RmgFreeHost(Hij_local);
     RmgFreeHost(Sij_local);
 

@@ -36,7 +36,7 @@
 //    double *vtot_c, std::complex<double> *theta_glob, std::complex<double> *kbpsi_glob);
 //template void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi, LocalObject<double> &NlProj, double *vtot_c, double *theta_glob, double *kbpsi_glob);
 void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        LocalObject<double> &NlProj, double *vtot_c, double *theta_local, double *kbpsi_glob)
+        LocalObject<double> &NlProj, double *vtot_c, double *theta_local, double *kbpsi_glob, double *CC_res_local)
 {
 
     FiniteDiff FD(&Rmg_L);
@@ -161,15 +161,21 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
             kbpsi_work1, num_prj, one, H_Phi.storage_ptr, pbasis);
-    MemcpyDeviceHost(H_Phi.storage_size, H_Phi.storage_gpu, H_Phi.storage_cpu);
+
+    double *res_work;
+    MallocHostOrDevice((void **)&res_work,  Phi.storage_size);
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, H_Phi.storage_ptr, pbasis,
+            CC_res_local, num_orb, mtwo, res_work, pbasis);
+    MemcpyDeviceHost(H_Phi.storage_size, res_work, H_Phi.storage_cpu);
     delete RT1;
 
 
-    RmgFreeHost(dnm);;
-    RmgFreeHost(qnm);;
-    FreeHostOrDevice(kbpsi_work1);;
-    FreeHostOrDevice(kbpsi_work);;
-    RmgFreeHost(kbpsi_local);;
+    RmgFreeHost(dnm);
+    RmgFreeHost(qnm);
+    FreeHostOrDevice(res_work);
+    FreeHostOrDevice(kbpsi_work1);
+    FreeHostOrDevice(kbpsi_work);
+    RmgFreeHost(kbpsi_local);
 
     delete(RT);
 

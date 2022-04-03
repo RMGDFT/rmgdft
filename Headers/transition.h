@@ -83,7 +83,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
 void DiagScalapack(STATE *, int, double *, double*);
-void DiagGpu(STATE *, int, double *, double*, double *, double *);
+void DiagGpu(STATE *, int, double *, double*, double *, double *, double *);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);
 void BandwidthReduction(int num_ions, std::vector<ION> &ions, unsigned int *);
 void PermAtoms(int num_ions, std::vector<ION> &ions, unsigned int *);
