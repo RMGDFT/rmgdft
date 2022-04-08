@@ -1397,7 +1397,6 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
 
         }
 
-
     }
 
     if(pct.worldrank == 0) {
@@ -1437,6 +1436,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     delete [] phase_Gr;
     delete [] residual;
 
+    fflush(NULL);
 
 
 }
@@ -1689,7 +1689,8 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     std::complex<double> *xij_fft = (std::complex<double> *)RmgMallocHost(length);
 
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
-    double scale = 1.0 / (double)pwave->global_basis;
+// normalized number of kpoint as in QE-QMCPACK interface. It will be consistent with afqmc
+    double scale = 1.0 / (double)(pwave->global_basis * ct.klist.num_k_all);
     scale = scale * alpha;
     for(int st_k1 = 0; st_k1 < ct.qmc_nband; st_k1++){
         for(int ips = 0; ips < state_per_pe; ips++) {

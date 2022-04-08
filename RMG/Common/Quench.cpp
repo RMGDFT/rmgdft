@@ -242,10 +242,11 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
-        Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
+        Exxbase<OrbitalType> *Exx = NULL;
+        Exx = new Exxbase<OrbitalType>(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, tempwave, Kptr[0]->nstates, occs.data(),
                 Kptr[0]->orbital_storage, ct.exx_mode);
         if(ct.exx_mode == EXX_LOCAL_FFT)
-            Exx.WriteWfsToSingleFile();
+            Exx->WriteWfsToSingleFile();
         
         double *v_psi, *vxc_psi;
         int pbasis = Kptr[0]->pbasis;
@@ -271,11 +272,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if(ct.qmc_nband > ct.num_states)
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
 
-        Exx.SetHcore(Hcore, Hcore_kin, nstates);
-        Exx.Vexx_integrals(ct.exx_int_file);
+        Exx->SetHcore(Hcore, Hcore_kin, nstates);
+        Exx->Vexx_integrals(ct.exx_int_file);
         ct.xc_is_hybrid = is_xc_hybrid;
+        RmgFreeHost(Hcore);
+        RmgFreeHost(Hcore_kin);
         delete [] v_psi;
         delete [] vxc_psi;
+        delete Exx;
     }
 
 
@@ -283,7 +287,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     OutputEigenvalues (Kptr, 0, ct.scf_steps);
     OutputDos(Kptr);
     rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-
 
     // Output RMSdV for convergence analysis
     if(pct.imgpe == 0) {
