@@ -110,8 +110,6 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                 {
                     Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
                             rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital);
-                    //Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                    //        rhocore, vxc_old, vh_old, &CONVERGENCE);
                 }
                 else
                 {

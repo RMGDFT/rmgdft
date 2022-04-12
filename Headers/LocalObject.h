@@ -14,6 +14,9 @@
 #include <vector>
 #include <iterator>
 #include "BaseGrid.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+
 
 template <typename KpointType> class LocalObject {
 
@@ -31,6 +34,8 @@ public:
     KpointType *storage_ptr;
     KpointType *storage_gpu;
     char *mask;
+
+    std::vector<std::vector<double>> boundary;
 
     int num_thispe;
     int num_tot;
@@ -56,11 +61,13 @@ public:
     void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid &Rmg_G);
     void GetAtomicOrbitals(int num_ions, BaseGrid &Rmg_G);
     void SetZeroBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order);
+    void SetBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order, STATE *states);
     void ReAssign(BaseGrid &BG);
     void AssignOrbital(int st, KpointType *psi);
     void Normalize();
     void SetOrbitalProjToSingle(BaseGrid &);
     void WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &Rmg_G);
+    void ApplyBoundary(KpointType *res, int st);
 
 
 

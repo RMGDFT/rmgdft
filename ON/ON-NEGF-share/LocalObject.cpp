@@ -780,7 +780,9 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
     int st_glob = this->index_proj_to_global[st];
 
     for(int ix = 0; ix < this->dimx[st_glob]; ix++)
+    {
         for(int iy = 0; iy < this->dimy[st_glob]; iy++)
+        {
             for(int iz = 0; iz < this->dimz[st_glob]; iz++)
             {
                 int ixx = ix + this->ixmin[st_glob]; 
@@ -803,6 +805,9 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
 
             }
 
+        }
+    }
+    this->ApplyBoundary(&this->storage_cpu[st * P0_BASIS], st);
 }
 
 template void LocalObject<double>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);
@@ -1079,4 +1084,80 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(const LocalObje
     this->storage_cpu = (KpointType *) RmgMallocHost(size);
     gpuMalloc( (void **)&this->storage_gpu, size);
     this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
+}
+template void LocalObject<double>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);
+template void LocalObject<std::complex<double>>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);
+template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &BG, int kh_level, int fd_order, STATE *states)
+{
+    boundary.resize(this->num_thispe);
+    int dump_grid = 1;
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    double hx_grid = BG.get_hxgrid(density);
+    double hy_grid = BG.get_hygrid(density);
+    double hz_grid = BG.get_hzgrid(density);
+
+    // average grid spacing
+    double grid_spacing = (hx_grid + hy_grid * Rmg_L.celldm[1] + hz_grid * Rmg_L.celldm[2] ) * Rmg_L.celldm[0] /3.0;
+    // exp(23.0) = 10^10 and treat 10^-10 as zero
+    double dump = 23.0/dump_grid /grid_spacing;
+
+    double xtal_center[3], xtal_grid[3], xtal_dist[3];
+    for(int st = 0; st < this->num_thispe; st++)
+    {
+        boundary[st].resize(P0_BASIS);
+        int st_glob = this->index_proj_to_global[st];
+        Rmg_L.to_crystal(xtal_center, states[st_glob].crds);
+        double radius = states[st_glob].radius - dump_grid * grid_spacing/2.0;
+
+        for(int ix = 0; ix < PX0_GRID; ix++)
+        {
+            xtal_grid[0] = (ix + PX_OFFSET) * hx_grid;
+            xtal_dist[0] = xtal_grid[0] - xtal_center[0];
+            if(xtal_dist[0] < -0.5 ) xtal_dist[0] += 1.0;
+            if(xtal_dist[0] > 0.5 ) xtal_dist[0] -= 1.0;
+            for(int iy = 0; iy < PY0_GRID; iy++)
+            {
+                xtal_grid[1] = (iy + PY_OFFSET) * hy_grid;
+                xtal_dist[1] = xtal_grid[1] - xtal_center[1];
+                if(xtal_dist[1] < -0.5 ) xtal_dist[1] += 1.0;
+                if(xtal_dist[1] > 0.5 ) xtal_dist[1] -= 1.0;
+                for(int iz = 0; iz < PZ0_GRID; iz++)
+                {
+                    int idx = ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz;
+                    xtal_grid[2] = (iz + PZ_OFFSET) * hz_grid;
+                    xtal_dist[2] = xtal_grid[2] - xtal_center[2];
+                    if(xtal_dist[2] < -0.5 ) xtal_dist[2] += 1.0;
+                    if(xtal_dist[2] > 0.5 ) xtal_dist[2] -= 1.0;
+
+                    // distance from this grid to the center of the orbital st_glob
+                    double r = Rmg_L.metric(xtal_dist);
+
+                    //boundary[st][idx] =1.0/(1.0 + exp( dump * (r-radius) ) ); 
+                      if(r > radius) 
+                          boundary[st][idx] =0.0;
+                      else
+                          boundary[st][idx] =1.0;
+                }
+            }
+            //if(st == 0) printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);
+        }
+    }
+
+
+}
+template void LocalObject<double>::ApplyBoundary(double *, int st);
+template void LocalObject<std::complex<double>>::ApplyBoundary(std::complex<double> *, int st);
+template <class KpointType> void LocalObject<KpointType>::ApplyBoundary(KpointType *res, int st)
+{
+
+    for(int idx = 0; idx < this->pbasis; idx++)
+    {
+        res[idx] *= this->boundary[st][idx];
+    }
 }

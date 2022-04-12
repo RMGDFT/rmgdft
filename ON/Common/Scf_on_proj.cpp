@@ -70,12 +70,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RmgTimer *RT = new RmgTimer("2-SCF");
     RT0 = new RmgTimer("2-SCF: set zero boundary");
 
-    for(int st = 0; st < LocalOrbital->num_thispe; st++)
-    {
-        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-            LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
-    }
-
     MemcpyHostDevice(LocalOrbital->storage_size, LocalOrbital->storage_cpu, LocalOrbital->storage_gpu);
     delete RT0;
 
@@ -181,7 +175,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 {
                     for(int j = 0; j < num_orb; j++) 
                     {
-                        if(i == j) CC_res_local[i*num_orb + j] = 1.0;
+                        if(i == j && i == 0) CC_res_local[i*num_orb + j] = 0.0;
                         else CC_res_local[i*num_orb + j] = 0.0;
                     }
                 }
@@ -303,8 +297,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
-            for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-                H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
+            LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
+            //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+            //    H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
 

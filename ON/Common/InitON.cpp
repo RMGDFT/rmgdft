@@ -170,6 +170,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         H_LocalOrbital->ReAssign(*Rmg_G);
 
         LocalOrbital->SetZeroBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order);
+        LocalOrbital->SetBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order, states);
         delete [] ixmin;
         delete [] dimx;
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);

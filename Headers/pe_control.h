@@ -7,6 +7,7 @@
 #ifdef USE_HWLOC
     #include <hwloc.h>
 #endif
+#include "params.h"
 #include "Mgrid.h"
 #include "Scalapack.h"
 

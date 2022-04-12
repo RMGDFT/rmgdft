@@ -150,8 +150,9 @@ void PreconditionerOne (double *res, int st, double gamma)
                 hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
         delete RT;
         daxpy(&pbasis, &one, &res[st * pbasis], &ione, res_t2, &ione);
-        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-            res_t2[idx] = 0.0;
+        LocalOrbital->ApplyBoundary(res_t2, st);
+        //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+        //    res_t2[idx] = 0.0;
 
         double t1; 
         /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -186,8 +187,9 @@ void PreconditionerOne (double *res, int st, double gamma)
 
         daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
 
-        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-            res_t[idx] = 0.0;
+        LocalOrbital->ApplyBoundary(res_t, st);
+//        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+ //           res_t[idx] = 0.0;
 
     }
 
