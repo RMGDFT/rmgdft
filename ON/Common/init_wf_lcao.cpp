@@ -29,7 +29,7 @@
    #define fasterexp exp
 #endif
 
-static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, int l, int m);
+static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, int l, int m, int l_extra);
 static void get_one_orbital(STATE *states, int state, double *phi);
 
 void init_wf_lcao(STATE * states)
@@ -67,13 +67,10 @@ void init_wf_lcao(STATE * states)
 
 static void get_one_orbital(STATE *states, int state, double *phi)
 {
-    int idx;
     int ion, species, ist;
     STATE *st;
     SPECIES *sp;
-    int state_count, ip, l, m, ix, iy, iz, ixx, iyy, izz;
-    int idx1, idx2, idx3, idx4, idx5, idx6;
-    long idum;
+    int state_count, ip, l, m;
 
 
     ion = states[state].atom_index;
@@ -83,71 +80,32 @@ static void get_one_orbital(STATE *states, int state, double *phi)
     st = &states[state];
 
     //count how many atomic wave functions we have
+    // if the number of atomic wave functions is not enough, 
+   // use the same radial function with l+1;
 
     state_count= 0;
-    for (ip = 0; ip < sp->num_atomic_waves; ip++)
+    int l_extra = 0;
+    while(ist >= state_count)
     {
-        l = sp->atomic_wave_l[ip];
-        for (m=0; m < 2*l+1; m++)
+        for (ip = 0; ip < sp->num_atomic_waves; ip++)
         {
-            if(ist == state_count)
+            l = sp->atomic_wave_l[ip]+l_extra;
+            for (m=0; m < 2*l+1; m++)
             {
-                atomic_wave_to_orbital(st, phi, sp, ip, l, m);
+                if(ist == state_count)
+                {
+                    atomic_wave_to_orbital(st, phi, sp, ip, l, m, l_extra);
+                }
+                state_count++;
             }
-            state_count++;
         }
+        l_extra++;
     }
-
-
-    // random start for this orbitals
-    if(ist >= state_count) 
-    {
-
-        idum = 3356 + state;  /*  seeds are different for different orbitals  */
-        rand0(&idum);
-        ixx = states[state].orbit_nx;
-        iyy = states[state].orbit_ny;
-        izz = states[state].orbit_nz;
-        for(ix = 0; ix < ixx; ix++)
-            for(iy = 0; iy < iyy; iy++)
-                for(iz = 0; iz < izz; iz++)
-                {
-                    idx = ix * iyy * izz + iy * izz + iz;
-                    phi[idx] = 0.0;
-                }
-
-        for(ix = ixx/2 -3; ix < ixx/2+3; ix++)
-            for(iy = iyy/2 -3; iy < iyy/2+3; iy++)
-                for(iz = izz/2 -3; iz < izz/2+3; iz++)
-                {
-                    idx = ix * iyy * izz + iy * izz + iz;
-                    phi[idx] = rand0(&idum);
-                }
-
-        for(ix = ixx/2 -4; ix < ixx/2+4; ix++)
-            for(iy = iyy/2 -4; iy < iyy/2+4; iy++)
-                for(iz = izz/2 -4; iz < izz/2+4; iz++)
-                {
-                    idx = ix * iyy * izz + iy * izz + iz;
-                    idx1 = (ix-1) *iyy * izz + (iy+0) * izz + iz +0;
-                    idx2 = (ix+1) *iyy * izz + (iy+0) * izz + iz +0;
-                    idx3 = (ix+0) *iyy * izz + (iy-1) * izz + iz +0;
-                    idx4 = (ix+0) *iyy * izz + (iy+0) * izz + iz +0;
-                    idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz -1;
-                    idx6 = (ix+0) *iyy * izz + (iy+0) * izz + iz +1;
-
-                    phi[idx] += (phi[idx1] +phi[idx2] +phi[idx3]
-                            +phi[idx4] +phi[idx5] +phi[idx6])/6.0 ;
-                }
-
-
-    }
-
 
 }                               
 
 
-static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, int l, int m)
+static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, int l, int m, int l_extra)
 {
 
     int idx, ix, iy, iz;
@@ -202,7 +160,7 @@ static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, 
 
                 if(r < sp->r[0])
                 {
-                    fradius = sp->atomic_wave[l][0];
+                    fradius = sp->atomic_wave[ip][0];
                     vector[0] = sp->r[0];
                     vector[1] = sp->r[0];
                     vector[2] = sp->r[0];
@@ -229,7 +187,7 @@ static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, 
                         + coef2 * sp->atomic_wave[ip][i_r+1];
                 }
 
-                phi[idx] = fradius * Ylm(l, m, vector);
+                phi[idx] = fradius * Ylm(l, m, vector) *std::pow(r, l_extra);
 
 
             }
