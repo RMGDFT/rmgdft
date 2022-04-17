@@ -735,8 +735,10 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
     for(int st = 0; st < this->num_thispe; st++)
     {
         int st_glob = this->index_proj_to_global[st];
-        for(int idx = 0; idx < P0_BASIS; idx++)
-            norm_coef[st_glob] += std::norm(this->storage_cpu[st*P0_BASIS + idx]);
+        if(st_glob >=0){
+            for(int idx = 0; idx < P0_BASIS; idx++)
+                norm_coef[st_glob] += std::norm(this->storage_cpu[st*P0_BASIS + idx]);
+        }
     }
 
     MPI_Allreduce(MPI_IN_PLACE, norm_coef, this->num_tot, MPI_DOUBLE, MPI_SUM, this->comm);
@@ -744,9 +746,11 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
     for(int st = 0; st < this->num_thispe; st++)
     {
         int st_glob = this->index_proj_to_global[st];
-        double alpha = std::sqrt(norm_coef[st_glob] * vol);
-        for(int idx = 0; idx < P0_BASIS; idx++)
-            this->storage_cpu[st*P0_BASIS + idx] /= alpha;
+        if(st_glob >=0){
+            double alpha = std::sqrt(norm_coef[st_glob] * vol);
+            for(int idx = 0; idx < P0_BASIS; idx++)
+                this->storage_cpu[st*P0_BASIS + idx] /= alpha;
+        }
     }
 
     delete [] norm_coef;
@@ -1110,8 +1114,9 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
     double xtal_center[3], xtal_grid[3], xtal_dist[3];
     for(int st = 0; st < this->num_thispe; st++)
     {
-        boundary[st].resize(P0_BASIS);
+        boundary[st].resize(P0_BASIS, 0.0);
         int st_glob = this->index_proj_to_global[st];
+        if(st_glob < 0) continue;
         Rmg_L.to_crystal(xtal_center, states[st_glob].crds);
         double radius = states[st_glob].radius - dump_grid * grid_spacing/2.0;
 
@@ -1138,11 +1143,11 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
                     // distance from this grid to the center of the orbital st_glob
                     double r = Rmg_L.metric(xtal_dist);
 
-                    //boundary[st][idx] =1.0/(1.0 + exp( dump * (r-radius) ) ); 
-                      if(r > radius) 
-                          boundary[st][idx] =0.0;
-                      else
-                          boundary[st][idx] =1.0;
+                    boundary[st][idx] =1.0/(1.0 + std::exp( dump * (r-radius) ) ); 
+                    //if(r > radius) 
+                    //    boundary[st][idx] =0.0;
+                    //else
+                    //    boundary[st][idx] =1.0;
                 }
             }
             //if(st == 0) printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);

@@ -188,6 +188,7 @@ static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, 
                 }
 
                 phi[idx] = fradius * Ylm(l, m, vector) *std::pow(r, l_extra);
+                if(l_extra > 0) phi[idx] *= exp(-r*6.0);
 
 
             }
