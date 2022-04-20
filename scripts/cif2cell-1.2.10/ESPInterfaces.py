@@ -2980,11 +2980,22 @@ output_wave_function_file = "Wave/wave"
 kohn_sham_solver="davidson"
 calculation_mode="Quench Electrons"
 
-kpoint_mesh = "1 1 1 "
-kpoint_is_shift = "0 0 0 "
 
 """
 
+        k_delta = 0.4
+        kx = int(2.0 * 3.1415926/self.cell.a/k_delta)
+        ky = int(2.0 * 3.1415926/self.cell.b/k_delta)
+        kz = int(2.0 * 3.1415926/self.cell.c/k_delta)
+        if (kx == 0): kx=1
+        if (ky == 0): ky=1
+        if (kz == 0): kz=1
+
+        filestring += """
+# kpoint mesh is determined by kdelta = %f 1/au
+kpoint_mesh = "%d %d %d "
+kpoint_is_shift = "0 0 0 "
+"""%(k_delta, kx, ky, kz)
         ibrav = 0
         self.cell.newunit("bohr")
         t = LatticeMatrix(self.cell.latticevectors)

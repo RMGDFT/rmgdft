@@ -129,6 +129,7 @@ void PreconditionerOne (double *res, int st, double gamma)
     double *work_t = new double[8*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     double *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     double *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    double *pot = new double[pct.coalesce_factor*4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
     double *res_t = new double[dimx * dimy * dimz];
     double *res_t2 = new double[dimx * dimy * dimz];
@@ -160,13 +161,14 @@ void PreconditionerOne (double *res, int st, double gamma)
         {
             //CPP_pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
             CPP_pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
+            CPP_pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
             //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
             RT= new RmgTimer("Precond: mgrid");
             MG.mgrid_solv<double>(work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
                     //tstep, 1.0*Zfac, 0.1, NULL,     // which one is best?
-                    tstep, 1.0, 0.0, LocalOrbital->pot_precond[st].data(),
+                    tstep, 1.0, 0.0, pot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
@@ -198,6 +200,7 @@ void PreconditionerOne (double *res, int st, double gamma)
     delete []work_t;
     delete []res_t;
     delete []res_t2;
+    delete [] pot;
 }
 
 
