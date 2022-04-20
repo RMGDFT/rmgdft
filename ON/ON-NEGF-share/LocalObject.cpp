@@ -1094,7 +1094,9 @@ template void LocalObject<std::complex<double>>::SetBoundary(BaseGrid&, int kh_l
 template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &BG, int kh_level, int fd_order, STATE *states)
 {
     boundary.resize(this->num_thispe);
+    pot_precond.resize(this->num_thispe);
     int dump_grid = 1;
+    double max_V = 0.0;
     int PX0_GRID = BG.get_PX0_GRID(density);
     int PY0_GRID = BG.get_PY0_GRID(density);
     int PZ0_GRID = BG.get_PZ0_GRID(density);
@@ -1115,6 +1117,7 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
     for(int st = 0; st < this->num_thispe; st++)
     {
         boundary[st].resize(P0_BASIS, 0.0);
+        pot_precond[st].resize(P0_BASIS, max_V);
         int st_glob = this->index_proj_to_global[st];
         if(st_glob < 0) continue;
         Rmg_L.to_crystal(xtal_center, states[st_glob].crds);
@@ -1144,10 +1147,15 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
                     double r = Rmg_L.metric(xtal_dist);
 
                     boundary[st][idx] =1.0/(1.0 + std::exp( dump * (r-radius) ) ); 
+                    pot_precond[st][idx] =max_V * (1.0 - 1.0/(1.0 + std::exp( 2*dump * (r-radius) ) )); 
                     //if(r > radius) 
                     //    boundary[st][idx] =0.0;
                     //else
                     //    boundary[st][idx] =1.0;
+                    //if(mask[st * P0_BASIS + idx])
+                    //    boundary[st][idx] = 1.0;
+                    //else
+                    //    boundary[st][idx] = 0.0;
                 }
             }
             //if(st == 0) printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);

@@ -36,6 +36,7 @@ public:
     char *mask;
 
     std::vector<std::vector<double>> boundary;
+    std::vector<std::vector<double>> pot_precond;
 
     int num_thispe;
     int num_tot;

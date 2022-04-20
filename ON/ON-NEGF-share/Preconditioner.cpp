@@ -165,8 +165,8 @@ void PreconditionerOne (double *res, int st, double gamma)
             MG.mgrid_solv<double>(work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
-                    tstep, 1.0*Zfac, 0.1, NULL,     // which one is best?
-                    //tstep, 1.0, 0.0, vtot,
+                    //tstep, 1.0*Zfac, 0.1, NULL,     // which one is best?
+                    tstep, 1.0, 0.0, LocalOrbital->pot_precond[st].data(),
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
