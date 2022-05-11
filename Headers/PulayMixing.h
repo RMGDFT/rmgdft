@@ -33,6 +33,10 @@ private:
     double ktf = 0.529177;  // in unit of au^-1
     std::complex<double> *c_fm = NULL;
 
+    double *dvh_hist;
+    std::vector<double*> dvh_hist_ptr;
+    bool Broyden_pot;
+    int pbasis;
 public:
 
     PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, double mix_init, double beta, MPI_Comm comm);
@@ -43,6 +47,9 @@ public:
     void SetNstates(int nstates){ this->nstates = nstates;}
     void SetGspace(bool drho_pre, bool Gspace, double q0);
     void Refresh();
+
+    void SetBroyden(int pbasis);
+    void MixingOrbitalBroyden(double *xm, double *fm, double *vh_out, double *vh_in);
 
 };
 #endif

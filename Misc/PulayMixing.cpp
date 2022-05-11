@@ -407,3 +407,141 @@ void PulayMixing::Mixing_rhoG(double *xm, double *fm)
 
 }
 
+void PulayMixing::SetBroyden(int pbasis_in)
+{
+    this->pbasis = pbasis_in;
+
+    if(!this->Nsize%this->pbasis) 
+        throw RmgFatalException() << "Cannot use broyden with pot N%pbasis = "<< this->Nsize << "  " << this->pbasis << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+    this->dvh_hist = new double[this->pbasis * (size_t)(pulay_order) + 1024];
+    for(int i = 0; i < this->pulay_order;i++)
+    {
+        this->dvh_hist_ptr.push_back(&this->dvh_hist[this->pbasis * i]);
+    }
+    
+}
+
+void PulayMixing::MixingOrbitalBroyden(double *xm, double *fm, double *vh_out, double *vh_in)
+{
+    int ione = 1;
+    double betamix[this->max_order][this->max_order];
+
+    this->step = this->step % this->refresh_steps;
+    int N = int(this->Nsize);
+
+    if(this->need_precond) this->Precond(fm, this->nstates);
+    if(this->pulay_order <=1)
+    {
+
+        daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
+
+        return;
+    }
+
+    // copy the xm and fm to the last history pointer.
+    int current_pos = std::min(this->step, this->pulay_order-1);
+    int iter_used = current_pos;
+    dcopy(&N, xm, &ione, this->hist_ptr[current_pos], &ione);
+    dcopy(&N, fm, &ione, this->res_hist_ptr[current_pos], &ione);
+    for(int idx = 0; idx < this->pbasis; idx++)
+    {
+        this->dvh_hist_ptr[current_pos][idx] = vh_out[idx] - vh_in[idx];
+    }
+    if (this->step == 0)
+    {
+        daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
+        this->step++;
+        return;
+    }
+
+    for(size_t idx = 0; idx < this->Nsize; idx++)
+    {
+        this->hist_ptr[current_pos -1][idx] -= this->hist_ptr[current_pos][idx];
+        this->res_hist_ptr[current_pos -1][idx] -= this->res_hist_ptr[current_pos][idx];
+    }
+
+    for(int idx = 0; idx < this->pbasis; idx++)
+    {
+        this->dvh_hist_ptr[current_pos-1][idx] -= this->dvh_hist_ptr[current_pos][idx] ;
+    }
+
+
+    for(int i = 0;i < iter_used;i++) {
+        for(int j = 0;j < iter_used;j++) {
+            betamix[j][i] = 0.0;
+            for(int is = 0; is < this->nstates; is++)
+            {
+                for(int k = 0;k < pbasis;k++) betamix[j][i] += this->res_hist_ptr[i][k + is * pbasis] * dvh_hist_ptr[j][k];
+            }
+        }
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, betamix, this->max_order*this->max_order, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, betamix, this->max_order*this->max_order, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+
+    if(ct.verbose && pct.gridpe == 0) 
+    {
+        for(int i = 0;i < iter_used;i++) {
+            printf("\n betamix ");
+            for(int j = 0;j < iter_used;j++) {
+                printf("  %e ", betamix[j][i]);
+            }
+        }
+    }
+    double work[this->max_order*this->max_order];
+    int ipiv[this->max_order*this->max_order];
+    int lwork = this->max_order*this->max_order;
+    int info = 0;
+    dgetrf(&iter_used, &iter_used, &betamix[0][0], &this->max_order, ipiv,  &info );
+    if(info)
+        throw RmgFatalException() << "dgetrf failed " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+    dgetri(&iter_used, &betamix[0][0], &this->max_order, ipiv, work, &lwork, &info );
+    if(info)
+        throw RmgFatalException() << "dgetri failed " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+    if(ct.verbose && pct.gridpe == 0) 
+    {
+        for(int i = 0;i < iter_used;i++) {
+            printf("\n betamix_rev ");
+            for(int j = 0;j < iter_used;j++) {
+                printf("  %e ", betamix[j][i]);
+            }
+        }
+    }
+
+    for(int i = 0;i < iter_used;i++) {
+        work[i] = 0.0;
+        for(int is = 0; is < this->nstates; is++)
+            for(int k = 0;k < pbasis;k++) work[i] += dvh_hist_ptr[i][k] * fm[k + is * pbasis];
+        MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    }
+
+    for(int i = 0;i < iter_used;i++) {
+
+        double gamma = 0.0;
+        for(int j=0;j < iter_used;j++) gamma += work[j] * betamix[i][j];
+        if(ct.verbose && pct.gridpe == 0) 
+            std::cout<< "\nITER " << i << " gamma = "  << gamma << std::endl;
+
+        for(size_t k=0;k < this->Nsize;k++) fm[k] -= gamma * res_hist_ptr[i][k];
+        for(size_t k=0;k < this->Nsize;k++) xm[k] -= gamma * hist_ptr[i][k];
+
+    }
+
+    daxpy(&N, &this->beta, fm, &ione, xm, &ione);
+
+    //the first pointer becomes the last pointer which will be used for next step xm and fm.
+    // otherwise the history pointers don't need to rotate.
+    if (this->step >= this->pulay_order -1) 
+    {
+        std::rotate(this->hist_ptr.begin(),this->hist_ptr.begin()+1,this->hist_ptr.end());
+        std::rotate(this->res_hist_ptr.begin(),this->res_hist_ptr.begin()+1,this->res_hist_ptr.end());
+        std::rotate(this->dvh_hist_ptr.begin(),this->dvh_hist_ptr.begin()+1,this->dvh_hist_ptr.end());
+    }
+
+    this->step++;
+
+}

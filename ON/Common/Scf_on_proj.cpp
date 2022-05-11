@@ -40,7 +40,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital)
 {
-    int numst = ct.num_states;
     int idx, ione = 1;
     double tem;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
@@ -59,6 +58,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
         Pulay_orbital->SetPrecond(Preconditioner);
         Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
+        Pulay_orbital->SetBroyden(pbasis);
     }
 
     rho_pre = new double[nfp0];
@@ -303,9 +303,18 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
 
-        Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
+        double *vh_out = new double[pbasis];
+        double *vh_in = new double[pbasis];
+
+        GetVtotPsi (vh_out, vh, Rmg_G->default_FG_RATIO);
+        GetVtotPsi (vh_in, vh_old, Rmg_G->default_FG_RATIO);
+
+        //Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
+        Pulay_orbital->MixingOrbitalBroyden(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu, vh_out, vh_in);
         RmgTimer *RT1 = new RmgTimer("2-SCF: orbital precond and mixing: normalize");
         LocalOrbital->Normalize();
+        delete [] vh_out;
+        delete [] vh_in;
         delete RT1;
         delete RT0;
 
