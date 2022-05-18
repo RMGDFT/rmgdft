@@ -309,8 +309,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         GetVtotPsi (vh_out, vh, Rmg_G->default_FG_RATIO);
         GetVtotPsi (vh_in, vh_old, Rmg_G->default_FG_RATIO);
 
-        //Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
-        Pulay_orbital->MixingOrbitalBroyden(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu, vh_out, vh_in);
+        Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
+        //Pulay_orbital->MixingOrbitalBroyden(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu, vh_out, vh_in);
         RmgTimer *RT1 = new RmgTimer("2-SCF: orbital precond and mixing: normalize");
         LocalOrbital->Normalize();
         delete [] vh_out;
