@@ -29,6 +29,7 @@
 #include "GpuAlloc.h"
 #include "Exx_on.h"
 #include "BlockTriMatrix.h"
+#include "blas_driver.h"
 
 #define DELTA_V_MAX 1.0
 
@@ -175,7 +176,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 {
                     for(int j = 0; j < num_orb; j++) 
                     {
-                        if(i == j && i == 0) CC_res_local[i*num_orb + j] = 0.0;
+                        if(i == j ) CC_res_local[i*num_orb + j] = 1.0;
                         else CC_res_local[i*num_orb + j] = 0.0;
                     }
                 }
@@ -294,9 +295,10 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         RT0 = new RmgTimer("2-SCF: Residual calculation");
         CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat, CC_res_local);
         delete RT0;
-
+        my_sync_device();
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
+
             LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
             //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
             //    H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;

@@ -165,7 +165,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     double *res_work;
     MallocHostOrDevice((void **)&res_work,  Phi.storage_size);
     RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, H_Phi.storage_ptr, pbasis,
-            CC_res_local, num_orb, mtwo, res_work, pbasis);
+            CC_res_local, num_orb, zero, res_work, pbasis);
     MemcpyDeviceHost(H_Phi.storage_size, res_work, H_Phi.storage_cpu);
     delete RT1;
 

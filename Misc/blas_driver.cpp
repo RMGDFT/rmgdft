@@ -19,10 +19,18 @@
 #include "rmg_control.h"
 #include "transition.h"
 
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#endif
+
+
 void my_sync_device()
 {
 #if CUDA_ENABLED
     DeviceSynchronize();
+#endif
+#if HIP_ENABLED
+    hipDeviceSynchronize();
 #endif
 }
 
