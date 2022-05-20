@@ -65,6 +65,7 @@
 #include "Xe_stringent_upf_bz2.h"
 #include "W_stringent_upf_bz2.h"
 #include "V_stringent_upf_bz2.h"
+#include "U_ONCV_PBE_sr_upf_bz2.h"
 #include "Tl_stringent_upf_bz2.h"
 #include "Ti_stringent_upf_bz2.h"
 #include "Zr_stringent_upf_bz2.h"
