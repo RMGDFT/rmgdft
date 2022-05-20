@@ -82,6 +82,11 @@ void WriteHeader (void)
     printf ("\nBuild Date:        %s  %s", __DATE__, __TIME__);
     printf ("\nStart time:        %s", timeptr);
 
+    printf("\nNOTICE: RMG internal pseudopotentials have switched to");
+    printf("\nONCVP from Ultrasoft. You can revert to Ultrasoft by");
+    printf("\nadding the input tag internal_pseudo_type=\"ultrasoft\" to");
+    printf("\nyour input files.\n\n");
+
     printf ("\n");
     printf ("Files\n");
     printf ("   Control input file:        %s\n", ct.cfile);

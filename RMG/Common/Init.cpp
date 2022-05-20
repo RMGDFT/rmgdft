@@ -95,6 +95,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	printf ("\n");
 	printf (" -- A Real Space Multigrid Electronic structure code --\n");
 	printf (" --      More information at www.rmgdft.org          --\n");
+
+        printf("\n\n\nNOTICE: RMG internal pseudopotentials have switched to");
+        printf("\nONCVP from Ultrasoft. You can revert to Ultrasoft by");
+        printf("\nadding the input tag internal_pseudo_type=\"ultrasoft\" to");
+        printf("\nyour input files.\n\n");
+
     }
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
