@@ -82,7 +82,30 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg_error_handler (__FILE__, __LINE__, " dgetrs not programmed.");
+    rocblas_status status;
+    rocblas_int *devInfo;
+    rocblas_int *ipiv = nullptr;
+    int info;
+    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
+    const rocblas_fill uplo = rocblas_fill_lower;
+    const rocblas_eform itype = rocblas_eform_ax;
+
+    gpuSetDevice(ct.hip_dev);
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&ipiv, sizeof(int)*n ), "Problem with gpuMalloc");
+
+    status = rocsolver_dgetrf(ct.roc_handle, n, n, A, n, ipiv, devInfo);
+
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
+    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrf failed.");
+
+
+    status = rocsolver_dgetrs(ct.roc_handle, rocblas_operation_none, n, m, A, n, ipiv, B, n);
+    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrs failed.");
+
+    gpuFree(devInfo);
+    gpuFree(ipiv);
+
 }
 #endif
 
