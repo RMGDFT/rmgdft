@@ -1,6 +1,7 @@
 # Mg 2-atom test cell with k-points
 # Expected energy
-test_energy="-125.31535043"
+test_energy="-118.76956640"
+
 
 a_length="      3.19405000"
 b_length="      3.19405000"
@@ -47,8 +48,9 @@ occupation_electron_temperature_eV = "1.0e-4"
 charge_density_mixing = "0.5"
 charge_mixing_type = "Broyden"
 potential_acceleration_constant_step = "1.0"
+subdiag_driver = "lapack"
 
-unoccupied_states_per_kpoint = "4"
+unoccupied_states_per_kpoint = "8"
 
 start_mode="LCAO Start"
 #start_mode="Restart From File"

@@ -116,6 +116,7 @@ kohn_sham_solver="multigrid"
 localize_projectors="false"
 localize_localpp="false"
 
+internal_pseudo_type = "ultrasoft"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
