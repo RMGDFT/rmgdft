@@ -98,6 +98,7 @@ public:
 
     void move_cell(double dt, int *cell_movable);
     void cross_product (double * a, double * b, double * c);
+    double dot_product (double * a, double * b);
     void to_crystal (double *crystal, double *cartesian);
     void to_crystal_vector (double *crystal, double *cartesian);
     void to_crystal_half (double *crystal, double *cartesian);
@@ -120,6 +121,7 @@ public:
     double get_yside(void);
     double get_zside(void);
     void lat2abc(double *a0, double *a1, double *a2);
+    void lat2celldm (int ibrav, double alat, double *a1, double *a2, double *a3);
     void abc2celldm(void);
     int lat2ibrav (double *a0, double *a1, double *a2);
     void rotate_vectors(double *a0, double *a1, double *a2);

@@ -111,7 +111,11 @@
 //#define         SQRT3       1.732050807569
 
 
-
+double Lattice::dot_product(double *a, double *b)
+{
+    double ret = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+    return ret;
+}
 void Lattice::cross_product (double * a, double * b, double * c)
 {
     c[0] = a[1] * b[2] - a[2] * b[1];
@@ -305,7 +309,6 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
     }
     if(Lattice::ibrav == None) return;
 
-
     alat = celldm[0];
     switch (Lattice::ibrav)
     {
@@ -452,7 +455,6 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             Lattice::a2[0] = alat * celldm[2] * celldm[4];
             Lattice::a2[1] = alat * celldm[2] * (celldm[3] - celldm[4] * celldm[5]) / singam;
             Lattice::a2[2] = alat * celldm[2] * term;
-
             break;
 
         default:
@@ -748,8 +750,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     if(fabs(cosbc) < 1.0e-5) cosbc = 0.0;
     if(fabs(cosab - cosac) < 1.0e-5) cosac = cosab;
     if(fabs(cosab - cosbc) < 1.0e-5) cosbc = cosab;
-    //printf("AAAA  %f  %f  %f\n",a,b,c);
-    //printf("BBBB  %f  %f  %f\n",cosab,cosac,cosbc);
     //
     // Assume triclinic if nothing suitable found
     //
@@ -1019,4 +1019,112 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
 
     }
 
+}
+
+
+void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double *a3)
+{
+/*
+       Sets celldm parameters computed from lattice vectors a1,a2,a3 
+       a1, a2, a3 are in "alat" units
+       If Bravais lattice index ibrav=0, only celldm[0] is set to alat
+       See latgen for definition of celldm and lattice vectors.
+  
+*/
+  switch(ibrav)
+  {
+      case None:
+         celldm[0] = 1.0;
+         break;
+      case CUBIC_PRIMITIVE:
+         celldm[0] = sqrt( dot_product (a1,a1) );
+         break;
+      case CUBIC_FC:
+         celldm[0] = sqrt( dot_product (a1,a1) * 2.0 );
+         break;
+      case -CUBIC_BC:
+      case CUBIC_BC:
+         celldm[0] = sqrt( dot_product (a1,a1) / 3.0 ) * 2.0;
+         break;
+      case HEXAGONAL:
+         celldm[0] = sqrt( dot_product (a1,a1) );
+         celldm[2] = sqrt( dot_product (a3,a3) ) / celldm[0];
+         break;
+//      case -TRIGONAL_PRIMITIVE:
+//      case TRIGONAL_PRIMITIVE:
+//         celldm[0] = sqrt( dot_product (a1,a1) );
+//         celldm[3] = dot_product(a1,a2) / celldm[0] / sqrt( dot_product( a2,a2) );
+//         break;
+      case TETRAGONAL_PRIMITIVE:
+         celldm[0]= sqrt( dot_product (a1,a1) );
+         celldm[2]= sqrt( dot_product (a3,a3) ) / celldm[0];
+         break;
+//      case TETRAGONAL_BC:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[2] = abs(a1(3)/a1(1));
+//         break;
+      case ORTHORHOMBIC_PRIMITIVE:
+         celldm[0] = sqrt( dot_product (a1,a1) );
+         celldm[1] = sqrt( dot_product (a2,a2) ) / celldm[0];
+         celldm[2] = sqrt( dot_product (a3,a3) ) / celldm[0];
+         break;
+//      case -ORTHORHOMBIC_BASE_CENTRED:
+//      case ORTHORHOMBIC_BASE_CENTRED:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[1] = abs(a2(2))*2.0/celldm[0];
+//         celldm[2] = abs(a3(3))/celldm[0];
+//         break;
+//      case 91:
+//         celldm[0] = sqrt( dot_product (a1,a1) );
+//         celldm[1] = abs (a2(2))*2.0/celldm[0];
+//         celldm[2] = abs (a3(3))*2.0/celldm[0];
+//         break;
+//      case ORTHORHOMBIC_BC:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[1] = abs(a2(2))*2.0/celldm[0];
+//         celldm[2] = abs(a3(3))*2.0/celldm[0];
+//         break;
+//      case ORTHORHOMBIC_FC:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[1] = abs(a1(2))*2.0/celldm[0];
+//         celldm[2] = abs(a1(3))*2.0/celldm[0];
+//         break;
+      case -MONOCLINIC_PRIMITIVE:
+      case MONOCLINIC_PRIMITIVE:
+         celldm[0] = sqrt( dot_product (a1,a1) );
+         celldm[1] = sqrt( dot_product(a2,a2) ) / celldm[0];
+         celldm[2] = sqrt( dot_product(a3,a3) ) / celldm[0];
+         if ( ibrav == 12 )
+         {
+            celldm[3] = dot_product(a1,a2) / celldm[0] / sqrt(dot_product(a2,a2));
+         }
+         else
+         {
+            celldm[4] = dot_product(a1,a3) / celldm[0] / sqrt(dot_product(a3,a3));
+         }
+         break;
+//      case MONOCLINIC_BASE_CENTRED:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[1] = sqrt( dot_product(a2,a2)) / celldm[0];
+//         celldm[2] = abs (a1(3)/a1(1));
+//         celldm[3] = a2(1)/a1(1)/celldm[1]/2.0;
+//         break;
+//      case -MONOCLINIC_BASE_CENTRED:
+//         celldm[0] = abs(a1(1))*2.0;
+//         celldm[1] = abs (a2(2)/a2(1));
+//         celldm[2] = sqrt( dot_product(a3,a3)) / celldm[0];
+//         celldm[4] = a3(1)/a1(1)/celldm[2]/2.0;
+//         break;
+      case TRICLINIC_PRIMITIVE:
+         celldm[0] = sqrt(dot_product(a1,a1));
+         celldm[1] = sqrt( dot_product(a2,a2)) / celldm[0];
+         celldm[2] = sqrt( dot_product(a3,a3)) / celldm[0];
+         celldm[3] = dot_product(a3,a2)/sqrt(dot_product(a2,a2) * dot_product(a3,a3));
+         celldm[4] = dot_product(a3,a1) / celldm[0] / sqrt( dot_product(a3,a3));
+         celldm[5] = dot_product(a1,a2) / celldm[0] / sqrt(dot_product(a2,a2));
+         break;
+      default:
+         rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
+      }
+      celldm[0] = celldm[0] * alat;
 }
