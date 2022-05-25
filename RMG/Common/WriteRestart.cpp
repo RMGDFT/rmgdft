@@ -226,8 +226,8 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     if (pct.imgpe == 0)
     {
-        std::string new_file(name);
-        new_file = new_file + ".atomic_coordinates.xyz";
+        std::string new_file(ct.cfile);
+        new_file = new_file + ".xyz";
 
         FILE *fhandle = fopen (new_file.c_str(), "w");
         if (!fhandle)
@@ -245,6 +245,10 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
                     a0_A*Atom.crds[0], a0_A*Atom.crds[1], a0_A*Atom.crds[2]);
         }
 
+        fprintf(fhandle, "lattice vectors\n");
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
         fclose (fhandle);
         fflush(NULL);

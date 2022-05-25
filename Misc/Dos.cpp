@@ -78,7 +78,7 @@ void Dos::tot_dos(int nk, int nband, const std::vector<double> &eigs, double Ef)
 
     if(pct.gridpe == 0)
     {
-        std::string filename = "dos_tot_spin" + std::to_string(pct.spinpe);
+        std::string filename = "dos_tot_spin" + std::to_string(pct.spinpe) + ".dat";
         FILE *dos_f = fopen (filename.c_str(), "w");
         for(int ie = 0; ie < num_epoint; ie++)
         {
