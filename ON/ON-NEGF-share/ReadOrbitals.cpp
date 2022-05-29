@@ -87,7 +87,7 @@ void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions, MPI_Comm 
     If.LoadInputKeys();
 
     bohr = 1.0;
-    if (Verify ("length_units", "Angstrom", NewMap))
+    if (Verify ("crds_units", "Angstrom", NewMap))
     {
         bohr= 1.88972612499359;
     }

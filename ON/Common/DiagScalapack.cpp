@@ -128,12 +128,12 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     }
 
     delete [] eigs;
-    if(pct.gridpe == 0) write_eigs(states);
-    fflush(NULL);
     if(ct.spin_flag)
     {
         get_opposite_eigvals( states );
     }
+    if(pct.gridpe == 0) write_eigs(states);
+    fflush(NULL);
     /* Generate new density */
 
     ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);

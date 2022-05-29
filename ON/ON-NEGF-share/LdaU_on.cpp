@@ -68,7 +68,7 @@ LdaU_on::~LdaU_on(void)
 
 LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
 {
-    for(auto& sp : Species) sp.InitOrbitals (LOCALIZED);
+    for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
 
     int tot_orbitals_ldaU = 0;
 
@@ -157,15 +157,18 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     MPI_Allreduce(MPI_IN_PLACE, &this->Ecorrect, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
 
-    //  for(int i = 0; i < nldaU; i++)
-    //  {
-    //      printf("\n");
-    //for(int j = 0; j < nldaU; j++)
+    //if(pct.imgpe == 0 && ct.verbose)
     //{
-    //    printf("\n %f ", this->ns_occ[j*nldaU + j]);
-    //} 
-
-    //  }
+    //    for(int i = 0; i < 5; i++)
+    //    {
+    //        printf("\n");
+    //        for(int j = 0; j < 5; j++)
+    //        {
+    //            printf(" %f ", this->ns_occ[i*nldaU + j]);
+    //        } 
+//
+ //       }
+  //  }
 
     //      printf("\n");
     //  for(int i = 0; i < norb; i++)
