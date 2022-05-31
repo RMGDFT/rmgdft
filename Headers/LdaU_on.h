@@ -44,6 +44,8 @@ public:
     void app_vhubbard(LocalObject<double> &HL, BaseGrid &);
     void WriteLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
     void ReadLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
+    void write_ldaU(void);
+
 
     LocalObject<double> *AtomicOrbital;
     int tot_orbitals_ldaU;

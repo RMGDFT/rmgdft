@@ -1,4 +1,5 @@
 set(tests "atomO_polarized")
+list(APPEND tests "NiO_64atoms_LDAU")
 #list(APPEND tests "C60")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/${rmg-on}")

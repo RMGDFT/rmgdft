@@ -230,3 +230,30 @@ void LdaU_on::ReadLdaU(std::string file_prefix, LocalObject<double> &LO)
 }
 
 
+// Writes out LDA+U information
+void LdaU_on::write_ldaU(void)
+{
+    if(pct.imgpe!=0) return;
+
+    int nldaU = this->tot_orbitals_ldaU;
+    int ns_index = 0;
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+        
+        ldaU_m = Species[Atoms[ion].species].num_ldaU_orbitals;
+        if(ldaU_m >0)
+        {
+            fprintf(ct.logfile, "  ion %lu  LDA+U occupation matrix_real\n", ion);
+            for(int i=0;i < ldaU_m;i++)
+            {
+                for(int j=0;j < ldaU_m;j++)
+                {
+                    fprintf(ct.logfile, "%7.4f ", std::real(ns_occ[(ns_index + i) * nldaU + ns_index + j]));
+                }
+                fprintf(ct.logfile, "\n");
+            }
+            ns_index += ldaU_m;
+        }
+    }
+}
+

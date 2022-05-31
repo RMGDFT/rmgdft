@@ -198,6 +198,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         RT0 = new RmgTimer("2-SCF: LDA+U");
         ldaU_on->calc_ns_occ(*LocalOrbital, mat_X, *Rmg_G);
+        if(ct.verbose) ldaU_on->write_ldaU();
         delete RT0;
 
     }
