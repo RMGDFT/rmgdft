@@ -286,6 +286,67 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     inv_type.erase(inv_type.begin()+ nsym, inv_type.end());
     time_rev.erase(time_rev.begin()+ nsym, time_rev.end());
 
+    //remove the symmetry operaion which break the symmetry by spin polarization
+    if(ct.nspin == 2)
+    {
+
+        bool sym_break, mag_same, mag_oppo;
+        for(int isym = nsym-1; isym > 0; isym--)
+        {
+            sym_break=false;
+            mag_same = true;
+            mag_oppo = true;
+
+            for (int ion1 = 0; ion1 < ct.num_ions; ion1++)
+            {
+                int ion2 = sym_atom[isym * ct.num_ions + ion1];
+                double diff1 = std::abs(Atoms[ion1].init_spin_rho - Atoms[ion2].init_spin_rho);
+                double diff2 = std::abs(Atoms[ion1].init_spin_rho + Atoms[ion2].init_spin_rho);
+                mag_same = mag_same && (diff1 < symprec);
+                mag_oppo = mag_oppo && (diff2 < symprec);
+
+                if(!mag_same && !mag_oppo)
+                {
+                    sym_break = true;
+                    break;
+                }
+                if(!mag_same && !ct.AFM)
+                {
+                    sym_break = true;
+                    break;
+                }
+
+            }
+
+            if(mag_oppo && !mag_same && ct.AFM) time_rev[isym] = true;
+            if(sym_break)
+            {
+                ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+                ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+                sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+                sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+                sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+                inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+                time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            }
+        }
+
+        if(ct.verbose && pct.imgpe == 0)
+        {
+            printf("\n sym operation after considering spin polarization# %d",(int) sym_rotate.size()/9);
+            for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+            {
+                printf("\n symmetry operation # %d:", isym);
+                for(int i = 0; i < 3; i++)
+                {
+                    printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+                }
+                printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+            }
+        }
+
+    }
+
     //remove the symmetry operaion which break the symmetry by noncollinear spin
     if(ct.noncoll)
     {
@@ -1103,4 +1164,86 @@ Symmetry::~Symmetry(void)
 }
 
 
+void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
+{
+    if(max_pdim < 256)
+    {
+        symmetrize_rho_AFM_int(rho, rho_oppo, sym_index_x8, sym_index_y8, sym_index_z8);
+    }
+    else
+    {
+        symmetrize_rho_AFM_int(rho, rho_oppo, sym_index_x16, sym_index_y16, sym_index_z16);
+    }
+}
+    template <typename U>
+void Symmetry::symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
+{
+    int incx = py_grid * pz_grid;
+    int incy = pz_grid;
+
+    int incx1 = ny_grid * nz_grid;
+    int incy1 = nz_grid;
+    int incz1 = 1;
+
+    // Allocate a global array object and put this processors object into the correct location
+    double *da1 = new double[nbasis]();
+    double *da2 = new double[nbasis]();
+
+        for (int ix = 0; ix < px_grid; ix++) {
+            for (int iy = 0; iy < py_grid; iy++) {
+                for (int iz = 0; iz < pz_grid; iz++) {
+                    da1[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
+                        = rho[ ix * incx + iy*incy + iz];
+                    da2[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
+                        = rho_oppo[ ix * incx + iy*incy + iz];
+                }
+            }
+        }
+
+    /* Call global sums to give everyone the full array */
+    size_t length = (size_t)nbasis;
+    BlockAllreduce(da1, length, pct.grid_comm);
+    BlockAllreduce(da2, length, pct.grid_comm);
+
+    for(int ix=0;ix < pbasis;ix++) 
+    {
+        rho[ix] = 0.0;
+        rho_oppo[ix] = 0.0;
+    }
+
+    for(int isy = 0; isy < nsym; isy++)
+    {
+        for (int ix = 0; ix < px_grid; ix++) {
+            for (int iy = 0; iy < py_grid; iy++) {
+                for (int iz = 0; iz < pz_grid; iz++) {
+
+                    int ixx = sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int iyy = sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int izz = sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+
+                    int idx = izz *incz1 + iyy *incy1 + ixx *incx1;
+                    if(time_rev[isy]) 
+                    {
+                        rho[ ix * incx + iy*incy + iz] += da2[idx];
+                        rho_oppo[ix * incx + iy*incy + iz] += da1[idx];
+                    }
+                    else
+                    {
+                        rho[ ix * incx + iy*incy + iz] += da1[idx];
+                        rho_oppo[ix * incx + iy*incy + iz] += da2[idx];
+                    }
+                }
+            }
+        }
+    }
+
+    double t1 = (double) nsym;
+    t1 = 1.0 / t1;
+    for(int ix = 0; ix < pbasis; ix++) rho[ix] = rho[ix] * t1;
+    for(int ix = 0; ix < pbasis; ix++) rho_oppo[ix] = rho_oppo[ix] * t1;
+
+    delete [] da1;
+    delete [] da2;
+
+}
 

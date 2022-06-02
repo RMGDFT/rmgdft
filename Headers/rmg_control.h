@@ -76,6 +76,7 @@ public:
     bool spinorbit;
     int noncoll_factor;
     int nspin;
+    bool AFM;
 
     /* determine if this image is processing spin up or spin down. */
     bool spin_flag;

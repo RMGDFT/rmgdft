@@ -30,6 +30,7 @@
 #include "Exx_on.h"
 #include "BlockTriMatrix.h"
 #include "blas_driver.h"
+#include "Symmetry.h"
 
 #define DELTA_V_MAX 1.0
 
@@ -218,6 +219,13 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         GetNewRho_proj(*LocalOrbital, *H_LocalOrbital, rho, rho_matrix_local);
     }
+    if(ct.spin_flag)
+        get_rho_oppo(rho, rho_oppo);
+    if (ct.AFM)
+    {
+        RmgTimer RTT("symm_rho");
+        Rmg_Symm->symmetrize_rho_AFM(rho, rho_oppo);
+    }
     delete RT0;
 
     RT0 = new RmgTimer("2-SCF: Rho mixing");
@@ -235,8 +243,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     double t2 = ct.nel / ct.tcharge;
     dscal(&iii, &t2, &rho[0], &ione);
 
-    if(ct.spin_flag)
-        get_rho_oppo(rho, rho_oppo);
 
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
         printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);

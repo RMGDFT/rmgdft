@@ -296,7 +296,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                     {
                         it1++;
                         std::string rho_updown_diff = *it1;
-                        sp += rho_updown_diff;
+                //        sp += rho_updown_diff;
                         init_spin_ratio = std::atof(rho_updown_diff.c_str());
                     }
                     break;

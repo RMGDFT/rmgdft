@@ -518,6 +518,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("spinorbit", &lc.spinorbit, false, 
             "if set true, calculate with spinorbit coupling ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("AFM", &lc.AFM, false, 
+            "if set true, anti-feromagnetic will be forced by symmetry operation if exist ", CONTROL_OPTIONS);
+   
+
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "First lattice constant. ", 

@@ -96,6 +96,8 @@ class Symmetry
             void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
         template <typename U>
             void symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
+        template <typename U>
+            void symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
 
     public:
         int nsym;
@@ -119,6 +121,7 @@ class Symmetry
 
         void setgrid(BaseGrid &G, int density);
         void symmetrize_grid_vector(double *mag_rho);
+        void symmetrize_rho_AFM(double *rho, double *rho_oppo);
         void symm_vec(int isy, double *vec);
         void symforce(void);
         void symmetrize_tensor(double *mat_tensor);

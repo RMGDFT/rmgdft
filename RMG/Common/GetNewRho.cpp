@@ -78,10 +78,18 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         delete [] augrho;
     }
 
-
-    if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
-    if(ct.noncoll && Rmg_Symm)
-        Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+    if (ct.nspin == 2)
+        get_rho_oppo (rho,  &rho[FP0_BASIS]);
+    if(ct.AFM)
+    {
+        Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
+    }
+    else
+    {
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+        if(ct.noncoll && Rmg_Symm)
+            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+    }
 
 
     /* Check total charge. */
@@ -142,7 +150,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
             {
                 if(fabs(Kpts[kpt]->Kstates[st1+ist].occupation[0]) > 1.0e-10)
                 {
-		    thread_control.job = HYBRID_GET_RHO;
+                    thread_control.job = HYBRID_GET_RHO;
                     double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
                     OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
                     thread_control.p1 = (void *)psi;
@@ -217,7 +225,7 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
 
     P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
     if(ct.noncoll)
-       P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
     for (int idx = 0; idx < FP0_BASIS; idx++)
     {

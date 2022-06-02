@@ -590,7 +590,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
 
         /*Now we can do subspace diagonalization */
-        double *new_rho=new double[FP0_BASIS *ct.noncoll_factor * ct.noncoll_factor];
+        double *new_rho=new double[FP0_BASIS *ct.nspin];
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
