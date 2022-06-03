@@ -467,6 +467,11 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
     nsym = (int)sym_rotate.size()/9;
+    n_time_rev = 0;
+    for (auto t_r = time_rev.begin(); t_r != time_rev.end(); ++t_r)
+    {
+        if(*t_r) n_time_rev++;
+    }
     rotate_ylm();
     rotate_spin(); 
     delete [] sa;
@@ -1171,12 +1176,15 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                                     {
                                         for(int i4 = 0; i4 < num_orb; i4++)
                                         { 
-                                            if(time_rev[isy] && ct.nspin == 4)
+                                            if(time_rev[isy] )
                                             {
-                                                ns_occ_sum[is1][is2][ion][i1][i2] += 
-                                                    std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
-                                                    ns_occ[is4][is3][ion1][i4][i3] *
-                                                    rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
+                                                if(ct.nspin == 4)
+                                                {
+                                                    ns_occ_sum[is1][is2][ion][i1][i2] += 
+                                                        std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
+                                                        ns_occ[is4][is3][ion1][i4][i3] *
+                                                        rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
+                                                }
                                             }
                                             else
                                             {
@@ -1203,16 +1211,16 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
         {
             ns_occ_g[idx] = ns_occ_sum.data()[idx]/(double)nsym;
         }
-            
+
     }
     else if(ct.nspin == 2)
     {
         for(int idx = 0; idx < size_each_spin; idx++)
         {
-            ns_occ_g[idx] = ns_occ_sum.data()[idx]/(double)nsym;
-            ns_occ_g[idx + size_each_spin] = ns_occ_sum.data()[idx + 3*size_each_spin]/(double)nsym;
+            ns_occ_g[idx] = ns_occ_sum.data()[idx]/(double)(nsym-n_time_rev);
+            ns_occ_g[idx + size_each_spin] = ns_occ_sum.data()[idx + 3*size_each_spin]/(double)(nsym-n_time_rev);
         }
-    
+
     }
     else 
     {
