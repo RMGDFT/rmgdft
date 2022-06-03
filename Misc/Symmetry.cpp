@@ -1171,7 +1171,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                                     {
                                         for(int i4 = 0; i4 < num_orb; i4++)
                                         { 
-                                            if(time_rev[isy] )
+                                            if(time_rev[isy] && ct.nspin == 4)
                                             {
                                                 ns_occ_sum[is1][is2][ion][i1][i2] += 
                                                     std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
