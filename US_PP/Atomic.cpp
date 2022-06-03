@@ -313,7 +313,7 @@ double Atomic::BesselToLogGrid (
     double *bcof = new double[alloc]();
 
     double alpha = (double)lval;
-    for(int i = pct.gridpe;i < N;i+=pct.grid_npes)
+    for(int i = pct.imgpe;i < N;i+=pct.image_npes[pct.thisimg])
     {
         double JN_i = sqrt(PI/(2.0*J_roots[lval][i])) * boost::math::cyl_bessel_j(alpha + 1.5, J_roots[lval][i]);
         for (int idx = 0; idx < rg_points; idx++)
@@ -323,14 +323,14 @@ double Atomic::BesselToLogGrid (
         }
         bcof[i] = JNorm * radint1 (work1, r, rab, rg_points) / (JN_i * JN_i);
     }
-    GlobalSums(bcof, N, pct.grid_comm);
+    GlobalSums(bcof, N, pct.img_comm);
 
 
     /* Now we reconstruct the filtered function */
     /* Zero out the array in which the filtered function is to be returned */
     for (int idx = 0; idx < MAX_LOGGRID; idx++) ffil[idx] = ZERO;
 
-    for(int idx = pct.gridpe;idx < MAX_LOGGRID;idx+=pct.grid_npes)
+    for(int idx = pct.imgpe;idx < MAX_LOGGRID;idx+=pct.image_npes[pct.thisimg])
     {
         if(r_filtered[idx] < rcut) {
             for (int i = 0;i < N;i++)
@@ -340,7 +340,7 @@ double Atomic::BesselToLogGrid (
             }
         }
     }
-    GlobalSums(ffil, MAX_LOGGRID, pct.grid_comm);
+    GlobalSums(ffil, MAX_LOGGRID, pct.img_comm);
 
     /* Release memory */
     delete [] bcof;

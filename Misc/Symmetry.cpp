@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 #include <cstdint>
 #include "const.h"
@@ -138,12 +138,13 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         translation[1] = 0.0;
         translation[2] = 0.0;
     }
-    
+
     if(!ct.time_reversal) time_reversal = false;
 
     nsym = 0;
     for(int kpt = 0; kpt < nsym_atom; kpt++)
     {
+
         for(int i = 0; i < 3; i++)
         {
             while(std::abs(translation[kpt*3+i] - 1.0) < symprec ) translation[kpt*3+i] -=1.0;
@@ -341,7 +342,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 {
                     printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
                 }
-                printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+                printf("  with translation of (%d %d %d) grids %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], int(time_rev[isym]));
             }
         }
 
@@ -410,6 +411,60 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             }
         }
 
+    }
+
+    //check if the rotation symmetry has been already add in
+    // For each rotation symmetry, only keep one fractional translation for time_rev = true and one for time_rev=false,
+    // same rotation symmetry with more than one fractional translation is not necessary
+    std::vector<int> sym_to_be_removed;
+    nsym = (int)sym_rotate.size()/9;
+    for (int isym = 0; isym < nsym; isym++)
+    {
+        bool already_in = false;
+        for (int jsym = 0; jsym < isym; jsym++)
+        {
+            double delta = 0.0;
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = 0; j < 3; j++)
+                {
+                    delta += std::abs(sym_rotate[isym * 9 + i *3 + j] - sym_rotate[jsym * 9 + i *3 + j]);
+                }
+            }
+            if (delta < symprec && time_rev[isym] == time_rev[jsym]) 
+            {
+                already_in = true;
+                break;
+            }
+        }
+
+        if(already_in) sym_to_be_removed.push_back(isym);
+    }
+
+    for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+    {
+        int isym = *it;
+        ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+        ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+        sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+        sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+        sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+        inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+        time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+    }
+
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        printf("\n sym operation after removing duplicating rotation symmetries with different translation # %d",(int) sym_rotate.size()/9);
+        for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+        {
+            printf("\n symmetry operation # %d:", isym);
+            for(int i = 0; i < 3; i++)
+            {
+                printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+            }
+            printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+        }
     }
     nsym = (int)sym_rotate.size()/9;
     rotate_ylm();
@@ -1189,16 +1244,16 @@ void Symmetry::symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::
     double *da1 = new double[nbasis]();
     double *da2 = new double[nbasis]();
 
-        for (int ix = 0; ix < px_grid; ix++) {
-            for (int iy = 0; iy < py_grid; iy++) {
-                for (int iz = 0; iz < pz_grid; iz++) {
-                    da1[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
-                        = rho[ ix * incx + iy*incy + iz];
-                    da2[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
-                        = rho_oppo[ ix * incx + iy*incy + iz];
-                }
+    for (int ix = 0; ix < px_grid; ix++) {
+        for (int iy = 0; iy < py_grid; iy++) {
+            for (int iz = 0; iz < pz_grid; iz++) {
+                da1[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
+                    = rho[ ix * incx + iy*incy + iz];
+                da2[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
+                    = rho_oppo[ ix * incx + iy*incy + iz];
             }
         }
+    }
 
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis;

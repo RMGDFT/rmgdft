@@ -24,7 +24,22 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "RmgException.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "InputKey.h"
+#include "blas.h"
+//#include "main.h"
+#include "init_var.h"
+#include "transition.h"
+#include "prototypes_on.h"
+#include "Kbpsi.h"
+#include "rmgthreads.h"
+#include "RmgGemm.h"
 #include "AtomicInterpolate.h"
 #include "Atomic.h"
 #include "RmgException.h"
@@ -265,7 +280,6 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                         case ATOMIC_RHO:
                                             t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
-                                            // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
                                             break;
 
                                         case ATOMIC_RHOCOMP:
@@ -395,4 +409,3 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     if(object_type == ATOMIC_LOCAL_PP) init_efield (sumobject);
 
 }   // end InitLocalObject
-
