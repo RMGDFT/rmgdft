@@ -38,6 +38,7 @@ extern Symmetry *Rmg_Symm;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void check_tests();
 void write_rho_z(double *, char *);
 void ProgressTag(double, double);
 void ExxProgressTag(double, double);

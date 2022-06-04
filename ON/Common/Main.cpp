@@ -454,6 +454,7 @@ int main(int argc, char **argv)
 
     delete(RT);
 
+    check_tests();
     if(pct.imgpe == 0) fclose(ct.logfile);
     int override_rank = 0;
     if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
