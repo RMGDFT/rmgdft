@@ -141,6 +141,9 @@ void WriteHeader (void)
     case Exx_only:
         printf ("calculate Exx integral's from saveed wave functions \n");
         break;
+    case STM:
+        printf ("calculate STM charge density \n");
+        break;
 
 
     default:

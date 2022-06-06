@@ -1,4 +1,5 @@
 add_library (RMG_Common
+STM_calc.cpp
 ComputeHcore.cpp
 OutputDos.cpp
 Reinit.cpp

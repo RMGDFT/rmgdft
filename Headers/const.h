@@ -136,6 +136,7 @@
 #define		TDDFT       10
 #define     Exx_only    11
 #define     BAND_WANNIER    12
+#define     STM    13
 
 /* MD integration flags */
 #define		ORDER_2         0

@@ -397,7 +397,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 
 
-    /* read state eigenvalues, not needed really */
+    /* read state eigenvalues, needed for STM calc */
     if (ct.forceflag != BAND_STRUCTURE)
     {
 
@@ -408,6 +408,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             {
                 read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
             }
+
+        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
 
         if(ct.verbose) rmg_printf ("read_data: read 'eigenvalues'\n");
 

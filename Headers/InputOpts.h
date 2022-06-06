@@ -91,7 +91,8 @@ static std::unordered_map<std::string, int> calculation_mode = {
         {"NEB Relax", 8},
         {"Dimer Relax", 9},
         {"TDDFT", 10},
-        {"Exx Only", 11}
+        {"Exx Only", 11},
+        {"STM", 13}
         };
 
 static std::unordered_map<std::string, int> dos_method = {

@@ -691,6 +691,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Target electron temperature when not using fixed occupations.  ",
             "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04. ", OCCUPATION_OPTIONS);
 
+    If.RegisterInputKey("STM_bias", &lc.stm_bias, -10.0, 10.0, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "bias (in unit of Volt)  for STM calculation  ",
+            "integrate density in energy window EF->EF+bias ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "Mixing parameter for orbital occupations when not using fixed occupations. ",

@@ -361,6 +361,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
                 break;
             }
+        case STM:
+            {
+                STM_calc(Kptr, rho, ct.stm_bias);
+                break;
+            }
 
         case TDDFT:
             if(!ct.restart_tddft) 
