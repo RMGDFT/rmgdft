@@ -363,7 +363,10 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             }
         case STM:
             {
-                STM_calc(Kptr, rho, ct.stm_bias);
+                for (auto bias = ct.stm_bias.begin(); bias != ct.stm_bias.end(); ++bias)
+                {
+                    STM_calc(Kptr, rho, *bias);
+                }
                 break;
             }
 

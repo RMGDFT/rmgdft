@@ -70,7 +70,7 @@ template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, doubl
 
     std::string bias_string = streamObj.str();
     if(bias < 0.0) bias_string = "m" + bias_string; 
-    std::string filename = "stm_bias_" + bias_string + "spin"+std::to_string(pct.spinpe) + ".cube";
+    std::string filename = "STM_bias_" + bias_string + "_spin"+std::to_string(pct.spinpe) + ".cube";
     // change the occupation then calculate the charge density
     double Emin = std::min(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
     double Emax = std::max(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
@@ -95,7 +95,7 @@ template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, doubl
                 Kptr[kpt]->Kstates[st].occupation[0] = 1.0;
             }
 
-            if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
+//            if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
         }
     }
 

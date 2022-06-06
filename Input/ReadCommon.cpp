@@ -691,7 +691,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Target electron temperature when not using fixed occupations.  ",
             "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04. ", OCCUPATION_OPTIONS);
 
-    If.RegisterInputKey("STM_bias", &lc.stm_bias, -10.0, 10.0, 1.0,
+    std::string stm_bias_str;
+    If.RegisterInputKey("STM_bias", &stm_bias_str, "-1.0 1.0",
             CHECK_AND_FIX, OPTIONAL,
             "bias (in unit of Volt)  for STM calculation  ",
             "integrate density in energy window EF->EF+bias ", CONTROL_OPTIONS);
@@ -1664,6 +1665,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         }
     }
 
+    const char *buf = stm_bias_str.c_str();
+    char *end;
+    for (double bias = strtod(buf, &end); buf != end; bias = strtod(buf, &end) )
+    {
+        buf = end;
+        ct.stm_bias.push_back(bias);
+    }
     if(ct.verbose && pct.imgpe == 0)
     {
         for(size_t st = 0; st < ct.cube_states_list.size(); st++)
