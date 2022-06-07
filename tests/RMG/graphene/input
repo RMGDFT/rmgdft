@@ -1,0 +1,47 @@
+description="graphene bulk"  
+#******** REAL SPACE GRID ********   
+wavefunction_grid="16 16 64"  
+potential_grid_refinement="2"  
+STM_bias = " -1.0 -0.5 0.5 1.0 "
+
+localize_localpp = "false"
+localize_projectors = "false"
+
+test_energy = " -12.04850491"
+
+  
+#******* CONTROL OPTIONS *******  
+start_mode          ="LCAO Start"  
+calculation_mode    ="Quench Electrons  "  
+calculation_mode    ="STM "  
+kohn_sham_solver    ="davidson"  
+#kohn_sham_solver    ="multigrid"  
+subdiag_driver      ="auto"  
+#auto: if cuda available, use cusolver, otherwise use lapack for n<128 and scaplack for large system  
+  
+#********* K POINT SETUP *********  
+kpoint_mesh = "4 4 1"  
+kpoint_shift = "0 0 0"  
+  
+#******* Pseudopotentials *******   
+internal_pseudo_type = "nc_accuracy"  
+#use Optimized Norm-Conserving Vanderbilt (ONCV) pseudopotenitals  
+#those pseudopotentials are built in with RMG  
+write_pseudopotential_plots ="False"  
+  
+#*****Exchange Correlation ******  
+exchange_correlaton_type="AUTO_XC"  
+#AUTO_XC: XC will be determined from pseudopotential  
+  
+#****  LATTICE and ATOMS  ****   
+bravais_lattice_type="Hexagonal Primitive"  
+crds_units = "Angstrom"  
+lattice_units = "Angstrom"  
+a_length = "2.46"
+b_length = "2.46"
+c_length = "9.84"
+atomic_coordinate_type = "Absolute"  
+atoms="  
+C     0.0   0.0         0.0
+C     1.23  0.71014083  0.0
+"
