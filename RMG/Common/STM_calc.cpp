@@ -32,6 +32,13 @@
 #include <csignal>
 #include <sstream>
 #include <iomanip>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <iterator>
+
 
 #include "const.h"
 #include "RmgTimer.h"
@@ -56,76 +63,175 @@
 #include "Wannier.h"
 
 
-template void STM_calc (Kpoint<double> **Kptr, double *rho, double bias);
-template void STM_calc (Kpoint<std::complex<double>> **Kptr, double *rho, double bias);
-template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, double bias)
+void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filenamne);
+template void STM_calc (Kpoint<double> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double> height_list);
+template void STM_calc (Kpoint<std::complex<double>> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double> height_list);
+template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double>
+height_list)
 {
 
-    std::ostringstream streamObj;
-    // Set Fixed -Point Notation
-    streamObj << std::fixed;
-    streamObj << std::setprecision(2);
-    //Add double to stream
-    streamObj << std::abs(bias);
-
-    std::string bias_string = streamObj.str();
-    if(bias < 0.0) bias_string = "m" + bias_string; 
-    std::string filename = "STM_bias_" + bias_string + "_spin"+std::to_string(pct.spinpe) + ".cube";
-    // change the occupation then calculate the charge density
-    double Emin = std::min(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
-    double Emax = std::max(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
-    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    double z_max = -DBL_MAX;
+    double z_min = DBL_MAX;
+    for(auto atom = Atoms.begin(); atom!= Atoms.end(); ++atom)
     {
-        for(int st = 0; st < ct.num_states; st++)
+        z_max = std::max(z_max, atom->crds[2] * a0_A);
+        z_min = std::min(z_min, atom->crds[2] * a0_A);
+    }
+
+    double vaccum = Rmg_L.get_zside() * a0_A - (z_max - z_min);
+    for(auto h_ptr = height_list.begin(); h_ptr != height_list.end(); ++h_ptr)
+    {
+        printf("\n bbb %f %f", vaccum, *h_ptr);
+        if (*h_ptr > vaccum/2.0) 
         {
-
-            double eig = Kptr[kpt]->Kstates[st].eig[0]*Ha_eV  ;
-            if( eig < Emin)
-            {
-                Kptr[kpt]->Kstates[st].occupation[0] = 
-                    std::exp( - (eig-Emin) * (eig-Emin)/ct.gaus_broad/ct.gaus_broad);
-            }
-            else if(eig > Emax)
-            {
-                Kptr[kpt]->Kstates[st].occupation[0] = 
-                    std::exp( - (eig-Emax) * (eig-Emin)/ct.gaus_broad/ct.gaus_broad);
-            }
-            else
-            {
-                Kptr[kpt]->Kstates[st].occupation[0] = 1.0;
-            }
-
-//            if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
+            printf("STM height list is out of range(Angstrom), max_z =%f, vaccum = %f  height = %f\n", z_max, vaccum, *h_ptr);
+            throw RmgFatalException() << "STM height wrong at File " << __FILE__ << " at line " << __LINE__ << "\n";
         }
     }
 
-    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    int grid =  Rmg_G->default_FG_RATIO;
+    int NX = Rmg_G->get_NX_GRID(grid);
+    int NY = Rmg_G->get_NY_GRID(grid);
+    int NZ = Rmg_G->get_NZ_GRID(grid);
 
-    int ratio = Rmg_G->default_FG_RATIO;
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    int PX0 = Rmg_G->get_PX0_GRID(grid);
+    int PY0 = Rmg_G->get_PY0_GRID(grid);
+    int PZ0 = Rmg_G->get_PZ0_GRID(grid);
 
-    GetNewRhoPost(Kptr, rho);
+    int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+    Rmg_G->find_node_offsets(pct.gridpe,NX, NY, NZ, &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
+    double hz = Rmg_L.get_zside() *a0_A/ NZ;
 
-    if(!ct.norm_conserving_pp) {
-        double *augrho = new double[FP0_BASIS*factor]();
-        GetAugRho(Kptr, augrho);
-        for(int idx = 0;idx < FP0_BASIS*factor;idx++) rho[idx] += augrho[idx];
-        delete [] augrho;
-    }
-
-    if (ct.nspin == 2)
-        get_rho_oppo (rho,  &rho[FP0_BASIS]);
-    if(ct.AFM)
+    mkdir("STM", S_IRWXU);
+    std::vector<double> rho_xy[height_list.size()];
+    printf("\n %d %d bbbb", height_list.size(), bias_list.size());
+    for (int i =0; i < int(height_list.size()); i++)
     {
-        Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
+        rho_xy[i].resize(NX*NY);
+    printf("\n aaa %f", height_list[i]);
     }
-    else
+    for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
     {
-        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
-        if(ct.noncoll && Rmg_Symm)
-            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
-    }
+        double bias = *bias_ptr;
+        std::ostringstream streamObj;
+        // Set Fixed -Point Notation
+        streamObj << std::fixed;
+        streamObj << std::setprecision(2);
+        //Add double to stream
+        streamObj << std::abs(bias);
 
-    OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename);
+        std::string bias_string = streamObj.str();
+        if(bias < 0.0) bias_string = "m" + bias_string; 
+        std::string filename = "STM/STM_bias_" + bias_string + "_spin"+std::to_string(pct.spinpe) ;
+        // change the occupation then calculate the charge density
+        double Emin = std::min(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
+        double Emax = std::max(ct.efermi*Ha_eV, ct.efermi*Ha_eV + bias);
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+        {
+            for(int st = 0; st < ct.num_states; st++)
+            {
+
+                double eig = Kptr[kpt]->Kstates[st].eig[0]*Ha_eV  ;
+                if( eig < Emin)
+                {
+                    Kptr[kpt]->Kstates[st].occupation[0] = 
+                        std::exp( - (eig-Emin) * (eig-Emin)/ct.gaus_broad/ct.gaus_broad);
+                }
+                else if(eig > Emax)
+                {
+                    Kptr[kpt]->Kstates[st].occupation[0] = 
+                        std::exp( - (eig-Emax) * (eig-Emin)/ct.gaus_broad/ct.gaus_broad);
+                }
+                else
+                {
+                    Kptr[kpt]->Kstates[st].occupation[0] = 1.0;
+                }
+
+                            if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
+            }
+        }
+
+        int factor = ct.noncoll_factor * ct.noncoll_factor;
+
+        int ratio = Rmg_G->default_FG_RATIO;
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+
+        GetNewRhoPost(Kptr, rho);
+
+        if(!ct.norm_conserving_pp) {
+            double *augrho = new double[FP0_BASIS*factor]();
+            GetAugRho(Kptr, augrho);
+            for(int idx = 0;idx < FP0_BASIS*factor;idx++) rho[idx] += augrho[idx];
+            delete [] augrho;
+        }
+
+        if (ct.nspin == 2)
+            get_rho_oppo (rho,  &rho[FP0_BASIS]);
+        if(ct.AFM)
+        {
+            Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
+        }
+        else
+        {
+            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+            if(ct.noncoll && Rmg_Symm)
+                Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+        }
+
+        OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename +".cube");
+
+        for (int i =0; i < int(height_list.size()); i++)
+        {
+            std::ostringstream HeightObj;
+            // Set Fixed -Point Notation
+            HeightObj << std::fixed;
+            HeightObj << std::setprecision(1);
+            //Add double to Height
+            HeightObj << std::abs(height_list[i]);
+            fill(rho_xy[i].begin(), rho_xy[i].end(), 0.0);
+            int iz = int((z_max + height_list[i] )/hz);
+
+    printf("\n ccc %d ", iz);
+            for(int ix = 0; ix < PX0; ix++)
+            {
+                for(int iy = 0; iy < PY0; iy++)
+                {
+                    if (iz >=FPZ_OFFSET && iz < PZ0 + FPZ_OFFSET)
+                    {
+                        rho_xy[i][(ix+FPX_OFFSET) * NY + iy + FPY_OFFSET] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
+                    }
+                }
+            }
+
+            int length = NX * NY;
+            MPI_Allreduce(MPI_IN_PLACE, rho_xy[i].data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+            if(pct.gridpe == 0)
+                OutputSTM(rho_xy[i], NX, NY, filename + "_height_"+HeightObj.str() + ".stm");
+        }
+    }
 }
 
+void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filename)
+{
+
+    FILE *fhand = fopen(filename.c_str(), "w");
+
+    fprintf(fhand, "#This is a 2D file to be viewed \n");
+
+    fprintf(fhand, "%d %12.6f %12.6f \n", NX, 
+            Rmg_L.get_a0(0) /NX * a0_A, 
+            Rmg_L.get_a0(1) /NX * a0_A);
+    fprintf(fhand, "%d %12.6f %12.6f \n", NY,
+            Rmg_L.get_a1(0) /NY * a0_A, 
+            Rmg_L.get_a1(1) /NY * a0_A);
+
+    for (int i=0; i<NX; i++) {
+        for (int j=0; j<NY; j++) {
+            fprintf(fhand, " %g ", rho_2d[i * NY +j]);
+            if( (j % 6) == 5) fprintf(fhand, "\n");
+        }
+
+        fprintf(fhand, "\n");
+    }
+    fclose(fhand);
+}

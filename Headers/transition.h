@@ -56,7 +56,8 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
 
 int init_kpoints (int *mesh, int *is_shift);
 
-template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, double bias);
+template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double>
+height_list);
 template <typename DataType> void OutputCubeFile(DataType *a, int grid, std::string filename);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, double *kvec);

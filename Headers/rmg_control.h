@@ -807,7 +807,8 @@ public:
     bool cube_vh;
     bool cube_pot;
     std::vector<int> cube_states_list;
-    std::vector<double> stm_bias;
+    std::vector<double> stm_bias_list;
+    std::vector<double> stm_height_list;
     
     std::vector<std::string> file_atomic_orbit;
 

@@ -696,6 +696,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "bias (in unit of Volt)  for STM calculation  ",
             "integrate density in energy window EF->EF+bias ", CONTROL_OPTIONS);
+    std::string stm_height_str;
+    If.RegisterInputKey("STM_height", &stm_height_str, "2.0 4.0",
+            CHECK_AND_FIX, OPTIONAL,
+            "height range for STM calculation  ",
+            "vaccum must be along z direction, height is above the maximum z coordinate ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
@@ -1665,12 +1670,23 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         }
     }
 
-    const char *buf = stm_bias_str.c_str();
-    char *end;
-    for (double bias = strtod(buf, &end); buf != end; bias = strtod(buf, &end) )
     {
-        buf = end;
-        ct.stm_bias.push_back(bias);
+        const char *buf = stm_bias_str.c_str();
+        char *end;
+        for (double bias = strtod(buf, &end); buf != end; bias = strtod(buf, &end) )
+        {
+            buf = end;
+            ct.stm_bias_list.push_back(bias);
+        }
+    }
+    {
+        const char *buf = stm_height_str.c_str();
+        char *end;
+        for (double height = strtod(buf, &end); buf != end; height = strtod(buf, &end) )
+        {
+            buf = end;
+            ct.stm_height_list.push_back(height);
+        }
     }
     if(ct.verbose && pct.imgpe == 0)
     {
