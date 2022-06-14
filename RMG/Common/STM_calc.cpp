@@ -102,13 +102,15 @@ height_list)
     Rmg_G->find_node_offsets(pct.gridpe,NX, NY, NZ, &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
     double hz = Rmg_L.get_zside() *a0_A/ NZ;
 
+    int iz_max = int((z_max + (height_list.back()) )/hz);
+    int iz_min = int((z_max + (*height_list.begin()) )/hz);
     mkdir("STM", S_IRWXU);
     std::vector<double> rho_xy[height_list.size()];
-    printf("\n %d %d bbbb", height_list.size(), bias_list.size());
+    std::vector<double> rho_3d;
+    rho_3d.resize(NX * NY * (iz_max - iz_min+1), 0.0);
     for (int i =0; i < int(height_list.size()); i++)
     {
         rho_xy[i].resize(NX*NY);
-    printf("\n aaa %f", height_list[i]);
     }
     for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
     {
@@ -147,7 +149,7 @@ height_list)
                     Kptr[kpt]->Kstates[st].occupation[0] = 1.0;
                 }
 
-                            if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
+                //if(pct.gridpe == 0)printf("\n occ %d %f %f %f", st, ct.efermi * Ha_eV, Kptr[kpt]->Kstates[st].eig[0] * Ha_eV, Kptr[kpt]->Kstates[st].occupation[0]);
             }
         }
 
@@ -191,7 +193,6 @@ height_list)
             fill(rho_xy[i].begin(), rho_xy[i].end(), 0.0);
             int iz = int((z_max + height_list[i] )/hz);
 
-    printf("\n ccc %d ", iz);
             for(int ix = 0; ix < PX0; ix++)
             {
                 for(int iy = 0; iy < PY0; iy++)
@@ -208,6 +209,58 @@ height_list)
             if(pct.gridpe == 0)
                 OutputSTM(rho_xy[i], NX, NY, filename + "_height_"+HeightObj.str() + ".stm");
         }
+
+        // constant current mode STM
+
+        double rho_0  = *std::min_element(rho_xy[0].begin(), rho_xy[0].end());
+        double rho_1  = *std::max_element(rho_xy[height_list.size() -1].begin(), rho_xy[height_list.size()-1].end());
+        double rho_ave = (rho_0 + rho_1) * 0.5;
+
+        for(int iz = iz_min; iz <= iz_max; iz++)
+        {
+            
+            for(int ix = 0; ix < PX0; ix++)
+            {
+                for(int iy = 0; iy < PY0; iy++)
+                {
+                    if (iz >=FPZ_OFFSET && iz < PZ0 + FPZ_OFFSET)
+                    {
+                        rho_3d[((ix+FPX_OFFSET) * NY  + iy + FPY_OFFSET) * (iz_max - iz_min+1) + iz - iz_min ] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
+                    }
+                }
+            }
+        }
+
+        int length = NX * NY * (iz_max - iz_min + 1);
+        MPI_Allreduce(MPI_IN_PLACE, rho_3d.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        if(pct.gridpe == 0)
+        {
+            for(int ix = 0; ix < NX; ix++)
+            {
+                for(int iy = 0; iy < NY; iy++)
+                {
+                    int iz0=0;
+                    for(int iz = iz_min; iz <= iz_max; iz++)
+                    {
+                        if( rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz-iz_min] < rho_ave)
+                        {
+                            iz0 = iz;
+                            break;
+                        }
+                    }
+
+                    double  rho1 = rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz0-iz_min];
+                    double  rho2 = rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz0-iz_min-1];
+                    
+                    rho_xy[0][ix*NY + iy] = (iz0-1 + rho_ave/(rho2 - rho1) ) * hz;
+
+                }
+            }
+
+            OutputSTM(rho_xy[0], NX, NY, filename + "_ConsCurrent.stm");
+
+        }
+
     }
 }
 
