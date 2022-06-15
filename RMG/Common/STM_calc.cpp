@@ -79,16 +79,16 @@ height_list)
     }
 
     double vaccum = Rmg_L.get_zside() * a0_A - (z_max - z_min);
-    for(auto h_ptr = height_list.begin(); h_ptr != height_list.end(); ++h_ptr)
+    for (int i = 0; i < int(height_list.size()); i++)
     {
-        printf("\n bbb %f %f", vaccum, *h_ptr);
-        if (*h_ptr > vaccum/2.0) 
+        if (height_list[i] > vaccum/2.0) 
         {
-            printf("STM height list is out of range(Angstrom), max_z =%f, vaccum = %f  height = %f\n", z_max, vaccum, *h_ptr);
-            throw RmgFatalException() << "STM height wrong at File " << __FILE__ << " at line " << __LINE__ << "\n";
+            height_list[i] = vaccum/2.0;
+            printf("STM height list is out of range(Angstrom), max_z =%f, vaccum = %f  height = %f\n", z_max, vaccum, height_list[i]);
         }
     }
 
+    // for STM we don't include augmented charge even when ultra-soft psuedopotentials are used.
     int grid =  Rmg_G->default_FG_RATIO;
     int NX = Rmg_G->get_NX_GRID(grid);
     int NY = Rmg_G->get_NY_GRID(grid);
@@ -103,18 +103,16 @@ height_list)
     double hz = Rmg_L.get_zside() *a0_A/ NZ;
 
     int iz_max = int((z_max + (height_list.back()) )/hz);
-    int iz_min = int((z_max + (*height_list.begin()) )/hz);
     mkdir("STM", S_IRWXU);
-    std::vector<double> rho_xy[height_list.size()];
+    std::vector<double> rho_xy;
     std::vector<double> rho_3d;
-    rho_3d.resize(NX * NY * (iz_max - iz_min+1), 0.0);
-    for (int i =0; i < int(height_list.size()); i++)
-    {
-        rho_xy[i].resize(NX*NY);
-    }
+    rho_3d.resize(NX * NY * NZ, 0.0);
+    rho_xy.resize(NX*NY);
     for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
     {
         double bias = *bias_ptr;
+
+
         std::ostringstream streamObj;
         // Set Fixed -Point Notation
         streamObj << std::fixed;
@@ -182,6 +180,8 @@ height_list)
 
         OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename +".cube");
 
+        double rho_max = 0.0;
+        double rho_min = DBL_MAX;
         for (int i =0; i < int(height_list.size()); i++)
         {
             std::ostringstream HeightObj;
@@ -190,7 +190,7 @@ height_list)
             HeightObj << std::setprecision(1);
             //Add double to Height
             HeightObj << std::abs(height_list[i]);
-            fill(rho_xy[i].begin(), rho_xy[i].end(), 0.0);
+            fill(rho_xy.begin(), rho_xy.end(), 0.0);
             int iz = int((z_max + height_list[i] )/hz);
 
             for(int ix = 0; ix < PX0; ix++)
@@ -199,69 +199,81 @@ height_list)
                 {
                     if (iz >=FPZ_OFFSET && iz < PZ0 + FPZ_OFFSET)
                     {
-                        rho_xy[i][(ix+FPX_OFFSET) * NY + iy + FPY_OFFSET] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
+                        rho_xy[(ix+FPX_OFFSET) * NY + iy + FPY_OFFSET] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
                     }
                 }
             }
 
             int length = NX * NY;
-            MPI_Allreduce(MPI_IN_PLACE, rho_xy[i].data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-            if(pct.gridpe == 0)
-                OutputSTM(rho_xy[i], NX, NY, filename + "_height_"+HeightObj.str() + ".stm");
+            MPI_Allreduce(MPI_IN_PLACE, rho_xy.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+            double rho_0  = *std::max_element(rho_xy.begin(), rho_xy.end());
+            double rho_1  = *std::min_element(rho_xy.begin(), rho_xy.end());
+            rho_max = std::max(rho_max, rho_0);
+            rho_min = std::min(rho_min, rho_1);
+            if(pct.imgpe == 0)
+                OutputSTM(rho_xy, NX, NY, filename + "_height_"+HeightObj.str() + ".stm");
         }
 
         // constant current mode STM
 
-        double rho_0  = *std::min_element(rho_xy[0].begin(), rho_xy[0].end());
-        double rho_1  = *std::max_element(rho_xy[height_list.size() -1].begin(), rho_xy[height_list.size()-1].end());
-        double rho_ave = (rho_0 + rho_1) * 0.5;
+        double rho_ave = (rho_max + rho_min) * 0.5;
+        if(pct.imgpe == 0 ) printf("\n rho_ave %e at bias %f\n", rho_ave, bias);
 
-        for(int iz = iz_min; iz <= iz_max; iz++)
+        std::fill(rho_3d.begin(), rho_3d.end(), 0.0);
+        for(int ix = 0; ix < PX0; ix++)
         {
-            
-            for(int ix = 0; ix < PX0; ix++)
+            for(int iy = 0; iy < PY0; iy++)
             {
-                for(int iy = 0; iy < PY0; iy++)
+                for(int iz = 0; iz < PZ0; iz++)
                 {
-                    if (iz >=FPZ_OFFSET && iz < PZ0 + FPZ_OFFSET)
-                    {
-                        rho_3d[((ix+FPX_OFFSET) * NY  + iy + FPY_OFFSET) * (iz_max - iz_min+1) + iz - iz_min ] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
-                    }
+                    rho_3d[(ix+FPX_OFFSET) * NY *NZ  + (iy + FPY_OFFSET) * NZ + iz +FPZ_OFFSET ] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz];
                 }
             }
         }
 
-        int length = NX * NY * (iz_max - iz_min + 1);
+        int length = NX * NY * NZ;
         MPI_Allreduce(MPI_IN_PLACE, rho_3d.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        if(pct.gridpe == 0)
+        std::fill(rho_xy.begin(), rho_xy.end(), 0.0);
+        for(int ix = pct.gridpe; ix < NX; ix+= pct.grid_npes)
         {
-            for(int ix = 0; ix < NX; ix++)
+            for(int iy = 0; iy < NY; iy++)
             {
-                for(int iy = 0; iy < NY; iy++)
+                int iz0 = -1;
+                for(int iz = iz_max; iz >=0; iz--)
                 {
-                    int iz0=0;
-                    for(int iz = iz_min; iz <= iz_max; iz++)
+                    if( rho_3d[ ix *NY *NZ + iy * NZ + iz] > rho_ave)
                     {
-                        if( rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz-iz_min] < rho_ave)
-                        {
-                            iz0 = iz;
-                            break;
-                        }
+                        iz0 = iz;
+                        break;
                     }
-
-                    double  rho1 = rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz0-iz_min];
-                    double  rho2 = rho_3d[ (ix *NY + iy) * (iz_max-iz_min+1) + iz0-iz_min-1];
-                    
-                    rho_xy[0][ix*NY + iy] = (iz0-1 + rho_ave/(rho2 - rho1) ) * hz;
-
                 }
+
+                if( iz0 == -1)
+                {
+                    rho_xy[ix*NY + iy] = 0.0;
+                }
+                else
+                {
+                    double  rho1 = rho_3d[ ix * NY * NZ + iy *NZ + iz0];
+                    double  rho2 = rho_3d[  ix * NY * NZ + iy *NZ + iz0 +1];
+
+                    if(rho2 > rho1)
+                    {
+                        printf("\n charge density wrong at ix iy iz %d %d %d   %e %e", ix, iy, iz0, rho1, rho2);
+                    }
+                    rho_xy[ix*NY + iy] = (iz0 + rho_ave/(rho1 - rho2) ) * hz;
+                }
+
             }
-
-            OutputSTM(rho_xy[0], NX, NY, filename + "_ConsCurrent.stm");
-
         }
+
+        length = NX * NY;
+        MPI_Allreduce(MPI_IN_PLACE, rho_xy.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        if(pct.imgpe == 0)
+            OutputSTM(rho_xy, NX, NY, filename + "_ConsCurrent.stm");
 
     }
+
 }
 
 void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filename)
