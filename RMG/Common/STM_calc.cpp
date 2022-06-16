@@ -261,7 +261,8 @@ height_list)
                     {
                         printf("\n charge density wrong at ix iy iz %d %d %d   %e %e", ix, iy, iz0, rho1, rho2);
                     }
-                    rho_xy[ix*NY + iy] = (iz0 + rho_ave/(rho1 - rho2) ) * hz;
+                    rho_xy[ix*NY + iy] = (iz0 + (rho1 - rho_ave)/(rho1 - rho2) ) * hz;
+                    //if(rho_xy[ix*NY + iy] > 30.0) printf("\n WARR: %d %d %d %e %e %e", ix, iy, iz0, rho_ave, rho1, rho2);
                 }
 
             }
