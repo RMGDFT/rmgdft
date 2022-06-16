@@ -217,12 +217,21 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
     // allocate memory for sint_compack;
     size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states * ct.noncoll_factor;
+    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() * ct.noncoll_factor;
+#if CUDA_ENABLED || HIP_ENABLED
+    KpointType *sint_compack = (KpointType *)GpuMallocHost(alloc * sizeof(KpointType));
+    std::fill(sint_compack, sint_compack + alloc, 0.0);
+    KpointType *nwork = (KpointType *)GpuMallocHost(alloc * sizeof(KpointType));
+    std::fill(nwork, nwork + alloc, 0.0);
+    KpointType *lambda = (KpointType *)GpuMallocHost(alloc1 * alloc1 * sizeof(KpointType));
+    std::fill(lambda, lambda + alloc1*alloc1, 0.0);
+#else
     KpointType *sint_compack = new KpointType[alloc]();
     KpointType *nwork = new KpointType[alloc];
+    KpointType *lambda = new KpointType[alloc1 * alloc1](); 
+#endif
 
     // and for the diagonal part of ns_occ
-    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() * ct.noncoll_factor;
-    KpointType *lambda = new KpointType[alloc1 * alloc1](); 
     std::complex<double> *lambda_C = (std::complex<double> *)lambda;
     boost::multi_array_ref<KpointType, 6> nlambda{lambda,
         boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
@@ -294,10 +303,17 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
             ONE_t, v_hub_x_psi, K.pbasis);
 
 
+#if CUDA_ENABLED || HIP_ENABLED
+    GpuFreeHost(lambda);
+    GpuFreeHost(nwork);
+    GpuFreeHost(sint_compack);
+#else
     delete [] lambda;
     delete [] nwork;
     delete [] sint_compack;
+#endif
 }
+
 
 
 // Destructor
