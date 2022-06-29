@@ -122,7 +122,7 @@ void vdw_d2_forces(Lattice &L,  std::vector<ION>& Atoms_in, double *forces)
                         xtal_tot[1] = xtal[1] + iy;
                         xtal_tot[2] = xtal[2] + iz;
                         dist = L.metric(xtal_tot);
-                        L.to_cartesian(xtal, xcrt);
+                        L.to_cartesian(xtal_tot, xcrt);
                         if(dist < rcut)
                         {
                             exptmp = std::exp(-damp * (dist/Rij -1.0));
@@ -170,7 +170,7 @@ void vdw_d2_stress(Lattice &L,  std::vector<ION>& Atoms_in, double *stress_d2)
                         xtal_tot[1] = xtal[1] + iy;
                         xtal_tot[2] = xtal[2] + iz;
                         dist = L.metric(xtal_tot);
-                        L.to_cartesian(xtal, xcrt);
+                        L.to_cartesian(xtal_tot, xcrt);
                         if(dist < rcut)
                         {
                             exptmp = std::exp(-damp * (dist/Rij -1.0));
