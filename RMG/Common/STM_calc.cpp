@@ -178,100 +178,13 @@ height_list)
                 Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
         }
 
-        OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename +".cube");
+        std::vector<double> rho_coarse;
+        int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+        rho_coarse.resize(P0_BASIS);
+        GetVtotPsi (rho_coarse.data(), rho, Rmg_G->default_FG_RATIO);
 
-        double rho_max = 0.0;
-        double rho_min = DBL_MAX;
-        for (int i =0; i < int(height_list.size()); i++)
-        {
-            std::ostringstream HeightObj;
-            // Set Fixed -Point Notation
-            HeightObj << std::fixed;
-            HeightObj << std::setprecision(1);
-            //Add double to Height
-            HeightObj << std::abs(height_list[i]);
-            fill(rho_xy.begin(), rho_xy.end(), 0.0);
-            int iz = int((z_max + height_list[i] )/hz);
+        OutputCubeFile(rho_coarse.data(), 1, filename +".cube");
 
-            for(int ix = 0; ix < PX0; ix++)
-            {
-                for(int iy = 0; iy < PY0; iy++)
-                {
-                    if (iz >=FPZ_OFFSET && iz < PZ0 + FPZ_OFFSET)
-                    {
-                        rho_xy[(ix+FPX_OFFSET) * NY + iy + FPY_OFFSET] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz - FPZ_OFFSET];
-                    }
-                }
-            }
-
-            int length = NX * NY;
-            MPI_Allreduce(MPI_IN_PLACE, rho_xy.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-            double rho_0  = *std::max_element(rho_xy.begin(), rho_xy.end());
-            double rho_1  = *std::min_element(rho_xy.begin(), rho_xy.end());
-            rho_max = std::max(rho_max, rho_0);
-            rho_min = std::min(rho_min, rho_1);
-            if(pct.imgpe == 0)
-                OutputSTM(rho_xy, NX, NY, filename + "_height_"+HeightObj.str() + ".stm");
-        }
-
-        // constant current mode STM
-
-        double rho_ave = (rho_max + rho_min) * 0.5;
-        if(pct.imgpe == 0 ) printf("\n rho_ave %e at bias %f\n", rho_ave, bias);
-
-        std::fill(rho_3d.begin(), rho_3d.end(), 0.0);
-        for(int ix = 0; ix < PX0; ix++)
-        {
-            for(int iy = 0; iy < PY0; iy++)
-            {
-                for(int iz = 0; iz < PZ0; iz++)
-                {
-                    rho_3d[(ix+FPX_OFFSET) * NY *NZ  + (iy + FPY_OFFSET) * NZ + iz +FPZ_OFFSET ] = rho[ix * PY0 * PZ0 + iy * PZ0 + iz];
-                }
-            }
-        }
-
-        int length = NX * NY * NZ;
-        MPI_Allreduce(MPI_IN_PLACE, rho_3d.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        std::fill(rho_xy.begin(), rho_xy.end(), 0.0);
-        for(int ix = pct.gridpe; ix < NX; ix+= pct.grid_npes)
-        {
-            for(int iy = 0; iy < NY; iy++)
-            {
-                int iz0 = -1;
-                for(int iz = iz_max; iz >=0; iz--)
-                {
-                    if( rho_3d[ ix *NY *NZ + iy * NZ + iz] > rho_ave)
-                    {
-                        iz0 = iz;
-                        break;
-                    }
-                }
-
-                if( iz0 == -1)
-                {
-                    rho_xy[ix*NY + iy] = 0.0;
-                }
-                else
-                {
-                    double  rho1 = rho_3d[ ix * NY * NZ + iy *NZ + iz0];
-                    double  rho2 = rho_3d[  ix * NY * NZ + iy *NZ + iz0 +1];
-
-                    if(rho2 > rho1)
-                    {
-                        printf("\n charge density wrong at ix iy iz %d %d %d   %e %e", ix, iy, iz0, rho1, rho2);
-                    }
-                    rho_xy[ix*NY + iy] = (iz0 + (rho1 - rho_ave)/(rho1 - rho2) ) * hz;
-                    //if(rho_xy[ix*NY + iy] > 30.0) printf("\n WARR: %d %d %d %e %e %e", ix, iy, iz0, rho_ave, rho1, rho2);
-                }
-
-            }
-        }
-
-        length = NX * NY;
-        MPI_Allreduce(MPI_IN_PLACE, rho_xy.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        if(pct.imgpe == 0)
-            OutputSTM(rho_xy, NX, NY, filename + "_ConsCurrent.stm");
 
     }
 
