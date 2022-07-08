@@ -210,7 +210,9 @@ endif()
 
 # Look for scalapack
 if(NOT USE_INTERNAL_SCALAPACK)
-   find_package(SCALAPACK)
+   if(NOT CRAY_HOST)
+       find_package(SCALAPACK)
+   endif()
 endif()
 
 
