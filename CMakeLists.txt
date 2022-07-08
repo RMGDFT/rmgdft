@@ -87,6 +87,7 @@ set(QMCPACK_SUPPORT ON CACHE BOOL "Generates a QMCPACK restart file.")
 set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentials in binary.")
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
+set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
@@ -99,6 +100,7 @@ endif()
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
 endif()
+
 
 # Now that the scalapack source has been included in the RMG distribution this should
 # always be available unless there is some issue with building it so we define it here.
@@ -203,6 +205,12 @@ if(MPI_CXX_FOUND)
 endif()
 if(MPI_C_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH})
+endif()
+
+
+# Look for scalapack
+if(NOT USE_INTERNAL_SCALAPACK)
+   find_package(SCALAPACK)
 endif()
 
 
@@ -508,7 +516,11 @@ if(NOT CRAY_HOST)
             endif()
         endif()
     endif()
-    list(APPEND RMGLIBS scalapack)
+    if(USE_INTERNAL_SCALAPACK)
+        list(APPEND RMGLIBS scalapack)
+    else()
+        list(APPEND RMGLIBS ${SCALAPACK_LIBRARIES})
+    endif()
 endif()
 
 
@@ -724,7 +736,9 @@ if(QMCPACK_SUPPORT)
     add_subdirectory (Interfaces EXCLUDE_FROM_ALL)
 endif()
 if(NOT CRAY_HOST)
-    add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
+    if(USE_INTERNAL_SCALAPACK)
+        add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
+    endif()
 endif()
 
 
