@@ -457,6 +457,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif()
 list(APPEND RMGLIBS ${Boost_LIBRARIES})
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 
 
 if(CRAY_HOST)
