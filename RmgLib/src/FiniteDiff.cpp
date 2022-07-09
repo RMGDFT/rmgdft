@@ -2509,6 +2509,19 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
     RmgType hex_t(0.5*1.154700538379);
 
+    RmgType x_gx[4] = {LC->axis_x_gx[3], LC->axis_x_gx[2], LC->axis_x_gx[1],LC->axis_x_gx[0]};
+    RmgType x_gy[4] = {LC->axis_x_gy[3], LC->axis_x_gy[2], LC->axis_x_gy[1],LC->axis_x_gy[0]};
+    RmgType x_gz[4] = {LC->axis_x_gz[3], LC->axis_x_gz[2], LC->axis_x_gz[1],LC->axis_x_gz[0]};
+    RmgType y_gx[4] = {LC->axis_y_gx[3], LC->axis_y_gx[2], LC->axis_y_gx[1],LC->axis_y_gx[0]};
+    RmgType y_gy[4] = {LC->axis_y_gy[3], LC->axis_y_gy[2], LC->axis_y_gy[1],LC->axis_y_gy[0]};
+    RmgType y_gz[4] = {LC->axis_y_gz[3], LC->axis_y_gz[2], LC->axis_y_gz[1],LC->axis_y_gz[0]};
+    RmgType xy_gx[4] = {LC->axis_xy_gx[3], LC->axis_xy_gx[2], LC->axis_xy_gx[1],LC->axis_xy_gx[0]};
+    RmgType xy_gy[4] = {LC->axis_xy_gy[3], LC->axis_xy_gy[2], LC->axis_xy_gy[1],LC->axis_xy_gy[0]};
+    RmgType xy_gz[4] = {LC->axis_xy_gz[3], LC->axis_xy_gz[2], LC->axis_xy_gz[1],LC->axis_xy_gz[0]};
+    RmgType nxy_gx[4] = {LC->axis_nxy_gx[3], LC->axis_nxy_gx[2], LC->axis_nxy_gx[1],LC->axis_nxy_gx[0]};
+    RmgType nxy_gy[4] = {LC->axis_nxy_gy[3], LC->axis_nxy_gy[2], LC->axis_nxy_gy[1],LC->axis_nxy_gy[0]};
+    RmgType nxy_gz[4] = {LC->axis_nxy_gz[3], LC->axis_nxy_gz[2], LC->axis_nxy_gz[1],LC->axis_nxy_gz[0]};
+
     int id = 1;
     switch (ibrav)
     {
@@ -2642,22 +2655,22 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         A[iz] =
-                            LC->axis_x_gx[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
-                            LC->axis_x_gx[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
-                            LC->axis_x_gx[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
-                            LC->axis_x_gx[0] * ( B[iz + ixs] - B[iz - ixs]) +
-                            LC->axis_y_gx[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
-                            LC->axis_y_gx[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
-                            LC->axis_y_gx[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
-                            LC->axis_y_gx[0] * ( B[iz + iys] - B[iz - iys]) +
-                            LC->axis_xy_gx[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
-                            LC->axis_xy_gx[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
-                            LC->axis_xy_gx[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
-                            LC->axis_xy_gx[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
-                            LC->axis_nxy_gx[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
-                            LC->axis_nxy_gx[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
-                            LC->axis_nxy_gx[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
-                            LC->axis_nxy_gx[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
+                            x_gx[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            x_gx[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            x_gx[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            x_gx[0] * ( B[iz + ixs] - B[iz - ixs]) +
+                            y_gx[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            y_gx[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            y_gx[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            y_gx[0] * ( B[iz + iys] - B[iz - iys]) +
+                            xy_gx[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
+                            xy_gx[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
+                            xy_gx[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
+                            xy_gx[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
+                            nxy_gx[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
+                            nxy_gx[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
+                            nxy_gx[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
+                            nxy_gx[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
 
 
                     }
@@ -2666,22 +2679,22 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         A[iz] =
-                            LC->axis_x_gy[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
-                            LC->axis_x_gy[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
-                            LC->axis_x_gy[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
-                            LC->axis_x_gy[0] * ( B[iz + ixs] - B[iz - ixs]) +
-                            LC->axis_y_gy[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
-                            LC->axis_y_gy[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
-                            LC->axis_y_gy[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
-                            LC->axis_y_gy[0] * ( B[iz + iys] - B[iz - iys]) +
-                            LC->axis_xy_gy[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
-                            LC->axis_xy_gy[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
-                            LC->axis_xy_gy[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
-                            LC->axis_xy_gy[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
-                            LC->axis_nxy_gy[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
-                            LC->axis_nxy_gy[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
-                            LC->axis_nxy_gy[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
-                            LC->axis_nxy_gy[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
+                            x_gy[3] * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            x_gy[2] * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            x_gy[1] * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            x_gy[0] * ( B[iz + ixs] - B[iz - ixs]) +
+                            y_gy[3] * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            y_gy[2] * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            y_gy[1] * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            y_gy[0] * ( B[iz + iys] - B[iz - iys]) +
+                            xy_gy[3] * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
+                            xy_gy[2] * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
+                            xy_gy[1] * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
+                            xy_gy[0] * ( -B[iz - ixs - iys] + B[iz + ixs + iys]) +
+                            nxy_gy[3] * ( -B[iz + 4*ixs - 4*iys] + B[iz - 4*ixs + 4*iys]) +
+                            nxy_gy[2] * ( -B[iz + 3*ixs - 3*iys] + B[iz - 3*ixs + 3*iys]) +
+                            nxy_gy[1] * ( -B[iz + 2*ixs - 2*iys] + B[iz - 2*ixs + 2*iys]) +
+                            nxy_gy[0] * ( -B[iz + ixs - iys] + B[iz - ixs + iys]);
                     }
 
                     A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
