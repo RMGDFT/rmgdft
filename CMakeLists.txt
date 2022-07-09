@@ -449,6 +449,7 @@ if(USE_PLPLOT_LIBS)
 endif()
 
 
+set(Boost_NO_BOOST_CMAKE on)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #    set(BOOST_ROOT "...")
     if(DEFINED ENV{BOOST_ROOT})
