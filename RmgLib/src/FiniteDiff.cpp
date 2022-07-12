@@ -2509,18 +2509,18 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
     RmgType hex_t(0.5*1.154700538379);
 
-    RmgType x_gx[4] = {LC->axis_x_gx[3], LC->axis_x_gx[2], LC->axis_x_gx[1],LC->axis_x_gx[0]};
-    RmgType x_gy[4] = {LC->axis_x_gy[3], LC->axis_x_gy[2], LC->axis_x_gy[1],LC->axis_x_gy[0]};
-    RmgType x_gz[4] = {LC->axis_x_gz[3], LC->axis_x_gz[2], LC->axis_x_gz[1],LC->axis_x_gz[0]};
-    RmgType y_gx[4] = {LC->axis_y_gx[3], LC->axis_y_gx[2], LC->axis_y_gx[1],LC->axis_y_gx[0]};
-    RmgType y_gy[4] = {LC->axis_y_gy[3], LC->axis_y_gy[2], LC->axis_y_gy[1],LC->axis_y_gy[0]};
-    RmgType y_gz[4] = {LC->axis_y_gz[3], LC->axis_y_gz[2], LC->axis_y_gz[1],LC->axis_y_gz[0]};
-    RmgType xy_gx[4] = {LC->axis_xy_gx[3], LC->axis_xy_gx[2], LC->axis_xy_gx[1],LC->axis_xy_gx[0]};
-    RmgType xy_gy[4] = {LC->axis_xy_gy[3], LC->axis_xy_gy[2], LC->axis_xy_gy[1],LC->axis_xy_gy[0]};
-    RmgType xy_gz[4] = {LC->axis_xy_gz[3], LC->axis_xy_gz[2], LC->axis_xy_gz[1],LC->axis_xy_gz[0]};
-    RmgType nxy_gx[4] = {LC->axis_nxy_gx[3], LC->axis_nxy_gx[2], LC->axis_nxy_gx[1],LC->axis_nxy_gx[0]};
-    RmgType nxy_gy[4] = {LC->axis_nxy_gy[3], LC->axis_nxy_gy[2], LC->axis_nxy_gy[1],LC->axis_nxy_gy[0]};
-    RmgType nxy_gz[4] = {LC->axis_nxy_gz[3], LC->axis_nxy_gz[2], LC->axis_nxy_gz[1],LC->axis_nxy_gz[0]};
+    RmgType x_gx[4] = {(RmgType)LC->axis_x_gx[3], (RmgType)LC->axis_x_gx[2], (RmgType)LC->axis_x_gx[1],(RmgType)LC->axis_x_gx[0]};
+    RmgType x_gy[4] = {(RmgType)LC->axis_x_gy[3], (RmgType)LC->axis_x_gy[2], (RmgType)LC->axis_x_gy[1],(RmgType)LC->axis_x_gy[0]};
+    RmgType x_gz[4] = {(RmgType)LC->axis_x_gz[3], (RmgType)LC->axis_x_gz[2], (RmgType)LC->axis_x_gz[1],(RmgType)LC->axis_x_gz[0]};
+    RmgType y_gx[4] = {(RmgType)LC->axis_y_gx[3], (RmgType)LC->axis_y_gx[2], (RmgType)LC->axis_y_gx[1],(RmgType)LC->axis_y_gx[0]};
+    RmgType y_gy[4] = {(RmgType)LC->axis_y_gy[3], (RmgType)LC->axis_y_gy[2], (RmgType)LC->axis_y_gy[1],(RmgType)LC->axis_y_gy[0]};
+    RmgType y_gz[4] = {(RmgType)LC->axis_y_gz[3], (RmgType)LC->axis_y_gz[2], (RmgType)LC->axis_y_gz[1],(RmgType)LC->axis_y_gz[0]};
+    RmgType xy_gx[4] = {(RmgType)LC->axis_xy_gx[3], (RmgType)LC->axis_xy_gx[2], (RmgType)LC->axis_xy_gx[1],(RmgType)LC->axis_xy_gx[0]};
+    RmgType xy_gy[4] = {(RmgType)LC->axis_xy_gy[3], (RmgType)LC->axis_xy_gy[2], (RmgType)LC->axis_xy_gy[1],(RmgType)LC->axis_xy_gy[0]};
+    RmgType xy_gz[4] = {(RmgType)LC->axis_xy_gz[3], (RmgType)LC->axis_xy_gz[2], (RmgType)LC->axis_xy_gz[1],(RmgType)LC->axis_xy_gz[0]};
+    RmgType nxy_gx[4] = {(RmgType)LC->axis_nxy_gx[3], (RmgType)LC->axis_nxy_gx[2], (RmgType)LC->axis_nxy_gx[1],(RmgType)LC->axis_nxy_gx[0]};
+    RmgType nxy_gy[4] = {(RmgType)LC->axis_nxy_gy[3], (RmgType)LC->axis_nxy_gy[2], (RmgType)LC->axis_nxy_gy[1],(RmgType)LC->axis_nxy_gy[0]};
+    RmgType nxy_gz[4] = {(RmgType)LC->axis_nxy_gz[3], (RmgType)LC->axis_nxy_gz[2], (RmgType)LC->axis_nxy_gz[1],(RmgType)LC->axis_nxy_gz[0]};
 
     int id = 1;
     switch (ibrav)
