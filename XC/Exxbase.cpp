@@ -1232,15 +1232,15 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     double qk[3];
     for(int iq = 0; iq < nkpts; iq++){
         for(int iqm = 0; iqm < nkpts; iqm++){
-            qk[0] = Qpts[iq][0] - Qpts[iqm][0];
-            qk[1] = Qpts[iq][1] - Qpts[iqm][1];
-            qk[2] = Qpts[iq][2] - Qpts[iqm][2];
+            qk[0] = Qpts[iq][0] + Qpts[iqm][0];
+            qk[1] = Qpts[iq][1] + Qpts[iqm][1];
+            qk[2] = Qpts[iq][2] + Qpts[iqm][2];
             qk[0] -= std::round(qk[0]);
             qk[1] -= std::round(qk[1]);
             qk[2] -= std::round(qk[2]);
 
             if(abs(qk[0]) + abs(qk[1]) + abs(qk[2]) < tol) {
-                if(kminus[iqm] >= 0) {
+                if(kminus[iq] >= 0) {
                     throw RmgFatalException() << "Multiple -Q found " << " . Terminating.\n";
                 }
                 kminus[iq] = iqm;
