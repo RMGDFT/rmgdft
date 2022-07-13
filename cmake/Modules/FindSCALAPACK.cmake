@@ -13,7 +13,11 @@ find_library (SCALAPACK_LIBRARIES NAMES scalapack)
 # if not found try using the MPI library path as a hint
 # since it's often included there
 if(NOT SCALAPACK_LIBRARIES)
-    get_filename_component(RMG_MPI_LIB_PATH ${MPI_C_LIBRARIES} PATH CACHE)
+    if(MPI_C_LIBRARIES)
+        get_filename_component(RMG_MPI_LIB_PATH ${MPI_C_LIBRARIES} DIRECTORY CACHE)
+    else()
+        set(RMG_MPI_LIB_PATH "")
+    endif()
 endif()
 find_library (SCALAPACK_LIBRARIES NAMES scalapack
     HINTS "${RMG_MPI_LIB_PATH}" "$ENV{SCALAPACK_LIB}"

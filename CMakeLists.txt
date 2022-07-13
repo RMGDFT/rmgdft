@@ -87,6 +87,7 @@ set(QMCPACK_SUPPORT ON CACHE BOOL "Generates a QMCPACK restart file.")
 set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentials in binary.")
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
+set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
@@ -99,6 +100,7 @@ endif()
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
 endif()
+
 
 # Now that the scalapack source has been included in the RMG distribution this should
 # always be available unless there is some issue with building it so we define it here.
@@ -203,6 +205,14 @@ if(MPI_CXX_FOUND)
 endif()
 if(MPI_C_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH})
+endif()
+
+
+# Look for scalapack
+if(NOT USE_INTERNAL_SCALAPACK)
+   if(NOT CRAY_HOST)
+       find_package(SCALAPACK)
+   endif()
 endif()
 
 
@@ -439,14 +449,16 @@ if(USE_PLPLOT_LIBS)
 endif()
 
 
+set(Boost_NO_BOOST_CMAKE on)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #    set(BOOST_ROOT "...")
     if(DEFINED ENV{BOOST_ROOT})
         set(BOOST_ROOT $ENV{BOOST_ROOT})
     endif()
-    find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
+    find_package(Boost 1.61 REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif()
 list(APPEND RMGLIBS ${Boost_LIBRARIES})
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 
 
 if(CRAY_HOST)
@@ -508,7 +520,15 @@ if(NOT CRAY_HOST)
             endif()
         endif()
     endif()
-    list(APPEND RMGLIBS scalapack)
+    if(USE_INTERNAL_SCALAPACK)
+        list(APPEND RMGLIBS scalapack)
+    else()
+	if(SCALAPACK_FOUND)
+            list(APPEND RMGLIBS ${SCALAPACK_LIBRARIES})
+	else()
+            list(APPEND RMGLIBS scalapack)
+        endif()
+    endif()
 endif()
 
 
@@ -724,7 +744,13 @@ if(QMCPACK_SUPPORT)
     add_subdirectory (Interfaces EXCLUDE_FROM_ALL)
 endif()
 if(NOT CRAY_HOST)
-    add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
+    if(USE_INTERNAL_SCALAPACK)
+        add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
+    else()
+        if(NOT SCALAPACK_FOUND)
+            add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
+	endif()
+    endif()
 endif()
 
 
@@ -744,8 +770,8 @@ set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in"
 set(CPACK_GENERATOR "RPM")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "4")
-set(CPACK_PACKAGE_VERSION_MINOR "2")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_MINOR "3")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
