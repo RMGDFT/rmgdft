@@ -378,7 +378,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
             (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
             (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
-    if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
+    SetLaplacian();
 
     // Now that coalescing is sorted out we need to check valid MG levels on the PE level (as opposed to
     // on the global level which was done in Autoset.cpp
