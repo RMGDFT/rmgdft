@@ -26,12 +26,34 @@ void init_bfgs( int *stdout_, int *bfgs_ndim_, double *trust_radius_max_,
 // 3*nat
 //
 //void bfgs( filebfgs, double *pos_in, h, double *nelec, double *energy,
+//
+// FCP specific options that are not used if lfcp=false
+// nelec, felec, fcp_thr, fcp_hess, fcp_error, fcp_cap
+//
 void bfgs( double *pos_in, double *h, double *nelec, double *energy,
            double *grad_in, double *fcell, double *iforceh, double *felec,
            double *energy_thr, double *grad_thr, double *cell_thr, double *fcp_thr,
            double *energy_error, double *grad_error, double *cell_error, double *fcp_error,
            bool *lmovecell, bool *lfcp, double *fcp_cap, double *fcp_hess, bool *step_accepted,
            bool *stop_bfgs, bool *failed, int *istep );
+
+// Wrapped version for general rmg use. Any array transposes should be done here.
+static inline void s_bfgs(double *pos_in, double *h, double *energy,
+                          double *grad_in, double *fcell, double *iforceh,
+                          double *energy_thr, double *grad_thr, double *cell_thr,
+                          double *energy_error, double *grad_error, double *cell_error,
+                          bool *lmovecell, bool *step_accepted,
+                          bool *stop_bfgs, bool *failed, int *istep )
+{
+    double nelec, felec, fcp_thr, fcp_hess, fcp_error, fcp_cap;
+    bool lfcp = false;
+    bfgs( pos_in, h, &nelec, energy,
+           grad_in, fcell, iforceh, &felec,
+           energy_thr, grad_thr, cell_thr, &fcp_thr,
+           energy_error, grad_error, cell_error, &fcp_error,
+           lmovecell, &lfcp, &fcp_cap, &fcp_hess, step_accepted,
+           stop_bfgs, failed, istep );
+}
 
 void reset_bfgs( int *, bool *lfcp, double *fcp_hess );
 
