@@ -8,10 +8,10 @@
 #include "rmgtypedefs.h"
 #include "rmg_mangling.h"
 
-#define		init_bfgs	RMG_FC_GLOBAL(init_bfgs, INIT_BFGS)
-#define		bfgs    	RMG_FC_GLOBAL(bfgs, BFGS)
-#define		reset_bfgs    	RMG_FC_GLOBAL(reset_bfgs, RESET_BFGS)
-#define		terminate_bfgs 	RMG_FC_GLOBAL(terminate_bfgs, TERMINATE_BFGS)
+#define init_bfgs       RMG_FC_MODULE(bfgs_module,init_bfgs,mod_BFGS_MODULE,INIT_BFGS)
+#define	bfgs    	RMG_FC_MODULE(bfgs_module,bfgs,mod_BFGS_MODULE,BFGS)
+#define	reset_bfgs    	RMG_FC_MODULE(bfgs_module,reset_bfgs,mod_BFGS_MODULE,RESET_BFGS)
+#define	terminate_bfgs 	RMG_FC_MODULE(bfgs_module,terminate_bfgs,mod_BFGS_MODULE,TERMINATE_BFGS)
 
 #if __cplusplus
 extern "C" {
