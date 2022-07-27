@@ -38,6 +38,7 @@
 #include "transition.h"
 #include "Atomic.h"
 #include "RmgParallelFft.h"
+#include "bfgs.h"
 
 
 // Instantiate gamma and non-gamma versions

@@ -100,8 +100,12 @@ pack.cpp
 PackMatrix.cpp
 RmgGpuError.cpp
 GpuMem.cpp
+bfgs_module.f90
+basic_algebra_routines.f90
+invmat.f90
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+include_directories("${RMG_BINARY_DIR}/XC/")
 include_directories(${MAGMA_INCLUDES})
 include_directories(${MAGMA_INCLUDES}/magma)
 if(PLplot_LIBRARY)
