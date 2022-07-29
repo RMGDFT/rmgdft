@@ -100,6 +100,20 @@
 #define     mu_me    1822.88847984055
 #define     me_mu       0.000548579910981427
 
+/* constants from QE used for interoperability */
+#define	 H_PLANCK_SI      6.62607015E-34      // J s
+#define	 K_BOLTZMANN_SI   1.380649E-23        // J K^-1 
+#define	 ELECTRON_SI      1.602176634E-19     // C
+#define	 ELECTRONVOLT_SI  1.602176634E-19     // J  
+#define	 ELECTRONMASS_SI  9.1093837015E-31    // Kg
+#define	 HARTREE_SI       4.3597447222071E-18 // J
+#define	 RYDBERG_SI       HARTREE_SI/2.0      // J
+#define	 BOHR_RADIUS_SI   0.529177210903E-10  // m
+#define	 AMU_SI           1.66053906660E-27   // Kg
+#define	 C_SI             2.99792458E+8       // m sec^-1
+#define  AU_GPA           HARTREE_SI / (BOHR_RADIUS_SI * BOHR_RADIUS_SI * BOHR_RADIUS_SI) / 1.0e9
+#define  RY_KBAR          10.0 * AU_GPA / 2.0
+
 
 
 

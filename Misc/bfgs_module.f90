@@ -61,7 +61,7 @@ MODULE bfgs_module
    !
    CHARACTER (len=18) :: fname="energy"
    !! name of the function to be minimized
-   CHARACTER (len=320):: bfgs_file=" "
+   CHARACTER (len=18):: bfgs_file=" "
    !! name of file (with path) used to store and retrieve the status
    !
    REAL(DP), ALLOCATABLE :: pos(:)
@@ -140,12 +140,14 @@ CONTAINS
    !
    !------------------------------------------------------------------------
    SUBROUTINE init_bfgs( stdout_, bfgs_ndim_, trust_radius_max_, &
-                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_)
+                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_, spin_idx, img_idx)
      !------------------------------------------------------------------------
      !! set values for several parameters of the algorithm
      !
      INTEGER, INTENT(IN) :: &
           stdout_, &
+          spin_idx, &
+          img_idx, &
           bfgs_ndim_
      REAL(DP), INTENT(IN)  :: &
         trust_radius_ini_, &
@@ -153,8 +155,13 @@ CONTAINS
         trust_radius_max_, &
         w_1_,              &
         w_2_
+     CHARACTER(2) :: tstr1
+     CHARACTER(8) :: tstr2
+     LOGICAL :: exst
+     INTEGER :: iunit
      !
-     stdout            = stdout_
+     !stdout            = stdout_
+     stdout = 6   ! Calling from C and can't match up properly so send to fortran stdout
      bfgs_ndim         = bfgs_ndim_
      trust_radius_max  = trust_radius_max_
      trust_radius_min  = trust_radius_min_
@@ -162,17 +169,30 @@ CONTAINS
      w_1               = w_1_
      w_2               = w_2_
      bfgs_initialized  = .true.
-     !
+     ! Clean up old files
+     write(tstr1, '(i2.2)') spin_idx
+     write(tstr2, '(i8.8)') img_idx
+     bfgs_file = 'rmg.bfgs' // tstr1 // tstr2
+     !write(6,*)bfgs_file
+     INQUIRE(FILE = bfgs_file, EXIST = exst)
+     IF (exst) THEN
+        !
+        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+        CLOSE(UNIT = iunit, STATUS = 'DELETE')
+        !
+        WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+        !
+     ENDIF
    END SUBROUTINE init_bfgs
    !
    !------------------------------------------------------------------------
-!   SUBROUTINE bfgs( filebfgs, pos_in, h, nelec, energy, &
-   SUBROUTINE bfgs( pos_in, h, nelec, energy, &
+!   SUBROUTINE bfgs( bfgs_file, pos_in, h, nelec, energy, &
+   SUBROUTINE bfgs(nat, pos_in, h_in, nelec, energy, &
                    grad_in, fcell, iforceh, felec, &
                    energy_thr, grad_thr, cell_thr, fcp_thr, &
                    energy_error, grad_error, cell_error, fcp_error, &
                    lmovecell, lfcp, fcp_cap, fcp_hess, step_accepted, &
-                   stop_bfgs, failed, istep )
+                   stop_bfgs, failed, istep)
       !------------------------------------------------------------------------
       !! BFGS algorithm.
       !
@@ -180,21 +200,23 @@ CONTAINS
       !
       IMPLICIT NONE
       !
-      REAL(DP),         INTENT(INOUT) :: pos_in(:)
+      INTEGER,          INTENT(IN)   :: nat
+      !
+      REAL(DP),         INTENT(INOUT) :: pos_in(3*nat)
       !! vector containing 3N coordinates of the system ( x )
-      REAL(DP),         INTENT(INOUT) :: h(3,3)
+      REAL(DP),         INTENT(INOUT) :: h_in(9)
       !! 3x3 matrix of the primitive lattice vectors
       REAL(DP),         INTENT(INOUT) :: nelec
       !! number of electrons (for FCP)
       REAL(DP),         INTENT(INOUT) :: energy
       !! energy of the system ( V(x) )
-      REAL(DP),         INTENT(INOUT) :: grad_in(:)
+      REAL(DP),         INTENT(INOUT) :: grad_in(3*nat)
       !! vector containing 3N components of grad( V(x) )
       REAL(DP),         INTENT(INOUT) :: fcell(3,3)
       !! 3x3 matrix containing the stress tensor
       REAL(DP),         INTENT(INOUT) :: felec 
       !! force on FCP
-!      CHARACTER(LEN=*), INTENT(IN)    :: filebfgs
+!      CHARACTER(LEN=*), INTENT(IN)    :: bfgs_file
       !! file name for storing and retrieving data
       REAL(DP),         INTENT(IN)    :: energy_thr
       !! threshold on energy difference for BFGS convergence
@@ -233,27 +255,25 @@ CONTAINS
       !
       ! ... local variables
       !
-      INTEGER  :: n, i, j, k, nat
+      INTEGER  :: n, i, j, k
       LOGICAL  :: lwolfe
       REAL(DP) :: dE0s, den
       ! ... for scaled coordinates
-      REAL(DP) :: hinv(3,3),g(3,3),ginv(3,3), omega
+      REAL(DP) :: hinv(3,3),g(3,3),ginv(3,3), omega, h(3,3)
       !
       ! ... additional dimensions of cell and FCP
       INTEGER, PARAMETER :: NADD = 9 + 1
-      CHARACTER(8) :: filebfgs
-      filebfgs = 'rmg_bfgs' 
       !
       !
       failed = .FALSE.
       !
       IF ( .NOT.bfgs_initialized ) CALL errore('bfgs',' not initialized',1)
       !
-      IF ( bfgs_file == " ") bfgs_file = TRIM(filebfgs)
+      !IF ( bfgs_file == " ") bfgs_file = TRIM(bfgs_file)
       lwolfe=.false.
-      n = SIZE( pos_in ) + NADD
-      nat = size (pos_in) / 3
-      if (nat*3 /= size (pos_in)) call errore('bfgs',' strange dimension',1)
+      n = 3*nat + NADD
+!write(6,*)'LLL ',nat,'  ',n,'  ',NADD,' ', size(pos_in)
+!      if (nat*3 /= size (pos_in)) call errore('bfgs',' strange dimension',1)
       !
       ! ... work-space allocation
       !
@@ -278,7 +298,22 @@ CONTAINS
       !
       ! ... the BFGS file read (pos & grad) in scaled coordinates
       !
+      h = 0.0_DP
+      h(1,1) = h_in(1)
+      h(2,1) = h_in(2)
+      h(3,1) = h_in(3)
+      h(1,2) = h_in(4)
+      h(2,2) = h_in(5)
+      h(3,2) = h_in(6)
+      h(1,3) = h_in(7)
+      h(2,3) = h_in(8)
+      h(3,3) = h_in(9)
+      !write(6,*)'HH  ',h(1,1),'  ',h(2,1),'  ',h(3,1)
+      !write(6,*)'HH  ',h(1,2),'  ',h(2,2),'  ',h(3,2)
+      !write(6,*)'HH  ',h(1,3),'  ',h(2,3),'  ',h(3,3)
+
       call invmat(3, h, hinv, omega)
+
       ! volume is defined to be positive even for left-handed vector triplet
       omega = abs(omega) 
       !
@@ -310,11 +345,18 @@ CONTAINS
       !
       ! ... generate bfgs vectors for the degrees of freedom and their gradients
       pos = 0.d0
-      pos(1:n-NADD) = pos_in
+      !pos(1:n-NADD) = pos_in
+do i=1,n-NADD
+     pos(i) = pos_in(i)
+end do
+
       if (lmovecell) FORALL( i=1:3, j=1:3)  pos( n-NADD + j+3*(i-1) ) = h(i,j)
       if (lfcp) pos( n ) = nelec
       grad = 0.d0
-      grad(1:n-NADD) = grad_in
+      !grad(1:n-NADD) = grad_in
+do i=1,n-NADD
+     grad(i) = grad_in(i)
+end do
       if (lmovecell) FORALL( i=1:3, j=1:3) grad( n-NADD + j+3*(i-1) ) = fcell(i,j)*iforceh(i,j)
       if (lfcp) grad( n ) = felec
       !
@@ -567,11 +609,20 @@ CONTAINS
       !
 1000  stop_bfgs = conv_bfgs
       ! ... input ions+cell variables
-      pos_in = pos(1:n-NADD)
+      !pos_in = pos(1:n-NADD)
+      do i=1,n-NADD
+           pos_in(i) = pos(i)
+      end do
+      !write(6,*)'POS_OUT1 = ',pos_in(1),' ',pos_in(2),' ',pos_in(3)
+      !write(6,*)'POS_OUT2 = ',pos_in(4),' ',pos_in(5),' ',pos_in(6)
+
       IF ( lmovecell ) FORALL( i=1:3, j=1:3) h(i,j) = pos( n-NADD + j+3*(i-1) )
       IF ( lfcp ) nelec = pos( n )
       ! ... update forces
-      grad_in = grad(1:n-NADD)
+      !grad_in = grad(1:n-NADD)
+      do i=1,n-NADD
+           grad_in(i) = grad(i)
+      end do
       !
       ! ... work-space deallocation
       !
@@ -1073,12 +1124,27 @@ CONTAINS
                               lmovecell, lfcp )
       !------------------------------------------------------------------------
       !
-!! EMIL comment out for now      USE io_files, ONLY : delete_if_present
+      !
       !
       IMPLICIT NONE
       REAL(DP),         INTENT(IN) :: energy, energy_thr, grad_thr, cell_thr, fcp_thr
       LOGICAL,          INTENT(IN) :: lmovecell, lfcp
       !
+      LOGICAL :: exst
+      !! Check if the file exist
+      INTEGER :: iunit
+      !! Unit of the file 
+
+      INQUIRE(FILE = bfgs_file, EXIST = exst)
+      IF (exst) THEN
+        !
+        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+        CLOSE(UNIT = iunit, STATUS = 'DELETE')
+        !
+        WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+        !
+      ENDIF
+
       IF ( conv_bfgs ) THEN
          !
          WRITE( UNIT = stdout, &
@@ -1104,7 +1170,17 @@ CONTAINS
          WRITE( UNIT = stdout, &
               & FMT = '(/,5X,"Final ",A," = ",F18.10," Ry")' ) fname, energy
          !
-!! EMIL comment out for now         CALL delete_if_present( bfgs_file )
+         INQUIRE(FILE = bfgs_file, EXIST = exst)
+         !
+         IF (exst) THEN
+           !
+           OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+           CLOSE(UNIT = iunit, STATUS = 'DELETE')
+           !
+           WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+           !
+         ENDIF
+
          bfgs_file = " "
          !
       ELSE

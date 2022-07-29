@@ -6,6 +6,7 @@
 ! or http://www.gnu.org/copyleft/gpl.txt .
 !
 MODULE matrix_inversion
+   USE iso_c_binding
    !! Contains LAPACK based routines for matrix inversion.
    !
    IMPLICIT NONE
@@ -88,13 +89,13 @@ MODULE matrix_inversion
   ELSE
      CALL dgetrf (n, n, a, lda, ipiv, info)
   END IF
-  CALL errore ('invmat', 'error in DGETRF', abs (info) )
+  IF(info /= 0) CALL errore ('invmat', 'error in DGETRF', abs (info) )
   IF ( PRESENT(a_inv) ) THEN
      CALL dgetri (n, a_inv, lda, ipiv, work, lwork, info)
   ELSE
      CALL dgetri (n, a, lda, ipiv, work, lwork, info)
   END IF 
-  CALL errore ('invmat', 'error in DGETRI', abs (info) )
+  IF(INFO /= 0) CALL errore ('invmat', 'error in DGETRI', abs (info) )
   !
   lworkfact = INT (work(1)/n)
   DEALLOCATE ( work, ipiv )
@@ -174,13 +175,13 @@ MODULE matrix_inversion
   ELSE
      CALL zgetrf (n, n, a, lda, ipiv, info)
   END IF
-  CALL errore ('invmat', 'error in ZGETRF', abs (info) )
+  IF(INFO /= 0) CALL errore ('invmat', 'error in ZGETRF', abs (info) )
   IF ( PRESENT(a_inv) ) THEN
      CALL zgetri (n, a_inv, lda, ipiv, work, lwork, info)
   ELSE
      CALL zgetri (n, a, lda, ipiv, work, lwork, info)
   END IF
-  CALL errore ('invmat', 'error in ZGETRI', abs (info) )
+  IF(INFO /= 0) CALL errore ('invmat', 'error in ZGETRI', abs (info) )
   !
   lworkfact = INT (work(1)/n)
   DEALLOCATE ( work, ipiv )
