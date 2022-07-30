@@ -130,11 +130,15 @@ void simple_lbfgs (void)
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
+        double tf[3];
         /* Get ion pointer */
         ION *iptr = &Atoms[ion];
-        force[ion*3+0] = -2.0*alat*iptr->force[fpt][0];
-        force[ion*3+1] = -2.0*alat*iptr->force[fpt][1];
-        force[ion*3+2] = -2.0*alat*iptr->force[fpt][2];
+        tf[0] = -iptr->force[fpt][0];
+        tf[1] = -iptr->force[fpt][1];
+        tf[2] = -iptr->force[fpt][2];
+        force[ion*3+0] = tf[0] * Rmg_L.a0[0] + tf[1] * Rmg_L.a0[1] + tf[2] * Rmg_L.a0[2];
+        force[ion*3+1] = tf[0] * Rmg_L.a1[0] + tf[1] * Rmg_L.a1[1] + tf[2] * Rmg_L.a1[2];
+        force[ion*3+2] = tf[0] * Rmg_L.a2[0] + tf[1] * Rmg_L.a2[1] + tf[2] * Rmg_L.a2[2];
 
         position[ion * 3 + 0] = iptr->xtal[0];
         position[ion * 3 + 1] = iptr->xtal[1];

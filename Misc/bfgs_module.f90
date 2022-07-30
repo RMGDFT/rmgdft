@@ -180,7 +180,7 @@ CONTAINS
         OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
         CLOSE(UNIT = iunit, STATUS = 'DELETE')
         !
-        WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+        !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
         !
      ENDIF
    END SUBROUTINE init_bfgs
@@ -346,17 +346,18 @@ CONTAINS
       ! ... generate bfgs vectors for the degrees of freedom and their gradients
       pos = 0.d0
       !pos(1:n-NADD) = pos_in
-do i=1,n-NADD
-     pos(i) = pos_in(i)
-end do
+      do i=1,n-NADD
+          pos(i) = pos_in(i)
+      end do
 
       if (lmovecell) FORALL( i=1:3, j=1:3)  pos( n-NADD + j+3*(i-1) ) = h(i,j)
       if (lfcp) pos( n ) = nelec
       grad = 0.d0
       !grad(1:n-NADD) = grad_in
-do i=1,n-NADD
-     grad(i) = grad_in(i)
-end do
+      do i=1,n-NADD
+          grad(i) = grad_in(i)
+      end do
+
       if (lmovecell) FORALL( i=1:3, j=1:3) grad( n-NADD + j+3*(i-1) ) = fcell(i,j)*iforceh(i,j)
       if (lfcp) grad( n ) = felec
       !
@@ -1141,7 +1142,7 @@ end do
         OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
         CLOSE(UNIT = iunit, STATUS = 'DELETE')
         !
-        WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+        !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
         !
       ENDIF
 
@@ -1177,7 +1178,7 @@ end do
            OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
            CLOSE(UNIT = iunit, STATUS = 'DELETE')
            !
-           WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
+           !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
            !
          ENDIF
 
