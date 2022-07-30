@@ -277,6 +277,9 @@ CONTAINS
       !
       ! ... work-space allocation
       !
+      ! RMG uses hartrees internally so convert to Rydbergs
+      energy = energy * 2.0_DP
+
       ALLOCATE( pos(    n ) )
       ALLOCATE( grad(   n ) )
       !
@@ -354,8 +357,9 @@ CONTAINS
       if (lfcp) pos( n ) = nelec
       grad = 0.d0
       !grad(1:n-NADD) = grad_in
+      ! RMG uses hartrees internally so convert to Rydbergs
       do i=1,n-NADD
-          grad(i) = grad_in(i)
+          grad(i) = 2.0*grad_in(i)
       end do
 
       if (lmovecell) FORALL( i=1:3, j=1:3) grad( n-NADD + j+3*(i-1) ) = fcell(i,j)*iforceh(i,j)
@@ -418,8 +422,8 @@ CONTAINS
       !
       conv_bfgs = conv_bfgs .OR. ( tr_min_hit > 1 )
       !
-      WRITE(stdout, '(5X,"Energy error",T30,"= ",1PE12.1," Ry")') energy_error
-      WRITE(stdout, '(5X,"Gradient error",T30,"= ",1PE12.1," Ry/Bohr")') grad_error
+      WRITE(stdout, '(5X,"Energy error",T30,"= ",1PE12.1," Ha")') energy_error/2.0_DP
+      WRITE(stdout, '(5X,"Gradient error",T30,"= ",1PE12.1," Ha/Bohr")') grad_error/2.0_DP
       IF( lmovecell ) WRITE(stdout, &
           '(5X,"Cell gradient error",T30,"= ",1PE12.1," kbar")') &
           cell_error * ry_kbar
@@ -433,9 +437,9 @@ CONTAINS
       WRITE( UNIT = stdout, &
            & FMT = '(5X,"number of bfgs steps",T30,"= ",I3,/)' ) bfgs_iter
       IF ( scf_iter > 1 ) WRITE( UNIT = stdout, &
-           & FMT = '(5X,A," old",T30,"= ",F18.10," Ry")' ) fname,energy_p
+           & FMT = '(5X,A," old",T30,"= ",F18.10," Ha")' ) fname,energy_p/2.0_DP
       WRITE( UNIT = stdout, &
-           & FMT = '(5X,A," new",T30,"= ",F18.10," Ry",/)' ) fname,energy
+           & FMT = '(5X,A," new",T30,"= ",F18.10," Ha",/)' ) fname,energy/2.0_DP
       !
       ! ... the bfgs algorithm starts here
       !
