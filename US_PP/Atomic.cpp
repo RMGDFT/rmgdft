@@ -82,163 +82,6 @@ Atomic::~Atomic(void)
 {
 }
 
-//  This function is used to filter the high frequencies from a radial function 
-//  defined on a logarithmic grid. It computes a DFT, applies a cutoff function
-//  defined in Gcutoff to the transform and then reconstructs the filtered function
-//  on a standard logarithmic grid which is set up in this class.
-//
-//  The radial function must be short ranged.
-//
-void Atomic::RftToLogGrid (
-                   double cparm,        // IN:  filtering parameter
-                   double * f,          // IN:  function to be filtered defined on pseudopotential grid
-                   double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
-                   double * ffil,       // OUT: filtered function defined on RMG standard log grid
-                   double *rab,         // IN:  radial volume element from the pseudopotential file
-                   int rg_points,       // IN:  number of points in pseudopotential radial grid
-                   int lval,            // IN:  momentum l (0=s, 1=p, 2=d)
-                   double width)        // IN:  width of gaussian cutoff in g-space
-{
-
-
-    int istep;
-    double t1;
-    int npes = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
-
-    /* Get some temporary memory */
-    int alloc = rg_points;
-    if(alloc < RADIAL_GVECS) alloc = RADIAL_GVECS;
-    if (alloc < MAX_LOGGRID)
-        alloc = MAX_LOGGRID;
-    if (alloc < MAX_RGRID)
-        alloc = MAX_RGRID;
-
-    double *work1 = new double[alloc]();
-    double *work2 = new double[alloc]();
-    double *gcof = new double[alloc]();
-    double *gvec = new double[alloc]();
-
-    int gnum = RADIAL_GVECS;
-
-    /* G-vectors are defined on a log grid with the smallest value set */
-    /* by the largest real-space value of r.                           */
-    gvec[0] = PI / (r[rg_points - 1]);
-
-    /* The smallest g-vector that we generate is defined by the global */
-    /* grid spacing.                                                  */
-    double gcut = PI / (cparm * ct.hmaxgrid);
-
-    // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
-    double gmax = PI / 0.03;
-
-    double gmesh = (log (gmax) - log (gvec[0])) / gnum;
-    t1 = exp (gmesh);
-
-
-    /* Generate g-vectors */
-    for (int idx = 1; idx < gnum; idx++)
-    {
-
-        gvec[idx] = gvec[0] * pow (t1, (double) idx);
-
-    }                           /* end for */
-
-
-    istep = gnum / npes;
-    double alpha = (double)lval + 0.5;
-
-    for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
-    {
-        for (int idx = 0; idx < rg_points; idx++)
-        {
-
-            double jarg = r[idx] * gvec[ift];
-            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
-
-        }                   /* end for */
-        gcof[ift] = radint1 (work1, r, rab, rg_points);
-    }
-    istep = npes * istep;
-    GlobalSums (gcof, istep, pct.grid_comm);
-
-    for (int ift = istep; ift < gnum; ift++)
-    {
-        for (int idx = 0; idx < rg_points; idx++)
-        {
-
-            double jarg = r[idx] * gvec[ift];
-            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
-
-        }                   /* end for */
-        gcof[ift] = radint1 (work1, r, rab, rg_points);
-    }
-
-
-    /* Fourier Filter the transform and store in work2 */
-    for (int idx = 0; idx < gnum; idx++)
-    {
-
-        work2[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
-
-    }                           /* end for */
-
-
-    /* Zero out the array in which the filtered function is to be returned */
-    for (int idx = 0; idx < MAX_LOGGRID; idx++) ffil[idx] = ZERO;
-
-    /* Reconstruct the filtered function onto our standard log grid */
-    istep = MAX_LOGGRID / npes;
-
-    for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
-    {
-
-        for (int ift = 0; ift < gnum; ift++)
-        {
-
-            double jarg = r_filtered[idx] * gvec[ift];
-            work1[ift] = work2[ift] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
-
-        }                   /* end for */
-
-
-        /* Integrate it */
-        t1 = radint (work1, gvec, gnum, gmesh);
-        ffil[idx] = t1 * TWO / PI;
-
-    }                       /* end for */
-
-
-    istep = npes * istep;
-    GlobalSums (ffil, istep, pct.grid_comm); 
-
-
-    for (int idx = istep; idx < MAX_LOGGRID; idx++)
-    {
-
-        for (int ift = 0; ift < gnum; ift++)
-        {
-
-            double jarg = r_filtered[idx] * gvec[ift];
-            work1[ift] = work2[ift] * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
-
-        }                   /* end for */
-
-        /* Integrate it */
-        t1 = radint (work1, gvec, gnum, gmesh);
-        ffil[idx] = t1 * TWO / PI;
-
-    }                       /* end for */
-
-
-    /* Release memory */
-    delete [] gvec;
-    delete [] gcof;
-    delete [] work2;
-    delete [] work1;
-
-} // end RftToLogGrid
-
-
 // G-vector cutoff function. Applies a gaussian cutoff function above
 // the specified cutoff.
 double Atomic::Gcutoff (double g1, double gcut, double width)
@@ -603,7 +446,7 @@ void Atomic::InitBessel(
     /* by the largest real-space value of r.                           */
     gvec[0] = LOGGRID_START;
     // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
-    double gmax = PI / 0.03;
+    double gmax = PI / 0.02;
 
     double gmesh = (log (gmax) - log (gvec[0])) / gnum;
     t1 = exp (gmesh);
@@ -654,23 +497,7 @@ void Atomic::Der_Localpp_g(
 
     double *work = new double[rg_points]();
 
-    double t1;
     int gnum = RADIAL_GVECS;
-
-    /* G-vectors are defined on a log grid with the smallest value set */
-    /* by the largest real-space value of r.                           */
-    gvec[0] = LOGGRID_START;
-    // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
-    double gmax = PI / 0.03;
-
-    double gmesh = (log (gmax) - log (gvec[0])) / gnum;
-    t1 = exp (gmesh);
-
-    /* Generate g-vectors */
-    for (int idx = 1; idx < gnum; idx++)
-    {
-        gvec[idx] = gvec[idx-1] * t1;
-    }                           /* end for */
 
     for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
     for (int ift = pct.gridpe; ift < gnum; ift+=pct.grid_npes)
