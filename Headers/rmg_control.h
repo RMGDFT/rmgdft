@@ -970,6 +970,14 @@ public:
    std::string input_initial, input_final;
    double totale_initial, totale_final;
 
+   // bfgs options
+   int bfgs_ndim = 1;
+   double trust_radius_max = 0.8;
+   double trust_radius_min = 1.0e-4;
+   double trust_radius_ini = 0.5;
+   double w_1 = 0.01;
+   double w_2 = 0.5;
+
    // Testing options
    double test_energy=NAN;
    double test_energy_tolerance=1.0e-7;

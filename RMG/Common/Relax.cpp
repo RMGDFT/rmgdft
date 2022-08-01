@@ -38,6 +38,7 @@
 #include "transition.h"
 #include "Atomic.h"
 #include "RmgParallelFft.h"
+#include "bfgs.h"
 
 
 // Instantiate gamma and non-gamma versions
@@ -117,7 +118,8 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
                 fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
                 break;
             case LBFGS:
-                rmg_lbfgs();
+                //rmg_lbfgs();
+                simple_lbfgs();
                 break;
             default:
                 rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");

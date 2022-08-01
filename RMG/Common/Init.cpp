@@ -55,6 +55,8 @@
 #include "Scalapack.h"
 #include "Elpa.h"
 #include "GatherScatter.h"
+#include "bfgs.h"
+
 extern Scalapack *MainSp;
 #if USE_ELPA
 extern Elpa *MainElpa;
@@ -711,6 +713,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         }
     }
+
+    int fnum = fileno(ct.logfile);
+    init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
+               &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.thisimg );
+
 }                               /* end init */
 
 
