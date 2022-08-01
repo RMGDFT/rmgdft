@@ -138,22 +138,24 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     for(int i = 0; i < 9; i++) Rmg_L.stress_tensor[i] = stress_tensor[i];
     double zero(0.0);
     int ithree = 3;
-    double  b[9]; // b is the reciprocal vector without 2PI, a^-1
+    double  a[9]; // b is the reciprocal vector without 2PI, a^-1
     for (int i = 0; i < 3; i++)
     {
-         b[0 * 3 + i] = Rmg_L.b0[i];
-         b[1 * 3 + i] = Rmg_L.b1[i];
-         b[2 * 3 + i] = Rmg_L.b2[i];
+       //  b[0 * 3 + i] = Rmg_L.b0[i];
+       //  b[1 * 3 + i] = Rmg_L.b1[i];
+       //  b[2 * 3 + i] = Rmg_L.b2[i];
 
-printf("\n aaa %f %f %f", Rmg_L.b0[i], Rmg_L.b1[i], Rmg_L.b2[i]); 
-        //a[0 * 3 + i] = Rmg_L.a0[i];
-        //a[1 * 3 + i] = Rmg_L.a1[i];
-        //a[2 * 3 + i] = Rmg_L.a2[i];
+        double a_length = Rmg_L.celldm[0];
+        double b_length = Rmg_L.celldm[1] * Rmg_L.celldm[0];
+        double c_length = Rmg_L.celldm[2] * Rmg_L.celldm[0];
+        a[0 * 3 + i] = Rmg_L.a0[i]/a_length/a_length;
+        a[1 * 3 + i] = Rmg_L.a1[i]/b_length/b_length;
+        a[2 * 3 + i] = Rmg_L.a2[i]/c_length/c_length;
     }
 
 
     double alpha = Rmg_L.omega;
-    dgemm("N","N", &ithree, &ithree, &ithree, &alpha, b, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
+    dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
 
 }
 
