@@ -21,11 +21,11 @@
 */
 
 
-
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+#include "common_prototypes.h"
 #include "main.h"
 #include "transition.h"
 #include "bfgs.h"
@@ -103,14 +103,14 @@ void simple_lbfgs (void)
 {
     double nelec, felec, fcp_thr, fcp_hess, fcp_error, fcp_cap;
     double energy_error, grad_error, cell_error;
-    double *fcell, *iforceh;
-    int lfcp = false, lmovecell = false;
+    int lfcp = false;
     int step_accepted, stop_bfgs, failed;
     double energy = ct.TOTAL;
-    double energy_thr = 1.0e-4;
-    double grad_thr = 1.0e-4;
+    double energy_thr = 1.0e-6;
+    double grad_thr = 1.0e-6;
     double cell_thr = 0.5 / RY_KBAR;
-    double *h = new double[9]();
+    double fcell[9], h[9], b[9], stress_tensor[9];
+    int cell_movable[9];
     int istep;
 
     double *position = new double[3*ct.num_ions]();
@@ -122,11 +122,22 @@ void simple_lbfgs (void)
         h[i] = Rmg_L.a0[i];
         h[i+3] = Rmg_L.a1[i];
         h[i+6] = Rmg_L.a2[i];
+        b[i] = Rmg_L.b0[i];
+        b[i+3] = Rmg_L.b1[i];
+        b[i+6] = Rmg_L.b2[i];
+    }
+
+    for(int i=0;i < 9;i++)
+    {
+        stress_tensor[i] = Rmg_L.stress_tensor[i];
+    }
+    for(int i=0;i < 9;i++)
+    {
+        cell_movable[i] = ct.cell_movable[i];
     }
 
     int fpt = ct.fpt[0];
     /* Loop over ions */
-    double alat = Rmg_L.a0[0];
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -145,10 +156,35 @@ void simple_lbfgs (void)
         position[ion * 3 + 2] = iptr->xtal[2];
     }
 
+    if(ct.cell_relax)
+    {
+        // Need to setup the stress tensor in the QE format
+        // can add in external pressure term here.
+        double ainv[9];
+        for(int j=0;j < 3;j++)
+        {
+            for(int i=0;i < 3;i++)
+            {
+                ainv[i*3+j] = b[j*3+i];
+            }
+        }
+        for(int j=0;j < 3;j++)
+        {
+            for(int i=0;i < 3;i++)
+            {
+                fcell[j*3+i] = ainv[i+0] * stress_tensor[0+j] +
+                               ainv[i+3] * stress_tensor[3+j] +
+                               ainv[i+6] * stress_tensor[6+j];
+            }
+        }
+        for(int i=0;i < 9;i++) fcell[i] *= -2.0 * Rmg_L.omega;
+    }
+
     if(pct.gridpe==0)
     {
+        int lmovecell = ct.cell_relax;
         bfgs( &ct.num_ions, position, h, &nelec, &energy,
-               force, fcell, iforceh, &felec,
+               force, fcell, cell_movable, &felec,
                &energy_thr, &grad_thr, &cell_thr, &fcp_thr,
                &energy_error, &grad_error, &cell_error, &fcp_error,
                &lmovecell, &lfcp, &fcp_cap, &fcp_hess, &step_accepted,
@@ -157,13 +193,32 @@ void simple_lbfgs (void)
     // Send updated positions to other nodes. May need to update for images
     // and symmetry considerations for non-gamma.
     MPI_Bcast(position, 3*ct.num_ions, MPI_DOUBLE, 0, pct.grid_comm);
+    if(ct.cell_relax)
+    {
+        MPI_Bcast(h, 9, MPI_DOUBLE, 0, pct.grid_comm);
+        for (int i = 0; i < 3; i++)
+        {
+            if(cell_movable[0*3+i]) Rmg_L.a0[i] = h[0*3+i];
+            if(cell_movable[1*3+i]) Rmg_L.a1[i] = h[1*3+i];
+            if(cell_movable[2*3+i]) Rmg_L.a2[i] = h[2*3+i];
+        }
+        double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
+        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
+        printf("bfgs: New volume = %12.6f\n", Rmg_L.omega);
+    }
 
-    //printf("BBBB  %d  %d  %d  %12.6f\n",step_accepted, stop_bfgs, failed, energy_error);
+    if(step_accepted)
+        rmg_printf("bfgs: step accepted\n");
+    else if(ct.md_steps > 0)
+        rmg_printf("bfgs: step not accepted\n");
+
+    printf ("    bfgs: energy error    = %12.6e\n", energy_error);
+    printf ("    bfgs: gradient error  = %12.6e\n", grad_error);
+    printf ("    bfgs: cell grad error = %13.6e\n", cell_error);
 
     // Copy back
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-
         ION *iptr = &Atoms[ion];
         if(iptr->movable[0] )
             iptr->xtal[0] = position[ion * 3 + 0] ;
@@ -186,7 +241,6 @@ void simple_lbfgs (void)
             iptr->xtal[2] -= ONE;
         if (iptr->xtal[2] < ZERO)
             iptr->xtal[2] += ONE;
-
         to_cartesian (iptr->xtal, iptr->crds);
 
     }

@@ -111,8 +111,8 @@
 #define	 BOHR_RADIUS_SI   0.529177210903E-10  // m
 #define	 AMU_SI           1.66053906660E-27   // Kg
 #define	 C_SI             2.99792458E+8       // m sec^-1
-#define  AU_GPA           HARTREE_SI / (BOHR_RADIUS_SI * BOHR_RADIUS_SI * BOHR_RADIUS_SI) / 1.0e9
-#define  RY_KBAR          10.0 * AU_GPA / 2.0
+#define  AU_GPA           (HARTREE_SI / (BOHR_RADIUS_SI * BOHR_RADIUS_SI * BOHR_RADIUS_SI) / 1.0e9)
+#define  RY_KBAR          (10.0 * AU_GPA / 2.0)
 
 
 

@@ -188,7 +188,7 @@ CONTAINS
    !------------------------------------------------------------------------
 !   SUBROUTINE bfgs( bfgs_file, pos_in, h, nelec, energy, &
    SUBROUTINE bfgs(nat, pos_in, h_in, nelec, energy, &
-                   grad_in, fcell, iforceh, felec, &
+                   grad_in, fcell_in, iforceh_in, felec, &
                    energy_thr, grad_thr, cell_thr, fcp_thr, &
                    energy_error, grad_error, cell_error, fcp_error, &
                    lmovecell, lfcp, fcp_cap, fcp_hess, step_accepted, &
@@ -212,7 +212,7 @@ CONTAINS
       !! energy of the system ( V(x) )
       REAL(DP),         INTENT(INOUT) :: grad_in(3*nat)
       !! vector containing 3N components of grad( V(x) )
-      REAL(DP),         INTENT(INOUT) :: fcell(3,3)
+      REAL(DP),         INTENT(INOUT) :: fcell_in(9)
       !! 3x3 matrix containing the stress tensor
       REAL(DP),         INTENT(INOUT) :: felec 
       !! force on FCP
@@ -227,7 +227,7 @@ CONTAINS
       !! threshold on grad of cell for BFGS convergence
       REAL(DP),         INTENT(IN)    :: fcp_thr
       !! treshold on grad of FCP for BFGS convergence
-      INTEGER,          INTENT(IN)    :: iforceh(3,3)
+      INTEGER,          INTENT(IN)    :: iforceh_in(9)
       !! 3x3 matrix containing cell constraints
       LOGICAL,          INTENT(IN)    :: lmovecell
       LOGICAL,          INTENT(IN)    :: lfcp
@@ -259,7 +259,8 @@ CONTAINS
       LOGICAL  :: lwolfe
       REAL(DP) :: dE0s, den
       ! ... for scaled coordinates
-      REAL(DP) :: hinv(3,3),g(3,3),ginv(3,3), omega, h(3,3)
+      REAL(DP) :: hinv(3,3),g(3,3),ginv(3,3), omega, h(3,3), fcell(3,3)
+      INTEGER iforceh(3,3)
       !
       ! ... additional dimensions of cell and FCP
       INTEGER, PARAMETER :: NADD = 9 + 1
@@ -353,6 +354,18 @@ CONTAINS
           pos(i) = pos_in(i)
       end do
 
+      do i=1,3
+        do j=1,3
+          fcell(i,j) = fcell_in((i-1)*3+j)
+          !write(6,*)' AAA ',fcell(i,j)
+          iforceh(i,j) = iforceh_in((i-1)*3+j)
+          !write(6,*)' BBB ',iforceh(i,j)
+        end do
+      end do
+      !write(6,*)'FCELL  ',fcell(1,1),'  ',fcell(2,1),'  ',fcell(3,1)
+      !write(6,*)'FCELL  ',fcell(1,2),'  ',fcell(2,2),'  ',fcell(3,2)
+      !write(6,*)'FCELL  ',fcell(1,3),'  ',fcell(2,3),'  ',fcell(3,3)
+
       if (lmovecell) FORALL( i=1:3, j=1:3)  pos( n-NADD + j+3*(i-1) ) = h(i,j)
       if (lfcp) pos( n ) = nelec
       grad = 0.d0
@@ -394,6 +407,7 @@ CONTAINS
           cell_error = MAXVAL( ABS( MATMUL ( TRANSPOSE ( RESHAPE( grad(n-NADD+1:n-1), (/ 3, 3 /) ) ),&
                                              TRANSPOSE(h) ) ) ) / omega
           conv_bfgs = conv_bfgs .AND. ( cell_error < cell_thr ) 
+          !write(6,*)'VVVVVV ',cell_error,'  ', cell_thr
 #undef DEBUG
 #if defined(DEBUG)
            write (*,'(3f15.10)') TRANSPOSE ( RESHAPE( grad(n-NADD+1:n-1), (/ 3, 3 /) ) )
@@ -628,6 +642,19 @@ CONTAINS
       do i=1,n-NADD
            grad_in(i) = grad(i)
       end do
+
+      h_in(1) = h(1,1)
+      h_in(2) = h(2,1)
+      h_in(3) = h(3,1)
+      h_in(4) = h(1,2)
+      h_in(5) = h(2,2)
+      h_in(6) = h(3,2)
+      h_in(7) = h(1,3)
+      h_in(8) = h(2,3)
+      h_in(9) = h(3,3)
+      !write(6,*)'HH1  ',h(1,1),'  ',h(2,1),'  ',h(3,1)
+      !write(6,*)'HH1  ',h(1,2),'  ',h(2,2),'  ',h(3,2)
+      !write(6,*)'HH1  ',h(1,3),'  ',h(2,3),'  ',h(3,3)
       !
       ! ... work-space deallocation
       !

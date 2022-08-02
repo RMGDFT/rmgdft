@@ -31,7 +31,7 @@ void init_bfgs( int *stdout_, int *bfgs_ndim_, double *trust_radius_max_,
 // nelec, felec, fcp_thr, fcp_hess, fcp_error, fcp_cap
 //
 void bfgs( int *nat, double *pos_in, double *h, double *nelec, double *energy,
-           double *grad_in, double *fcell, double *iforceh, double *felec,
+           double *grad_in, double *fcell, int *iforceh, double *felec,
            double *energy_thr, double *grad_thr, double *cell_thr, double *fcp_thr,
            double *energy_error, double *grad_error, double *cell_error, double *fcp_error,
            int *lmovecell, int *lfcp, double *fcp_cap, double *fcp_hess, int *step_accepted,
@@ -43,7 +43,7 @@ void terminate_bfgs( double *energy, double *energy_thr, double *grad_thr,
                      double *cell_thr, double *fcp_thr,
                      int *lmovecell, int *lfcp );
 
-void simple_lbfgs(void);
+void simple_lbfgs();
 
 #if __cplusplus
 }
