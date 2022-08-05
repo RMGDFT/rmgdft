@@ -87,7 +87,7 @@ void SPECIES::InitDelocalizedOrbital (void)
 
 
 
-    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
+    double gcut = sqrt(coarse_pwaves->gcut*tpiba2);
     RmgTimer *RT3= new RmgTimer("Orbital: proj cal");
     for(int iproj = 0; iproj < tot_orbitals; iproj++)
     {

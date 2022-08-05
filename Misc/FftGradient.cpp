@@ -94,7 +94,7 @@ void FftGradient(float *x, float *fgx, float *fgy, float *fgz, Pw &pwaves)
 
     pwaves.FftForward(tx, tx);
 
-    double gcut = ct.filter_factor*pwaves.gcut;
+    double gcut = pwaves.gcut;
 
     for(int icar=0;icar < 3;icar++) {
 
@@ -138,7 +138,7 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 
     pwaves.FftForward(tx, tx);
 
-    double gcut = ct.filter_factor*pwaves.gcut;
+    double gcut = pwaves.gcut;
 
     for(int icar=0;icar < 3;icar++) {
 
@@ -182,7 +182,7 @@ void FftGradient(std::complex<float> *x, std::complex<float> *fgx, std::complex<
 
     pwaves.FftForward(tx, tx);
 
-    double gcut = ct.filter_factor*pwaves.gcut;
+    double gcut = pwaves.gcut;
 
     for(int icar=0;icar < 3;icar++) {
 
@@ -227,7 +227,7 @@ void FftGradient(std::complex<double> *x, std::complex<double> *fgx, std::comple
 
     pwaves.FftForward(tx, tx);
 
-    double gcut = ct.filter_factor*pwaves.gcut;
+    double gcut = pwaves.gcut;
 
     for(int icar=0;icar < 3;icar++) {
 

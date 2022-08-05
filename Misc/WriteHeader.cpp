@@ -234,8 +234,8 @@ void WriteHeader (void)
      * points in the cell with a correction for the grid anisotropy.
      */
     double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-    double t1 = ct.filter_factor*coarse_pwaves->gcut * tpiba2;
-    double t2 = ct.filter_factor*fine_pwaves->gcut * tpiba2;
+    double t1 = coarse_pwaves->gcut * tpiba2;
+    double t2 = fine_pwaves->gcut * tpiba2;
     int ibrav = get_ibrav_type();
     if(ibrav < 0) ibrav *= -1;
     printf ("    Equivalent energy cutoffs (psi,rho):  %8.3f   %8.3f Ry\n", t1, t2);

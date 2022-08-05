@@ -40,7 +40,7 @@
 // On input performs a dft of the square root of x which is an array distributed in real
 // space across all nodes // using the plane wave structure defined in pwaves. This is
 // then filtered in g-space with the coefficients of all plane waves with a cutoff
-// greater than factor*factor*pwaves.gcut set equal to zero. The presence of the 
+// greater than factor*factor*pwaves.gmax set equal to zero. The presence of the 
 // square root means that only functions with at most small negative values (e.g. rho)
 // should be smoothed with this routine.
 void FftSmoother(double *x,     // IN:OUT  Input array in real space. Distributed across all nodes.
@@ -52,7 +52,7 @@ void FftSmoother(double *x,     // IN:OUT  Input array in real space. Distribute
   if((factor <= 0.0) || (factor > 1.0))
       throw RmgFatalException() << "FFT filtering factor must be between 0.0 and 1.0 " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-  double g2cut = factor*factor*pwaves.gcut;
+  double g2cut = factor*factor*pwaves.gmax;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 

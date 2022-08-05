@@ -133,23 +133,23 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   }
 
   MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
-
   if(L.get_ibrav_type() == CUBIC_FC) gmax /= sqrt(2.0);
   if(L.get_ibrav_type() == CUBIC_BC) gmax /= sqrt(6.0);
+//  if(L.get_ibrav_type() == HEXAGONAL) gmax /= 4.4;
 
-  this->gcut = this->gmax;
+  this->gcut = ct.filter_factor*this->gmax;
   for(size_t idx = 0;idx < this->pbasis;idx++)
   {
-      if(this->gmags[idx] > this->gcut) {
+      if(this->gmags[idx] > this->gmax) {
           if(this->gmask[idx]) this->ng--;
           this->gmask[idx] = false;
       }
   }
 
-  //int gcount = this->ng;
-  //MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
-  //printf("G-vector count  = %d\n", gcount);
-  //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
+  int gcount = this->ng;
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
+  printf("G-vector count  = %d   %lu\n", gcount, this->global_basis);
+  printf("G-vector cutoff = %8.2f  %8.2f\n", sqrt(this->gcut), sqrt(this->gmax));
 
   // Now set up plans
   if(G.get_NPES() == 1)
@@ -474,7 +474,7 @@ size_t Pw::count_filtered_gvectors(double filter_factor)
   size_t gcount = 0;
   for(size_t idx=0;idx < pbasis;idx++)
   {
-      if(this->gmags[idx] < filter_factor*this->gcut) gcount++;
+      if(this->gmags[idx] < filter_factor*this->gmax) gcount++;
   }
   MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_UNSIGNED_LONG, MPI_SUM, comm);
   return gcount;

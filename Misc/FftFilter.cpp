@@ -51,7 +51,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   if((factor <= 0.0) || (factor > 1.0))
       throw RmgFatalException() << "FFT filtering factor must be between 0.0 and 1.0 " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-  double g2cut = factor*factor*pwaves.gcut;
+  double g2cut = factor*factor*pwaves.gmax;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
   int size = pbasis;

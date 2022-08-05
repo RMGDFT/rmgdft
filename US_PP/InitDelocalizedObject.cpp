@@ -68,7 +68,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     pct.num_loc_ions = ct.num_ions;
     for(int ion = 0;ion < ct.num_ions;ion++)  pct.loc_ions_list[ion] = ion;
 
-    double gcut = sqrt(ct.filter_factor*fine_pwaves->gcut*tpiba2);
+    double gcut = sqrt(fine_pwaves->gcut*tpiba2);
 
     // for each type of atoms, initilize localpp in g space
     for (int isp = 0; isp < ct.num_species; isp++)

@@ -65,7 +65,7 @@ void SPECIES::InitDelocalizedWeight (void)
     double vol = pwave->L->get_omega();
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
-    double gcut = sqrt(ct.filter_factor*pwave->gcut*tpiba2);
+    double gcut = sqrt(pwave->gcut*tpiba2);
 
 
     /*Loop over all betas to calculate num of projectors for given species */

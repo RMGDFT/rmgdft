@@ -244,7 +244,7 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     for(int ig=0;ig < pbasis;ig++) {
-        if((pwaves.gmags[ig] > 1.0e-6) && pwaves.gmask[ig])
+        if((pwaves.gmags[ig] > 1.0e-6) && pwaves.gmags[ig] < pwaves.gcut && pwaves.gmask[ig])
         {
             double gsqr = pwaves.gmags[ig] *tpiba2;
             double rhog2 = std::norm(crho[ig])/gsqr;
@@ -383,11 +383,11 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &Species[isp];
-
         for(int ig=0;ig < pbasis;ig++) 
         {
             if(!pwaves.gmask[ig]) continue;
             //if((pwaves.gmags[ig] < 1.0e-6) || !pwaves.gmask[ig]) continue;
+            if(pwaves.gmags[ig] > pwaves.gcut)continue;
             double gsqr = pwaves.gmags[ig] *tpiba2;
             double gval = std::sqrt(gsqr);
             double g[3];
@@ -757,7 +757,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
     for(size_t ig=0;ig < pwaves.pbasis;ig++)
     {
-        if(pwaves.gmags[ig] > 1.0e-6)
+        if(pwaves.gmags[ig] > 1.0e-6 && pwaves.gmags[ig] < pwaves.gcut)
         {
             gsquare = pwaves.gmags[ig] * tpiba2;
             gs4sigma = gsquare/(4.0 * sigma);

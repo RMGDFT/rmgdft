@@ -147,8 +147,10 @@ public:
     int global_dimz;
 
     // Plane wave cutoff and max
-    double gcut;
+    //   gmax is the square magnitude of the largest g-vector that can exist on a given grid
+    //   gcut is = ct.filter_factor*gmax
     double gmax;
+    double gcut;
 
     size_t ng;
     gvector *g;

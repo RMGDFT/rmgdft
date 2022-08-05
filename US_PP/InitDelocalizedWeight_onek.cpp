@@ -76,7 +76,7 @@ void InitDelocalizedWeight_onek (int kindex, double kvec[3], Pw &pwave)
             double vol = pwave.L->get_omega();
             double tpiba = 2.0 * PI / Rmg_L.celldm[0];
             double tpiba2 = tpiba * tpiba;
-            double gcut = sqrt(ct.filter_factor*pwave.gcut*tpiba2);
+            double gcut = sqrt(pwave.gcut*tpiba2);
             double ax[3];
 
             int proj_l = sp->nhtol[iproj];

@@ -1622,7 +1622,7 @@ template <class T> void Wannier<T>::InitGuideFunc()
     RT1 = new RmgTimer("7-Wannier: Amn: gf: radial_q");
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
-    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
+    double gcut = sqrt(coarse_pwaves->gcut*tpiba2);
 
     delta_g = gcut/(gnum-1);
 
