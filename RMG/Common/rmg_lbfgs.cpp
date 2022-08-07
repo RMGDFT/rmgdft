@@ -205,6 +205,17 @@ void simple_lbfgs (void)
         double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
         Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
         printf("bfgs: New volume = %12.6f\n", Rmg_L.omega);
+        if(pct.imgpe == 0)
+        {
+            printf("\n lattice a0: ");
+            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a0[i]);
+            printf("\n lattice a1: ");
+            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a1[i]);
+            printf("\n lattice a2: ");
+            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a2[i]);
+            printf("\n");
+        }
+
     }
 
     if(step_accepted)
