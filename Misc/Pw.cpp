@@ -137,6 +137,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   if(L.get_ibrav_type() == CUBIC_BC) gmax /= sqrt(6.0);
 //  if(L.get_ibrav_type() == HEXAGONAL) gmax /= 4.4;
 
+  double g_radius = InscribedSphere();
+  if(pct.gridpe == 0) printf("\n g radius max %f %f", g_radius * g_radius, gmax);
+  gmax = g_radius * g_radius;
   this->gcut = ct.filter_factor*this->gmax;
   for(size_t idx = 0;idx < this->pbasis;idx++)
   {
@@ -1103,3 +1106,45 @@ Pw::~Pw(void)
   }
 }
 
+double Pw::InscribedSphere ()
+{
+    //  reciprocal lattice b1*nx, b2 * ny, b3*nz and origin(0,0,0) as vertexes
+    // two lattice vectors form a plane.  a_n *x + b_n *y + c_n *z = 0.0
+    // norm vector of b1 x b2 plane, center of the octagon
+    double a_n, b_n, c_n, center[3], radius_min, radius;
+    int nx = this->global_dimx;
+    int ny = this->global_dimy;
+    int nz = this->global_dimz;
+    center[0] = (L->b0[0] * nx + L->b1[0] * ny + L->b2[0] *nz)/2.0 * L->celldm[0];
+    center[1] = (L->b0[1] * nx + L->b1[1] * ny + L->b2[1] *nz)/2.0 * L->celldm[0];
+    center[2] = (L->b0[2] * nx + L->b1[2] * ny + L->b2[2] *nz)/2.0 * L->celldm[0];
+
+    if(pct.gridpe ==0) printf("\n center %f %f %f", center[0], center[1], center[2]);
+//  for plane b0 anx b1
+    a_n = L->b0[1] * L->b1[2] - L->b0[2] * L->b1[1];
+    b_n = L->b0[2] * L->b1[0] - L->b0[0] * L->b1[2];
+    c_n = L->b0[0] * L->b1[1] - L->b0[1] * L->b1[0];
+    
+    radius = std::abs(a_n * center[0] + b_n * center[1] + c_n * center[2])/std::sqrt(a_n * a_n + b_n * b_n + c_n * c_n);
+    radius_min = radius;
+    if(pct.gridpe ==0) printf("\n radius %f %f %f %f", radius, a_n, b_n, c_n);
+
+//  for plane b0 anx b2
+    a_n = L->b0[1] * L->b2[2] - L->b0[2] * L->b2[1];
+    b_n = L->b0[2] * L->b2[0] - L->b0[0] * L->b2[2];
+    c_n = L->b0[0] * L->b2[1] - L->b0[1] * L->b2[0];
+    
+    radius = std::abs(a_n * center[0] + b_n * center[1] + c_n * center[2])/std::sqrt(a_n * a_n + b_n * b_n + c_n * c_n);
+    radius_min = std::min(radius, radius_min);
+
+//  for plane b1 anx b2
+    a_n = L->b2[1] * L->b1[2] - L->b2[2] * L->b1[1];
+    b_n = L->b2[2] * L->b1[0] - L->b2[0] * L->b1[2];
+    c_n = L->b2[0] * L->b1[1] - L->b2[1] * L->b1[0];
+    
+    radius = std::abs(a_n * center[0] + b_n * center[1] + c_n * center[2])/std::sqrt(a_n * a_n + b_n * b_n + c_n * c_n);
+    radius_min = std::min(radius, radius_min);
+
+    return radius_min;
+
+}
