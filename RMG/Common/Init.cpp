@@ -132,10 +132,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.ecutwfc > 0.0)
     {
         double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-        ct.filter_factor = 2.0*ct.ecutwfc / (coarse_pwaves->gmax * tpiba2);
+        double ecut = coarse_pwaves->gmax * tpiba2 /2.0;
 
-        if(ct.filter_factor > 1.0)
-            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid. Reduce by %7.2f\n", ct.filter_factor);
+        if(ecut < ct.ecutwfc)
+        {
+            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+        }
+        else
+        {
+            coarse_pwaves->gcut = 2.0 * ct.ecutwfc / tpiba2;
+        }
     }
     //int fgcount = coarse_pwaves->count_filtered_gvectors(ct.filter_factor);
     //printf("Adjusted filtering factor = %f\n", ct.filter_factor);
@@ -520,13 +526,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
-        FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+        FftFilter(vxc, *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         if(ct.noncoll)
         {
-            FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-            FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-            FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+            FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+            FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         }
         delete F;
@@ -535,7 +541,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RmgTimer *RT1 = new RmgTimer("2-Init: hartree");
         double rms_target = 1.0e-10;
         VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
-        FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+        FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
         delete RT1;
 
     }

@@ -56,7 +56,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1))
     {
         for(int is = 0; is < ct.nspin; is++)
-            FftFilter(&vxc[is*nfp0], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[is*nfp0], *fine_pwaves, *coarse_pwaves, LOW_PASS);
     }
 
     delete F;
@@ -74,7 +74,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     // Transfer vtot from the fine grid to the wavefunction grid
     GetVtotPsi (vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
-    FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+    FftFilter(vtot, *fine_pwaves, *coarse_pwaves, LOW_PASS);
     get_ddd(vtot, vxc, true);
 
 

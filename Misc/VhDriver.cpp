@@ -73,7 +73,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
          * back into the wavefunction hartree array. */
         CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
 //        if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
-//            FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+//            FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         delete(RT1);
     }

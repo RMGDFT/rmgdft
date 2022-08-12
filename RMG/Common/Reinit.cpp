@@ -85,10 +85,17 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     if(ct.ecutwfc > 0.0)
     {
         double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-        ct.filter_factor = 2.0*ct.ecutwfc / (coarse_pwaves->gmax * tpiba2);
+        double ecut = coarse_pwaves->gmax * tpiba2 /2.0;
 
-        if(ct.filter_factor > 1.0)
-            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid. Reduce by %7.2f\n", ct.filter_factor);
+        if(ecut < ct.ecutwfc)
+        {
+            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+        }
+        else
+        {
+            coarse_pwaves->gcut = 2.0 * ct.ecutwfc / tpiba2;
+        }
+
     }
 
     ct.hmaxgrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);

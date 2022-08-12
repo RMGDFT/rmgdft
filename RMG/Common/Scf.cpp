@@ -106,7 +106,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
     {
         for(int is = 0; is < ct.nspin; is++)
-            FftFilter(&vxc[is*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[is*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
     }
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
     delete F;

@@ -79,7 +79,7 @@ void FftLaplacian(std::complex<float> *x, std::complex<float> *lapx, Pw &pwaves)
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
 void FftLaplacian(std::complex<double> *x, std::complex<double> *lapx, Pw &pwaves);
 
-void FftFilter(double *x, Pw &pwaves, double factor, int type);
+void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, int type);
 
 void FftFreqBin(double *x, Pw &pwaves, double *bins);
 

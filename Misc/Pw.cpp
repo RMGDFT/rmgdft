@@ -111,19 +111,12 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               g[idx].a[1] = gvec[1];
               g[idx].a[2] = gvec[2];
 
-  //            if(abs(ivec[0]) > ivx) continue;
-  //            if(abs(ivec[1]) > ivy) continue;
-  //            if(abs(ivec[2]) > ivz) continue;
-
               // Gamma only exclude volume with x<0
               if((ivec[0] < 0) && this->is_gamma) continue;
               // Gamma only exclude plane with x = 0, y < 0
               if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
               // Gamma only exclude line with x = 0, y = 0, z < 0
               if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
-   //           if((abs(ivec[0]) == this->global_dimx/2) || 
-    //             (abs(ivec[1]) == this->global_dimy/2) || 
-    //             (abs(ivec[2]) == this->global_dimz/2)) continue;
 
               this->gmask[idx] = true;
               this->ng++;
@@ -132,18 +125,13 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       }
   }
 
-  MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
-  if(L.get_ibrav_type() == CUBIC_FC) gmax /= sqrt(2.0);
-  if(L.get_ibrav_type() == CUBIC_BC) gmax /= sqrt(6.0);
-//  if(L.get_ibrav_type() == HEXAGONAL) gmax /= 4.4;
-
   double g_radius = InscribedSphere();
   if(pct.gridpe == 0) printf("\n g radius max %f %f", g_radius * g_radius, gmax);
-  gmax = g_radius * g_radius;
-  this->gcut = ct.filter_factor*this->gmax;
+  this->gmax = g_radius * g_radius;
+  this->gcut = ct.filter_factor*g_radius * g_radius;
   for(size_t idx = 0;idx < this->pbasis;idx++)
   {
-      if(this->gmags[idx] > this->gmax) {
+      if(this->gmags[idx] > this->gcut) {
           if(this->gmask[idx]) this->ng--;
           this->gmask[idx] = false;
       }

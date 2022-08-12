@@ -57,7 +57,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
 
     if(grid_ratio == 2) {
 
-        FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
+        FftFilter(temp, *fine_pwaves, *coarse_pwaves, LOW_PASS);
         for(ix = 0; ix < dimx/2; ix++)
         for(iy = 0; iy < dimy/2; iy++)
         for(iz = 0; iz < dimz/2; iz++)
@@ -70,7 +70,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
     }
     else if(grid_ratio == 3) {
 
-        FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
+        FftFilter(temp, *fine_pwaves, *coarse_pwaves, LOW_PASS);
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
         for(iz = 0; iz < dimz/3; iz++)

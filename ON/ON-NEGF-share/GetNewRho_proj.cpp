@@ -65,7 +65,6 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
             mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
         case FFT_INTERPOLATION:
-            //FftFilter(work, *coarse_pwaves, ct.cparm, LOW_PASS);  // limit to G-vectors within the inscribed sphere
             FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
             break;
         default:

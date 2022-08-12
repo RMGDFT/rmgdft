@@ -43,15 +43,11 @@
 // depending on the type of filtering set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
-               double factor,  // IN:  Plane wave filtering factor between (0.0, 1.). Closely corresponds to 
-                            // maximum frequence on a grid of equivalent density.
+               Pw &c_pwaves, // IN: Plane wave structure for the coarse grid.
                int filter_type)  // IN: LOW_PASS or HIGH_PASS, defined in const.h
 {
 
-  if((factor <= 0.0) || (factor > 1.0))
-      throw RmgFatalException() << "FFT filtering factor must be between 0.0 and 1.0 " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-
-  double g2cut = factor*factor*pwaves.gmax;
+  double g2cut = c_pwaves.gcut;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
   int size = pbasis;

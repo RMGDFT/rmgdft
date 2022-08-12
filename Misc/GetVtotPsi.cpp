@@ -55,9 +55,8 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     double *vtot = new double[dimx*dimy*dimz];
     for(int idx=0;idx<dimx*dimy*dimz;idx++)vtot[idx] = in_vtot[idx];
 
+    FftFilter(vtot, *fine_pwaves, *coarse_pwaves, LOW_PASS);
     if(grid_ratio == 2) {
-
-        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/2; ix++)
         for(iy = 0; iy < dimy/2; iy++)
@@ -71,7 +70,6 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else if(grid_ratio == 3) {
 
-        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
@@ -84,8 +82,6 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
 
     }
     else if(grid_ratio == 4) {
-
-        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/4; ix++)
         for(iy = 0; iy < dimy/4; iy++)
