@@ -125,8 +125,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       }
   }
 
+  MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
+
   double g_radius = InscribedSphere();
-  if(pct.gridpe == 0) printf("\n g radius max %f %f", g_radius * g_radius, gmax);
+  if(pct.gridpe == 0) printf("\n g radius max %f %f", g_radius * g_radius, this->gmax);
   this->gmax = g_radius * g_radius;
   this->gcut = ct.filter_factor*g_radius * g_radius;
   for(size_t idx = 0;idx < this->pbasis;idx++)

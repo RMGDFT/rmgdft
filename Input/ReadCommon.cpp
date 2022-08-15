@@ -551,7 +551,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Approximate grid spacing (bohr). ", 
             "grid_spacing must be a positive number. Terminating. ", CELL_OPTIONS);
 
-    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 0.75, 
+    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 1.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "Filtering factor. ", 
             "filter_factor must lie in the range (0.1, 1.0). Terminating. ", PSEUDO_OPTIONS|EXPERT_OPTION);
