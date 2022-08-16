@@ -61,7 +61,7 @@ MODULE bfgs_module
    !
    CHARACTER (len=18) :: fname="energy"
    !! name of the function to be minimized
-   CHARACTER (len=18):: bfgs_file=" "
+   CHARACTER (len=22):: bfgs_file=" "
    !! name of file (with path) used to store and retrieve the status
    !
    REAL(DP), ALLOCATABLE :: pos(:)
@@ -140,7 +140,7 @@ CONTAINS
    !
    !------------------------------------------------------------------------
    SUBROUTINE init_bfgs( stdout_, bfgs_ndim_, trust_radius_max_, &
-                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_, spin_idx, img_idx)
+                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_, spin_idx, img_idx, kp_idx)
      !------------------------------------------------------------------------
      !! set values for several parameters of the algorithm
      !
@@ -148,6 +148,7 @@ CONTAINS
           stdout_, &
           spin_idx, &
           img_idx, &
+          kp_idx, &
           bfgs_ndim_
      REAL(DP), INTENT(IN)  :: &
         trust_radius_ini_, &
@@ -157,6 +158,7 @@ CONTAINS
         w_2_
      CHARACTER(2) :: tstr1
      CHARACTER(8) :: tstr2
+     CHARACTER(4) :: tstr3
      LOGICAL :: exst
      INTEGER :: iunit
      !
@@ -172,7 +174,8 @@ CONTAINS
      ! Clean up old files
      write(tstr1, '(i2.2)') spin_idx
      write(tstr2, '(i8.8)') img_idx
-     bfgs_file = 'rmg.bfgs' // tstr1 // tstr2
+     write(tstr3, '(i4.4)') kp_idx
+     bfgs_file = 'rmg.bfgs' // tstr1 // tstr2 // tstr3
      !write(6,*)bfgs_file
      INQUIRE(FILE = bfgs_file, EXIST = exst)
      IF (exst) THEN

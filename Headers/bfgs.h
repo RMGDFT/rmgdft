@@ -19,7 +19,7 @@ extern "C" {
 
 void init_bfgs( int *stdout_, int *bfgs_ndim_, double *trust_radius_max_,
                double *trust_radius_min_, double *trust_radius_ini_, 
-               double *w_1_, double *w_2_, int *spin_idx, int *img_idx);
+               double *w_1_, double *w_2_, int *spin_idx, int *img_idx, int *kp_idx);
 
 // h, fcell and iforce_h are 3x3 double matrices.
 // pos_in and grad_in are linear arrays of doubles sized a bit larger than
