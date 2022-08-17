@@ -160,26 +160,27 @@ void simple_lbfgs (void)
     {
         // Need to setup the stress tensor in the QE format
         // can add in external pressure term here.
-    //  double ainv[9];
-    //  for(int j=0;j < 3;j++)
-    //  {
-    //      for(int i=0;i < 3;i++)
-    //      {
-    //          ainv[i*3+j] = b[j*3+i];
-    //      }
-    //  }
-    //  for(int j=0;j < 3;j++)
-    //  {
-    //      for(int i=0;i < 3;i++)
-    //      {
-    //          fcell[j*3+i] = ainv[i+0] * stress_tensor[0+j] +
-    //                         ainv[i+3] * stress_tensor[3+j] +
-    //                         ainv[i+6] * stress_tensor[6+j];
-    //      }
-    //  }
-    //  for(int i=0;i < 9;i++) fcell[i] *= -2.0 * Rmg_L.omega;
-    //  for(int i=0;i < 9;i++) printf("\n aaa %d %e %e", i, fcell[i], Rmg_L.cell_force[i]);
-        for(int i=0;i < 9;i++) fcell[i] = -2.0 * Rmg_L.cell_force[i];
+      double ainv[9];
+      for(int j=0;j < 3;j++)
+      {
+          for(int i=0;i < 3;i++)
+          {
+              ainv[i*3+j] = b[j*3+i];
+          }
+      }
+      for(int j=0;j < 3;j++)
+      {
+          for(int i=0;i < 3;i++)
+          {
+              
+              fcell[j*3+i] = ainv[i+0] * stress_tensor[0+j] +
+                             ainv[i+3] * stress_tensor[3+j] +
+                             ainv[i+6] * stress_tensor[6+j];
+          }
+      }
+      for(int i=0;i < 9;i++) fcell[i] *= -2.0 * Rmg_L.omega;
+ //     for(int i=0;i < 9;i++) printf("\n aaa %d %f %f %f", i, fcell[i], 2*Rmg_L.cell_force[i], h[i]);
+ //     for(int i=0;i < 9;i++) fcell[i] = 2.0 * Rmg_L.cell_force[i];
 
     }
 
