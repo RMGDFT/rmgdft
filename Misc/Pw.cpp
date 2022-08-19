@@ -128,7 +128,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
 
   double g_radius = InscribedSphere();
-  if(pct.gridpe == 0) printf("\n g radius max %f %f", g_radius * g_radius, this->gmax);
+  if(ct.verbose && pct.gridpe==0) printf("\n g radius max %f %f", g_radius * g_radius, this->gmax);
   this->gmax = g_radius * g_radius;
   this->gcut = ct.filter_factor*g_radius * g_radius;
   for(size_t idx = 0;idx < this->pbasis;idx++)
@@ -141,8 +141,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
   int gcount = this->ng;
   MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
-  printf("G-vector count  = %d   %lu\n", gcount, this->global_basis);
-  printf("G-vector cutoff = %8.2f  %8.2f\n", sqrt(this->gcut), sqrt(this->gmax));
+  if(ct.verbose && pct.gridpe==0) printf("G-vector count  = %d   %lu\n", gcount, this->global_basis);
+  if(ct.verbose && pct.gridpe==0) printf("G-vector cutoff = %8.2f  %8.2f\n", sqrt(this->gcut), sqrt(this->gmax));
 
   // Now set up plans
   if(G.get_NPES() == 1)
@@ -1109,7 +1109,7 @@ double Pw::InscribedSphere ()
     center[1] = (L->b0[1] * nx + L->b1[1] * ny + L->b2[1] *nz)/2.0 * L->celldm[0];
     center[2] = (L->b0[2] * nx + L->b1[2] * ny + L->b2[2] *nz)/2.0 * L->celldm[0];
 
-    if(pct.gridpe ==0) printf("\n center %f %f %f", center[0], center[1], center[2]);
+    if(ct.verbose && pct.gridpe==0) printf("\n center %f %f %f", center[0], center[1], center[2]);
 //  for plane b0 anx b1
     a_n = L->b0[1] * L->b1[2] - L->b0[2] * L->b1[1];
     b_n = L->b0[2] * L->b1[0] - L->b0[0] * L->b1[2];
@@ -1117,7 +1117,7 @@ double Pw::InscribedSphere ()
     
     radius = std::abs(a_n * center[0] + b_n * center[1] + c_n * center[2])/std::sqrt(a_n * a_n + b_n * b_n + c_n * c_n);
     radius_min = radius;
-    if(pct.gridpe ==0) printf("\n radius %f %f %f %f", radius, a_n, b_n, c_n);
+    if(ct.verbose && pct.gridpe==0) printf("\n radius %f %f %f %f", radius, a_n, b_n, c_n);
 
 //  for plane b0 anx b2
     a_n = L->b0[1] * L->b2[2] - L->b0[2] * L->b2[1];

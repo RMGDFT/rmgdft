@@ -111,15 +111,19 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) < ct.hmingrid)
         ct.hmingrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-
-    if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
+    double density[3];
+    double planar_anisotropy = GetPlanarAnisotropy(density);
+    if (planar_anisotropy > 1.1)
     {
         if (pct.imgpe == 0)
         {
-            printf ("hxgrid = %7.5f\n", Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
-            printf ("hygrid = %7.5f\n", Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
-            printf ("hzgrid = %7.5f\n", Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
-            printf ("Anisotropy is large: %f", ct.hmaxgrid/ct.hmingrid);
+	    printf ("\n");
+	    printf ("Coordinate planes\n");
+	    printf ("  Planar Anisotropy: %5.3f\n", planar_anisotropy);
+	    printf ("  A0-A1 density: %9.3f\n", density[0]);
+	    printf ("  A0-A2 density: %9.3f\n", density[1]);
+	    printf ("  A1-A2 density: %9.3f\n", density[2]);
+            printf ("Planar Anisotropy is large: %f", planar_anisotropy);
         }
     }
 

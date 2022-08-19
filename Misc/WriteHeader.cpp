@@ -245,8 +245,8 @@ void WriteHeader (void)
     double density[3];
     double planar_anisotropy = GetPlanarAnisotropy(density);
     printf ("\n");
-    printf ("Coordinate planes");
-    printf("  (Planar Anisotropy: %5.3f)\n", planar_anisotropy);
+    printf ("Coordinate planes\n");
+    printf ("  Planar Anisotropy: %5.3f\n", planar_anisotropy);
     printf ("  A0-A1 density: %9.3f\n", density[0]);
     printf ("  A0-A2 density: %9.3f\n", density[1]);
     printf ("  A1-A2 density: %9.3f\n", density[2]);
