@@ -3,6 +3,7 @@ PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
+GetPlanarAnisotropy.cpp
 check_tests.cpp
 MixLdaU.cpp
 Precond_drho.cpp

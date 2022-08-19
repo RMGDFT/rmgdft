@@ -178,7 +178,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) < ct.hmingrid)
         ct.hmingrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-
+    double planar_anistropy = GetPlanarAnisotropy();
     if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
     {
         if (pct.imgpe == 0)
