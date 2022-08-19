@@ -178,16 +178,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) < ct.hmingrid)
         ct.hmingrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-    double planar_anistropy = GetPlanarAnisotropy();
-    if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
+    double density[3];
+    double planar_anisotropy = GetPlanarAnisotropy(density);
+    if (planar_anisotropy > 1.1)
     {
         if (pct.imgpe == 0)
         {
-            printf ("hxgrid = %7.5f\n", Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
-            printf ("hygrid = %7.5f\n", Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
-            printf ("hzgrid = %7.5f\n", Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
+            printf ("A0-A1 density = %7.5f\n", density[0]);
+            printf ("A0-A2 density = %7.5f\n", density[1]);
+            printf ("A1-A2 density = %7.5f\n", density[2]);
         }
-        rmg_error_handler (__FILE__, __LINE__, "Anisotropy too large");
+        rmg_error_handler (__FILE__, __LINE__, "Planar Anisotropy too large");
     }
 
 

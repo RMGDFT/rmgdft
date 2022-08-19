@@ -30,33 +30,28 @@
 #include "RmgException.h"
 #include "transition.h"
 
-double GetPlanarAnisotropy(void)
+double GetPlanarAnisotropy(double *density)
 {
     double t[3];
     Rmg_L.cross_product(Rmg_L.a0, Rmg_L.a1, t);
-    double xy_density = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
+    density[0] = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
 	                (Rmg_G->get_NX_GRID(1)*Rmg_G->get_NY_GRID(1));
-    xy_density = 1.0 / xy_density;
+    density[0] = 1.0 / density[0];
 
     Rmg_L.cross_product(Rmg_L.a0, Rmg_L.a2, t);
-    double xz_density = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
+    density[1] = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
 	                (Rmg_G->get_NX_GRID(1)*Rmg_G->get_NZ_GRID(1));
-    xz_density = 1.0 / xz_density;
+    density[1] = 1.0 / density[1];
 
     Rmg_L.cross_product(Rmg_L.a1, Rmg_L.a2, t);
-    double yz_density = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
+    density[2] = sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2]) / 
 	                (Rmg_G->get_NY_GRID(1)*Rmg_G->get_NZ_GRID(1));
-    yz_density = 1.0 / yz_density;
+    density[2] = 1.0 / density[2];
 
-    if(ct.verbose && pct.gridpe == 0) 
-        rmg_printf("Planar Density = %12.6f  %12.6f  %12.6f\n", xy_density, xz_density, yz_density);
-    
-    double dmax = std::max(xy_density, xz_density);
-    dmax = std::max(dmax, yz_density);
-    double dmin = std::min(xy_density, xz_density);
-    dmin = std::min(dmin, yz_density);
-    if(ct.verbose && pct.gridpe == 0) 
-        rmg_printf("Planar Anisotropy = %12.6f\n", dmax/dmin);
+    double dmax = std::max(density[0], density[1]);
+    dmax = std::max(dmax, density[2]);
+    double dmin = std::min(density[0], density[1]);
+    dmin = std::min(dmin, density[2]);
 
     return dmax / dmin;
 }

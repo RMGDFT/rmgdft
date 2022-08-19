@@ -216,8 +216,7 @@ void WriteHeader (void)
     
     printf ("\n");
     printf ("Grid Points");
-    if (fabs (1.0 - get_anisotropy()) > 0.005)
-	printf("  (Anisotropy: %5.3f)", get_anisotropy());
+    printf("  (Linear Anisotropy: %5.3f)", get_anisotropy());
     printf ("\n");
     
     printf ("    X:  Total: %d   Per PE: %d   Spacing:%5.3f a0  \n", get_NX_GRID(), get_PX0_GRID(),   get_hxgrid() * get_xside());
@@ -242,6 +241,15 @@ void WriteHeader (void)
     printf ("\n");
     printf ("    Charge density grid:         %d times finer\n", get_FG_RATIO());
 
+
+    double density[3];
+    double planar_anisotropy = GetPlanarAnisotropy(density);
+    printf ("\n");
+    printf ("Coordinate planes");
+    printf("  (Planar Anisotropy: %5.3f)\n", planar_anisotropy);
+    printf ("  A0-A1 density: %9.3f\n", density[0]);
+    printf ("  A0-A2 density: %9.3f\n", density[1]);
+    printf ("  A1-A2 density: %9.3f\n", density[2]);
 
     printf ("\n");
     printf ("\n");
