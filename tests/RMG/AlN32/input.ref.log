@@ -1,4 +1,4 @@
-RMG initialization ... 1 image(s) total, 1 per node. 24 MPI processes/image. Thread level 2.
+RMG initialization ... 1 image(s) total, 1 per node. 8 MPI processes/image. Thread level 2.
 
 
                      * * * * * * * * * *
@@ -8,9 +8,15 @@ RMG initialization ... 1 image(s) total, 1 per node. 24 MPI processes/image. Thr
      -- A Real Space Multigrid Electronic structure code --
      --      More information at www.rmgdft.org          --
 
-Code Revision:     v4.0.0_beta_1176_g7eb6b4d5
-Build Date:        May 19 2022  19:30:14
-Start time:        Thu May 19 19:33:58 2022
+Code Revision:     v4.0.0_beta_1244_g05658a35
+Build Date:        Aug 19 2022  15:54:33
+Start time:        Sun Aug 21 07:37:06 2022
+
+NOTICE: RMG internal pseudopotentials have switched to
+ONCVP from Ultrasoft. You can revert to Ultrasoft by
+adding the input tag internal_pseudo_type="ultrasoft" to
+your input files.
+
 
 Files
    Control input file:        input
@@ -25,21 +31,27 @@ Run Setup
     System charge:            Neutral
 
 Processor Topology
-   Total PEs:                 24
-   X direction:               6
+   Total PEs:                 8
+   X direction:               2
    Y direction:               2
    Z direction:               2
    MG Threads/PE:             1
    OMP Threads/PE:            1
 
-Grid Points  (Anisotropy: 1.089)
-    X:  Total: 48   Per PE: 8   Spacing:0.252 a0  
+Grid Points  (Linear Anisotropy: 1.174)
+    X:  Total: 48   Per PE: 24   Spacing:0.252 a0  
     Y:  Total: 48   Per PE: 24   Spacing:0.252 a0  
-    Z:  Total: 72   Per PE: 36   Spacing:0.274 a0  
+    Z:  Total: 92   Per PE: 46   Spacing:0.215 a0  
 
-    Equivalent energy cutoffs (psi,rho):   188.262    753.049 Ry
+    Equivalent energy cutoffs (psi,rho):   155.468    621.874 Ry
 
     Charge density grid:         2 times finer
+
+Coordinate planes
+  Planar Anisotropy: 1.016
+  A0-A1 density:    18.189
+  A0-A2 density:    18.489
+  A1-A2 density:    18.489
 
 
 Lattice (Cell) Setup
@@ -81,7 +93,7 @@ Subspace Diagonalization Options
 Filtering Cutoff  Parameters
     Wavefunction grid (cparm):               0.800
     Charge density grid (rhocparm):          1.000
-    Filter factor:                           0.250
+    Filter factor:                           1.000
 
 Multigrid (MG) Parameters
     Psi MG levels:                           3
@@ -118,8 +130,8 @@ Pseudopotential generation information:
 
 
 Memory usage (Mbytes):     Min        Max       Total
-    wave functions         17.70      17.70     424.70
-    beta-functions         31.85      31.85     764.44
+    wave functions         67.83      67.83     542.65
+    beta-functions        122.09     122.09     976.76
 
 
 
@@ -200,32 +212,32 @@ Diagonalization using scalapack for step=0  count=1
 
 KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
 
-[kpt   0  -1   0]   -10.6123 [2.000]   -10.0341 [2.000]   -10.0341 [2.000]    -9.3614 [2.000]    -9.3614 [2.000]
-[kpt   0  -1   1]    -9.3614 [2.000]    -9.3234 [2.000]    -9.1406 [2.000]    -9.1406 [2.000]    -9.1406 [2.000]
-[kpt   0  -1   2]    -9.1406 [2.000]    -9.1406 [2.000]    -9.1406 [2.000]    -8.9268 [2.000]    -8.9268 [2.000]
-[kpt   0  -1   3]    -8.9268 [2.000]    -0.7733 [2.000]    -0.4421 [2.000]    -0.4421 [2.000]    -0.4421 [2.000]
-[kpt   0  -1   4]    -0.4421 [2.000]    -0.4421 [2.000]    -0.4421 [2.000]    -0.3398 [2.000]    -0.3398 [2.000]
-[kpt   0  -1   5]    -0.3398 [2.000]     0.4616 [2.000]     0.4617 [2.000]     0.4617 [2.000]     1.0891 [2.000]
-[kpt   0  -1   6]     1.0891 [2.000]     1.1055 [2.000]     1.1055 [2.000]     1.1055 [2.000]     2.0068 [2.000]
-[kpt   0  -1   7]     2.0068 [2.000]     2.0069 [2.000]     2.2956 [2.000]     2.2956 [2.000]     2.2956 [2.000]
-[kpt   0  -1   8]     2.4423 [2.000]     2.4423 [2.000]     2.4423 [2.000]     2.4423 [2.000]     2.4424 [2.000]
-[kpt   0  -1   9]     2.4424 [2.000]     2.4460 [2.000]     2.4460 [2.000]     2.4460 [2.000]     2.4460 [2.000]
-[kpt   0  -1  10]     2.4460 [2.000]     2.4460 [2.000]     2.9228 [2.000]     2.9229 [2.000]     2.9710 [2.000]
-[kpt   0  -1  11]     2.9710 [2.000]     2.9710 [2.000]     3.1844 [2.000]     3.1844 [2.000]     3.1844 [2.000]
-[kpt   0  -1  12]     3.1844 [2.000]     3.4201 [2.000]     3.4526 [2.000]     3.4526 [2.000]     8.5716 [0.000]
-[kpt   0  -1  13]    10.7479 [0.000]    10.7480 [0.000]    12.3816 [0.000]    12.3816 [0.000]    12.3820 [0.000]
-[kpt   0  -1  14]    12.3820 [0.000]    12.3820 [0.000]    12.3820 [0.000]    12.3895 [0.000]    12.7293 [0.000]
-[kpt   0  -1  15]    12.7296 [0.000]    12.7296 [0.000]    13.6689 [0.000]    13.6695 [0.000]    13.6695 [0.000]
-[kpt   0  -1  16]    14.3017 [0.000]    14.3019 [0.000]    14.3019 [0.000]    15.0648 [0.000]    15.5819 [0.000]
-[kpt   0  -1  17]    15.5819 [0.000]    15.5820 [0.000]    15.5820 [0.000]    15.5820 [0.000]    15.5820 [0.000]
-[kpt   0  -1  18]    15.7005 [0.000]    15.7005 [0.000]    15.7005 [0.000]    17.3504 [0.000]    17.3504 [0.000]
-[kpt   0  -1  19]    17.4233 [0.000]    17.4233 [0.000]    17.4233 [0.000]    18.4808 [0.000]    18.4908 [0.000]
-[kpt   0  -1  20]    18.7310 [0.000]    18.7310 [0.000]    18.7314 [0.000]    18.7314 [0.000]    18.7314 [0.000]
-[kpt   0  -1  21]    18.7314 [0.000]    19.1935 [0.000]    19.1935 [0.000]    19.2037 [0.000]    19.2037 [0.000]
-[kpt   0  -1  22]    19.2256 [0.000]    19.5797 [0.000]    19.5797 [0.000]    19.5865 [0.000]    20.0049 [0.000]
-[kpt   0  -1  23]    20.0049 [0.000]    20.0049 [0.000]    20.0049 [0.000]    20.0101 [0.000]    20.0101 [0.000]
-[kpt   0  -1  24]    20.3269 [0.000]    20.3352 [0.000]    20.4557 [0.000]    20.4557 [0.000]    20.4590 [0.000]
-[kpt   0  -1  25]    20.9723 [0.000]    20.9725 [0.000]    20.9725 [0.000]
+[kpt   0  -1   0]   -10.6125 [2.000]   -10.0343 [2.000]   -10.0343 [2.000]    -9.3616 [2.000]    -9.3616 [2.000]
+[kpt   0  -1   1]    -9.3616 [2.000]    -9.3236 [2.000]    -9.1409 [2.000]    -9.1408 [2.000]    -9.1408 [2.000]
+[kpt   0  -1   2]    -9.1408 [2.000]    -9.1408 [2.000]    -9.1408 [2.000]    -8.9270 [2.000]    -8.9270 [2.000]
+[kpt   0  -1   3]    -8.9270 [2.000]    -0.7745 [2.000]    -0.4429 [2.000]    -0.4429 [2.000]    -0.4429 [2.000]
+[kpt   0  -1   4]    -0.4429 [2.000]    -0.4429 [2.000]    -0.4429 [2.000]    -0.3405 [2.000]    -0.3405 [2.000]
+[kpt   0  -1   5]    -0.3405 [2.000]     0.4608 [2.000]     0.4608 [2.000]     0.4608 [2.000]     1.0872 [2.000]
+[kpt   0  -1   6]     1.0872 [2.000]     1.1034 [2.000]     1.1034 [2.000]     1.1035 [2.000]     2.0053 [2.000]
+[kpt   0  -1   7]     2.0053 [2.000]     2.0053 [2.000]     2.2930 [2.000]     2.2930 [2.000]     2.2930 [2.000]
+[kpt   0  -1   8]     2.4407 [2.000]     2.4407 [2.000]     2.4407 [2.000]     2.4407 [2.000]     2.4407 [2.000]
+[kpt   0  -1   9]     2.4407 [2.000]     2.4435 [2.000]     2.4435 [2.000]     2.4435 [2.000]     2.4435 [2.000]
+[kpt   0  -1  10]     2.4435 [2.000]     2.4435 [2.000]     2.9212 [2.000]     2.9212 [2.000]     2.9693 [2.000]
+[kpt   0  -1  11]     2.9693 [2.000]     2.9694 [2.000]     3.1827 [2.000]     3.1827 [2.000]     3.1828 [2.000]
+[kpt   0  -1  12]     3.1828 [2.000]     3.4169 [2.000]     3.4510 [2.000]     3.4510 [2.000]     8.5712 [0.000]
+[kpt   0  -1  13]    10.7464 [0.000]    10.7464 [0.000]    12.3770 [0.000]    12.3770 [0.000]    12.3770 [0.000]
+[kpt   0  -1  14]    12.3770 [0.000]    12.3770 [0.000]    12.3770 [0.000]    12.3886 [0.000]    12.7246 [0.000]
+[kpt   0  -1  15]    12.7246 [0.000]    12.7246 [0.000]    13.6626 [0.000]    13.6626 [0.000]    13.6626 [0.000]
+[kpt   0  -1  16]    14.2943 [0.000]    14.2943 [0.000]    14.2943 [0.000]    15.0600 [0.000]    15.5785 [0.000]
+[kpt   0  -1  17]    15.5785 [0.000]    15.5785 [0.000]    15.5785 [0.000]    15.5786 [0.000]    15.5786 [0.000]
+[kpt   0  -1  18]    15.6979 [0.000]    15.6979 [0.000]    15.6979 [0.000]    17.3426 [0.000]    17.3426 [0.000]
+[kpt   0  -1  19]    17.4133 [0.000]    17.4133 [0.000]    17.4134 [0.000]    18.4450 [0.000]    18.4452 [0.000]
+[kpt   0  -1  20]    18.7130 [0.000]    18.7130 [0.000]    18.7130 [0.000]    18.7130 [0.000]    18.7130 [0.000]
+[kpt   0  -1  21]    18.7130 [0.000]    19.1549 [0.000]    19.1549 [0.000]    19.1549 [0.000]    19.1549 [0.000]
+[kpt   0  -1  22]    19.1940 [0.000]    19.5413 [0.000]    19.5413 [0.000]    19.5413 [0.000]    19.9735 [0.000]
+[kpt   0  -1  23]    19.9735 [0.000]    19.9735 [0.000]    19.9735 [0.000]    19.9735 [0.000]    19.9735 [0.000]
+[kpt   0  -1  24]    20.2969 [0.000]    20.2969 [0.000]    20.4288 [0.000]    20.4288 [0.000]    20.4288 [0.000]
+[kpt   0  -1  25]    20.9544 [0.000]    20.9544 [0.000]    20.9544 [0.000]
 
 
 Charge density mixing: Linear with a constant of 0.50 
@@ -233,327 +245,406 @@ Charge density mixing: Linear with a constant of 0.50
 Diagonalization using scalapack for step=0  count=2
 
 
-FERMI ENERGY =      6.71645173 eV
-@@ EIGENVALUE SUM     =        7.938970 Ha
+FERMI ENERGY =      6.61905713 eV
+@@ EIGENVALUE SUM     =        7.440948 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -52.569249 Ha
-@@ VXC                =      -74.428428 Ha
-@@ EXC                =      -68.517989 Ha
-@@ TOTAL ENERGY       =     -206.830665 Ha
+@@ ELECTROSTATIC      =      -52.567410 Ha
+@@ VXC                =      -74.427865 Ha
+@@ EXC                =      -68.517495 Ha
+@@ TOTAL ENERGY       =     -207.326915 Ha
 @@ estimated error    =   ****************
 Charge density mixing: Linear with a constant of 0.50 
-
- write_data: Opening output file 'Waves/wave.out.restart' failed
-  Trying to create subdirectory in case it does not exist
-
- Creating directory Waves successfully
-
 WriteRestart: Restart file Waves/wave.out opened...
-WriteData: total size of each of the 24 files = 2.0 Mb
-WriteData: writing took 0.0 seconds, writing speed 90.800 Mbps 
-WriteRestart: writing took 0.0 seconds 
+WriteData: total size of each of the 8 files = 7.5 Mb
+WriteData: writing took 0.1 seconds, writing speed 68.103 Mbps 
+WriteRestart: writing took 0.1 seconds 
 
 
 KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
 
-[kpt   0   0   0]    -7.9258 [2.000]    -7.1511 [2.000]    -7.1475 [2.000]    -6.1436 [2.000]    -6.1432 [2.000]
-[kpt   0   0   1]    -6.1392 [2.000]    -6.0787 [2.000]    -5.8277 [2.000]    -5.8270 [2.000]    -5.8263 [2.000]
-[kpt   0   0   2]    -5.8259 [2.000]    -5.8227 [2.000]    -5.8214 [2.000]    -5.5423 [2.000]    -5.5414 [2.000]
-[kpt   0   0   3]    -5.5371 [2.000]     0.8273 [2.000]     1.2951 [2.000]     1.2956 [2.000]     1.2964 [2.000]
-[kpt   0   0   4]     1.2978 [2.000]     1.3118 [2.000]     1.3119 [2.000]     1.3773 [2.000]     1.3930 [2.000]
-[kpt   0   0   5]     1.3940 [2.000]     2.5600 [2.000]     2.5612 [2.000]     2.5986 [2.000]     3.2694 [2.000]
-[kpt   0   0   6]     3.2734 [2.000]     3.4294 [2.000]     3.4304 [2.000]     3.4340 [2.000]     4.7625 [2.000]
-[kpt   0   0   7]     4.7982 [2.000]     4.7999 [2.000]     4.9410 [2.000]     4.9416 [2.000]     4.9578 [2.000]
-[kpt   0   0   8]     5.2947 [2.000]     5.2979 [2.000]     5.3031 [2.000]     5.3036 [2.000]     5.3079 [2.000]
-[kpt   0   0   9]     5.3089 [2.000]     5.3393 [2.000]     5.3445 [2.000]     5.3852 [2.000]     5.3862 [2.000]
-[kpt   0   0  10]     5.3871 [2.000]     5.3882 [2.000]     6.0066 [2.000]     6.0608 [2.000]     6.0678 [2.000]
-[kpt   0   0  11]     6.1181 [2.000]     6.1201 [2.000]     6.3043 [2.000]     6.3084 [2.000]     6.3867 [2.000]
-[kpt   0   0  12]     6.3893 [2.000]     6.6146 [2.000]     6.6191 [2.000]     6.7165 [2.000]     9.7737 [0.000]
-[kpt   0   0  13]    11.8641 [0.000]    11.8648 [0.000]    11.8805 [0.000]    11.8815 [0.000]    11.8967 [0.000]
-[kpt   0   0  14]    11.9267 [0.000]    12.0986 [0.000]    12.1225 [0.000]    12.5795 [0.000]    13.0683 [0.000]
-[kpt   0   0  15]    13.0690 [0.000]    13.1069 [0.000]    13.5925 [0.000]    13.6801 [0.000]    13.6821 [0.000]
+[kpt   0   0   0]    -8.0425 [2.000]    -7.2676 [2.000]    -7.2630 [2.000]    -6.2606 [2.000]    -6.2591 [2.000]
+[kpt   0   0   1]    -6.2589 [2.000]    -6.1951 [2.000]    -5.9421 [2.000]    -5.9418 [2.000]    -5.9417 [2.000]
+[kpt   0   0   2]    -5.9409 [2.000]    -5.9405 [2.000]    -5.9399 [2.000]    -5.6565 [2.000]    -5.6557 [2.000]
+[kpt   0   0   3]    -5.6519 [2.000]     0.7350 [2.000]     1.2055 [2.000]     1.2066 [2.000]     1.2071 [2.000]
+[kpt   0   0   4]     1.2073 [2.000]     1.2266 [2.000]     1.2270 [2.000]     1.2887 [2.000]     1.2984 [2.000]
+[kpt   0   0   5]     1.2985 [2.000]     2.4677 [2.000]     2.4678 [2.000]     2.5122 [2.000]     3.1751 [2.000]
+[kpt   0   0   6]     3.1778 [2.000]     3.3259 [2.000]     3.3270 [2.000]     3.3287 [2.000]     4.6507 [2.000]
+[kpt   0   0   7]     4.6961 [2.000]     4.6970 [2.000]     4.8383 [2.000]     4.8391 [2.000]     4.8487 [2.000]
+[kpt   0   0   8]     5.1873 [2.000]     5.1878 [2.000]     5.1921 [2.000]     5.1927 [2.000]     5.1928 [2.000]
+[kpt   0   0   9]     5.1935 [2.000]     5.2269 [2.000]     5.2273 [2.000]     5.2821 [2.000]     5.2828 [2.000]
+[kpt   0   0  10]     5.2830 [2.000]     5.2847 [2.000]     5.8917 [2.000]     5.9447 [2.000]     5.9640 [2.000]
+[kpt   0   0  11]     6.0129 [2.000]     6.0145 [2.000]     6.1939 [2.000]     6.1968 [2.000]     6.2863 [2.000]
+[kpt   0   0  12]     6.2893 [2.000]     6.4905 [2.000]     6.5079 [2.000]     6.6191 [2.000]     9.6960 [0.000]
+[kpt   0   0  13]    11.8638 [0.000]    11.8653 [0.000]    11.8713 [0.000]    11.8778 [0.000]    11.9239 [0.000]
+[kpt   0   0  14]    11.9341 [0.000]    12.0506 [0.000]    12.0561 [0.000]    12.5186 [0.000]    13.0434 [0.000]
+[kpt   0   0  15]    13.0463 [0.000]    13.0708 [0.000]    13.7166 [0.000]    13.7189 [0.000]    13.7392 [0.000]
 
 
 
 
 Total charge in supercell =     128.00000000
- quench: [md:   0/100  scf:   0/20  step time:   0.83  scf time:     1.03 secs  RMS[dV]: 7.15e-02 ]
+ quench: [md:   0/100  scf:   0/20  step time:   3.18  scf time:     3.89 secs  RMS[dV]: 7.15e-02 ]
 
 
-average potential <V> = -2.52e-16
+average potential <V> = 3.10e-16
 
 Diagonalization using scalapack for step=1  count=3
 
 
-FERMI ENERGY =      7.39014553 eV
-@@ EIGENVALUE SUM     =       10.497152 Ha
+FERMI ENERGY =      7.42032323 eV
+@@ EIGENVALUE SUM     =       10.576670 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -54.658727 Ha
-@@ VXC                =      -75.019462 Ha
-@@ EXC                =      -68.935107 Ha
-@@ TOTAL ENERGY       =     -206.188043 Ha
-@@ estimated error    =        1.38e-01 Ha
+@@ ELECTROSTATIC      =      -55.202633 Ha
+@@ VXC                =      -75.193771 Ha
+@@ EXC                =      -69.072372 Ha
+@@ TOTAL ENERGY       =     -206.615388 Ha
+@@ estimated error    =        1.81e-01 Ha
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   1/20  step time:   0.76  scf time:     1.79 secs  RMS[dV]: 2.22e-02 ]
+ quench: [md:   0/100  scf:   1/20  step time:   2.84  scf time:     6.74 secs  RMS[dV]: 2.47e-02 ]
 
 
-average potential <V> = -1.10e-16
+average potential <V> = -4.09e-16
 
 Diagonalization using scalapack for step=2  count=4
 
 
-FERMI ENERGY =      6.98708322 eV
-@@ EIGENVALUE SUM     =        8.963791 Ha
+FERMI ENERGY =      7.09900084 eV
+@@ EIGENVALUE SUM     =        9.371753 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -51.677673 Ha
-@@ VXC                =      -74.039847 Ha
-@@ EXC                =      -68.141935 Ha
-@@ TOTAL ENERGY       =     -204.926793 Ha
-@@ estimated error    =        2.42e-01 Ha
+@@ ELECTROSTATIC      =      -52.479051 Ha
+@@ VXC                =      -74.298738 Ha
+@@ EXC                =      -68.346037 Ha
+@@ TOTAL ENERGY       =     -205.265420 Ha
+@@ estimated error    =        2.08e-01 Ha
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   2/20  step time:   0.76  scf time:     2.55 secs  RMS[dV]: 1.79e-02 ]
+ quench: [md:   0/100  scf:   2/20  step time:   2.76  scf time:     9.50 secs  RMS[dV]: 1.66e-02 ]
 
 
-average potential <V> = 1.04e-16
+average potential <V> = -7.67e-17
 
 Diagonalization using scalapack for step=3  count=5
 
 
-FERMI ENERGY =      6.50010179 eV
-@@ EIGENVALUE SUM     =        7.210377 Ha
+FERMI ENERGY =      6.62337954 eV
+@@ EIGENVALUE SUM     =        7.669958 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -49.090364 Ha
-@@ VXC                =      -73.198994 Ha
-@@ EXC                =      -67.468729 Ha
-@@ TOTAL ENERGY       =     -204.260547 Ha
-@@ estimated error    =        1.80e-01 Ha
+@@ ELECTROSTATIC      =      -49.780750 Ha
+@@ VXC                =      -73.423876 Ha
+@@ EXC                =      -67.646377 Ha
+@@ TOTAL ENERGY       =     -204.444117 Ha
+@@ estimated error    =        1.90e-01 Ha
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   3/20  step time:   0.76  scf time:     3.31 secs  RMS[dV]: 1.57e-02 ]
+ quench: [md:   0/100  scf:   3/20  step time:   2.76  scf time:    12.26 secs  RMS[dV]: 1.61e-02 ]
 
 
-average potential <V> = 9.32e-17
+average potential <V> = 1.34e-16
+Davidson converged in 3 steps
+
+FERMI ENERGY =      6.29087157 eV
+@@ EIGENVALUE SUM     =        6.450114 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.306251 Ha
+@@ VXC                =      -72.947222 Ha
+@@ EXC                =      -67.265012 Ha
+@@ TOTAL ENERGY       =     -204.284752 Ha
+@@ estimated error    =        6.43e-02 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   4/20  step time:   1.94  scf time:    14.20 secs  RMS[dV]: 9.33e-03 ]
+
+
+average potential <V> = 1.54e-16
+Davidson converged in 3 steps
+
+FERMI ENERGY =      6.15974307 eV
+@@ EIGENVALUE SUM     =        6.004255 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -47.830084 Ha
+@@ VXC                =      -72.795708 Ha
+@@ EXC                =      -67.141608 Ha
+@@ TOTAL ENERGY       =     -204.282554 Ha
+@@ estimated error    =        1.05e-02 Ha
+Charge density mixing: Broyden
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   5   0]    -8.3390 [2.000]    -7.5759 [2.000]    -7.5759 [2.000]    -6.5939 [2.000]    -6.5938 [2.000]
+[kpt   0   5   1]    -6.5937 [2.000]    -6.5264 [2.000]    -6.2833 [2.000]    -6.2832 [2.000]    -6.2832 [2.000]
+[kpt   0   5   2]    -6.2832 [2.000]    -6.2829 [2.000]    -6.2828 [2.000]    -6.0055 [2.000]    -6.0055 [2.000]
+[kpt   0   5   3]    -6.0050 [2.000]     0.5319 [2.000]     0.9899 [2.000]     0.9900 [2.000]     0.9916 [2.000]
+[kpt   0   5   4]     0.9916 [2.000]     0.9916 [2.000]     0.9916 [2.000]     1.1133 [2.000]     1.1166 [2.000]
+[kpt   0   5   5]     1.1167 [2.000]     2.2407 [2.000]     2.2417 [2.000]     2.2417 [2.000]     2.9171 [2.000]
+[kpt   0   5   6]     2.9171 [2.000]     3.0520 [2.000]     3.0520 [2.000]     3.0527 [2.000]     4.3967 [2.000]
+[kpt   0   5   7]     4.3967 [2.000]     4.3972 [2.000]     4.5265 [2.000]     4.5270 [2.000]     4.5270 [2.000]
+[kpt   0   5   8]     4.8735 [2.000]     4.8735 [2.000]     4.8740 [2.000]     4.8740 [2.000]     4.8740 [2.000]
+[kpt   0   5   9]     4.8740 [2.000]     4.9551 [2.000]     4.9551 [2.000]     4.9551 [2.000]     4.9551 [2.000]
+[kpt   0   5  10]     4.9556 [2.000]     4.9557 [2.000]     5.5693 [2.000]     5.5711 [2.000]     5.6417 [2.000]
+[kpt   0   5  11]     5.6417 [2.000]     5.6428 [2.000]     5.8551 [2.000]     5.8551 [2.000]     5.8571 [2.000]
+[kpt   0   5  12]     5.8571 [2.000]     6.1119 [2.000]     6.1574 [2.000]     6.1597 [2.000]     9.4965 [0.000]
+[kpt   0   5  13]    11.0215 [0.000]    11.0215 [0.000]    11.0215 [0.000]    11.0217 [0.000]    11.0252 [0.000]
+[kpt   0   5  14]    11.0252 [0.000]    11.6120 [0.000]    11.6555 [0.000]    11.6561 [0.000]    11.7355 [0.000]
+[kpt   0   5  15]    11.7356 [0.000]    11.7384 [0.000]    11.8354 [0.000]    11.8354 [0.000]    12.1262 [0.000]
+
+
+
+
+Total charge in supercell =     128.00000000
+ quench: [md:   0/100  scf:   5/20  step time:   2.11  scf time:    16.31 secs  RMS[dV]: 3.89e-03 ]
+
+
+average potential <V> = 7.28e-17
+Davidson converged in 3 steps
+
+FERMI ENERGY =      6.19207707 eV
+@@ EIGENVALUE SUM     =        6.136198 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -47.974261 Ha
+@@ VXC                =      -72.845501 Ha
+@@ EXC                =      -67.179211 Ha
+@@ TOTAL ENERGY       =     -204.282597 Ha
+@@ estimated error    =        1.10e-03 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   6/20  step time:   2.06  scf time:    18.37 secs  RMS[dV]: 2.14e-03 ]
+
+
+average potential <V> = 7.57e-17
+Davidson converged in 3 steps
+
+FERMI ENERGY =      6.21431304 eV
+@@ EIGENVALUE SUM     =        6.225632 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.072616 Ha
+@@ VXC                =      -72.880075 Ha
+@@ EXC                =      -67.204898 Ha
+@@ TOTAL ENERGY       =     -204.282632 Ha
+@@ estimated error    =        2.13e-04 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   7/20  step time:   2.12  scf time:    20.49 secs  RMS[dV]: 1.04e-03 ]
+
+
+average potential <V> = 5.75e-16
+Davidson converged in 5 steps
+
+FERMI ENERGY =      6.20560013 eV
+@@ EIGENVALUE SUM     =        6.195172 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.040078 Ha
+@@ VXC                =      -72.869640 Ha
+@@ EXC                =      -67.196541 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        2.40e-05 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   8/20  step time:   2.88  scf time:    23.36 secs  RMS[dV]: 1.86e-04 ]
+
+
+average potential <V> = -8.20e-17
+Davidson converged in 4 steps
+
+FERMI ENERGY =      6.20686748 eV
+@@ EIGENVALUE SUM     =        6.199962 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.045174 Ha
+@@ VXC                =      -72.871252 Ha
+@@ EXC                =      -67.197846 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        2.41e-06 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   9/20  step time:   2.42  scf time:    25.79 secs  RMS[dV]: 8.61e-05 ]
+
+
+average potential <V> = -6.26e-16
+Davidson converged in 3 steps
+
+FERMI ENERGY =      6.20721007 eV
+@@ EIGENVALUE SUM     =        6.201596 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.046899 Ha
+@@ VXC                =      -72.871787 Ha
+@@ EXC                =      -67.198290 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        5.03e-07 Ha
+Charge density mixing: Broyden
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  10   0]    -8.2976 [2.000]    -7.5323 [2.000]    -7.5323 [2.000]    -6.5465 [2.000]    -6.5465 [2.000]
+[kpt   0  10   1]    -6.5465 [2.000]    -6.4781 [2.000]    -6.2346 [2.000]    -6.2346 [2.000]    -6.2346 [2.000]
+[kpt   0  10   2]    -6.2345 [2.000]    -6.2345 [2.000]    -6.2345 [2.000]    -5.9557 [2.000]    -5.9557 [2.000]
+[kpt   0  10   3]    -5.9557 [2.000]     0.5604 [2.000]     1.0235 [2.000]     1.0235 [2.000]     1.0235 [2.000]
+[kpt   0  10   4]     1.0235 [2.000]     1.0235 [2.000]     1.0235 [2.000]     1.1489 [2.000]     1.1489 [2.000]
+[kpt   0  10   5]     1.1489 [2.000]     2.2785 [2.000]     2.2785 [2.000]     2.2785 [2.000]     2.9533 [2.000]
+[kpt   0  10   6]     2.9533 [2.000]     3.0867 [2.000]     3.0867 [2.000]     3.0867 [2.000]     4.4381 [2.000]
+[kpt   0  10   7]     4.4382 [2.000]     4.4382 [2.000]     4.5646 [2.000]     4.5646 [2.000]     4.5646 [2.000]
+[kpt   0  10   8]     4.9157 [2.000]     4.9157 [2.000]     4.9157 [2.000]     4.9157 [2.000]     4.9157 [2.000]
+[kpt   0  10   9]     4.9157 [2.000]     4.9986 [2.000]     4.9986 [2.000]     4.9987 [2.000]     4.9987 [2.000]
+[kpt   0  10  10]     4.9987 [2.000]     4.9987 [2.000]     5.6164 [2.000]     5.6164 [2.000]     5.6891 [2.000]
+[kpt   0  10  11]     5.6891 [2.000]     5.6891 [2.000]     5.9034 [2.000]     5.9035 [2.000]     5.9035 [2.000]
+[kpt   0  10  12]     5.9035 [2.000]     6.1584 [2.000]     6.2072 [2.000]     6.2072 [2.000]     9.5331 [0.000]
+[kpt   0  10  13]    11.0434 [0.000]    11.0434 [0.000]    11.0434 [0.000]    11.0434 [0.000]    11.0436 [0.000]
+[kpt   0  10  14]    11.0438 [0.000]    11.5866 [0.000]    11.5870 [0.000]    11.5875 [0.000]    11.7113 [0.000]
+[kpt   0  10  15]    11.7114 [0.000]    11.7132 [0.000]    11.8699 [0.000]    11.8700 [0.000]    12.1503 [0.000]
+
+
+
+
+Total charge in supercell =     128.00000000
+ quench: [md:   0/100  scf:  10/20  step time:   1.99  scf time:    27.77 secs  RMS[dV]: 4.11e-05 ]
+
+
+average potential <V> = 2.61e-16
+Davidson converged in 4 steps
+
+FERMI ENERGY =      6.20768628 eV
+@@ EIGENVALUE SUM     =        6.203376 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.048790 Ha
+@@ VXC                =      -72.872391 Ha
+@@ EXC                =      -67.198783 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        1.12e-07 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:  11/20  step time:   2.78  scf time:    30.55 secs  RMS[dV]: 2.53e-05 ]
+
+
+average potential <V> = 2.73e-16
 Davidson converged in 2 steps
 
-FERMI ENERGY =      6.18523542 eV
-@@ EIGENVALUE SUM     =        6.068763 Ha
+FERMI ENERGY =      6.20749132 eV
+@@ EIGENVALUE SUM     =        6.202707 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -47.890888 Ha
-@@ VXC                =      -72.811186 Ha
-@@ EXC                =      -67.157107 Ha
-@@ TOTAL ENERGY       =     -204.278871 Ha
-@@ estimated error    =        4.73e-02 Ha
+@@ ELECTROSTATIC      =      -48.048074 Ha
+@@ VXC                =      -72.872164 Ha
+@@ EXC                =      -67.198604 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        5.19e-08 Ha
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   4/20  step time:   0.54  scf time:     3.84 secs  RMS[dV]: 7.98e-03 ]
+ quench: [md:   0/100  scf:  12/20  step time:   1.67  scf time:    32.23 secs  RMS[dV]: 1.53e-05 ]
 
 
-average potential <V> = -1.10e-17
-Davidson converged in 3 steps
+average potential <V> = 1.76e-16
+Davidson converged in 4 steps
 
-FERMI ENERGY =      6.18555017 eV
-@@ EIGENVALUE SUM     =        6.099966 Ha
+FERMI ENERGY =      6.20728527 eV
+@@ EIGENVALUE SUM     =        6.202013 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -47.929604 Ha
-@@ VXC                =      -72.828484 Ha
-@@ EXC                =      -67.167116 Ha
-@@ TOTAL ENERGY       =     -204.279094 Ha
-@@ estimated error    =        3.25e-03 Ha
+@@ ELECTROSTATIC      =      -48.047331 Ha
+@@ VXC                =      -72.871933 Ha
+@@ EXC                =      -67.198423 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        1.10e-08 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:  13/20  step time:   2.80  scf time:    35.03 secs  RMS[dV]: 3.86e-06 ]
+
+
+average potential <V> = 2.88e-16
+Davidson converged in 2 steps
+
+FERMI ENERGY =      6.20739480 eV
+@@ EIGENVALUE SUM     =        6.202398 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.047742 Ha
+@@ VXC                =      -72.872065 Ha
+@@ EXC                =      -67.198528 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        1.24e-08 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:  14/20  step time:   1.70  scf time:    36.73 secs  RMS[dV]: 6.44e-06 ]
+
+
+average potential <V> = -6.24e-16
+Davidson converged in 4 steps
+
+FERMI ENERGY =      6.20746003 eV
+@@ EIGENVALUE SUM     =        6.202627 Ha
+@@ ION_ION            =     -168.110824 Ha
+@@ ELECTROSTATIC      =      -48.047987 Ha
+@@ VXC                =      -72.872144 Ha
+@@ EXC                =      -67.198591 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        1.68e-09 Ha
 Charge density mixing: Broyden
 
 
 KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
 
-[kpt   0   5   0]    -8.3205 [2.000]    -7.5558 [2.000]    -7.5556 [2.000]    -6.5709 [2.000]    -6.5708 [2.000]
-[kpt   0   5   1]    -6.5704 [2.000]    -6.5027 [2.000]    -6.2593 [2.000]    -6.2592 [2.000]    -6.2591 [2.000]
-[kpt   0   5   2]    -6.2590 [2.000]    -6.2589 [2.000]    -6.2586 [2.000]    -5.9806 [2.000]    -5.9805 [2.000]
-[kpt   0   5   3]    -5.9802 [2.000]     0.5421 [2.000]     1.0021 [2.000]     1.0022 [2.000]     1.0034 [2.000]
-[kpt   0   5   4]     1.0034 [2.000]     1.0035 [2.000]     1.0035 [2.000]     1.1265 [2.000]     1.1286 [2.000]
-[kpt   0   5   5]     1.1286 [2.000]     2.2561 [2.000]     2.2571 [2.000]     2.2572 [2.000]     2.9335 [2.000]
-[kpt   0   5   6]     2.9336 [2.000]     3.0677 [2.000]     3.0678 [2.000]     3.0686 [2.000]     4.4171 [2.000]
-[kpt   0   5   7]     4.4173 [2.000]     4.4173 [2.000]     4.5449 [2.000]     4.5458 [2.000]     4.5458 [2.000]
-[kpt   0   5   8]     4.8956 [2.000]     4.8956 [2.000]     4.8957 [2.000]     4.8958 [2.000]     4.8958 [2.000]
-[kpt   0   5   9]     4.8959 [2.000]     4.9771 [2.000]     4.9772 [2.000]     4.9772 [2.000]     4.9773 [2.000]
-[kpt   0   5  10]     4.9774 [2.000]     4.9775 [2.000]     5.5942 [2.000]     5.5950 [2.000]     5.6668 [2.000]
-[kpt   0   5  11]     5.6669 [2.000]     5.6672 [2.000]     5.8810 [2.000]     5.8812 [2.000]     5.8818 [2.000]
-[kpt   0   5  12]     5.8821 [2.000]     6.1384 [2.000]     6.1846 [2.000]     6.1856 [2.000]     9.5084 [0.000]
-[kpt   0   5  13]    11.0236 [0.000]    11.0236 [0.000]    11.0237 [0.000]    11.0237 [0.000]    11.0264 [0.000]
-[kpt   0   5  14]    11.0265 [0.000]    11.6651 [0.000]    11.7075 [0.000]    11.7076 [0.000]    11.7077 [0.000]
-[kpt   0   5  15]    11.7155 [0.000]    11.7188 [0.000]    11.8500 [0.000]    11.8501 [0.000]    12.1284 [0.000]
+[kpt   0  15   0]    -8.2974 [2.000]    -7.5320 [2.000]    -7.5320 [2.000]    -6.5463 [2.000]    -6.5463 [2.000]
+[kpt   0  15   1]    -6.5463 [2.000]    -6.4779 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]
+[kpt   0  15   2]    -6.2343 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]    -5.9554 [2.000]    -5.9554 [2.000]
+[kpt   0  15   3]    -5.9554 [2.000]     0.5605 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]
+[kpt   0  15   4]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.1490 [2.000]     1.1490 [2.000]
+[kpt   0  15   5]     1.1490 [2.000]     2.2787 [2.000]     2.2787 [2.000]     2.2787 [2.000]     2.9535 [2.000]
+[kpt   0  15   6]     2.9535 [2.000]     3.0869 [2.000]     3.0869 [2.000]     3.0869 [2.000]     4.4383 [2.000]
+[kpt   0  15   7]     4.4383 [2.000]     4.4384 [2.000]     4.5648 [2.000]     4.5648 [2.000]     4.5648 [2.000]
+[kpt   0  15   8]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]
+[kpt   0  15   9]     4.9159 [2.000]     4.9989 [2.000]     4.9989 [2.000]     4.9989 [2.000]     4.9989 [2.000]
+[kpt   0  15  10]     4.9989 [2.000]     4.9989 [2.000]     5.6166 [2.000]     5.6166 [2.000]     5.6893 [2.000]
+[kpt   0  15  11]     5.6894 [2.000]     5.6894 [2.000]     5.9037 [2.000]     5.9037 [2.000]     5.9037 [2.000]
+[kpt   0  15  12]     5.9037 [2.000]     6.1587 [2.000]     6.2074 [2.000]     6.2075 [2.000]     9.5333 [0.000]
+[kpt   0  15  13]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]
+[kpt   0  15  14]    11.0431 [0.000]    11.5863 [0.000]    11.5864 [0.000]    11.5865 [0.000]    11.7105 [0.000]
+[kpt   0  15  15]    11.7105 [0.000]    11.7105 [0.000]    11.8698 [0.000]    11.8698 [0.000]    12.1492 [0.000]
 
 
 
 
 Total charge in supercell =     128.00000000
- quench: [md:   0/100  scf:   5/20  step time:   0.58  scf time:     4.43 secs  RMS[dV]: 3.26e-03 ]
+ quench: [md:   0/100  scf:  15/20  step time:   2.81  scf time:    39.54 secs  RMS[dV]: 2.27e-06 ]
 
 
-average potential <V> = -2.19e-17
-Davidson converged in 5 steps
+average potential <V> = 4.72e-17
+Davidson converged in 1 steps
 
-FERMI ENERGY =      6.19871144 eV
-@@ EIGENVALUE SUM     =        6.164944 Ha
+FERMI ENERGY =      6.20743971 eV
+@@ EIGENVALUE SUM     =        6.202559 Ha
 @@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.003655 Ha
-@@ VXC                =      -72.857192 Ha
-@@ EXC                =      -67.186866 Ha
-@@ TOTAL ENERGY       =     -204.279209 Ha
-@@ estimated error    =        6.98e-04 Ha
+@@ ELECTROSTATIC      =      -48.047913 Ha
+@@ VXC                =      -72.872121 Ha
+@@ EXC                =      -67.198573 Ha
+@@ TOTAL ENERGY       =     -204.282631 Ha
+@@ estimated error    =        1.04e-09 Ha
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   6/20  step time:   0.77  scf time:     5.20 secs  RMS[dV]: 1.83e-03 ]
-
-
-average potential <V> = 1.32e-16
-Davidson converged in 5 steps
-
-FERMI ENERGY =      6.20996559 eV
-@@ EIGENVALUE SUM     =        6.209045 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.051252 Ha
-@@ VXC                =      -72.872964 Ha
-@@ EXC                =      -67.199161 Ha
-@@ TOTAL ENERGY       =     -204.279228 Ha
-@@ estimated error    =        3.43e-05 Ha
-Charge density mixing: Broyden
- quench: [md:   0/100  scf:   7/20  step time:   0.96  scf time:     6.16 secs  RMS[dV]: 3.14e-04 ]
-
-
-average potential <V> = 2.52e-16
-Davidson converged in 3 steps
-
-FERMI ENERGY =      6.20832966 eV
-@@ EIGENVALUE SUM     =        6.204435 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.046351 Ha
-@@ VXC                =      -72.871433 Ha
-@@ EXC                =      -67.197921 Ha
-@@ TOTAL ENERGY       =     -204.279228 Ha
-@@ estimated error    =        5.75e-06 Ha
-Charge density mixing: Broyden
- quench: [md:   0/100  scf:   8/20  step time:   0.59  scf time:     6.75 secs  RMS[dV]: 1.56e-04 ]
-
-
-average potential <V> = -8.22e-17
-Davidson converged in 3 steps
-
-FERMI ENERGY =      6.20731012 eV
-@@ EIGENVALUE SUM     =        6.201534 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.043220 Ha
-@@ VXC                =      -72.870434 Ha
-@@ EXC                =      -67.197152 Ha
-@@ TOTAL ENERGY       =     -204.279229 Ha
-@@ estimated error    =        9.81e-07 Ha
-Charge density mixing: Broyden
- quench: [md:   0/100  scf:   9/20  step time:   0.66  scf time:     7.41 secs  RMS[dV]: 5.39e-05 ]
-
-
-average potential <V> = 7.68e-17
-Davidson converged in 3 steps
-
-FERMI ENERGY =      6.20723466 eV
-@@ EIGENVALUE SUM     =        6.201656 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.043337 Ha
-@@ VXC                =      -72.870479 Ha
-@@ EXC                =      -67.197202 Ha
-@@ TOTAL ENERGY       =     -204.279229 Ha
-@@ estimated error    =        1.61e-07 Ha
-Charge density mixing: Broyden
-
-
-KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
-
-[kpt   0  10   0]    -8.2981 [2.000]    -7.5329 [2.000]    -7.5329 [2.000]    -6.5473 [2.000]    -6.5473 [2.000]
-[kpt   0  10   1]    -6.5473 [2.000]    -6.4789 [2.000]    -6.2354 [2.000]    -6.2354 [2.000]    -6.2354 [2.000]
-[kpt   0  10   2]    -6.2354 [2.000]    -6.2354 [2.000]    -6.2354 [2.000]    -5.9566 [2.000]    -5.9566 [2.000]
-[kpt   0  10   3]    -5.9566 [2.000]     0.5609 [2.000]     1.0235 [2.000]     1.0236 [2.000]     1.0236 [2.000]
-[kpt   0  10   4]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.1488 [2.000]     1.1488 [2.000]
-[kpt   0  10   5]     1.1488 [2.000]     2.2784 [2.000]     2.2784 [2.000]     2.2785 [2.000]     2.9539 [2.000]
-[kpt   0  10   6]     2.9539 [2.000]     3.0875 [2.000]     3.0875 [2.000]     3.0875 [2.000]     4.4380 [2.000]
-[kpt   0  10   7]     4.4381 [2.000]     4.4381 [2.000]     4.5656 [2.000]     4.5656 [2.000]     4.5656 [2.000]
-[kpt   0  10   8]     4.9165 [2.000]     4.9165 [2.000]     4.9165 [2.000]     4.9165 [2.000]     4.9165 [2.000]
-[kpt   0  10   9]     4.9165 [2.000]     4.9986 [2.000]     4.9986 [2.000]     4.9986 [2.000]     4.9986 [2.000]
-[kpt   0  10  10]     4.9986 [2.000]     4.9986 [2.000]     5.6164 [2.000]     5.6164 [2.000]     5.6891 [2.000]
-[kpt   0  10  11]     5.6891 [2.000]     5.6891 [2.000]     5.9035 [2.000]     5.9035 [2.000]     5.9035 [2.000]
-[kpt   0  10  12]     5.9035 [2.000]     6.1599 [2.000]     6.2072 [2.000]     6.2072 [2.000]     9.5328 [0.000]
-[kpt   0  10  13]    11.0432 [0.000]    11.0432 [0.000]    11.0433 [0.000]    11.0433 [0.000]    11.0434 [0.000]
-[kpt   0  10  14]    11.0434 [0.000]    11.5872 [0.000]    11.5874 [0.000]    11.5875 [0.000]    11.7106 [0.000]
-[kpt   0  10  15]    11.7107 [0.000]    11.7116 [0.000]    11.8704 [0.000]    11.8705 [0.000]    12.1492 [0.000]
+ quench: [md:   0/100  scf:  16/20  step time:   1.63  scf time:    41.17 secs  RMS[dV]: 2.00e-06 ]
 
 
 
-
-Total charge in supercell =     128.00000000
- quench: [md:   0/100  scf:  10/20  step time:   0.66  scf time:     8.07 secs  RMS[dV]: 6.96e-05 ]
-
-
-average potential <V> = 9.32e-17
-Davidson converged in 4 steps
-
-FERMI ENERGY =      6.20732309 eV
-@@ EIGENVALUE SUM     =        6.201975 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.043668 Ha
-@@ VXC                =      -72.870582 Ha
-@@ EXC                =      -67.197293 Ha
-@@ TOTAL ENERGY       =     -204.279229 Ha
-@@ estimated error    =        1.44e-08 Ha
-Charge density mixing: Broyden
- quench: [md:   0/100  scf:  11/20  step time:   0.79  scf time:     8.87 secs  RMS[dV]: 1.47e-05 ]
-
-
-average potential <V> = -2.08e-16
-Davidson converged in 4 steps
-
-FERMI ENERGY =      6.20730686 eV
-@@ EIGENVALUE SUM     =        6.201913 Ha
-@@ ION_ION            =     -168.110824 Ha
-@@ ELECTROSTATIC      =      -48.043598 Ha
-@@ VXC                =      -72.870559 Ha
-@@ EXC                =      -67.197278 Ha
-@@ TOTAL ENERGY       =     -204.279229 Ha
-@@ estimated error    =        1.54e-09 Ha
-Charge density mixing: Broyden
- quench: [md:   0/100  scf:  12/20  step time:   0.79  scf time:     9.66 secs  RMS[dV]: 3.91e-06 ]
-
-
-
- Convergence criterion reached: Energy variation (1.74e-10) is lower than threshold (1.00e-09)
+ Convergence criterion reached: Energy variation (4.08e-10) is lower than threshold (1.00e-09)
 
 potential convergence has been achieved. stopping ...
 
-[   0  13   13       11 ] Quench.cpp: final total energy =    -204.27922861 Ha
+[   0  17   17       47 ] Quench.cpp: final total energy =    -204.28263077 Ha
 
 
 KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
 
-[kpt   0  13   0]    -8.2980 [2.000]    -7.5328 [2.000]    -7.5328 [2.000]    -6.5472 [2.000]    -6.5472 [2.000]
-[kpt   0  13   1]    -6.5472 [2.000]    -6.4788 [2.000]    -6.2353 [2.000]    -6.2353 [2.000]    -6.2353 [2.000]
-[kpt   0  13   2]    -6.2353 [2.000]    -6.2353 [2.000]    -6.2353 [2.000]    -5.9565 [2.000]    -5.9565 [2.000]
-[kpt   0  13   3]    -5.9565 [2.000]     0.5609 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]
-[kpt   0  13   4]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.1489 [2.000]     1.1489 [2.000]
-[kpt   0  13   5]     1.1489 [2.000]     2.2785 [2.000]     2.2785 [2.000]     2.2785 [2.000]     2.9540 [2.000]
-[kpt   0  13   6]     2.9540 [2.000]     3.0875 [2.000]     3.0875 [2.000]     3.0875 [2.000]     4.4381 [2.000]
-[kpt   0  13   7]     4.4381 [2.000]     4.4381 [2.000]     4.5656 [2.000]     4.5656 [2.000]     4.5656 [2.000]
-[kpt   0  13   8]     4.9166 [2.000]     4.9166 [2.000]     4.9166 [2.000]     4.9166 [2.000]     4.9166 [2.000]
-[kpt   0  13   9]     4.9166 [2.000]     4.9987 [2.000]     4.9987 [2.000]     4.9987 [2.000]     4.9987 [2.000]
-[kpt   0  13  10]     4.9987 [2.000]     4.9987 [2.000]     5.6164 [2.000]     5.6164 [2.000]     5.6892 [2.000]
-[kpt   0  13  11]     5.6892 [2.000]     5.6892 [2.000]     5.9035 [2.000]     5.9036 [2.000]     5.9036 [2.000]
-[kpt   0  13  12]     5.9036 [2.000]     6.1600 [2.000]     6.2073 [2.000]     6.2073 [2.000]     9.5329 [0.000]
-[kpt   0  13  13]    11.0431 [0.000]    11.0431 [0.000]    11.0432 [0.000]    11.0432 [0.000]    11.0432 [0.000]
-[kpt   0  13  14]    11.0432 [0.000]    11.5870 [0.000]    11.5871 [0.000]    11.5872 [0.000]    11.7105 [0.000]
-[kpt   0  13  15]    11.7105 [0.000]    11.7108 [0.000]    11.8701 [0.000]    11.8701 [0.000]    12.1491 [0.000]
+[kpt   0  17   0]    -8.2974 [2.000]    -7.5321 [2.000]    -7.5321 [2.000]    -6.5463 [2.000]    -6.5463 [2.000]
+[kpt   0  17   1]    -6.5463 [2.000]    -6.4779 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]
+[kpt   0  17   2]    -6.2343 [2.000]    -6.2343 [2.000]    -6.2343 [2.000]    -5.9555 [2.000]    -5.9555 [2.000]
+[kpt   0  17   3]    -5.9555 [2.000]     0.5605 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]
+[kpt   0  17   4]     1.0236 [2.000]     1.0236 [2.000]     1.0236 [2.000]     1.1490 [2.000]     1.1490 [2.000]
+[kpt   0  17   5]     1.1490 [2.000]     2.2786 [2.000]     2.2787 [2.000]     2.2787 [2.000]     2.9535 [2.000]
+[kpt   0  17   6]     2.9535 [2.000]     3.0869 [2.000]     3.0869 [2.000]     3.0869 [2.000]     4.4383 [2.000]
+[kpt   0  17   7]     4.4383 [2.000]     4.4383 [2.000]     4.5648 [2.000]     4.5648 [2.000]     4.5648 [2.000]
+[kpt   0  17   8]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]     4.9159 [2.000]
+[kpt   0  17   9]     4.9159 [2.000]     4.9989 [2.000]     4.9989 [2.000]     4.9989 [2.000]     4.9989 [2.000]
+[kpt   0  17  10]     4.9989 [2.000]     4.9989 [2.000]     5.6166 [2.000]     5.6166 [2.000]     5.6893 [2.000]
+[kpt   0  17  11]     5.6893 [2.000]     5.6893 [2.000]     5.9037 [2.000]     5.9037 [2.000]     5.9037 [2.000]
+[kpt   0  17  12]     5.9037 [2.000]     6.1587 [2.000]     6.2074 [2.000]     6.2074 [2.000]     9.5333 [0.000]
+[kpt   0  17  13]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]    11.0431 [0.000]
+[kpt   0  17  14]    11.0431 [0.000]    11.5863 [0.000]    11.5864 [0.000]    11.5865 [0.000]    11.7104 [0.000]
+[kpt   0  17  15]    11.7104 [0.000]    11.7105 [0.000]    11.8697 [0.000]    11.8697 [0.000]    12.1492 [0.000]
 
 
 
 
 Total charge in supercell =     128.00000000
- volume and energy per atom =        11.58457564       -173.71001985 eV
+ volume and energy per atom =        11.58457564       -173.71291289 eV
 
- Vdd took 0.000217 seconds
+ Vdd took 0.000957 seconds
 WriteRestart: Restart file Waves/wave.out opened...
-WriteData: total size of each of the 24 files = 1.9 Mb
-WriteData: writing took 0.0 seconds, writing speed 90.522 Mbps 
-WriteRestart: writing took 0.0 seconds 
+WriteData: total size of each of the 8 files = 7.4 Mb
+WriteData: writing took 0.1 seconds, writing speed 66.539 Mbps 
+WriteRestart: writing took 0.1 seconds 
 
 
 
@@ -561,195 +652,195 @@ WriteRestart: writing took 0.0 seconds
   Charge analysis using: Voronoi Deformation Density
 
 @ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ      Movable
-@ION    1    Al      3.3258500   8.7280927  18.8237441    0.502    0.0000013  -0.0000009   0.0089812  1 1 1
-@ION    2    Al      3.3258500   5.2368556  13.8863686    0.502   -0.0000013   0.0000010   0.0089803  1 1 1
-@ION    3    Al      0.3023500   3.4912371  18.8237441    0.502    0.0000014  -0.0000007   0.0089811  1 1 1
-@ION    4    Al      0.3023500   0.0000000  13.8863686    0.502   -0.0000014   0.0000008   0.0089802  1 1 1
-@ION    5    Al     -2.7211500   8.7280927  18.8237441    0.502    0.0000013  -0.0000009   0.0089812  1 1 1
-@ION    6    Al     -2.7211500   5.2368556  13.8863686    0.502   -0.0000013   0.0000010   0.0089803  1 1 1
-@ION    7    Al      6.3493500   3.4912371  18.8237441    0.502    0.0000014  -0.0000006   0.0089811  1 1 1
-@ION    8    Al      6.3493500   0.0000000  13.8863686    0.502   -0.0000015   0.0000008   0.0089802  1 1 1
-@ION    9    Al      3.3258500   8.7280927   8.9489931    0.502    0.0000012  -0.0000008   0.0089807  1 1 1
-@ION   10    Al      3.3258500   5.2368556   4.0116176    0.502   -0.0000015   0.0000011   0.0089790  1 1 1
-@ION   11    Al      0.3023500   3.4912371   8.9489931    0.502    0.0000013  -0.0000007   0.0089806  1 1 1
-@ION   12    Al      0.3023500   0.0000000   4.0116176    0.502   -0.0000016   0.0000008   0.0089790  1 1 1
-@ION   13    Al     -2.7211500   8.7280927   8.9489931    0.502    0.0000012  -0.0000008   0.0089807  1 1 1
-@ION   14    Al     -2.7211500   5.2368556   4.0116176    0.502   -0.0000014   0.0000011   0.0089790  1 1 1
-@ION   15    Al      6.3493500   3.4912371   8.9489931    0.502    0.0000013  -0.0000007   0.0089806  1 1 1
-@ION   16    Al      6.3493500   0.0000000   4.0116176    0.502   -0.0000016   0.0000008   0.0089789  1 1 1
-@ION   17     N      3.3258500   8.7280927  15.1207125   -0.502   -0.0000004   0.0000002  -0.0089803  1 1 1
-@ION   18     N      3.3258500   5.2368556  10.1833370   -0.502    0.0000010  -0.0000006  -0.0089819  1 1 1
-@ION   19     N      0.3023500   3.4912371  15.1207125   -0.502   -0.0000008   0.0000007  -0.0089801  1 1 1
-@ION   20     N      0.3023500   0.0000000  10.1833370   -0.502    0.0000015  -0.0000009  -0.0089815  1 1 1
-@ION   21     N     -2.7211500   8.7280927  15.1207125   -0.502   -0.0000004   0.0000003  -0.0089804  1 1 1
-@ION   22     N     -2.7211500   5.2368556  10.1833370   -0.502    0.0000010  -0.0000006  -0.0089821  1 1 1
-@ION   23     N      6.3493500   3.4912371  15.1207125   -0.502   -0.0000008   0.0000007  -0.0089801  1 1 1
-@ION   24     N      6.3493500   0.0000000  10.1833370   -0.502    0.0000015  -0.0000009  -0.0089815  1 1 1
-@ION   25     N      3.3258500   8.7280927   5.2459615   -0.502   -0.0000016   0.0000006  -0.0089808  1 1 1
-@ION   26     N      3.3258500   5.2368556   0.3085860   -0.502    0.0000010  -0.0000008  -0.0089788  1 1 1
-@ION   27     N      0.3023500   3.4912371   5.2459615   -0.502   -0.0000015   0.0000011  -0.0089803  1 1 1
-@ION   28     N      0.3023500   0.0000000   0.3085860   -0.502    0.0000014  -0.0000010  -0.0089784  1 1 1
-@ION   29     N     -2.7211500   8.7280927   5.2459615   -0.502   -0.0000015   0.0000007  -0.0089807  1 1 1
-@ION   30     N     -2.7211500   5.2368556   0.3085860   -0.502    0.0000010  -0.0000008  -0.0089788  1 1 1
-@ION   31     N      6.3493500   3.4912371   5.2459615   -0.502   -0.0000016   0.0000011  -0.0089804  1 1 1
-@ION   32     N      6.3493500   0.0000000   0.3085860   -0.502    0.0000014  -0.0000010  -0.0089783  1 1 1
+@ION    1    Al      3.3258500   8.7280927  18.8237441    0.501    0.0000004  -0.0000002   0.0089701  1 1 1
+@ION    2    Al      3.3258500   5.2368556  13.8863686    0.501   -0.0000004   0.0000002   0.0089708  1 1 1
+@ION    3    Al      0.3023500   3.4912371  18.8237441    0.501    0.0000004  -0.0000003   0.0089701  1 1 1
+@ION    4    Al      0.3023500   0.0000000  13.8863686    0.501   -0.0000005   0.0000004   0.0089707  1 1 1
+@ION    5    Al     -2.7211500   8.7280927  18.8237441    0.501    0.0000004  -0.0000002   0.0089701  1 1 1
+@ION    6    Al     -2.7211500   5.2368556  13.8863686    0.501   -0.0000004   0.0000002   0.0089708  1 1 1
+@ION    7    Al      6.3493500   3.4912371  18.8237441    0.501    0.0000004  -0.0000003   0.0089701  1 1 1
+@ION    8    Al      6.3493500   0.0000000  13.8863686    0.501   -0.0000005   0.0000004   0.0089707  1 1 1
+@ION    9    Al      3.3258500   8.7280927   8.9489931    0.501    0.0000004  -0.0000001   0.0089709  1 1 1
+@ION   10    Al      3.3258500   5.2368556   4.0116176    0.501   -0.0000004   0.0000002   0.0089701  1 1 1
+@ION   11    Al      0.3023500   3.4912371   8.9489931    0.501    0.0000004  -0.0000003   0.0089708  1 1 1
+@ION   12    Al      0.3023500   0.0000000   4.0116176    0.501   -0.0000004   0.0000004   0.0089700  1 1 1
+@ION   13    Al     -2.7211500   8.7280927   8.9489931    0.501    0.0000004  -0.0000001   0.0089709  1 1 1
+@ION   14    Al     -2.7211500   5.2368556   4.0116176    0.501   -0.0000004   0.0000002   0.0089702  1 1 1
+@ION   15    Al      6.3493500   3.4912371   8.9489931    0.501    0.0000004  -0.0000003   0.0089708  1 1 1
+@ION   16    Al      6.3493500   0.0000000   4.0116176    0.501   -0.0000005   0.0000004   0.0089700  1 1 1
+@ION   17     N      3.3258500   8.7280927  15.1207125   -0.501    0.0000001  -0.0000000  -0.0089701  1 1 1
+@ION   18     N      3.3258500   5.2368556  10.1833370   -0.501   -0.0000000  -0.0000002  -0.0089694  1 1 1
+@ION   19     N      0.3023500   3.4912371  15.1207125   -0.501    0.0000000   0.0000001  -0.0089703  1 1 1
+@ION   20     N      0.3023500   0.0000000  10.1833370   -0.501    0.0000000   0.0000000  -0.0089695  1 1 1
+@ION   21     N     -2.7211500   8.7280927  15.1207125   -0.501    0.0000001  -0.0000000  -0.0089701  1 1 1
+@ION   22     N     -2.7211500   5.2368556  10.1833370   -0.501   -0.0000001  -0.0000002  -0.0089694  1 1 1
+@ION   23     N      6.3493500   3.4912371  15.1207125   -0.501    0.0000000   0.0000001  -0.0089704  1 1 1
+@ION   24     N      6.3493500   0.0000000  10.1833370   -0.501   -0.0000000   0.0000001  -0.0089695  1 1 1
+@ION   25     N      3.3258500   8.7280927   5.2459615   -0.501   -0.0000000   0.0000001  -0.0089712  1 1 1
+@ION   26     N      3.3258500   5.2368556   0.3085860   -0.501    0.0000000  -0.0000001  -0.0089712  1 1 1
+@ION   27     N      0.3023500   3.4912371   5.2459615   -0.501    0.0000000   0.0000000  -0.0089708  1 1 1
+@ION   28     N      0.3023500   0.0000000   0.3085860   -0.501    0.0000001  -0.0000002  -0.0089710  1 1 1
+@ION   29     N     -2.7211500   8.7280927   5.2459615   -0.501   -0.0000000   0.0000001  -0.0089712  1 1 1
+@ION   30     N     -2.7211500   5.2368556   0.3085860   -0.501   -0.0000000  -0.0000001  -0.0089712  1 1 1
+@ION   31     N      6.3493500   3.4912371   5.2459615   -0.501    0.0000000   0.0000000  -0.0089707  1 1 1
+@ION   32     N      6.3493500   0.0000000   0.3085860   -0.501    0.0000001  -0.0000002  -0.0089710  1 1 1
 
- mean FX      =   0.00000126 Ha/a0
- mean FY      =   0.00000080 Ha/a0
- mean FZ      =   0.00898028 Ha/a0
+ mean FX      =   0.00000023 Ha/a0
+ mean FY      =   0.00000017 Ha/a0
+ mean FZ      =   0.00897045 Ha/a0
 
- max FX       =   0.00000163 Ha/a0   (ion 16)
- max FY       =   0.00000110 Ha/a0   (ion 27)
- max FZ       =   0.00898206 Ha/a0   (ion 22)
- max F[x,y,z] =   0.00898206 Ha/a0
- max |F|      =   0.00898206 Ha/a0   (ion 22)
+ max FX       =   0.00000049 Ha/a0   (ion 8)
+ max FY       =   0.00000038 Ha/a0   (ion 16)
+ max FZ       =   0.00897124 Ha/a0   (ion 30)
+ max F[x,y,z] =   0.00897124 Ha/a0
+ max |F|      =   0.00897124 Ha/a0   (ion 30)
 
 WriteRestart: Restart file Waves/wave.out opened...
-WriteData: total size of each of the 24 files = 1.9 Mb
-WriteData: writing took 0.0 seconds, writing speed 90.361 Mbps 
-WriteRestart: writing took 0.0 seconds 
+WriteData: total size of each of the 8 files = 7.4 Mb
+WriteData: writing took 0.1 seconds, writing speed 65.867 Mbps 
+WriteRestart: writing took 0.1 seconds 
 
 
 --------TIMING INFORMATION FOR Processor owned the most atoms----------------
                                         Total time               Per SCF/step
 
-1-TOTAL                                            12.65                0.97
+1-TOTAL                                            51.32                3.02
 -----------------------------------------------------------------------------
-  1-TOTAL: Init                                     1.82                0.14
-  1-TOTAL: run                                     10.84                0.83
+  1-TOTAL: Init                                     5.41                0.32
+  1-TOTAL: run                                     45.91                2.70
   ---------------------------------------------------------------------------
-    1-TOTAL: run: Force                             0.76                0.06
-    1-TOTAL: run: Scf steps                         9.46                0.73
+    1-TOTAL: run: Force                             3.89                0.23
+    1-TOTAL: run: Scf steps                        40.46                2.38
 
-2-Force                                             0.76                0.06
+2-Force                                             3.89                0.23
 -----------------------------------------------------------------------------
-  2-Force: core correction                          0.13                0.01
-  2-Force: corrections                              0.16                0.01
-  2-Force: ion-ion                                  0.10                0.01
-  2-Force: local                                    0.25                0.02
-  2-Force: non-local                                0.11                0.01
-  2-Force: non-local-betaxpsi                       0.08                0.01
+  2-Force: core correction                          0.63                0.04
+  2-Force: corrections                              0.62                0.04
+  2-Force: ion-ion                                  0.53                0.03
+  2-Force: local                                    1.61                0.09
+  2-Force: non-local                                0.49                0.03
+  2-Force: non-local-betaxpsi                       0.43                0.03
   2-Force: non-local-get gamma                      0.00                0.00
-  2-Force: non-local-nlforce_par_Q                  0.00                0.00
+  2-Force: non-local-nlforce_par_Q                  0.01                0.00
   2-Force: non-local-nlforce_par_gamma              0.00                0.00
   2-Force: non-local-nlforce_par_omega              0.00                0.00
   2-Force: non-local-partial gamma                  0.00                0.00
-  2-Force: non-local-veff grad                      0.00                0.00
+  2-Force: non-local-veff grad                      0.01                0.00
 
-2-Init                                              1.82                0.14
+2-Init                                              5.41                0.32
 -----------------------------------------------------------------------------
-  2-Init: GetNewRho                                 0.04                0.00
-  2-Init: KpointClass                               0.61                0.05
-  2-Init: LcaoGetPsi                                0.09                0.01
-  2-Init: LcaoGetRho                                0.13                0.01
-  2-Init: ReinitIonicPotentials                     0.37                0.03
-  2-Init: betaxpsi                                  0.06                0.00
-  2-Init: exchange/correlation                      0.03                0.00
-  2-Init: hartree                                   0.02                0.00
-  2-Init: normalization                             0.01                0.00
-  2-Init: radial potentials                         0.27                0.02
-  2-Init: subdiag                                   0.11                0.01
-  2-Init: weights                                   0.01                0.00
+  2-Init: GetNewRho                                 0.08                0.00
+  2-Init: KpointClass                               1.17                0.07
+  2-Init: LcaoGetPsi                                0.35                0.02
+  2-Init: LcaoGetRho                                0.46                0.03
+  2-Init: ReinitIonicPotentials                     1.39                0.08
+  2-Init: betaxpsi                                  0.31                0.02
+  2-Init: exchange/correlation                      0.20                0.01
+  2-Init: hartree                                   0.17                0.01
+  2-Init: normalization                             0.02                0.00
+  2-Init: radial potentials                         0.54                0.03
+  2-Init: subdiag                                   0.45                0.03
+  2-Init: weights                                   0.03                0.00
 
-2-Scf steps                                         9.46                0.73
+2-Scf steps                                        40.46                2.38
 -----------------------------------------------------------------------------
-  2-Scf steps: Davidson                             5.47                0.42
-  2-Scf steps: GetNewRho                            0.48                0.04
-  2-Scf steps: Hartree                              0.27                0.02
-  2-Scf steps: MgridSubspace                        2.68                0.21
-  2-Scf steps: MixRho                               0.05                0.00
-  2-Scf steps: exchange/correlation                 0.29                0.02
+  2-Scf steps: Davidson                            22.21                1.31
+  2-Scf steps: GetNewRho                            1.22                0.07
+  2-Scf steps: Hartree                              2.99                0.18
+  2-Scf steps: MgridSubspace                        9.32                0.55
+  2-Scf steps: MixRho                               0.48                0.03
+  2-Scf steps: exchange/correlation                 1.98                0.12
 
-3-MgridSubspace                                     2.68                0.21
+3-MgridSubspace                                     9.32                0.55
 -----------------------------------------------------------------------------
-  3-MgridSubspace: AppNls                           0.30                0.02
-  3-MgridSubspace: Beta x psi                       0.33                0.03
-  3-MgridSubspace: Diagonalization                  0.29                0.02
-  3-MgridSubspace: Mg_eig                           1.74                0.13
+  3-MgridSubspace: AppNls                           1.54                0.09
+  3-MgridSubspace: Beta x psi                       1.78                0.10
+  3-MgridSubspace: Diagonalization                  1.05                0.06
+  3-MgridSubspace: Mg_eig                           4.88                0.29
 
-3-ReinitIonicPotentials                             0.37                0.03
+3-ReinitIonicPotentials                             1.39                0.08
 -----------------------------------------------------------------------------
-  3-ReinitIonicPotentials: GetNlop                  0.02                0.00
-  3-ReinitIonicPotentials: GetWeight                0.24                0.02
+  3-ReinitIonicPotentials: GetNlop                  0.11                0.01
+  3-ReinitIonicPotentials: GetWeight                0.96                0.06
   3-ReinitIonicPotentials: get_QI                   0.00                0.00
   3-ReinitIonicPotentials: get_qqq                  0.00                0.00
-  3-ReinitIonicPotentials: init_nuc                 0.11                0.01
+  3-ReinitIonicPotentials: init_nuc                 0.32                0.02
 
-4-Diagonalization                                   0.40                0.03
+4-Diagonalization                                   1.50                0.09
 -----------------------------------------------------------------------------
-  4-Diagonalization: AppNls                         0.14                0.01
-  4-Diagonalization: Eigensolver                    0.04                0.00
+  4-Diagonalization: AppNls                         0.67                0.04
+  4-Diagonalization: Eigensolver                    0.02                0.00
   4-Diagonalization: MPI_Bcast                      0.00                0.00
-  4-Diagonalization: PDSYGVX/PZHEGVX                0.03                0.00
-  4-Diagonalization: Update orbitals                0.05                0.00
-  4-Diagonalization: apply operators                0.28                0.02
+  4-Diagonalization: PDSYGVX/PZHEGVX                0.01                0.00
+  4-Diagonalization: Update orbitals                0.25                0.01
+  4-Diagonalization: apply operators                1.03                0.06
   4-Diagonalization: distribute matrices.           0.00                0.00
-  4-Diagonalization: matrix setup/reduce            0.04                0.00
-  4-Diagonalization: scalapack                      0.04                0.00
+  4-Diagonalization: matrix setup/reduce            0.20                0.01
+  4-Diagonalization: scalapack                      0.02                0.00
 
-5-Functional                                        0.31                0.02
+5-Functional                                        2.10                0.12
 -----------------------------------------------------------------------------
-  5-Functional: apply gradient                      0.06                0.00
-  5-Functional: apply laplacian                     0.02                0.00
-  5-Functional: libxc                               0.15                0.01
-  5-Functional: vxc                                 0.31                0.02
-  5-Functional: vxc grad                            0.25                0.02
-  5-Functional: vxc local                           0.05                0.00
+  5-Functional: apply gradient                      0.34                0.02
+  5-Functional: apply laplacian                     0.10                0.01
+  5-Functional: libxc                               1.09                0.06
+  5-Functional: vxc                                 2.08                0.12
+  5-Functional: vxc grad                            1.75                0.10
+  5-Functional: vxc local                           0.30                0.02
   5-Functional: vxc nonlocal                        0.00                0.00
 
-6-Davidson                                          5.47                0.42
+6-Davidson                                         22.21                1.31
 -----------------------------------------------------------------------------
-  6-Davidson: Betaxpsi                              0.90                0.07
-  6-Davidson: apply hamiltonian                     1.53                0.12
-  6-Davidson: diagonalization                       0.51                0.04
-  6-Davidson: generate residuals                    0.35                0.03
-  6-Davidson: matrix setup/reduce                   0.45                0.03
-  6-Davidson: normalization                         0.02                0.00
-  6-Davidson: precondition                          1.52                0.12
-  6-Davidson: rotate orbitals                       0.13                0.01
+  6-Davidson: Betaxpsi                              6.06                0.36
+  6-Davidson: apply hamiltonian                     7.59                0.45
+  6-Davidson: diagonalization                       0.41                0.02
+  6-Davidson: generate residuals                    2.27                0.13
+  6-Davidson: matrix setup/reduce                   2.61                0.15
+  6-Davidson: normalization                         0.41                0.02
+  6-Davidson: precondition                          1.89                0.11
+  6-Davidson: rotate orbitals                       0.89                0.05
 
-AppNls                                              1.24                0.10
+AppNls                                              7.53                0.44
 -----------------------------------------------------------------------------
-  AppNls: data_rearrange                            0.02                0.00
+  AppNls: data_rearrange                            0.03                0.00
   ---------------------------------------------------------------------------
-    AppNls: data_rearrange: alloc and zeros           0.01                0.00
+    AppNls: data_rearrange: alloc and zeros           0.02                0.00
     AppNls: data_rearrange: dnm                     0.00                0.00
     AppNls: data_rearrange: sint                    0.01                0.00
-  AppNls: nv                                        1.13                0.09
+  AppNls: nv                                        6.98                0.41
   AppNls: nv_work                                   0.01                0.00
 
-App_gradient                                        0.12                0.01
+App_gradient                                        0.44                0.03
 
-GlobalSums                                          0.46                0.04
+GlobalSums                                          0.60                0.04
 
-Init                                                1.20                0.09
+Init                                                4.24                0.25
 
-Init Voronoi                                        0.17                0.01
+Init Voronoi                                        0.60                0.04
 
-Mix rho                                             0.05                0.00
+Mix rho                                             0.49                0.03
 -----------------------------------------------------------------------------
-  Mix rho: Broyden                                  0.04                0.00
-  Mix rho: Linear                                   0.00                0.00
+  Mix rho: Broyden                                  0.45                0.03
+  Mix rho: Linear                                   0.02                0.00
 
-Orbital                                             0.00                0.00
+Orbital                                             0.01                0.00
 -----------------------------------------------------------------------------
-  Orbital: phase and set                            0.00                0.00
-  Orbital: proj cal                                 0.00                0.00
+  Orbital: phase and set                            0.01                0.00
+  Orbital: proj cal                                 0.01                0.00
 
-VhPfft                                              0.26                0.02
+VhPfft                                              2.98                0.18
 
-Weight                                              0.01                0.00
+Weight                                              0.02                0.00
 
-radial beta                                         0.22                0.02
+radial beta                                         0.31                0.02
 
 
 ------------------------- TIMING INFORMATION FOR THREADS  -------------------
 
                                            Min            Max            Avg
-GlobalSums                               0.27           0.27           0.27
+GlobalSums                               0.18           0.18           0.18
 -----------------------------------------------------------------------------
 
-Mg_eig                                   1.74           1.74           1.74
+Mg_eig                                   4.85           4.85           4.85
 -----------------------------------------------------------------------------
-  Mg_eig: apply hamiltonian              0.96           0.96           0.96
-  Mg_eig: mgrid_solv                     0.51           0.51           0.51
+  Mg_eig: apply hamiltonian              2.75           2.75           2.75
+  Mg_eig: mgrid_solv                     0.43           0.43           0.43

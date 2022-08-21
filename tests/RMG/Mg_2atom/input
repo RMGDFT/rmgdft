@@ -1,6 +1,6 @@
 # Mg 2-atom test cell with k-points
 # Expected energy
-test_energy="-118.76956640"
+test_energy="-118.77144717"
 
 
 a_length="      3.19405000"
@@ -31,7 +31,7 @@ preconditioner_threshold = "0.00010000000"
 #nvme_orbitals = "true"
 #nvme_weights_filepath = "/mnt/scratch/briggs/Weights/"
 #nvme_orbitals_filepath = "/mnt/scratch/briggs/Orbitals/"
-wavefunction_grid = "24 24 40"
+wavefunction_grid = "24 24 44"
 
 potential_grid_refinement = "2"
 energy_convergence_criterion = "1e-12"
