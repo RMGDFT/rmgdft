@@ -116,7 +116,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     int dimension;
     // for laplacian, 2n order is also 2n+1 order since the odd partianl derivatives cancelled automatically.
     Lorder = Lorder /2 * 2;
-
     if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && !this->offdiag)
     {
         dimension = 1;
@@ -218,33 +217,53 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         der_list.clear();
         points.clear();
         GetDerListFCC(der_list, Lorder);
-        GetPointListFCC(points, a, Ngrid, Lorder);
+        GetPointListFCC(points1, a, Ngrid, Lorder);
 
-        this->BuildSolveLinearEq(points, der_list, dimension);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
 
         for(auto a:points1)
         {   
-            if((a.index[0] != 0) && (a.index[1] == 0))
+//		printf("AAAA  %d  %d  %d\n",a.index[0],a.index[1],a.index[2]);
+            if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
             {
                 this->plane_dist_x = std::min(this->plane_dist_x, std::abs(a.dist));
                 this->axis_x[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_x -= a.coeff;
             }
-            else if((a.index[0] == 0) && (a.index[1] != 0))
+            else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
             {
                 this->plane_dist_y = std::min(this->plane_dist_y, std::abs(a.dist));
                 this->axis_y[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_y -= a.coeff;
             }
-            else if(a.index[0] != 0 && a.index[1] != 0)
+            else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
+            {
+                this->plane_dist_z = std::min(this->plane_dist_z, std::abs(a.dist));
+                this->axis_z[a.index[2]+Lorder/2] = a.coeff;
+                this->plane_center_z -= a.coeff;
+            }
+            else if(a.index[0] != 0 && std::abs(a.index[0]) == std::abs(a.index[1]) && a.index[2] == 0)
             {
                 this->plane_dist_xy = std::min(this->plane_dist_xy, std::abs(a.dist));
                 this->axis_xy[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_xy -= a.coeff;
             }
+            else if(a.index[0] != 0 && a.index[1] == 0 && std::abs(a.index[0]) == std::abs(a.index[2]))
+            {
+                this->plane_dist_xz = std::min(this->plane_dist_xz, std::abs(a.dist));
+                this->axis_xz[a.index[0]+Lorder/2] = a.coeff;
+                this->plane_center_xz -= a.coeff;
+            }
+            else if(a.index[0] == 0 && a.index[1] != 0 && std::abs(a.index[1]) == std::abs(a.index[2]))
+            {
+                this->plane_dist_yz = std::min(this->plane_dist_yz, std::abs(a.dist));
+                this->axis_yz[a.index[1]+Lorder/2] = a.coeff;
+                this->plane_center_yz -= a.coeff;
+            }
         }
 
         points.insert(std::end(points), std::begin(points1), std::end(points1));
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
     else if( this->ibrav == CUBIC_BC && !this->offdiag )
     {

@@ -134,6 +134,10 @@ template double FiniteDiff::app8_combined_triclinic<double>(double *, double *, 
 template double FiniteDiff::app8_combined_triclinic<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined_triclinic<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
+template double FiniteDiff::app8_combined_fcc<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined_fcc<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined_fcc<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined_fcc<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
@@ -1640,7 +1644,7 @@ template <typename RmgType>
 double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz)
 {
-
+    double kvec[3] = {0.0,0.0,0.0};
     int ibrav = L->get_ibrav_type();
 
     int ixs = (dimy + 8) * (dimz + 8);
@@ -1797,8 +1801,12 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
 
                 }
             }
+	    break;
+// For now this is handled in the higher level driver routines. Somewhat less efficient but the combined
+// operator is used for most things so not a huge deal.
+//	case CUBIC_FC:
+//            break;
 
-            break;
         default:
             rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 
@@ -3114,6 +3122,11 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     {
         return FiniteDiff::app8_combined_monoclinic(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
     }
+    if(ibrav == CUBIC_FC)
+    {
+        return FiniteDiff::app8_combined_fcc(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
+    }
+
 
     // Triclinic
     return FiniteDiff::app8_combined_triclinic(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
@@ -3985,3 +3998,191 @@ double FiniteDiff::app8_combined_triclinic(RmgType * __restrict__ a, RmgType * _
 
 
 } /* end app8_combined_triclinic */
+
+
+
+template <typename RmgType>
+double FiniteDiff::app8_combined_fcc(RmgType * __restrict__ a, RmgType * __restrict__ b, 
+		int dimx, int dimy, int dimz,
+                double gridhx, double gridhy, double gridhz,
+		double *kvec, bool use_gpu)
+{
+    fdparms_o8<RmgType> c;
+    RmgType I_t;
+    if(typeid(RmgType) == typeid(double))
+    {
+        I_t = 0.0;
+    }
+    else if(typeid(RmgType) == typeid(float))
+    {
+        I_t = 0.0;
+    }
+    else if(typeid(RmgType) == typeid(std::complex<double>))
+    {
+        double *iptr = (double *)&I_t;
+        iptr[0] = 0.0;iptr[1] = 1.0;
+    }
+    else if(typeid(RmgType) == typeid(std::complex<float>))
+    {
+        float *iptr = (float *)&I_t;
+        iptr[0] = 0.0;iptr[1] = 1.0;
+    }
+
+    int ixs = (dimy + 8) * (dimz + 8);
+    int iys = (dimz + 8);
+
+    // nine and seven point stencils, 2nd derivative, extrapolated
+    double c1, c2;
+    double d1 = 6.0/560.0;
+    double d2 = -8.0/3150.0;
+    double dr = d1 / d2;
+    double k2 = PI*PI/8.0;
+    double th2=0.0, maxh, hadj;
+
+    RmgType t1xy, t2xy, t3xy, t4xy, t1xz, t2xz, t3xz, t4xz, t1yz, t2yz, t3yz, t4yz;
+    RmgType t1x, t2x, t3x, t4x;
+    RmgType t1y, t2y, t3y, t4y;
+    RmgType t1z, t2z, t3z, t4z;
+
+
+    // Need to setup 6 axes
+    maxh = std::max(LC->plane_dist_x, LC->plane_dist_y);
+    maxh = std::max(maxh, LC->plane_dist_z);
+    maxh = std::max(maxh, LC->plane_dist_xy);
+    maxh = std::max(maxh, LC->plane_dist_xz);
+    maxh = std::max(maxh, LC->plane_dist_yz);
+    hadj = sqrt(LC->plane_dist_x / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_x - c2*LC_6->plane_center_x;
+    t1x = c1*LC->axis_x[3] - c2*LC_6->axis_x[2];
+    t2x = c1*LC->axis_x[2] - c2*LC_6->axis_x[1];
+    t3x = c1*LC->axis_x[1] - c2*LC_6->axis_x[0];
+    t4x = c1*LC->axis_x[0];
+
+    hadj = sqrt(LC->plane_dist_y / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_y - c2*LC_6->plane_center_y;
+    t1y = c1*LC->axis_y[3] - c2*LC_6->axis_y[2];
+    t2y = c1*LC->axis_y[2] - c2*LC_6->axis_y[1];
+    t3y = c1*LC->axis_y[1] - c2*LC_6->axis_y[0];
+    t4y = c1*LC->axis_y[0];
+
+    hadj = sqrt(LC->plane_dist_z / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_z - c2*LC_6->plane_center_z;
+    t1z = c1*LC->axis_z[3] - c2*LC_6->axis_z[2];
+    t2z = c1*LC->axis_z[2] - c2*LC_6->axis_z[1];
+    t3z = c1*LC->axis_z[1] - c2*LC_6->axis_z[0];
+    t4z = c1*LC->axis_z[0];
+
+    hadj = sqrt(LC->plane_dist_xy / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_xy - c2*LC_6->plane_center_xy;
+    t1xy = c1*LC->axis_xy[3] - c2*LC_6->axis_xy[2];
+    t2xy = c1*LC->axis_xy[2] - c2*LC_6->axis_xy[1];
+    t3xy = c1*LC->axis_xy[1] - c2*LC_6->axis_xy[0];
+    t4xy = c1*LC->axis_xy[0];
+
+    hadj = sqrt(LC->plane_dist_xz / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_xz - c2*LC_6->plane_center_xz;
+    t1xz = c1*LC->axis_xz[3] - c2*LC_6->axis_xz[2];
+    t2xz = c1*LC->axis_xz[2] - c2*LC_6->axis_xz[1];
+    t3xz = c1*LC->axis_xz[1] - c2*LC_6->axis_xz[0];
+    t4xz = c1*LC->axis_xz[0];
+
+    hadj = sqrt(LC->plane_dist_yz / maxh);
+    c2 = 0.0;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += c1*LC->plane_center_yz - c2*LC_6->plane_center_yz;
+    t1yz = c1*LC->axis_yz[3] - c2*LC_6->axis_yz[2];
+    t2yz = c1*LC->axis_yz[2] - c2*LC_6->axis_yz[1];
+    t3yz = c1*LC->axis_yz[1] - c2*LC_6->axis_yz[0];
+    t4yz = c1*LC->axis_yz[0];
+
+    // NULL b means we just want the diagonal component.
+    if(b == NULL) return (double)std::real(th2);
+
+    for (int ix = 4; ix < dimx + 4; ix++)
+    {
+
+        for (int iy = 4; iy < dimy + 4; iy++)
+        {
+
+            RmgType *A = &a[iy*iys + ix*ixs];
+            RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] = th2 * A[iz] +
+                    t1z * A[iz + 1] + t1z * A[iz - 1] +
+                    t2z * A[iz + 2] + t2z * A[iz - 2] +
+                    t3z * A[iz + 3] + t3z * A[iz - 3] +
+                    t4z * A[iz + 4] + t4z * A[iz - 4];
+            }
+
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                    t1y * A[iz + iys] + t1y * A[iz - iys] +
+                    t2y * A[iz + 2*iys] + t2y * A[iz - 2*iys] +
+                    t3y * A[iz + 3*iys] + t3y * A[iz - 3*iys] +
+                    t4y * A[iz + 4*iys] + t4y * A[iz - 4*iys];
+
+            }
+
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                    t1x * A[iz + ixs] + t1x * A[iz - ixs] +
+                    t2x * A[iz + 2*ixs] + t2x * A[iz - 2*ixs] +
+                    t3x * A[iz + 3*ixs] + t3x * A[iz - 3*ixs] +
+                    t4x * A[iz + 4*ixs] + t4x * A[iz - 4*ixs];
+            }                   /* end for */
+
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                    t1xy * A[iz + ixs - iys] + t1xy * A[iz - ixs + iys] +
+                    t2xy * A[iz + 2*ixs - 2*iys] + t2xy * A[iz - 2*ixs + 2*iys] +
+                    t3xy * A[iz + 3*ixs - 3*iys] + t3xy * A[iz - 3*ixs + 3*iys] +
+                    t4xy * A[iz + 4*ixs - 4*iys] + t4xy * A[iz - 4*ixs + 4*iys];
+            }                   /* end for */
+
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                    t1xz * A[iz + ixs - 1] + t1xz * A[iz - ixs + 1] +
+                    t2xz * A[iz + 2*ixs - 2] + t2xz * A[iz - 2*ixs + 2] +
+                    t3xz * A[iz + 3*ixs - 3] + t3xz * A[iz - 3*ixs + 3] +
+                    t4xz * A[iz + 4*ixs - 4] + t4xz * A[iz - 4*ixs + 4];
+            }                   /* end for */
+
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                    t1yz * A[iz + iys - 1] + t1yz * A[iz - iys + 1] +
+                    t2yz * A[iz + 2*iys - 2] + t2yz * A[iz - 2*iys + 2] +
+                    t3yz * A[iz + 3*iys - 3] + t3yz * A[iz - 3*iys + 3] +
+                    t4yz * A[iz + 4*iys - 4] + t4yz * A[iz - 4*iys + 4];
+            }                   /* end for */
+
+        }
+    }
+
+    /* Return the diagonal component of the operator */
+    return (double)std::real(th2);
+
+
+} /* end app8_combined_fcc */
