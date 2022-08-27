@@ -113,6 +113,10 @@ template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int
 template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec);
 template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec);
 template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec);
+template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 template double FiniteDiff::app8_combined_hex<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined_hex<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
