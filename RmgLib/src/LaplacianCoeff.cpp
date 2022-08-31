@@ -72,43 +72,43 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     this->plane_center_nxy = 0.0;
     this->plane_center_nxz = 0.0;
     this->plane_center_nyz = 0.0;
-    this->axis_x.resize(Lorder);
-    this->axis_y.resize(Lorder);
-    this->axis_z.resize(Lorder);
-    this->axis_xy.resize(Lorder);
-    this->axis_xz.resize(Lorder);
-    this->axis_yz.resize(Lorder);
-    this->axis_nxy.resize(Lorder);
-    this->axis_nxz.resize(Lorder);
-    this->axis_nyz.resize(Lorder);
+    this->axis_x.resize(Lorder+1);
+    this->axis_y.resize(Lorder+1);
+    this->axis_z.resize(Lorder+1);
+    this->axis_xy.resize(Lorder+1);
+    this->axis_xz.resize(Lorder+1);
+    this->axis_yz.resize(Lorder+1);
+    this->axis_nxy.resize(Lorder+1);
+    this->axis_nxz.resize(Lorder+1);
+    this->axis_nyz.resize(Lorder+1);
 
-    this->axis_x_gx.resize(Lorder);
-    this->axis_x_gy.resize(Lorder);
-    this->axis_x_gz.resize(Lorder);
-    this->axis_y_gx.resize(Lorder);
-    this->axis_y_gy.resize(Lorder);
-    this->axis_y_gz.resize(Lorder);
-    this->axis_z_gx.resize(Lorder);
-    this->axis_z_gy.resize(Lorder);
-    this->axis_z_gz.resize(Lorder);
-    this->axis_xy_gx.resize(Lorder);
-    this->axis_xy_gy.resize(Lorder);
-    this->axis_xy_gz.resize(Lorder);
-    this->axis_xz_gx.resize(Lorder);
-    this->axis_xz_gy.resize(Lorder);
-    this->axis_xz_gz.resize(Lorder);
-    this->axis_yz_gx.resize(Lorder);
-    this->axis_yz_gy.resize(Lorder);
-    this->axis_yz_gz.resize(Lorder);
-    this->axis_nxy_gx.resize(Lorder);
-    this->axis_nxy_gy.resize(Lorder);
-    this->axis_nxy_gz.resize(Lorder);
-    this->axis_nxz_gx.resize(Lorder);
-    this->axis_nxz_gy.resize(Lorder);
-    this->axis_nxz_gz.resize(Lorder);
-    this->axis_nyz_gx.resize(Lorder);
-    this->axis_nyz_gy.resize(Lorder);
-    this->axis_nyz_gz.resize(Lorder);
+    this->axis_x_gx.resize(Lorder+1);
+    this->axis_x_gy.resize(Lorder+1);
+    this->axis_x_gz.resize(Lorder+1);
+    this->axis_y_gx.resize(Lorder+1);
+    this->axis_y_gy.resize(Lorder+1);
+    this->axis_y_gz.resize(Lorder+1);
+    this->axis_z_gx.resize(Lorder+1);
+    this->axis_z_gy.resize(Lorder+1);
+    this->axis_z_gz.resize(Lorder+1);
+    this->axis_xy_gx.resize(Lorder+1);
+    this->axis_xy_gy.resize(Lorder+1);
+    this->axis_xy_gz.resize(Lorder+1);
+    this->axis_xz_gx.resize(Lorder+1);
+    this->axis_xz_gy.resize(Lorder+1);
+    this->axis_xz_gz.resize(Lorder+1);
+    this->axis_yz_gx.resize(Lorder+1);
+    this->axis_yz_gy.resize(Lorder+1);
+    this->axis_yz_gz.resize(Lorder+1);
+    this->axis_nxy_gx.resize(Lorder+1);
+    this->axis_nxy_gy.resize(Lorder+1);
+    this->axis_nxy_gz.resize(Lorder+1);
+    this->axis_nxz_gx.resize(Lorder+1);
+    this->axis_nxz_gy.resize(Lorder+1);
+    this->axis_nxz_gz.resize(Lorder+1);
+    this->axis_nyz_gx.resize(Lorder+1);
+    this->axis_nyz_gy.resize(Lorder+1);
+    this->axis_nyz_gz.resize(Lorder+1);
 
     std::vector<GridPoint>  points, points1;
 
@@ -216,49 +216,60 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         dimension = 3;
         der_list.clear();
         points.clear();
+        points1.clear();
         GetDerListFCC(der_list, Lorder);
         GetPointListFCC(points1, a, Ngrid, Lorder);
-
         this->BuildSolveLinearEq(points1, der_list, dimension);
 
         for(auto a:points1)
         {   
-//		printf("AAAA  %d  %d  %d\n",a.index[0],a.index[1],a.index[2]);
             if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
             {
                 this->plane_dist_x = std::min(this->plane_dist_x, std::abs(a.dist));
                 this->axis_x[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_x -= a.coeff;
+                this->axis_x_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_x_gy[a.index[0]+Lorder/2] = a.coeff_gy;
             }
             else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
             {
                 this->plane_dist_y = std::min(this->plane_dist_y, std::abs(a.dist));
                 this->axis_y[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_y -= a.coeff;
+                this->axis_y_gy[a.index[1]+Lorder/2] = a.coeff_gy;
+                this->axis_y_gz[a.index[1]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
             {
                 this->plane_dist_z = std::min(this->plane_dist_z, std::abs(a.dist));
                 this->axis_z[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_z -= a.coeff;
+                this->axis_z_gx[a.index[2]+Lorder/2] = a.coeff_gx;
+                this->axis_z_gz[a.index[2]+Lorder/2] = a.coeff_gz;
             }
-            else if(a.index[0] != 0 && std::abs(a.index[0]) == std::abs(a.index[1]) && a.index[2] == 0)
+            else if(a.index[0] == -a.index[1])
             {
                 this->plane_dist_xy = std::min(this->plane_dist_xy, std::abs(a.dist));
                 this->axis_xy[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_xy -= a.coeff;
+                this->axis_xy_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_xy_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
-            else if(a.index[0] != 0 && a.index[1] == 0 && std::abs(a.index[0]) == std::abs(a.index[2]))
+            else if(a.index[0] == -a.index[2])
             {
                 this->plane_dist_xz = std::min(this->plane_dist_xz, std::abs(a.dist));
                 this->axis_xz[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_xz -= a.coeff;
+                this->axis_xz_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_xz_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
-            else if(a.index[0] == 0 && a.index[1] != 0 && std::abs(a.index[1]) == std::abs(a.index[2]))
+            else if(a.index[1] == -a.index[2])
             {
                 this->plane_dist_yz = std::min(this->plane_dist_yz, std::abs(a.dist));
                 this->axis_yz[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_yz -= a.coeff;
+                this->axis_yz_gx[a.index[1]+Lorder/2] = a.coeff_gx;
+                this->axis_yz_gy[a.index[1]+Lorder/2] = a.coeff_gy;
             }
         }
 
@@ -739,7 +750,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         {   
             printf("COEFF  %2d    %14.8f    %d  %d  %d   %14.8f\n",index, a.dist, 
                     a.index[0], a.index[1], a.index[2], a.coeff);
-//            std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<a.coeff<<std::endl;
+            std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<a.coeff<<std::endl;
             index++;
         }
     }
@@ -1162,7 +1173,6 @@ void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3]
 
         }
     }
-
 
     std::stable_sort(points.begin(), points.end(), customLess_dist);
 

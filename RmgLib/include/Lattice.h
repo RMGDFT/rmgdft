@@ -50,6 +50,10 @@
 #define MONOCLINIC_BASE_CENTRED         13
 #define TRICLINIC_PRIMITIVE             14
 
+// Declared outside class since we may want to use it in other places
+void TransformVector(double *vec, double *a0, double *a1, double *a2,
+                                  double *b0, double *b1, double *b2);
+
 // HEXAGONAL is for 60 degree case HEXAGONAL2 is for 120
 #define HEXAGONAL2                      15
 class Lattice {
