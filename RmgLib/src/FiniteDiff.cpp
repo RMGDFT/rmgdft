@@ -4040,7 +4040,7 @@ double FiniteDiff::app8_combined_fcc(RmgType * __restrict__ a, RmgType * __restr
     double d2 = -8.0/3150.0;
     double dr = d1 / d2;
     double k2 = PI*PI/8.0;
-    double th2=0.0, maxh, hadj;
+    double th2=0.0, hadj;
 
     RmgType t1xy, t2xy, t3xy, t4xy, t1xz, t2xz, t3xz, t4xz, t1yz, t2yz, t3yz, t4yz;
     RmgType t1x, t2x, t3x, t4x;
@@ -4049,65 +4049,42 @@ double FiniteDiff::app8_combined_fcc(RmgType * __restrict__ a, RmgType * __restr
 
 
     // Need to setup 6 axes
-    maxh = std::max(LC->plane_dist_x, LC->plane_dist_y);
-    maxh = std::max(maxh, LC->plane_dist_z);
-    maxh = std::max(maxh, LC->plane_dist_xy);
-    maxh = std::max(maxh, LC->plane_dist_xz);
-    maxh = std::max(maxh, LC->plane_dist_yz);
-    hadj = sqrt(LC->plane_dist_x / maxh);
+    hadj = 1.0;
     c2 = 0.0;
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c2 = 0.0;  // disabled until I derive the relations for FCC
     c1 = 1.0 + c2;
+
     th2 += c1*LC->plane_center_x - c2*LC_6->plane_center_x;
     t1x = c1*LC->axis_x[3] - c2*LC_6->axis_x[2];
     t2x = c1*LC->axis_x[2] - c2*LC_6->axis_x[1];
     t3x = c1*LC->axis_x[1] - c2*LC_6->axis_x[0];
     t4x = c1*LC->axis_x[0];
 
-    hadj = sqrt(LC->plane_dist_y / maxh);
-    c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c1 = 1.0 + c2;
     th2 += c1*LC->plane_center_y - c2*LC_6->plane_center_y;
     t1y = c1*LC->axis_y[3] - c2*LC_6->axis_y[2];
     t2y = c1*LC->axis_y[2] - c2*LC_6->axis_y[1];
     t3y = c1*LC->axis_y[1] - c2*LC_6->axis_y[0];
     t4y = c1*LC->axis_y[0];
 
-    hadj = sqrt(LC->plane_dist_z / maxh);
-    c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c1 = 1.0 + c2;
     th2 += c1*LC->plane_center_z - c2*LC_6->plane_center_z;
     t1z = c1*LC->axis_z[3] - c2*LC_6->axis_z[2];
     t2z = c1*LC->axis_z[2] - c2*LC_6->axis_z[1];
     t3z = c1*LC->axis_z[1] - c2*LC_6->axis_z[0];
     t4z = c1*LC->axis_z[0];
 
-    hadj = sqrt(LC->plane_dist_xy / maxh);
-    c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c1 = 1.0 + c2;
     th2 += c1*LC->plane_center_xy - c2*LC_6->plane_center_xy;
     t1xy = c1*LC->axis_xy[3] - c2*LC_6->axis_xy[2];
     t2xy = c1*LC->axis_xy[2] - c2*LC_6->axis_xy[1];
     t3xy = c1*LC->axis_xy[1] - c2*LC_6->axis_xy[0];
     t4xy = c1*LC->axis_xy[0];
 
-    hadj = sqrt(LC->plane_dist_xz / maxh);
-    c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c1 = 1.0 + c2;
     th2 += c1*LC->plane_center_xz - c2*LC_6->plane_center_xz;
     t1xz = c1*LC->axis_xz[3] - c2*LC_6->axis_xz[2];
     t2xz = c1*LC->axis_xz[2] - c2*LC_6->axis_xz[1];
     t3xz = c1*LC->axis_xz[1] - c2*LC_6->axis_xz[0];
     t4xz = c1*LC->axis_xz[0];
 
-    hadj = sqrt(LC->plane_dist_yz / maxh);
-    c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c1 = 1.0 + c2;
     th2 += c1*LC->plane_center_yz - c2*LC_6->plane_center_yz;
     t1yz = c1*LC->axis_yz[3] - c2*LC_6->axis_yz[2];
     t2yz = c1*LC->axis_yz[2] - c2*LC_6->axis_yz[1];
