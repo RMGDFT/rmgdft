@@ -55,7 +55,6 @@ src/RmgSumAll.cpp
 src/RmgMaxAll.cpp
 src/ThreadBarrier.cpp
 src/rmg_error.cpp
-src/TransformVector.cpp
 src/get_vh.cpp
 src/vh_fmg.cpp
 src/packfuncs.cpp
