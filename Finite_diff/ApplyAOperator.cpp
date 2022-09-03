@@ -170,6 +170,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
                    (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
                    (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == CUBIC_FC) ||
+                   (Rmg_L.get_ibrav_type() == CUBIC_BC) ||
                    (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE))
         Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
