@@ -241,21 +241,6 @@ void simple_lbfgs (void)
             iptr->xtal[1] = position[ion * 3 + 1] ;
         if(iptr->movable[2] )
             iptr->xtal[2] = position[ion * 3 + 2] ;
-
-        if (iptr->xtal[0] > ONE)
-            iptr->xtal[0] -= ONE;
-        if (iptr->xtal[0] < ZERO)
-            iptr->xtal[0] += ONE;
-
-        if (iptr->xtal[1] > ONE)
-            iptr->xtal[1] -= ONE;
-        if (iptr->xtal[1] < ZERO)
-            iptr->xtal[1] += ONE;
-
-        if (iptr->xtal[2] > ONE)
-            iptr->xtal[2] -= ONE;
-        if (iptr->xtal[2] < ZERO)
-            iptr->xtal[2] += ONE;
         to_cartesian (iptr->xtal, iptr->crds);
 
     }
