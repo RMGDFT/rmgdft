@@ -194,7 +194,7 @@ void DeviceSynchronize(void);
 void Precond_drho(double *);
 template <typename T> void Write_Wfs_forWannier(int kpt_global, Kpoint<T> *kptr, std::vector<bool> exclude_bands, std::string wavefule);
 double GetPlanarAnisotropy(double *density);
-
+void GetFdFactor(void);
 
 #endif
 #endif

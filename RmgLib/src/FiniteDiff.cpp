@@ -40,6 +40,7 @@
 #define         PI          3.14159265358979323
 
 int FiniteDiff::allocation_limit = 65536;
+double FiniteDiff::cfac;
 
 // Force instantiation of float, double and complex versions.
 template double FiniteDiff::app_cil_sixth<float>(float *, float *, int, int, int, double, double, double);
@@ -171,6 +172,15 @@ FiniteDiff::FiniteDiff(Lattice *lptr, bool alt_flag)
 void FiniteDiff::set_allocation_limit(int lim)
 {
     FiniteDiff::allocation_limit = lim;
+}
+
+void FiniteDiff::set_cfac(double cfac_in)
+{
+    FiniteDiff::cfac = cfac_in;
+}
+double get_cfac(void)
+{
+    return FiniteDiff::cfac;
 }
 
 // Constructor for non-periodic boundary conditions. Unlike the case with
@@ -3399,7 +3409,8 @@ double FiniteDiff::app8_combined_orthorhombic(
     maxh = std::max(maxh, h2z);
 
     double hadj = sqrt(h2x / maxh);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    if(this->alt_laplacian) c2 = cfac;
     c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
 
@@ -3409,7 +3420,8 @@ double FiniteDiff::app8_combined_orthorhombic(
     RmgType t4x (c1*w1[ic+4] * hf / h2x);
 
     hadj = sqrt(h2y / maxh);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    if(this->alt_laplacian) c2 = cfac;
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) / h2y;
 
@@ -3419,7 +3431,8 @@ double FiniteDiff::app8_combined_orthorhombic(
     RmgType t4y (c1*w1[ic+4] * hf / h2y);
 
     hadj = sqrt(h2z / maxh);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
+    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
+    if(this->alt_laplacian) c2 = cfac;
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);

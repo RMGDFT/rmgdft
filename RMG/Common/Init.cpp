@@ -598,6 +598,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
         }
 
+        // Set up autotuning finite differencing
+        GetFdFactor();
+
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS *ct.nspin];
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
