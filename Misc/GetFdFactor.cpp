@@ -19,8 +19,7 @@ void GetFdFactor(void)
     int norbitals = 0;
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
-    std::vector<double *> orbitals;
-    std::vector<double> cfacs, fke, orbital_occs;
+    double *orbital = new double[pbasis];
     std::vector<double> cvals, diffs;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
@@ -59,71 +58,65 @@ void GetFdFactor(void)
             /*Do the backwards transform */
             coarse_pwaves->FftInverse(gbptr, beptr);
 
-            orbitals.push_back(new double[pbasis]);
-            double *orbit_R = orbitals[norbitals];
-
-            for (int idx = 0; idx < pbasis; idx++) orbit_R[idx] = std::real(beptr[idx]);
+            for (int idx = 0; idx < pbasis; idx++) orbital[idx] = std::real(beptr[idx]);
 
             /*Advance the fortward transform pointers */
             fptr += pbasis;
             norbitals++;
+
+            // Get the FFT laplacian and compute the kinetic energy as our gold standard
+            FftLaplacianCoarse(orbital, work);
+
+            double fft_ke = 0.0;
+            for(int idx=0;idx<pbasis;idx++) fft_ke += orbital[idx] * work[idx];
+            fft_ke = -0.5*fft_ke*get_vel();
+            MPI_Allreduce(MPI_IN_PLACE, &fft_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+            double c2 = 0.0;
+            cvals.clear();
+            diffs.clear();
+            // Just doing a linear fit with 2 points for now
+            for(int j=0;j < 2;j++)
+            {
+                FD.set_cfac(c2);
+                ApplyAOperator (orbital, work, kvec);
+                double fd_ke = 0.0;
+                for(int idx=0;idx<pbasis;idx++) fd_ke += orbital[idx] * work[idx];
+                fd_ke = -0.5*fd_ke*get_vel();
+                MPI_Allreduce(MPI_IN_PLACE, &fd_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+                //if(pct.gridpe == 0) printf("LLLL  %f   %f\n",c2, fd_ke);
+                cvals.push_back(c2);
+                diffs.push_back(fft_ke - fd_ke);
+                c2 += 1.0; 
+            }
+
+            double m = diffs[1] - diffs[0];
+            double x_int = - diffs[0] / m;
+            sp.fd_factors.push_back(x_int);
+            sp.fd_fke.push_back(fft_ke);
         }
     } 
 
-    for(int isp=0;isp < norbitals;isp++)
-    {
-        // Get the FFT laplacian and compute the kinetic energy as our gold standard
-        FftLaplacianCoarse(orbitals[isp], work);
-
-        double fft_ke = 0.0;
-        for(int idx=0;idx<pbasis;idx++) fft_ke += orbitals[isp][idx] * work[idx];
-        fft_ke = -0.5*fft_ke*get_vel();
-        MPI_Allreduce(MPI_IN_PLACE, &fft_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        //if(pct.gridpe == 0) printf("FFT Kinetic energy %f\n",fft_ke);
-
-        double c2 = 0.0;
-        cvals.clear();
-        diffs.clear();
-        // Just doing a linear fit with 2 points for now
-        for(int j=0;j < 2;j++)
-        {
-            FD.set_cfac(c2);
-            ApplyAOperator (orbitals[isp], work, kvec);
-            double fd_ke = 0.0;
-            for(int idx=0;idx<pbasis;idx++) fd_ke += orbitals[isp][idx] * work[idx];
-            fd_ke = -0.5*fd_ke*get_vel();
-            MPI_Allreduce(MPI_IN_PLACE, &fd_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-            //if(pct.gridpe == 0) printf("LLLL  %f   %f\n",c2, fd_ke);
-            cvals.push_back(c2);
-            diffs.push_back(fft_ke - fd_ke);
-            c2 += 1.0; 
-        }
-
-        double m = diffs[1] - diffs[0];
-        double x_int = - diffs[0] / m;
-        cfacs.push_back(x_int);
-        fke.push_back(fft_ke);
-        for(int j=0;j<2;j++)
-        {
-            //if(pct.gridpe==0) printf("DDDD  %f   %f  %e\n",x_int,cvals[j], diffs[j]);
-        }
-    }
-
-    // Weight by the kinetic energy of the orbitals
+    // Loop over ions
     double newcfac = 0.0, kesum=0.0;
-    for(size_t i=0;i < cfacs.size();i++)
+    for(auto& Atom : Atoms)
     {
-        newcfac += cfacs[i]*fke[i];
-        kesum += fke[i];
+        for(size_t i=0;i < Atom.Type->fd_factors.size();i++)
+        {
+            // Weight by the kinetic energy of the orbitals
+            newcfac += Atom.Type->fd_factors[i] * Atom.Type->fd_fke[i];
+            kesum += Atom.Type->fd_fke[i];
+        }
     }
+
     newcfac /= kesum;
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac);
     FD.set_cfac(newcfac);
 
 
-    for(int i=0;i < norbitals;i++) delete [] orbitals[i];
     delete [] work;
     fftw_free (gbptr);
     fftw_free (beptr);
+    delete [] orbital;
     delete [] fftw_phase;
 }
