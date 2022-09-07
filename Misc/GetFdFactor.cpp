@@ -79,7 +79,8 @@ void GetFdFactor(void)
             for(int j=0;j < 2;j++)
             {
                 FD.set_cfac(c2);
-                ApplyAOperator (orbital, work, kvec);
+                if(ct.kohn_sham_fd_order == 8) ApplyAOperator (orbital, work, kvec);
+                if(ct.kohn_sham_fd_order == 10) ApplyLaplacian (orbital, work, 10, "Coarse");
                 double fd_ke = 0.0;
                 for(int idx=0;idx<pbasis;idx++) fd_ke += orbital[idx] * work[idx];
                 fd_ke = -0.5*fd_ke*get_vel();
