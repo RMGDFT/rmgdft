@@ -61,6 +61,9 @@ void SPECIES::InitDelocalizedOrbital (void)
     int orbital_count = 0;
     for (int ip = 0; ip < this->num_atomic_waves; ip++)
     {
+
+        // If the occupation condition changes here then it must change in
+        // GetFdFactors as well.
         if(this->atomic_wave_oc[ip] > 0.0) {
 
             for(int m = 0; m < 2*this->atomic_wave_l[ip]+1; m++)

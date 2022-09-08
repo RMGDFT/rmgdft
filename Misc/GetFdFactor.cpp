@@ -21,6 +21,7 @@ void GetFdFactor(void)
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
     std::vector<double> cvals, diffs;
+    std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     double *work = new double[pbasis];
@@ -38,7 +39,20 @@ void GetFdFactor(void)
     // Loop over species
     for (auto& sp : Species)
     {
-
+        // Set up an occupation weight array
+        for (int ip = 0; ip < sp.num_atomic_waves; ip++)
+        {
+            // This is here since we have forward beta only for occupied orbitals.
+            // If that changes then this must change.
+            if(sp.atomic_wave_oc[ip] > 0.0)
+             {
+                for(int m = 0; m < 2*sp.atomic_wave_l[ip]+1; m++)
+                {
+                    occ_weight.push_back(sp.atomic_wave_oc[ip] / (2*sp.atomic_wave_l[ip]+1));
+                }
+             }
+        }
+ 
         /*The vector we are looking for should be */
         to_cartesian (vect, nlcrds);
 
@@ -85,16 +99,27 @@ void GetFdFactor(void)
                 for(int idx=0;idx<pbasis;idx++) fd_ke += orbital[idx] * work[idx];
                 fd_ke = -0.5*fd_ke*get_vel();
                 MPI_Allreduce(MPI_IN_PLACE, &fd_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-                //if(pct.gridpe == 0) printf("LLLL  %f   %f\n",c2, fd_ke);
+                if(pct.gridpe == 0) printf("LLLL  %e   %e\n",c2, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
                 c2 += 1.0; 
             }
 
-            double m = diffs[1] - diffs[0];
+            double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
             double x_int = - diffs[0] / m;
+            //if(x_int < 0.0) x_int = 0.0;
+            //if(x_int > 1.0) x_int = 1.0;
+
+            if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
             sp.fd_factors.push_back(x_int);
-            sp.fd_fke.push_back(fft_ke);
+            // if the difference between fft and fd is very small then it likely
+            // means the orbital is soft compared to the grid and we are just
+            // fitting noise so don't include it in the computations since it
+            // will have no impact on the total energy.
+            if(fabs(m) > 1.0e-5)
+                sp.fd_fke.push_back(fft_ke);
+            else
+                sp.fd_fke.push_back(0.0); // will cause it to not be included
         }
     } 
 
@@ -104,9 +129,9 @@ void GetFdFactor(void)
     {
         for(size_t i=0;i < Atom.Type->fd_factors.size();i++)
         {
-            // Weight by the kinetic energy of the orbitals
-            newcfac += Atom.Type->fd_factors[i] * Atom.Type->fd_fke[i];
-            kesum += Atom.Type->fd_fke[i];
+            // Weight by the kinetic energy of the orbitals and the occupations
+            newcfac += Atom.Type->fd_factors[i] * Atom.Type->fd_fke[i] * occ_weight[i];
+            kesum += Atom.Type->fd_fke[i] * occ_weight[i];
         }
     }
 
