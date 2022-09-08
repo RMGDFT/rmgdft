@@ -4067,8 +4067,8 @@ double FiniteDiff::app8_combined_fcc(RmgType * __restrict__ a, RmgType * __restr
     // Need to setup 6 axes
     hadj = 1.0;
     c2 = 0.0;
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    c2 = 0.0;  // disabled until I derive the relations for FCC
+    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    if(this->alt_laplacian) c2 = cfac;
     c1 = 1.0 + c2;
 
     th2 += c1*LC->plane_center_x - c2*LC_6->plane_center_x;
