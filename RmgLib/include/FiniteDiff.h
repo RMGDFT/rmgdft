@@ -94,11 +94,9 @@ public:
     FiniteDiff(Lattice *lptr, BaseGrid *G, int xtype, int ytype, int ztype, int density, int order);
     void gen_weights(int n, int m, double xr, double *x, double *w);
     void set_alt_laplacian_flag(bool flag);
-    void set_cfac(double cfac);
-    double get_cfac(void);
     static void set_allocation_limit(int lim);
     static int allocation_limit;
-    static double cfac;
+    static double cfac[12];
 
 
     ~FiniteDiff(void);

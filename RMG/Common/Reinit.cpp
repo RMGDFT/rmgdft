@@ -231,6 +231,9 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
         }
     }
 
+    // Reinitialize autotuning finite differencing
+    GetFdFactor();
+
 }                               /* end init */
 
 

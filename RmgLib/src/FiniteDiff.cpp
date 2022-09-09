@@ -40,7 +40,7 @@
 #define         PI          3.14159265358979323
 
 int FiniteDiff::allocation_limit = 65536;
-double FiniteDiff::cfac;
+double FiniteDiff::cfac[12];
 
 // Force instantiation of float, double and complex versions.
 template double FiniteDiff::app_cil_sixth<float>(float *, float *, int, int, int, double, double, double);
@@ -172,15 +172,6 @@ FiniteDiff::FiniteDiff(Lattice *lptr, bool alt_flag)
 void FiniteDiff::set_allocation_limit(int lim)
 {
     FiniteDiff::allocation_limit = lim;
-}
-
-void FiniteDiff::set_cfac(double cfac_in)
-{
-    FiniteDiff::cfac = cfac_in;
-}
-double get_cfac(void)
-{
-    return FiniteDiff::cfac;
 }
 
 // Constructor for non-periodic boundary conditions. Unlike the case with
@@ -1867,7 +1858,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
     double hadj = sqrt(h2x / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
     RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2x);
@@ -1878,7 +1869,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
     hadj = sqrt(h2y / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2y;
     RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) / h2y);
@@ -1889,7 +1880,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
     hadj = sqrt(h2z / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
@@ -3212,8 +3203,8 @@ double FiniteDiff::app8_combined_hex(RmgType * __restrict__ a, RmgType * __restr
     maxh = std::max(maxh, h2z);
 
     double hadj = sqrt(h2x / maxh);
-hadj=1.0/0.707;
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
     RmgType t1hy, t2hy, t3hy, t4hy;
@@ -3224,8 +3215,8 @@ hadj=1.0/0.707;
     RmgType t4x (c1*w1[ic+4] * hf / h2x);
 
     hadj = sqrt(h2y / maxh);
-hadj=1.0/0.707;
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) / h2y;
 
@@ -3235,8 +3226,8 @@ hadj=1.0/0.707;
     RmgType t4y (c1*w1[ic+4] * hf / h2y);
 
     hadj = sqrt(h2z / maxh);
-hadj=1.0;
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
+if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
@@ -3413,7 +3404,7 @@ double FiniteDiff::app8_combined_orthorhombic(
 
     double hadj = sqrt(h2x / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
 
@@ -3424,7 +3415,7 @@ double FiniteDiff::app8_combined_orthorhombic(
 
     hadj = sqrt(h2y / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) / h2y;
 
@@ -3435,7 +3426,7 @@ double FiniteDiff::app8_combined_orthorhombic(
 
     hadj = sqrt(h2z / maxh);
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
@@ -4068,7 +4059,7 @@ double FiniteDiff::app8_combined_fcc(RmgType * __restrict__ a, RmgType * __restr
     hadj = 1.0;
     c2 = 0.0;
     //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac;
+    if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
 
     th2 += c1*LC->plane_center_x - c2*LC_6->plane_center_x;

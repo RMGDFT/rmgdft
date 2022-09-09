@@ -39,6 +39,9 @@ void GetFdFactor(void)
     // Loop over species
     for (auto& sp : Species)
     {
+        sp.fd_factors.clear();
+        sp.fd_fke.clear();
+
         // Set up an occupation weight array
         for (int ip = 0; ip < sp.num_atomic_waves; ip++)
         {
@@ -92,7 +95,7 @@ void GetFdFactor(void)
             // Just doing a linear fit with 2 points for now
             for(int j=0;j < 2;j++)
             {
-                FD.set_cfac(c2);
+                FD.cfac[0] = c2;
                 if(ct.kohn_sham_fd_order == 8) ApplyAOperator (orbital, work, kvec);
                 if(ct.kohn_sham_fd_order == 10) ApplyLaplacian (orbital, work, 10, "Coarse");
                 double fd_ke = 0.0;
@@ -135,10 +138,14 @@ void GetFdFactor(void)
         }
     }
 
-    newcfac /= kesum;
-    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac);
-    FD.set_cfac(newcfac);
+    // If extrememly well converged then nothing to do here
+    if(kesum == 0.0)
+        newcfac = 0.0;
+    else
+        newcfac /= kesum;
 
+    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac);
+    FD.cfac[0] = newcfac;
 
     delete [] work;
     fftw_free (gbptr);
