@@ -4,11 +4,25 @@
 #include "main.h"
 #include "Atomic.h"
 #include "Pw.h"
+#include "Lattice.h"
 #include "transition.h"
+
+double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
+{
+    double ke = 0.0;
+    for(int idx=0;idx<pbasis;idx++)
+    {
+        ke += x[idx] * lapx[idx];
+    }
+    ke = -0.5*ke*get_vel();
+    MPI_Allreduce(MPI_IN_PLACE, &ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    return ke;
+}
 
 
 void GetFdFactor(void)
 {
+    int ibrav = Rmg_L.get_ibrav_type();
     FiniteDiff FD(&Rmg_L);
     std::complex<double> I_t(0.0, 1.0);
 
@@ -16,7 +30,6 @@ void GetFdFactor(void)
     int nlydim = get_NY_GRID();
     int nlzdim = get_NZ_GRID();
     int pbasis = Rmg_G->get_P0_BASIS(1);
-    int norbitals = 0;
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
@@ -39,8 +52,13 @@ void GetFdFactor(void)
     // Loop over species
     for (auto& sp : Species)
     {
-        sp.fd_factors.clear();
-        sp.fd_fke.clear();
+        sp.fd_factor1.clear();
+        sp.fd_factor2.clear();
+        sp.fd_factor3.clear();
+        sp.fd_fke1.clear();
+        sp.fd_fke2.clear();
+        sp.fd_fke3.clear();
+        sp.fd_slopes.clear();
 
         // Set up an occupation weight array
         for (int ip = 0; ip < sp.num_atomic_waves; ip++)
@@ -79,16 +97,10 @@ void GetFdFactor(void)
 
             /*Advance the fortward transform pointers */
             fptr += pbasis;
-            norbitals++;
 
             // Get the FFT laplacian and compute the kinetic energy as our gold standard
             FftLaplacianCoarse(orbital, work);
-
-            double fft_ke = 0.0;
-            for(int idx=0;idx<pbasis;idx++) fft_ke += orbital[idx] * work[idx];
-            fft_ke = -0.5*fft_ke*get_vel();
-            MPI_Allreduce(MPI_IN_PLACE, &fft_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
+            double fft_ke = ComputeKineticEnergy(orbital, work, pbasis);
             double c2 = 0.0;
             cvals.clear();
             diffs.clear();
@@ -98,54 +110,61 @@ void GetFdFactor(void)
                 FD.cfac[0] = c2;
                 if(ct.kohn_sham_fd_order == 8) ApplyAOperator (orbital, work, kvec);
                 if(ct.kohn_sham_fd_order == 10) ApplyLaplacian (orbital, work, 10, "Coarse");
-                double fd_ke = 0.0;
-                for(int idx=0;idx<pbasis;idx++) fd_ke += orbital[idx] * work[idx];
-                fd_ke = -0.5*fd_ke*get_vel();
-                MPI_Allreduce(MPI_IN_PLACE, &fd_ke, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+                double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
                 if(pct.gridpe == 0) printf("LLLL  %e   %e\n",c2, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
                 c2 += 1.0; 
             }
-
             double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
+            sp.fd_slopes.push_back(m);
             double x_int = - diffs[0] / m;
-            //if(x_int < 0.0) x_int = 0.0;
-            //if(x_int > 1.0) x_int = 1.0;
 
             if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
-            sp.fd_factors.push_back(x_int);
+            sp.fd_factor1.push_back(x_int);
             // if the difference between fft and fd is very small then it likely
             // means the orbital is soft compared to the grid and we are just
             // fitting noise so don't include it in the computations since it
             // will have no impact on the total energy.
             if(fabs(m) > 1.0e-5)
-                sp.fd_fke.push_back(fft_ke);
+                sp.fd_fke1.push_back(fft_ke);
             else
-                sp.fd_fke.push_back(0.0); // will cause it to not be included
+                sp.fd_fke1.push_back(0.0); // will cause it to not be included
         }
-    } 
+    }
 
     // Loop over ions
-    double newcfac = 0.0, kesum=0.0;
+    double newcfac[3] = {0.0,0.0,0.0}, fweight=0.0;
     for(auto& Atom : Atoms)
     {
-        for(size_t i=0;i < Atom.Type->fd_factors.size();i++)
+        for(size_t i=0;i < Atom.Type->fd_factor1.size();i++)
         {
             // Weight by the kinetic energy of the orbitals and the occupations
-            newcfac += Atom.Type->fd_factors[i] * Atom.Type->fd_fke[i] * occ_weight[i];
-            kesum += Atom.Type->fd_fke[i] * occ_weight[i];
+            newcfac[0] += Atom.Type->fd_factor1[i] * Atom.Type->fd_fke1[i] * occ_weight[i] * fabs(Atom.Type->fd_slopes[i]);
+            fweight += Atom.Type->fd_fke1[i] * occ_weight[i] * fabs(Atom.Type->fd_slopes[i]);
+
         }
     }
 
     // If extrememly well converged then nothing to do here
-    if(kesum == 0.0)
-        newcfac = 0.0;
+    if(fweight == 0.0)
+    {
+        newcfac[0] = 0.0;
+        newcfac[1] = 0.0;
+        newcfac[2] = 0.0;
+    }
     else
-        newcfac /= kesum;
+    {
+        newcfac[0] /= fweight;
+        newcfac[1] /= fweight;
+        newcfac[2] /= fweight;
+    }
 
-    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac);
-    FD.cfac[0] = newcfac;
+    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac[0]);
+    FD.cfac[0] = newcfac[0];
+    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) FD.cfac[2] = newcfac[2];
+    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC2 = %f\n",newcfac[2]);
+
 
     delete [] work;
     fftw_free (gbptr);

@@ -165,8 +165,13 @@ public:
     std::vector<double> atomic_wave_energy;
 
     /* Finite difference auto tuning factors. One for each atomic orbital (including m-dependence) */
-    std::vector<double> fd_factors;
-    std::vector<double> fd_fke;
+    std::vector<double> fd_factor1;
+    std::vector<double> fd_factor2;
+    std::vector<double> fd_factor3;
+    std::vector<double> fd_fke1;
+    std::vector<double> fd_fke2;
+    std::vector<double> fd_fke3;
+    std::vector<double> fd_slopes;
     
     std::vector<std::string> atomic_wave_label;
 
