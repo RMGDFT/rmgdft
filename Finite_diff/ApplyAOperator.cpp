@@ -239,9 +239,16 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
 
         if(special)
-            FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        {
+            if(order == APP_CI_EIGHT)
+                FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            if(order == APP_CI_TEN)
+                FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
         else
+        {
             FiniteDiffGrad((DataType *)rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+        }
 
         // if complex orbitals compute dot products as well
         std::complex<double> I_t(0.0, 1.0);
