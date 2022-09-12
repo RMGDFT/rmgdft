@@ -14,12 +14,12 @@ static std::unordered_map<std::string, int> bravais_lattice_type = {
         {"Tetragonal Primitive", 6},
 //        {"Tetragonal Body Centered", 7},
         {"Monoclinic Primitive", 12},
-        {"Orthorhombic Primitive", 8}};
+        {"Orthorhombic Primitive", 8},
 //        {"Orthorhombic Base Centered", 9},
 //        {"Orthorhombic Body Centered", 10},
 //        {"Orthorhombic Face Centered", 11},
 //        {"Monoclinic Base Centered", 13},
-//        {"Triclinic Primitive", 14}};
+        {"Triclinic Primitive", 14}};
 
 static std::unordered_map<std::string, int> tddft_mode = {
         {"electric field", EFIELD},

@@ -59,6 +59,8 @@ void GetFdFactor(void)
         sp.fd_fke2.clear();
         sp.fd_fke3.clear();
         sp.fd_slopes.clear();
+        sp.fd_xint.clear();
+        sp.fd_yint.clear();
 
         // Set up an occupation weight array
         for (int ip = 0; ip < sp.num_atomic_waves; ip++)
@@ -117,32 +119,29 @@ void GetFdFactor(void)
                 c2 += 1.0; 
             }
             double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
-            sp.fd_slopes.push_back(m);
             double x_int = - diffs[0] / m;
+            sp.fd_slopes.push_back(m);
+            sp.fd_xint.push_back(x_int);
+            sp.fd_yint.push_back(diffs[0]);
 
             if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
             sp.fd_factor1.push_back(x_int);
-            // if the difference between fft and fd is very small then it likely
-            // means the orbital is soft compared to the grid and we are just
-            // fitting noise so don't include it in the computations since it
-            // will have no impact on the total energy.
-            if(fabs(m) > 1.0e-5)
-                sp.fd_fke1.push_back(fft_ke);
-            else
-                sp.fd_fke1.push_back(0.0); // will cause it to not be included
+            sp.fd_fke1.push_back(fft_ke);
         }
     }
 
     // Loop over ions
-    double newcfac[3] = {0.0,0.0,0.0}, fweight=0.0;
+    double newcfac[3] = {0.0,0.0,0.0}, fweight=0.0, a=0.0;
     for(auto& Atom : Atoms)
     {
-        for(size_t i=0;i < Atom.Type->fd_factor1.size();i++)
+        for(size_t i=0;i < Atom.Type->fd_slopes.size();i++)
         {
-            // Weight by the kinetic energy of the orbitals and the occupations
-            newcfac[0] += Atom.Type->fd_factor1[i] * Atom.Type->fd_fke1[i] * occ_weight[i] * fabs(Atom.Type->fd_slopes[i]);
-            fweight += Atom.Type->fd_fke1[i] * occ_weight[i] * fabs(Atom.Type->fd_slopes[i]);
-
+            if(fabs(Atom.Type->fd_slopes[i]) > 1.0e-5)
+            {
+                a += Atom.Type->fd_slopes[i] * occ_weight[i] * 
+                     (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
+                fweight += Atom.Type->fd_slopes[i] * occ_weight[i];
+            }
         }
     }
 
@@ -155,16 +154,15 @@ void GetFdFactor(void)
     }
     else
     {
-        newcfac[0] /= fweight;
-        newcfac[1] /= fweight;
-        newcfac[2] /= fweight;
+        newcfac[0] = a / fweight;
+        newcfac[1] = a / fweight;
+        newcfac[2] = a / fweight;
     }
 
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac[0]);
     FD.cfac[0] = newcfac[0];
     if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) FD.cfac[2] = newcfac[2];
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC2 = %f\n",newcfac[2]);
-
 
     delete [] work;
     fftw_free (gbptr);

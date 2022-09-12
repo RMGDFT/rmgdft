@@ -278,82 +278,148 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     }
     else if( this->ibrav == CUBIC_BC && !this->offdiag )
     {
-        
         dimension = 3;
         der_list.clear();
         points.clear();
-        // derivates does not include the cross terms, such as d^2/dxdy, so the fcc and bcc have the same deravite list
+        points1.clear();
         GetDerListFCC(der_list, Lorder);
-        GetPointListBCC(points, a, Ngrid, Lorder);
-
-        this->BuildSolveLinearEq(points, der_list, dimension);
-    }
-    else       // TRICLINIC
-    {
-        dimension = 3;
-        GetDerList(der_list, Lorder, dimension, 0);
-
-        GetPointList3D(points, a, Ngrid, Lorder);
-
-        this->BuildSolveLinearEq(points, der_list, dimension);
-        for(auto a:points)
+        GetPointListBCC(points1, a, Ngrid, Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+        for(auto a:points1)
         {   
             if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
             {
                 this->plane_dist_x = std::min(this->plane_dist_x, std::abs(a.dist));
                 this->axis_x[a.index[0]+Lorder/2] = a.coeff;
                 this->plane_center_x -= a.coeff;
+                this->axis_x_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_x_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_x_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
             {
                 this->plane_dist_y = std::min(this->plane_dist_y, std::abs(a.dist));
                 this->axis_y[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_y -= a.coeff;
+                this->axis_y_gx[a.index[1]+Lorder/2] = a.coeff_gx;
+                this->axis_y_gy[a.index[1]+Lorder/2] = a.coeff_gy;
+                this->axis_y_gz[a.index[1]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
             {
                 this->plane_dist_z = std::min(this->plane_dist_z, std::abs(a.dist));
                 this->axis_z[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_z -= a.coeff;
+                this->axis_z_gx[a.index[2]+Lorder/2] = a.coeff_gx;
+                this->axis_z_gy[a.index[2]+Lorder/2] = a.coeff_gy;
+                this->axis_z_gz[a.index[2]+Lorder/2] = a.coeff_gz;
+            }
+            else
+            {
+//printf("UUUU  %lu  %d  %d  %d  %f  %f  %f  %f\n",points1.size(),a.index[0],a.index[1],a.index[2],a.coeff, a.coeff_gx, a.coeff_gy, a.coeff_gz);
+            }
+        }
+//exit(0);
+        points.insert(std::end(points), std::begin(points1), std::end(points1));
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
+    }
+    else       // TRICLINIC
+    {
+        dimension = 3;
+        der_list.clear();
+        points.clear();
+        points1.clear();
+        GetDerList(der_list, Lorder, dimension, 0);
+        GetPointList3D(points1, a, Ngrid, Lorder);
+
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+        for(auto a:points1)
+        {   
+            if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
+            {
+                this->plane_dist_x = std::min(this->plane_dist_x, std::abs(a.dist));
+                this->axis_x[a.index[0]+Lorder/2] = a.coeff;
+                this->plane_center_x -= a.coeff;
+                this->axis_x_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_x_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_x_gz[a.index[0]+Lorder/2] = a.coeff_gz;
+            }
+            else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
+            {
+                this->plane_dist_y = std::min(this->plane_dist_y, std::abs(a.dist));
+                this->axis_y[a.index[1]+Lorder/2] = a.coeff;
+                this->plane_center_y -= a.coeff;
+                this->axis_y_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_y_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_y_gz[a.index[0]+Lorder/2] = a.coeff_gz;
+            }
+            else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
+            {
+                this->plane_dist_z = std::min(this->plane_dist_z, std::abs(a.dist));
+                this->axis_z[a.index[2]+Lorder/2] = a.coeff;
+                this->plane_center_z -= a.coeff;
+                this->axis_z_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_z_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_z_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == a.index[1]) && (a.index[2] == 0))
             {
                 this->plane_dist_xy = std::min(this->plane_dist_xy, std::abs(a.dist));
                 this->axis_xy[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_xy -= a.coeff;
+                this->axis_xy_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_xy_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_xy_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == a.index[2]) && (a.index[1] == 0))
             {
                 this->plane_dist_xz = std::min(this->plane_dist_xz, std::abs(a.dist));
                 this->axis_xz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_xz -= a.coeff;
+                this->axis_xz_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_xz_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_xz_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == 0) && (a.index[1] == a.index[2]))
             {
                 this->plane_dist_yz = std::min(this->plane_dist_yz, std::abs(a.dist));
                 this->axis_yz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_yz -= a.coeff;
+                this->axis_yz_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_yz_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_yz_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == -a.index[1]) && (a.index[2] == 0))
             {
                 this->plane_dist_nxy = std::min(this->plane_dist_nxy, std::abs(a.dist));
                 this->axis_nxy[a.index[1]+Lorder/2] = a.coeff;
                 this->plane_center_nxy -= a.coeff;
+                this->axis_nxy_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_nxy_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_nxy_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == -a.index[2]) && (a.index[1] == 0))
             {
                 this->plane_dist_nxz = std::min(this->plane_dist_nxz, std::abs(a.dist));
                 this->axis_nxz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_nxz -= a.coeff;
+                this->axis_nxz_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_nxz_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_nxz_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
             else if((a.index[0] == 0) && (a.index[1] == -a.index[2]))
             {
                 this->plane_dist_nyz = std::min(this->plane_dist_nyz, std::abs(a.dist));
                 this->axis_nyz[a.index[2]+Lorder/2] = a.coeff;
                 this->plane_center_nyz -= a.coeff;
+                this->axis_nyz_gx[a.index[0]+Lorder/2] = a.coeff_gx;
+                this->axis_nyz_gy[a.index[0]+Lorder/2] = a.coeff_gy;
+                this->axis_nyz_gz[a.index[0]+Lorder/2] = a.coeff_gz;
             }
 
         }
+        points.insert(std::end(points), std::begin(points1), std::end(points1));
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
 
     this->GenerateList(points);
@@ -434,6 +500,7 @@ void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][
 
 void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
+    points.clear();
     double dx, dy,dz, dist;    
     for(int i = -Lorder/2; i <= Lorder/2; i++){
         for(int j = -Lorder/2; j <= Lorder/2; j++){
@@ -1189,21 +1256,15 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                 dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
-
-                double check1 = fabs(fabs(dx) - fabs(dy));
-                double check11 = fabs(fabs(dx) - fabs(h));
-                double check2 = fabs(fabs(dx) - fabs(dz));
-                double check22 = fabs(fabs(dy) - fabs(h));
-                double check3 = fabs(fabs(dy) - fabs(dz));
-                
-                if(((check1 < eps) && (check11 < eps)) ||
-                   ((check2 < eps) && (check11 < eps)) ||
-                   ((check3 < eps) && (check22 < eps)) ||
-                   ((fabs(dx) < eps) && (fabs(dy) < eps)) ||
-                   ((fabs(dx) < eps) && (fabs(dz) < eps)) ||
-                   ((fabs(dy) < eps) && (fabs(dz) < eps)))
-                { 
-
+//                if((abs(i) == abs(j) && abs(j) == abs(k)) ||
+                if(
+                   (abs(i) == abs(j) && abs(k)==0) ||
+                   (abs(i) == abs(k) && abs(j)==0) ||
+                   (abs(j) == abs(k) && abs(i)==0) ||
+                   (abs(i) != 0 && abs(j) == 0 && abs(k) == 0) ||
+                   (abs(i) == 0 && abs(j) != 0 && abs(k) == 0) ||
+                   (abs(i) == 0 && abs(j) == 0 && abs(k) != 0))
+                {
                     dist = sqrt(dx * dx  + dy * dy + dz * dz);
                     point.dist = dist;
                     point.delta[0] = dx;
@@ -1216,6 +1277,7 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                     point.weight_factor = 1.0/std::pow(dist, this->weight_power);
                     point.coeff = 0.0;
                     points.push_back(point);
+                    printf("IIII  %d  %d  %d\n",i,j,k);
                 }
             }
         }
@@ -1225,5 +1287,4 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
     std::stable_sort(points.begin(), points.end(), customLess_x);
     std::stable_sort(points.begin(), points.end(), customLess_ijk);
     std::stable_sort(points.begin(), points.end(), customLess_dist);
-
 }

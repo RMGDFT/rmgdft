@@ -160,6 +160,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
                    (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == CUBIC_FC) ||
+//                   (Rmg_L.get_ibrav_type() == CUBIC_BC) ||
                    (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
