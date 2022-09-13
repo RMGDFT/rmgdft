@@ -141,54 +141,20 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         GetPointList1D(points1, a[0][0], Ngrid[0], Lorder, 0);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
-        this->include_axis[0] = true;
 
         points1.clear();
         GetDerList(der_list, Lorder, dimension, 1);
         GetPointList1D(points1, a[1][1], Ngrid[1], Lorder, 1);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
-        this->include_axis[1] = true;
 
         points1.clear();
         GetDerList(der_list, Lorder, dimension, 2);
         GetPointList1D(points1, a[2][2], Ngrid[2], Lorder, 2);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
-        this->include_axis[2] = true;
 
         std::stable_sort(points.begin(), points.end(), customLess_dist);
-        for(auto a:points)
-        {
-            if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
-            {
-                this->plane_dists[0] = std::min(this->plane_dist_x, std::abs(a.dist));
-                this->axis_lc[0][a.index[0]+Lorder/2] = a.coeff;
-                this->plane_centers[0] -= a.coeff;
-                this->axis_gc_x[0][a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[0][a.index[0]+Lorder/2] = a.coeff_gy;
-                this->axis_gc_z[0][a.index[0]+Lorder/2] = a.coeff_gz;
-            }
-            if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
-            {
-                this->plane_dists[1] = std::min(this->plane_dist_x, std::abs(a.dist));
-                this->axis_lc[1][a.index[1]+Lorder/2] = a.coeff;
-                this->plane_centers[1] -= a.coeff;
-                this->axis_gc_x[1][a.index[1]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[1][a.index[1]+Lorder/2] = a.coeff_gy;
-                this->axis_gc_z[1][a.index[1]+Lorder/2] = a.coeff_gz;
-            }
-            if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
-            {
-                this->plane_dists[2] = std::min(this->plane_dist_x, std::abs(a.dist));
-                this->axis_lc[2][a.index[2]+Lorder/2] = a.coeff;
-                this->plane_centers[2] -= a.coeff;
-                this->axis_gc_x[2][a.index[2]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[2][a.index[2]+Lorder/2] = a.coeff_gy;
-                this->axis_gc_z[2][a.index[2]+Lorder/2] = a.coeff_gz;
-            }
-        }
-
     }
 
     else if (((this->ibrav == HEXAGONAL)||
@@ -206,42 +172,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
         GetPointList2D(points1, a2d, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
-
-        for(auto a:points1)
-        {   
-            if((a.index[0] != 0) && (a.index[1] == 0))
-            {
-                this->plane_dists[0] = std::min(this->plane_dists[0], std::abs(a.dist));
-                this->axis_lc[0][a.index[0]+Lorder/2] = a.coeff;
-                this->plane_centers[0] -= a.coeff;
-                this->axis_gc_x[0][a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[0][a.index[0]+Lorder/2] = a.coeff_gy;
-            }
-            else if((a.index[0] == 0) && (a.index[1] != 0))
-            {
-                this->plane_dists[1] = std::min(this->plane_dists[1], std::abs(a.dist));
-                this->axis_lc[1][a.index[1]+Lorder/2] = a.coeff;
-                this->plane_centers[1] -= a.coeff;
-                this->axis_gc_x[1][a.index[1]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[1][a.index[1]+Lorder/2] = a.coeff_gy;
-            }
-            else if(a.index[0] == a.index[1] && (ibrav == HEXAGONAL || ibrav == MONOCLINIC_PRIMITIVE))
-            {
-                this->plane_dists[3] = std::min(this->plane_dists[3], std::abs(a.dist));
-                this->axis_lc[3][a.index[0]+Lorder/2] = a.coeff;
-                this->plane_centers[3] -= a.coeff;
-                this->axis_gc_x[3][a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[3][a.index[0]+Lorder/2] = a.coeff_gy;
-            }
-            else if(a.index[0] == -a.index[1] && (ibrav == HEXAGONAL2 || ibrav == MONOCLINIC_PRIMITIVE))
-            {
-                this->plane_dists[6] = std::min(this->plane_dists[6], std::abs(a.dist));
-                this->axis_lc[6][a.index[0]+Lorder/2] = a.coeff;
-                this->plane_centers[6] -= a.coeff;
-                this->axis_gc_x[6][a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[6][a.index[0]+Lorder/2] = a.coeff_gy;
-            }
-        }
         points.insert(std::end(points), std::begin(points1), std::end(points1));
 
 
@@ -250,24 +180,8 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         GetDerList(der_list, Lorder, dimension, 2);
         GetPointList1D(points1, a[2][2], Ngrid[2], Lorder, 2);
         this->BuildSolveLinearEq(points1, der_list, dimension);
-
-        for(auto a:points1)
-        {   
-            this->plane_dists[2] = std::min(this->plane_dist_z, std::abs(a.dist));
-            this->axis_lc[2][a.index[2]+Lorder/2] = a.coeff;
-            this->plane_centers[2] -= a.coeff;
-            this->axis_gc_z[2][a.index[2]+Lorder/2] = a.coeff_gz;
-        }
-
-        this->include_axis[0] = true;  // x
-        this->include_axis[1] = true;  // y
-        this->include_axis[2] = true;  // z
-        if(ibrav == HEXAGONAL || ibrav == MONOCLINIC_PRIMITIVE)
-            this->include_axis[3] = true;  // xy
-        if(ibrav == HEXAGONAL2 || ibrav == MONOCLINIC_PRIMITIVE)
-            this->include_axis[6] = true;  // nxy
-
         points.insert(std::end(points), std::begin(points1), std::end(points1));
+
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
     else if( this->ibrav == CUBIC_FC && !this->offdiag )
@@ -280,65 +194,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         GetDerListFCC(der_list, Lorder);
         GetPointListFCC(points1, a, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
-        for(auto a:points1)
-        {   
-            if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
-            {
-                this->plane_dists[0] = std::min(this->plane_dists[0], std::abs(a.dist));
-                this->axis_lc[0][a.index[0]+Lorder/2] = a.coeff;
-                this->plane_centers[0] -= a.coeff;
-                this->axis_gc_x[0][a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[0][a.index[0]+Lorder/2] = a.coeff_gy;
-            }
-            else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
-            {
-                this->plane_dists[1] = std::min(this->plane_dists[1], std::abs(a.dist));
-                this->axis_lc[1][a.index[1]+Lorder/2] = a.coeff;
-                this->plane_centers[1] -= a.coeff;
-                this->axis_gc_y[1][a.index[1]+Lorder/2] = a.coeff_gy;
-                this->axis_gc_z[1][a.index[1]+Lorder/2] = a.coeff_gz;
-            }
-            else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
-            {
-                this->plane_dists[2] = std::min(this->plane_dists[2], std::abs(a.dist));
-                this->axis_lc[2][a.index[2]+Lorder/2] = a.coeff;
-                this->plane_centers[2] -= a.coeff;
-                this->axis_gc_x[2][a.index[2]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_z[2][a.index[2]+Lorder/2] = a.coeff_gz;
-            }
-            else if(a.index[0] == -a.index[1])
-            {
-                this->plane_dists[6] = std::min(this->plane_dists[6], std::abs(a.dist));
-                this->axis_lc[6][a.index[1]+Lorder/2] = a.coeff;
-                this->plane_centers[6] -= a.coeff;
-                this->axis_gc_x[6][a.index[1]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_z[6][a.index[1]+Lorder/2] = a.coeff_gz;
-            }
-            else if(a.index[0] == -a.index[2])
-            {
-                this->plane_dists[7] = std::min(this->plane_dists[7], std::abs(a.dist));
-                this->axis_lc[7][a.index[2]+Lorder/2] = a.coeff;
-                this->plane_centers[7] -= a.coeff;
-                this->axis_gc_y[7][a.index[2]+Lorder/2] = a.coeff_gy;
-                this->axis_gc_z[7][a.index[2]+Lorder/2] = a.coeff_gz;
-            }
-            else if(a.index[1] == -a.index[2])
-            {
-                this->plane_dists[8] = std::min(this->plane_dists[8], std::abs(a.dist));
-                this->axis_lc[8][a.index[2]+Lorder/2] = a.coeff;
-                this->plane_centers[8] -= a.coeff;
-                this->axis_gc_x[8][a.index[2]+Lorder/2] = a.coeff_gx;
-                this->axis_gc_y[8][a.index[2]+Lorder/2] = a.coeff_gy;
-            }
-        }
-
-        this->include_axis[0] = true;  // x
-        this->include_axis[1] = true;  // y
-        this->include_axis[2] = true;  // z
-        this->include_axis[6] = true;  // nxy
-        this->include_axis[7] = true;  // nxz
-        this->include_axis[8] = true;  // nyz
-
         points.insert(std::end(points), std::begin(points1), std::end(points1));
         std::stable_sort(points.begin(), points.end(), customLess_dist);
 
@@ -404,7 +259,103 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
 
+    // Indirect indexing list
     this->GenerateList(points);
+
+    // Put coeffs into axis arrays for efficient application.
+    for(auto a:points)
+    {   
+        if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
+        {
+            this->plane_dists[0] = std::min(this->plane_dists[0], std::abs(a.dist));
+            this->axis_lc[0][a.index[0]+Lorder/2] = a.coeff;
+            this->plane_centers[0] -= a.coeff;
+            this->axis_gc_x[0][a.index[0]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[0][a.index[0]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[0][a.index[0]+Lorder/2] = a.coeff_gz;
+            this->include_axis[0] = true;
+        }
+        else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
+        {
+            this->plane_dists[1] = std::min(this->plane_dists[1], std::abs(a.dist));
+            this->axis_lc[1][a.index[1]+Lorder/2] = a.coeff;
+            this->plane_centers[1] -= a.coeff;
+            this->axis_gc_x[1][a.index[1]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[1][a.index[1]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[1][a.index[1]+Lorder/2] = a.coeff_gz;
+            this->include_axis[1] = true;
+        }
+        else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
+        {
+            this->plane_dists[2] = std::min(this->plane_dists[2], std::abs(a.dist));
+            this->axis_lc[2][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[2] -= a.coeff;
+            this->axis_gc_x[2][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[2][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[2][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[2] = true;
+        }
+        else if(a.index[0] == a.index[1] && a.index[2] == 0)
+        {
+            this->plane_dists[3] = std::min(this->plane_dists[3], std::abs(a.dist));
+            this->axis_lc[3][a.index[1]+Lorder/2] = a.coeff;
+            this->plane_centers[3] -= a.coeff;
+            this->axis_gc_x[3][a.index[1]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[3][a.index[1]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[3][a.index[1]+Lorder/2] = a.coeff_gz;
+            this->include_axis[3] = true;
+        }
+        else if(a.index[0] == a.index[2] && a.index[1] == 0)
+        {
+            this->plane_dists[4] = std::min(this->plane_dists[4], std::abs(a.dist));
+            this->axis_lc[4][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[4] -= a.coeff;
+            this->axis_gc_x[4][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[4][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[4][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[4] = true;
+        }
+        else if(a.index[1] == a.index[2] && a.index[0] == 0)
+        {
+            this->plane_dists[5] = std::min(this->plane_dists[5], std::abs(a.dist));
+            this->axis_lc[5][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[5] -= a.coeff;
+            this->axis_gc_x[5][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[5][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[5][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[5] = true;
+        }
+        else if(a.index[0] == -a.index[1] && a.index[2] == 0)
+        {
+            this->plane_dists[6] = std::min(this->plane_dists[6], std::abs(a.dist));
+            this->axis_lc[6][a.index[1]+Lorder/2] = a.coeff;
+            this->plane_centers[6] -= a.coeff;
+            this->axis_gc_x[6][a.index[1]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[6][a.index[1]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[6][a.index[1]+Lorder/2] = a.coeff_gz;
+            this->include_axis[6] = true;
+        }
+        else if(a.index[0] == -a.index[2] && a.index[1] == 0)
+        {
+            this->plane_dists[7] = std::min(this->plane_dists[7], std::abs(a.dist));
+            this->axis_lc[7][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[7] -= a.coeff;
+            this->axis_gc_x[7][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[7][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[7][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[7] = true;
+        }
+        else if(a.index[1] == -a.index[2] && a.index[0] == 0)
+        {
+            this->plane_dists[8] = std::min(this->plane_dists[8], std::abs(a.dist));
+            this->axis_lc[8][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[8] -= a.coeff;
+            this->axis_gc_x[8][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[8][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[8][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[8] = true;
+        }
+    }
 }
 
 void LaplacianCoeff::GetPointList1D(std::vector<GridPoint>& points, double a, int Ngrid, int Lorder, int direction){
