@@ -121,9 +121,6 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         if(order == APP_CI_SECOND) {
             cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         }
-        else if(order == APP_CI_SIXTH) {
-            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
         else if(order == APP_CI_EIGHT) {
             cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         }

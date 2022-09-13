@@ -119,9 +119,6 @@ public:
     double app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int offset);
 
     template <typename RmgType>
-    double app6_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
     double app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
@@ -168,17 +165,6 @@ public:
 		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
-    double app8_combined_hex(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_hex(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
-
-    template <typename RmgType>
     double app8_combined_orthorhombic(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
@@ -218,26 +204,26 @@ public:
 		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
-    double app8_combined_fcc(
+    double app8_combined_bcc(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec);
     template <typename RmgType>
-    double app8_combined_fcc(
+    double app8_combined_bcc(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
-    double app8_combined_bcc(
+    double app8_combined_general(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec);
     template <typename RmgType>
-    double app8_combined_bcc(
+    double app8_combined_general(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,

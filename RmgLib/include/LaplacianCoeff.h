@@ -23,9 +23,6 @@ struct GridPoint{
     double coeff_gxy;
     double coeff_gxz;
     double coeff_gyz;
-    double coeff_ngxy;
-    double coeff_ngxz;
-    double coeff_ngyz;
 };
 typedef GridPoint GridPoint;
 
@@ -61,6 +58,17 @@ public:
     double plane_center_nxy, plane_center_nxz, plane_center_nyz;
 
     // For laplacian
+    // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
+    double axis_lc[9][12];
+    double plane_centers[9];
+    double plane_dists[9];
+    bool include_axis[9];
+
+    // For gradients
+    double axis_gc_x[9][12];
+    double axis_gc_y[9][12];
+    double axis_gc_z[9][12];
+
     std::vector<double> axis_x;
     std::vector<double> axis_y;
     std::vector<double> axis_z;
@@ -71,7 +79,6 @@ public:
     std::vector<double> axis_nxz;
     std::vector<double> axis_nyz;
 
-    // For gradients
     std::vector<double> axis_x_gx;
     std::vector<double> axis_x_gy;
     std::vector<double> axis_x_gz;

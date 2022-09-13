@@ -206,10 +206,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {
-        if(!special)
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
-        else
-            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_EIGHT) {
         if(!special)

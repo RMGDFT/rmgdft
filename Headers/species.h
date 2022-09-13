@@ -172,6 +172,8 @@ public:
     std::vector<double> fd_fke2;
     std::vector<double> fd_fke3;
     std::vector<double> fd_slopes;
+    std::vector<double> fd_xint;
+    std::vector<double> fd_yint;
     
     std::vector<std::string> atomic_wave_label;
 
