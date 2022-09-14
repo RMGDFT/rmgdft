@@ -178,45 +178,6 @@ public:
 		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
-    double app8_combined_monoclinic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_monoclinic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
-
-    template <typename RmgType>
-    double app8_combined_triclinic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_triclinic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
-
-    template <typename RmgType>
-    double app8_combined_bcc(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_bcc(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
-
-    template <typename RmgType>
     double app8_combined_general(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		    int dimx, int dimy, int dimz,
