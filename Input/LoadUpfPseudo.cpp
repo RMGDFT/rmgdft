@@ -183,6 +183,7 @@ void LoadUpfPseudo(SPECIES *sp)
         ibegin = i;
         if(t_r[i] > 1.0e-5) break;
     }
+    ibegin=0;
     for(int i = ibegin;i < r_total;i++) {
         iend = i;
         if(t_r[i] > 50.0) break;
@@ -196,7 +197,8 @@ void LoadUpfPseudo(SPECIES *sp)
     }
     delete [] t_r;
 
-
+    // Fix for QE compatibility for PPs that start radial grid at 0.0
+    if(ibegin == 0 && sp->r[0] == 0.0) sp->r[0] = sp->r[1] / 1000;
 
     l_max = upf_tree.get<int>("UPF.PP_HEADER.<xmlattr>.l_max");
     sp->kkbeta = sp->rg_points;
