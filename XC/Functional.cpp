@@ -534,7 +534,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
-    ApplyLaplacian (rhoout, d2rho, fd_order, "Fine");
+    FftLaplacianFine(rhoout, d2rho);
 
     delete RT3;
 
