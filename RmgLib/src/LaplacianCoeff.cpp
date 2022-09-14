@@ -207,41 +207,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         GetDerListFCC(der_list, Lorder);
         GetPointListBCC(points1, a, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
-        for(auto a:points1)
-        {   
-            if((a.index[0] != 0) && (a.index[1] == 0) && (a.index[2] == 0))
-            {
-                this->plane_dist_x = std::min(this->plane_dist_x, std::abs(a.dist));
-                this->axis_x[a.index[0]+Lorder/2] = a.coeff;
-                this->plane_center_x -= a.coeff;
-                this->axis_x_gx[a.index[0]+Lorder/2] = a.coeff_gx;
-                this->axis_x_gy[a.index[0]+Lorder/2] = a.coeff_gy;
-                this->axis_x_gz[a.index[0]+Lorder/2] = a.coeff_gz;
-            }
-            else if((a.index[0] == 0) && (a.index[1] != 0) && (a.index[2] == 0))
-            {
-                this->plane_dist_y = std::min(this->plane_dist_y, std::abs(a.dist));
-                this->axis_y[a.index[1]+Lorder/2] = a.coeff;
-                this->plane_center_y -= a.coeff;
-                this->axis_y_gx[a.index[1]+Lorder/2] = a.coeff_gx;
-                this->axis_y_gy[a.index[1]+Lorder/2] = a.coeff_gy;
-                this->axis_y_gz[a.index[1]+Lorder/2] = a.coeff_gz;
-            }
-            else if((a.index[0] == 0) && (a.index[1] == 0) && (a.index[2] != 0))
-            {
-                this->plane_dist_z = std::min(this->plane_dist_z, std::abs(a.dist));
-                this->axis_z[a.index[2]+Lorder/2] = a.coeff;
-                this->plane_center_z -= a.coeff;
-                this->axis_z_gx[a.index[2]+Lorder/2] = a.coeff_gx;
-                this->axis_z_gy[a.index[2]+Lorder/2] = a.coeff_gy;
-                this->axis_z_gz[a.index[2]+Lorder/2] = a.coeff_gz;
-            }
-            else
-            {
-//printf("UUUU  %lu  %d  %d  %d  %f  %f  %f  %f\n",points1.size(),a.index[0],a.index[1],a.index[2],a.coeff, a.coeff_gx, a.coeff_gy, a.coeff_gz);
-            }
-        }
-//exit(0);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
@@ -1181,7 +1146,6 @@ void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3]
 void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     double dx, dy,dz, dist;    
-    double h = a[0][0]/Ngrid[0], eps=1.0e-5;;
     for(int i = -Lorder/2; i <= Lorder/2; i++){
         for(int j = -Lorder/2; j <= Lorder/2; j++){
             for(int k = -Lorder/2; k <= Lorder/2; k++){
