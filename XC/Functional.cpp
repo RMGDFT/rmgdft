@@ -527,8 +527,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     // calculate the gradient of rho + rho_core
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (rhoout, gx, gy, gz, fd_order, "Fine");
-
+    //ApplyGradient (rhoout, gx, gy, gz, fd_order, "Fine");
+    FftGradientFine(rhoout, gx, gy, gz);
     delete RT2;
 
 

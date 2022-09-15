@@ -60,11 +60,6 @@ template double FiniteDiff::app_cil_fourth<double>(double *, double *, int, int,
 template double FiniteDiff::app_cil_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_fourth<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
-template double FiniteDiff::app_cil_fourth_threaded<float>(float *, float *, int, int, int, double, double, double);
-template double FiniteDiff::app_cil_fourth_threaded<double>(double *, double *, int, int, int, double, double, double);
-template double FiniteDiff::app_cil_fourth_threaded<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
-template double FiniteDiff::app_cil_fourth_threaded<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
-
 template void FiniteDiff::app_cir_fourth<float>(float *, float *, int, int, int);
 template void FiniteDiff::app_cir_fourth<double>(double *, double *, int, int, int);
 template void FiniteDiff::app_cir_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int);
@@ -90,11 +85,6 @@ template double FiniteDiff::app10_del2<double>(double *, double *, int, int, int
 template double FiniteDiff::app10_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app10_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
-template void FiniteDiff::app_gradient_sixth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
-template void FiniteDiff::app_gradient_sixth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
-template void FiniteDiff::app_gradient_sixth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
-template void FiniteDiff::app_gradient_sixth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
-
 template void FiniteDiff::app_gradient_eighth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
 template void FiniteDiff::app_gradient_eighth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
 template void FiniteDiff::app_gradient_eighth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
@@ -113,11 +103,6 @@ template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int
 template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-
-template double FiniteDiff::app8_combined_orthorhombic<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_orthorhombic<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_orthorhombic<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_orthorhombic<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 template double FiniteDiff::app8_combined_general<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined_general<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
@@ -1754,7 +1739,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
 
 
-    template <typename RmgType>
+template <typename RmgType>
 double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
@@ -2040,7 +2025,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
 }                               /* end app_cil */
 
 
-    template <typename RmgType>
+template <typename RmgType>
 void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
@@ -2175,84 +2160,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 
 }
 
-
-    template <typename RmgType>
-void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-        double gridhx, double gridhy, double gridhz)
-{
-
-    int ixs = (dimy + 6) * (dimz + 6);
-    int iys = (dimz + 6);
-    int ix1 = dimy * dimz;
-    int iy1 = dimz;
-
-    int ibrav = L->get_ibrav_type();
-
-    RmgType t1x (3.0 / ( 4.0 * gridhx * L->get_xside()));
-    RmgType t2x (-3.0 / (20.0 * gridhx * L->get_xside()));
-    RmgType t3x (1.0 / (60.0 * gridhx * L->get_xside()));
-
-    RmgType t1y (3.0 / ( 4.0 * gridhy * L->get_yside()));
-    RmgType t2y (-3.0 / (20.0 * gridhy * L->get_yside()));
-    RmgType t3y (1.0 / (60.0 * gridhy * L->get_yside()));
-
-    RmgType t1z (3.0 / ( 4.0 * gridhz * L->get_zside()));
-    RmgType t2z (-3.0 / (20.0 * gridhz * L->get_zside()));
-    RmgType t3z (1.0 / (60.0 * gridhz * L->get_zside()));
-
-    switch (ibrav)
-    {
-
-        case CUBIC_PRIMITIVE:
-        case ORTHORHOMBIC_PRIMITIVE:
-        case TETRAGONAL_PRIMITIVE:
-
-            for (int ix = 3; ix < dimx + 3; ix++)
-            {
-
-                for (int iy = 3; iy < dimy + 3; iy++)
-                {
-
-                    for (int iz = 3; iz < dimz + 3; iz++)
-                    {
-
-                        wxr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
-                            -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
-                            -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
-                            -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
-                            t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
-                            t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
-                            t3x * rptr[(ix + 3) * ixs + iy * iys + iz];
-
-                        wyr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
-                            -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
-                            -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
-                            -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
-                            t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
-                            t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
-                            t3y * rptr[ix * ixs + (iy + 3) * iys + iz];
-
-                        wzr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
-                            -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
-                            -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
-                            -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
-                            t1z * rptr[ix * ixs + iy * iys + iz + 1] +
-                            t2z * rptr[ix * ixs + iy * iys + iz + 2] +
-                            t3z * rptr[ix * ixs + iy * iys + iz + 3];
-
-                    }               /* end for */
-                }                   /* end for */
-            }                       /* end for */
-
-            break;
-
-        default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
-
-    }                           /* end switch */
-}
-
-    template <typename RmgType>
+template <typename RmgType>
 void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
@@ -2596,246 +2504,6 @@ void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __re
 
 
 
-// Openmp version. Very simple with no cache optimizations as of yet.
-    template <typename RmgType>
-double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
-{
-
-    RmgTimer RT("App_cil: computation");
-    int incx, incy, incxr, incyr;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    RmgType ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    RmgType ihx, ihy, ihz;
-    RmgType a1, a2, a3;
-    RmgType ONE_t = 1.0;
-    RmgType TWO_t = 2.0;
-    RmgType THREE_t = 3.0;
-    RmgType FOUR_t = 4.0;
-    RmgType FIVE_t = 5.0;
-    RmgType SIX_t = 6.0;
-    RmgType EIGHT_t = 8.0;
-    RmgType NINE_t = 9.0;
-    RmgType TWELVE_t = 12.0;
-    RmgType EIGHTTEEN_t = 18.0;
-    RmgType TWENTYFOUR_t = 24.0;
-    RmgType THIRTYFOUR_t = 34.0;
-    RmgType THIRTYSIX_t = 36.0;
-    RmgType FORTYEIGHT_t = 48.0;
-
-    int ibrav = L->get_ibrav_type();
-
-
-    ihx = 1.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
-    ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());
-    ihz = 1.0 / (gridhz * gridhz * L->get_zside() * L->get_zside());
-
-
-    incx = (dimz + 2) * (dimy + 2);
-    incy = dimz + 2;
-    incxr = dimz * dimy;
-    incyr = dimz;
-
-    switch(ibrav) {
-
-        case CUBIC_PRIMITIVE:
-        case ORTHORHOMBIC_PRIMITIVE:
-        case TETRAGONAL_PRIMITIVE:
-
-            /* Compute coefficients for this grid spacing */
-            cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
-
-            fcx = FIVE_t/SIX_t * ihx + (cc / EIGHT_t);
-            fcy = FIVE_t/SIX_t * ihy + (cc / EIGHT_t);
-            fcz = FIVE_t/SIX_t * ihz + (cc / EIGHT_t);
-
-            ecxy = (ONE_t / TWELVE_t) * (ihx + ihy);
-            ecxz = (ONE_t / TWELVE_t) * (ihx + ihz);
-            ecyz = (ONE_t / TWELVE_t) * (ihy + ihz);
-
-
-            incy = dimz + 2;
-            incx = (dimz + 2) * (dimy + 2);
-            incyr = dimz;
-            incxr = dimz * dimy;
-
-            int ix, iy, iz;
-#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-            {
-#pragma omp for schedule(static, 2) nowait
-                for (ix = 1; ix <= dimx; ix++)
-                {
-                    ixs = ix * incx;
-                    ixms = (ix - 1) * incx;
-                    ixps = (ix + 1) * incx;
-                    for (iy = 1; iy <= dimy; iy++)
-                    {
-                        iys = iy * incy;
-                        iyms = (iy - 1) * incy;
-                        iyps = (iy + 1) * incy;
-
-                        for (iz = 1; iz <= dimz; iz++)
-                        {
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                                cc * rptr[ixs + iys + iz] +
-                                fcx * rptr[ixms + iys + iz] +
-                                fcx * rptr[ixps + iys + iz] +
-                                fcy * rptr[ixs + iyms + iz] +
-                                fcy * rptr[ixs + iyps + iz] +
-                                fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                                ecxz * rptr[ixms + iys + iz - 1] +
-                                ecxz * rptr[ixps + iys + iz - 1] +
-                                ecyz * rptr[ixs + iyms + iz - 1] +
-                                ecyz * rptr[ixs + iyps + iz - 1] +
-                                ecxy * rptr[ixms + iyms + iz] +
-                                ecxy * rptr[ixms + iyps + iz] +
-                                ecxy * rptr[ixps + iyms + iz] +
-                                ecxy * rptr[ixps + iyps + iz] +
-                                ecxz * rptr[ixms + iys + iz + 1] +
-                                ecxz * rptr[ixps + iys + iz + 1] +
-                                ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
-
-
-                        }           /* end for */
-
-                    }               /* end for */
-
-                }                   /* end for */
-            }
-            break;
-
-        case HEXAGONAL2:
-        case HEXAGONAL:
-
-            cc = ((-THREE_t / FOUR_t) * ihz) - ((FIVE_t / THREE_t) * ihx);
-            a1 = ((THREE_t / EIGHT_t) * ihz) - ((ONE_t / SIX_t) * ihx);
-            a2 = ((FIVE_t / EIGHTTEEN_t) * ihx) - ((ONE_t / TWENTYFOUR_t) * ihz);
-            a3 = ((ONE_t / FORTYEIGHT_t) * ihz) + ((ONE_t / THIRTYSIX_t) * ihx);
-            cc = TWO_t * cc;
-            a1 = TWO_t * a1;
-            a2 = TWO_t * a2;
-            a3 = TWO_t * a3;
-
-#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-            {
-#pragma omp for schedule(static, 2) nowait
-
-                for (ix = 1; ix <= dimx; ix++)
-                {
-                    ixs = ix * incx;
-                    ixms = (ix - 1) * incx;
-                    ixps = (ix + 1) * incx;
-                    for (iy = 1; iy <= dimy; iy++)
-                    {
-                        iys = iy * incy;
-                        iyms = (iy - 1) * incy;
-                        iyps = (iy + 1) * incy;
-
-                        for (iz = 1; iz <= dimz; iz++)
-                        {
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                                cc * rptr[ixs + iys + iz] +
-                                a3 * (rptr[ixps + iys + iz - 1] +
-                                        rptr[ixps + iyms + iz - 1] +
-                                        rptr[ixs + iyms + iz - 1] +
-                                        rptr[ixms + iys + iz - 1] +
-                                        rptr[ixms + iyps + iz - 1] +
-                                        rptr[ixs + iyps + iz - 1] +
-                                        rptr[ixps + iys + iz + 1] +
-                                        rptr[ixps + iyms + iz + 1] +
-                                        rptr[ixs + iyms + iz + 1] +
-                                        rptr[ixms + iys + iz + 1] +
-                                        rptr[ixms + iyps + iz + 1] + 
-                                        rptr[ixs + iyps + iz + 1]);
-
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                                a2 * (rptr[ixps + iys + iz] +
-                                        rptr[ixps + iyms + iz] +
-                                        rptr[ixs + iyms + iz] +
-                                        rptr[ixms + iys + iz] + 
-                                        rptr[ixms + iyps + iz] + 
-                                        rptr[ixs + iyps + iz]);
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                                a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
-
-                        }               /* end for */
-
-                    }                   /* end for */
-
-                }                       /* end for */
-            }
-            break;
-
-        case CUBIC_FC:
-
-            cc = -(THIRTYFOUR_t / SIX_t) * ihx;
-            a1 = (FOUR_t / NINE_t) * ihx;
-            a2 = (ONE_t / EIGHTTEEN_t) * ihx;
-
-#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-            {
-#pragma omp for schedule(static, 2) nowait
-
-                for (ix = 1; ix <= dimx; ix++)
-                {
-                    ixs = ix * incx;
-                    ixms = (ix - 1) * incx;
-                    ixps = (ix + 1) * incx;
-                    for (iy = 1; iy <= dimy; iy++)
-                    {
-                        iys = iy * incy;
-                        iyms = (iy - 1) * incy;
-                        iyps = (iy + 1) * incy;
-
-                        for (iz = 1; iz <= dimz; iz++)
-                        {
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                                cc * rptr[ix * incx + iys + iz] +
-                                a1 * rptr[ixms + iys + iz] +
-                                a1 * rptr[ixms + iys + iz + 1] +
-                                a1 * rptr[ixms + iyps + iz] +
-                                a1 * rptr[ixs + iyms + iz] +
-                                a1 * rptr[ixs + iyms + iz + 1] +
-                                a1 * rptr[ixs + iys + iz - 1] +
-                                a1 * rptr[ixs + iys + iz + 1] +
-                                a1 * rptr[ixs + iyps + iz - 1] +
-                                a1 * rptr[ixs + iyps + iz] +
-                                a1 * rptr[ixps + iyms + iz] +
-                                a1 * rptr[ixps + iys + iz - 1] + 
-                                a1 * rptr[ixps + iys + iz];
-
-
-                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                                a2 * rptr[ixms + iyms + iz + 1] +
-                                a2 * rptr[ixms + iyps + iz - 1] +
-                                a2 * rptr[ixms + iyps + iz + 1] +
-                                a2 * rptr[ixps + iyms + iz - 1] +
-                                a2 * rptr[ixps + iyms + iz + 1] + 
-                                a2 * rptr[ixps + iyps + iz - 1];
-
-                        }               /* end for */
-
-                    }                   /* end for */
-
-                }                       /* end for */
-            }
-            break;
-
-        default:
-            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
-
-    } // end switch
-
-    return (double)std::real(cc);
-
-}                               /* end app_cil */
-
 #include "rmg_complex.h"
 
 
@@ -2850,195 +2518,9 @@ template <typename RmgType>
 double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz, double *kvec, bool use_gpu)
 {
-    int ibrav = L->get_ibrav_type();
-
-//    if(ibrav == CUBIC_PRIMITIVE || ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE)
-//    {
-//        return FiniteDiff::app8_combined_orthorhombic(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
-//    }
-
     return FiniteDiff::app8_combined_general(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
-
 } /* end app8_combined */
 
-
-
-template <typename RmgType>
-double FiniteDiff::app8_combined_orthorhombic(
-		RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		int dimx, int dimy, int dimz,
-                double gridhx, double gridhy, double gridhz,
-		double *kvec, bool use_gpu)
-{
-    double xside = L->get_xside();
-    double yside = L->get_yside();
-    double zside = L->get_zside();
-    double s1 = 2.0;
-    fdparms_o8<RmgType> c;
-
-    RmgType I_t;
-    if(typeid(RmgType) == typeid(double))
-    {
-        I_t = 0.0;
-    }
-    else if(typeid(RmgType) == typeid(float))
-    {
-        I_t = 0.0;
-    }
-    else if(typeid(RmgType) == typeid(std::complex<double>))
-    {
-        double *iptr = (double *)&I_t;
-        iptr[0] = 0.0;iptr[1] = 1.0;
-    }
-    else if(typeid(RmgType) == typeid(std::complex<float>))
-    {
-        float *iptr = (float *)&I_t;
-        iptr[0] = 0.0;iptr[1] = 1.0;
-    }
-
-    int ixs = (dimy + 8) * (dimz + 8);
-    int iys = (dimz + 8);
-
-    // nine and seven point stencils, 2nd derivative, extrapolated
-    int ic = 4;
-    double x[10], w1[10], w2[10];
-    for(int i=0;i<10;i++) x[i] = (double)i;
-    gen_weights(9, 2, (double)ic, x, w1);
-    gen_weights(7, 2, (double)(ic-1), x, w2);
-    double hf = 1.0, c1, c2=0.0;
-    double h2x = gridhx * gridhx * xside * xside;
-    double h2y = gridhy * gridhy * yside * yside;
-    double h2z = gridhz * gridhz * zside * zside;
-
-    double d1 = 6.0/560.0;
-    double d2 = -8.0/3150.0;
-    double dr = d1 / d2;
-    double k2 = PI*PI/8.0;
-
-
-    double maxh = std::max(h2x, h2y);
-    maxh = std::max(maxh, h2z);
-
-    double hadj = sqrt(h2x / maxh);
-    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
-    double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
-
-    RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2x);
-    RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2x);
-    RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2x);
-    RmgType t4x (c1*w1[ic+4] * hf / h2x);
-
-    hadj = sqrt(h2y / maxh);
-    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
-    th2 += (c1*w1[ic] - c2*w2[ic-1]) / h2y;
-
-    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2y);
-    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2y);
-    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2y);
-    RmgType t4y (c1*w1[ic+4] * hf / h2y);
-
-    hadj = sqrt(h2z / maxh);
-    //if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
-    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
-    RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
-    RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) / h2z);
-    RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) / h2z);
-    RmgType t4z (c1*w1[ic+4] / h2z);
-    RmgType t0 (th2);
-
-    // When kvec[i] != 0 this includes the gradient component
-    c.a0 = t0;
-    c.gpt1x = t1x + s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * xside));
-    c.gpt2x = t2x + s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * xside));
-    c.gpt3x = t3x + s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * xside));
-    c.gpt4x = t4x + s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * xside));
-
-    c.gmt1x = t1x - s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * xside));
-    c.gmt2x = t2x - s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * xside));
-    c.gmt3x = t3x - s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * xside));
-    c.gmt4x = t4x - s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * xside));
-
-    c.gpt1y = t1y + s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * yside));
-    c.gpt2y = t2y + s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * yside));
-    c.gpt3y = t3y + s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * yside));
-    c.gpt4y = t4y + s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * yside));
-
-    c.gmt1y = t1y - s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * yside));
-    c.gmt2y = t2y - s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * yside));
-    c.gmt3y = t3y - s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * yside));
-    c.gmt4y = t4y - s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * yside));
-
-    c.gpt1z = t1z + s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * zside));
-    c.gpt2z = t2z + s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * zside));
-    c.gpt3z = t3z + s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * zside));
-    c.gpt4z = t4z + s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * zside));
-
-    c.gmt1z = t1z - s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * zside));
-    c.gmt2z = t2z - s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * zside));
-    c.gmt3z = t3z - s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * zside));
-    c.gmt4z = t4z - s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * zside));
-
-    // NULL b means we just want the diagonal component.
-    if(b == NULL) return (double)std::real(t0);
-
-#if HIP_ENABLED || CUDA_ENABLED
-    if(use_gpu)
-    {
-        /* Return the diagonal component of the operator */
-        app8_del2_gpu(a, b, dimx, dimy, dimz, c);
-        return (double)std::real(t0);
-    }
-#endif
-
-    for (int ix = 4; ix < dimx + 4; ix++)
-    {
-
-        for (int iy = 4; iy < dimy + 4; iy++)
-        {
-
-            RmgType *A = &a[iy*iys + ix*ixs];
-            RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-
-            for (int iz = 4; iz < dimz + 4; iz++)
-            {
-                B[iz] = t0 * A[iz] +
-                    c.gpt1z * A[iz + 1] + c.gmt1z * A[iz - 1] +
-                    c.gpt2z * A[iz + 2] + c.gmt2z * A[iz - 2] +
-                    c.gpt3z * A[iz + 3] + c.gmt3z * A[iz - 3] +
-                    c.gpt4z * A[iz + 4] + c.gmt4z * A[iz - 4];
-            }
-
-            for (int iz = 4; iz < dimz + 4; iz++)
-            {
-                B[iz] +=
-                    c.gpt1y * A[iz + iys] + c.gmt1y * A[iz - iys] +
-                    c.gpt2y * A[iz + 2*iys] + c.gmt2y * A[iz - 2*iys] +
-                    c.gpt3y * A[iz + 3*iys] + c.gmt3y * A[iz - 3*iys] +
-                    c.gpt4y * A[iz + 4*iys] + c.gmt4y * A[iz - 4*iys];
-            }
-
-            for (int iz = 4; iz < dimz + 4; iz++)
-            {
-                B[iz] +=
-                    c.gpt1x * A[iz + ixs] + c.gmt1x * A[iz - ixs] +
-                    c.gpt2x * A[iz + 2*ixs] + c.gmt2x * A[iz - 2*ixs] +
-                    c.gpt3x * A[iz + 3*ixs] + c.gmt3x * A[iz - 3*ixs] +
-                    c.gpt4x * A[iz + 4*ixs] + c.gmt4x * A[iz - 4*ixs];
-            }                   /* end for */
-
-        }                       /* end for */
-    }                           /* end for */
-
-    /* Return the diagonal component of the operator */
-    return (double)std::real(t0);
-
-} /* end app8_combined_orthorhombic */
 
 
 template <typename RmgType>
@@ -3290,6 +2772,15 @@ if(this->alt_laplacian) c2 = cfac[0];
 
     // NULL b means we just want the diagonal component.
     if(b == NULL) return (double)std::real(th2);
+
+#if HIP_ENABLED || CUDA_ENABLED
+    if(use_gpu && (ibrav == CUBIC_PRIMITIVE || ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE))
+    {
+        /* Return the diagonal component of the operator */
+        app8_del2_gpu(a, b, dimx, dimy, dimz, c);
+        return (double)std::real(t0);
+    }
+#endif
 
     // x,y, and z axes are required by all lattice types
     for (int ix = 4; ix < dimx + 4; ix++)

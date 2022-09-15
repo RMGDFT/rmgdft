@@ -126,7 +126,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
             {
 
                 /* Apply operator */
-                diag = CPP_app_cil_driver_threaded (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
+                diag = CPP_app_cil_driver (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
 
                 diag = -1.0 / diag;
@@ -196,7 +196,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
         }                       /* end for */
 
         /*Get residual*/
-        diag = CPP_app_cil_driver_threaded<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
+        diag = CPP_app_cil_driver<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;

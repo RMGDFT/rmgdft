@@ -50,8 +50,6 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
 template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
-double CPP_app_cil_driver_threaded (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
-template <typename RmgType>
 void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
@@ -128,23 +126,7 @@ public:
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
-    double app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
     void app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
-
-    template <typename RmgType>
-    void app_cir_fcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
-
-    template <typename RmgType>
-    void app_cir_bcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
-
-    template <typename RmgType>
-    void app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
-
-    template <typename RmgType>
-    void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                                   double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     void app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
@@ -161,19 +143,6 @@ public:
     template <typename RmgType>
     double app8_combined(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
-
-    template <typename RmgType>
-    double app8_combined_orthorhombic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_orthorhombic(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 

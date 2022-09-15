@@ -92,12 +92,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     else
     {
 
-        if(order == APP_CI_SIXTH) {
-
-            FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-        }
-        else if(order == APP_CI_EIGHT) {
+        if(order == APP_CI_EIGHT) {
 
             FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
