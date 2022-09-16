@@ -158,6 +158,12 @@ public:
 		    int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
+
+    double app8_coeff0(void);
+
+    template <typename RmgType>
+    void app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+
 };
 #endif
 

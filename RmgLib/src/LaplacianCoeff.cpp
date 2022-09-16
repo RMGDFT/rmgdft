@@ -54,7 +54,7 @@ void LaplacianCoeff::CalculateCoeff()
 void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim[3])
 {
 
-    for(int i=0;i<9;i++)
+    for(int i=0;i<13;i++)
     {
         // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
         this->include_axis[i] = false;
@@ -204,8 +204,10 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         der_list.clear();
         points.clear();
         points1.clear();
-        GetDerListFCC(der_list, Lorder);
-        GetPointListBCC(points1, a, Ngrid, Lorder);
+        //GetDerListFCC(der_list, Lorder);
+        GetDerList(der_list, Lorder, 3, 0);
+        //GetPointListBCC(points1, a, Ngrid, Lorder);
+        GetPointList3D(points1, a, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
         std::stable_sort(points.begin(), points.end(), customLess_dist);
@@ -320,6 +322,52 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
             this->axis_gc_z[8][a.index[2]+Lorder/2] = a.coeff_gz;
             this->include_axis[8] = true;
         }
+
+        else if(a.index[0] == a.index[1] && a.index[0] == a.index[2])
+        {
+            // -1,-1,-1 to 1,1,1
+            this->plane_dists[9] = std::min(this->plane_dists[9], std::abs(a.dist));
+            this->axis_lc[9][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[9] -= a.coeff;
+            this->axis_gc_x[9][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[9][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[9][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[9] = true;
+        }
+        else if(a.index[0] == a.index[1] && a.index[1] == -a.index[2])
+        {
+            // -1,-1,1 to 1,1,-1
+            this->plane_dists[10] = std::min(this->plane_dists[10], std::abs(a.dist));
+            this->axis_lc[10][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[10] -= a.coeff;
+            this->axis_gc_x[10][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[10][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[10][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[10] = true;
+        }
+        else if(a.index[0] == -a.index[1] && a.index[0] == a.index[2])
+        {
+            // -1,1,-1 to 1,-1,1
+            this->plane_dists[11] = std::min(this->plane_dists[11], std::abs(a.dist));
+            this->axis_lc[11][a.index[2]+Lorder/2] = a.coeff;
+            this->plane_centers[11] -= a.coeff;
+            this->axis_gc_x[11][a.index[2]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[11][a.index[2]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[11][a.index[2]+Lorder/2] = a.coeff_gz;
+            this->include_axis[11] = true;
+        }
+        else if(a.index[0] == -a.index[1] && a.index[1] == a.index[2])
+        {
+            // -1,1,1 to 1,-1,-1
+            this->plane_dists[12] = std::min(this->plane_dists[12], std::abs(a.dist));
+            this->axis_lc[12][a.index[0]+Lorder/2] = a.coeff;
+            this->plane_centers[12] -= a.coeff;
+            this->axis_gc_x[12][a.index[0]+Lorder/2] = a.coeff_gx;
+            this->axis_gc_y[12][a.index[0]+Lorder/2] = a.coeff_gy;
+            this->axis_gc_z[12][a.index[0]+Lorder/2] = a.coeff_gz;
+            this->include_axis[12] = true;
+        }
+
     }
 }
 
@@ -411,23 +459,27 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
 
-                // This next set of conditions forces TRICLINIC to use four axes/plane
+                // This next set of conditions are specific for TRICLINIC and CUBIC_BC
                 if((i!=0) && (j!=0) && (k==0))
                 {
                     if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != j*j)) continue;
+                    if((this->ibrav == CUBIC_BC) && (i*i != j*j)) continue;
                 }
                 if((i!=0) && (j==0) && (k!=0))
                 {
                     if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != k*k)) continue;
+                    if((this->ibrav == CUBIC_BC) && (i*i != k*k)) continue;
                 }
                 if((i==0) && (j!=0) && (k!=0))
                 {
                     if((this->ibrav == TRICLINIC_PRIMITIVE) && (j*j != k*k)) continue;
+                    if((this->ibrav == CUBIC_BC) && (j*j != k*k)) continue;
                 }
                 if((i!=0) && (j!=0) && (k!=0))
                 {
                     if(this->ibrav == TRICLINIC_PRIMITIVE) continue;
                 } 
+                if(this->ibrav == CUBIC_BC && i!=0 && j!=0 && k!=0 && (i*i != j*j || i*i != k*k)) continue;
 
                 dist = sqrt(dx * dx  + dy * dy + dz * dz);
                 point.dist = dist;
@@ -441,9 +493,11 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
                 point.weight_factor = 1.0/std::pow(dist, this->weight_power);
                 point.coeff = 0.0;
                 points.push_back(point);
+//                printf("IIII  %f  %f  %f  %f  %d  %d  %d\n",dist,dx,dy,dz,i,j,k);
             }
         }
     }
+
     std::stable_sort(points.begin(), points.end(), customLess_z);
     std::stable_sort(points.begin(), points.end(), customLess_y);
     std::stable_sort(points.begin(), points.end(), customLess_x);
@@ -1089,6 +1143,26 @@ void LaplacianCoeff::GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder)
 
 }
 
+void LaplacianCoeff::GetDerListBCC(std::vector<GridPoint>& der_list, int Lorder)
+{
+    der_list.clear();
+
+#if 0
+    std::vector<GridPoint> der_list1;
+    GetDerList(der_list1, Lorder, 3, 0);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+    GetDerList(der_list1, Lorder, 1, 1);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+    GetDerList(der_list1, Lorder,  2);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+#endif
+    GetDerList(der_list, Lorder, 3, 0);
+printf("SIZE = %lu\n",der_list.size());
+    std::stable_sort(der_list.begin(), der_list.end(), customLess_ijk);
+    std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
+
+}
+
 void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     double dx, dy,dz, dist;    
@@ -1153,14 +1227,14 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                 dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
-//                if((abs(i) == abs(j) && abs(j) == abs(k)) ||
                 if(
-                   (abs(i) == abs(j) && abs(k)==0) ||
-                   (abs(i) == abs(k) && abs(j)==0) ||
-                   (abs(j) == abs(k) && abs(i)==0) ||
-                   (abs(i) != 0 && abs(j) == 0 && abs(k) == 0) ||
-                   (abs(i) == 0 && abs(j) != 0 && abs(k) == 0) ||
-                   (abs(i) == 0 && abs(j) == 0 && abs(k) != 0))
+                   (i==j && j==k) ||
+                   (abs(i)==abs(j) && abs(k)==0) ||
+                   (abs(i)==abs(k) && abs(j)==0) ||
+                   (abs(j)==abs(k) && abs(i)==0) ||
+                   (fabs(dx) > 1.0e-5 && fabs(dy) < 1.0e-5 && fabs(dz) < 1.0e-5) ||
+                   (fabs(dy) > 1.0e-5 && fabs(dx) < 1.0e-5 && fabs(dz) < 1.0e-5) ||
+                   (fabs(dz) > 1.0e-5 && fabs(dy) < 1.0e-5 && fabs(dx) < 1.0e-5))
                 {
                     dist = sqrt(dx * dx  + dy * dy + dz * dz);
                     point.dist = dist;
@@ -1174,11 +1248,11 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                     point.weight_factor = 1.0/std::pow(dist, this->weight_power);
                     point.coeff = 0.0;
                     points.push_back(point);
-                    printf("IIII  %d  %d  %d\n",i,j,k);
                 }
             }
         }
     }
+//exit(0);
     std::stable_sort(points.begin(), points.end(), customLess_z);
     std::stable_sort(points.begin(), points.end(), customLess_y);
     std::stable_sort(points.begin(), points.end(), customLess_x);

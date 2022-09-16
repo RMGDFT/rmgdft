@@ -59,15 +59,15 @@ public:
 
     // For laplacian
     // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
-    double axis_lc[9][12];
-    double plane_centers[9];
-    double plane_dists[9];
-    bool include_axis[9];
+    double axis_lc[13][12];
+    double plane_centers[13];
+    double plane_dists[13];
+    bool include_axis[13];
 
     // For gradients
-    double axis_gc_x[9][12];
-    double axis_gc_y[9][12];
-    double axis_gc_z[9][12];
+    double axis_gc_x[13][12];
+    double axis_gc_y[13][12];
+    double axis_gc_z[13][12];
 
     std::vector<double> axis_x;
     std::vector<double> axis_y;
@@ -151,6 +151,7 @@ public:
     void GetPointListFCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetPointListBCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder);
+    void GetDerListBCC(std::vector<GridPoint>& der_list, int Lorder);
 
 };
 
