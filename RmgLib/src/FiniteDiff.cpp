@@ -2846,15 +2846,47 @@ void FiniteDiff::app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *
     t3 = c1*LC->axis_lc[ax][1] - c2*LC_6->axis_lc[ax][0];
     t4 = c1*LC->axis_lc[ax][0];
 
-    cm[0] = t1 + s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][3] + kvec[1]*LC->axis_gc_y[ax][3] + kvec[2]*LC->axis_gc_z[ax][3]);
-    cm[1] = t2 + s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][2] + kvec[1]*LC->axis_gc_y[ax][2] + kvec[2]*LC->axis_gc_z[ax][2]);
-    cm[2] = t3 + s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][1] + kvec[1]*LC->axis_gc_y[ax][1] + kvec[2]*LC->axis_gc_z[ax][1]);
-    cm[3] = t4 + s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][0] + kvec[1]*LC->axis_gc_y[ax][0] + kvec[2]*LC->axis_gc_z[ax][0]);
+    RmgType x1, y1, z1;
+    x1 = c1*LC->axis_gc_x[ax][3] - c2*LC_6->axis_gc_x[ax][2];
+    y1 = c1*LC->axis_gc_y[ax][3] - c2*LC_6->axis_gc_y[ax][2];
+    z1 = c1*LC->axis_gc_z[ax][3] - c2*LC_6->axis_gc_z[ax][2];
+    cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    cp[0] = t1 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][3] + kvec[1]*LC->axis_gc_y[ax][3] + kvec[2]*LC->axis_gc_z[ax][3]);
-    cp[1] = t2 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][2] + kvec[1]*LC->axis_gc_y[ax][2] + kvec[2]*LC->axis_gc_z[ax][2]);
-    cp[2] = t3 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][1] + kvec[1]*LC->axis_gc_y[ax][1] + kvec[2]*LC->axis_gc_z[ax][1]);
-    cp[3] = t4 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][0] + kvec[1]*LC->axis_gc_y[ax][0] + kvec[2]*LC->axis_gc_z[ax][0]);
+    x1 = c1*LC->axis_gc_x[ax][2] - c2*LC_6->axis_gc_x[ax][1];
+    y1 = c1*LC->axis_gc_y[ax][2] - c2*LC_6->axis_gc_y[ax][1];
+    z1 = c1*LC->axis_gc_z[ax][2] - c2*LC_6->axis_gc_z[ax][1];
+    cm[1] = t2 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][1] - c2*LC_6->axis_gc_x[ax][0];
+    y1 = c1*LC->axis_gc_y[ax][1] - c2*LC_6->axis_gc_y[ax][0];
+    z1 = c1*LC->axis_gc_z[ax][1] - c2*LC_6->axis_gc_z[ax][0];
+    cm[2] = t3 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][0];
+    y1 = c1*LC->axis_gc_y[ax][0];
+    z1 = c1*LC->axis_gc_z[ax][0];
+    cm[3] = t4 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][3] - c2*LC_6->axis_gc_x[ax][2];
+    y1 = c1*LC->axis_gc_y[ax][3] - c2*LC_6->axis_gc_y[ax][2];
+    z1 = c1*LC->axis_gc_z[ax][3] - c2*LC_6->axis_gc_z[ax][2];
+    cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][2] - c2*LC_6->axis_gc_x[ax][1];
+    y1 = c1*LC->axis_gc_y[ax][2] - c2*LC_6->axis_gc_y[ax][1];
+    z1 = c1*LC->axis_gc_z[ax][2] - c2*LC_6->axis_gc_z[ax][1];
+    cp[1] = t2 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][1] - c2*LC_6->axis_gc_x[ax][0];
+    y1 = c1*LC->axis_gc_y[ax][1] - c2*LC_6->axis_gc_y[ax][0];
+    z1 = c1*LC->axis_gc_z[ax][1] - c2*LC_6->axis_gc_z[ax][0];
+    cp[2] = t3 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC->axis_gc_x[ax][0];
+    y1 = c1*LC->axis_gc_y[ax][0];
+    z1 = c1*LC->axis_gc_z[ax][0];
+    cp[3] = t4 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
 }
 
 template <typename RmgType>
