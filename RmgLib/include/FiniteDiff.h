@@ -135,27 +135,10 @@ public:
     template <typename RmgType>
     void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
-    template <typename RmgType>
-    double app8_combined(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
-    double app8_combined_general(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz,
-		    double *kvec);
-    template <typename RmgType>
-    double app8_combined_general(
-		    RmgType * __restrict__ a, RmgType * __restrict__ b, 
-		    int dimx, int dimy, int dimz,
+    double app8_combined(
+		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 

@@ -95,19 +95,10 @@ template void FiniteDiff::app_gradient_tenth<double> (double *, double *, double
 template void FiniteDiff::app_gradient_tenth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
 template void FiniteDiff::app_gradient_tenth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
-template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int, double, double, double, double *kvec);
-template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec);
-template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec);
-template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec);
 template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-
-template double FiniteDiff::app8_combined_general<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_general<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_general<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined_general<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
@@ -1537,7 +1528,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
                double gridhx, double gridhy, double gridhz)
 {
     double kvec[3] = {0.0,0.0,0.0};
-    return FiniteDiff::app8_combined_general(a, b, dimx, dimy, dimz,
+    return FiniteDiff::app8_combined(a, b, dimx, dimy, dimz,
         gridhx, gridhy, gridhz, kvec, false);
 
 }  /* end app8_del2 */
@@ -2507,24 +2498,9 @@ void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __re
 #include "rmg_complex.h"
 
 
-template <typename RmgType>
-double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-        double gridhx, double gridhy, double gridhz, double *kvec)
-{
-    return FiniteDiff::app8_combined(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
-}
 
 template <typename RmgType>
-double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-        double gridhx, double gridhy, double gridhz, double *kvec, bool use_gpu)
-{
-    return FiniteDiff::app8_combined_general(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, use_gpu);
-} /* end app8_combined */
-
-
-
-template <typename RmgType>
-double FiniteDiff::app8_combined_general(RmgType * __restrict__ a, RmgType * __restrict__ b, 
+double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz,
 		double *kvec, bool use_gpu)
@@ -2808,7 +2784,7 @@ double FiniteDiff::app8_combined_general(RmgType * __restrict__ a, RmgType * __r
     /* Return the diagonal component of the operator */
     return (double)std::real(th2);
 
-} /* end app8_combined_general */
+} /* end app8_combined */
 
 // Gets the central coefficient
 double FiniteDiff::app8_coeff0(void)

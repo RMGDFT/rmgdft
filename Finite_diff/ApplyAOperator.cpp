@@ -192,12 +192,12 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         else
         {
             if(ct.verbose) RTA = new RmgTimer("CPUFD");
-            cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+            cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
             if(ct.verbose) delete RTA;
         }
 #else
         if(ct.verbose) RTA = new RmgTimer("CPUFD");
-        cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+        cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
         if(ct.verbose) delete RTA;
 #endif
 
