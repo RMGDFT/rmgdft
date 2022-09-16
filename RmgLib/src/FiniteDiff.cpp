@@ -100,6 +100,15 @@ template double FiniteDiff::app8_combined<double>(double *, double *, int, int, 
 template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
+template void FiniteDiff::app8_gradient_coeffs<float>(int , int , float *, float *, float *);
+template void FiniteDiff::app8_gradient_coeffs<double>(int , int , double *, double *, double *);
+template void FiniteDiff::app8_gradient_coeffs<std::complex<double>>(int , int , std::complex<double> *, std::complex<double> *, std::complex<double> *);
+
+template void FiniteDiff::app8_combined_coeffs<float>(int , int , float *, float *, double *);
+template void FiniteDiff::app8_combined_coeffs<double>(int , int , double *, double *, double *);
+template void FiniteDiff::app8_combined_coeffs<std::complex<float>>(int , int , std::complex<float> *, std::complex<float> *, double *);
+template void FiniteDiff::app8_combined_coeffs<std::complex<double>>(int , int , std::complex<double> *, std::complex<double> *, double *);
+
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
     L = lptr;
@@ -2847,3 +2856,23 @@ void FiniteDiff::app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *
     cp[2] = t3 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][1] + kvec[1]*LC->axis_gc_y[ax][1] + kvec[2]*LC->axis_gc_z[ax][1]);
     cp[3] = t4 - s1 * I_t * (kvec[0]*LC->axis_gc_x[ax][0] + kvec[1]*LC->axis_gc_y[ax][0] + kvec[2]*LC->axis_gc_z[ax][0]);
 }
+
+template <typename RmgType>
+void FiniteDiff::app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
+{
+    cx[0] = LC->axis_gc_x[axis][3];
+    cx[1] = LC->axis_gc_x[axis][2];
+    cx[2] = LC->axis_gc_x[axis][1];
+    cx[3] = LC->axis_gc_x[axis][0];
+
+    cy[0] = LC->axis_gc_y[axis][3];
+    cy[1] = LC->axis_gc_y[axis][2];
+    cy[2] = LC->axis_gc_y[axis][1];
+    cy[3] = LC->axis_gc_y[axis][0];
+
+    cz[0] = LC->axis_gc_z[axis][3];
+    cz[1] = LC->axis_gc_z[axis][2];
+    cz[2] = LC->axis_gc_z[axis][1];
+    cz[3] = LC->axis_gc_z[axis][0];
+}
+

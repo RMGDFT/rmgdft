@@ -133,6 +133,13 @@ public:
                                    double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
+    void app8_gradient_general (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                int dimx, int dimy, int dimz);
+
+    template <typename RmgType>
     void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
 
@@ -146,6 +153,9 @@ public:
 
     template <typename RmgType>
     void app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+
+    template <typename RmgType>
+    void app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
 
 };
 #endif
