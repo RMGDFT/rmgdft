@@ -232,9 +232,9 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     }
 
     // Reinitialize autotuning finite differencing
-    //delete LC;
-    //delete LC_6;
-    //delete HLC;
+    delete LC;
+    delete LC_6;
+    delete HLC;
     SetLaplacian();
     GetFdFactor();
 
