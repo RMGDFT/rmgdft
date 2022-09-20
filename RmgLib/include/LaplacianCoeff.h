@@ -61,6 +61,9 @@ public:
     double axis_gc_y[13][12];
     double axis_gc_z[13][12];
 
+    // For rescaling to improve numercal stability
+    double scale1;
+
     std::vector<CoeffList> coeff_and_index;
     std::vector<CoeffList> gx_coeff_and_index;
     std::vector<CoeffList> gy_coeff_and_index;

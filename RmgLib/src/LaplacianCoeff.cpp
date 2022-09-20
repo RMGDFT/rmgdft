@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <math.h>
 #include <iostream>
+#include <float.h>
 #include "LaplacianCoeff.h"
 #include "blas.h"
 
@@ -38,9 +39,13 @@ struct {
 } customLess_ijk;
 
 LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim[3]){
+
+    // Figure out the rescaling to improve numerical stability
+    scale1 = sqrt(a[0][0]*a[0][0] + a[0][1]*a[0][1] + a[0][2]*a[0][2]) / Ngrid[0];
+    scale1 = 1.0 / scale1;
     for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
-            this->a[i][j] = a[i][j];
+            this->a[i][j] = scale1*a[i][j];
     for(int i = 0; i < 3; i++){
         this->Ngrid[i] = Ngrid[i];
         this->dim[i] = dim[i];
@@ -152,6 +157,15 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
                 a.coeff_gz = 0.0;
             }
         }
+
+        for(auto &a:points1)
+        {
+            a.coeff *= scale1*scale1;
+            a.coeff_gx *= scale1;
+            a.coeff_gy *= scale1;
+            a.coeff_gz *= scale1;
+        }
+
         points.insert(std::end(points), std::begin(points1), std::end(points1));
 
         points1.clear();
@@ -567,7 +581,8 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
 
 }
 
-void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension){
+void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension)
+{
 
     int num_derivative = der_list.size();
     
@@ -650,6 +665,17 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
                 }
             } 
 
+        }
+
+        double maxd=0.0, mind=DBL_MAX;
+        for(int i=0;i < num_derivative;i++)
+        {
+            maxd = std::abs(std::max(maxd, Am[i + i*num_derivative]));
+            mind = std::abs(std::min(maxd, Am[i + i*num_derivative]));
+        }
+        if(mind == 0)
+        {
+            printf("Matrix is singular\n");
         }
 
         for(int i = 0; i < num_derivative * num_derivative; i++) Bm[i] = Am[i];
@@ -777,6 +803,18 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         }
     }
 
+    for(auto &a:points)
+    {
+        a.dist *= scale1;
+        a.delta[0] *= scale1;
+        a.delta[1] *= scale1;
+        a.delta[2] *= scale1;
+
+        a.coeff *= scale1*scale1;
+        a.coeff_gx *= scale1;
+        a.coeff_gy *= scale1;
+        a.coeff_gz *= scale1;
+    }
 
     delete []Am;
     delete []Bm;
