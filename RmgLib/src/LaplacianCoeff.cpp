@@ -156,12 +156,71 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
-
-    else if (((this->ibrav == HEXAGONAL)||
-              (this->ibrav == HEXAGONAL2) ||
-              (this->ibrav == MONOCLINIC_PRIMITIVE)) && !this->offdiag)
+    else if ((this->ibrav == HEXAGONAL) || (this->ibrav == HEXAGONAL2))
     {
+        double x[20], w1[20], w2[20];
+        for(int i=0;i<20;i++) x[i] = (double)i;
+        FiniteDiff::gen_weights(Lorder+1, 2, (double)Lorder/2, x, w1);
+        FiniteDiff::gen_weights(Lorder+1, 1, (double)Lorder/2, x, w2);
+        double id=1.0;
+        if(this->ibrav == HEXAGONAL) id = -1.0;
+        dimension = 2;
+        double a2d[2][2];
+        a2d[0][0] = a[0][0];
+        a2d[0][1] = a[0][1];
+        a2d[1][0] = a[1][0];
+        a2d[1][1] = a[1][1];
+        double h = a2d[0][0] / (double)Ngrid[0];
+        double h2 = h*h;
+        double hf = sqrt(3.0/4.0);
+        double hf1 = sqrt(3.0);
 
+        GetPointList2D(points1, a2d, Ngrid, Lorder);
+        for(auto &a:points1)
+        {
+            if(a.index[0] != 0 && a.index[1]==0)
+            {
+                a.coeff = 2.0*w1[Lorder/2+a.index[0]]/3.0/h2;
+                a.coeff_gx = (double)a.index[0]*w2[Lorder/2+a.index[0]]/3.0/h;
+                a.coeff_gy = 0.0;
+                a.coeff_gz = 0.0;
+            }
+            else if(a.index[0] == 0 && a.index[1]!=0)
+            {
+                a.coeff = 2.0*w1[Lorder/2+a.index[1]]/3.0/h2;
+                a.coeff_gx = hf*id*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h/hf1;
+                a.coeff_gy = hf*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h;
+                a.coeff_gz = 0.0;
+            }
+            else if(a.index[0] == a.index[1])
+            {
+                a.coeff = 2.0*w1[Lorder/2+a.index[0]]/3.0/h2;
+                a.coeff_gx = hf*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h/hf1;
+                a.coeff_gy = hf*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h;
+                a.coeff_gz = 0.0;
+            }
+            else if(a.index[0] == -a.index[1])
+            {
+                a.coeff = 2.0*w1[Lorder/2+a.index[0]]/3.0/h2;
+                a.coeff_gx = -hf*id*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h/hf1;
+                a.coeff_gy = hf*(double)a.index[1]*w2[Lorder/2+a.index[1]]/3.0/h;
+                a.coeff_gz = 0.0;
+            }
+        }
+        points.insert(std::end(points), std::begin(points1), std::end(points1));
+
+        points1.clear();
+        dimension = 1;
+        GetDerList(der_list, Lorder, dimension, 2);
+        GetPointList1D(points1, a[2][2], Ngrid[2], Lorder, 2);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+        points.insert(std::end(points), std::begin(points1), std::end(points1));
+
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
+
+    }
+    else if((this->ibrav == MONOCLINIC_PRIMITIVE) && !this->offdiag)
+    {
         dimension = 2;
         GetDerList(der_list, Lorder, dimension, 0);
         double a2d[2][2];
@@ -173,7 +232,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         GetPointList2D(points1, a2d, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
-
 
         points1.clear();
         dimension = 1;
