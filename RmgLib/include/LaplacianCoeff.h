@@ -49,14 +49,6 @@ public:
     void CalculateCoeff ();
     ~LaplacianCoeff(void);
 
-    // Used for monoclinic
-    double plane_dist_x, plane_dist_y, plane_dist_z;
-    double plane_dist_xy, plane_dist_xz, plane_dist_yz;
-    double plane_dist_nxy, plane_dist_nxz, plane_dist_nyz;
-    double plane_center_x, plane_center_y, plane_center_z;
-    double plane_center_xy, plane_center_xz, plane_center_yz;
-    double plane_center_nxy, plane_center_nxz, plane_center_nyz;
-
     // For laplacian
     // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
     double axis_lc[13][12];
@@ -68,45 +60,6 @@ public:
     double axis_gc_x[13][12];
     double axis_gc_y[13][12];
     double axis_gc_z[13][12];
-
-    std::vector<double> axis_x;
-    std::vector<double> axis_y;
-    std::vector<double> axis_z;
-    std::vector<double> axis_xy;
-    std::vector<double> axis_xz;
-    std::vector<double> axis_yz;
-    std::vector<double> axis_nxy;
-    std::vector<double> axis_nxz;
-    std::vector<double> axis_nyz;
-
-    std::vector<double> axis_x_gx;
-    std::vector<double> axis_x_gy;
-    std::vector<double> axis_x_gz;
-    std::vector<double> axis_y_gx;
-    std::vector<double> axis_y_gy;
-    std::vector<double> axis_y_gz;
-    std::vector<double> axis_z_gx;
-    std::vector<double> axis_z_gy;
-    std::vector<double> axis_z_gz;
-    std::vector<double> axis_xy_gx;
-    std::vector<double> axis_xy_gy;
-    std::vector<double> axis_xy_gz;
-    std::vector<double> axis_xz_gx;
-    std::vector<double> axis_xz_gy;
-    std::vector<double> axis_xz_gz;
-    std::vector<double> axis_yz_gx;
-    std::vector<double> axis_yz_gy;
-    std::vector<double> axis_yz_gz;
-
-    std::vector<double> axis_nxy_gx;
-    std::vector<double> axis_nxy_gy;
-    std::vector<double> axis_nxy_gz;
-    std::vector<double> axis_nxz_gx;
-    std::vector<double> axis_nxz_gy;
-    std::vector<double> axis_nxz_gz;
-    std::vector<double> axis_nyz_gx;
-    std::vector<double> axis_nyz_gy;
-    std::vector<double> axis_nyz_gz;
 
     std::vector<CoeffList> coeff_and_index;
     std::vector<CoeffList> gx_coeff_and_index;

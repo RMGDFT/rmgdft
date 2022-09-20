@@ -372,12 +372,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
 
-    // Set up the Laplacian for unusual grid types
-    bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
-            (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
-            (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
-            (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
-            (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
+    // Set up the Laplacian and gradient coefficients
     SetLaplacian();
 
     // Now that coalescing is sorted out we need to check valid MG levels on the PE level (as opposed to

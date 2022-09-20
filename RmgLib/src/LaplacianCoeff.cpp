@@ -68,61 +68,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
             this->axis_gc_z[i][j] = 0.0;
         }
     }
-    this->plane_dist_x = 1000000.0;
-    this->plane_dist_y = 1000000.0;
-    this->plane_dist_z = 1000000.0;
-    this->plane_dist_xy = 1000000.0;
-    this->plane_dist_xz = 1000000.0;
-    this->plane_dist_yz = 1000000.0;
-    this->plane_dist_nxy = 1000000.0;
-    this->plane_dist_nxz = 1000000.0;
-    this->plane_dist_nyz = 1000000.0;
-    this->plane_center_x = 0.0;
-    this->plane_center_y = 0.0;
-    this->plane_center_z = 0.0;
-    this->plane_center_xy = 0.0;
-    this->plane_center_xz = 0.0;
-    this->plane_center_yz = 0.0;
-    this->plane_center_nxy = 0.0;
-    this->plane_center_nxz = 0.0;
-    this->plane_center_nyz = 0.0;
-
-    this->axis_x.resize(Lorder+1);
-    this->axis_y.resize(Lorder+1);
-    this->axis_z.resize(Lorder+1);
-    this->axis_xy.resize(Lorder+1);
-    this->axis_xz.resize(Lorder+1);
-    this->axis_yz.resize(Lorder+1);
-    this->axis_nxy.resize(Lorder+1);
-    this->axis_nxz.resize(Lorder+1);
-    this->axis_nyz.resize(Lorder+1);
-    this->axis_x_gx.resize(Lorder+1);
-    this->axis_x_gy.resize(Lorder+1);
-    this->axis_x_gz.resize(Lorder+1);
-    this->axis_y_gx.resize(Lorder+1);
-    this->axis_y_gy.resize(Lorder+1);
-    this->axis_y_gz.resize(Lorder+1);
-    this->axis_z_gx.resize(Lorder+1);
-    this->axis_z_gy.resize(Lorder+1);
-    this->axis_z_gz.resize(Lorder+1);
-    this->axis_xy_gx.resize(Lorder+1);
-    this->axis_xy_gy.resize(Lorder+1);
-    this->axis_xy_gz.resize(Lorder+1);
-    this->axis_xz_gx.resize(Lorder+1);
-    this->axis_xz_gy.resize(Lorder+1);
-    this->axis_xz_gz.resize(Lorder+1);
-    this->axis_yz_gx.resize(Lorder+1);
-    this->axis_yz_gy.resize(Lorder+1);
-    this->axis_yz_gz.resize(Lorder+1);
-    this->axis_nxy_gx.resize(Lorder+1);
-    this->axis_nxy_gy.resize(Lorder+1);
-    this->axis_nxy_gz.resize(Lorder+1);
-    this->axis_nxz_gx.resize(Lorder+1);
-    this->axis_nxz_gy.resize(Lorder+1);
-    this->axis_nxz_gz.resize(Lorder+1);
-    this->axis_nyz_gx.resize(Lorder+1);
-    this->axis_nyz_gy.resize(Lorder+1);
-    this->axis_nyz_gz.resize(Lorder+1);
 
     std::vector<GridPoint>  points, points1;
 
@@ -1320,45 +1265,8 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
 
 LaplacianCoeff::~LaplacianCoeff(void)
 {
-    this->axis_x.clear();
-    this->axis_y.clear();
-    this->axis_z.clear();
-    this->axis_xy.clear();
-    this->axis_xz.clear();
-    this->axis_yz.clear();
-    this->axis_nxy.clear();
-    this->axis_nxz.clear();
-    this->axis_nyz.clear();
-    this->axis_x_gx.clear();
-    this->axis_x_gy.clear();
-    this->axis_x_gz.clear();
-    this->axis_y_gx.clear();
-    this->axis_y_gy.clear();
-    this->axis_y_gz.clear();
-    this->axis_z_gx.clear();
-    this->axis_z_gy.clear();
-    this->axis_z_gz.clear();
-    this->axis_xy_gx.clear();
-    this->axis_xy_gy.clear();
-    this->axis_xy_gz.clear();
-    this->axis_xz_gx.clear();
-    this->axis_xz_gy.clear();
-    this->axis_xz_gz.clear();
-    this->axis_yz_gx.clear();
-    this->axis_yz_gy.clear();
-    this->axis_yz_gz.clear();
-    this->axis_nxy_gx.clear();
-    this->axis_nxy_gy.clear();
-    this->axis_nxy_gz.clear();
-    this->axis_nxz_gx.clear();
-    this->axis_nxz_gy.clear();
-    this->axis_nxz_gz.clear();
-    this->axis_nyz_gx.clear();
-    this->axis_nyz_gy.clear();
-    this->axis_nyz_gz.clear();
     coeff_and_index.clear();
     gx_coeff_and_index.clear();
     gy_coeff_and_index.clear();
     gz_coeff_and_index.clear();
-
 }
