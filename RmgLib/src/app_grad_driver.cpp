@@ -58,7 +58,6 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
                    (ibrav == CUBIC_PRIMITIVE) ||
                    (ibrav == TETRAGONAL_PRIMITIVE));
 
-
     // while alloca is dangerous it's very fast for small arrays and the 110k limit
     // is fine for linux and 64bit power
     if(alloc <= 110592)
@@ -79,7 +78,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     if(!special)
     {
         LC->GetDim(dim);
-        HLC->GetDim(hdim);
+//        HLC->GetDim(hdim);
     }
     if(!special && (dimx == dim[0]) && (dimy == dim[1]) && (dimz == dim[2]))
     {

@@ -2164,6 +2164,8 @@ template <typename RmgType>
 void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
+FiniteDiff::app8_gradient_general (rptr, wxr, wyr, wzr, dimx, dimy, dimz);
+return;
 
     int ixs = (dimy + 8) * (dimz + 8);
     int iys = (dimz + 8);
@@ -2187,7 +2189,6 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
     RmgType t3z (4.0 / (105.0 * gridhz * L->get_zside()));
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
     RmgType hex_t(0.5*1.154700538379);
-
 
     int id = 1;
     switch (ibrav)
@@ -2806,19 +2807,449 @@ void FiniteDiff::app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *
 template <typename RmgType>
 void FiniteDiff::app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
 {
-    cx[0] = LC->axis_gc_x[axis][3];
-    cx[1] = LC->axis_gc_x[axis][2];
-    cx[2] = LC->axis_gc_x[axis][1];
-    cx[3] = LC->axis_gc_x[axis][0];
+    double c1, c2=0.0;
+    if(this->alt_laplacian) c2 = cfac[0];
+    c1 = 1.0 + c2;
+    cx[0] = c1*LC->axis_gc_x[axis][3] - c2*LC_6->axis_gc_x[axis][2];
+    cx[1] = c1*LC->axis_gc_x[axis][2] - c2*LC_6->axis_gc_x[axis][1];
+    cx[2] = c1*LC->axis_gc_x[axis][1] - c2*LC_6->axis_gc_x[axis][0];
+    cx[3] = c1*LC->axis_gc_x[axis][0];
 
-    cy[0] = LC->axis_gc_y[axis][3];
-    cy[1] = LC->axis_gc_y[axis][2];
-    cy[2] = LC->axis_gc_y[axis][1];
-    cy[3] = LC->axis_gc_y[axis][0];
+    cy[0] = c1*LC->axis_gc_y[axis][3] - c2*LC_6->axis_gc_y[axis][2];
+    cy[1] = c1*LC->axis_gc_y[axis][2] - c2*LC_6->axis_gc_y[axis][1];
+    cy[2] = c1*LC->axis_gc_y[axis][1] - c2*LC_6->axis_gc_y[axis][0];
+    cy[3] = c1*LC->axis_gc_y[axis][0];
 
-    cz[0] = LC->axis_gc_z[axis][3];
-    cz[1] = LC->axis_gc_z[axis][2];
-    cz[2] = LC->axis_gc_z[axis][1];
-    cz[3] = LC->axis_gc_z[axis][0];
+    cz[0] = c1*LC->axis_gc_z[axis][3] - c2*LC_6->axis_gc_z[axis][2];
+    cz[1] = c1*LC->axis_gc_z[axis][2] - c2*LC_6->axis_gc_z[axis][1];
+    cz[2] = c1*LC->axis_gc_z[axis][1] - c2*LC_6->axis_gc_z[axis][0];
+    cz[3] = c1*LC->axis_gc_z[axis][0];
 }
+
+
+
+template <typename RmgType>
+void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a, 
+                                RmgType * __restrict__ gx, 
+                                RmgType * __restrict__ gy, 
+                                RmgType * __restrict__ gz,
+                                int dimx, int dimy, int dimz)
+{
+    int ibrav = L->get_ibrav_type();
+    RmgType cxx[4], cxy[4], cxz[4];
+    RmgType cyx[4], cyy[4], cyz[4];
+    RmgType czx[4], czy[4], czz[4];
+    RmgType cx[4], cy[4], cz[4];
+    int ixs = (dimy + 8) * (dimz + 8);
+    int iys = (dimz + 8);
+
+
+    // Get coeffs for x,y,z axes which are used by all lattice types
+    app8_gradient_coeffs(8, 0, cxx, cxy, cxz);
+    app8_gradient_coeffs(8, 1, cyx, cyy, cyz);
+    app8_gradient_coeffs(8, 2, czx, czy, czz);
+    for (int ix = 4; ix < dimx + 4; ix++)
+    {
+        for (int iy = 4; iy < dimy + 4; iy++)
+        {
+            RmgType *A = &a[iy*iys + ix*ixs];
+            RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+            // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                bgx[iz] =
+                    -czx[0] * A[iz + 1] + czx[0] * A[iz - 1] +
+                    -czx[1] * A[iz + 2] + czx[1] * A[iz - 2] +
+                    -czx[2] * A[iz + 3] + czx[2] * A[iz - 3] +
+                    -czx[3] * A[iz + 4] + czx[3] * A[iz - 4];
+                bgy[iz] =
+                    -czy[0] * A[iz + 1] + czy[0] * A[iz - 1] +
+                    -czy[1] * A[iz + 2] + czy[1] * A[iz - 2] +
+                    -czy[2] * A[iz + 3] + czy[2] * A[iz - 3] +
+                    -czy[3] * A[iz + 4] + czy[3] * A[iz - 4];
+                bgz[iz] =
+                    -czz[0] * A[iz + 1] + czz[0] * A[iz - 1] +
+                    -czz[1] * A[iz + 2] + czz[1] * A[iz - 2] +
+                    -czz[2] * A[iz + 3] + czz[2] * A[iz - 3] +
+                    -czz[3] * A[iz + 4] + czz[3] * A[iz - 4];
+
+            }
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                bgx[iz] +=
+                    -cyx[0] * A[iz + iys] + cyx[0] * A[iz - iys] +
+                    -cyx[1] * A[iz + 2*iys] + cyx[1] * A[iz - 2*iys] +
+                    -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys] +
+                    -cyx[3] * A[iz + 4*iys] + cyx[3] * A[iz - 4*iys];
+                bgy[iz] +=
+                    -cyy[0] * A[iz + iys] + cyy[0] * A[iz - iys] +
+                    -cyy[1] * A[iz + 2*iys] + cyy[1] * A[iz - 2*iys] +
+                    -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys] +
+                    -cyy[3] * A[iz + 4*iys] + cyy[3] * A[iz - 4*iys];
+                bgz[iz] +=
+                    -cyz[0] * A[iz + iys] + cyz[0] * A[iz - iys] +
+                    -cyz[1] * A[iz + 2*iys] + cyz[1] * A[iz - 2*iys] +
+                    -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys] +
+                    -cyz[3] * A[iz + 4*iys] + cyz[3] * A[iz - 4*iys];
+            }
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                bgx[iz] +=
+                    -cxx[0] * A[iz + ixs] + cxx[0] * A[iz - ixs] +
+                    -cxx[1] * A[iz + 2*ixs] + cxx[1] * A[iz - 2*ixs] +
+                    -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs] +
+                    -cxx[3] * A[iz + 4*ixs] + cxx[3] * A[iz - 4*ixs];
+                bgy[iz] +=
+                    -cxy[0] * A[iz + ixs] + cxy[0] * A[iz - ixs] +
+                    -cxy[1] * A[iz + 2*ixs] + cxy[1] * A[iz - 2*ixs] +
+                    -cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs] +
+                    -cxy[3] * A[iz + 4*ixs] + cxy[3] * A[iz - 4*ixs];
+                bgz[iz] +=
+                    -cxz[0] * A[iz + ixs] + cxz[0] * A[iz - ixs] +
+                    -cxz[1] * A[iz + 2*ixs] + cxz[1] * A[iz - 2*ixs] +
+                    -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs] +
+                    -cxz[3] * A[iz + 4*ixs] + cxz[3] * A[iz - 4*ixs];
+
+            }                   /* end for */
+        }
+    }
+
+    /* Quick return for orthogonal axis cases */
+    if(ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == CUBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE)
+        return;
+
+    // Add additional axes as required
+    if(LC->include_axis[3])
+    {
+        app8_gradient_coeffs(8, 3, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + ixs + iys] + cz[0] * A[iz - ixs - iys] +
+                        -cz[1] * A[iz + 2*ixs + 2*iys] + cz[1] * A[iz - 2*ixs - 2*iys] +
+                        -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys] +
+                        -cz[3] * A[iz + 4*ixs + 4*iys] + cz[3] * A[iz - 4*ixs - 4*iys];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys] +
+                        -cy[1] * A[iz + 2*ixs + 2*iys] + cy[1] * A[iz - 2*ixs - 2*iys] +
+                        -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys] +
+                        -cy[3] * A[iz + 4*ixs + 4*iys] + cy[3] * A[iz - 4*ixs - 4*iys];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys] +
+                        -cx[1] * A[iz + 2*ixs + 2*iys] + cx[1] * A[iz - 2*ixs - 2*iys] +
+                        -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys] +
+                        -cx[3] * A[iz + 4*ixs + 4*iys] + cx[3] * A[iz - 4*ixs - 4*iys];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[4])
+    {
+        app8_gradient_coeffs(8, 4, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + ixs + 1] + cz[0] * A[iz - ixs - 1] +
+                        -cz[1] * A[iz + 2*ixs + 2] + cz[1] * A[iz - 2*ixs - 2] +
+                        -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3] +
+                        -cz[3] * A[iz + 4*ixs + 4] + cz[3] * A[iz - 4*ixs - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1] +
+                        -cy[1] * A[iz + 2*ixs + 2] + cy[1] * A[iz - 2*ixs - 2] +
+                        -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3] +
+                        -cy[3] * A[iz + 4*ixs + 4] + cy[3] * A[iz - 4*ixs - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1] +
+                        -cx[1] * A[iz + 2*ixs + 2] + cx[1] * A[iz - 2*ixs - 2] +
+                        -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3] +
+                        -cx[3] * A[iz + 4*ixs + 4] + cx[3] * A[iz - 4*ixs - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[5])
+    {
+        app8_gradient_coeffs(8, 5, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + iys + 1] + cz[0] * A[iz - iys - 1] +
+                        -cz[1] * A[iz + 2*iys + 2] + cz[1] * A[iz - 2*iys - 2] +
+                        -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3] +
+                        -cz[3] * A[iz + 4*iys + 4] + cz[3] * A[iz - 4*iys - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1] +
+                        -cy[1] * A[iz + 2*iys + 2] + cy[1] * A[iz - 2*iys - 2] +
+                        -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3] +
+                        -cy[3] * A[iz + 4*iys + 4] + cy[3] * A[iz - 4*iys - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1] +
+                        -cx[1] * A[iz + 2*iys + 2] + cx[1] * A[iz - 2*iys - 2] +
+                        -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3] +
+                        -cx[3] * A[iz + 4*iys + 4] + cx[3] * A[iz - 4*iys - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[6])
+    {
+        app8_gradient_coeffs(8, 6, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz - ixs + iys] + cz[0] * A[iz + ixs - iys] +
+                        -cz[1] * A[iz - 2*ixs + 2*iys] + cz[1] * A[iz + 2*ixs - 2*iys] +
+                        -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys] +
+                        -cz[3] * A[iz - 4*ixs + 4*iys] + cz[3] * A[iz + 4*ixs - 4*iys];
+                    bgy[iz] +=
+                        -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys] +
+                        -cy[1] * A[iz - 2*ixs + 2*iys] + cy[1] * A[iz + 2*ixs - 2*iys] +
+                        -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys] +
+                        -cy[3] * A[iz - 4*ixs + 4*iys] + cy[3] * A[iz + 4*ixs - 4*iys];
+                    bgx[iz] +=
+                        -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys] +
+                        -cx[1] * A[iz - 2*ixs + 2*iys] + cx[1] * A[iz + 2*ixs - 2*iys] +
+                        -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys] +
+                        -cx[3] * A[iz - 4*ixs + 4*iys] + cx[3] * A[iz + 4*ixs - 4*iys];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[7])
+    {
+        app8_gradient_coeffs(8, 7, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz - ixs + 1] + cz[0] * A[iz + ixs - 1] +
+                        -cz[1] * A[iz - 2*ixs + 2] + cz[1] * A[iz + 2*ixs - 2] +
+                        -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3] +
+                        -cz[3] * A[iz - 4*ixs + 4] + cz[3] * A[iz + 4*ixs - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1] +
+                        -cy[1] * A[iz - 2*ixs + 2] + cy[1] * A[iz + 2*ixs - 2] +
+                        -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3] +
+                        -cy[3] * A[iz - 4*ixs + 4] + cy[3] * A[iz + 4*ixs - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1] +
+                        -cx[1] * A[iz - 2*ixs + 2] + cx[1] * A[iz + 2*ixs - 2] +
+                        -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3] +
+                        -cx[3] * A[iz - 4*ixs + 4] + cx[3] * A[iz + 4*ixs - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[8])
+    {
+        app8_gradient_coeffs(8, 8, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz - iys + 1] + cz[0] * A[iz + iys - 1] +
+                        -cz[1] * A[iz - 2*iys + 2] + cz[1] * A[iz + 2*iys - 2] +
+                        -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3] +
+                        -cz[3] * A[iz - 4*iys + 4] + cz[3] * A[iz + 4*iys - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1] +
+                        -cy[1] * A[iz - 2*iys + 2] + cy[1] * A[iz + 2*iys - 2] +
+                        -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3] +
+                        -cy[3] * A[iz - 4*iys + 4] + cy[3] * A[iz + 4*iys - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1] +
+                        -cx[1] * A[iz - 2*iys + 2] + cx[1] * A[iz + 2*iys - 2] +
+                        -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3] +
+                        -cx[3] * A[iz - 4*iys + 4] + cx[3] * A[iz + 4*iys - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[9])
+    {
+        app8_gradient_coeffs(8, 9, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + 1*ixs + 1*iys + 1] + cz[0] * A[iz - 1*ixs - 1*iys - 1] +
+                        -cz[1] * A[iz + 2*ixs + 2*iys + 2] + cz[1] * A[iz - 2*ixs - 2*iys - 2] +
+                        -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3] +
+                        -cz[3] * A[iz + 4*ixs + 4*iys + 4] + cz[3] * A[iz - 4*ixs - 4*iys - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1] +
+                        -cy[1] * A[iz + 2*ixs + 2*iys + 2] + cy[1] * A[iz - 2*ixs - 2*iys - 2] +
+                        -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3] +
+                        -cy[3] * A[iz + 4*ixs + 4*iys + 4] + cy[3] * A[iz - 4*ixs - 4*iys - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1] +
+                        -cx[1] * A[iz + 2*ixs + 2*iys + 2] + cx[1] * A[iz - 2*ixs - 2*iys - 2] +
+                        -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3] +
+                        -cx[3] * A[iz + 4*ixs + 4*iys + 4] + cx[3] * A[iz - 4*ixs - 4*iys - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[10])
+    {
+        app8_gradient_coeffs(8, 10, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz - 1*ixs - 1*iys + 1] + cz[0] * A[iz + 1*ixs + 1*iys - 1] +
+                        -cz[1] * A[iz - 2*ixs - 2*iys + 2] + cz[1] * A[iz + 2*ixs + 2*iys - 2] +
+                        -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3] +
+                        -cz[3] * A[iz - 4*ixs - 4*iys + 4] + cz[3] * A[iz + 4*ixs + 4*iys - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1] +
+                        -cy[1] * A[iz - 2*ixs - 2*iys + 2] + cy[1] * A[iz + 2*ixs + 2*iys - 2] +
+                        -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3] +
+                        -cy[3] * A[iz - 4*ixs - 4*iys + 4] + cy[3] * A[iz + 4*ixs + 4*iys - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1] +
+                        -cx[1] * A[iz - 2*ixs - 2*iys + 2] + cx[1] * A[iz + 2*ixs + 2*iys - 2] +
+                        -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3] +
+                        -cx[3] * A[iz - 4*ixs - 4*iys + 4] + cx[3] * A[iz + 4*ixs + 4*iys - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[11])
+    {
+        app8_gradient_coeffs(8, 11, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + 1*ixs - 1*iys + 1] + cz[0] * A[iz - 1*ixs + 1*iys - 1] +
+                        -cz[1] * A[iz + 2*ixs - 2*iys + 2] + cz[1] * A[iz - 2*ixs + 2*iys - 2] +
+                        -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3] +
+                        -cz[3] * A[iz + 4*ixs - 4*iys + 4] + cz[3] * A[iz - 4*ixs + 4*iys - 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1] +
+                        -cy[1] * A[iz + 2*ixs - 2*iys + 2] + cy[1] * A[iz - 2*ixs + 2*iys - 2] +
+                        -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3] +
+                        -cy[3] * A[iz + 4*ixs - 4*iys + 4] + cy[3] * A[iz - 4*ixs + 4*iys - 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1] +
+                        -cx[1] * A[iz + 2*ixs - 2*iys + 2] + cx[1] * A[iz - 2*ixs + 2*iys - 2] +
+                        -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3] +
+                        -cx[3] * A[iz + 4*ixs - 4*iys + 4] + cx[3] * A[iz - 4*ixs + 4*iys - 4];
+                }                   /* end for */
+            }
+        }
+    }
+
+    if(LC->include_axis[12])
+    {
+        app8_gradient_coeffs(8, 12, cx, cy, cz);
+        for (int ix = 4; ix < dimx + 4; ix++)
+        {
+            for (int iy = 4; iy < dimy + 4; iy++)
+            {
+                RmgType *A = &a[iy*iys + ix*ixs];
+                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                for (int iz = 4; iz < dimz + 4; iz++)
+                {
+                    bgz[iz] +=
+                        -cz[0] * A[iz + 1*ixs - 1*iys - 1] + cz[0] * A[iz - 1*ixs + 1*iys + 1] +
+                        -cz[1] * A[iz + 2*ixs - 2*iys - 2] + cz[1] * A[iz - 2*ixs + 2*iys + 2] +
+                        -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3] +
+                        -cz[3] * A[iz + 4*ixs - 4*iys - 4] + cz[3] * A[iz - 4*ixs + 4*iys + 4];
+                    bgy[iz] +=
+                        -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1] +
+                        -cy[1] * A[iz + 2*ixs - 2*iys - 2] + cy[1] * A[iz - 2*ixs + 2*iys + 2] +
+                        -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3] +
+                        -cy[3] * A[iz + 4*ixs - 4*iys - 4] + cy[3] * A[iz - 4*ixs + 4*iys + 4];
+                    bgx[iz] +=
+                        -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1] +
+                        -cx[1] * A[iz + 2*ixs - 2*iys - 2] + cx[1] * A[iz - 2*ixs + 2*iys + 2] +
+                        -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3] +
+                        -cx[3] * A[iz + 4*ixs - 4*iys - 4] + cx[3] * A[iz - 4*ixs + 4*iys + 4];
+                }                   /* end for */
+            }
+        }
+    }
+} /* end app8_gradient_general */
 

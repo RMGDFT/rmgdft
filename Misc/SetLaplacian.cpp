@@ -60,13 +60,13 @@ void SetLaplacian()
     dim[0] = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     dim[1] = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     dim[2] = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
-
+#if 0
     HLC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
 
     HLC->SetOffdiag(ct.laplacian_offdiag);
 
     HLC->CalculateCoeff();
-
+#endif
 }
 
