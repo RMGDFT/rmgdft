@@ -148,7 +148,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
                       for(int izz = 0;izz < dimz_c;izz++) {
                           rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
-                          if(ct.sqrt_interpolation)
+                          if(use_sqrt)
                           {
                               fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
                                      scale*scale*rootrho*rootrho;
