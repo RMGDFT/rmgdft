@@ -2294,14 +2294,16 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     double th2 = app8_coeff0();
     if(b == NULL) return (double)std::real(th2);
 
+#if 0
 #if HIP_ENABLED || CUDA_ENABLED
     // Broken for now. Need to set up c
     if(use_gpu && (ibrav == CUBIC_PRIMITIVE || ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE))
     {
         /* Return the diagonal component of the operator */
         app8_del2_gpu(a, b, dimx, dimy, dimz, c);
-        return (double)std::real(t0);
+        return (double)std::real(th2);
     }
+#endif
 #endif
 
     // Get coeffs for x,y,z axes which are used by all lattice types

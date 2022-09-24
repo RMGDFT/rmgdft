@@ -256,6 +256,32 @@ else()
 endif()
 
 if(RMG_HIP_ENABLED)
+  if(ROCM_ROOT)
+    message(STATUS "ROCM_ROOT provided. Searching for FindHIP.cmake file")
+    find_path(
+      HIP_MODULE_FILE_DIR FindHIP.cmake
+      HINTS ${ROCM_ROOT}
+      PATH_SUFFIXES hip/cmake REQUIRED
+      NO_DEFAULT_PATH)
+  else()
+    message(STATUS "ROCM_ROOT not provided. Searching for FindHIP.cmake file.")
+    find_path(
+      HIP_MODULE_FILE_DIR FindHIP.cmake
+      HINTS $ENV{ROCM_PATH} /opt/rocm
+      PATH_SUFFIXES hip/cmake)
+    if(HIP_MODULE_FILE_DIR)
+      message(STATUS "Found FindHIP.cmake file. ROCM_ROOT will be derived.")
+    else()
+      message(FATAL_ERROR "Failed to find FindHIP.cmake file. Please set ROCM_ROOT to your ROCm installation.")
+    endif()
+    string(REGEX REPLACE "\/hip\/cmake" "" ROCM_ROOT "${HIP_MODULE_FILE_DIR}")
+  endif()
+  message(STATUS "Using ROCM_ROOT: ${ROCM_ROOT}")
+
+  list(APPEND CMAKE_MODULE_PATH ${HIP_MODULE_FILE_DIR})
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_ROOT})
+  # need FindHIP for hip_add_library similar to deprecated FindCUDA style
+
     if(NOT DEFINED HIP_PATH)
         if(NOT DEFINED ENV{HIP_PATH})
             set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")
