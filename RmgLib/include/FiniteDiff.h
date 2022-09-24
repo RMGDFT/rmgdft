@@ -123,6 +123,12 @@ public:
     double app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
+    double app6_del2(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    double app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>

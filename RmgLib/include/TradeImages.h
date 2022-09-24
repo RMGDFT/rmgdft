@@ -48,7 +48,11 @@
 #define CENTRAL_TRADE 2
 
 /* Maximum number of images for finite difference routines */
-#define MAX_TRADE_IMAGES 5
+#ifndef TWELFTH_ORDER_FD
+  #define MAX_TRADE_IMAGES 5
+#else
+  #define MAX_TRADE_IMAGES 6
+#endif
 #define MAX_CFACTOR 16
 
 #if __cplusplus

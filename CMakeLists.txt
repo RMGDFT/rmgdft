@@ -97,6 +97,12 @@ else()
     add_definitions(-DBLAS_PROFILE=0)
 endif()
 
+# Build 12th order laplacian for testing purposes
+option(TWELTH_ORDER_FD "Build 12th order laplacian for testing" OFF)
+if(TWELFTH_ORDER_FD)
+    add_definitions(-DTWELFTH_ORDER_FD=1)
+endif()
+
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
 endif()

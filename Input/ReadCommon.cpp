@@ -824,7 +824,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
             "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
 
+#ifdef TWELFTH_ORDER_FD
+    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 12, 8,
+#else
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 10, 8,
+#endif
             CHECK_AND_FIX, OPTIONAL,
             "RMG uses finite differencing to represent the kinetic energy operator "
             "and the accuracy of the representation is controllable by the "

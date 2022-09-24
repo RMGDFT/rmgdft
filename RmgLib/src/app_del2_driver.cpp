@@ -127,6 +127,14 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         else if(order == APP_CI_TEN) {
             cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         }
+#ifdef TWELFTH_ORDER_FD
+        else if(order == APP_CI_SIXTH) {
+            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+        else if(order == APP_CI_TWELVE) {
+            cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+#endif
         else {
 
             rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
