@@ -505,18 +505,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                 bgx[iz] =
                     -czx[0] * A[iz + 1] + czx[0] * A[iz - 1] +
                     -czx[1] * A[iz + 2] + czx[1] * A[iz - 2] +
-                    -czx[2] * A[iz + 3] + czx[2] * A[iz - 3] +
-                    -czx[3] * A[iz + 4] + czx[3] * A[iz - 4];
+                    -czx[2] * A[iz + 3] + czx[2] * A[iz - 3];
                 bgy[iz] =
                     -czy[0] * A[iz + 1] + czy[0] * A[iz - 1] +
                     -czy[1] * A[iz + 2] + czy[1] * A[iz - 2] +
-                    -czy[2] * A[iz + 3] + czy[2] * A[iz - 3] +
-                    -czy[3] * A[iz + 4] + czy[3] * A[iz - 4];
+                    -czy[2] * A[iz + 3] + czy[2] * A[iz - 3];
                 bgz[iz] =
                     -czz[0] * A[iz + 1] + czz[0] * A[iz - 1] +
                     -czz[1] * A[iz + 2] + czz[1] * A[iz - 2] +
-                    -czz[2] * A[iz + 3] + czz[2] * A[iz - 3] +
-                    -czz[3] * A[iz + 4] + czz[3] * A[iz - 4];
+                    -czz[2] * A[iz + 3] + czz[2] * A[iz - 3];
 
             }
             for (int iz = 3; iz < dimz + 3; iz++)
@@ -524,36 +521,30 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                 bgx[iz] +=
                     -cyx[0] * A[iz + iys] + cyx[0] * A[iz - iys] +
                     -cyx[1] * A[iz + 2*iys] + cyx[1] * A[iz - 2*iys] +
-                    -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys] +
-                    -cyx[3] * A[iz + 4*iys] + cyx[3] * A[iz - 4*iys];
+                    -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys];
                 bgy[iz] +=
                     -cyy[0] * A[iz + iys] + cyy[0] * A[iz - iys] +
                     -cyy[1] * A[iz + 2*iys] + cyy[1] * A[iz - 2*iys] +
-                    -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys] +
-                    -cyy[3] * A[iz + 4*iys] + cyy[3] * A[iz - 4*iys];
+                    -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys];
                 bgz[iz] +=
                     -cyz[0] * A[iz + iys] + cyz[0] * A[iz - iys] +
                     -cyz[1] * A[iz + 2*iys] + cyz[1] * A[iz - 2*iys] +
-                    -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys] +
-                    -cyz[3] * A[iz + 4*iys] + cyz[3] * A[iz - 4*iys];
+                    -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys];
             }
             for (int iz = 3; iz < dimz + 3; iz++)
             {
                 bgx[iz] +=
                     -cxx[0] * A[iz + ixs] + cxx[0] * A[iz - ixs] +
                     -cxx[1] * A[iz + 2*ixs] + cxx[1] * A[iz - 2*ixs] +
-                    -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs] +
-                    -cxx[3] * A[iz + 4*ixs] + cxx[3] * A[iz - 4*ixs];
+                    -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs];
                 bgy[iz] +=
                     -cxy[0] * A[iz + ixs] + cxy[0] * A[iz - ixs] +
                     -cxy[1] * A[iz + 2*ixs] + cxy[1] * A[iz - 2*ixs] +
-                    -cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs] +
-                    -cxy[3] * A[iz + 4*ixs] + cxy[3] * A[iz - 4*ixs];
+                    -cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs];
                 bgz[iz] +=
                     -cxz[0] * A[iz + ixs] + cxz[0] * A[iz - ixs] +
                     -cxz[1] * A[iz + 2*ixs] + cxz[1] * A[iz - 2*ixs] +
-                    -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs] +
-                    -cxz[3] * A[iz + 4*ixs] + cxz[3] * A[iz - 4*ixs];
+                    -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs];
 
             }                   /* end for */
         }
@@ -580,18 +571,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + ixs + iys] + cz[0] * A[iz - ixs - iys] +
                         -cz[1] * A[iz + 2*ixs + 2*iys] + cz[1] * A[iz - 2*ixs - 2*iys] +
-                        -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys] +
-                        -cz[3] * A[iz + 4*ixs + 4*iys] + cz[3] * A[iz - 4*ixs - 4*iys];
+                        -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys];
                     bgy[iz] +=
                         -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys] +
                         -cy[1] * A[iz + 2*ixs + 2*iys] + cy[1] * A[iz - 2*ixs - 2*iys] +
-                        -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys] +
-                        -cy[3] * A[iz + 4*ixs + 4*iys] + cy[3] * A[iz - 4*ixs - 4*iys];
+                        -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys];
                     bgx[iz] +=
                         -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys] +
                         -cx[1] * A[iz + 2*ixs + 2*iys] + cx[1] * A[iz - 2*ixs - 2*iys] +
-                        -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys] +
-                        -cx[3] * A[iz + 4*ixs + 4*iys] + cx[3] * A[iz - 4*ixs - 4*iys];
+                        -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys];
                 }                   /* end for */
             }
         }
@@ -613,18 +601,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + ixs + 1] + cz[0] * A[iz - ixs - 1] +
                         -cz[1] * A[iz + 2*ixs + 2] + cz[1] * A[iz - 2*ixs - 2] +
-                        -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3] +
-                        -cz[3] * A[iz + 4*ixs + 4] + cz[3] * A[iz - 4*ixs - 4];
+                        -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1] +
                         -cy[1] * A[iz + 2*ixs + 2] + cy[1] * A[iz - 2*ixs - 2] +
-                        -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3] +
-                        -cy[3] * A[iz + 4*ixs + 4] + cy[3] * A[iz - 4*ixs - 4];
+                        -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1] +
                         -cx[1] * A[iz + 2*ixs + 2] + cx[1] * A[iz - 2*ixs - 2] +
-                        -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3] +
-                        -cx[3] * A[iz + 4*ixs + 4] + cx[3] * A[iz - 4*ixs - 4];
+                        -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3];
                 }                   /* end for */
             }
         }
@@ -646,18 +631,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + iys + 1] + cz[0] * A[iz - iys - 1] +
                         -cz[1] * A[iz + 2*iys + 2] + cz[1] * A[iz - 2*iys - 2] +
-                        -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3] +
-                        -cz[3] * A[iz + 4*iys + 4] + cz[3] * A[iz - 4*iys - 4];
+                        -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1] +
                         -cy[1] * A[iz + 2*iys + 2] + cy[1] * A[iz - 2*iys - 2] +
-                        -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3] +
-                        -cy[3] * A[iz + 4*iys + 4] + cy[3] * A[iz - 4*iys - 4];
+                        -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1] +
                         -cx[1] * A[iz + 2*iys + 2] + cx[1] * A[iz - 2*iys - 2] +
-                        -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3] +
-                        -cx[3] * A[iz + 4*iys + 4] + cx[3] * A[iz - 4*iys - 4];
+                        -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3];
                 }                   /* end for */
             }
         }
@@ -679,18 +661,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz - ixs + iys] + cz[0] * A[iz + ixs - iys] +
                         -cz[1] * A[iz - 2*ixs + 2*iys] + cz[1] * A[iz + 2*ixs - 2*iys] +
-                        -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys] +
-                        -cz[3] * A[iz - 4*ixs + 4*iys] + cz[3] * A[iz + 4*ixs - 4*iys];
+                        -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys];
                     bgy[iz] +=
                         -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys] +
                         -cy[1] * A[iz - 2*ixs + 2*iys] + cy[1] * A[iz + 2*ixs - 2*iys] +
-                        -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys] +
-                        -cy[3] * A[iz - 4*ixs + 4*iys] + cy[3] * A[iz + 4*ixs - 4*iys];
+                        -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys];
                     bgx[iz] +=
                         -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys] +
                         -cx[1] * A[iz - 2*ixs + 2*iys] + cx[1] * A[iz + 2*ixs - 2*iys] +
-                        -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys] +
-                        -cx[3] * A[iz - 4*ixs + 4*iys] + cx[3] * A[iz + 4*ixs - 4*iys];
+                        -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys];
                 }                   /* end for */
             }
         }
@@ -712,18 +691,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz - ixs + 1] + cz[0] * A[iz + ixs - 1] +
                         -cz[1] * A[iz - 2*ixs + 2] + cz[1] * A[iz + 2*ixs - 2] +
-                        -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3] +
-                        -cz[3] * A[iz - 4*ixs + 4] + cz[3] * A[iz + 4*ixs - 4];
+                        -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1] +
                         -cy[1] * A[iz - 2*ixs + 2] + cy[1] * A[iz + 2*ixs - 2] +
-                        -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3] +
-                        -cy[3] * A[iz - 4*ixs + 4] + cy[3] * A[iz + 4*ixs - 4];
+                        -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1] +
                         -cx[1] * A[iz - 2*ixs + 2] + cx[1] * A[iz + 2*ixs - 2] +
-                        -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3] +
-                        -cx[3] * A[iz - 4*ixs + 4] + cx[3] * A[iz + 4*ixs - 4];
+                        -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3];
                 }                   /* end for */
             }
         }
@@ -745,18 +721,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz - iys + 1] + cz[0] * A[iz + iys - 1] +
                         -cz[1] * A[iz - 2*iys + 2] + cz[1] * A[iz + 2*iys - 2] +
-                        -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3] +
-                        -cz[3] * A[iz - 4*iys + 4] + cz[3] * A[iz + 4*iys - 4];
+                        -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1] +
                         -cy[1] * A[iz - 2*iys + 2] + cy[1] * A[iz + 2*iys - 2] +
-                        -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3] +
-                        -cy[3] * A[iz - 4*iys + 4] + cy[3] * A[iz + 4*iys - 4];
+                        -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1] +
                         -cx[1] * A[iz - 2*iys + 2] + cx[1] * A[iz + 2*iys - 2] +
-                        -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3] +
-                        -cx[3] * A[iz - 4*iys + 4] + cx[3] * A[iz + 4*iys - 4];
+                        -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3];
                 }                   /* end for */
             }
         }
@@ -778,18 +751,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + 1*ixs + 1*iys + 1] + cz[0] * A[iz - 1*ixs - 1*iys - 1] +
                         -cz[1] * A[iz + 2*ixs + 2*iys + 2] + cz[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cz[3] * A[iz + 4*ixs + 4*iys + 4] + cz[3] * A[iz - 4*ixs - 4*iys - 4];
+                        -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1] +
                         -cy[1] * A[iz + 2*ixs + 2*iys + 2] + cy[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cy[3] * A[iz + 4*ixs + 4*iys + 4] + cy[3] * A[iz - 4*ixs - 4*iys - 4];
+                        -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1] +
                         -cx[1] * A[iz + 2*ixs + 2*iys + 2] + cx[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cx[3] * A[iz + 4*ixs + 4*iys + 4] + cx[3] * A[iz - 4*ixs - 4*iys - 4];
+                        -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3];
                 }                   /* end for */
             }
         }
@@ -811,18 +781,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz - 1*ixs - 1*iys + 1] + cz[0] * A[iz + 1*ixs + 1*iys - 1] +
                         -cz[1] * A[iz - 2*ixs - 2*iys + 2] + cz[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cz[3] * A[iz - 4*ixs - 4*iys + 4] + cz[3] * A[iz + 4*ixs + 4*iys - 4];
+                        -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1] +
                         -cy[1] * A[iz - 2*ixs - 2*iys + 2] + cy[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cy[3] * A[iz - 4*ixs - 4*iys + 4] + cy[3] * A[iz + 4*ixs + 4*iys - 4];
+                        -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1] +
                         -cx[1] * A[iz - 2*ixs - 2*iys + 2] + cx[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cx[3] * A[iz - 4*ixs - 4*iys + 4] + cx[3] * A[iz + 4*ixs + 4*iys - 4];
+                        -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3];
                 }                   /* end for */
             }
         }
@@ -844,18 +811,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + 1*ixs - 1*iys + 1] + cz[0] * A[iz - 1*ixs + 1*iys - 1] +
                         -cz[1] * A[iz + 2*ixs - 2*iys + 2] + cz[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cz[3] * A[iz + 4*ixs - 4*iys + 4] + cz[3] * A[iz - 4*ixs + 4*iys - 4];
+                        -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3];
                     bgy[iz] +=
                         -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1] +
                         -cy[1] * A[iz + 2*ixs - 2*iys + 2] + cy[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cy[3] * A[iz + 4*ixs - 4*iys + 4] + cy[3] * A[iz - 4*ixs + 4*iys - 4];
+                        -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3];
                     bgx[iz] +=
                         -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1] +
                         -cx[1] * A[iz + 2*ixs - 2*iys + 2] + cx[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cx[3] * A[iz + 4*ixs - 4*iys + 4] + cx[3] * A[iz - 4*ixs + 4*iys - 4];
+                        -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3];
                 }                   /* end for */
             }
         }
@@ -877,18 +841,15 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] +=
                         -cz[0] * A[iz + 1*ixs - 1*iys - 1] + cz[0] * A[iz - 1*ixs + 1*iys + 1] +
                         -cz[1] * A[iz + 2*ixs - 2*iys - 2] + cz[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cz[3] * A[iz + 4*ixs - 4*iys - 4] + cz[3] * A[iz - 4*ixs + 4*iys + 4];
+                        -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3];
                     bgy[iz] +=
                         -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1] +
                         -cy[1] * A[iz + 2*ixs - 2*iys - 2] + cy[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cy[3] * A[iz + 4*ixs - 4*iys - 4] + cy[3] * A[iz - 4*ixs + 4*iys + 4];
+                        -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3];
                     bgx[iz] +=
                         -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1] +
                         -cx[1] * A[iz + 2*ixs - 2*iys - 2] + cx[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cx[3] * A[iz + 4*ixs - 4*iys - 4] + cx[3] * A[iz - 4*ixs + 4*iys + 4];
+                        -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3];
                 }                   /* end for */
             }
         }

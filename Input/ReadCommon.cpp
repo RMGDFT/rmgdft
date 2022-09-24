@@ -1703,4 +1703,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
+    // Force grad order must match kohn_sham_fd_order unless fft is chose
+    if(lc.force_grad_order != lc.kohn_sham_fd_order) lc.force_grad_order = 0;
 }
