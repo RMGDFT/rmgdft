@@ -203,6 +203,14 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
         return cc;
     }
+    else if(special && (order == APP_CI_SIXTH))
+    {
+        RmgTimer *RTA=NULL;
+        if(ct.verbose) RTA = new RmgTimer("CPUFD");
+        cc = FD.app6_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        if(ct.verbose) delete RTA;
+        return cc;
+    }
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {

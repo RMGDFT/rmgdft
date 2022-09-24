@@ -135,8 +135,19 @@ public:
     void app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
+    void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
     void app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    void app6_gradient_general (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                int dimx, int dimy, int dimz);
 
     template <typename RmgType>
     void app8_gradient_general (RmgType * __restrict__ a,
@@ -148,6 +159,12 @@ public:
     template <typename RmgType>
     void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    double app6_combined(
+		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
+                    double gridhx, double gridhy, double gridhz,
+		    double *kvec, bool use_gpu);
 
     template <typename RmgType>
     double app8_combined(
@@ -162,6 +179,14 @@ public:
 
     template <typename RmgType>
     void app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
+
+    double app6_coeff0(void);
+
+    template <typename RmgType>
+    void app6_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+
+    template <typename RmgType>
+    void app6_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
 
 };
 #endif

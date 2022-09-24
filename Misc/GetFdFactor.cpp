@@ -110,10 +110,11 @@ void GetFdFactor(void)
             for(int j=0;j < 2;j++)
             {
                 FD.cfac[0] = c2;
+                if(ct.kohn_sham_fd_order == 6) ApplyAOperator (orbital, work, kvec);
                 if(ct.kohn_sham_fd_order == 8) ApplyAOperator (orbital, work, kvec);
                 if(ct.kohn_sham_fd_order == 10) ApplyLaplacian (orbital, work, 10, "Coarse");
                 if(ct.kohn_sham_fd_order == 12) ApplyLaplacian (orbital, work, 12, "Coarse");
-                if(ct.kohn_sham_fd_order == 6) ApplyLaplacian (orbital, work, 6, "Coarse");
+//                if(ct.kohn_sham_fd_order == 6) ApplyLaplacian (orbital, work, 6, "Coarse");
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
                 if(pct.gridpe == 0) printf("LLLL  %e   %e\n",c2, fft_ke - fd_ke);
                 cvals.push_back(c2);
