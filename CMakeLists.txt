@@ -97,6 +97,12 @@ else()
     add_definitions(-DBLAS_PROFILE=0)
 endif()
 
+# Build 12th order laplacian for testing purposes
+option(TWELTH_ORDER_FD "Build 12th order laplacian for testing" OFF)
+if(TWELFTH_ORDER_FD)
+    add_definitions(-DTWELFTH_ORDER_FD=1)
+endif()
+
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
 endif()
@@ -250,6 +256,32 @@ else()
 endif()
 
 if(RMG_HIP_ENABLED)
+  if(ROCM_ROOT)
+    message(STATUS "ROCM_ROOT provided. Searching for FindHIP.cmake file")
+    find_path(
+      HIP_MODULE_FILE_DIR FindHIP.cmake
+      HINTS ${ROCM_ROOT}
+      PATH_SUFFIXES hip/cmake REQUIRED
+      NO_DEFAULT_PATH)
+  else()
+    message(STATUS "ROCM_ROOT not provided. Searching for FindHIP.cmake file.")
+    find_path(
+      HIP_MODULE_FILE_DIR FindHIP.cmake
+      HINTS $ENV{ROCM_PATH} /opt/rocm
+      PATH_SUFFIXES hip/cmake)
+    if(HIP_MODULE_FILE_DIR)
+      message(STATUS "Found FindHIP.cmake file. ROCM_ROOT will be derived.")
+    else()
+      message(FATAL_ERROR "Failed to find FindHIP.cmake file. Please set ROCM_ROOT to your ROCm installation.")
+    endif()
+    string(REGEX REPLACE "\/hip\/cmake" "" ROCM_ROOT "${HIP_MODULE_FILE_DIR}")
+  endif()
+  message(STATUS "Using ROCM_ROOT: ${ROCM_ROOT}")
+
+  list(APPEND CMAKE_MODULE_PATH ${HIP_MODULE_FILE_DIR})
+  list(APPEND CMAKE_PREFIX_PATH ${ROCM_ROOT})
+  # need FindHIP for hip_add_library similar to deprecated FindCUDA style
+
     if(NOT DEFINED HIP_PATH)
         if(NOT DEFINED ENV{HIP_PATH})
             set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")

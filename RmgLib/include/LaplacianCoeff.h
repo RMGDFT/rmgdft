@@ -119,6 +119,7 @@ void FiniteDiffGrad(T * __restrict__ a, T * __restrict__ gx, T * __restrict__ gy
 
 extern LaplacianCoeff *LC;
 extern LaplacianCoeff *LC_6;
+extern LaplacianCoeff *LC_4;
 extern LaplacianCoeff *HLC;
 
 #endif

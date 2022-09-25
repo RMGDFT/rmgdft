@@ -40,10 +40,12 @@
 #define APP_CI_TWELVE 12
 
 #ifdef __cplusplus
+#include <unordered_map>
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "boundary_conditions.h"
 #include "GpuAlloc.h"
+#include "LaplacianCoeff.h"
 
 template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
@@ -96,6 +98,10 @@ public:
     static int allocation_limit;
     static double cfac[12];
 
+    // Used to access Coeffs for a given grid and order.
+    // The key is dimx*dimy*dimz+order
+    static std::unordered_map<int, LaplacianCoeff *> FdCoeffs;
+
 
     ~FiniteDiff(void);
 
@@ -123,14 +129,31 @@ public:
     double app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
+    double app6_del2(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    double app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     void app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
+    void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
     void app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    void app6_gradient_general (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                int dimx, int dimy, int dimz);
 
     template <typename RmgType>
     void app8_gradient_general (RmgType * __restrict__ a,
@@ -144,18 +167,32 @@ public:
                                    double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
+    double app6_combined(
+		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
+                    double gridhx, double gridhy, double gridhz,
+		    double *kvec, bool use_gpu);
+
+    template <typename RmgType>
     double app8_combined(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 
-    double app8_coeff0(void);
+    double app8_coeff0(int dimx, int dimy, int dimz, int order);
 
     template <typename RmgType>
-    void app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+    void app8_combined_coeffs(int dimx, int dimy, int dimz, int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
 
     template <typename RmgType>
     void app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
+
+    double app6_coeff0(void);
+
+    template <typename RmgType>
+    void app6_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+
+    template <typename RmgType>
+    void app6_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
 
 };
 #endif

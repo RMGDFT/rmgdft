@@ -203,10 +203,22 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
         return cc;
     }
+    else if(special && (order == APP_CI_SIXTH))
+    {
+        RmgTimer *RTA=NULL;
+        if(ct.verbose) RTA = new RmgTimer("CPUFD");
+        cc = FD.app6_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        if(ct.verbose) delete RTA;
+        return cc;
+    }
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {
+#ifdef TWELFTH_ORDER_FD
+            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+#else
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
+#endif
     }
     else if(order == APP_CI_EIGHT) {
         if(!special)
@@ -220,6 +232,11 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         else
             cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
+#ifdef TWELFTH_ORDER_FD
+    else if(order == APP_CI_TWELVE) {
+            cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+#endif
     else {
 
         rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");

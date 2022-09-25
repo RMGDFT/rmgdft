@@ -11,6 +11,7 @@
 
 LaplacianCoeff *LC;
 LaplacianCoeff *LC_6;
+LaplacianCoeff *LC_4;
 LaplacianCoeff *HLC;
 BaseGrid *Rmg_G;
 BaseGrid *Rmg_halfgrid;
