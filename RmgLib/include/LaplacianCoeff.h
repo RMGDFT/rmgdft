@@ -33,7 +33,6 @@ private:
 
     double a[3][3];
     int Ngrid[3];
-    int Lorder;
     int dim[3];
     int weight_power = 3;
     bool offdiag = true;
@@ -43,6 +42,7 @@ private:
 public:
     
 
+    int Lorder;
     LaplacianCoeff ();
     LaplacianCoeff (double a[3][3], int Ngrid[3], int Lorder, int dim[3]);
     void CalculateCoeff (double a[3][3], int Ngrid[3], int Lorder, int dim[3]);

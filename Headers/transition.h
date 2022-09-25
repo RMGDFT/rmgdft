@@ -38,6 +38,7 @@ extern Symmetry *Rmg_Symm;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void OptimizeFdCoeff();
 void check_tests();
 void write_rho_z(double *, char *);
 void ProgressTag(double, double);
@@ -49,8 +50,7 @@ void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int l
 void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_ddd (double *veff, double *vxc, bool ddd0_flag);
 
-void rmg_lbfgs (void);
-void lbfgs_init(int num_ions, int num_images);
+void lbfgs_init(int num_coeff);
 void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 

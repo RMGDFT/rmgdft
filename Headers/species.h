@@ -328,6 +328,9 @@ public:
     /* Total number of 3D atomic orbitals for this atomic species */
     int num_orbitals;
 
+    // total number of atoms with this species
+    int num_atoms;
+
     fftw_complex *phase = NULL;
 
     /*This will store results of forward fourier transform on the coarse grid */

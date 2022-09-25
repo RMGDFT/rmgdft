@@ -36,7 +36,7 @@ double *ro;
 int reset_flag, fdstep, lineopt;
 double finite_step,  maxmove, invcurv;
 
-void lbfgs (double *posion, double *force, int num_ions, int num_images)
+void lbfgs (double *posion, double *force, int num_coeff)
 {
 
 
@@ -45,10 +45,8 @@ void lbfgs (double *posion, double *force, int num_ions, int num_images)
 ! Limited-memory bfgs method, adapted from Vasp TST Tools 
 !
 !**********************************************************************
-posion: cartesian coordinates of ions: 3 * num_ions *num_images;
-force:  dimension of 3* num_ions * num_images, 
-num_ions: total number of ions per image, if L-BFGS 
-num_images: total number of images in NEB, if GL-BFGS 
+posion: 
+force:  
 
 */
 
@@ -62,7 +60,7 @@ num_images: total number of images in NEB, if GL-BFGS
 
     static int itr;
 
-    tot_dim = 3 * num_ions * num_images;
+    tot_dim = num_coeff;
 
     R=posion;
     F=force;
@@ -105,10 +103,6 @@ num_images: total number of images in NEB, if GL-BFGS
                     change_in_R[itr * tot_dim + i] = R[i] - Rold[i]; 
                 }
 
-                // apply periodic boundary conditions to these vector differences
-                set_pbc(&change_in_R[itr * tot_dim],num_ions, num_images);
-
-
 
                 a1 = QMD_ddot (tot_dim, &change_in_G[itr * tot_dim], ione, &change_in_R[itr * tot_dim], ione);
                 ro[itr]=1.0/a1;
@@ -128,9 +122,6 @@ num_images: total number of images in NEB, if GL-BFGS
                     change_in_G[item * tot_dim + i] = -(F[i] - Fold[i]); 
                     change_in_R[item * tot_dim + i] = R[i] - Rold[i]; 
                 }
-
-                // apply periodic boundary conditions to these vector differences
-                set_pbc(&change_in_R[item* tot_dim],num_ions, num_images);
 
                 a1 = QMD_ddot (tot_dim, &change_in_G[item * tot_dim], ione, &change_in_R[item * tot_dim], ione);
                 ro[item] = 1.0/a1;
@@ -192,9 +183,9 @@ num_images: total number of images in NEB, if GL-BFGS
         {
             a1 = QMD_ddot (tot_dim, direction, ione, direction, ione);
             step_size = fabs(sqrt(a1));
-            if (step_size > sqrt(maxmove*maxmove*num_images)) 
+            if (step_size > sqrt(maxmove*maxmove)) 
             { 
-                step_size=sqrt(maxmove*maxmove*num_images);
+                step_size=sqrt(maxmove*maxmove);
                 a1 = step_size /sqrt(a1);
                 QMD_dscal(tot_dim, a1, direction, ione); 
             }

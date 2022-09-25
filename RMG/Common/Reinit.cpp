@@ -237,6 +237,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     delete HLC;
     SetLaplacian();
     GetFdFactor();
+    //OptimizeFdCoeff();
 
 }                               /* end init */
 

@@ -28,15 +28,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "main.h"
+#include "lbfgs.h"
 
-void lbfgs_init(int num_ions, int num_images)
+void lbfgs_init(int num_coeff)
 {
 
 
     int item;
 
-    //printf("\n num_ions =  %d num_images = %d in lbfgs_init", num_ions, num_images); 
     memory_steps = 20;
     finite_step = 0.005;
     maxmove = 0.2;
@@ -50,14 +49,14 @@ void lbfgs_init(int num_ions, int num_images)
     ro = new double[memory_steps]();
     alpha_lbfgs = new double[memory_steps]();
 
-    item = 3 * num_ions * num_images * memory_steps;
+    item = num_coeff * memory_steps;
 
     //my_malloc_init(change_in_G, item, double);
     //my_malloc_init(change_in_R,  item,double);
     change_in_G = new double[item]();
     change_in_R = new double[item]();
 
-    item = 3 * num_ions * num_images;
+    item = num_coeff;
     //my_malloc_init(Rold, item, double);
     //my_malloc_init(Fold, item, double);
     //my_malloc_init(direction, item, double);

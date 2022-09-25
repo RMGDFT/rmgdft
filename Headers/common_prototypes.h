@@ -125,7 +125,7 @@ double get_omega(void);
 void trade_images (double *mat, int dimx, int dimy, int dimz, int type);
 void trade_imagesx (double *f, double *w, int dimx, int dimy, int dimz, int images, int type);
 double AtomicInterpolate(double *f, double r);
-void lbfgs (double *posion, double *force, int num_ions, int num_images);
+void lbfgs (double *posion, double *force, int num_coeff);
 void Vdd(double * rho);
 void WriteChargeAnalysis(void);
 

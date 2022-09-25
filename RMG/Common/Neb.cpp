@@ -320,7 +320,8 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
                 fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
                 break;
             case LBFGS:
-                rmg_lbfgs();
+                //simple_lbfgs();
+                rmg_error_handler (__FILE__, __LINE__, "LBFGS for NEB not implemented");
                 break;
             default:
                 rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");

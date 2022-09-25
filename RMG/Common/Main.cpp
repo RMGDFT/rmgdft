@@ -237,9 +237,6 @@ void initialize(int argc, char **argv)
 
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-    int num_images = pct.images;
-    num_images = 1;
-    lbfgs_init(Atoms.size(), num_images);
 
     rho = new double[ct.nspin * FP0_BASIS]();
     rhocore = new double[FP0_BASIS];
