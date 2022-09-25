@@ -40,10 +40,12 @@
 #define APP_CI_TWELVE 12
 
 #ifdef __cplusplus
+#include <unordered_map>
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "boundary_conditions.h"
 #include "GpuAlloc.h"
+#include "LaplacianCoeff.h"
 
 template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
@@ -95,6 +97,10 @@ public:
     static void set_allocation_limit(int lim);
     static int allocation_limit;
     static double cfac[12];
+
+    // Used to access Coeffs for a given grid and order.
+    // The key is dimx*dimy*dimz+order
+    static std::unordered_map<int, LaplacianCoeff *> FdCoeffs;
 
 
     ~FiniteDiff(void);
@@ -172,10 +178,10 @@ public:
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 
-    double app8_coeff0(void);
+    double app8_coeff0(int dimx, int dimy, int dimz, int order);
 
     template <typename RmgType>
-    void app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+    void app8_combined_coeffs(int dimx, int dimy, int dimz, int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
 
     template <typename RmgType>
     void app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);

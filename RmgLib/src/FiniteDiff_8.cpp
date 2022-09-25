@@ -63,10 +63,10 @@ template void FiniteDiff::app8_gradient_coeffs<float>(int , int , float *, float
 template void FiniteDiff::app8_gradient_coeffs<double>(int , int , double *, double *, double *);
 template void FiniteDiff::app8_gradient_coeffs<std::complex<double>>(int , int , std::complex<double> *, std::complex<double> *, std::complex<double> *);
 
-template void FiniteDiff::app8_combined_coeffs<float>(int , int , float *, float *, double *);
-template void FiniteDiff::app8_combined_coeffs<double>(int , int , double *, double *, double *);
-template void FiniteDiff::app8_combined_coeffs<std::complex<float>>(int , int , std::complex<float> *, std::complex<float> *, double *);
-template void FiniteDiff::app8_combined_coeffs<std::complex<double>>(int , int , std::complex<double> *, std::complex<double> *, double *);
+template void FiniteDiff::app8_combined_coeffs<float>(int, int, int, int , int , float *, float *, double *);
+template void FiniteDiff::app8_combined_coeffs<double>(int, int, int, int , int , double *, double *, double *);
+template void FiniteDiff::app8_combined_coeffs<std::complex<float>>(int, int, int, int , int , std::complex<float> *, std::complex<float> *, double *);
+template void FiniteDiff::app8_combined_coeffs<std::complex<double>>(int, int, int, int , int , std::complex<double> *, std::complex<double> *, double *);
 
 
 template <typename RmgType>
@@ -103,7 +103,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
 
     // NULL b means we just want the diagonal component.
-    double th2 = app8_coeff0();
+    double th2 = app8_coeff0(dimx, dimy, dimz, 8);
     if(b == NULL) return (double)std::real(th2);
 
 #if 0
@@ -119,9 +119,9 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 #endif
 
     // Get coeffs for x,y,z axes which are used by all lattice types
-    app8_combined_coeffs(8, 0, cmx, cpx, kvec);
-    app8_combined_coeffs(8, 1, cmy, cpy, kvec);
-    app8_combined_coeffs(8, 2, cmz, cpz, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, 8, 0, cmx, cpx, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, 8, 1, cmy, cpy, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, 8, 2, cmz, cpz, kvec);
 
     for (int ix = 4; ix < dimx + 4; ix++)
     {
@@ -165,7 +165,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     // Add additional axes as required
     if(LC->include_axis[3])
     {
-        app8_combined_coeffs(8, 3, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 3, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -186,7 +186,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[4])
     {
-        app8_combined_coeffs(8, 4, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 4, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -207,7 +207,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[5])
     {
-        app8_combined_coeffs(8, 5, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 5, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -228,7 +228,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[6])
     {
-        app8_combined_coeffs(8, 6, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 6, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -249,7 +249,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[7])
     {
-        app8_combined_coeffs(8, 7, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 7, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -270,7 +270,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[8])
     {
-        app8_combined_coeffs(8, 8, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 8, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -291,7 +291,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[9])
     {
-        app8_combined_coeffs(8, 9, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 9, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -312,7 +312,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[10])
     {
-        app8_combined_coeffs(8, 10, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 10, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -333,7 +333,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[11])
     {
-        app8_combined_coeffs(8, 11, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 11, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -354,7 +354,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[12])
     {
-        app8_combined_coeffs(8, 12, cm, cp, kvec);
+        app8_combined_coeffs(dimx, dimy, dimz, 8, 12, cm, cp, kvec);
         for (int ix = 4; ix < dimx + 4; ix++)
         {
             for (int iy = 4; iy < dimy + 4; iy++)
@@ -379,8 +379,10 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 } /* end app8_combined */
 
 // Gets the central coefficient
-double FiniteDiff::app8_coeff0(void)
+double FiniteDiff::app8_coeff0(int dimx, int dimy, int dimz, int order)
 {
+    LaplacianCoeff *LC = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order];
+    LaplacianCoeff *LC_6 = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order-2];
     double c1, c2 = 0.0;
     if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
@@ -395,11 +397,12 @@ double FiniteDiff::app8_coeff0(void)
 
 // Computes combined coefficients
 template <typename RmgType>
-void FiniteDiff::app8_combined_coeffs(int order, int ax, RmgType * cm, RmgType *cp, double *kvec)
+void FiniteDiff::app8_combined_coeffs(int dimx, int dimy, int dimz, int order, int ax, RmgType * cm, RmgType *cp, double *kvec)
 {
     double s1 = 2.0;
     RmgType t1, t2, t3, t4;
-
+    LaplacianCoeff *LC = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order];
+    LaplacianCoeff *LC_6 = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order-2];
 
     RmgType I_t;
     if(typeid(RmgType) == typeid(double))

@@ -33,7 +33,6 @@
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "Gpufuncs.h"
-#include "LaplacianCoeff.h"
 #include "RmgTimer.h"
 #include "rmg_error.h"
 
@@ -41,6 +40,7 @@
 
 int FiniteDiff::allocation_limit = 65536;
 double FiniteDiff::cfac[12];
+std::unordered_map<int, LaplacianCoeff *> FiniteDiff::FdCoeffs;
 
 // Force instantiation of float, double and complex versions.
 template double FiniteDiff::app_del2_np<double>(double *, double *, double, double, double);
