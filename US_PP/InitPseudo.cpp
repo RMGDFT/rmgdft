@@ -226,7 +226,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     for (int idx = 0; idx < this->rg_points; idx++)
         work[idx] = this->vloc0[idx] + Zv/this->r[idx];
     double G0 = 4.0*PI*radint1 (work, this->r, this->rab, this->rg_points);
-    this->localpp_g[0] = 2*G0;
+    this->localpp_g[0] = G0;
 
     // Subtract off analytic transform of erf that was added above
     for(int idx=1;idx < RADIAL_GVECS;idx++)
