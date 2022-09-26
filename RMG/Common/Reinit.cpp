@@ -232,6 +232,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     }
 
     // Reinitialize autotuning finite differencing
+    FiniteDiff::FdCoeffs.clear();
     delete LC;
     delete LC_6;
     delete HLC;

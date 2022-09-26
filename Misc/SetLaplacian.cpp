@@ -26,7 +26,6 @@
 
 void SetLaplacian()
 {
-    FiniteDiff FD(&Rmg_L);
     double a[3][3];
     int Ngrid[3], dim[3];
     int Lorder;
@@ -49,19 +48,19 @@ void SetLaplacian()
     LC->SetBrav(Rmg_L.get_ibrav_type());
     LC->SetOffdiag(ct.laplacian_offdiag);
     LC->CalculateCoeff();
-    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, LC});
+    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, LC});
 
     LC_6 = new LaplacianCoeff(a, Ngrid, 6, dim);
     LC_6->SetBrav(Rmg_L.get_ibrav_type());
     LC_6->SetOffdiag(ct.laplacian_offdiag);
     LC_6->CalculateCoeff();
-    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+6, LC_6});
+    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+6, LC_6});
 
     LC_4 = new LaplacianCoeff(a, Ngrid, 4, dim);
     LC_4->SetBrav(Rmg_L.get_ibrav_type());
     LC_4->SetOffdiag(ct.laplacian_offdiag);
     LC_4->CalculateCoeff();
-    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+4, LC_4});
+    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+4, LC_4});
 
     Ngrid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     Ngrid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
@@ -74,7 +73,7 @@ void SetLaplacian()
     HLC->SetBrav(Rmg_L.get_ibrav_type());
     HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();
-    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, LC_4});
+    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, HLC});
 
 }
 
