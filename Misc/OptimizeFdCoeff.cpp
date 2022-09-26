@@ -9,8 +9,8 @@
 
 void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbasis, 
         int num_coeff, int order, double *orbitals, double * orbitals_b, double *psi_psin);
-void compute_coeff_grad(int num_orb, std::vector<double> ke_fft, std::vector<double> ke_fd, 
-        double *psi_psin, std::vector<double>& coeff_grad);
+void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<double> &ke_fd, 
+        double *psi_psin, std::vector<double> &occ_weight, std::vector<double>& coeff_grad);
 double ComputeKineticEnergy(double *x, double *lapx, int pbasis);
 
 
@@ -176,9 +176,9 @@ void OptimizeFdCoeff()
         {
             ApplyAOperator (&orbitals[iorb*pbasis], work, kvec);
             ke_fd[iorb] = ComputeKineticEnergy(&orbitals[iorb*pbasis], work, pbasis);
-            ke_diff2 += (ke_fd[iorb] - ke_fft[iorb]) *(ke_fd[iorb] - ke_fft[iorb]);
+            ke_diff2 += (ke_fd[iorb] - ke_fft[iorb]) *(ke_fd[iorb] - ke_fft[iorb]) * occ_weight[iorb];
         }
-        compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, coeff_grad);
+        compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad);
 
         if(pct.gridpe == 0) 
         {
@@ -199,7 +199,8 @@ void OptimizeFdCoeff()
     delete [] work;
 }
 
-void compute_coeff_grad(int num_orb, std::vector<double> ke_fft, std::vector<double> ke_fd, double *psi_psin, std::vector<double> &coeff_grad)
+void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<double> &ke_fd, double *psi_psin, 
+        std::vector<double> &occ_weight, std::vector<double> &coeff_grad)
 {
     std::fill(coeff_grad.begin(), coeff_grad.end(), 0.0);
     int num_coeff = coeff_grad.size();
@@ -207,7 +208,7 @@ void compute_coeff_grad(int num_orb, std::vector<double> ke_fft, std::vector<dou
     {
         for(int i = 0; i < num_coeff; i++)
         {
-            coeff_grad[i] += 2.0 * (ke_fd[iorb] - ke_fft[iorb]) * psi_psin[iorb * num_coeff + i];
+            coeff_grad[i] += 2.0 * (ke_fd[iorb] - ke_fft[iorb]) * psi_psin[iorb * num_coeff + i] * occ_weight[iorb];
         }
     }
 
