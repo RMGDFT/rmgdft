@@ -61,7 +61,7 @@ void SetLaplacian()
     LC_4->SetBrav(Rmg_L.get_ibrav_type());
     LC_4->SetOffdiag(ct.laplacian_offdiag);
     LC_4->CalculateCoeff();
-    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+6, LC_4});
+    FD.FdCoeffs.insert({dim[0]*dim[1]*dim[2]+4, LC_4});
 
     Ngrid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     Ngrid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);

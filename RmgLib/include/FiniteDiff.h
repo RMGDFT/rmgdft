@@ -155,7 +155,7 @@ public:
                                 RmgType * __restrict__ gz,
                                 int dimx, int dimy, int dimz);
 
-    template <typename RmgType>
+    template <typename RmgType, int order>
     void app8_gradient_general (RmgType * __restrict__ a,
                                 RmgType * __restrict__ gx,
                                 RmgType * __restrict__ gy,
@@ -172,7 +172,7 @@ public:
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 
-    template <typename RmgType>
+    template <typename RmgType, int order>
     double app8_combined(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,

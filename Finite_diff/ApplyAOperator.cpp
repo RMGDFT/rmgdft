@@ -186,18 +186,18 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         if(ct.use_gpu_fd)
         {
             if(ct.verbose) RTA = new RmgTimer("GPUFD");
-            cc = FD.app8_combined(rptr, (DataType *)b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, true);
+            cc = FD.app8_combined<DataType, 8>(rptr, (DataType *)b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, true);
             if(ct.verbose) delete RTA;
         }
         else
         {
             if(ct.verbose) RTA = new RmgTimer("CPUFD");
-            cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+            cc = FD.app8_combined<DataType, 8> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
             if(ct.verbose) delete RTA;
         }
 #else
         if(ct.verbose) RTA = new RmgTimer("CPUFD");
-        cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        cc = FD.app8_combined<DataType, 8> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
         if(ct.verbose) delete RTA;
 #endif
 

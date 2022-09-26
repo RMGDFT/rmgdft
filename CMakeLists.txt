@@ -125,22 +125,22 @@ option(USE_ELPA_LIBS "Experimental." OFF)
 option(USE_ELEMENTAL_LIBS "Experimental." OFF)
 
 
-# RMG requires c++14 and C99
+# RMG requires c++17 and C99
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 
 
-# Check for c++14 and c99 support
-CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
+# Check for c++17 and c99 support
+CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    set(CMAKE_CXX_STANDARD 14)
+if(COMPILER_SUPPORTS_CXX17)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    set(CMAKE_CXX_STANDARD 17)
 elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 else()
-    message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++14 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
+    message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++17 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
 
 

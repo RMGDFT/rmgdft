@@ -49,15 +49,32 @@ template void FiniteDiff::app_gradient_eighth<double> (double *, double *, doubl
 template void FiniteDiff::app_gradient_eighth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
 template void FiniteDiff::app_gradient_eighth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
-template void FiniteDiff::app8_gradient_general<float> (float *, float *, float *, float *, int, int, int);
-template void FiniteDiff::app8_gradient_general<double> (double *, double *, double *, double *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int);
+template void FiniteDiff::app8_gradient_general<float, 6> (float *, float *, float *, float *, int, int, int);
+template void FiniteDiff::app8_gradient_general<double, 6> (double *, double *, double *, double *, int, int, int);
+template void FiniteDiff::app8_gradient_general<std::complex<double>, 6> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int);
+template void FiniteDiff::app8_gradient_general<std::complex<float>, 6> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int);
+template void FiniteDiff::app8_gradient_general<float, 8> (float *, float *, float *, float *, int, int, int);
+template void FiniteDiff::app8_gradient_general<double, 8> (double *, double *, double *, double *, int, int, int);
+template void FiniteDiff::app8_gradient_general<std::complex<double>, 8> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int);
+template void FiniteDiff::app8_gradient_general<std::complex<float>, 8> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int);
 
-template double FiniteDiff::app8_combined<float>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<double>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <float>, 2>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <double>, 2>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<float,4>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<double,4>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <float>, 4>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <double>, 4>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<float,6>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<double,6>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <float>, 6>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <double>, 6>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<float,8>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<double,8>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <float>, 8>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app8_combined<std::complex <double>, 8>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+
 
 template void FiniteDiff::app8_gradient_coeffs<float>(int , int , float *, float *, float *);
 template void FiniteDiff::app8_gradient_coeffs<double>(int , int , double *, double *, double *);
@@ -74,7 +91,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
                double gridhx, double gridhy, double gridhz)
 {
     double kvec[3] = {0.0,0.0,0.0};
-    return FiniteDiff::app8_combined(a, b, dimx, dimy, dimz,
+    return FiniteDiff::app8_combined<RmgType, 8>(a, b, dimx, dimy, dimz,
         gridhx, gridhy, gridhz, kvec, false);
 
 }  /* end app8_del2 */
@@ -84,26 +101,25 @@ template <typename RmgType>
 void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
-    FiniteDiff::app8_gradient_general (rptr, wxr, wyr, wzr, dimx, dimy, dimz);
+    FiniteDiff::app8_gradient_general<RmgType, 8> (rptr, wxr, wyr, wzr, dimx, dimy, dimz);
 }
 
 
-
-template <typename RmgType>
+template <typename RmgType, int order>
 double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz,
 		double *kvec, bool use_gpu)
 {
     int ibrav = L->get_ibrav_type();
-    RmgType cm[4], cp[4];
-    RmgType cpx[4], cmx[4], cpy[4], cmy[4], cpz[4], cmz[4];
-    int ixs = (dimy + 8) * (dimz + 8);
-    int iys = (dimz + 8);
+    RmgType cm[8], cp[8];
+    RmgType cpx[8], cmx[8], cpy[8], cmy[8], cpz[8], cmz[8];
+    int ixs = (dimy + order) * (dimz + order);
+    int iys = (dimz + order);
 
 
     // NULL b means we just want the diagonal component.
-    double th2 = app8_coeff0(dimx, dimy, dimz, 8);
+    double th2 = app8_coeff0(dimx, dimy, dimz, order);
     if(b == NULL) return (double)std::real(th2);
 
 #if 0
@@ -119,41 +135,48 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 #endif
 
     // Get coeffs for x,y,z axes which are used by all lattice types
-    app8_combined_coeffs(dimx, dimy, dimz, 8, 0, cmx, cpx, kvec);
-    app8_combined_coeffs(dimx, dimy, dimz, 8, 1, cmy, cpy, kvec);
-    app8_combined_coeffs(dimx, dimy, dimz, 8, 2, cmz, cpz, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, order, 0, cmx, cpx, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, order, 1, cmy, cpy, kvec);
+    app8_combined_coeffs(dimx, dimy, dimz, order, 2, cmz, cpz, kvec);
 
-    for (int ix = 4; ix < dimx + 4; ix++)
+    for (int ix = order/2; ix < dimx + order/2; ix++)
     {
-        for (int iy = 4; iy < dimy + 4; iy++)
+        for (int iy = order/2; iy < dimy + order/2; iy++)
         {
             RmgType *A = &a[iy*iys + ix*ixs];
-            RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
             // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
             // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                B[iz] = th2 * A[iz] +
-                    cpz[0] * A[iz + 1] + cmz[0] * A[iz - 1] +
-                    cpz[1] * A[iz + 2] + cmz[1] * A[iz - 2] +
-                    cpz[2] * A[iz + 3] + cmz[2] * A[iz - 3] +
-                    cpz[3] * A[iz + 4] + cmz[3] * A[iz - 4];
+                B[iz] = th2 * A[iz];
+                B[iz] += cpz[0] * A[iz + 1] + cmz[0] * A[iz - 1];
+                if constexpr(order >= 4)
+                    B[iz] += cpz[1] * A[iz + 2] + cmz[1] * A[iz - 2];
+                if constexpr(order >= 6)
+                    B[iz] += cpz[2] * A[iz + 3] + cmz[2] * A[iz - 3];
+                if constexpr(order >= 8)
+                    B[iz] += cpz[3] * A[iz + 4] + cmz[3] * A[iz - 4];
             }
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                B[iz] +=
-                    cpy[0] * A[iz + iys] + cmy[0] * A[iz - iys] +
-                    cpy[1] * A[iz + 2*iys] + cmy[1] * A[iz - 2*iys] +
-                    cpy[2] * A[iz + 3*iys] + cmy[2] * A[iz - 3*iys] +
-                    cpy[3] * A[iz + 4*iys] + cmy[3] * A[iz - 4*iys];
+                B[iz] += cpy[0] * A[iz + iys] + cmy[0] * A[iz - iys];
+                if constexpr(order >= 4)
+                    B[iz] += cpy[1] * A[iz + 2*iys] + cmy[1] * A[iz - 2*iys];
+                if constexpr(order >= 6)
+                    B[iz] += cpy[2] * A[iz + 3*iys] + cmy[2] * A[iz - 3*iys];
+                if constexpr(order >= 8)
+                    B[iz] += cpy[3] * A[iz + 4*iys] + cmy[3] * A[iz - 4*iys];
             }
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                B[iz] +=
-                    cpx[0] * A[iz + ixs] + cmx[0] * A[iz - ixs] +
-                    cpx[1] * A[iz + 2*ixs] + cmx[1] * A[iz - 2*ixs] +
-                    cpx[2] * A[iz + 3*ixs] + cmx[2] * A[iz - 3*ixs] +
-                    cpx[3] * A[iz + 4*ixs] + cmx[3] * A[iz - 4*ixs];
+                B[iz] += cpx[0] * A[iz + ixs] + cmx[0] * A[iz - ixs];
+                if constexpr(order >= 4)
+                    B[iz] += cpx[1] * A[iz + 2*ixs] + cmx[1] * A[iz - 2*ixs];
+                if constexpr(order >= 6)
+                    B[iz] += cpx[2] * A[iz + 3*ixs] + cmx[2] * A[iz - 3*ixs];
+                if constexpr(order >= 8)
+                    B[iz] += cpx[3] * A[iz + 4*ixs] + cmx[3] * A[iz - 4*ixs];
             }                   /* end for */
         }
     }
@@ -165,20 +188,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     // Add additional axes as required
     if(LC->include_axis[3])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 3, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 3, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + ixs + iys] + cm[0] * A[iz - ixs - iys] +
-                        cp[1] * A[iz + 2*ixs + 2*iys] + cm[1] * A[iz - 2*ixs - 2*iys] +
-                        cp[2] * A[iz + 3*ixs + 3*iys] + cm[2] * A[iz - 3*ixs - 3*iys] +
-                        cp[3] * A[iz + 4*ixs + 4*iys] + cm[3] * A[iz - 4*ixs - 4*iys];
+                    B[iz] += cp[0] * A[iz + ixs + iys] + cm[0] * A[iz - ixs - iys];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*ixs + 2*iys] + cm[1] * A[iz - 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*ixs + 3*iys] + cm[2] * A[iz - 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*ixs + 4*iys] + cm[3] * A[iz - 4*ixs - 4*iys];
                 }                   /* end for */
             }
         }
@@ -186,20 +211,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[4])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 4, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 4, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + ixs + 1] + cm[0] * A[iz - ixs - 1] +
-                        cp[1] * A[iz + 2*ixs + 2] + cm[1] * A[iz - 2*ixs - 2] +
-                        cp[2] * A[iz + 3*ixs + 3] + cm[2] * A[iz - 3*ixs - 3] +
-                        cp[3] * A[iz + 4*ixs + 4] + cm[3] * A[iz - 4*ixs - 4];
+                    B[iz] += cp[0] * A[iz + ixs + 1] + cm[0] * A[iz - ixs - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*ixs + 2] + cm[1] * A[iz - 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*ixs + 3] + cm[2] * A[iz - 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*ixs + 4] + cm[3] * A[iz - 4*ixs - 4];
                 }                   /* end for */
             }
         }
@@ -207,20 +234,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[5])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 5, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 5, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + iys + 1] + cm[0] * A[iz - iys - 1] +
-                        cp[1] * A[iz + 2*iys + 2] + cm[1] * A[iz - 2*iys - 2] +
-                        cp[2] * A[iz + 3*iys + 3] + cm[2] * A[iz - 3*iys - 3] +
-                        cp[3] * A[iz + 4*iys + 4] + cm[3] * A[iz - 4*iys - 4];
+                    B[iz] += cp[0] * A[iz + iys + 1] + cm[0] * A[iz - iys - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*iys + 2] + cm[1] * A[iz - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*iys + 3] + cm[2] * A[iz - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*iys + 4] + cm[3] * A[iz - 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -228,20 +257,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[6])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 6, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 6, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz - ixs + iys] + cm[0] * A[iz + ixs - iys] +
-                        cp[1] * A[iz - 2*ixs + 2*iys] + cm[1] * A[iz + 2*ixs - 2*iys] +
-                        cp[2] * A[iz - 3*ixs + 3*iys] + cm[2] * A[iz + 3*ixs - 3*iys] +
-                        cp[3] * A[iz - 4*ixs + 4*iys] + cm[3] * A[iz + 4*ixs - 4*iys];
+                    B[iz] += cp[0] * A[iz - ixs + iys] + cm[0] * A[iz + ixs - iys];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz - 2*ixs + 2*iys] + cm[1] * A[iz + 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz - 3*ixs + 3*iys] + cm[2] * A[iz + 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz - 4*ixs + 4*iys] + cm[3] * A[iz + 4*ixs - 4*iys];
                 }                   /* end for */
             }
         }
@@ -249,20 +280,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[7])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 7, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 7, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz - ixs + 1] + cm[0] * A[iz + ixs - 1] +
-                        cp[1] * A[iz - 2*ixs + 2] + cm[1] * A[iz + 2*ixs - 2] +
-                        cp[2] * A[iz - 3*ixs + 3] + cm[2] * A[iz + 3*ixs - 3] +
-                        cp[3] * A[iz - 4*ixs + 4] + cm[3] * A[iz + 4*ixs - 4];
+                    B[iz] += cp[0] * A[iz - ixs + 1] + cm[0] * A[iz + ixs - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz - 2*ixs + 2] + cm[1] * A[iz + 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz - 3*ixs + 3] + cm[2] * A[iz + 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz - 4*ixs + 4] + cm[3] * A[iz + 4*ixs - 4];
                 }                   /* end for */
             }
         }
@@ -270,20 +303,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[8])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 8, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 8, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz - iys + 1] + cm[0] * A[iz + iys - 1] +
-                        cp[1] * A[iz - 2*iys + 2] + cm[1] * A[iz + 2*iys - 2] +
-                        cp[2] * A[iz - 3*iys + 3] + cm[2] * A[iz + 3*iys - 3] +
-                        cp[3] * A[iz - 4*iys + 4] + cm[3] * A[iz + 4*iys - 4];
+                    B[iz] += cp[0] * A[iz - iys + 1] + cm[0] * A[iz + iys - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz - 2*iys + 2] + cm[1] * A[iz + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz - 3*iys + 3] + cm[2] * A[iz + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz - 4*iys + 4] + cm[3] * A[iz + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -291,20 +326,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[9])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 9, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 9, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + 1*ixs + 1*iys + 1] + cm[0] * A[iz - 1*ixs - 1*iys - 1] +
-                        cp[1] * A[iz + 2*ixs + 2*iys + 2] + cm[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        cp[2] * A[iz + 3*ixs + 3*iys + 3] + cm[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        cp[3] * A[iz + 4*ixs + 4*iys + 4] + cm[3] * A[iz - 4*ixs - 4*iys - 4];
+                    B[iz] += cp[0] * A[iz + 1*ixs + 1*iys + 1] + cm[0] * A[iz - 1*ixs - 1*iys - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*ixs + 2*iys + 2] + cm[1] * A[iz - 2*ixs - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*ixs + 3*iys + 3] + cm[2] * A[iz - 3*ixs - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*ixs + 4*iys + 4] + cm[3] * A[iz - 4*ixs - 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -312,20 +349,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[10])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 10, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 10, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz - 1*ixs - 1*iys + 1] + cm[0] * A[iz + 1*ixs + 1*iys - 1] +
-                        cp[1] * A[iz - 2*ixs - 2*iys + 2] + cm[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        cp[2] * A[iz - 3*ixs - 3*iys + 3] + cm[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        cp[3] * A[iz - 4*ixs - 4*iys + 4] + cm[3] * A[iz + 4*ixs + 4*iys - 4];
+                    B[iz] += cp[0] * A[iz - 1*ixs - 1*iys + 1] + cm[0] * A[iz + 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz - 2*ixs - 2*iys + 2] + cm[1] * A[iz + 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz - 3*ixs - 3*iys + 3] + cm[2] * A[iz + 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz - 4*ixs - 4*iys + 4] + cm[3] * A[iz + 4*ixs + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -333,20 +372,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[11])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 11, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 11, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + 1*ixs - 1*iys + 1] + cm[0] * A[iz - 1*ixs + 1*iys - 1] +
-                        cp[1] * A[iz + 2*ixs - 2*iys + 2] + cm[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        cp[2] * A[iz + 3*ixs - 3*iys + 3] + cm[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        cp[3] * A[iz + 4*ixs - 4*iys + 4] + cm[3] * A[iz - 4*ixs + 4*iys - 4];
+                    B[iz] += cp[0] * A[iz + 1*ixs - 1*iys + 1] + cm[0] * A[iz - 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*ixs - 2*iys + 2] + cm[1] * A[iz - 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*ixs - 3*iys + 3] + cm[2] * A[iz - 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*ixs - 4*iys + 4] + cm[3] * A[iz - 4*ixs + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -354,20 +395,22 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[12])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, 8, 12, cm, cp, kvec);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_combined_coeffs(dimx, dimy, dimz, order, 12, cm, cp, kvec);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    B[iz] +=
-                        cp[0] * A[iz + 1*ixs - 1*iys - 1] + cm[0] * A[iz - 1*ixs + 1*iys + 1] +
-                        cp[1] * A[iz + 2*ixs - 2*iys - 2] + cm[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        cp[2] * A[iz + 3*ixs - 3*iys - 3] + cm[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        cp[3] * A[iz + 4*ixs - 4*iys - 4] + cm[3] * A[iz - 4*ixs + 4*iys + 4];
+                    B[iz] += cp[0] * A[iz + 1*ixs - 1*iys - 1] + cm[0] * A[iz - 1*ixs + 1*iys + 1];
+                    if constexpr(order >= 4)
+                        B[iz] += cp[1] * A[iz + 2*ixs - 2*iys - 2] + cm[1] * A[iz - 2*ixs + 2*iys + 2];
+                    if constexpr(order >= 6)
+                        B[iz] += cp[2] * A[iz + 3*ixs - 3*iys - 3] + cm[2] * A[iz - 3*ixs + 3*iys + 3];
+                    if constexpr(order >= 8)
+                        B[iz] += cp[3] * A[iz + 4*ixs - 4*iys - 4] + cm[3] * A[iz - 4*ixs + 4*iys + 4];
                 }                   /* end for */
             }
         }
@@ -499,7 +542,7 @@ void FiniteDiff::app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType
 
 
 
-template <typename RmgType>
+template <typename RmgType, int order>
 void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a, 
                                 RmgType * __restrict__ gx, 
                                 RmgType * __restrict__ gy, 
@@ -507,82 +550,106 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
                                 int dimx, int dimy, int dimz)
 {
     int ibrav = L->get_ibrav_type();
-    RmgType cxx[4], cxy[4], cxz[4];
-    RmgType cyx[4], cyy[4], cyz[4];
-    RmgType czx[4], czy[4], czz[4];
-    RmgType cx[4], cy[4], cz[4];
-    int ixs = (dimy + 8) * (dimz + 8);
-    int iys = (dimz + 8);
+    RmgType cxx[8], cxy[8], cxz[8];
+    RmgType cyx[8], cyy[8], cyz[8];
+    RmgType czx[8], czy[8], czz[8];
+    RmgType cx[8], cy[8], cz[8];
+    int ixs = (dimy + order) * (dimz + order);
+    int iys = (dimz + order);
 
 
     // Get coeffs for x,y,z axes which are used by all lattice types
-    app8_gradient_coeffs(8, 0, cxx, cxy, cxz);
-    app8_gradient_coeffs(8, 1, cyx, cyy, cyz);
-    app8_gradient_coeffs(8, 2, czx, czy, czz);
-    for (int ix = 4; ix < dimx + 4; ix++)
+    app8_gradient_coeffs(order, 0, cxx, cxy, cxz);
+    app8_gradient_coeffs(order, 1, cyx, cyy, cyz);
+    app8_gradient_coeffs(order, 2, czx, czy, czz);
+    for (int ix = order/2; ix < dimx + order/2; ix++)
     {
-        for (int iy = 4; iy < dimy + 4; iy++)
+        for (int iy = order/2; iy < dimy + order/2; iy++)
         {
             RmgType *A = &a[iy*iys + ix*ixs];
-            RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-            RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-            RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+            RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+            RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+            RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
             // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
             // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                bgx[iz] =
-                    -czx[0] * A[iz + 1] + czx[0] * A[iz - 1] +
-                    -czx[1] * A[iz + 2] + czx[1] * A[iz - 2] +
-                    -czx[2] * A[iz + 3] + czx[2] * A[iz - 3] +
-                    -czx[3] * A[iz + 4] + czx[3] * A[iz - 4];
-                bgy[iz] =
-                    -czy[0] * A[iz + 1] + czy[0] * A[iz - 1] +
-                    -czy[1] * A[iz + 2] + czy[1] * A[iz - 2] +
-                    -czy[2] * A[iz + 3] + czy[2] * A[iz - 3] +
-                    -czy[3] * A[iz + 4] + czy[3] * A[iz - 4];
-                bgz[iz] =
-                    -czz[0] * A[iz + 1] + czz[0] * A[iz - 1] +
-                    -czz[1] * A[iz + 2] + czz[1] * A[iz - 2] +
-                    -czz[2] * A[iz + 3] + czz[2] * A[iz - 3] +
-                    -czz[3] * A[iz + 4] + czz[3] * A[iz - 4];
+                bgx[iz] = -czx[0] * A[iz + 1] + czx[0] * A[iz - 1];
+                if constexpr(order >= 4)
+                    bgx[iz] += -czx[1] * A[iz + 2] + czx[1] * A[iz - 2];
+                if constexpr(order >= 6)
+                    bgx[iz] += -czx[2] * A[iz + 3] + czx[2] * A[iz - 3];
+                if constexpr(order >= 8)
+                    bgx[iz] += -czx[3] * A[iz + 4] + czx[3] * A[iz - 4];
+
+                bgy[iz] = -czy[0] * A[iz + 1] + czy[0] * A[iz - 1];
+                if constexpr(order >= 4)
+                    bgy[iz] += -czy[1] * A[iz + 2] + czy[1] * A[iz - 2];
+                if constexpr(order >= 6)
+                    bgy[iz] += -czy[2] * A[iz + 3] + czy[2] * A[iz - 3];
+                if constexpr(order >= 8)
+                    bgy[iz] += -czy[3] * A[iz + 4] + czy[3] * A[iz - 4];
+
+                bgz[iz] = -czz[0] * A[iz + 1] + czz[0] * A[iz - 1];
+                if constexpr(order >= 4)
+                    bgz[iz] += -czz[1] * A[iz + 2] + czz[1] * A[iz - 2];
+                if constexpr(order >= 6)
+                    bgz[iz] += -czz[2] * A[iz + 3] + czz[2] * A[iz - 3];
+                if constexpr(order >= 8)
+                    bgz[iz] += -czz[3] * A[iz + 4] + czz[3] * A[iz - 4];
 
             }
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                bgx[iz] +=
-                    -cyx[0] * A[iz + iys] + cyx[0] * A[iz - iys] +
-                    -cyx[1] * A[iz + 2*iys] + cyx[1] * A[iz - 2*iys] +
-                    -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys] +
-                    -cyx[3] * A[iz + 4*iys] + cyx[3] * A[iz - 4*iys];
-                bgy[iz] +=
-                    -cyy[0] * A[iz + iys] + cyy[0] * A[iz - iys] +
-                    -cyy[1] * A[iz + 2*iys] + cyy[1] * A[iz - 2*iys] +
-                    -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys] +
-                    -cyy[3] * A[iz + 4*iys] + cyy[3] * A[iz - 4*iys];
-                bgz[iz] +=
-                    -cyz[0] * A[iz + iys] + cyz[0] * A[iz - iys] +
-                    -cyz[1] * A[iz + 2*iys] + cyz[1] * A[iz - 2*iys] +
-                    -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys] +
-                    -cyz[3] * A[iz + 4*iys] + cyz[3] * A[iz - 4*iys];
+                bgx[iz] += -cyx[0] * A[iz + iys] + cyx[0] * A[iz - iys];
+                if constexpr(order >= 4)
+                    bgx[iz] += -cyx[1] * A[iz + 2*iys] + cyx[1] * A[iz - 2*iys];
+                if constexpr(order >= 6)
+                    bgx[iz] += -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys];
+                if constexpr(order >= 8)
+                    bgx[iz] += -cyx[3] * A[iz + 4*iys] + cyx[3] * A[iz - 4*iys];
+
+                bgy[iz] += -cyy[0] * A[iz + iys] + cyy[0] * A[iz - iys];
+                if constexpr(order >= 4)
+                    bgy[iz] += -cyy[1] * A[iz + 2*iys] + cyy[1] * A[iz - 2*iys];
+                if constexpr(order >= 6)
+                    bgy[iz] += -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys];
+                if constexpr(order >= 8)
+                    bgy[iz] += -cyy[3] * A[iz + 4*iys] + cyy[3] * A[iz - 4*iys];
+
+                bgz[iz] += -cyz[0] * A[iz + iys] + cyz[0] * A[iz - iys];
+                if constexpr(order >= 4)
+                    bgz[iz] += -cyz[1] * A[iz + 2*iys] + cyz[1] * A[iz - 2*iys];
+                if constexpr(order >= 6)
+                    bgz[iz] += -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys];
+                if constexpr(order >= 8)
+                    bgz[iz] += -cyz[3] * A[iz + 4*iys] + cyz[3] * A[iz - 4*iys];
             }
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int iz = order/2; iz < dimz + order/2; iz++)
             {
-                bgx[iz] +=
-                    -cxx[0] * A[iz + ixs] + cxx[0] * A[iz - ixs] +
-                    -cxx[1] * A[iz + 2*ixs] + cxx[1] * A[iz - 2*ixs] +
-                    -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs] +
-                    -cxx[3] * A[iz + 4*ixs] + cxx[3] * A[iz - 4*ixs];
-                bgy[iz] +=
-                    -cxy[0] * A[iz + ixs] + cxy[0] * A[iz - ixs] +
-                    -cxy[1] * A[iz + 2*ixs] + cxy[1] * A[iz - 2*ixs] +
-                    -cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs] +
-                    -cxy[3] * A[iz + 4*ixs] + cxy[3] * A[iz - 4*ixs];
-                bgz[iz] +=
-                    -cxz[0] * A[iz + ixs] + cxz[0] * A[iz - ixs] +
-                    -cxz[1] * A[iz + 2*ixs] + cxz[1] * A[iz - 2*ixs] +
-                    -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs] +
-                    -cxz[3] * A[iz + 4*ixs] + cxz[3] * A[iz - 4*ixs];
+                bgx[iz] += -cxx[0] * A[iz + ixs] + cxx[0] * A[iz - ixs];
+                if constexpr(order >= 4)
+                    bgx[iz] += -cxx[1] * A[iz + 2*ixs] + cxx[1] * A[iz - 2*ixs];
+                if constexpr(order >= 6)
+                    bgx[iz] += -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs];
+                if constexpr(order >= 8)
+                    bgx[iz] += -cxx[3] * A[iz + 4*ixs] + cxx[3] * A[iz - 4*ixs];
+
+                bgy[iz] += -cxy[0] * A[iz + ixs] + cxy[0] * A[iz - ixs];
+                if constexpr(order >= 4)
+                    bgy[iz] +=-cxy[1] * A[iz + 2*ixs] + cxy[1] * A[iz - 2*ixs];
+                if constexpr(order >= 6)
+                    bgy[iz] +=-cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs];
+                if constexpr(order >= 8)
+                    bgy[iz] +=-cxy[3] * A[iz + 4*ixs] + cxy[3] * A[iz - 4*ixs];
+
+                bgz[iz] += -cxz[0] * A[iz + ixs] + cxz[0] * A[iz - ixs];
+                if constexpr(order >= 4)
+                    bgz[iz] += -cxz[1] * A[iz + 2*ixs] + cxz[1] * A[iz - 2*ixs];
+                if constexpr(order >= 6)
+                    bgz[iz] += -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs];
+                if constexpr(order >= 8)
+                    bgz[iz] += -cxz[3] * A[iz + 4*ixs] + cxz[3] * A[iz - 4*ixs];
 
             }                   /* end for */
         }
@@ -595,32 +662,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
     // Add additional axes as required
     if(LC->include_axis[3])
     {
-        app8_gradient_coeffs(8, 3, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 3, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + ixs + iys] + cz[0] * A[iz - ixs - iys] +
-                        -cz[1] * A[iz + 2*ixs + 2*iys] + cz[1] * A[iz - 2*ixs - 2*iys] +
-                        -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys] +
-                        -cz[3] * A[iz + 4*ixs + 4*iys] + cz[3] * A[iz - 4*ixs - 4*iys];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys] +
-                        -cy[1] * A[iz + 2*ixs + 2*iys] + cy[1] * A[iz - 2*ixs - 2*iys] +
-                        -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys] +
-                        -cy[3] * A[iz + 4*ixs + 4*iys] + cy[3] * A[iz - 4*ixs - 4*iys];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys] +
-                        -cx[1] * A[iz + 2*ixs + 2*iys] + cx[1] * A[iz - 2*ixs - 2*iys] +
-                        -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys] +
-                        -cx[3] * A[iz + 4*ixs + 4*iys] + cx[3] * A[iz - 4*ixs - 4*iys];
+                    bgz[iz] += -cz[0] * A[iz + ixs + iys] + cz[0] * A[iz - ixs - iys];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*ixs + 2*iys] + cz[1] * A[iz - 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*ixs + 4*iys] + cz[3] * A[iz - 4*ixs - 4*iys];
+
+                    bgy[iz] += -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*ixs + 2*iys] + cy[1] * A[iz - 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*ixs + 4*iys] + cy[3] * A[iz - 4*ixs - 4*iys];
+
+                    bgx[iz] += -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*ixs + 2*iys] + cx[1] * A[iz - 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*ixs + 4*iys] + cx[3] * A[iz - 4*ixs - 4*iys];
                 }                   /* end for */
             }
         }
@@ -628,32 +703,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[4])
     {
-        app8_gradient_coeffs(8, 4, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 4, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + ixs + 1] + cz[0] * A[iz - ixs - 1] +
-                        -cz[1] * A[iz + 2*ixs + 2] + cz[1] * A[iz - 2*ixs - 2] +
-                        -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3] +
-                        -cz[3] * A[iz + 4*ixs + 4] + cz[3] * A[iz - 4*ixs - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1] +
-                        -cy[1] * A[iz + 2*ixs + 2] + cy[1] * A[iz - 2*ixs - 2] +
-                        -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3] +
-                        -cy[3] * A[iz + 4*ixs + 4] + cy[3] * A[iz - 4*ixs - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1] +
-                        -cx[1] * A[iz + 2*ixs + 2] + cx[1] * A[iz - 2*ixs - 2] +
-                        -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3] +
-                        -cx[3] * A[iz + 4*ixs + 4] + cx[3] * A[iz - 4*ixs - 4];
+                    bgz[iz] += -cz[0] * A[iz + ixs + 1] + cz[0] * A[iz - ixs - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*ixs + 2] + cz[1] * A[iz - 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*ixs + 4] + cz[3] * A[iz - 4*ixs - 4];
+
+                    bgy[iz] += -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*ixs + 2] + cy[1] * A[iz - 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*ixs + 4] + cy[3] * A[iz - 4*ixs - 4];
+
+                    bgx[iz] += -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*ixs + 2] + cx[1] * A[iz - 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*ixs + 4] + cx[3] * A[iz - 4*ixs - 4];
                 }                   /* end for */
             }
         }
@@ -661,32 +744,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[5])
     {
-        app8_gradient_coeffs(8, 5, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 5, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + iys + 1] + cz[0] * A[iz - iys - 1] +
-                        -cz[1] * A[iz + 2*iys + 2] + cz[1] * A[iz - 2*iys - 2] +
-                        -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3] +
-                        -cz[3] * A[iz + 4*iys + 4] + cz[3] * A[iz - 4*iys - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1] +
-                        -cy[1] * A[iz + 2*iys + 2] + cy[1] * A[iz - 2*iys - 2] +
-                        -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3] +
-                        -cy[3] * A[iz + 4*iys + 4] + cy[3] * A[iz - 4*iys - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1] +
-                        -cx[1] * A[iz + 2*iys + 2] + cx[1] * A[iz - 2*iys - 2] +
-                        -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3] +
-                        -cx[3] * A[iz + 4*iys + 4] + cx[3] * A[iz - 4*iys - 4];
+                    bgz[iz] += -cz[0] * A[iz + iys + 1] + cz[0] * A[iz - iys - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*iys + 2] + cz[1] * A[iz - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*iys + 4] + cz[3] * A[iz - 4*iys - 4];
+
+                    bgy[iz] += -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*iys + 2] + cy[1] * A[iz - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*iys + 4] + cy[3] * A[iz - 4*iys - 4];
+
+                    bgx[iz] += -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*iys + 2] + cx[1] * A[iz - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*iys + 4] + cx[3] * A[iz - 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -694,32 +785,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[6])
     {
-        app8_gradient_coeffs(8, 6, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 6, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz - ixs + iys] + cz[0] * A[iz + ixs - iys] +
-                        -cz[1] * A[iz - 2*ixs + 2*iys] + cz[1] * A[iz + 2*ixs - 2*iys] +
-                        -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys] +
-                        -cz[3] * A[iz - 4*ixs + 4*iys] + cz[3] * A[iz + 4*ixs - 4*iys];
-                    bgy[iz] +=
-                        -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys] +
-                        -cy[1] * A[iz - 2*ixs + 2*iys] + cy[1] * A[iz + 2*ixs - 2*iys] +
-                        -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys] +
-                        -cy[3] * A[iz - 4*ixs + 4*iys] + cy[3] * A[iz + 4*ixs - 4*iys];
-                    bgx[iz] +=
-                        -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys] +
-                        -cx[1] * A[iz - 2*ixs + 2*iys] + cx[1] * A[iz + 2*ixs - 2*iys] +
-                        -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys] +
-                        -cx[3] * A[iz - 4*ixs + 4*iys] + cx[3] * A[iz + 4*ixs - 4*iys];
+                    bgz[iz] += -cz[0] * A[iz - ixs + iys] + cz[0] * A[iz + ixs - iys];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz - 2*ixs + 2*iys] + cz[1] * A[iz + 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz - 4*ixs + 4*iys] + cz[3] * A[iz + 4*ixs - 4*iys];
+
+                    bgy[iz] += -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz - 2*ixs + 2*iys] + cy[1] * A[iz + 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz - 4*ixs + 4*iys] + cy[3] * A[iz + 4*ixs - 4*iys];
+
+                    bgx[iz] += -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz - 2*ixs + 2*iys] + cx[1] * A[iz + 2*ixs - 2*iys];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz - 4*ixs + 4*iys] + cx[3] * A[iz + 4*ixs - 4*iys];
                 }                   /* end for */
             }
         }
@@ -727,32 +826,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[7])
     {
-        app8_gradient_coeffs(8, 7, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 7, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz - ixs + 1] + cz[0] * A[iz + ixs - 1] +
-                        -cz[1] * A[iz - 2*ixs + 2] + cz[1] * A[iz + 2*ixs - 2] +
-                        -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3] +
-                        -cz[3] * A[iz - 4*ixs + 4] + cz[3] * A[iz + 4*ixs - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1] +
-                        -cy[1] * A[iz - 2*ixs + 2] + cy[1] * A[iz + 2*ixs - 2] +
-                        -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3] +
-                        -cy[3] * A[iz - 4*ixs + 4] + cy[3] * A[iz + 4*ixs - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1] +
-                        -cx[1] * A[iz - 2*ixs + 2] + cx[1] * A[iz + 2*ixs - 2] +
-                        -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3] +
-                        -cx[3] * A[iz - 4*ixs + 4] + cx[3] * A[iz + 4*ixs - 4];
+                    bgz[iz] += -cz[0] * A[iz - ixs + 1] + cz[0] * A[iz + ixs - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz - 2*ixs + 2] + cz[1] * A[iz + 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz - 4*ixs + 4] + cz[3] * A[iz + 4*ixs - 4];
+
+                    bgy[iz] += -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz - 2*ixs + 2] + cy[1] * A[iz + 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz - 4*ixs + 4] + cy[3] * A[iz + 4*ixs - 4];
+
+                    bgx[iz] += -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz - 2*ixs + 2] + cx[1] * A[iz + 2*ixs - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz - 4*ixs + 4] + cx[3] * A[iz + 4*ixs - 4];
                 }                   /* end for */
             }
         }
@@ -760,32 +867,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[8])
     {
-        app8_gradient_coeffs(8, 8, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 8, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz - iys + 1] + cz[0] * A[iz + iys - 1] +
-                        -cz[1] * A[iz - 2*iys + 2] + cz[1] * A[iz + 2*iys - 2] +
-                        -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3] +
-                        -cz[3] * A[iz - 4*iys + 4] + cz[3] * A[iz + 4*iys - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1] +
-                        -cy[1] * A[iz - 2*iys + 2] + cy[1] * A[iz + 2*iys - 2] +
-                        -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3] +
-                        -cy[3] * A[iz - 4*iys + 4] + cy[3] * A[iz + 4*iys - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1] +
-                        -cx[1] * A[iz - 2*iys + 2] + cx[1] * A[iz + 2*iys - 2] +
-                        -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3] +
-                        -cx[3] * A[iz - 4*iys + 4] + cx[3] * A[iz + 4*iys - 4];
+                    bgz[iz] += -cz[0] * A[iz - iys + 1] + cz[0] * A[iz + iys - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz - 2*iys + 2] + cz[1] * A[iz + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz - 4*iys + 4] + cz[3] * A[iz + 4*iys - 4];
+
+                    bgy[iz] += -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz - 2*iys + 2] + cy[1] * A[iz + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz - 4*iys + 4] + cy[3] * A[iz + 4*iys - 4];
+
+                    bgx[iz] += -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz - 2*iys + 2] + cx[1] * A[iz + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz - 4*iys + 4] + cx[3] * A[iz + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -793,32 +908,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[9])
     {
-        app8_gradient_coeffs(8, 9, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 9, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + 1*ixs + 1*iys + 1] + cz[0] * A[iz - 1*ixs - 1*iys - 1] +
-                        -cz[1] * A[iz + 2*ixs + 2*iys + 2] + cz[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cz[3] * A[iz + 4*ixs + 4*iys + 4] + cz[3] * A[iz - 4*ixs - 4*iys - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1] +
-                        -cy[1] * A[iz + 2*ixs + 2*iys + 2] + cy[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cy[3] * A[iz + 4*ixs + 4*iys + 4] + cy[3] * A[iz - 4*ixs - 4*iys - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1] +
-                        -cx[1] * A[iz + 2*ixs + 2*iys + 2] + cx[1] * A[iz - 2*ixs - 2*iys - 2] +
-                        -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3] +
-                        -cx[3] * A[iz + 4*ixs + 4*iys + 4] + cx[3] * A[iz - 4*ixs - 4*iys - 4];
+                    bgz[iz] += -cz[0] * A[iz + 1*ixs + 1*iys + 1] + cz[0] * A[iz - 1*ixs - 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*ixs + 2*iys + 2] + cz[1] * A[iz - 2*ixs - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*ixs + 4*iys + 4] + cz[3] * A[iz - 4*ixs - 4*iys - 4];
+
+                    bgy[iz] += -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*ixs + 2*iys + 2] + cy[1] * A[iz - 2*ixs - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*ixs + 4*iys + 4] + cy[3] * A[iz - 4*ixs - 4*iys - 4];
+
+                    bgx[iz] += -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*ixs + 2*iys + 2] + cx[1] * A[iz - 2*ixs - 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*ixs + 4*iys + 4] + cx[3] * A[iz - 4*ixs - 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -826,32 +949,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[10])
     {
-        app8_gradient_coeffs(8, 10, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 10, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz - 1*ixs - 1*iys + 1] + cz[0] * A[iz + 1*ixs + 1*iys - 1] +
-                        -cz[1] * A[iz - 2*ixs - 2*iys + 2] + cz[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cz[3] * A[iz - 4*ixs - 4*iys + 4] + cz[3] * A[iz + 4*ixs + 4*iys - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1] +
-                        -cy[1] * A[iz - 2*ixs - 2*iys + 2] + cy[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cy[3] * A[iz - 4*ixs - 4*iys + 4] + cy[3] * A[iz + 4*ixs + 4*iys - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1] +
-                        -cx[1] * A[iz - 2*ixs - 2*iys + 2] + cx[1] * A[iz + 2*ixs + 2*iys - 2] +
-                        -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3] +
-                        -cx[3] * A[iz - 4*ixs - 4*iys + 4] + cx[3] * A[iz + 4*ixs + 4*iys - 4];
+                    bgz[iz] += -cz[0] * A[iz - 1*ixs - 1*iys + 1] + cz[0] * A[iz + 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz - 2*ixs - 2*iys + 2] + cz[1] * A[iz + 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz - 4*ixs - 4*iys + 4] + cz[3] * A[iz + 4*ixs + 4*iys - 4];
+
+                    bgy[iz] += -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz - 2*ixs - 2*iys + 2] + cy[1] * A[iz + 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz - 4*ixs - 4*iys + 4] + cy[3] * A[iz + 4*ixs + 4*iys - 4];
+
+                    bgx[iz] += -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz - 2*ixs - 2*iys + 2] + cx[1] * A[iz + 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz - 4*ixs - 4*iys + 4] + cx[3] * A[iz + 4*ixs + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -859,32 +990,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[11])
     {
-        app8_gradient_coeffs(8, 11, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 11, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + 1*ixs - 1*iys + 1] + cz[0] * A[iz - 1*ixs + 1*iys - 1] +
-                        -cz[1] * A[iz + 2*ixs - 2*iys + 2] + cz[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cz[3] * A[iz + 4*ixs - 4*iys + 4] + cz[3] * A[iz - 4*ixs + 4*iys - 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1] +
-                        -cy[1] * A[iz + 2*ixs - 2*iys + 2] + cy[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cy[3] * A[iz + 4*ixs - 4*iys + 4] + cy[3] * A[iz - 4*ixs + 4*iys - 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1] +
-                        -cx[1] * A[iz + 2*ixs - 2*iys + 2] + cx[1] * A[iz - 2*ixs + 2*iys - 2] +
-                        -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3] +
-                        -cx[3] * A[iz + 4*ixs - 4*iys + 4] + cx[3] * A[iz - 4*ixs + 4*iys - 4];
+                    bgz[iz] += -cz[0] * A[iz + 1*ixs - 1*iys + 1] + cz[0] * A[iz - 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*ixs - 2*iys + 2] + cz[1] * A[iz - 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*ixs - 4*iys + 4] + cz[3] * A[iz - 4*ixs + 4*iys - 4];
+
+                    bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*ixs - 2*iys + 2] + cy[1] * A[iz - 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*ixs - 4*iys + 4] + cy[3] * A[iz - 4*ixs + 4*iys - 4];
+
+                    bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*ixs - 2*iys + 2] + cx[1] * A[iz - 2*ixs + 2*iys - 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*ixs - 4*iys + 4] + cx[3] * A[iz - 4*ixs + 4*iys - 4];
                 }                   /* end for */
             }
         }
@@ -892,32 +1031,40 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[12])
     {
-        app8_gradient_coeffs(8, 12, cx, cy, cz);
-        for (int ix = 4; ix < dimx + 4; ix++)
+        app8_gradient_coeffs(order, 12, cx, cy, cz);
+        for (int ix = order/2; ix < dimx + order/2; ix++)
         {
-            for (int iy = 4; iy < dimy + 4; iy++)
+            for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgy = &gy[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                RmgType *bgz = &gz[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-                for (int iz = 4; iz < dimz + 4; iz++)
+                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
+                for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    bgz[iz] +=
-                        -cz[0] * A[iz + 1*ixs - 1*iys - 1] + cz[0] * A[iz - 1*ixs + 1*iys + 1] +
-                        -cz[1] * A[iz + 2*ixs - 2*iys - 2] + cz[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cz[3] * A[iz + 4*ixs - 4*iys - 4] + cz[3] * A[iz - 4*ixs + 4*iys + 4];
-                    bgy[iz] +=
-                        -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1] +
-                        -cy[1] * A[iz + 2*ixs - 2*iys - 2] + cy[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cy[3] * A[iz + 4*ixs - 4*iys - 4] + cy[3] * A[iz - 4*ixs + 4*iys + 4];
-                    bgx[iz] +=
-                        -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1] +
-                        -cx[1] * A[iz + 2*ixs - 2*iys - 2] + cx[1] * A[iz - 2*ixs + 2*iys + 2] +
-                        -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3] +
-                        -cx[3] * A[iz + 4*ixs - 4*iys - 4] + cx[3] * A[iz - 4*ixs + 4*iys + 4];
+                    bgz[iz] += -cz[0] * A[iz + 1*ixs - 1*iys - 1] + cz[0] * A[iz - 1*ixs + 1*iys + 1];
+                    if constexpr(order >= 4)
+                        bgz[iz] += -cz[1] * A[iz + 2*ixs - 2*iys - 2] + cz[1] * A[iz - 2*ixs + 2*iys + 2];
+                    if constexpr(order >= 6)
+                        bgz[iz] += -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3];
+                    if constexpr(order >= 8)
+                        bgz[iz] += -cz[3] * A[iz + 4*ixs - 4*iys - 4] + cz[3] * A[iz - 4*ixs + 4*iys + 4];
+
+                    bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1];
+                    if constexpr(order >= 4)
+                        bgy[iz] += -cy[1] * A[iz + 2*ixs - 2*iys - 2] + cy[1] * A[iz - 2*ixs + 2*iys + 2];
+                    if constexpr(order >= 6)
+                        bgy[iz] += -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3];
+                    if constexpr(order >= 8)
+                        bgy[iz] += -cy[3] * A[iz + 4*ixs - 4*iys - 4] + cy[3] * A[iz - 4*ixs + 4*iys + 4];
+
+                    bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1];
+                    if constexpr(order >= 4)
+                        bgx[iz] += -cx[1] * A[iz + 2*ixs - 2*iys - 2] + cx[1] * A[iz - 2*ixs + 2*iys + 2];
+                    if constexpr(order >= 6)
+                        bgx[iz] += -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3];
+                    if constexpr(order >= 8)
+                        bgx[iz] += -cx[3] * A[iz + 4*ixs - 4*iys - 4] + cx[3] * A[iz - 4*ixs + 4*iys + 4];
                 }                   /* end for */
             }
         }
