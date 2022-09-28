@@ -180,7 +180,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     double density[3];
     double planar_anisotropy = GetPlanarAnisotropy(density);
-    if (planar_anisotropy > 1.1)
+    if (planar_anisotropy > 1.5)
     {
         if (pct.imgpe == 0)
         {

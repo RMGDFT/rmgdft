@@ -73,9 +73,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
     RmgType *rptr;
-    int special = ((ibrav == HEXAGONAL) ||
-                   (ibrav == HEXAGONAL2) ||
-                   (ibrav == ORTHORHOMBIC_PRIMITIVE) ||
+    int special = ((ibrav == ORTHORHOMBIC_PRIMITIVE) ||
                    (ibrav == CUBIC_PRIMITIVE) ||
                    (ibrav == TETRAGONAL_PRIMITIVE));
 
@@ -94,56 +92,36 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     
 
-    if(!special || (ibrav == HEXAGONAL) || (ibrav == HEXAGONAL2))
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
-    else
+    if(special)
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
-
-
-    int dim[3]={0,0,0}, hdim[3]={0,0,0};
-    if(!special)
-    {
-        LC->GetDim(dim);
-        HLC->GetDim(hdim);
-    }
-    if(!special && (dimx == dim[0]) && (dimy == dim[1]) && (dimz == dim[2]))
-    {
-        if(a == NULL) return LC->coeff_and_index[0].coeff;
-        cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
-    }
-    else if(!special && (dimx == hdim[0]) && (dimy == hdim[1]) && (dimz == hdim[2]))
-    {
-        if(a == NULL) return HLC->coeff_and_index[0].coeff;
-        cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, HLC);
-    }
     else
-    {
-        if(order == APP_CI_SECOND) {
-            cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
-        else if(order == APP_CI_SIXTH) {
-            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
-        else if(order == APP_CI_EIGHT) {
-            cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
-        else if(order == APP_CI_TEN) {
-            cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
+
+    if(order == APP_CI_SECOND) {
+        cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_SIXTH) {
+        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_EIGHT) {
+        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_TEN) {
+        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
 #ifdef TWELFTH_ORDER_FD
-        else if(order == APP_CI_SIXTH) {
-            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
-        else if(order == APP_CI_TWELVE) {
-            cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
+    else if(order == APP_CI_SIXTH) {
+        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_TWELVE) {
+        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
 #endif
-        else {
+    else {
 
-            rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
-            return 0;   // Just to keep the compiler from complaining
+        rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+        return 0;   // Just to keep the compiler from complaining
 
-        }
     }
 
     if(alloc > (size_t)FiniteDiff::allocation_limit) delete [] rptr;
