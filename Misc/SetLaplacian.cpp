@@ -26,7 +26,7 @@
 
 void SetLaplacian()
 {
-    double a[3][3];
+    double hxgrid, a[3][3];
     int Ngrid[3], dim[3];
     int Lorder;
     Lorder = ct.kohn_sham_fd_order;
@@ -43,24 +43,25 @@ void SetLaplacian()
     dim[0] = Rmg_G->get_PX0_GRID(1);
     dim[1] = Rmg_G->get_PY0_GRID(1);
     dim[2] = Rmg_G->get_PZ0_GRID(1);
+    hxgrid = Rmg_G->get_hxgrid(1);
 
     LC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
     LC->SetBrav(Rmg_L.get_ibrav_type());
     LC->SetOffdiag(ct.laplacian_offdiag);
     LC->CalculateCoeff();
-    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, LC});
+    FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+8, LC});
 
     LC_6 = new LaplacianCoeff(a, Ngrid, 6, dim);
     LC_6->SetBrav(Rmg_L.get_ibrav_type());
     LC_6->SetOffdiag(ct.laplacian_offdiag);
     LC_6->CalculateCoeff();
-    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+6, LC_6});
+    FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+6, LC_6});
 
     LC_4 = new LaplacianCoeff(a, Ngrid, 4, dim);
     LC_4->SetBrav(Rmg_L.get_ibrav_type());
     LC_4->SetOffdiag(ct.laplacian_offdiag);
     LC_4->CalculateCoeff();
-    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+4, LC_4});
+    FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+4, LC_4});
 
     Ngrid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     Ngrid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
@@ -68,12 +69,19 @@ void SetLaplacian()
     dim[0] = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     dim[1] = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     dim[2] = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
+    hxgrid = Rmg_G->get_hxgrid(Rmg_G->default_FG_RATIO);
 
     HLC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
     HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();
-    FiniteDiff::FdCoeffs.insert({dim[0]*dim[1]*dim[2]+8, HLC});
+    FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder, HLC});
+
+    HLC = new LaplacianCoeff(a, Ngrid, Lorder-2, dim);
+    HLC->SetBrav(Rmg_L.get_ibrav_type());
+    HLC->SetOffdiag(ct.laplacian_offdiag);
+    HLC->CalculateCoeff();
+    FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder-2, HLC});
 
 }
 

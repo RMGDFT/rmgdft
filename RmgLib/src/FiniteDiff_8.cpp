@@ -49,14 +49,15 @@ template void FiniteDiff::app_gradient_eighth<double> (double *, double *, doubl
 template void FiniteDiff::app_gradient_eighth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
 template void FiniteDiff::app_gradient_eighth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
-template void FiniteDiff::app8_gradient_general<float, 6> (float *, float *, float *, float *, int, int, int);
-template void FiniteDiff::app8_gradient_general<double, 6> (double *, double *, double *, double *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<double>, 6> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<float>, 6> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int);
-template void FiniteDiff::app8_gradient_general<float, 8> (float *, float *, float *, float *, int, int, int);
-template void FiniteDiff::app8_gradient_general<double, 8> (double *, double *, double *, double *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<double>, 8> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int);
-template void FiniteDiff::app8_gradient_general<std::complex<float>, 8> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int);
+template void FiniteDiff::fd_gradient_general<float, 6> (float *, float *, float *, float *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<double, 6> (double *, double *, double *, double *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<double>, 6> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<float>, 6> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
+
+template void FiniteDiff::fd_gradient_general<float, 8> (float *, float *, float *, float *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<double, 8> (double *, double *, double *, double *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<double>, 8> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<float>, 8> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
 
 template double FiniteDiff::app8_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app8_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
@@ -76,14 +77,14 @@ template double FiniteDiff::app8_combined<std::complex <float>, 8>(std::complex<
 template double FiniteDiff::app8_combined<std::complex <double>, 8>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 
-template void FiniteDiff::app8_gradient_coeffs<float>(int , int , float *, float *, float *);
-template void FiniteDiff::app8_gradient_coeffs<double>(int , int , double *, double *, double *);
-template void FiniteDiff::app8_gradient_coeffs<std::complex<double>>(int , int , std::complex<double> *, std::complex<double> *, std::complex<double> *);
+template void FiniteDiff::fd_gradient_coeffs<float>(int , double, int , float *, float *, float *);
+template void FiniteDiff::fd_gradient_coeffs<double>(int , double, int , double *, double *, double *);
+template void FiniteDiff::fd_gradient_coeffs<std::complex<double>>(int , double, int , std::complex<double> *, std::complex<double> *, std::complex<double> *);
 
-template void FiniteDiff::app8_combined_coeffs<float>(int, int, int, int , int , float *, float *, double *);
-template void FiniteDiff::app8_combined_coeffs<double>(int, int, int, int , int , double *, double *, double *);
-template void FiniteDiff::app8_combined_coeffs<std::complex<float>>(int, int, int, int , int , std::complex<float> *, std::complex<float> *, double *);
-template void FiniteDiff::app8_combined_coeffs<std::complex<double>>(int, int, int, int , int , std::complex<double> *, std::complex<double> *, double *);
+template void FiniteDiff::fd_combined_coeffs<float>(int, double, int, float *, float *, double *);
+template void FiniteDiff::fd_combined_coeffs<double>(int, double, int, double *, double *, double *);
+template void FiniteDiff::fd_combined_coeffs<std::complex<float>>(int, double, int, std::complex<float> *, std::complex<float> *, double *);
+template void FiniteDiff::fd_combined_coeffs<std::complex<double>>(int, double, int, std::complex<double> *, std::complex<double> *, double *);
 
 
 template <typename RmgType>
@@ -101,7 +102,7 @@ template <typename RmgType>
 void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
-    FiniteDiff::app8_gradient_general<RmgType, 8> (rptr, wxr, wyr, wzr, dimx, dimy, dimz);
+    FiniteDiff::fd_gradient_general<RmgType, 8> (rptr, wxr, wyr, wzr, gridhx, dimx, dimy, dimz);
 }
 
 
@@ -119,7 +120,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
 
     // NULL b means we just want the diagonal component.
-    double th2 = app8_coeff0(dimx, dimy, dimz, order);
+    double th2 = fd_coeff0(order, gridhx);
     if(b == NULL) return (double)std::real(th2);
 
 #if 0
@@ -135,9 +136,9 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 #endif
 
     // Get coeffs for x,y,z axes which are used by all lattice types
-    app8_combined_coeffs(dimx, dimy, dimz, order, 0, cmx, cpx, kvec);
-    app8_combined_coeffs(dimx, dimy, dimz, order, 1, cmy, cpy, kvec);
-    app8_combined_coeffs(dimx, dimy, dimz, order, 2, cmz, cpz, kvec);
+    fd_combined_coeffs(order, gridhx, 0, cmx, cpx, kvec);
+    fd_combined_coeffs(order, gridhx, 1, cmy, cpy, kvec);
+    fd_combined_coeffs(order, gridhx, 2, cmz, cpz, kvec);
 
     for (int ix = order/2; ix < dimx + order/2; ix++)
     {
@@ -188,7 +189,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     // Add additional axes as required
     if(LC->include_axis[3])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 3, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 3, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -211,7 +212,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[4])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 4, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 4, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -234,7 +235,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[5])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 5, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 5, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -257,7 +258,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[6])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 6, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 6, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -280,7 +281,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[7])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 7, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 7, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -303,7 +304,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[8])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 8, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 8, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -326,7 +327,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[9])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 9, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 9, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -349,7 +350,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[10])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 10, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 10, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -372,7 +373,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[11])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 11, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 11, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -395,7 +396,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     if(LC->include_axis[12])
     {
-        app8_combined_coeffs(dimx, dimy, dimz, order, 12, cm, cp, kvec);
+        fd_combined_coeffs(order, gridhx, 12, cm, cp, kvec);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -422,17 +423,17 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 } /* end app8_combined */
 
 // Gets the central coefficient
-double FiniteDiff::app8_coeff0(int dimx, int dimy, int dimz, int order)
+double FiniteDiff::fd_coeff0(int order, double hxgrid)
 {
-    LaplacianCoeff *LC = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order];
-    LaplacianCoeff *LC_6 = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order-2];
+    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
     double c1, c2 = 0.0;
     if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     double coeff0 = 0.0;
     for(int ax=0;ax < 13;ax++)
     {
-        coeff0 += c1*LC->plane_centers[ax] - c2*LC_6->plane_centers[ax];
+        coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
     }
     return coeff0;
 }
@@ -440,12 +441,12 @@ double FiniteDiff::app8_coeff0(int dimx, int dimy, int dimz, int order)
 
 // Computes combined coefficients
 template <typename RmgType>
-void FiniteDiff::app8_combined_coeffs(int dimx, int dimy, int dimz, int order, int ax, RmgType * cm, RmgType *cp, double *kvec)
+void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * cm, RmgType *cp, double *kvec)
 {
     double s1 = 2.0;
     RmgType t1, t2, t3, t4;
-    LaplacianCoeff *LC = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order];
-    LaplacianCoeff *LC_6 = FiniteDiff::FdCoeffs[dimx*dimy*dimz+order-2];
+    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
 
     RmgType I_t;
     if(typeid(RmgType) == typeid(double))
@@ -470,83 +471,86 @@ void FiniteDiff::app8_combined_coeffs(int dimx, int dimy, int dimz, int order, i
     double c1, c2=0.0;
     if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
-    t1 = c1*LC->axis_lc[ax][3] - c2*LC_6->axis_lc[ax][2];
-    t2 = c1*LC->axis_lc[ax][2] - c2*LC_6->axis_lc[ax][1];
-    t3 = c1*LC->axis_lc[ax][1] - c2*LC_6->axis_lc[ax][0];
-    t4 = c1*LC->axis_lc[ax][0];
+    t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
+    t2 = c1*LC2->axis_lc[ax][2] - c2*LC1->axis_lc[ax][1];
+    t3 = c1*LC2->axis_lc[ax][1] - c2*LC1->axis_lc[ax][0];
+    t4 = c1*LC2->axis_lc[ax][0];
 
     RmgType x1, y1, z1;
-    x1 = c1*LC->axis_gc_x[ax][3] - c2*LC_6->axis_gc_x[ax][2];
-    y1 = c1*LC->axis_gc_y[ax][3] - c2*LC_6->axis_gc_y[ax][2];
-    z1 = c1*LC->axis_gc_z[ax][3] - c2*LC_6->axis_gc_z[ax][2];
+    x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
+    y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
+    z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
     cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][2] - c2*LC_6->axis_gc_x[ax][1];
-    y1 = c1*LC->axis_gc_y[ax][2] - c2*LC_6->axis_gc_y[ax][1];
-    z1 = c1*LC->axis_gc_z[ax][2] - c2*LC_6->axis_gc_z[ax][1];
+    x1 = c1*LC2->axis_gc_x[ax][2] - c2*LC1->axis_gc_x[ax][1];
+    y1 = c1*LC2->axis_gc_y[ax][2] - c2*LC1->axis_gc_y[ax][1];
+    z1 = c1*LC2->axis_gc_z[ax][2] - c2*LC1->axis_gc_z[ax][1];
     cm[1] = t2 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][1] - c2*LC_6->axis_gc_x[ax][0];
-    y1 = c1*LC->axis_gc_y[ax][1] - c2*LC_6->axis_gc_y[ax][0];
-    z1 = c1*LC->axis_gc_z[ax][1] - c2*LC_6->axis_gc_z[ax][0];
+    x1 = c1*LC2->axis_gc_x[ax][1] - c2*LC1->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][1] - c2*LC1->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][1] - c2*LC1->axis_gc_z[ax][0];
     cm[2] = t3 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][0];
-    y1 = c1*LC->axis_gc_y[ax][0];
-    z1 = c1*LC->axis_gc_z[ax][0];
+    x1 = c1*LC2->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][0];
     cm[3] = t4 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][3] - c2*LC_6->axis_gc_x[ax][2];
-    y1 = c1*LC->axis_gc_y[ax][3] - c2*LC_6->axis_gc_y[ax][2];
-    z1 = c1*LC->axis_gc_z[ax][3] - c2*LC_6->axis_gc_z[ax][2];
+    x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
+    y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
+    z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
     cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][2] - c2*LC_6->axis_gc_x[ax][1];
-    y1 = c1*LC->axis_gc_y[ax][2] - c2*LC_6->axis_gc_y[ax][1];
-    z1 = c1*LC->axis_gc_z[ax][2] - c2*LC_6->axis_gc_z[ax][1];
+    x1 = c1*LC2->axis_gc_x[ax][2] - c2*LC1->axis_gc_x[ax][1];
+    y1 = c1*LC2->axis_gc_y[ax][2] - c2*LC1->axis_gc_y[ax][1];
+    z1 = c1*LC2->axis_gc_z[ax][2] - c2*LC1->axis_gc_z[ax][1];
     cp[1] = t2 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][1] - c2*LC_6->axis_gc_x[ax][0];
-    y1 = c1*LC->axis_gc_y[ax][1] - c2*LC_6->axis_gc_y[ax][0];
-    z1 = c1*LC->axis_gc_z[ax][1] - c2*LC_6->axis_gc_z[ax][0];
+    x1 = c1*LC2->axis_gc_x[ax][1] - c2*LC1->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][1] - c2*LC1->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][1] - c2*LC1->axis_gc_z[ax][0];
     cp[2] = t3 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
-    x1 = c1*LC->axis_gc_x[ax][0];
-    y1 = c1*LC->axis_gc_y[ax][0];
-    z1 = c1*LC->axis_gc_z[ax][0];
+    x1 = c1*LC2->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][0];
     cp[3] = t4 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
 }
 
 template <typename RmgType>
-void FiniteDiff::app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
+void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
 {
+    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
     double c1, c2=0.0;
     if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
-    cx[0] = c1*LC->axis_gc_x[axis][3] - c2*LC_6->axis_gc_x[axis][2];
-    cx[1] = c1*LC->axis_gc_x[axis][2] - c2*LC_6->axis_gc_x[axis][1];
-    cx[2] = c1*LC->axis_gc_x[axis][1] - c2*LC_6->axis_gc_x[axis][0];
-    cx[3] = c1*LC->axis_gc_x[axis][0];
+    cx[0] = c1*LC2->axis_gc_x[axis][3] - c2*LC1->axis_gc_x[axis][2];
+    cx[1] = c1*LC2->axis_gc_x[axis][2] - c2*LC1->axis_gc_x[axis][1];
+    cx[2] = c1*LC2->axis_gc_x[axis][1] - c2*LC1->axis_gc_x[axis][0];
+    cx[3] = c1*LC2->axis_gc_x[axis][0];
 
-    cy[0] = c1*LC->axis_gc_y[axis][3] - c2*LC_6->axis_gc_y[axis][2];
-    cy[1] = c1*LC->axis_gc_y[axis][2] - c2*LC_6->axis_gc_y[axis][1];
-    cy[2] = c1*LC->axis_gc_y[axis][1] - c2*LC_6->axis_gc_y[axis][0];
-    cy[3] = c1*LC->axis_gc_y[axis][0];
+    cy[0] = c1*LC2->axis_gc_y[axis][3] - c2*LC1->axis_gc_y[axis][2];
+    cy[1] = c1*LC2->axis_gc_y[axis][2] - c2*LC1->axis_gc_y[axis][1];
+    cy[2] = c1*LC2->axis_gc_y[axis][1] - c2*LC1->axis_gc_y[axis][0];
+    cy[3] = c1*LC2->axis_gc_y[axis][0];
 
-    cz[0] = c1*LC->axis_gc_z[axis][3] - c2*LC_6->axis_gc_z[axis][2];
-    cz[1] = c1*LC->axis_gc_z[axis][2] - c2*LC_6->axis_gc_z[axis][1];
-    cz[2] = c1*LC->axis_gc_z[axis][1] - c2*LC_6->axis_gc_z[axis][0];
-    cz[3] = c1*LC->axis_gc_z[axis][0];
+    cz[0] = c1*LC2->axis_gc_z[axis][3] - c2*LC1->axis_gc_z[axis][2];
+    cz[1] = c1*LC2->axis_gc_z[axis][2] - c2*LC1->axis_gc_z[axis][1];
+    cz[2] = c1*LC2->axis_gc_z[axis][1] - c2*LC1->axis_gc_z[axis][0];
+    cz[3] = c1*LC2->axis_gc_z[axis][0];
 }
 
 
 
 template <typename RmgType, int order>
-void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a, 
+void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a, 
                                 RmgType * __restrict__ gx, 
                                 RmgType * __restrict__ gy, 
                                 RmgType * __restrict__ gz,
+                                double gridhx,
                                 int dimx, int dimy, int dimz)
 {
     int ibrav = L->get_ibrav_type();
@@ -556,12 +560,13 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
     RmgType cx[8], cy[8], cz[8];
     int ixs = (dimy + order) * (dimz + order);
     int iys = (dimz + order);
-
+    LaplacianCoeff *LC = FiniteDiff::FdCoeffs[FiniteDiff::LCkey(gridhx) + order];
 
     // Get coeffs for x,y,z axes which are used by all lattice types
-    app8_gradient_coeffs(order, 0, cxx, cxy, cxz);
-    app8_gradient_coeffs(order, 1, cyx, cyy, cyz);
-    app8_gradient_coeffs(order, 2, czx, czy, czz);
+    fd_gradient_coeffs(order, gridhx, 0, cxx, cxy, cxz);
+    fd_gradient_coeffs(order, gridhx, 1, cyx, cyy, cyz);
+    fd_gradient_coeffs(order, gridhx, 2, czx, czy, czz);
+
     for (int ix = order/2; ix < dimx + order/2; ix++)
     {
         for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -662,7 +667,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
     // Add additional axes as required
     if(LC->include_axis[3])
     {
-        app8_gradient_coeffs(order, 3, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 3, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -703,7 +708,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[4])
     {
-        app8_gradient_coeffs(order, 4, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 4, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -744,7 +749,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[5])
     {
-        app8_gradient_coeffs(order, 5, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 5, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -785,7 +790,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[6])
     {
-        app8_gradient_coeffs(order, 6, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 6, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -826,7 +831,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[7])
     {
-        app8_gradient_coeffs(order, 7, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 7, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -867,7 +872,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[8])
     {
-        app8_gradient_coeffs(order, 8, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 8, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -908,7 +913,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[9])
     {
-        app8_gradient_coeffs(order, 9, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 9, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -949,7 +954,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[10])
     {
-        app8_gradient_coeffs(order, 10, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 10, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -990,7 +995,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[11])
     {
-        app8_gradient_coeffs(order, 11, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 11, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)
@@ -1031,7 +1036,7 @@ void FiniteDiff::app8_gradient_general (RmgType * __restrict__ a,
 
     if(LC->include_axis[12])
     {
-        app8_gradient_coeffs(order, 12, cx, cy, cz);
+        fd_gradient_coeffs(order, gridhx, 12, cx, cy, cz);
         for (int ix = order/2; ix < dimx + order/2; ix++)
         {
             for (int iy = order/2; iy < dimy + order/2; iy++)

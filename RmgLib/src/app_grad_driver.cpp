@@ -52,9 +52,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     int images = order / 2;
     int ibrav = L->get_ibrav_type();
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
-    int special = ((ibrav == HEXAGONAL) ||
-                   (ibrav == HEXAGONAL2) ||
-                   (ibrav == ORTHORHOMBIC_PRIMITIVE) || 
+    int special = ((ibrav == ORTHORHOMBIC_PRIMITIVE) || 
                    (ibrav == CUBIC_PRIMITIVE) ||
                    (ibrav == TETRAGONAL_PRIMITIVE));
 
@@ -69,48 +67,30 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
         rptr = new RmgType[sbasis + 64];
     }
 
-    if(!special || (ibrav == HEXAGONAL) || (ibrav == HEXAGONAL2))
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
-    else
+    if(special)
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
-
-    int dim[3]={0,0,0}, hdim[3]={0,0,0};
-    if(!special)
-    {
-        LC->GetDim(dim);
-//        HLC->GetDim(hdim);
-    }
-    if(!special && (dimx == dim[0]) && (dimy == dim[1]) && (dimz == dim[2]))
-    {
-        FiniteDiffGrad (rptr, bx, by, bz, dimx, dimy, dimz, LC);
-    }
-    else if(!special && (dimx == hdim[0]) && (dimy == hdim[1]) && (dimz == hdim[2]))
-    {
-        FiniteDiffGrad (rptr, bx, by, bz, dimx, dimy, dimz, HLC);
-    }
     else
-    {
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
 
-        if(order == APP_CI_EIGHT) {
+    if(order == APP_CI_EIGHT) {
 
-            FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-        }
-        else if(order == APP_CI_SIXTH) {
-
-            FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-        }
-        else if(order == APP_CI_TEN) {
-
-            FD.app_gradient_tenth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-        }
-        else {
-            rmg_error_handler (__FILE__, __LINE__, "Finite difference order not programmed yet in app_gradient_driver.\n");
-        }
+        FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
+    else if(order == APP_CI_SIXTH) {
+
+        FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+    }
+    else if(order == APP_CI_TEN) {
+
+        FD.app_gradient_tenth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+    }
+    else {
+        rmg_error_handler (__FILE__, __LINE__, "Finite difference order not programmed yet in app_gradient_driver.\n");
+    }
+
 
     if(alloc > 110592) delete [] rptr;
 

@@ -527,14 +527,15 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     // calculate the gradient of rho + rho_core
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
-    //ApplyGradient (rhoout, gx, gy, gz, fd_order, "Fine");
-    FftGradientFine(rhoout, gx, gy, gz);
+    ApplyGradient (rhoout, gx, gy, gz, fd_order, "Fine");
+    //FftGradientFine(rhoout, gx, gy, gz);
     delete RT2;
 
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
-    FftLaplacianFine(rhoout, d2rho);
+    //FftLaplacianFine(rhoout, d2rho);
+    ApplyLaplacian (rhoout, d2rho, fd_order, "Fine");
 
     delete RT3;
 

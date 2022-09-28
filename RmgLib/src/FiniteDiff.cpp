@@ -86,6 +86,13 @@ void FiniteDiff::set_allocation_limit(int lim)
     FiniteDiff::allocation_limit = lim;
 }
 
+// Generates a key for the FdCoeffs map
+// a0h is the grid spacing for the first axis
+int FiniteDiff::LCkey(double a0h)
+{
+    return (int)std::round(a0h * 100000);
+}
+
 // Constructor for non-periodic boundary conditions. Unlike the case with
 // the standard constructor the non-periodic case is specific to a specific
 // grid density and order of accuracy.

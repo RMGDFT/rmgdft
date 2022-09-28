@@ -93,8 +93,9 @@ public:
     FiniteDiff(Lattice *lptr, bool alt_flag);
     FiniteDiff(Lattice *lptr, BaseGrid *G, int xtype, int ytype, int ztype, int density, int order);
     static void gen_weights(int n, int m, double xr, double *x, double *w);
-    void set_alt_laplacian_flag(bool flag);
     static void set_allocation_limit(int lim);
+    static int LCkey(double a0h);
+    void set_alt_laplacian_flag(bool flag);
     static int allocation_limit;
     static double cfac[12];
 
@@ -156,10 +157,11 @@ public:
                                 int dimx, int dimy, int dimz);
 
     template <typename RmgType, int order>
-    void app8_gradient_general (RmgType * __restrict__ a,
+    void fd_gradient_general (RmgType * __restrict__ a,
                                 RmgType * __restrict__ gx,
                                 RmgType * __restrict__ gy,
                                 RmgType * __restrict__ gz,
+                                double hxgrid,
                                 int dimx, int dimy, int dimz);
 
     template <typename RmgType>
@@ -178,13 +180,13 @@ public:
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);
 
-    double app8_coeff0(int dimx, int dimy, int dimz, int order);
+    double fd_coeff0(int order, double hxgrid);
 
     template <typename RmgType>
-    void app8_combined_coeffs(int dimx, int dimy, int dimz, int order, int ax, RmgType * cm, RmgType *cp, double *kvec);
+    void fd_combined_coeffs(int order, double hxgrid, int axis, RmgType * cm, RmgType *cp, double *kvec);
 
     template <typename RmgType>
-    void app8_gradient_coeffs(int order, int axis , RmgType *cx, RmgType *cy, RmgType *cz);
+    void fd_gradient_coeffs(int order, double hxgrid, int axis, RmgType *cx, RmgType *cy, RmgType *cz);
 
     double app6_coeff0(void);
 
