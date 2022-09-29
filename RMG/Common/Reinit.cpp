@@ -232,11 +232,13 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     }
 
     // Reinitialize autotuning finite differencing
-    for(auto a:FiniteDiff::FdCoeffs)
+    std::unordered_map<LaplacianCoeff *, LaplacianCoeff *> T;
+    for(auto& a:FiniteDiff::FdCoeffs)
     {
-        delete a.second;
+        T.insert_or_assign(a.second, a.second);
     }
     FiniteDiff::FdCoeffs.clear();
+    for(auto& a:T) delete a.second;
     SetLaplacian();
     GetFdFactor();
     //OptimizeFdCoeff();
