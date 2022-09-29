@@ -293,6 +293,9 @@ template <typename RmgType>
 double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz)
 {
+    double kvec[3] = {0.0, 0.0, 0.0};
+    return FiniteDiff::app_combined<RmgType, 2>(a, b, dimx, dimy, dimz,
+        gridhx, gridhy, gridhz, kvec, false);
 
     int ix, iy, iz, ibrav;
     int incy, incx;
@@ -582,6 +585,10 @@ template <typename RmgType>
 double FiniteDiff::app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz, int offset)
 {
+
+    double kvec[3] = {0.0, 0.0, 0.0};
+    return FiniteDiff::app_combined<RmgType, 2>(a, b, dimx, dimy, dimz,
+        gridhx, gridhy, gridhz, kvec, false);
 
     int ibrav;
     int incy, incx;

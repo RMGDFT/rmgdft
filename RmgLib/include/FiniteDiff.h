@@ -175,7 +175,7 @@ public:
 		    double *kvec, bool use_gpu);
 
     template <typename RmgType, int order>
-    double app8_combined(
+    double app_combined(
 		    RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz,
 		    double *kvec, bool use_gpu);

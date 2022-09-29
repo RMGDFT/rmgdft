@@ -239,7 +239,10 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     int active_threads = 1;
     if(tid >= 0) active_threads = Threads->barrier->barrier_count();
     if(active_threads < 2) check = false;
+
     if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
+// EMIL -- this needs a lot more checking if we want to enable the offset loop
+//    if(pot || (k != 0.0) || !check)
     {
 
         T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -264,6 +267,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }
     else
     {
+
         // Convert f_mat into p-type work grid then trade images up to 4
         int offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
         CPP_pack_stop (f_mat, work, dimx, dimy, dimz);
@@ -1286,9 +1290,11 @@ void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
     FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-//    for (idx = 0; idx < size; idx++) work[idx] = 0.0;
-    diag = -FD.app2_del2 (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    RmgType *work1 = &work[size];
+//for (idx = 0; idx < size; idx++) work1[idx] = 0.0;
 
+    diag = -FD.app2_del2 (vmat, work1, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    CPP_pack_ptos(work, work1, dimx, dimy, dimz);
     scale = 1.0 / (diag + Zfac);
     scale = step * scale;
  
@@ -1331,10 +1337,14 @@ void Mgrid::solv_pois_offset (RmgType * __restrict__ vmat, RmgType * __restrict_
     int incy = (dimz + 2*foffset);
     int incx = (dimy + 2*foffset)*(dimz + 2*foffset);
 
+    int size = (dimx + 2*offset+2) * (dimy + 2*offset+2) * (dimz + 2*offset+2);
+    RmgType *work1 = &work[size];
+
     while(offset > 0)
     {
         offset--;
-        double diag = -FD.app2_del2 (vmat, work, dimx+2*offset, dimy+2*offset, dimz+2*offset, gridhx, gridhy, gridhz);
+        double diag = -FD.app2_del2 (vmat, work1, dimx+2*offset, dimy+2*offset, dimz+2*offset, gridhx, gridhy, gridhz);
+        CPP_pack_ptos(work, work1, dimx+2*offset, dimy+2*offset, dimz+2*offset);
         double scale = 1.0 / (diag + Zfac);
         scale = step * scale;
         int idx = 0;

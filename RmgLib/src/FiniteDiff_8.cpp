@@ -59,22 +59,22 @@ template void FiniteDiff::fd_gradient_general<double, 8> (double *, double *, do
 template void FiniteDiff::fd_gradient_general<std::complex<double>, 8> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<std::complex<float>, 8> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
 
-template double FiniteDiff::app8_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <float>, 2>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <double>, 2>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<float,4>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<double,4>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <float>, 4>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <double>, 4>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<float,6>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<double,6>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <float>, 6>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <double>, 6>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<float,8>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<double,8>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <float>, 8>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-template double FiniteDiff::app8_combined<std::complex <double>, 8>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <float>, 2>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <double>, 2>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<float,4>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<double,4>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <float>, 4>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <double>, 4>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<float,6>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<double,6>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <float>, 6>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <double>, 6>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<float,8>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<double,8>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <float>, 8>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <double>, 8>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 
 template void FiniteDiff::fd_gradient_coeffs<float>(int , double, int , float *, float *, float *);
@@ -92,7 +92,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
                double gridhx, double gridhy, double gridhz)
 {
     double kvec[3] = {0.0,0.0,0.0};
-    return FiniteDiff::app8_combined<RmgType, 8>(a, b, dimx, dimy, dimz,
+    return FiniteDiff::app_combined<RmgType, 8>(a, b, dimx, dimy, dimz,
         gridhx, gridhy, gridhz, kvec, false);
 
 }  /* end app8_del2 */
@@ -107,7 +107,7 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
 
 
 template <typename RmgType, int order>
-double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, 
+double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, 
 		int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz,
 		double *kvec, bool use_gpu)
@@ -420,22 +420,31 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     /* Return the diagonal component of the operator */
     return (double)std::real(th2);
 
-} /* end app8_combined */
+} /* end app_combined */
 
 // Gets the central coefficient
 double FiniteDiff::fd_coeff0(int order, double hxgrid)
 {
-    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
+
     double c1, c2 = 0.0;
     if(this->alt_laplacian) c2 = cfac[0];
     c1 = 1.0 + c2;
     double coeff0 = 0.0;
+    if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
     for(int ax=0;ax < 13;ax++)
     {
         coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
     }
-    return coeff0;
+    return scale*coeff0;
 }
 
 
@@ -445,8 +454,16 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
 {
     double s1 = 2.0;
     RmgType t1, t2, t3, t4;
-    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+    RmgType x1, y1, z1;
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
 
     RmgType I_t;
     if(typeid(RmgType) == typeid(double))
@@ -468,15 +485,26 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
         iptr[0] = 0.0;iptr[1] = 1.0;
     }
 
+    // 2nd order if for multigrid and has no optimizations
+    if(order == 2)
+    {
+        t1 = scale*LC2->axis_lc[ax][0];
+        x1 = scale*LC2->axis_gc_x[ax][0];
+        y1 = scale*LC2->axis_gc_y[ax][0];
+        z1 = scale*LC2->axis_gc_z[ax][0];
+        cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+        cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+        return;
+    }
+
     double c1, c2=0.0;
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
+    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    c1 = scale*(1.0 + c2);
     t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
     t2 = c1*LC2->axis_lc[ax][2] - c2*LC1->axis_lc[ax][1];
     t3 = c1*LC2->axis_lc[ax][1] - c2*LC1->axis_lc[ax][0];
     t4 = c1*LC2->axis_lc[ax][0];
 
-    RmgType x1, y1, z1;
     x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
     y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
     z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
@@ -522,11 +550,19 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
 template <typename RmgType>
 void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
 {
-    LaplacianCoeff *LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    LaplacianCoeff *LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
+
     double c1, c2=0.0;
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
+    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    c1 = scale*(1.0 + c2);
     cx[0] = c1*LC2->axis_gc_x[axis][3] - c2*LC1->axis_gc_x[axis][2];
     cx[1] = c1*LC2->axis_gc_x[axis][2] - c2*LC1->axis_gc_x[axis][1];
     cx[2] = c1*LC2->axis_gc_x[axis][1] - c2*LC1->axis_gc_x[axis][0];
