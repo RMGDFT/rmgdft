@@ -99,7 +99,8 @@ class InputKey {
 // Used to sort keys by group and then alphabetically
 struct keycompare
 {
-    bool operator()(InputKey *ik_lhs, InputKey *ik_rhs)
+    inline bool operator()(const InputKey *ik_lhs, const InputKey *ik_rhs)
+    const
     {
         // First sort by group
         size_t left = ik_lhs->grouping & MASKOFF_MODIFIERS;
