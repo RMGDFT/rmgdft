@@ -422,163 +422,6 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
 
 } /* end app_combined */
 
-// Gets the central coefficient
-double FiniteDiff::fd_coeff0(int order, double hxgrid)
-{
-    LaplacianCoeff *LC1, *LC2;
-    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    if(order == 2)
-        LC1 = LC2;
-    else
-        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
-
-    double scale = LC2->gen_hxgrid / hxgrid;
-    scale = scale*scale;
-
-    double c1, c2 = 0.0;
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
-    double coeff0 = 0.0;
-    if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
-    for(int ax=0;ax < 13;ax++)
-    {
-        coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
-    }
-    return scale*coeff0;
-}
-
-
-// Computes combined coefficients
-template <typename RmgType>
-void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * cm, RmgType *cp, double *kvec)
-{
-    double s1 = 2.0;
-    RmgType t1, t2, t3, t4;
-    RmgType x1, y1, z1;
-    LaplacianCoeff *LC1, *LC2;
-    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    if(order == 2)
-        LC1 = LC2;
-    else
-        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
-
-    double scale = LC2->gen_hxgrid / hxgrid;
-    scale = scale*scale;
-
-    RmgType I_t;
-    if(typeid(RmgType) == typeid(double))
-    {
-        I_t = 0.0;
-    }
-    else if(typeid(RmgType) == typeid(float))
-    {
-        I_t = 0.0;
-    }
-    else if(typeid(RmgType) == typeid(std::complex<double>))
-    {
-        double *iptr = (double *)&I_t;
-        iptr[0] = 0.0;iptr[1] = 1.0;
-    }
-    else if(typeid(RmgType) == typeid(std::complex<float>))
-    {
-        float *iptr = (float *)&I_t;
-        iptr[0] = 0.0;iptr[1] = 1.0;
-    }
-
-    // 2nd order if for multigrid and has no optimizations
-    if(order == 2)
-    {
-        t1 = scale*LC2->axis_lc[ax][0];
-        x1 = scale*LC2->axis_gc_x[ax][0];
-        y1 = scale*LC2->axis_gc_y[ax][0];
-        z1 = scale*LC2->axis_gc_z[ax][0];
-        cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-        cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-        return;
-    }
-
-    double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[0];
-    c1 = scale*(1.0 + c2);
-    t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
-    t2 = c1*LC2->axis_lc[ax][2] - c2*LC1->axis_lc[ax][1];
-    t3 = c1*LC2->axis_lc[ax][1] - c2*LC1->axis_lc[ax][0];
-    t4 = c1*LC2->axis_lc[ax][0];
-
-    x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
-    y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
-    z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
-    cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][2] - c2*LC1->axis_gc_x[ax][1];
-    y1 = c1*LC2->axis_gc_y[ax][2] - c2*LC1->axis_gc_y[ax][1];
-    z1 = c1*LC2->axis_gc_z[ax][2] - c2*LC1->axis_gc_z[ax][1];
-    cm[1] = t2 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][1] - c2*LC1->axis_gc_x[ax][0];
-    y1 = c1*LC2->axis_gc_y[ax][1] - c2*LC1->axis_gc_y[ax][0];
-    z1 = c1*LC2->axis_gc_z[ax][1] - c2*LC1->axis_gc_z[ax][0];
-    cm[2] = t3 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][0];
-    y1 = c1*LC2->axis_gc_y[ax][0];
-    z1 = c1*LC2->axis_gc_z[ax][0];
-    cm[3] = t4 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
-    y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
-    z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
-    cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][2] - c2*LC1->axis_gc_x[ax][1];
-    y1 = c1*LC2->axis_gc_y[ax][2] - c2*LC1->axis_gc_y[ax][1];
-    z1 = c1*LC2->axis_gc_z[ax][2] - c2*LC1->axis_gc_z[ax][1];
-    cp[1] = t2 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][1] - c2*LC1->axis_gc_x[ax][0];
-    y1 = c1*LC2->axis_gc_y[ax][1] - c2*LC1->axis_gc_y[ax][0];
-    z1 = c1*LC2->axis_gc_z[ax][1] - c2*LC1->axis_gc_z[ax][0];
-    cp[2] = t3 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-    x1 = c1*LC2->axis_gc_x[ax][0];
-    y1 = c1*LC2->axis_gc_y[ax][0];
-    z1 = c1*LC2->axis_gc_z[ax][0];
-    cp[3] = t4 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
-
-}
-
-template <typename RmgType>
-void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
-{
-    LaplacianCoeff *LC1, *LC2;
-    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
-    if(order == 2)
-        LC1 = LC2;
-    else
-        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
-
-    double scale = LC2->gen_hxgrid / hxgrid;
-    scale = scale*scale;
-
-    double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[0];
-    c1 = scale*(1.0 + c2);
-    cx[0] = c1*LC2->axis_gc_x[axis][3] - c2*LC1->axis_gc_x[axis][2];
-    cx[1] = c1*LC2->axis_gc_x[axis][2] - c2*LC1->axis_gc_x[axis][1];
-    cx[2] = c1*LC2->axis_gc_x[axis][1] - c2*LC1->axis_gc_x[axis][0];
-    cx[3] = c1*LC2->axis_gc_x[axis][0];
-
-    cy[0] = c1*LC2->axis_gc_y[axis][3] - c2*LC1->axis_gc_y[axis][2];
-    cy[1] = c1*LC2->axis_gc_y[axis][2] - c2*LC1->axis_gc_y[axis][1];
-    cy[2] = c1*LC2->axis_gc_y[axis][1] - c2*LC1->axis_gc_y[axis][0];
-    cy[3] = c1*LC2->axis_gc_y[axis][0];
-
-    cz[0] = c1*LC2->axis_gc_z[axis][3] - c2*LC1->axis_gc_z[axis][2];
-    cz[1] = c1*LC2->axis_gc_z[axis][2] - c2*LC1->axis_gc_z[axis][1];
-    cz[2] = c1*LC2->axis_gc_z[axis][1] - c2*LC1->axis_gc_z[axis][0];
-    cz[3] = c1*LC2->axis_gc_z[axis][0];
-}
-
 
 
 template <typename RmgType, int order>
@@ -1111,4 +954,177 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
         }
     }
 } /* end app8_gradient_general */
+
+
+
+// Gets the central coefficient
+double FiniteDiff::fd_coeff0(int order, double hxgrid)
+{
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
+
+    double c1, c2 = 0.0;
+    if(this->alt_laplacian) c2 = cfac[0];
+    c1 = 1.0 + c2;
+    double coeff0 = 0.0;
+    if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
+    for(int ax=0;ax < 13;ax++)
+    {
+        coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
+    }
+    return scale*coeff0;
+}
+
+
+// Computes combined coefficients
+template <typename RmgType>
+void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * cm, RmgType *cp, double *kvec)
+{
+    double s1 = 2.0;
+    RmgType t1, t2, t3, t4;
+    RmgType x1, y1, z1;
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
+
+    RmgType I_t;
+    if(typeid(RmgType) == typeid(double))
+    {
+        I_t = 0.0;
+    }
+    else if(typeid(RmgType) == typeid(float))
+    {
+        I_t = 0.0;
+    }
+    else if(typeid(RmgType) == typeid(std::complex<double>))
+    {
+        double *iptr = (double *)&I_t;
+        iptr[0] = 0.0;iptr[1] = 1.0;
+    }
+    else if(typeid(RmgType) == typeid(std::complex<float>))
+    {
+        float *iptr = (float *)&I_t;
+        iptr[0] = 0.0;iptr[1] = 1.0;
+    }
+
+    // 2nd order if for multigrid and has no optimizations
+    if(order == 2)
+    {
+        t1 = scale*LC2->axis_lc[ax][0];
+        x1 = scale*LC2->axis_gc_x[ax][0];
+        y1 = scale*LC2->axis_gc_y[ax][0];
+        z1 = scale*LC2->axis_gc_z[ax][0];
+        cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+        cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+        return;
+    }
+
+    double c1, c2=0.0;
+    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    c1 = scale*(1.0 + c2);
+    t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
+    t2 = c1*LC2->axis_lc[ax][2] - c2*LC1->axis_lc[ax][1];
+    t3 = c1*LC2->axis_lc[ax][1] - c2*LC1->axis_lc[ax][0];
+    t4 = c1*LC2->axis_lc[ax][0];
+
+    for(int i=0;i < order/2-1;i++)
+    {
+        t1 = c1*LC2->axis_lc[ax][order/2-i-1] - c2*LC1->axis_lc[ax][order/2-i-2];
+        x1 = c1*LC2->axis_gc_x[ax][order/2-i-1] - c2*LC1->axis_gc_x[ax][order/2-i-2];
+        y1 = c1*LC2->axis_gc_y[ax][order/2-i-1] - c2*LC1->axis_gc_y[ax][order/2-i-2];
+        z1 = c1*LC2->axis_gc_z[ax][order/2-i-1] - c2*LC1->axis_gc_z[ax][order/2-i-2];
+        cm[i] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+        cp[i] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    }
+    t1 = c1*LC2->axis_lc[ax][0];
+    x1 = c1*LC2->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][0];
+    cm[order/2-1] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    cp[order/2-1] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+#if 0
+    x1 = c1*LC2->axis_gc_x[ax][3] - c2*LC1->axis_gc_x[ax][2];
+    y1 = c1*LC2->axis_gc_y[ax][3] - c2*LC1->axis_gc_y[ax][2];
+    z1 = c1*LC2->axis_gc_z[ax][3] - c2*LC1->axis_gc_z[ax][2];
+    cm[0] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    cp[0] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC2->axis_gc_x[ax][2] - c2*LC1->axis_gc_x[ax][1];
+    y1 = c1*LC2->axis_gc_y[ax][2] - c2*LC1->axis_gc_y[ax][1];
+    z1 = c1*LC2->axis_gc_z[ax][2] - c2*LC1->axis_gc_z[ax][1];
+    cm[1] = t2 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    cp[1] = t2 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC2->axis_gc_x[ax][1] - c2*LC1->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][1] - c2*LC1->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][1] - c2*LC1->axis_gc_z[ax][0];
+    cm[2] = t3 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    cp[2] = t3 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+
+    x1 = c1*LC2->axis_gc_x[ax][0];
+    y1 = c1*LC2->axis_gc_y[ax][0];
+    z1 = c1*LC2->axis_gc_z[ax][0];
+    cm[3] = t4 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+    cp[3] = t4 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
+#endif
+}
+
+template <typename RmgType>
+void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType *cx, RmgType *cy, RmgType *cz)
+{
+    LaplacianCoeff *LC1, *LC2;
+    LC2 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order];
+    if(order == 2)
+        LC1 = LC2;
+    else
+        LC1 = FiniteDiff::FdCoeffs[LCkey(hxgrid)+order-2];
+
+    double scale = LC2->gen_hxgrid / hxgrid;
+    scale = scale*scale;
+
+    double c1, c2=0.0;
+    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    c1 = scale*(1.0 + c2);
+
+    for(int i=0;i < order/2-1;i++)
+    {
+        cx[i] = c1*LC2->axis_gc_x[axis][order/2-i-1] - c2*LC1->axis_gc_x[axis][order/2-i-2];
+        cy[i] = c1*LC2->axis_gc_y[axis][order/2-i-1] - c2*LC1->axis_gc_y[axis][order/2-i-2];
+        cz[i] = c1*LC2->axis_gc_z[axis][order/2-i-1] - c2*LC1->axis_gc_z[axis][order/2-i-2];
+    }
+    cx[order/2-1] = c1*LC2->axis_gc_x[axis][0];
+    cy[order/2-1] = c1*LC2->axis_gc_y[axis][0];
+    cz[order/2-1] = c1*LC2->axis_gc_z[axis][0];
+#if 0
+    cx[0] = c1*LC2->axis_gc_x[axis][3] - c2*LC1->axis_gc_x[axis][2];
+    cx[1] = c1*LC2->axis_gc_x[axis][2] - c2*LC1->axis_gc_x[axis][1];
+    cx[2] = c1*LC2->axis_gc_x[axis][1] - c2*LC1->axis_gc_x[axis][0];
+    cx[3] = c1*LC2->axis_gc_x[axis][0];
+
+    cy[0] = c1*LC2->axis_gc_y[axis][3] - c2*LC1->axis_gc_y[axis][2];
+    cy[1] = c1*LC2->axis_gc_y[axis][2] - c2*LC1->axis_gc_y[axis][1];
+    cy[2] = c1*LC2->axis_gc_y[axis][1] - c2*LC1->axis_gc_y[axis][0];
+    cy[3] = c1*LC2->axis_gc_y[axis][0];
+
+    cz[0] = c1*LC2->axis_gc_z[axis][3] - c2*LC1->axis_gc_z[axis][2];
+    cz[1] = c1*LC2->axis_gc_z[axis][2] - c2*LC1->axis_gc_z[axis][1];
+    cz[2] = c1*LC2->axis_gc_z[axis][1] - c2*LC1->axis_gc_z[axis][0];
+    cz[3] = c1*LC2->axis_gc_z[axis][0];
+#endif
+}
+
 
