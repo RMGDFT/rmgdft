@@ -1,3 +1,4 @@
+#if 0
 /*
  *
  * Copyright (c) 1995,2011,2014,2022 Emil Briggs
@@ -855,4 +856,4 @@ void FiniteDiff::app6_gradient_general (RmgType * __restrict__ a,
         }
     }
 } /* end app6_gradient_general */
-
+#endif

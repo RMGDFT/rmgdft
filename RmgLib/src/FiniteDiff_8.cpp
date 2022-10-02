@@ -59,6 +59,11 @@ template void FiniteDiff::fd_gradient_general<double, 8> (double *, double *, do
 template void FiniteDiff::fd_gradient_general<std::complex<double>, 8> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<std::complex<float>, 8> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
 
+template void FiniteDiff::fd_gradient_general<float, 10> (float *, float *, float *, float *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<double, 10> (double *, double *, double *, double *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<double>, 10> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
+template void FiniteDiff::fd_gradient_general<std::complex<float>, 10> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
+
 template double FiniteDiff::app_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <float>, 2>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
@@ -75,7 +80,10 @@ template double FiniteDiff::app_combined<float,8>(float *, float *, int, int, in
 template double FiniteDiff::app_combined<double,8>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <float>, 8>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <double>, 8>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-
+template double FiniteDiff::app_combined<float,10>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<double,10>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <float>, 10>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
+template double FiniteDiff::app_combined<std::complex <double>, 10>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
 template void FiniteDiff::fd_gradient_coeffs<float>(int , double, int , float *, float *, float *);
 template void FiniteDiff::fd_gradient_coeffs<double>(int , double, int , double *, double *, double *);
@@ -113,8 +121,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
 		double *kvec, bool use_gpu)
 {
     int ibrav = L->get_ibrav_type();
-    RmgType cm[8], cp[8];
-    RmgType cpx[8], cmx[8], cpy[8], cmy[8], cpz[8], cmz[8];
+    RmgType cm[12], cp[12];
+    RmgType cpx[12], cmx[12], cpy[12], cmy[12], cpz[12], cmz[12];
     int ixs = (dimy + order) * (dimz + order);
     int iys = (dimz + order);
 
@@ -158,6 +166,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                     B[iz] += cpz[2] * A[iz + 3] + cmz[2] * A[iz - 3];
                 if constexpr(order >= 8)
                     B[iz] += cpz[3] * A[iz + 4] + cmz[3] * A[iz - 4];
+                if constexpr(order >= 10)
+                    B[iz] += cpz[4] * A[iz + 5] + cmz[4] * A[iz - 5];
             }
             for (int iz = order/2; iz < dimz + order/2; iz++)
             {
@@ -168,6 +178,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                     B[iz] += cpy[2] * A[iz + 3*iys] + cmy[2] * A[iz - 3*iys];
                 if constexpr(order >= 8)
                     B[iz] += cpy[3] * A[iz + 4*iys] + cmy[3] * A[iz - 4*iys];
+                if constexpr(order >= 10)
+                    B[iz] += cpy[4] * A[iz + 5*iys] + cmy[4] * A[iz - 5*iys];
             }
             for (int iz = order/2; iz < dimz + order/2; iz++)
             {
@@ -178,6 +190,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                     B[iz] += cpx[2] * A[iz + 3*ixs] + cmx[2] * A[iz - 3*ixs];
                 if constexpr(order >= 8)
                     B[iz] += cpx[3] * A[iz + 4*ixs] + cmx[3] * A[iz - 4*ixs];
+                if constexpr(order >= 10)
+                    B[iz] += cpx[4] * A[iz + 5*ixs] + cmx[4] * A[iz - 5*ixs];
             }                   /* end for */
         }
     }
@@ -205,6 +219,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*ixs + 3*iys] + cm[2] * A[iz - 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*ixs + 4*iys] + cm[3] * A[iz - 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*ixs + 5*iys] + cm[4] * A[iz - 5*ixs - 5*iys];
                 }                   /* end for */
             }
         }
@@ -228,6 +244,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*ixs + 3] + cm[2] * A[iz - 3*ixs - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*ixs + 4] + cm[3] * A[iz - 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*ixs + 5] + cm[4] * A[iz - 5*ixs - 5];
                 }                   /* end for */
             }
         }
@@ -251,6 +269,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*iys + 3] + cm[2] * A[iz - 3*iys - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*iys + 4] + cm[3] * A[iz - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*iys + 5] + cm[4] * A[iz - 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -274,6 +294,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz - 3*ixs + 3*iys] + cm[2] * A[iz + 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz - 4*ixs + 4*iys] + cm[3] * A[iz + 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz - 5*ixs + 5*iys] + cm[4] * A[iz + 5*ixs - 5*iys];
                 }                   /* end for */
             }
         }
@@ -297,6 +319,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz - 3*ixs + 3] + cm[2] * A[iz + 3*ixs - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz - 4*ixs + 4] + cm[3] * A[iz + 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz - 5*ixs + 5] + cm[4] * A[iz + 5*ixs - 5];
                 }                   /* end for */
             }
         }
@@ -320,6 +344,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz - 3*iys + 3] + cm[2] * A[iz + 3*iys - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz - 4*iys + 4] + cm[3] * A[iz + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz - 5*iys + 5] + cm[4] * A[iz + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -343,6 +369,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*ixs + 3*iys + 3] + cm[2] * A[iz - 3*ixs - 3*iys - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*ixs + 4*iys + 4] + cm[3] * A[iz - 4*ixs - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*ixs + 5*iys + 5] + cm[4] * A[iz - 5*ixs - 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -366,6 +394,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz - 3*ixs - 3*iys + 3] + cm[2] * A[iz + 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz - 4*ixs - 4*iys + 4] + cm[3] * A[iz + 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz - 5*ixs - 5*iys + 5] + cm[4] * A[iz + 5*ixs + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -389,6 +419,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*ixs - 3*iys + 3] + cm[2] * A[iz - 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*ixs - 4*iys + 4] + cm[3] * A[iz - 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*ixs - 5*iys + 5] + cm[4] * A[iz - 5*ixs + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -412,6 +444,8 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
                         B[iz] += cp[2] * A[iz + 3*ixs - 3*iys - 3] + cm[2] * A[iz - 3*ixs + 3*iys + 3];
                     if constexpr(order >= 8)
                         B[iz] += cp[3] * A[iz + 4*ixs - 4*iys - 4] + cm[3] * A[iz - 4*ixs + 4*iys + 4];
+                    if constexpr(order >= 10)
+                        B[iz] += cp[4] * A[iz + 5*ixs - 5*iys - 5] + cm[4] * A[iz - 5*ixs + 5*iys + 5];
                 }                   /* end for */
             }
         }
@@ -433,10 +467,10 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                                 int dimx, int dimy, int dimz)
 {
     int ibrav = L->get_ibrav_type();
-    RmgType cxx[8], cxy[8], cxz[8];
-    RmgType cyx[8], cyy[8], cyz[8];
-    RmgType czx[8], czy[8], czz[8];
-    RmgType cx[8], cy[8], cz[8];
+    RmgType cxx[12], cxy[12], cxz[12];
+    RmgType cyx[12], cyy[12], cyz[12];
+    RmgType czx[12], czy[12], czz[12];
+    RmgType cx[12], cy[12], cz[12];
     int ixs = (dimy + order) * (dimz + order);
     int iys = (dimz + order);
     LaplacianCoeff *LC = FiniteDiff::FdCoeffs[FiniteDiff::LCkey(gridhx) + order];
@@ -465,6 +499,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgx[iz] += -czx[2] * A[iz + 3] + czx[2] * A[iz - 3];
                 if constexpr(order >= 8)
                     bgx[iz] += -czx[3] * A[iz + 4] + czx[3] * A[iz - 4];
+                if constexpr(order >= 10)
+                    bgx[iz] += -czx[4] * A[iz + 5] + czx[4] * A[iz - 5];
 
                 bgy[iz] = -czy[0] * A[iz + 1] + czy[0] * A[iz - 1];
                 if constexpr(order >= 4)
@@ -473,6 +509,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgy[iz] += -czy[2] * A[iz + 3] + czy[2] * A[iz - 3];
                 if constexpr(order >= 8)
                     bgy[iz] += -czy[3] * A[iz + 4] + czy[3] * A[iz - 4];
+                if constexpr(order >= 10)
+                    bgy[iz] += -czy[4] * A[iz + 5] + czy[4] * A[iz - 5];
 
                 bgz[iz] = -czz[0] * A[iz + 1] + czz[0] * A[iz - 1];
                 if constexpr(order >= 4)
@@ -481,6 +519,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] += -czz[2] * A[iz + 3] + czz[2] * A[iz - 3];
                 if constexpr(order >= 8)
                     bgz[iz] += -czz[3] * A[iz + 4] + czz[3] * A[iz - 4];
+                if constexpr(order >= 10)
+                    bgz[iz] += -czz[4] * A[iz + 5] + czz[4] * A[iz - 5];
 
             }
             for (int iz = order/2; iz < dimz + order/2; iz++)
@@ -492,6 +532,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgx[iz] += -cyx[2] * A[iz + 3*iys] + cyx[2] * A[iz - 3*iys];
                 if constexpr(order >= 8)
                     bgx[iz] += -cyx[3] * A[iz + 4*iys] + cyx[3] * A[iz - 4*iys];
+                if constexpr(order >= 10)
+                    bgx[iz] += -cyx[4] * A[iz + 5*iys] + cyx[4] * A[iz - 5*iys];
 
                 bgy[iz] += -cyy[0] * A[iz + iys] + cyy[0] * A[iz - iys];
                 if constexpr(order >= 4)
@@ -500,6 +542,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgy[iz] += -cyy[2] * A[iz + 3*iys] + cyy[2] * A[iz - 3*iys];
                 if constexpr(order >= 8)
                     bgy[iz] += -cyy[3] * A[iz + 4*iys] + cyy[3] * A[iz - 4*iys];
+                if constexpr(order >= 10)
+                    bgy[iz] += -cyy[4] * A[iz + 5*iys] + cyy[4] * A[iz - 5*iys];
 
                 bgz[iz] += -cyz[0] * A[iz + iys] + cyz[0] * A[iz - iys];
                 if constexpr(order >= 4)
@@ -508,6 +552,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] += -cyz[2] * A[iz + 3*iys] + cyz[2] * A[iz - 3*iys];
                 if constexpr(order >= 8)
                     bgz[iz] += -cyz[3] * A[iz + 4*iys] + cyz[3] * A[iz - 4*iys];
+                if constexpr(order >= 10)
+                    bgz[iz] += -cyz[4] * A[iz + 5*iys] + cyz[4] * A[iz - 5*iys];
             }
             for (int iz = order/2; iz < dimz + order/2; iz++)
             {
@@ -518,6 +564,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgx[iz] += -cxx[2] * A[iz + 3*ixs] + cxx[2] * A[iz - 3*ixs];
                 if constexpr(order >= 8)
                     bgx[iz] += -cxx[3] * A[iz + 4*ixs] + cxx[3] * A[iz - 4*ixs];
+                if constexpr(order >= 10)
+                    bgx[iz] += -cxx[4] * A[iz + 5*ixs] + cxx[4] * A[iz - 5*ixs];
 
                 bgy[iz] += -cxy[0] * A[iz + ixs] + cxy[0] * A[iz - ixs];
                 if constexpr(order >= 4)
@@ -526,6 +574,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgy[iz] +=-cxy[2] * A[iz + 3*ixs] + cxy[2] * A[iz - 3*ixs];
                 if constexpr(order >= 8)
                     bgy[iz] +=-cxy[3] * A[iz + 4*ixs] + cxy[3] * A[iz - 4*ixs];
+                if constexpr(order >= 10)
+                    bgy[iz] +=-cxy[4] * A[iz + 5*ixs] + cxy[4] * A[iz - 5*ixs];
 
                 bgz[iz] += -cxz[0] * A[iz + ixs] + cxz[0] * A[iz - ixs];
                 if constexpr(order >= 4)
@@ -534,6 +584,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                     bgz[iz] += -cxz[2] * A[iz + 3*ixs] + cxz[2] * A[iz - 3*ixs];
                 if constexpr(order >= 8)
                     bgz[iz] += -cxz[3] * A[iz + 4*ixs] + cxz[3] * A[iz - 4*ixs];
+                if constexpr(order >= 10)
+                    bgz[iz] += -cxz[4] * A[iz + 5*ixs] + cxz[4] * A[iz - 5*ixs];
 
             }                   /* end for */
         }
@@ -564,6 +616,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*ixs + 3*iys] + cz[2] * A[iz - 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*ixs + 4*iys] + cz[3] * A[iz - 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*ixs + 5*iys] + cz[4] * A[iz - 5*ixs - 5*iys];
 
                     bgy[iz] += -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys];
                     if constexpr(order >= 4)
@@ -572,6 +626,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*ixs + 3*iys] + cy[2] * A[iz - 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*ixs + 4*iys] + cy[3] * A[iz - 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*ixs + 5*iys] + cy[4] * A[iz - 5*ixs - 5*iys];
 
                     bgx[iz] += -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys];
                     if constexpr(order >= 4)
@@ -580,6 +636,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*ixs + 3*iys] + cx[2] * A[iz - 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*ixs + 4*iys] + cx[3] * A[iz - 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*ixs + 5*iys] + cx[4] * A[iz - 5*ixs - 5*iys];
                 }                   /* end for */
             }
         }
@@ -605,6 +663,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*ixs + 3] + cz[2] * A[iz - 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*ixs + 4] + cz[3] * A[iz - 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*ixs + 5] + cz[4] * A[iz - 5*ixs - 5];
 
                     bgy[iz] += -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1];
                     if constexpr(order >= 4)
@@ -613,6 +673,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*ixs + 3] + cy[2] * A[iz - 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*ixs + 4] + cy[3] * A[iz - 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*ixs + 5] + cy[4] * A[iz - 5*ixs - 5];
 
                     bgx[iz] += -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1];
                     if constexpr(order >= 4)
@@ -621,6 +683,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*ixs + 3] + cx[2] * A[iz - 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*ixs + 4] + cx[3] * A[iz - 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*ixs + 5] + cx[4] * A[iz - 5*ixs - 5];
                 }                   /* end for */
             }
         }
@@ -646,6 +710,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*iys + 3] + cz[2] * A[iz - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*iys + 4] + cz[3] * A[iz - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*iys + 5] + cz[4] * A[iz - 5*iys - 5];
 
                     bgy[iz] += -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1];
                     if constexpr(order >= 4)
@@ -654,6 +720,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*iys + 3] + cy[2] * A[iz - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*iys + 4] + cy[3] * A[iz - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*iys + 5] + cy[4] * A[iz - 5*iys - 5];
 
                     bgx[iz] += -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1];
                     if constexpr(order >= 4)
@@ -662,6 +730,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*iys + 3] + cx[2] * A[iz - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*iys + 4] + cx[3] * A[iz - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*iys + 5] + cx[4] * A[iz - 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -687,6 +757,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz - 3*ixs + 3*iys] + cz[2] * A[iz + 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz - 4*ixs + 4*iys] + cz[3] * A[iz + 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz - 5*ixs + 5*iys] + cz[4] * A[iz + 5*ixs - 5*iys];
 
                     bgy[iz] += -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys];
                     if constexpr(order >= 4)
@@ -695,6 +767,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz - 3*ixs + 3*iys] + cy[2] * A[iz + 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz - 4*ixs + 4*iys] + cy[3] * A[iz + 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz - 5*ixs + 5*iys] + cy[4] * A[iz + 5*ixs - 5*iys];
 
                     bgx[iz] += -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys];
                     if constexpr(order >= 4)
@@ -703,6 +777,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz - 3*ixs + 3*iys] + cx[2] * A[iz + 3*ixs - 3*iys];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz - 4*ixs + 4*iys] + cx[3] * A[iz + 4*ixs - 4*iys];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz - 5*ixs + 5*iys] + cx[4] * A[iz + 5*ixs - 5*iys];
                 }                   /* end for */
             }
         }
@@ -728,6 +804,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz - 3*ixs + 3] + cz[2] * A[iz + 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz - 4*ixs + 4] + cz[3] * A[iz + 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz - 5*ixs + 5] + cz[4] * A[iz + 5*ixs - 5];
 
                     bgy[iz] += -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1];
                     if constexpr(order >= 4)
@@ -736,6 +814,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz - 3*ixs + 3] + cy[2] * A[iz + 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz - 4*ixs + 4] + cy[3] * A[iz + 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz - 5*ixs + 5] + cy[4] * A[iz + 5*ixs - 5];
 
                     bgx[iz] += -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1];
                     if constexpr(order >= 4)
@@ -744,6 +824,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz - 3*ixs + 3] + cx[2] * A[iz + 3*ixs - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz - 4*ixs + 4] + cx[3] * A[iz + 4*ixs - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz - 5*ixs + 5] + cx[4] * A[iz + 5*ixs - 5];
                 }                   /* end for */
             }
         }
@@ -769,6 +851,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz - 3*iys + 3] + cz[2] * A[iz + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz - 4*iys + 4] + cz[3] * A[iz + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz - 5*iys + 5] + cz[4] * A[iz + 5*iys - 5];
 
                     bgy[iz] += -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1];
                     if constexpr(order >= 4)
@@ -777,6 +861,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz - 3*iys + 3] + cy[2] * A[iz + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz - 4*iys + 4] + cy[3] * A[iz + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz - 5*iys + 5] + cy[4] * A[iz + 5*iys - 5];
 
                     bgx[iz] += -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1];
                     if constexpr(order >= 4)
@@ -785,6 +871,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz - 3*iys + 3] + cx[2] * A[iz + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz - 4*iys + 4] + cx[3] * A[iz + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz - 5*iys + 5] + cx[4] * A[iz + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -810,6 +898,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*ixs + 3*iys + 3] + cz[2] * A[iz - 3*ixs - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*ixs + 4*iys + 4] + cz[3] * A[iz - 4*ixs - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*ixs + 5*iys + 5] + cz[4] * A[iz - 5*ixs - 5*iys - 5];
 
                     bgy[iz] += -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1];
                     if constexpr(order >= 4)
@@ -818,6 +908,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*ixs + 3*iys + 3] + cy[2] * A[iz - 3*ixs - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*ixs + 4*iys + 4] + cy[3] * A[iz - 4*ixs - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*ixs + 5*iys + 5] + cy[4] * A[iz - 5*ixs - 5*iys - 5];
 
                     bgx[iz] += -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1];
                     if constexpr(order >= 4)
@@ -826,6 +918,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*ixs + 3*iys + 3] + cx[2] * A[iz - 3*ixs - 3*iys - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*ixs + 4*iys + 4] + cx[3] * A[iz - 4*ixs - 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*ixs + 5*iys + 5] + cx[4] * A[iz - 5*ixs - 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -851,6 +945,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz - 3*ixs - 3*iys + 3] + cz[2] * A[iz + 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz - 4*ixs - 4*iys + 4] + cz[3] * A[iz + 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz - 5*ixs - 5*iys + 5] + cz[4] * A[iz + 5*ixs + 5*iys - 5];
 
                     bgy[iz] += -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1];
                     if constexpr(order >= 4)
@@ -859,6 +955,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz - 3*ixs - 3*iys + 3] + cy[2] * A[iz + 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz - 4*ixs - 4*iys + 4] + cy[3] * A[iz + 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz - 5*ixs - 5*iys + 5] + cy[4] * A[iz + 5*ixs + 5*iys - 5];
 
                     bgx[iz] += -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1];
                     if constexpr(order >= 4)
@@ -867,6 +965,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz - 3*ixs - 3*iys + 3] + cx[2] * A[iz + 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz - 4*ixs - 4*iys + 4] + cx[3] * A[iz + 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz - 5*ixs - 5*iys + 5] + cx[4] * A[iz + 5*ixs + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -892,6 +992,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*ixs - 3*iys + 3] + cz[2] * A[iz - 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*ixs - 4*iys + 4] + cz[3] * A[iz - 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*ixs - 5*iys + 5] + cz[4] * A[iz - 5*ixs + 5*iys - 5];
 
                     bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1];
                     if constexpr(order >= 4)
@@ -900,6 +1002,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*ixs - 3*iys + 3] + cy[2] * A[iz - 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*ixs - 4*iys + 4] + cy[3] * A[iz - 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*ixs - 5*iys + 5] + cy[4] * A[iz - 5*ixs + 5*iys - 5];
 
                     bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1];
                     if constexpr(order >= 4)
@@ -908,6 +1012,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*ixs - 3*iys + 3] + cx[2] * A[iz - 3*ixs + 3*iys - 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*ixs - 4*iys + 4] + cx[3] * A[iz - 4*ixs + 4*iys - 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*ixs - 5*iys + 5] + cx[4] * A[iz - 5*ixs + 5*iys - 5];
                 }                   /* end for */
             }
         }
@@ -933,6 +1039,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgz[iz] += -cz[2] * A[iz + 3*ixs - 3*iys - 3] + cz[2] * A[iz - 3*ixs + 3*iys + 3];
                     if constexpr(order >= 8)
                         bgz[iz] += -cz[3] * A[iz + 4*ixs - 4*iys - 4] + cz[3] * A[iz - 4*ixs + 4*iys + 4];
+                    if constexpr(order >= 10)
+                        bgz[iz] += -cz[4] * A[iz + 5*ixs - 5*iys - 5] + cz[4] * A[iz - 5*ixs + 5*iys + 5];
 
                     bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1];
                     if constexpr(order >= 4)
@@ -941,6 +1049,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgy[iz] += -cy[2] * A[iz + 3*ixs - 3*iys - 3] + cy[2] * A[iz - 3*ixs + 3*iys + 3];
                     if constexpr(order >= 8)
                         bgy[iz] += -cy[3] * A[iz + 4*ixs - 4*iys - 4] + cy[3] * A[iz - 4*ixs + 4*iys + 4];
+                    if constexpr(order >= 10)
+                        bgy[iz] += -cy[4] * A[iz + 5*ixs - 5*iys - 5] + cy[4] * A[iz - 5*ixs + 5*iys + 5];
 
                     bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1];
                     if constexpr(order >= 4)
@@ -949,6 +1059,8 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
                         bgx[iz] += -cx[2] * A[iz + 3*ixs - 3*iys - 3] + cx[2] * A[iz - 3*ixs + 3*iys + 3];
                     if constexpr(order >= 8)
                         bgx[iz] += -cx[3] * A[iz + 4*ixs - 4*iys - 4] + cx[3] * A[iz - 4*ixs + 4*iys + 4];
+                    if constexpr(order >= 10)
+                        bgx[iz] += -cx[4] * A[iz + 5*ixs - 5*iys - 5] + cx[4] * A[iz - 5*ixs + 5*iys + 5];
                 }                   /* end for */
             }
         }

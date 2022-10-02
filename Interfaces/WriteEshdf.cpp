@@ -545,7 +545,7 @@ void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
     phi_z.resize(ct.states[0].size);
     phi_L.resize(ct.states[0].size);
 
-    FiniteDiff FD(&Rmg_L);
+    FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
     double hxgrid = Rmg_G->get_hxgrid(1);
     double hygrid = Rmg_G->get_hygrid(1);
     double hzgrid = Rmg_G->get_hzgrid(1);

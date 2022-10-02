@@ -65,7 +65,7 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
 template <typename RmgType>
 double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag)
 {
-
+    double kvec[3] = {0.0,0.0,0.0};
     double cc = 0.0;
     FiniteDiff FD(L, alt_flag);
     int ibrav = L->get_ibrav_type();
@@ -101,13 +101,13 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_SIXTH) {
-        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        cc = FD.app_combined<RmgType, 6>(rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
     }
     else if(order == APP_CI_EIGHT) {
-        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        cc = FD.app_combined<RmgType, 8>(rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
     }
     else if(order == APP_CI_TEN) {
-        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        cc = FD.app_combined<RmgType, 10>(rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
     }
 #ifdef TWELFTH_ORDER_FD
     else if(order == APP_CI_SIXTH) {

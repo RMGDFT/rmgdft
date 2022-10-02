@@ -155,31 +155,20 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     }
     DataType *rptr = (DataType *)rbufs[tid];
 
-    int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) ||
-                   (Rmg_L.get_ibrav_type() == HEXAGONAL2) || 
-                   (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
+    int special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
-                   (Rmg_L.get_ibrav_type() == CUBIC_FC) ||
-                   (Rmg_L.get_ibrav_type() == CUBIC_BC) ||
-                   (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE) ||
-                   (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
 
 
 
-    if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL) || 
-                   (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
-                   (Rmg_L.get_ibrav_type() == TRICLINIC_PRIMITIVE) ||
-                   (Rmg_L.get_ibrav_type() == CUBIC_FC) ||
-                   (Rmg_L.get_ibrav_type() == CUBIC_BC) ||
-                   (Rmg_L.get_ibrav_type() == MONOCLINIC_PRIMITIVE))
-        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
-    else
+    if(special)
        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+    else
+       Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
 
 
     // Handle special combined operator first
-    if(special && (order == APP_CI_EIGHT))
+    if(order == APP_CI_EIGHT)
     {
         RmgTimer *RTA=NULL;
 #if HIP_ENABLED || CUDA_ENABLED
@@ -203,92 +192,32 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
         return cc;
     }
-    else if(special && (order == APP_CI_SIXTH))
+    else if(order == APP_CI_SIXTH)
     {
         RmgTimer *RTA=NULL;
         if(ct.verbose) RTA = new RmgTimer("CPUFD");
-        cc = FD.app6_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        cc = FD.app_combined<DataType, 6> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        if(ct.verbose) delete RTA;
+        return cc;
+    }
+    else if(order == APP_CI_TEN)
+    {
+        RmgTimer *RTA=NULL;
+        if(ct.verbose) RTA = new RmgTimer("CPUFD");
+        cc = FD.app_combined<DataType, 10> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
         if(ct.verbose) delete RTA;
         return cc;
     }
 
-    // First apply the laplacian
-    if(order == APP_CI_SIXTH) {
 #ifdef TWELFTH_ORDER_FD
-            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-#else
-            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
-#endif
-    }
-    else if(order == APP_CI_EIGHT) {
-        if(!special)
-            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
-        else
-            cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_TEN) {
-        if(!special)
-            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
-        else
-            cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-#ifdef TWELFTH_ORDER_FD
-    else if(order == APP_CI_TWELVE) {
+    // Order 12 is for testing and is gamma only
+    if(order == APP_CI_TWELVE) {
             cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
 #endif
-    else {
 
-        rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
-        return 0;   // Just to keep the compiler from complaining
-
-    }
-
-    if(!ct.is_gamma)
-    {
-        int pbasis = dimx*dimy*dimz;
-        DataType *gx = new DataType[pbasis];
-        DataType *gy = new DataType[pbasis];
-        DataType *gz = new DataType[pbasis];
-        std::complex<double> *kdr = new std::complex<double>[pbasis];
-
-
-        if(special)
-        {
-            if(order == APP_CI_EIGHT)
-                FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-            if(order == APP_CI_TEN)
-                FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        }
-        else
-        {
-            FiniteDiffGrad((DataType *)rptr, gx, gy, gz, dimx, dimy, dimz, LC);
-        }
-
-        // if complex orbitals compute dot products as well
-        std::complex<double> I_t(0.0, 1.0);
-        for(int idx = 0;idx < pbasis;idx++)
-        {
-            kdr[idx] = -I_t * (kvec[0] * std::complex<double>(std::real(gx[idx]), std::imag(gx[idx])) +
-                               kvec[1] * std::complex<double>(std::real(gy[idx]), std::imag(gy[idx])) +
-                               kvec[2] * std::complex<double>(std::real(gz[idx]), std::imag(gz[idx])));
-        }
-        if(typeid(DataType) == typeid(std::complex<double>))
-        {
-            std::complex<double> *pptr = (std::complex<double> *)b;
-            for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
-        }
-        if(typeid(DataType) == typeid(std::complex<float>))
-        {
-            std::complex<float> *pptr = (std::complex<float> *)b;
-            for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
-        }
-        
-        delete [] kdr;
-        delete [] gz;
-        delete [] gy;
-        delete [] gx;
-    }
+    rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+    return 0;   // Just to keep the compiler from complaining
 
     return cc;
 

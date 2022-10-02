@@ -59,7 +59,8 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int d
     double gridhx = Rmg_G->get_hxgrid(1);
     double gridhy = Rmg_G->get_hygrid(1);
     double gridhz = Rmg_G->get_hzgrid(1);
-    CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+    CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz,
+                         gridhx, gridhy, gridhz, order, ct.alt_laplacian);
 }
 
 template <typename DataType>
@@ -89,11 +90,11 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhz = Rmg_G->get_hzgrid(density);
 
     int ibrav = Rmg_L.get_ibrav_type();
-    if((order == APP_CI_FFT) || (ibrav == TRICLINIC_PRIMITIVE) || (ibrav == MONOCLINIC_PRIMITIVE))
+    if(order == APP_CI_FFT)
         AppGradPfft(a, gx, gy, gz, grid); 
     else
-        CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-
+        CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, 
+                             gridhx, gridhy, gridhz, order, ct.alt_laplacian);
 }
 
 template <typename DataType>
@@ -123,11 +124,11 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhz = G->get_hzgrid(density);
 
     int ibrav = Rmg_L.get_ibrav_type();
-    if((order == APP_CI_FFT) || (ibrav == TRICLINIC_PRIMITIVE) || (ibrav == MONOCLINIC_PRIMITIVE))
+    if(order == APP_CI_FFT)
         AppGradPfft(a, gx, gy, gz, grid); 
     else
-        CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-
+        CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz,
+                             gridhx, gridhy, gridhz, order, ct.alt_laplacian);
 }
 
 
