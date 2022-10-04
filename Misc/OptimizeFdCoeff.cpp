@@ -192,7 +192,8 @@ void OptimizeFdCoeff()
         }
         compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad);
 
-        if(pct.gridpe == 0 && ct.verbose) 
+        //if(pct.gridpe == 0 && ct.verbose) 
+        if(pct.gridpe == 0) 
         {
             printf("\n iter %d  ke_diff2 = %e", iter, ke_diff2);
             if(pct.gridpe == 0) printf("\n plane_center %e", LC->plane_centers[0]);
@@ -232,12 +233,6 @@ void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<do
 void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbasis, int num_coeff, int order, double *orbitals, double * orbitals_b, double *psi_psin)
 {
     for(int i = 0; i < num_orb * num_coeff; i++) psi_psin[i] = 0.0;
-    if(order != 8) 
-    {
-        printf("\n only 8th order is donw \n");
-        fflush(NULL);
-        exit(0);
-    }
 
     int ixs = (dimy + order) * (dimz + order);
     int iys = (dimz + order);
@@ -260,20 +255,12 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                 // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
-                    psi_psin[iorb * num_coeff + 0]  +=  B[iz] * (A[iz + 1 * ixs] +  A[iz - 1 * ixs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 1]  +=  B[iz] * (A[iz + 2 * ixs] +  A[iz - 2 * ixs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 2]  +=  B[iz] * (A[iz + 3 * ixs] +  A[iz - 3 * ixs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 3]  +=  B[iz] * (A[iz + 4 * ixs] +  A[iz - 4 * ixs] - A[iz]);
-
-                    psi_psin[iorb * num_coeff + 4]  +=  B[iz] * (A[iz + 1 * iys] +  A[iz - 1 * iys] - A[iz]);
-                    psi_psin[iorb * num_coeff + 5]  +=  B[iz] * (A[iz + 2 * iys] +  A[iz - 2 * iys] - A[iz]);
-                    psi_psin[iorb * num_coeff + 6]  +=  B[iz] * (A[iz + 3 * iys] +  A[iz - 3 * iys] - A[iz]);
-                    psi_psin[iorb * num_coeff + 7]  +=  B[iz] * (A[iz + 4 * iys] +  A[iz - 4 * iys] - A[iz]);
-
-                    psi_psin[iorb * num_coeff + 8 ]  +=  B[iz] * (A[iz + 1 * izs] +  A[iz - 1 * izs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 9 ]  +=  B[iz] * (A[iz + 2 * izs] +  A[iz - 2 * izs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 10] +=  B[iz] * (A[iz + 3 * izs] +  A[iz - 3 * izs] - A[iz]);
-                    psi_psin[iorb * num_coeff + 11] +=  B[iz] * (A[iz + 4 * izs] +  A[iz - 4 * izs] - A[iz]);
+                    for(int inn = 1; inn < order/2+1; inn++)
+                    {
+                        psi_psin[iorb * num_coeff + inn-1]  +=  B[iz] * (A[iz + inn * ixs] +  A[iz - inn * ixs] - A[iz]);
+                        psi_psin[iorb * num_coeff + order/2 + inn-1]  +=  B[iz] * (A[iz + inn * iys] +  A[iz - inn * iys] - A[iz]);
+                        psi_psin[iorb * num_coeff + 2 * order/2 + inn-1 ]  +=  B[iz] * (A[iz + inn * izs] +  A[iz - inn * izs] - A[iz]);
+                    }
                 }
 
             }
@@ -281,7 +268,7 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
 
 
         // Add additional axes as required
-        icoeff = 11;
+        icoeff = 3 * order/2;
         if(LC->include_axis[3])
         {
             for (int ix = order/2; ix < dimx + order/2; ix++)
@@ -292,10 +279,11 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * ixs + 1 * iys] +  A[iz - 1 * ixs - 1 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * ixs + 2 * iys] +  A[iz - 2 * ixs - 2 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * ixs + 3 * iys] +  A[iz - 3 * ixs - 3 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * ixs + 4 * iys] +  A[iz - 4 * ixs - 4 * iys] - A[iz]);
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz + inn * ixs + inn * iys] +  
+                                    A[iz - inn * ixs - inn * iys] - A[iz]);
+                        }
                     }                   /* end for */
                 }
             }
@@ -312,14 +300,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * ixs + 1 * izs] +  A[iz - 1 * ixs - 1 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * ixs + 2 * izs] +  A[iz - 2 * ixs - 2 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * ixs + 3 * izs] +  A[iz - 3 * ixs - 3 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * ixs + 4 * izs] +  A[iz - 4 * ixs - 4 * izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz + inn * ixs + inn * izs] +  
+                                    A[iz - inn * ixs - inn * izs] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[5])
@@ -332,14 +321,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * iys + 1 * izs] +  A[iz - 1 * iys - 1 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * iys + 2 * izs] +  A[iz - 2 * iys - 2 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * iys + 3 * izs] +  A[iz - 3 * iys - 3 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * iys + 4 * izs] +  A[iz - 4 * iys - 4 * izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-11]  +=  B[iz] * (A[iz + inn * iys + inn * izs] +  
+                                    A[iz - inn * iys - inn * izs] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[6])
@@ -352,14 +342,16 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * ixs + 1 * iys] +  A[iz - 1 * ixs - 1 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * ixs + 2 * iys] +  A[iz - 2 * ixs - 2 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * ixs + 3 * iys] +  A[iz - 3 * ixs - 3 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * ixs + 4 * iys] +  A[iz - 4 * ixs - 4 * iys] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + inn * ixs + inn * iys] +  
+                                    A[iz - inn * ixs - inn * iys] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
+
         }
 
         if(LC->include_axis[7])
@@ -372,14 +364,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz - 1 * ixs + 1 * izs] +  A[iz + 1 * ixs - 1 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz - 2 * ixs + 2 * izs] +  A[iz + 2 * ixs - 2 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz - 3 * ixs + 3 * izs] +  A[iz + 3 * ixs - 3 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz - 4 * ixs + 4 * izs] +  A[iz + 4 * ixs - 4 * izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz - inn * ixs + inn * izs] +  
+                                    A[iz + inn * ixs - inn * izs] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[8])
@@ -392,14 +385,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz - 1 * iys + 1 * izs] +  A[iz + 1 * iys - 1 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz - 2 * iys + 2 * izs] +  A[iz + 2 * iys - 2 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz - 3 * iys + 3 * izs] +  A[iz + 3 * iys - 3 * izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz - 4 * iys + 4 * izs] +  A[iz + 4 * iys - 4 * izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz - inn * iys + inn * izs] +  
+                                    A[iz + inn * iys - inn * izs] - A[iz]);
+                        }
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[9])
@@ -412,14 +406,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz - 1 * ixs + 1 * iys] +  A[iz + 1 * ixs - 1 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz - 2 * ixs + 2 * iys] +  A[iz + 2 * ixs - 2 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz - 3 * ixs + 3 * iys] +  A[iz + 3 * ixs - 3 * iys] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz - 4 * ixs + 4 * iys] +  A[iz + 4 * ixs - 4 * iys] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz - inn * ixs + inn * iys] +  
+                                    A[iz + inn * ixs - inn * iys] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[10])
@@ -432,20 +427,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz - 1 * ixs - 1 * iys + 1 *izs] +  
-                                A[iz + 1 * ixs + 1 * iys - 1 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz - 1 * ixs - 1 * iys + 1 *izs] +  
-                                A[iz + 1 * ixs + 1 * iys - 1 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz - 2 * ixs - 2 * iys + 2 *izs] +  
-                                A[iz + 2 * ixs + 2 * iys - 2 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz - 3 * ixs - 3 * iys + 3 *izs] + 
-                                A[iz + 3 * ixs + 3 * iys - 3 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz - 4 * ixs - 4 * iys + 4 *izs] +  
-                                A[iz + 4 * ixs + 4 * iys - 4 *izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz - inn * ixs - inn * iys + inn *izs] +  
+                                    A[iz + inn * ixs + inn * iys - inn *izs] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[11])
@@ -458,18 +448,15 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * ixs - 1 * iys + 1 *izs] +  
-                                A[iz - 1 * ixs + 1 * iys - 1 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * ixs - 2 * iys + 2 *izs] +  
-                                A[iz - 2 * ixs + 2 * iys - 2 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * ixs - 3 * iys + 3 *izs] +  
-                                A[iz - 3 * ixs + 3 * iys - 3 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * ixs - 4 * iys + 4 *izs] +  
-                                A[iz - 4 * ixs + 4 * iys - 4 *izs] - A[iz]);
-                    }                   /* end for */
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz + inn * ixs - inn * iys + inn *izs] +  
+                                    A[iz - inn * ixs + inn * iys - inn *izs] - A[iz]);
+                        }                   /* end for */
+                    }
                 }
+                icoeff += order/2;
             }
-            icoeff += order/2;
         }
 
         if(LC->include_axis[12])
@@ -482,14 +469,11 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     double *B = &b[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                     for (int iz = order/2; iz < dimz + order/2; iz++)
                     {
-                        psi_psin[iorb * num_coeff + icoeff + 1]  +=  B[iz] * (A[iz + 1 * ixs - 1 * iys - 1 *izs] +  
-                                A[iz - 1 * ixs + 1 * iys + 1 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 2]  +=  B[iz] * (A[iz + 2 * ixs - 2 * iys - 2 *izs] +  
-                                A[iz - 2 * ixs + 2 * iys + 2 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 3]  +=  B[iz] * (A[iz + 3 * ixs - 3 * iys - 3 *izs] +  
-                                A[iz - 3 * ixs + 3 * iys + 3 *izs] - A[iz]);
-                        psi_psin[iorb * num_coeff + icoeff + 4]  +=  B[iz] * (A[iz + 4 * ixs - 4 * iys - 4 *izs] +  
-                                A[iz - 4 * ixs + 4 * iys + 4 *izs] - A[iz]);
+                        for(int inn = 1; inn < order/2+1; inn++)
+                        {
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz + inn * ixs - inn * iys - inn *izs] +  
+                                    A[iz - inn * ixs + inn * iys + inn *izs] - A[iz]);
+                        }
                     }                   /* end for */
                 }
             }
