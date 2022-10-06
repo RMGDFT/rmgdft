@@ -223,6 +223,12 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     RmgTimer *RT=NULL;
     if(this->timer_mode) RT = new RmgTimer("Trade images: trade_imagesx");
 
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int ACTIVE_THREADS = 1;
+    int tid = T->get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(T->is_loop_over_states()) ACTIVE_THREADS = T->barrier->barrier_count();
+
     if(this->local_mode && (type == CENTRAL_TRADE))
     {
         TradeImages::trade_imagesx_central_local (f, w, dimx, dimy, dimz, images);
@@ -238,7 +244,6 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     RmgType *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     RmgType *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
     RmgType *swbuf1x_f, *swbuf2x_f;
-    BaseThread *T = BaseThread::getBaseThread(0);
 
     factor = sizeof(RmgType);
 
@@ -246,7 +251,7 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
 
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE) {
-            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0))
+            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0) && (ACTIVE_THREADS > 1))
             {
                 TradeImages::trade_imagesx_central_async_managed (f, w, dimx, dimy, dimz, images);
             }
@@ -256,7 +261,7 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
             }
         }
         else {
-            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0))
+            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0) && (ACTIVE_THREADS > 1))
             {
                 TradeImages::trade_imagesx_async_managed (f, w, dimx, dimy, dimz, images);
             }
@@ -268,11 +273,6 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
         if(this->timer_mode) delete RT;
         return;
     }
-
-    int ACTIVE_THREADS = 1;
-    int tid = T->get_thread_tid();
-    if(tid < 0) tid = 0;
-    if(T->is_loop_over_states()) ACTIVE_THREADS = T->barrier->barrier_count();
 
     swbuf1x_f = (RmgType *)TradeImages::swbuf1x;
     swbuf2x_f = (RmgType *)TradeImages::swbuf2x;
