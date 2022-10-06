@@ -117,7 +117,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
         int dimx = this->G->get_PX0_GRID(1) * pct.coalesce_factor;
         int dimy = this->G->get_PY0_GRID(1);
         int dimz = this->G->get_PZ0_GRID(1);
-        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+        int sbasis = (dimx + 8) * (dimy + 8) * (dimz + 8);
         int sbasis_noncoll = sbasis * ct.noncoll_factor;
 
         for(int tid=0;tid < ct.MG_THREADS_PER_NODE;tid++)
