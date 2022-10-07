@@ -116,7 +116,7 @@ void GetFdFactor(void)
                 if(ct.kohn_sham_fd_order == 12) ApplyLaplacian (orbital, work, 12, "Coarse");
 //                if(ct.kohn_sham_fd_order == 6) ApplyLaplacian (orbital, work, 6, "Coarse");
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
-                if(pct.gridpe == 0) printf("LLLL  %e   %e\n",c2, fft_ke - fd_ke);
+                if(ct.verbose && pct.gridpe == 0) printf("FFT-FD  %e   %e\n",c2, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
                 c2 += 1.0; 
