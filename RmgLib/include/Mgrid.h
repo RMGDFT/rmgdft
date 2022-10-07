@@ -66,7 +66,7 @@ public:
 
     template <typename RmgType> void mg_prolong_cubic (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
-    template <typename RmgType> void eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, RmgType * res, double *pot);
+    template <typename RmgType> void eval_residual (RmgType * mat, RmgType * f_mat, RmgType *work, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, RmgType * res, double *pot);
 
     template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, double k, double *pot);

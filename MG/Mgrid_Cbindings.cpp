@@ -47,11 +47,11 @@ void mg_prolong (double * full, double * half, int dimx, int dimy, int dimz, int
     MG.mg_prolong<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
 }
 
-void eval_residual (double * mat, double * f_mat, int dimx, int dimy, int dimz,
+void eval_residual (double * mat, double * f_mat, double *work, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, double * res)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
-    MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res, NULL);
+    MG.eval_residual<double>(mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, res, NULL);
 }
 
 int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)

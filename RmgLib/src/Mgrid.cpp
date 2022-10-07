@@ -78,9 +78,9 @@ template void Mgrid::mgrid_solv_schrodinger<std::complex <double> >(std::complex
 template void Mgrid::mgrid_solv_schrodinger<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
 
 
-template void Mgrid::eval_residual (double *, double *, int, int, int, double, double, double, double *, double *);
+template void Mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double *);
 
-template void Mgrid::eval_residual (float *, float *, int, int, int, double, double, double, float *, double *);
+template void Mgrid::eval_residual (float *, float *, float *, int, int, int, double, double, double, float *, double *);
 
 template void Mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double, double *);
 
@@ -308,7 +308,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
 
 /* evaluate residual */
-    eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
+    eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
     T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
@@ -386,7 +386,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         /* evaluate max residual */
         if (i < (mu_cyc - 1))
         {
-            eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
+            eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
             T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
         }                       /* end if */
 
@@ -1241,16 +1241,19 @@ void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict_
 }
 
 template <typename RmgType>
-void Mgrid::eval_residual (RmgType * __restrict__ mat, RmgType * __restrict__ f_mat, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz, RmgType * res, double *pot)
+void Mgrid::eval_residual (RmgType * __restrict__ mat, 
+                           RmgType * __restrict__ f_mat, 
+                           RmgType * __restrict__ work, 
+                           int dimx, int dimy, int dimz,
+                           double gridhx, double gridhy, double gridhz, 
+                           RmgType * res, double *pot)
 {
     int size, idx;
     FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    for (idx = 0; idx < size; idx++)
-        res[idx] = 0.0;
-    FD.app2_del2 (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FD.app2_del2 (mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    CPP_pack_ptos(res, work, dimx, dimy, dimz);
     if(pot) {
         for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)pot[idx]*mat[idx] - res[idx];
     }
