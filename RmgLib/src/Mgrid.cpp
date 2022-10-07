@@ -307,10 +307,6 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }
 
 
-/* evaluate residual */
-    eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
-    T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
-
 
 /* set storage pointers in the current workspace */
     RmgType *newv = &work[0];
@@ -322,6 +318,10 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
     for (int i = 0; i < mu_cyc; i++)
     {
+
+        /* evaluate residual */
+        eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
+        T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
         mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         if(pot) mg_restrict (pot, newpot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -382,13 +382,6 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             }
         }
         T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
-
-        /* evaluate max residual */
-        if (i < (mu_cyc - 1))
-        {
-            eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
-            T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
-        }                       /* end if */
 
     }                           /* for mu_cyc */
 
