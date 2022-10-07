@@ -225,8 +225,8 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int size2 = (dimx + 2*offset)*(dimy + 2*offset)*(dimz + 2*offset);
-    RmgType *resid = work + 2 * size2;
-    RmgType *nf_mat = f_mat + size2;
+    RmgType *resid = work + 2 * size;
+    RmgType *nf_mat = f_mat + size;
 
     double scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     scale = scale + (2.0 / (gridhy * gridhy * L->get_yside() * L->get_yside()));
@@ -314,10 +314,10 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
 /* set storage pointers in the current workspace */
     RmgType *newv = &work[0];
-    RmgType *newf = &work[size2];
-    RmgType *newwork = &work[2 * size2];
+    RmgType *newf = &work[size];
+    RmgType *newwork = &work[2 * size];
     double *newpot=NULL;
-    if(pot) newpot = &pot[size2];
+    if(pot) newpot = &pot[size];
 
 
     for (int i = 0; i < mu_cyc; i++)
