@@ -252,7 +252,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     ct.is_gamma = ct.is_gamma && (!ct.noncoll);
     ct.is_use_symmetry = ct.is_use_symmetry && (!ct.is_gamma);
     if(ct.AFM) ct.is_use_symmetry = 1;
-    Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
+    if(ct.is_use_symmetry) Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
 
 
     if(ct.forceflag == BAND_STRUCTURE)
@@ -282,7 +282,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_halfgrid->set_rank(pct.gridpe, pct.grid_comm);
 
 
-    Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
+    if(Rmg_Symm) Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
 
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
