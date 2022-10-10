@@ -166,7 +166,7 @@ void OptimizeFdCoeff()
 
 
     double ke_diff2;
-    int iter_max = 20;
+    int iter_max = 40;
     lbfgs_init(num_coeff);
     if(pct.gridpe == 0) printf("\n plane_center %e", LC->plane_centers[0]);
     for(int iter = 0; iter < iter_max; iter++)
@@ -307,8 +307,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[5])
@@ -328,8 +328,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[6])
@@ -349,8 +349,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
 
         }
 
@@ -371,8 +371,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[8])
@@ -392,8 +392,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[9])
@@ -413,8 +413,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[10])
@@ -434,8 +434,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[11])
@@ -455,8 +455,8 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                         }                   /* end for */
                     }
                 }
-                icoeff += order/2;
             }
+            icoeff += order/2;
         }
 
         if(LC->include_axis[12])
