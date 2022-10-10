@@ -47,7 +47,6 @@ src/app_del2_driver.cpp
 src/FiniteDiff.cpp
 src/FiniteDiff_exp.cpp
 src/FiniteDiff_mehr.cpp
-src/FiniteDiff_8.cpp
 src/LaplacianCoeff.cpp
 src/RmgTimer.cpp
 src/FiniteDiffLap.cpp
