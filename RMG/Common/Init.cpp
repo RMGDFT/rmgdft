@@ -516,6 +516,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
+    // Set up autotuning finite differencing
+    GetFdFactor();
+    //FDOpt *Fopt = new FDOpt();
+    //Fopt->Optimize();
+    //delete Fopt;
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
@@ -598,13 +603,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             for(int is = 0; is < 4; is++)
                 GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
         }
-
-        // Set up autotuning finite differencing
-        GetFdFactor();
-        //OptimizeFdCoeff();
-        //FDOpt *Fopt = new FDOpt();
-        //Fopt->Optimize();
-        //delete Fopt;
 
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS *ct.nspin];
