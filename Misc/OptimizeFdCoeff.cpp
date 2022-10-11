@@ -67,7 +67,7 @@ FDOpt::FDOpt(void)
     double c2 = FD.cfac[0];
     double c1 = 1.0+c2;
 //  LC_6 is 2 orders lower than LC, not necessary to be 6 order
-    ct.alt_laplacian = 0;
+    ct.alt_laplacian = false;
     for (int ax = 0; ax < 13; ax++)
     {
         if(!LC->include_axis[ax]) continue;
@@ -175,6 +175,14 @@ FDOpt::FDOpt(void)
 
 FDOpt::~FDOpt(void)
 {
+    FDOpt::ke_fft.clear();
+    FDOpt::ke_fd.clear();
+    FDOpt::occ_weight.clear();
+    FDOpt::coeff.clear();
+    FDOpt::coeff_grad.clear();
+    delete [] FDOpt::psi_psin;
+    delete [] FDOpt::orbitals_b;
+    delete [] FDOpt::orbitals;
     delete [] work;
 }
 
@@ -193,6 +201,7 @@ double FDOpt::evaluate(void *,
             for(int i = 0; i < LC->Lorder/2; i++)
             {
                 LC->axis_lc[ax][i] = coeff[icoeff];
+                if(ct.verbose) printf("For axis = %d  Coeff = %20.12f\n",ax,coeff[icoeff]);
                 LC->plane_centers[ax] += -coeff[icoeff] * 2.0;
                 icoeff++;
             } 
