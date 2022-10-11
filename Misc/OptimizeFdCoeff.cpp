@@ -6,6 +6,8 @@
 #include "Pw.h"
 #include "Lattice.h"
 #include "transition.h"
+#include "llbfgs.hpp"
+#include "FDOpt.h"
 
 void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbasis, 
         int num_coeff, int order, double *orbitals, double * orbitals_b, double *psi_psin);
@@ -13,28 +15,42 @@ void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<do
         double *psi_psin, std::vector<double> &occ_weight, std::vector<double>& coeff_grad);
 double ComputeKineticEnergy(double *x, double *lapx, int pbasis);
 
+int FDOpt::pbasis;
+int FDOpt::sbasis;
+int FDOpt::order;
+int FDOpt::num_orb;
+int FDOpt::num_coeff;
+std::vector<double> FDOpt::ke_fft;
+std::vector<double> FDOpt::ke_fd;
+std::vector<double> FDOpt::occ_weight;
+std::vector<double> FDOpt::coeff;
+std::vector<double> FDOpt::coeff_grad;
+double *FDOpt::orbitals;
+double *FDOpt::orbitals_b;
+double *FDOpt::psi_psin;
+double *FDOpt::work;
+double FDOpt::kvec[3];
 
-void OptimizeFdCoeff()
+
+FDOpt::FDOpt(void)
 {
     FiniteDiff FD(&Rmg_L);
-    std::complex<double> I_t(0.0, 1.0);
-
     int nlxdim = get_NX_GRID();
     int nlydim = get_NY_GRID();
     int nlzdim = get_NZ_GRID();
-    int pbasis = Rmg_G->get_P0_BASIS(1);
     int dimx  = Rmg_G->get_PX0_GRID(1);
     int dimy  = Rmg_G->get_PY0_GRID(1);
     int dimz  = Rmg_G->get_PZ0_GRID(1);
-    int order = LC->Lorder;
-    int num_coeff;
-    int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
-
-    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
-
+    kvec[0] = 0.0;
+    kvec[1] = 0.0;
+    kvec[2] = 0.0;
+    order = LC->Lorder;
+    pbasis = Rmg_G->get_P0_BASIS(1);
+    sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    work = new double[sbasis];
+ 
     //  determine total number of orbital to be included, sum of atomic orbitals for each speices
-
-    int num_orb = 0;
+    num_orb = 0;
     for (auto& sp : Species)
     {
         num_orb += sp.num_orbitals;
@@ -45,10 +61,9 @@ void OptimizeFdCoeff()
         Atom.Type->num_atoms +=1;
     }
 
-    // determine and initialize coeffients
+    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
-    std::vector<double> coeff;
-    std::vector<double> coeff_grad;
+    // determine and initialize coeffients
     double c2 = FD.cfac[0];
     double c1 = 1.0+c2;
 //  LC_6 is 2 orders lower than LC, not necessary to be 6 order
@@ -66,13 +81,9 @@ void OptimizeFdCoeff()
     coeff_grad.resize(coeff.size());
     num_coeff = coeff.size();
 
-    double *orbitals = new double[num_orb * pbasis];
-    double *orbitals_b = new double[num_orb * sbasis];
-    double *psi_psin = new double[num_orb * coeff.size()];
-
-    std::vector<double> ke_fft;
-    std::vector<double> ke_fd;
-    std::vector<double> occ_weight;
+    orbitals = new double[num_orb * pbasis];
+    orbitals_b = new double[num_orb * sbasis];
+    psi_psin = new double[num_orb * coeff.size()];
     ke_fft.resize(num_orb);
     ke_fd.resize(num_orb);
 
@@ -100,7 +111,6 @@ void OptimizeFdCoeff()
     {
         printf("\n occ_weigh size %d != num_orb %d", (int)occ_weight.size(), num_orb);
     }
-
 
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
@@ -155,22 +165,26 @@ void OptimizeFdCoeff()
         }
     }
 
-
     fftw_free (gbptr);
     fftw_free (beptr);
     delete [] fftw_phase;
 
-
     // calculte <psi(ijk)| psi(ijk + neighbor)> which will never change with different coeffients.
     compute_der(num_orb, dimx, dimy, dimz, pbasis, sbasis, num_coeff, order, orbitals, orbitals_b, psi_psin);
+} // end FDOpt::FDOpt
+
+FDOpt::~FDOpt(void)
+{
+    delete [] work;
+}
 
 
-    double ke_diff2;
-    int iter_max = 40;
-    lbfgs_init(num_coeff);
-    if(pct.gridpe == 0) printf("\n plane_center %e", LC->plane_centers[0]);
-    for(int iter = 0; iter < iter_max; iter++)
-    {
+double FDOpt::evaluate(void *, 
+                       const double *x,
+                       double *g,
+                       const int n)
+{
+        double ke_diff2=1.0;
         int icoeff = 0;
         for (int ax = 0; ax < 13; ax++)
         {
@@ -191,29 +205,35 @@ void OptimizeFdCoeff()
             ke_diff2 += (ke_fd[iorb] - ke_fft[iorb]) *(ke_fd[iorb] - ke_fft[iorb]) * occ_weight[iorb];
         }
         compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad);
+        for(int i=0;i < n;i++) g[i] = -coeff_grad[i];
+        printf("ke_diff2 = %14.8e\n",ke_diff2);
+        return ke_diff2;
 
-        //if(pct.gridpe == 0 && ct.verbose) 
-        if(pct.gridpe == 0) 
+} // end FDOpt::evaluate
+
+
+double FDOpt::Optimize(void)
+{
+    double ke_diff2;
+    llbfgs::lbfgs_parameter_t lbfgs_params;
+    llbfgs::lbfgs_load_default_parameters(&lbfgs_params);
+    int ret = llbfgs::lbfgs_optimize(num_coeff, coeff.data(), &ke_diff2, evaluate, NULL, NULL, this, &lbfgs_params);
+    int icoeff = 0;
+    for (int ax = 0; ax < 13; ax++)
+    {
+        if(!LC->include_axis[ax]) continue;
+        LC->plane_centers[ax] = 0.0;
+        for(int i = 0; i < LC->Lorder/2; i++)
         {
-            printf("\n iter %d  ke_diff2 = %e", iter, ke_diff2);
-            if(pct.gridpe == 0) printf("\n plane_center %e", LC->plane_centers[0]);
-            for(int ic = 0; ic < num_coeff; ic++)
-            {
-                printf("\n coeff  %e   grad  %e ", coeff[ic], coeff_grad[ic]);
-            }
+            LC->axis_lc[ax][i] = coeff[icoeff];
+            LC->plane_centers[ax] += -coeff[icoeff] * 2.0;
+            icoeff++;
+        } 
         }
-        
-
-        lbfgs(coeff.data(), coeff_grad.data(), num_coeff);
-    }
-
-    if(ke_diff2 >1.0e-10) printf("\n WARNING: Optimization of FD coefficients failed\n");
-
-    delete [] orbitals;
-    delete [] orbitals_b;
-    delete [] psi_psin;
-    delete [] work;
+    return ke_diff2;
 }
+
+
 
 void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<double> &ke_fd, double *psi_psin, 
         std::vector<double> &occ_weight, std::vector<double> &coeff_grad)

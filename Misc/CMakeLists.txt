@@ -4,7 +4,6 @@ COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
 OptimizeFdCoeff.cpp
-OptimizeFdCoeff1.cpp
 GetPlanarAnisotropy.cpp
 check_tests.cpp
 MixLdaU.cpp
