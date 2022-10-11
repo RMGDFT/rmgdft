@@ -229,7 +229,7 @@ double FDOpt::Optimize(void)
             LC->plane_centers[ax] += -coeff[icoeff] * 2.0;
             icoeff++;
         } 
-        }
+    }
     return ke_diff2;
 }
 
