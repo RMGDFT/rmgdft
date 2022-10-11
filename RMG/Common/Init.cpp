@@ -56,6 +56,7 @@
 #include "Elpa.h"
 #include "GatherScatter.h"
 #include "bfgs.h"
+#include "FDOpt.h"
 
 extern Scalapack *MainSp;
 #if USE_ELPA
@@ -601,6 +602,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         // Set up autotuning finite differencing
         GetFdFactor();
         //OptimizeFdCoeff();
+        //FDOpt *Fopt = new FDOpt();
+        //Fopt->Optimize();
+        //delete Fopt;
 
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS *ct.nspin];
