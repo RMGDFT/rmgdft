@@ -373,7 +373,7 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
                     {
                         for(int inn = 1; inn < order/2+1; inn++)
                         {
-                            psi_psin[iorb * num_coeff + icoeff - 1]  +=  B[iz] * (A[iz - inn * ixs + inn * iys] +  
+                            psi_psin[iorb * num_coeff + icoeff + inn-1]  +=  B[iz] * (A[iz - inn * ixs + inn * iys] +  
                                     A[iz + inn * ixs - inn * iys] - A[iz]);
                         }                   /* end for */
                     }
