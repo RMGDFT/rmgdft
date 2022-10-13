@@ -5,11 +5,6 @@
 #include <complex>
 // with input of base vectors a[3][3] and required order of Lapalacian operator, find needed neighbors and their coefficients. 
 
-typedef struct {
-    double coeff;
-    std::vector<int> i,j,k,relative_index;
-} CoeffList; 
-
 struct GridPoint{
     double dist;
     double delta[3];
@@ -20,9 +15,6 @@ struct GridPoint{
     double coeff_gx;
     double coeff_gy;
     double coeff_gz;
-    double coeff_gxy;
-    double coeff_gxz;
-    double coeff_gyz;
 };
 typedef GridPoint GridPoint;
 
@@ -65,10 +57,6 @@ public:
     // For rescaling to improve numercal stability
     double scale1;
 
-    std::vector<CoeffList> coeff_and_index;
-    std::vector<CoeffList> gx_coeff_and_index;
-    std::vector<CoeffList> gy_coeff_and_index;
-    std::vector<CoeffList> gz_coeff_and_index;
     void SetLattice(double a[3][3])
     {
         for(int i = 0; i < 3; i++)
@@ -98,7 +86,6 @@ public:
     
     void UpdateIndex(int dim[3]);
 
-    void GenerateList(const std::vector<GridPoint>& points);
     void BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension);
     void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction);
     void GetPointList3D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);

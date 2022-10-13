@@ -49,8 +49,6 @@ src/FiniteDiff_exp.cpp
 src/FiniteDiff_mehr.cpp
 src/LaplacianCoeff.cpp
 src/RmgTimer.cpp
-src/FiniteDiffLap.cpp
-src/FiniteDiffGrad.cpp
 src/RmgPrintTimings.cpp
 src/RmgSumAll.cpp
 src/RmgMaxAll.cpp
