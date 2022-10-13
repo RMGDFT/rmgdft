@@ -217,15 +217,65 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     }
     else if( this->ibrav == CUBIC_BC && !this->offdiag )
     {
-        dimension = 3;
-        der_list.clear();
+        double x[20], w1[20], w2[20];
+        for(int i=0;i<20;i++) x[i] = (double)i;
+        FiniteDiff::gen_weights(Lorder+1, 2, (double)Lorder/2, x, w1);
+        FiniteDiff::gen_weights(Lorder+1, 1, (double)Lorder/2, x, w2);
+        // First derivative requires this
+        for(int i=0;i <= Lorder;i++) w2[i] = -w2[i] * (double)std::abs(i-Lorder/2);
         points.clear();
         points1.clear();
-        //GetDerListFCC(der_list, Lorder);
-        GetDerList(der_list, Lorder, 3, 0);
-        //GetPointListBCC(points1, a, Ngrid, Lorder);
-        GetPointList3D(points1, a, Ngrid, Lorder);
-        this->BuildSolveLinearEq(points1, der_list, dimension);
+        double h = a[0][0] / (double)Ngrid[0];
+        double h2 = h*h;
+        double fac = 1.0 / 8.0 / h;
+        GetPointListBCC(points1, a, Ngrid, Lorder);
+        for(auto &a:points1)
+        {
+            if(a.index[0] == a.index[1] && a.index[0] == a.index[2])
+            {
+              a.coeff = w1[Lorder/2+a.index[0]]/4.0/h2;
+              int i1 = a.index[0];
+              a.coeff_gx = fac*w2[Lorder/2+i1];
+              a.coeff_gy = fac*w2[Lorder/2+i1];
+              a.coeff_gz = fac*w2[Lorder/2+i1];
+            }
+            else if(a.index[0] != 0 && a.index[1] == 0 && a.index[2] == 0)
+            {
+//A
+              a.coeff = w1[Lorder/2+a.index[0]]/4.0/h2;
+              int i1 = a.index[0];
+              a.coeff_gx = fac*w2[Lorder/2+i1];
+              a.coeff_gy = fac*w2[Lorder/2+i1];
+              a.coeff_gz = -fac*w2[Lorder/2+i1];
+            } 
+            else if(a.index[0] == 0 && a.index[1] != 0 && a.index[2] == 0)
+            {
+//C
+              a.coeff = w1[Lorder/2+a.index[1]]/4.0/h2;
+              int i1 = a.index[1];
+              a.coeff_gx = -fac*w2[Lorder/2+i1];
+              a.coeff_gy = fac*w2[Lorder/2+i1];
+              a.coeff_gz = fac*w2[Lorder/2+i1];
+            }
+            else if(a.index[0] == 0 && a.index[1] ==0 && a.index[2] != 0)
+            {
+//B
+              a.coeff = w1[Lorder/2+a.index[2]]/4.0/h2;
+              int i1 = a.index[2];
+              a.coeff_gx = fac*w2[Lorder/2+i1];
+              a.coeff_gy = -fac*w2[Lorder/2+i1];
+              a.coeff_gz = fac*w2[Lorder/2+i1];
+            }
+        }
+
+        for(auto &a:points1)
+        {
+            a.coeff *= scale1*scale1;
+            a.coeff_gx *= scale1;
+            a.coeff_gy *= scale1;
+            a.coeff_gz *= scale1;
+        }
+
         points.insert(std::end(points), std::begin(points1), std::end(points1));
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
@@ -1270,12 +1320,9 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
                 if(
                    (i==j && j==k) ||
-                   (abs(i)==abs(j) && abs(k)==0) ||
-                   (abs(i)==abs(k) && abs(j)==0) ||
-                   (abs(j)==abs(k) && abs(i)==0) ||
-                   (fabs(dx) > 1.0e-5 && fabs(dy) < 1.0e-5 && fabs(dz) < 1.0e-5) ||
-                   (fabs(dy) > 1.0e-5 && fabs(dx) < 1.0e-5 && fabs(dz) < 1.0e-5) ||
-                   (fabs(dz) > 1.0e-5 && fabs(dy) < 1.0e-5 && fabs(dx) < 1.0e-5))
+                   (i!=0 && j==0 && k==0) ||
+                   (i==0 && j!=0 && k==0) ||
+                   (i==0 && j==0 && k!=0))
                 {
                     dist = sqrt(dx * dx  + dy * dy + dz * dz);
                     point.dist = dist;
@@ -1293,7 +1340,7 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
             }
         }
     }
-//exit(0);
+
     std::stable_sort(points.begin(), points.end(), customLess_z);
     std::stable_sort(points.begin(), points.end(), customLess_y);
     std::stable_sort(points.begin(), points.end(), customLess_x);
