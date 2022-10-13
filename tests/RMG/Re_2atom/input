@@ -1,0 +1,37 @@
+# Rhenium test cell. Structure is HCP with gamma=60
+#
+lattice_vector = "
+    2.77447000        0.00000000        0.00000000
+    1.38723500        2.40276150        0.00000000
+    0.00000000        0.00000000        4.47993000
+"
+
+atoms=
+"
+ Re     0.000000000000e+00    0.000000000000e+00    0.000000000000e+00      1  0.000000
+ Re     3.333333333333e-01    3.333333333333e-01    5.000000000000e-01      1  0.000000
+"
+kpoint_mesh = "7 7 4"
+kpoint_is_shift = "1 1 1 "
+wavefunction_grid = "24 24 48"
+#kohn_sham_ke_fft="true"
+crds_units = "Angstrom"
+lattice_units = "Angstrom"
+atomic_coordinate_type = "Cell Relative"
+potential_grid_refinement="2"
+occupations_type = "MethfesselPaxton"
+occupation_electron_temperature_eV = "1.0e-2"
+charge_density_mixing = "0.2"
+potential_acceleration_constant_step = "1.0"
+charge_mixing_type = "Broyden"
+output_wave_function_file = "/dev/null"
+rms_convergence_criterion = "1e-7"
+start_mode="LCAO Start"
+max_scf_steps = "100"
+calculation_mode="Quench Electrons"
+localize_projectors = "false"
+localize_localpp = "false"
+kohn_sham_solver="davidson"
+davidson_premg="1"
+kpoint_distribution = "4"
+
