@@ -56,6 +56,17 @@ public:
              const double *x,
              const double *g,
              const int n);
+    static int progress(void *instance,
+                         const double *x,
+                         const double *g,
+                         const double fx,
+                         const double xnorm,
+                         const double gnorm,
+                         const double step,
+                         int n,
+                         int k,
+                         int ls);
+
 };
 
 #endif
