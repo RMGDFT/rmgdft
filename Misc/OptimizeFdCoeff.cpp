@@ -195,6 +195,27 @@ double FDOpt::stepbound(void *,
   return 0.5;
 }
 
+int FDOpt::progress(void *instance,
+                         const double *x,
+                         const double *g,
+                         const double fx,
+                         const double xnorm,
+                         const double gnorm,
+                         const double step,
+                         int n,
+                         int k,
+                         int ls)
+{
+    if(ct.verbose && pct.gridpe==0)
+    {
+        printf("Iteration %d:\n", k);
+        printf("  fx = %f, x[0] = %f, x[1] = %f\n", fx, x[0], x[1]);
+        printf("  xnorm = %f, gnorm = %f, step = %f\n", xnorm, gnorm, step);
+        printf("\n");
+    }
+    return 0;
+}
+
 
 double FDOpt::evaluate(void *, 
                        const double *x,
@@ -235,7 +256,12 @@ double FDOpt::Optimize(void)
     double ke_diff2=0.0;
     llbfgs::lbfgs_parameter_t lbfgs_params;
     llbfgs::lbfgs_load_default_parameters(&lbfgs_params);
-    int ret = llbfgs::lbfgs_optimize(num_coeff, coeff.data(), &ke_diff2, evaluate, NULL, NULL, this, &lbfgs_params);
+    lbfgs_params.delta = 0;
+    int ret = llbfgs::lbfgs_optimize(num_coeff, coeff.data(), &ke_diff2, evaluate, stepbound, progress, this, &lbfgs_params);
+
+    if(ct.verbose && pct.gridpe==0)
+        printf("FD Opt lbfgs return msg = %s\n", llbfgs::lbfgs_strerror(ret));
+
     int icoeff = 0;
     for (int ax = 0; ax < 13; ax++)
     {
