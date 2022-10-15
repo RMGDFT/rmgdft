@@ -77,14 +77,42 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
     double *nvtot_psi = vtot_psi;;
+    double *coarse_vtot;
     if(pct.coalesce_factor > 1)
     {
         nvtot_psi = new double[pbasis * pct.coalesce_factor];
+        coarse_vtot = new double[pbasis * pct.coalesce_factor];
         GatherGrid(this->G, pbasis, vtot_psi, nvtot_psi);
     }
-    
+    else
+    {
+        coarse_vtot = new double[pbasis];
+    }
+
     // Set trade images coalesce_factor
     this->T->set_coalesce_factor(pct.coalesce_factor);
+
+    // Restrict coarse vtot
+    {
+        Mgrid MG(this->L, this->T);
+        int ixoff, iyoff, izoff;
+        int dimx = pct.coalesce_factor * G->get_PX0_GRID(1);
+        int dimy = G->get_PY0_GRID(1);
+        int dimz = G->get_PZ0_GRID(1);
+        int NX_GRID = G->get_NX_GRID(1);
+        int NY_GRID = G->get_NY_GRID(1);
+        int NZ_GRID = G->get_NZ_GRID(1);
+        int sbasis = (dimx + 2)*(dimy + 2)*(dimz + 2);
+        int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
+        int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
+        int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
+        double *work = new double[sbasis]();
+        CPP_pack_ptos_convert (work, nvtot_psi, dimx, dimy, dimz);
+        this->T->trade_images (work, dimx, dimy, dimz, FULL_TRADE);
+        MG.mg_restrict (work, coarse_vtot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        delete [] work;
+    }
+ 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
@@ -160,6 +188,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 thread_control.job = HYBRID_EIG;
                 thread_control.vtot = nvtot_psi;
                 thread_control.vxc_psi = vxc_psi;
+                thread_control.coarse_vtot = coarse_vtot;
                 thread_control.vcycle = vcycle;
                 thread_control.sp = &this->Kstates[st1 + ist + istart];
                 thread_control.p3 = (void *)this;
@@ -196,6 +225,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         // Eigenvalues are not copied to all nodes in MgEigState when using coalesced grids.
         GatherEigs(this);
     }
+    delete [] coarse_vtot;
 
     if(Verify ("freeze_occupied", true, this->ControlMap)) {
 

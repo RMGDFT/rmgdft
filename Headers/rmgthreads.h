@@ -30,6 +30,7 @@ typedef struct
     void *sp;
 
     double *vtot;
+    double *coarse_vtot;
     double *vxc_psi;
 
     double *rho_neutral;

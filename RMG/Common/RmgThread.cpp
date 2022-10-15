@@ -200,17 +200,17 @@ void *run_threads(void *v) {
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
+                        MgEigState<double,float> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.coarse_vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
                     else
-                        MgEigState<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
+                        MgEigState<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.coarse_vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot,
+                        MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, ss.coarse_vtot,
 ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
                     else
-                        MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot,
+                        MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, ss.coarse_vtot,
 ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
                 }
                 break;
