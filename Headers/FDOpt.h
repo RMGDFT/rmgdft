@@ -52,6 +52,10 @@ public:
              const double *x,
              double *g,
              const int n);
+    static double stepbound(void *,
+             const double *x,
+             const double *g,
+             const int n);
 };
 
 #endif

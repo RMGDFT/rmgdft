@@ -186,6 +186,15 @@ FDOpt::~FDOpt(void)
     delete [] work;
 }
 
+// Fixed for now
+double FDOpt::stepbound(void *,
+                         const double *xp,
+                         const double *d,
+                         const int n)
+{
+  return 0.5;
+}
+
 
 double FDOpt::evaluate(void *, 
                        const double *x,
@@ -223,7 +232,7 @@ double FDOpt::evaluate(void *,
 
 double FDOpt::Optimize(void)
 {
-    double ke_diff2;
+    double ke_diff2=0.0;
     llbfgs::lbfgs_parameter_t lbfgs_params;
     llbfgs::lbfgs_load_default_parameters(&lbfgs_params);
     int ret = llbfgs::lbfgs_optimize(num_coeff, coeff.data(), &ke_diff2, evaluate, NULL, NULL, this, &lbfgs_params);
