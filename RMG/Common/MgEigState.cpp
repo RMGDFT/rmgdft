@@ -66,16 +66,16 @@ double ComputeEig(int n, T *A, T *B, T *D)
 }
 
 
-template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, int);
-template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, int);
-template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *,
+template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
+template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, double *,
         double *, std::complex<double> *, std::complex<double> *, int);
-template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *,
+template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, double *,
         double *, std::complex<double> *, std::complex<double> *, int);
 
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
+void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
     BaseThread *Thread = BaseThread::getBaseThread(0);
@@ -140,6 +140,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *sg_twovpsi_t  =  (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
     OrbitalType *saved_psi  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
     double *dvtot_psi = (double *)p->ordered_malloc(aratio);pool_blocks+=aratio;
+    double *c_vtot = (double *)p->ordered_malloc(2);pool_blocks+=2;
     CalcType *tmp_psi_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *res_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
@@ -154,6 +155,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     else
         GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, pct.coalesce_factor);
 
+    // Set up coarse vtot
+    for(int idx=0;idx < pbasis;idx++) c_vtot[idx] = -coarse_vtot[idx];
 
     // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
     if(ct.norm_conserving_pp)
@@ -290,6 +293,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                             dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                             1, levels, eig_pre, eig_post, 1, 
                             ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                            //ct.eig_parm.sb_step, Zfac, 0.0, c_vtot,
                             NX_GRID, NY_GRID, NZ_GRID,
                             G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                             dimx, dimy, dimz, ct.boundaryflag);
