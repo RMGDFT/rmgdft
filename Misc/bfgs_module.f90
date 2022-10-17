@@ -140,7 +140,7 @@ CONTAINS
    !
    !------------------------------------------------------------------------
    SUBROUTINE init_bfgs( stdout_, bfgs_ndim_, trust_radius_max_, &
-                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_, spin_idx, img_idx, kp_idx)
+                   trust_radius_min_, trust_radius_ini_, w_1_, w_2_, spin_idx, img_idx, kp_idx, runflag)
      !------------------------------------------------------------------------
      !! set values for several parameters of the algorithm
      !
@@ -156,6 +156,7 @@ CONTAINS
         trust_radius_max_, &
         w_1_,              &
         w_2_
+     INTEGER, INTENT(IN) :: runflag
      CHARACTER(2) :: tstr1
      CHARACTER(8) :: tstr2
      CHARACTER(4) :: tstr3
@@ -178,7 +179,7 @@ CONTAINS
      bfgs_file = 'rmg.bfgs' // tstr1 // tstr2 // tstr3
      !write(6,*)bfgs_file
      INQUIRE(FILE = bfgs_file, EXIST = exst)
-     IF (exst) THEN
+     IF (exst .and. runflag /= 1) THEN
         !
         OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
         CLOSE(UNIT = iunit, STATUS = 'DELETE')
