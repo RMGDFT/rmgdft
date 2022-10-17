@@ -22,7 +22,6 @@ double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
 
 void GetFdFactor(void)
 {
-    int ibrav = Rmg_L.get_ibrav_type();
     FiniteDiff FD(&Rmg_L);
     std::complex<double> I_t(0.0, 1.0);
 
@@ -110,11 +109,7 @@ void GetFdFactor(void)
             for(int j=0;j < 2;j++)
             {
                 FD.cfac[0] = c2;
-                if(ct.kohn_sham_fd_order == 6) ApplyAOperator (orbital, work, kvec);
-                if(ct.kohn_sham_fd_order == 8) ApplyAOperator (orbital, work, kvec);
-                if(ct.kohn_sham_fd_order == 10) ApplyLaplacian (orbital, work, 10, "Coarse");
-                if(ct.kohn_sham_fd_order == 12) ApplyLaplacian (orbital, work, 12, "Coarse");
-//                if(ct.kohn_sham_fd_order == 6) ApplyLaplacian (orbital, work, 6, "Coarse");
+                ApplyAOperator (orbital, work, kvec);
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
                 if(ct.verbose && pct.gridpe == 0) printf("FFT-FD  %e   %e\n",c2, fft_ke - fd_ke);
                 cvals.push_back(c2);
@@ -164,8 +159,6 @@ void GetFdFactor(void)
 
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac[0]);
     FD.cfac[0] = newcfac[0];
-    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) FD.cfac[2] = newcfac[2];
-    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC2 = %f\n",newcfac[2]);
 
     delete [] work;
     fftw_free (gbptr);
