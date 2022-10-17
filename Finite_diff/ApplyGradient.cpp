@@ -89,20 +89,12 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhy = Rmg_G->get_hygrid(density);
     double gridhz = Rmg_G->get_hzgrid(density);
 
-    int ibrav = Rmg_L.get_ibrav_type();
     if(order == APP_CI_FFT)
     {
         AppGradPfft(a, gx, gy, gz, grid); 
     }
     else
     {
-#ifdef TWELFTH_ORDER_FD
-        if(order == APP_CI_TWELVE)
-        {
-            AppGradPfft(a, gx, gy, gz, grid); 
-            return;
-        }
-#endif
         CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz,
                              gridhx, gridhy, gridhz, order, ct.alt_laplacian);
     }
@@ -134,20 +126,12 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhy = G->get_hygrid(density);
     double gridhz = G->get_hzgrid(density);
 
-    int ibrav = Rmg_L.get_ibrav_type();
     if(order == APP_CI_FFT)
     {
         AppGradPfft(a, gx, gy, gz, grid); 
     }
     else
     {
-#ifdef TWELFTH_ORDER_FD
-        if(order == APP_CI_TWELVE)
-        {
-            AppGradPfft(a, gx, gy, gz, grid); 
-            return;
-        }
-#endif
         CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz,
                              gridhx, gridhy, gridhz, order, ct.alt_laplacian);
     }

@@ -81,6 +81,11 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     else if(order == APP_CI_TEN) {
         FD.fd_gradient_general<RmgType, 10> (rptr, bx, by, bz, gridhx, dimx, dimy, dimz);
     }
+#ifdef TWELFTH_ORDER_FD
+    else if(order == APP_CI_TWELVE) {
+        FD.fd_gradient_general<RmgType, 12> (rptr, bx, by, bz, gridhx, dimx, dimy, dimz);
+    }
+#endif
     else {
         rmg_error_handler (__FILE__, __LINE__, "Finite difference order not programmed yet in app_gradient_driver.\n");
     }

@@ -208,11 +208,14 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         if(ct.verbose) delete RTA;
         return cc;
     }
-
 #ifdef TWELFTH_ORDER_FD
-    // Order 12 is for testing and is gamma only
-    if(order == APP_CI_TWELVE) {
-        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    // Order 12 is for testing
+    else if(order == APP_CI_TWELVE)
+    {
+        RmgTimer *RTA=NULL;
+        if(ct.verbose) RTA = new RmgTimer("CPUFD");
+        cc = FD.app_combined<DataType, 12> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
+        if(ct.verbose) delete RTA;
         return cc;
     }
 #endif

@@ -110,8 +110,8 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         cc = FD.app_combined<RmgType, 10>(rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
     }
 #ifdef TWELFTH_ORDER_FD
-    else if(order == APP_CI_TWELVE) {
-        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    else if(order == APP_CI_TWELVE){
+        cc = FD.app_combined<RmgType, 12>(rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
     }
 #endif
     else {
