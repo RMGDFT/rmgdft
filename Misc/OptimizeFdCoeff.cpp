@@ -64,12 +64,12 @@ FDOpt::FDOpt(void)
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
     // determine and initialize coeffients
-    double c2 = FD.cfac[0];
-    double c1 = 1.0+c2;
 //  LC_6 is 2 orders lower than LC, not necessary to be 6 order
     ct.alt_laplacian = false;
     for (int ax = 0; ax < 13; ax++)
     {
+        double c2 = FD.cfac[ax];
+        double c1 = 1.0+c2;
         if(!LC->include_axis[ax]) continue;
         LC->plane_centers[ax] = c1 * LC->plane_centers[ax] - c2 * LC_6->plane_centers[ax];
         coeff.push_back(LC->axis_lc[ax][0]);
