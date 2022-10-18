@@ -39,7 +39,7 @@
 #define         PI          3.14159265358979323
 
 int FiniteDiff::allocation_limit = 65536;
-double FiniteDiff::cfac[12];
+double FiniteDiff::cfac[13];
 std::unordered_map<int, LaplacianCoeff *> FiniteDiff::FdCoeffs;
 
 
@@ -1457,13 +1457,13 @@ double FiniteDiff::fd_coeff0(int order, double hxgrid)
     double scale = LC2->gen_hxgrid / hxgrid;
     scale = scale*scale;
 
-    double c1, c2 = 0.0;
-    if(this->alt_laplacian) c2 = cfac[0];
-    c1 = 1.0 + c2;
     double coeff0 = 0.0;
-    if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
     for(int ax=0;ax < 13;ax++)
     {
+        double c1, c2 = 0.0;
+        if(this->alt_laplacian) c2 = cfac[ax];
+        if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
+        c1 = 1.0 + c2;
         coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
     }
     return scale*coeff0;
@@ -1520,7 +1520,7 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
     }
 
     double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    if(this->alt_laplacian && order > 2) c2 = cfac[ax];
     c1 = scale*(1.0 + c2);
     t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
 
@@ -1556,7 +1556,7 @@ void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType
     scale = scale*scale;
 
     double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    if(this->alt_laplacian && order > 2) c2 = cfac[axis];
     c1 = scale*(1.0 + c2);
 
     for(int i=0;i < order/2-1;i++)

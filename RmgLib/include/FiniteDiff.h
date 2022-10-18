@@ -97,7 +97,7 @@ public:
     static int LCkey(double a0h);
     void set_alt_laplacian_flag(bool flag);
     static int allocation_limit;
-    static double cfac[12];
+    static double cfac[13];
 
     // Used to access Coeffs for a given grid and order.
     // The key is dimx*dimy*dimz+order

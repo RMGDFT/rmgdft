@@ -7,6 +7,12 @@
 #include "Lattice.h"
 #include "transition.h"
 
+
+void SetCfacs(double *cf, double val)
+{
+    for(int i=0;i < 13;i++) cf[i] = val;
+}
+
 double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
 {
     double ke = 0.0;
@@ -108,7 +114,7 @@ void GetFdFactor(void)
             // Just doing a linear fit with 2 points for now
             for(int j=0;j < 2;j++)
             {
-                FD.cfac[0] = c2;
+                SetCfacs(FD.cfac, c2);
                 ApplyAOperator (orbital, work, kvec);
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
                 if(ct.verbose && pct.gridpe == 0) printf("FFT-FD  %e   %e\n",c2, fft_ke - fd_ke);
@@ -158,7 +164,7 @@ void GetFdFactor(void)
     }
 
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac[0]);
-    FD.cfac[0] = newcfac[0];
+    SetCfacs(FD.cfac, newcfac[0]);
 
     delete [] work;
     fftw_free (gbptr);
