@@ -12,7 +12,7 @@
 void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbasis, 
         int num_coeff, int order, double *orbitals, double * orbitals_b, double *psi_psin);
 void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<double> &ke_fd, 
-        double *psi_psin, std::vector<double> &occ_weight, std::vector<double>& coeff_grad);
+        double *psi_psin, std::vector<double> &occ_weight, std::vector<double>& coeff_grad, std::vector<double>& coeff);
 double ComputeKineticEnergy(double *x, double *lapx, int pbasis);
 
 int FDOpt::pbasis;
@@ -222,28 +222,39 @@ double FDOpt::evaluate(void *,
                        double *g,
                        const int n)
 {
-        double ke_diff2=1.0;
+        double ke_diff2=0.0;
         int icoeff = 0;
         for (int ax = 0; ax < 13; ax++)
         {
             if(!LC->include_axis[ax]) continue;
             LC->plane_centers[ax] = 0.0;
+            double dist = 1.0 / LC->plane_dists[ax];
+            double x2sum = 0.0;
+            double x4sum = 0.0;
+            double x6sum = 0.0;
             for(int i = 0; i < LC->Lorder/2; i++)
             {
+                double h2 = dist * (double)(LC->Lorder/2 - i);
+                h2 = h2 * h2;
+                x2sum += coeff[icoeff]*h2;
+                x4sum += coeff[icoeff]*h2*h2;
+                x6sum += coeff[icoeff]*h2*h2*h2;
                 LC->axis_lc[ax][i] = coeff[icoeff];
                 if(ct.verbose) printf("For axis = %d  Coeff = %20.12f\n",ax,coeff[icoeff]);
                 LC->plane_centers[ax] += -coeff[icoeff] * 2.0;
                 icoeff++;
             } 
+            ke_diff2 += (double)num_orb*(x2sum - 1.0)*(x2sum - 1.0);
+            ke_diff2 += (double)num_orb*x4sum*x4sum;
+            ke_diff2 += (double)num_orb*x6sum*x6sum;
         }
-        ke_diff2 = 0.0;
         for(int iorb = 0; iorb < num_orb; iorb++)
         {
             ApplyAOperator (&orbitals[iorb*pbasis], work, kvec);
             ke_fd[iorb] = ComputeKineticEnergy(&orbitals[iorb*pbasis], work, pbasis);
             ke_diff2 += (ke_fd[iorb] - ke_fft[iorb]) *(ke_fd[iorb] - ke_fft[iorb]) * occ_weight[iorb];
         }
-        compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad);
+        compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad, coeff);
         for(int i=0;i < n;i++) g[i] = -coeff_grad[i];
         printf("ke_diff2 = %14.8e\n",ke_diff2);
         return ke_diff2;
@@ -280,10 +291,14 @@ double FDOpt::Optimize(void)
 
 
 void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<double> &ke_fd, double *psi_psin, 
-        std::vector<double> &occ_weight, std::vector<double> &coeff_grad)
+        std::vector<double> &occ_weight, std::vector<double> &coeff_grad, std::vector<double>& coeff)
 {
     std::fill(coeff_grad.begin(), coeff_grad.end(), 0.0);
     int num_coeff = coeff_grad.size();
+    std::vector<double> tcoeff_grad;
+    tcoeff_grad.resize(num_coeff);
+    std::fill(tcoeff_grad.begin(), tcoeff_grad.end(), 0.0);
+    double gnorm1 = 0.0;
     for(int iorb = 0; iorb < num_orb; iorb++)
     {
         for(int i = 0; i < num_coeff; i++)
@@ -292,8 +307,44 @@ void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<do
             coeff_grad[i] += 2.0 * (ke_fd[iorb] - ke_fft[iorb]) * psi_psin[iorb * num_coeff + i] * occ_weight[iorb] ;
         }
     }
+    for(int i=0;i < num_coeff;i++) gnorm1 += coeff_grad[i]*coeff_grad[i];
+
+        int icoeff = 0;
+        for (int ax = 0; ax < 13; ax++)
+        {
+            if(!LC->include_axis[ax]) continue;
+            double dist = 1.0 / LC->plane_dists[ax];
+            double x2sum = 0.0;
+            double x4sum = 0.0;
+            double x6sum = 0.0;
+            for(int i = 0; i < LC->Lorder/2; i++)
+            {
+                double h2 = dist * (double)(LC->Lorder/2 - i);
+                h2 = h2 * h2;
+                x2sum += coeff[icoeff]*h2;
+                x4sum += coeff[icoeff]*h2*h2;
+                x6sum += coeff[icoeff]*h2*h2*h2;
+                icoeff++;
+            } 
+            int icoeff1 = icoeff - LC->Lorder/2;
+            for(int i = 0; i < LC->Lorder/2; i++)
+            {
+                double h2 = dist * (double)(LC->Lorder/2 - i);
+                h2 = h2 * h2;
+                tcoeff_grad[icoeff1] -= 2.0 * (x2sum - 1.0) * h2;
+                tcoeff_grad[icoeff1] -= 2.0 * (x4sum) * h2 * h2;
+                tcoeff_grad[icoeff1] -= 2.0 * (x6sum) * h2 * h2 * h2;
+                icoeff1++;
+            }
+        }
+
+    double gnorm2 = 0.0;
+    for(int i=0;i < num_coeff;i++) gnorm2 += coeff_grad[i]*coeff_grad[i];
+//    gnorm2 = sqrt(gnorm2 / gnorm1);
+    for(int i=0;i < num_coeff;i++) coeff_grad[i] += (double)num_orb*tcoeff_grad[i];
 
 }
+
 void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbasis, int num_coeff, int order, double *orbitals, double * orbitals_b, double *psi_psin)
 {
     for(int i = 0; i < num_orb * num_coeff; i++) psi_psin[i] = 0.0;
