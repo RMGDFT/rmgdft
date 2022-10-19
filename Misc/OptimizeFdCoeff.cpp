@@ -222,7 +222,7 @@ double FDOpt::evaluate(void *,
                        double *g,
                        const int n)
 {
-        double ke_diff2=0.0;
+        double ke_diff2=0.0, poly_diff2 = 0.0;
         int icoeff = 0;
         for (int ax = 0; ax < 13; ax++)
         {
@@ -244,9 +244,9 @@ double FDOpt::evaluate(void *,
                 LC->plane_centers[ax] += -coeff[icoeff] * 2.0;
                 icoeff++;
             } 
-            ke_diff2 += (double)num_orb*(x2sum - 1.0)*(x2sum - 1.0);
-            ke_diff2 += (double)num_orb*x4sum*x4sum;
-            ke_diff2 += (double)num_orb*x6sum*x6sum;
+            poly_diff2 += (double)num_orb*(x2sum - 1.0)*(x2sum - 1.0);
+            poly_diff2 += (double)num_orb*x4sum*x4sum;
+            poly_diff2 += (double)num_orb*x6sum*x6sum;
         }
         for(int iorb = 0; iorb < num_orb; iorb++)
         {
@@ -256,8 +256,8 @@ double FDOpt::evaluate(void *,
         }
         compute_coeff_grad(num_orb, ke_fft, ke_fd, psi_psin, occ_weight, coeff_grad, coeff);
         for(int i=0;i < n;i++) g[i] = -coeff_grad[i];
-        printf("ke_diff2 = %14.8e\n",ke_diff2);
-        return ke_diff2;
+        printf("ke_diff2 = %14.8e   %14.8e\n",ke_diff2, poly_diff2);
+        return ke_diff2 + poly_diff2;
 
 } // end FDOpt::evaluate
 
@@ -267,7 +267,9 @@ double FDOpt::Optimize(void)
     double ke_diff2=0.0;
     llbfgs::lbfgs_parameter_t lbfgs_params;
     llbfgs::lbfgs_load_default_parameters(&lbfgs_params);
-    lbfgs_params.delta = 0;
+    lbfgs_params.delta = 0.0;
+    lbfgs_params.past = 5;
+    lbfgs_params.line_search_type = 0;
     int ret = llbfgs::lbfgs_optimize(num_coeff, coeff.data(), &ke_diff2, evaluate, stepbound, progress, this, &lbfgs_params);
 
     if(ct.verbose && pct.gridpe==0)
@@ -327,6 +329,7 @@ void compute_coeff_grad(int num_orb, std::vector<double> &ke_fft, std::vector<do
                 icoeff++;
             } 
             int icoeff1 = icoeff - LC->Lorder/2;
+printf("PPPP  %e  %e  %e\n",x2sum,x4sum,x6sum);
             for(int i = 0; i < LC->Lorder/2; i++)
             {
                 double h2 = dist * (double)(LC->Lorder/2 - i);
