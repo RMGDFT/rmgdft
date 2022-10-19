@@ -58,11 +58,7 @@ void GetFdFactor(void)
     for (auto& sp : Species)
     {
         sp.fd_factor1.clear();
-        sp.fd_factor2.clear();
-        sp.fd_factor3.clear();
         sp.fd_fke1.clear();
-        sp.fd_fke2.clear();
-        sp.fd_fke3.clear();
         sp.fd_slopes.clear();
         sp.fd_xint.clear();
         sp.fd_yint.clear();
@@ -111,7 +107,7 @@ void GetFdFactor(void)
             double c2 = 0.0;
             cvals.clear();
             diffs.clear();
-            // Just doing a linear fit with 2 points for now
+            // Linear fit with 2 points
             for(int j=0;j < 2;j++)
             {
                 SetCfacs(FD.cfac, c2);

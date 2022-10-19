@@ -518,6 +518,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Set up autotuning finite differencing
     GetFdFactor();
+    // FDOpt is experimental
     //FDOpt *Fopt = new FDOpt();
     //Fopt->Optimize();
     //delete Fopt;
