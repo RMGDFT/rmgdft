@@ -133,7 +133,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.ecutwfc > 0.0)
     {
         double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-        double ecut = coarse_pwaves->gmax * tpiba2 /2.0;
+        double ecut = coarse_pwaves->gmax * tpiba2;
 
         if(ecut < ct.ecutwfc)
         {
@@ -141,7 +141,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
         else
         {
-            coarse_pwaves->gcut = 2.0 * ct.ecutwfc / tpiba2;
+            coarse_pwaves->gcut = ct.ecutwfc / tpiba2;
+            fine_pwaves->gcut = coarse_pwaves->gcut * Rmg_G->default_FG_RATIO * Rmg_G->default_FG_RATIO;
         }
     }
     //int fgcount = coarse_pwaves->count_filtered_gvectors(ct.filter_factor);
