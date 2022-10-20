@@ -242,6 +242,9 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     for(auto& a:T) delete a.second;
     SetLaplacian();
     GetFdFactor();
+    // Kpoint version
+    //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
+
     //OptimizeFdCoeff();
 
 }                               /* end init */

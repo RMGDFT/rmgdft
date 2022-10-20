@@ -105,7 +105,8 @@ public:
     void LcaoGetPsi (void);
     void DeleteNvmeArrays(void);
     void ClearPotentialAcceleration(void);
-
+    void GetFdFactor(void);
+    std::vector<double> fd_factors;
 
     // Minimal kpoint structure
     KSTRUCT &kp;

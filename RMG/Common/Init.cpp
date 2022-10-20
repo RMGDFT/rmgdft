@@ -523,6 +523,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //FDOpt *Fopt = new FDOpt();
     //Fopt->Optimize();
     //delete Fopt;
+    // Kpoint version
+    //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
@@ -558,6 +560,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Generate initial Betaxpsi
     for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
+        Kptr[kpt]->GetFdFactor();
+
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
         //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
 #if HIP_ENABLED || CUDA_ENABLED
