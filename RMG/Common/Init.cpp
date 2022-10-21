@@ -560,7 +560,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Generate initial Betaxpsi
     for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
-        Kptr[kpt]->GetFdFactor();
 
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
         //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
