@@ -1461,7 +1461,7 @@ double FiniteDiff::fd_coeff0(int order, double hxgrid)
     for(int ax=0;ax < 13;ax++)
     {
         double c1, c2 = 0.0;
-        if(this->alt_laplacian) c2 = cfac[ax];
+        if(this->alt_laplacian) c2 = cfac[0];
         if(order == 2) {c1=1.0;c2 = 0.0;}    // no optimzation for 2nd order
         c1 = 1.0 + c2;
         coeff0 += c1*LC2->plane_centers[ax] - c2*LC1->plane_centers[ax];
@@ -1519,24 +1519,26 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
         return;
     }
 
-    double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[ax];
+    double c1, c2=0.0, c1g, c2g;
+    if(this->alt_laplacian && order > 2) c2 = cfac[0];
+    if(this->alt_laplacian && order > 2) c2g = cfac[1];
     c1 = scale*(1.0 + c2);
-    t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
+    c1g = scale*(1.0 + c2g);
+    //t1 = c1*LC2->axis_lc[ax][3] - c2*LC1->axis_lc[ax][2];
 
     for(int i=0;i < order/2-1;i++)
     {
         t1 = c1*LC2->axis_lc[ax][order/2-i-1] - c2*LC1->axis_lc[ax][order/2-i-2];
-        x1 = c1*LC2->axis_gc_x[ax][order/2-i-1] - c2*LC1->axis_gc_x[ax][order/2-i-2];
-        y1 = c1*LC2->axis_gc_y[ax][order/2-i-1] - c2*LC1->axis_gc_y[ax][order/2-i-2];
-        z1 = c1*LC2->axis_gc_z[ax][order/2-i-1] - c2*LC1->axis_gc_z[ax][order/2-i-2];
+        x1 = c1g*LC2->axis_gc_x[ax][order/2-i-1] - c2g*LC1->axis_gc_x[ax][order/2-i-2];
+        y1 = c1g*LC2->axis_gc_y[ax][order/2-i-1] - c2g*LC1->axis_gc_y[ax][order/2-i-2];
+        z1 = c1g*LC2->axis_gc_z[ax][order/2-i-1] - c2g*LC1->axis_gc_z[ax][order/2-i-2];
         cm[i] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
         cp[i] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
     }
     t1 = c1*LC2->axis_lc[ax][0];
-    x1 = c1*LC2->axis_gc_x[ax][0];
-    y1 = c1*LC2->axis_gc_y[ax][0];
-    z1 = c1*LC2->axis_gc_z[ax][0];
+    x1 = c1g*LC2->axis_gc_x[ax][0];
+    y1 = c1g*LC2->axis_gc_y[ax][0];
+    z1 = c1g*LC2->axis_gc_z[ax][0];
     cm[order/2-1] = t1 + s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
     cp[order/2-1] = t1 - s1 * I_t * (kvec[0]*x1 + kvec[1]*y1 + kvec[2]*z1);
 
@@ -1556,7 +1558,7 @@ void FiniteDiff::fd_gradient_coeffs(int order, double hxgrid, int axis , RmgType
     scale = scale*scale;
 
     double c1, c2=0.0;
-    if(this->alt_laplacian && order > 2) c2 = cfac[axis];
+    if(this->alt_laplacian && order > 2) c2 = cfac[1];
     c1 = scale*(1.0 + c2);
 
     for(int i=0;i < order/2-1;i++)

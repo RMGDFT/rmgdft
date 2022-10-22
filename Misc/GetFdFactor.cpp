@@ -131,7 +131,7 @@ void GetFdFactor(void)
     }
 
     // Loop over ions
-    double newcfac[3] = {0.0,0.0,0.0}, fweight=0.0, a=0.0;
+    double fweight=0.0, a=0.0;
     for(auto& Atom : Atoms)
     {
         for(size_t i=0;i < Atom.Type->fd_slopes.size();i++)
@@ -148,19 +148,16 @@ void GetFdFactor(void)
     // If extrememly well converged then nothing to do here
     if(fweight == 0.0)
     {
-        newcfac[0] = 0.0;
-        newcfac[1] = 0.0;
-        newcfac[2] = 0.0;
+        FD.cfac[0] = 0.0;
+        FD.cfac[1] = 0.0;
     }
     else
     {
-        newcfac[0] = a / fweight;
-        newcfac[1] = a / fweight;
-        newcfac[2] = a / fweight;
+        FD.cfac[0] = a / fweight;
+        FD.cfac[1] = a / fweight;
     }
 
-    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f\n",newcfac[0]);
-    SetCfacs(FD.cfac, newcfac[0]);
+    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
 
     delete [] work;
     fftw_free (gbptr);
