@@ -38,6 +38,7 @@ extern Symmetry *Rmg_Symm;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void OptimizeFdCoeff();
 void check_tests();
 void write_rho_z(double *, char *);

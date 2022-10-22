@@ -25,9 +25,7 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include "transition.h"
 #include "blas.h"
 #include "RmgSumAll.h"
-
-#include "prototypes_on.h"
-#include "init_var.h"
+#include "transition.h"
 
 
 void DistributeToGlobal(double * distr_array, double * global_array)

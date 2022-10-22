@@ -35,7 +35,6 @@ app_grad6.cpp
 app_mask.cpp
 assign_weight_on.cpp
 density_orbit_X_orbit.cpp
-DistributeToGlobal.cpp
 DotProductOrbitOrbit.cpp
 DotProductOrbitNl.cpp
 duplicate_states_info.cpp

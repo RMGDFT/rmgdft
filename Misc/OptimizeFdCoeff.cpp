@@ -72,10 +72,12 @@ FDOpt::FDOpt(void)
         double c1 = 1.0+c2;
         if(!LC->include_axis[ax]) continue;
         LC->plane_centers[ax] = c1 * LC->plane_centers[ax] - c2 * LC_6->plane_centers[ax];
+        LC->axis_lc[ax][0] *= c1;
         coeff.push_back(LC->axis_lc[ax][0]);
         for(int i = 1; i < LC->Lorder/2; i++)
         {
-            coeff.push_back(c1*LC->axis_lc[ax][i] - c2 * LC_6->axis_lc[ax][i-1]);
+            LC->axis_lc[ax][i] = c1*LC->axis_lc[ax][i] - c2 * LC_6->axis_lc[ax][i-1];
+            coeff.push_back(LC->axis_lc[ax][i]);
         } 
     }
     coeff_grad.resize(coeff.size());
@@ -605,3 +607,57 @@ void compute_der(int num_orb, int dimx, int dimy, int dimz, int pbasis, int sbas
 
     for(int idx = 0; idx < num_orb * num_coeff; idx++) psi_psin[idx] *= -0.5 * get_vel();
 }
+void FDOpt::Analyze_fft(int orb_index)
+{
+    double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
+    int nx = get_NX_GRID();
+    int ny = get_NY_GRID();
+    int nz = get_NZ_GRID();
+
+    ct.alt_laplacian = false;
+    double *one_orbital = &orbitals[orb_index * pbasis];
+    double *work_glob = new double[nx * ny * nz];
+    double *gmags_glob = new double[nx * ny * nz];
+    DistributeToGlobal(coarse_pwaves->gmags, gmags_glob);
+    std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    FftLaplacianCoarse(one_orbital, work);
+    for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(work[idx],0.0);
+    coarse_pwaves->FftForward(gbptr, beptr);
+
+    for(int idx = 0; idx < pbasis; idx++) work[idx] = std::real(beptr[idx]);
+    DistributeToGlobal(work, work_glob);
+    //  for xz plane
+    if(pct.gridpe == 0)
+    {
+        for (int ix = 0; ix < nx; ix++)
+        {
+            int idx = ix * ny * nz +ix ;
+            printf("\n %10.3f %18.12e   FFT_xz", gmags_glob[idx] *tpiba2, work_glob[idx]);
+        }
+    }
+
+    ApplyAOperator (one_orbital, work, kvec);
+    for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(work[idx],0.0);
+    coarse_pwaves->FftForward(gbptr, beptr);
+
+    for(int idx = 0; idx < pbasis; idx++) work[idx] = std::real(beptr[idx]);
+    DistributeToGlobal(work, work_glob);
+    //  for xz plane
+    if(pct.gridpe == 0)
+    {
+        for (int ix = 0; ix < nx; ix++)
+        {
+            int idx = ix * ny * nz +ix ;
+            printf("\n %10.3f %18.12e    FD_xz", gmags_glob[idx] *tpiba2, work_glob[idx]);
+        }
+    }
+
+    delete [] work_glob;
+    fftw_free (gbptr);
+    fftw_free (beptr);
+}
+
+
+
+

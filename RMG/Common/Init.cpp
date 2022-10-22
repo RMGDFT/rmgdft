@@ -522,6 +522,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // FDOpt is experimental
     //FDOpt *Fopt = new FDOpt();
     //Fopt->Optimize();
+    //Fopt->Analyze_fft(5);
     //delete Fopt;
     // Kpoint version
     //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
