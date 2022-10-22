@@ -74,7 +74,7 @@ double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid)
     double gridhz = Rmg_G->get_hzgrid(density);
 
     return CPP_app_del2_driver (&Rmg_L, Rmg_T, a, b, dimx, dimy, dimz,
-                         gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+                         gridhx, gridhy, gridhz, order, ct.alt_laplacian && density==1);
 
 
 }
@@ -108,7 +108,7 @@ double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, Ba
     double gridhz = G->get_hzgrid(density);
 
     return CPP_app_del2_driver (&Rmg_L, T, a, b, dimx, dimy, dimz,
-                         gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+                         gridhx, gridhy, gridhz, order, ct.alt_laplacian && density==1);
 
 
 }

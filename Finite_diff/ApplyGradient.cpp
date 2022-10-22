@@ -96,7 +96,7 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     else
     {
         CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz,
-                             gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+                             gridhx, gridhy, gridhz, order, ct.alt_laplacian && density==1);
     }
 }
 
@@ -133,7 +133,7 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     else
     {
         CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz,
-                             gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+                             gridhx, gridhy, gridhz, order, ct.alt_laplacian && density==1);
     }
 }
 
