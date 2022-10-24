@@ -2966,8 +2966,9 @@ charge_pulay_order = "5"
 charge_pulay_scale = "0.1"
 charge_pulay_refresh = "100"
 
-length_units = "Bohr"
-atomic_coordinate_type = "Absolute"
+crds_units = "Angstrom"
+lattice_units = "Angstrom"
+atomic_coordinate_type = "Cell Relative"
 
 
 occupations_type = "Fermi Dirac"
@@ -2997,7 +2998,7 @@ kpoint_mesh = "%d %d %d "
 kpoint_is_shift = "0 0 0 "
 """%(k_delta, kx, ky, kz)
         ibrav = 0
-        self.cell.newunit("bohr")
+        self.cell.newunit("angstrom")
         t = LatticeMatrix(self.cell.latticevectors)
         for i in range(3):
             for j in range(3):
@@ -3047,10 +3048,7 @@ kpoint_is_shift = "0 0 0 "
         filestring += 'atoms="\n'
         for a in self.cell.atomdata:
             for b in a:
-                t = Vector(mvmult3(self.cell.latticevectors,b.position))
-                for i in range(3):
-                    t[i] = self.cell.lengthscale*t[i]
-                filestring += b.spcstring().rjust(width)+" "+str(t)
+                filestring += b.spcstring().rjust(width)+" "+str(b.position)
                 filestring += "  1 1 1 0.0 0.0 0.0\n"
         filestring += '"\n'
 
