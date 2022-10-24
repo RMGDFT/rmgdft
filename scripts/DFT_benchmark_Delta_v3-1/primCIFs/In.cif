@@ -1,0 +1,56 @@
+data_Wien2k_Data
+_cell_length_a    3.298409
+_cell_length_b    3.298409
+_cell_length_c    5.062558
+_cell_angle_alpha   90.000000
+_cell_angle_beta    90.000000
+_cell_angle_gamma   90.000000
+_cell_measurement_temperature 0.0
+_diffrn_ambient_temperature 0.0
+_symmetry_space_group_name_H-M         'I4/mmm '
+_symmetry_space_group_number  139
+
+loop_
+_symmetry_equiv_pos_as_xyz
+   +x,+y,+z
+   -x,-y,+z
+   -y,+x,+z
+   +y,-x,+z
+   -x,+y,-z
+   +x,-y,-z
+   +y,+x,-z
+   -y,-x,-z
+   -x,-y,-z
+   +x,+y,-z
+   +y,-x,-z
+   -y,+x,-z
+   +x,-y,+z
+   -x,+y,+z
+   -y,-x,+z
+   +y,+x,+z
+   +x+1/2,+y+1/2,+z+1/2
+   -x+1/2,-y+1/2,+z+1/2
+   -y+1/2,+x+1/2,+z+1/2
+   +y+1/2,-x+1/2,+z+1/2
+   -x+1/2,+y+1/2,-z+1/2
+   +x+1/2,-y+1/2,-z+1/2
+   +y+1/2,+x+1/2,-z+1/2
+   -y+1/2,-x+1/2,-z+1/2
+   -x+1/2,-y+1/2,-z+1/2
+   +x+1/2,+y+1/2,-z+1/2
+   +y+1/2,-x+1/2,-z+1/2
+   -y+1/2,+x+1/2,-z+1/2
+   +x+1/2,-y+1/2,+z+1/2
+   -x+1/2,+y+1/2,+z+1/2
+   -y+1/2,-x+1/2,+z+1/2
+   +y+1/2,+x+1/2,+z+1/2
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+In001  In  0.00000000  0.00000000  0.00000000  0.05000000
+#End data_Wien2k_Data
+

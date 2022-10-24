@@ -1,0 +1,41 @@
+data_Wien2k_Data
+_cell_length_a    2.542416
+_cell_length_b    2.542416
+_cell_length_c    3.595519
+_cell_angle_alpha   90.000000
+_cell_angle_beta    90.000000
+_cell_angle_gamma   90.000000
+_cell_measurement_temperature 0.0
+_diffrn_ambient_temperature 0.0
+_symmetry_space_group_name_H-M         'P4/mmm '
+_symmetry_space_group_number  123
+
+loop_
+_symmetry_equiv_pos_as_xyz
+   +x,+y,+z
+   -x,-y,+z
+   -y,+x,+z
+   +y,-x,+z
+   -x,+y,-z
+   +x,-y,-z
+   +y,+x,-z
+   -y,-x,-z
+   -x,-y,-z
+   +x,+y,-z
+   +y,-x,-z
+   -y,+x,-z
+   +x,-y,+z
+   -x,+y,+z
+   -y,-x,+z
+   +y,+x,+z
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Mn001  Mn  0.00000000  0.00000000  0.00000000  0.05000000
+Mn002  Mn  0.50000000  0.50000000  0.50000000  0.05000000
+#End data_Wien2k_Data
+
