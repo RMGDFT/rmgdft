@@ -1519,7 +1519,7 @@ void FiniteDiff::fd_combined_coeffs(int order, double hxgrid, int ax, RmgType * 
         return;
     }
 
-    double c1, c2=0.0, c1g, c2g;
+    double c1, c2=0.0, c1g, c2g=0.0;
     if(this->alt_laplacian && order > 2) c2 = cfac[0];
     if(this->alt_laplacian && order > 2) c2g = cfac[1];
     c1 = scale*(1.0 + c2);
