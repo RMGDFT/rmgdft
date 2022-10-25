@@ -11,7 +11,9 @@ import stat
 import math
 import tarfile
 
+
 from numpy import sqrt, arccos, fabs, pi, cos, sin
+from rmg_parser import *
 
 pi = 3.141592653589793238
 
@@ -27,7 +29,10 @@ pseudo_uspp = ["Ag","O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y
 run_mg = ["O"];
 
 FM_list = ["Fe", "Co", "Ni"]
-AFM_list = ["Cr", "Mn", "O"]
+# spin up, spin down
+AFM_list1 = ["Cr", "Mn"]
+#spin up, up, down, down
+AFM_list2 = ["O"]
 
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
@@ -50,11 +55,11 @@ cp ~/bin/rmg-cpu .
     dirname = 'Delta_benchmark_dk_%4.2f_hx_%4.2f_%s'%(k_delta, grid_spacing_base, pp)
     if not os.path.exists(dirname): os.mkdir(dirname)
     os.chdir(dirname)
-    for filename in os.listdir('../../CIFs/'):
+    print("dir", dirname)
+    for filename in os.listdir('../../primCIFs/'):
         species = filename.split('.')[0]
     
-        cif_blocks = {}
-        read_cif('../../CIFs/'+filename, cif_blocks)
+        print("starting spec", species)
         if not os.path.exists(species): os.mkdir(species)
         os.chdir(species)
         
@@ -74,7 +79,13 @@ cp ~/bin/rmg-cpu .
         if(species in pseudo_uspp):
             grid_spacing = 1.25*grid_spacing_base;
 
-        input_for_rmg(species, cif_blocks, grid_spacing)
+        try:
+            input_for_rmg(species, '../../../primCIFs/'+filename,  grid_spacing)
+        except:
+            print("primCIFs has problem for ", species)
+            print("use CIFs instead")
+            input_for_rmg(species, '../../../CIFs/'+filename,  grid_spacing)
+
         os.chdir('..')
         jobline_desktop += 'cd ' + species +'\n'
         jobline_desktop += './job.bat\n'
@@ -118,9 +129,11 @@ cp ~/bin/rmg-cpu .
     os.chdir('..')
     #os.system("tar cvf delta.tar " + dirname + ' ONCV PBE_MT_FHI')
 
-def input_for_rmg(species, cif_blocks, grid_spacing):
+def input_for_rmg(species, ciffile, grid_spacing):
 
 
+
+    crmg = rmg_interface(ciffile, "cif")
 
     default_line = """
 crds_units = "Angstrom"
@@ -143,64 +156,36 @@ energy_convergence_criterion = "1.00000000e-9"
 
     atom_format = " %s     %.12e    %.12e    %.12e      1  %f\n"
 
-    atom_list = []
-    for i in range(len(cif_blocks['_atom_site_type_symbol'])):
-        atom_name = cif_blocks['_atom_site_type_symbol'][i]
-        x = float(cif_blocks['_atom_site_fract_x'][i])
-        y = float(cif_blocks['_atom_site_fract_y'][i])
-        z = float(cif_blocks['_atom_site_fract_z'][i])
-        atom_list.append([atom_name, x, y, z])
-
-    a0 = float(cif_blocks['_cell_length_a'])
-    b0 = float(cif_blocks['_cell_length_b'])
-    c0 = float(cif_blocks['_cell_length_c'])
-    alpha = float(cif_blocks['_cell_angle_alpha'])
-    beta = float(cif_blocks['_cell_angle_beta'])
-    gamma =float(cif_blocks['_cell_angle_gamma'])
-#    if(abs(alpha -60) < 0.1 and abs(beta-60) < 0.1 and abs(gamma-60) <0.1 and abs(a0-b0) < 0.01 and abs(a0-c0) < 0.01):
-#        a0 = a0*math.sqrt(2.0)
-#        b0 = a0
-#        c0 = a0
-#    elif(abs(alpha -90) < 0.1 and abs(beta-90) < 0.1 and abs(gamma-120) <0.1 and abs(a0-b0) < 0.01):
-#        b0 = b0 * math.sqrt(3.0)
-#    elif(abs(alpha -90) < 0.1 and abs(beta-90) < 0.1 and abs(gamma-60) <0.1 and abs(a0-b0) < 0.01):
-#        b0 = b0 * math.sqrt(3.0)
-    
-    veca = [0.0,0.0,0.0]
-    vecb = [0.0,0.0,0.0]
-    vecc = [0.0,0.0,0.0]
-    alpha_r = alpha * pi / 180.0
-    beta_r = beta * pi / 180.0
-    gamma_r = gamma * pi / 180.0
-    veca[0] = a0;
-    vecb[0] = b0 * cos(gamma_r)
-    vecb[1] = b0 * sin(gamma_r)
-    vecc[0] = c0 * cos(beta_r)
-    cy = ( cos(alpha_r) - cos(gamma_r) * cos(beta_r) ) / sin(gamma_r)
-    vecc[1] = c0 * cy
-    vecc[2] = c0*sqrt(1.0-cos(alpha_r)*cos(alpha_r)-cos(beta_r)*cos(beta_r)-cos(gamma_r)*cos(gamma_r)+2*cos(alpha_r)*cos(beta_r)*cos(gamma_r))/sin(gamma_r)
-
-    final_atom_list = []
-    final_atom_list = atom_list
-
     _positions_line = ''
     mag = 0.0;
-    sign = 1
+    sign = []
+    for atom in crmg.atoms:
+        sign.append(1);
     if(species in FM_list):
         mag = 0.25
-        sign = 1
+        sign = [1,1]
         _positions_line +='spin_polarization="true"\n'
 
-    if(species in AFM_list):
+    if(species in AFM_list1):
         mag = 0.25
-        sign = -1
+        sign = [1,-1]
+        _positions_line +='spin_polarization="true"\n'
+    if(species in AFM_list2):
+        mag = 0.25
+        sign = [1,1,-1,-1]
         _positions_line +='spin_polarization="true"\n'
     _positions_line += 'atoms=\n"\n'
-    for atom in final_atom_list:
-        _positions_line += ( atom_format % (atom[0], atom[1], atom[2], atom[3], mag) )
-        mag = mag * sign
+    iatom = 0
+    for atom in crmg.atoms:
+        mag1 = mag * sign[iatom]
+        iatom += 1
+        _positions_line += ( atom_format % (atom[0], atom[1], atom[2], atom[3], mag1) )
 
     _positions_line += '"\n'
+
+    a0 = crmg.cell.a
+    b0 = crmg.cell.b
+    c0 = crmg.cell.c
 
     (nx, ny, nz) = SetupGrid(a0, b0, c0, grid_spacing)
     kx = int(2.0 * 3.1415926/a0/k_delta)
@@ -242,7 +227,14 @@ energy_convergence_criterion = "1.00000000e-9"
 #    if(species in pseudo_extra):
 #        pp_line ='pseudopotential = "%s ../../../PBE_MT_FHI/%s.pbe-mt_fhi.txt"\n '%(species, species)
 #
+    veca = [0.0,0.0,0.0]
+    vecb = [0.0,0.0,0.0]
+    vecc = [0.0,0.0,0.0]
 
+    for j in range(3):
+        veca[j] = crmg.cell.latticevectors[0][j] * crmg.cell.lengthscale
+        vecb[j] = crmg.cell.latticevectors[1][j] * crmg.cell.lengthscale
+        vecc[j] = crmg.cell.latticevectors[2][j] * crmg.cell.lengthscale
     for vol in volume_lists:
         dir_name = 'volume_' + str(vol)
         jobfile.write('cd ' + dir_name + '\n')
