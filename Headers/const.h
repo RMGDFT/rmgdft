@@ -276,5 +276,5 @@
 
 // Internal pseudopotential types
 #define ULTRASOFT_GBRV  0
-#define NORM_CONSERVING_STANDARD  1
+#define NORM_CONSERVING_SG15  1
 #define NORM_CONSERVING_ACCURACY  2

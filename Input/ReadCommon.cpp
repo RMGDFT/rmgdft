@@ -301,9 +301,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Atomic Orbital Type. Choices are localized and delocalized. ", 
                      "atomic_orbital_type not found. ", PSEUDO_OPTIONS);
 
-    If.RegisterInputKey("internal_pseudo_type", NULL, &ct.internal_pseudo_type, "nc_accuracy",
+    If.RegisterInputKey("internal_pseudo_type", NULL, &ct.internal_pseudo_type, "sg15",
                      CHECK_AND_TERMINATE, OPTIONAL, internal_pseudo_type,
-                     "Internal pseudopotential type. Choices are ultrasoft, nc_accuracy ", 
+                     "Internal pseudopotential type. Choices are sg15, ultrasoft, nc_accuracy ", 
                      "internal pseudopotential type not found. ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
