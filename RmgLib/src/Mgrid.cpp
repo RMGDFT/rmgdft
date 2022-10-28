@@ -547,6 +547,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
 
             break;
 
+        case -CUBIC_BC:
         case CUBIC_BC:
 
             scale = 1.0 / 52.0;
@@ -688,6 +689,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
 
         case CUBIC_PRIMITIVE:
         case CUBIC_FC:
+        case -CUBIC_BC:
         case CUBIC_BC:
         case ORTHORHOMBIC_PRIMITIVE:
         case MONOCLINIC_PRIMITIVE:
