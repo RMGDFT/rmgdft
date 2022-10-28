@@ -23,7 +23,7 @@ volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 #pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp = ["C", "O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y","B","Co","Po","Ge","As","Si","Os","I","Li","Cs","In","K","Ru","Ti","Hg","Tl","H","Sb","Se","S","Re","Zr","Al","Cd","Br","Be","Ba","P","Nb","Na","Rb","Pb","Pd","Sr","Ta","Sn","Ca","Cu","Hf","Te"];
+pseudo_uspp = ["C", "O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y","B","Co","Po","Ge","As","Si","Os","I","Li","Cs","In","K","Ru","Ti","Hg","Tl","H","Sb","Se","S","Re","Al","Cd","Br","Be","Ba","P","Nb","Na","Rb","Pb","Pd","Sr","Ta","Sn","Ca","Cu","Hf","Te"];
 
 # ONCV with core corrections
 pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
