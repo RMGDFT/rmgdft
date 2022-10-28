@@ -1506,6 +1506,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if(ibrav == None && lc.stress)
         rmg_error_handler(__FILE__,__LINE__, "\nStress not supported for arbitary lattice vectors. You need to specify bravais_lattice_type.: Terminating.\n");
 
+    // If ibrav is none then the user entered in a set of lattice vectors rather than a
+    // lattice type with parameters so the next code block is used to set those up.
     if(ibrav == None)
     {
         double Lunit = 1.0;
@@ -1523,23 +1525,24 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             a1[i] = Lunit * lattice_vector.vals.at(i+3);
             a2[i] = Lunit * lattice_vector.vals.at(i+6);
         }
-
         // Save copy of scaled input vectors
         Rmg_L.save_vectors(a0, a1, a2);
 
-//        Rmg_L.lat2abc(a0, a1, a2);
-        // Detects ibrav and generates a,b,c,cosab,cosac,cosbc
-        int ibb = Rmg_L.lat2ibrav (a0, a1, a2);
+        // Next detect ibrav and also generate a,b,c,cosab,cosac,cosbc
+        ibrav = Rmg_L.lat2ibrav (a0, a1, a2);
+        if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibrav);
+
+        // Next generate the celldm using alat=1.0
+        Rmg_L.lat2celldm(ibrav, 1.0, a0, a1, a2);
+
+        // Take care of rotations
         Rmg_L.rotate_vectors(a0, a1, a2);
-        if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibb);
 
-        // Sets up celldm
-        Rmg_L.abc2celldm();
-
-        for(int i=0;i < 6;i++) {celldm[i] = Rmg_L.get_celldm(i);}
-        ibrav = Rmg_L.get_ibrav_type();
-        Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
-
+        // Get celldm and set it up for later call to latgen
+        for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
+        printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
+        celldm[1] *= celldm[0];
+        celldm[2] *= celldm[0];
     }
     else
     {
@@ -1550,33 +1553,35 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             celldm[1] *= A_a0;
             celldm[2] *= A_a0;
         }
-
-        // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
-        // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
-        if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-                !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
-        {
-            celldm[1] /= celldm[0];
-            celldm[2] /= celldm[0];
-        }
-
-        if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
-        {
-            if( std::abs(celldm[1] - 1.0 ) > 1.0e-5 || std::abs(celldm[2] - 1.0) > 1.0e-5)
-
-                throw RmgFatalException() << "a, b, c is not consistent with Cubic Primitive\n";
-        }
-    
-        // Lattice vectors are orthogonal except for Hex which is setup inside latgen
-        celldm[3] = 0.0;
-        celldm[4] = 0.0;
-        celldm[5] = 0.0;
-
-        // Set up the lattice vectors
-        Rmg_L.set_ibrav_type(ibrav);
-        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
     }
+
+    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
+    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
+    if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+    {
+        celldm[1] /= celldm[0];
+        celldm[2] /= celldm[0];
+    }
+
+    if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
+    {
+        if( std::abs(celldm[1] - 1.0 ) > 1.0e-5 || std::abs(celldm[2] - 1.0) > 1.0e-5)
+
+            throw RmgFatalException() << "a, b, c is not consistent with Cubic Primitive\n";
+    }
+
+    // Lattice vectors are orthogonal except for Hex which is setup inside latgen
+    celldm[3] = 0.0;
+    celldm[4] = 0.0;
+    celldm[5] = 0.0;
+
+    // Set up the lattice vectors
+    Rmg_L.set_ibrav_type(ibrav);
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
+    Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
+
+    //printf("CELLDM1 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
     int NY_GRID = WavefunctionGrid.vals.at(1);

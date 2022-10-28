@@ -325,8 +325,8 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             Lattice::a2[2] = term;
             break;
 
+        case -CUBIC_BC:
         case CUBIC_BC:
-
             term = alat / 2.0;
             for (ir = 0; ir < 3; ir++)
             {
@@ -334,9 +334,18 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
                 Lattice::a1[ir] = term;
                 Lattice::a2[ir] = term;
             }                       /* for ir */
-            Lattice::a0[2] = -term;
-            Lattice::a1[0] = -term;
-            Lattice::a2[1] = -term;
+            if(Lattice::ibrav > 0)
+            {
+                Lattice::a0[2] = -term;
+                Lattice::a1[0] = -term;
+                Lattice::a2[1] = -term;
+            }
+            else
+            {
+                Lattice::a0[0] = -term;
+                Lattice::a1[1] = -term;
+                Lattice::a2[2] = -term;
+            }
             break;
 
         case HEXAGONAL:
@@ -734,16 +743,16 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     //
     //     Returns ibrav from lattice vectors if recognized, 0 otherwise
     //
-    a = sqrt(a0[0]*a0[0] + a0[1]*a0[1] + a0[2]*a0[2]);
-    b = sqrt(a1[0]*a1[0] + a1[1]*a1[1] + a1[2]*a1[2]);
-    c = sqrt(a2[0]*a2[0] + a2[1]*a2[1] + a2[2]*a2[2]);
+    double a = sqrt(a0[0]*a0[0] + a0[1]*a0[1] + a0[2]*a0[2]);
+    double b = sqrt(a1[0]*a1[0] + a1[1]*a1[1] + a1[2]*a1[2]);
+    double c = sqrt(a2[0]*a2[0] + a2[1]*a2[1] + a2[2]*a2[2]);
 
     if(fabs(a-b) < 1.0e-5) b = a;
     if(fabs(a-c) < 1.0e-5) c = a;
 
-    cosab = (a0[0]*a1[0] + a0[1]*a1[1] + a0[2]*a1[2])/a/b;
-    cosac = (a0[0]*a2[0] + a0[1]*a2[1] + a0[2]*a2[2])/a/c;
-    cosbc = (a2[0]*a1[0] + a2[1]*a1[1] + a2[2]*a1[2])/c/b;
+    double cosab = (a0[0]*a1[0] + a0[1]*a1[1] + a0[2]*a1[2])/a/b;
+    double cosac = (a0[0]*a2[0] + a0[1]*a2[1] + a0[2]*a2[2])/a/c;
+    double cosbc = (a2[0]*a1[0] + a2[1]*a1[1] + a2[2]*a1[2])/c/b;
 
     if(fabs(cosab) < 1.0e-5) cosab = 0.0;
     if(fabs(cosac) < 1.0e-5) cosac = 0.0;
@@ -774,8 +783,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             {
                 // Cubic I - ibrav=-3
                 ibrav = -3;
-                // Force to triclinic until special operators coded
-                ibrav = 14;
             }
             else
             {
@@ -953,6 +960,7 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
 
     bool dorotate = (ibb == CUBIC_FC) ||
                     (ibb == CUBIC_BC) ||
+                    (ibb == -CUBIC_BC) ||
                     (ibb == ORTHORHOMBIC_PRIMITIVE) ||
                     (ibb == CUBIC_PRIMITIVE) ||
                     (ibb == TETRAGONAL_PRIMITIVE) ||
@@ -990,6 +998,7 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
             a2[0] = term;
             a2[2] = term;
             break;
+        case -CUBIC_BC:
         case CUBIC_BC:
             term = SQRT3 * m[0] / 2.0;
             for (int ir = 0; ir < 3; ir++)
@@ -998,9 +1007,18 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
                 a1[ir] = term;
                 a2[ir] = term;
             }                       /* for ir */
-            a0[2] = -term;
-            a1[0] = -term;
-            a2[1] = -term;
+            if(Lattice::ibrav > 0)
+            {
+                a0[2] = -term;
+                a1[0] = -term;
+                a2[1] = -term;
+            }
+            else
+            {
+                a0[0] = -term;
+                a1[1] = -term;
+                a2[2] = -term;
+            }
             break;
         case HEXAGONAL:
             cbya = m[2] / m[0];
@@ -1045,9 +1063,12 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
       case -CUBIC_BC:
       case CUBIC_BC:
          celldm[0] = sqrt( dot_product (a1,a1) / 3.0 ) * 2.0;
+         celldm[1]= celldm[0];
+         celldm[2]= celldm[0];
          break;
       case HEXAGONAL:
          celldm[0] = sqrt( dot_product (a1,a1) );
+         celldm[1] = sqrt( dot_product (a2,a2) ) / celldm[0];
          celldm[2] = sqrt( dot_product (a3,a3) ) / celldm[0];
          break;
 //      case -TRIGONAL_PRIMITIVE:
