@@ -216,14 +216,18 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         std::stable_sort(points.begin(), points.end(), customLess_dist);
 
     }
-    else if( this->ibrav == CUBIC_BC && !this->offdiag )
+    else if( abs(this->ibrav) == CUBIC_BC && !this->offdiag )
     {
         double x[20], w1[20], w2[20];
         for(int i=0;i<20;i++) x[i] = (double)i;
         FiniteDiff::gen_weights(Lorder+1, 2, (double)Lorder/2, x, w1);
         FiniteDiff::gen_weights(Lorder+1, 1, (double)Lorder/2, x, w2);
         // First derivative requires this
-        for(int i=0;i <= Lorder;i++) w2[i] = -w2[i] * (double)std::abs(i-Lorder/2);
+        if(this->ibrav > 0)
+            for(int i=0;i <= Lorder;i++) w2[i] = -w2[i] * (double)std::abs(i-Lorder/2);
+        else
+            for(int i=0;i <= Lorder;i++) w2[i] = w2[i] * (double)std::abs(i-Lorder/2);
+
         points.clear();
         points1.clear();
         double h = a[0][0] / (double)Ngrid[0];
@@ -245,27 +249,49 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 //A
               a.coeff = w1[Lorder/2+a.index[0]]/4.0/h2;
               int i1 = a.index[0];
-              a.coeff_gx = fac*w2[Lorder/2+i1];
-              a.coeff_gy = fac*w2[Lorder/2+i1];
-              a.coeff_gz = -fac*w2[Lorder/2+i1];
+              if(this->ibrav > 0) {
+                  a.coeff_gx = fac*w2[Lorder/2+i1];
+                  a.coeff_gy = fac*w2[Lorder/2+i1];
+                  a.coeff_gz = -fac*w2[Lorder/2+i1];
+              }
+              else {
+                  a.coeff_gx = -fac*w2[Lorder/2+i1];
+                  a.coeff_gy = fac*w2[Lorder/2+i1];
+                  a.coeff_gz = fac*w2[Lorder/2+i1];
+              }
+            
             } 
             else if(a.index[0] == 0 && a.index[1] != 0 && a.index[2] == 0)
             {
 //C
               a.coeff = w1[Lorder/2+a.index[1]]/4.0/h2;
               int i1 = a.index[1];
-              a.coeff_gx = -fac*w2[Lorder/2+i1];
-              a.coeff_gy = fac*w2[Lorder/2+i1];
-              a.coeff_gz = fac*w2[Lorder/2+i1];
+              if(this->ibrav > 0) {
+                  a.coeff_gx = -fac*w2[Lorder/2+i1];
+                  a.coeff_gy = fac*w2[Lorder/2+i1];
+                  a.coeff_gz = fac*w2[Lorder/2+i1];
+              }
+              else {
+                  a.coeff_gx = fac*w2[Lorder/2+i1];
+                  a.coeff_gy = -fac*w2[Lorder/2+i1];
+                  a.coeff_gz = fac*w2[Lorder/2+i1];
+              }
             }
             else if(a.index[0] == 0 && a.index[1] ==0 && a.index[2] != 0)
             {
 //B
               a.coeff = w1[Lorder/2+a.index[2]]/4.0/h2;
               int i1 = a.index[2];
-              a.coeff_gx = fac*w2[Lorder/2+i1];
-              a.coeff_gy = -fac*w2[Lorder/2+i1];
-              a.coeff_gz = fac*w2[Lorder/2+i1];
+              if(this->ibrav > 0) {
+                  a.coeff_gx = fac*w2[Lorder/2+i1];
+                  a.coeff_gy = -fac*w2[Lorder/2+i1];
+                  a.coeff_gz = fac*w2[Lorder/2+i1];
+              }
+              else {
+                  a.coeff_gx = fac*w2[Lorder/2+i1];
+                  a.coeff_gy = fac*w2[Lorder/2+i1];
+                  a.coeff_gz = -fac*w2[Lorder/2+i1];
+              }
             }
         }
 
