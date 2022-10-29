@@ -65,11 +65,11 @@ Use: python eosfit.py filename
 '''
 
 if len(argv) != 2:
-    print 'Error: Wrong number of arguments'
+    print('Error: Wrong number of arguments')
     exit()
 else:
     if argv[1] == '--help':
-        print usage            
+        print(usage)
         exit()
 infile = argv[1]
 
