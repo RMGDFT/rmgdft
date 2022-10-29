@@ -33,7 +33,12 @@ from sys import argv, stdout, exit
 import os
 import getopt
 import numpy as np
+import sys
 
+if(sys.version[0]==3):
+    print('This version of calcDelta requires python version 3')
+    exit
+    
 periodtable = {'H': 1, 'He': 2, 'Li': 3, 'Be': 4, 'B': 5, 'C': 6, 'N': 7,
                'O': 8, 'F': 9, 'Ne': 10, 'Na': 11, 'Mg': 12, 'Al': 13,
                'Si': 14, 'P': 15, 'S': 16, 'Cl': 17, 'Ar': 18, 'K': 19,
@@ -121,10 +126,10 @@ python calcDelta.py --help displays the current instructions
     try:
         data_f = np.loadtxt(args[0], 
             dtype={'names': ('element', 'V0', 'B0', 'BP'),
-            'formats': ('S2', np.float, np.float, np.float)})
+            'formats': ('U2', float, float, float)})
         data_w = np.loadtxt(reffile, 
             dtype={'names': ('element', 'V0', 'B0', 'BP'),
-            'formats': ('S2', np.float, np.float, np.float)})
+            'formats': ('U2', float, float, float)})
     except IOError as err:
         print("Error: Cannot read the input files %s and %s: %s" 
             % (args[0], reffile, err))
@@ -133,7 +138,7 @@ python calcDelta.py --help displays the current instructions
     try:
         len(data_f['element'])
     except TypeError:
-        print 'Error: ' + argv[1] + ': at least two elements required'
+        print('Error: ' + argv[1] + ': at least two elements required')
         exit()
 
     eloverlap = list(set(data_f['element']) & set(data_w['element']))
