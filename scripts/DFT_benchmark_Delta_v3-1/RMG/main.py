@@ -18,12 +18,15 @@ from rmg_parser import *
 pi = 3.141592653589793238
 
 # The base value is used for ncpp
-grid_spacing_base = 0.12 # in unit of Angstrom
+grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
-pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
+#pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
-# Rmg default pseudo is NCPP. If a species is in this list then USPP will be used.
-pseudo_uspp = ["Ag","O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y","B","Co","Po","Ge","Au","As","Si","V","Os","I","Li","Cs","In","K","Ru","Ti","Hg","Tl","H","Sb","Se","S","Rh","W","Re","Ir","Zr","Al","Cd","Br","Be","Ba","P","Nb","Na","Pt","Rb","Pb","Pd","Sr","Ta","Sn","Ca","C","Cu","Hf","Te"];
+# Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
+pseudo_uspp = ["C", "O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y","B","Co","Po","Ge","As","Si","Os","I","Li","Cs","In","K","Ru","Ti","Hg","Tl","H","Sb","Se","S","Re","Al","Cd","Br","Be","Ba","P","Nb","Na","Rb","Pb","Pd","Sr","Ta","Sn","Ca","Cu","Hf","Te"];
+
+# ONCV with core corrections
+pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
@@ -34,9 +37,14 @@ AFM_list1 = ["Cr", "Mn"]
 #spin up, up, down, down
 AFM_list2 = ["O"]
 
+# Denser kpoint mesh for elements in this list. Mostly fcc metals
+high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir"];
+
+# even denser kpoint mesh for elements in this list
+#veryhigh_k = ["Au", "Pt"];
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
-k_parall = 4;
+k_parall = 3;
 pp = 'MIXED'
 #pp = 'ONCV'
 
@@ -48,8 +56,8 @@ cp ~/bin/rmg-cpu .
 
     jobline_desktop = ''
 #    line_run = 'aprun -n 128 -N 8 -d 4 -cc numa_node ../../rmg-cpu input&\n'
-    line_run = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
-
+#    line_run = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
+    line_run = 'mpirun -np 24 --bind-to core ~/bin/rmg-cpu input\n'
     
     shell_script_line=''
     dirname = 'Delta_benchmark_dk_%4.2f_hx_%4.2f_%s'%(k_delta, grid_spacing_base, pp)
@@ -139,7 +147,6 @@ def input_for_rmg(species, ciffile, grid_spacing):
 crds_units = "Angstrom"
 lattice_units = "Angstrom"
 atomic_coordinate_type = "Cell Relative"
-potential_grid_refinement="2"
 occupations_type = "MethfesselPaxton"
 occupation_electron_temperature_eV = "1.0e-2"
 output_wave_function_file = "/dev/null"
@@ -151,6 +158,7 @@ localize_projectors = "false"
 localize_localpp = "false"
 kpoint_distribution = "%d"
 verbose="true"
+kohn_sham_fd_order="10"
 energy_convergence_criterion = "1.00000000e-9"
 """%(k_parall)
 
@@ -187,6 +195,16 @@ energy_convergence_criterion = "1.00000000e-9"
     b0 = crmg.cell.b
     c0 = crmg.cell.c
 
+# Adjust grid spacing based on ibrav type
+    print("ibrav", crmg.ibrav)
+    if(crmg.ibrav == 2):
+        grid_spacing = grid_spacing * sqrt(2.0);
+#    if(crmg.ibrav == 3):
+#        grid_spacing = grid_spacing*sqrt(3.0/2.0);
+    if(crmg.ibrav == 4):
+        grid_spacing = grid_spacing;
+    
+    
     (nx, ny, nz) = SetupGrid(a0, b0, c0, grid_spacing)
     kx = int(2.0 * 3.1415926/a0/k_delta)
     ky = int(2.0 * 3.1415926/b0/k_delta)
@@ -194,19 +212,26 @@ energy_convergence_criterion = "1.00000000e-9"
     if (kx == 0): kx = 1
     if (ky == 0): ky = 1
     if (kz == 0): kz = 1
-    _positions_line += 'kpoint_mesh = "%d %d %d"\n'%(kx, ky, kz)
+    if(species in high_k_list):
+        _positions_line += 'kpoint_mesh = "23 23 23"\n'
+    else:
+        _positions_line += 'kpoint_mesh = "%d %d %d"\n'%(kx, ky, kz)
+
     _positions_line += 'wavefunction_grid = "%d %d %d"\n'%(nx, ny, nz)
 
 
     
     jobfile = open('job.bat', 'w') 
     jobfile.write('rm */*.log */*.options\n')
-    #jobrun = 'mpirun -n 24 --bind-to core ~/bin/rmg-cpu input\n'
-    jobrun = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
+    jobrun = 'mpirun -n 24 --bind-to core ~/bin/rmg-cpu input\n'
+    #jobrun = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
 
     pp_type = '\n'
     if(species in pseudo_uspp):
-        pp_type = 'internal_pseudo_type="ultrasoft"'
+        pp_type = 'internal_pseudo_type="ultrasoft"\n'
+
+    if(species in pseudo_nc):
+        pp_type = 'internal_pseudo_type="nc_accuracy"\n'
 
     mg_line = '\n'
     if(species in run_mg):
@@ -221,12 +246,6 @@ energy_convergence_criterion = "1.00000000e-9"
         mg_line += 'potential_acceleration_constant_step="0.0"\n'
 
     pp_line='\n'
-#    if(pp == 'ONCV'):
-#        pp_line = ' pseudopotential = "%s  ../../../ONCV/%s_ONCV_PBE-1.0.upf"\n'%(atom_list[0][0], atom_list[0][0])
-#
-#    if(species in pseudo_extra):
-#        pp_line ='pseudopotential = "%s ../../../PBE_MT_FHI/%s.pbe-mt_fhi.txt"\n '%(species, species)
-#
     veca = [0.0,0.0,0.0]
     vecb = [0.0,0.0,0.0]
     vecc = [0.0,0.0,0.0]
@@ -280,9 +299,9 @@ def SetupGrid(a0, b0, c0, grid_spacing):
         nx += 4
         xspacing = a0/nx
         ny = b0/xspacing
-        ny = int((ny + 1)/2) * 2
+        ny = int((ny + 1)/4) * 4
         nz = c0/xspacing
-        nz = int((nz + 1)/2) * 2
+        nz = int((nz + 1)/4) * 4
         spacing_list =[a0/nx, b0/ny, c0/nz]
         max_sp = max(spacing_list)
         min_sp = min(spacing_list)
