@@ -521,7 +521,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("AFM", &lc.AFM, false, 
             "if set true, anti-feromagnetic will be forced by symmetry operation if exist ", CONTROL_OPTIONS);
    
-
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "First lattice constant. ", 
@@ -706,6 +705,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Mixing parameter for orbital occupations when not using fixed occupations. ",
             "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3. ", OCCUPATION_OPTIONS);
+
+    If.RegisterInputKey("semilocal_factor", &lc.semilocal_factor, 0.25, 4.0, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Controls the number of semilocal projectors.",
+            "semilocal_factor must lie in the range (0.25,4.0). Resetting to the default value of 1.0. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
             CHECK_AND_FIX, OPTIONAL, 
