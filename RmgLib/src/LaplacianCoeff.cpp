@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <math.h>
 #include <iostream>
+#include <csignal>
 #include <float.h>
 #include "LaplacianCoeff.h"
 #include "blas.h"
@@ -772,7 +773,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
                 printf ("error in LaplacianCoeff.cpp dgetrf INFO = %d \n", info);
                 printf ("not enough grid points in LaplacianCoeff.cpp\n");
                 fflush (NULL);
-                exit (0);
+                std::raise(SIGTERM);
             }
             point_start = point_end;
             point_end = num_points[index];
@@ -787,9 +788,9 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     if (info != 0)
     {
-        printf ("error in zgesv in LaplacianCoeff.cppwith INFO = %d \n", info);
+        printf ("error in zgesv in LaplacianCoeff.cpp with INFO = %d \n", info);
         fflush (NULL);
-        exit (0);
+        std::raise(SIGTERM);
     }
 
     //     for(int j = 0; j < num_derivative; j++)
