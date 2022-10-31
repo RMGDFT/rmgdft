@@ -560,7 +560,7 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
     if(this->ibrav != TRICLINIC_PRIMITIVE)
     {
         printf("\n WARNING this is only work for Triclinic \n");
-        exit(0);
+        std::raise(SIGTERM);
     }
     for(int ia = -Lorder/2; ia <= Lorder/2; ia++){
         if(ia == 0 ) continue;
