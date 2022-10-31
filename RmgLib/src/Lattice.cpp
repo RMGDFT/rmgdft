@@ -1056,6 +1056,8 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
          break;
       case CUBIC_PRIMITIVE:
          celldm[0] = sqrt( dot_product (a1,a1) );
+         celldm[1] = sqrt( dot_product (a2,a2) );
+         celldm[2] = sqrt( dot_product (a3,a3) );
          break;
       case CUBIC_FC:
          celldm[0] = sqrt( dot_product (a1,a1) * 2.0 );

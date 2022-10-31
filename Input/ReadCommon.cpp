@@ -1545,8 +1545,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
         printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
-        celldm[1] *= celldm[0];
-        celldm[2] *= celldm[0];
+        if(ibrav!=CUBIC_PRIMITIVE && ibrav!=CUBIC_BC && ibrav != CUBIC_FC)
+        {
+                celldm[1] *= celldm[0];
+                celldm[2] *= celldm[0];
+        }
     }
     else
     {
@@ -1562,6 +1565,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
     // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
     if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
             !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
     {
         celldm[1] /= celldm[0];
