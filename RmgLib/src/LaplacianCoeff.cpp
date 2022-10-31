@@ -533,60 +533,124 @@ void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][
 
    
 }
+void LaplacianCoeff::ijk_to_point(int i, int j, int k, GridPoint &point, double a[3][3], int Ngrid[3])
+{
+    double dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
+    double dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
+    double dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
 
+    double dist = sqrt(dx * dx  + dy * dy + dz * dz);
+    point.dist = dist;
+    point.delta[0] = dx;
+    point.delta[1] = dy;
+    point.delta[2] = dz;
+    point.index[0] = i;
+    point.index[1] = j;
+    point.index[2] = k;
+    point.ijk = std::abs(i) + std::abs(j) + std::abs(k);
+    point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+    point.coeff = 0.0;
+}
 
 void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     points.clear();
     double dx, dy,dz, dist;    
-    for(int i = -Lorder/2; i <= Lorder/2; i++){
-        for(int j = -Lorder/2; j <= Lorder/2; j++){
-            for(int k = -Lorder/2; k <= Lorder/2; k++){
-                if(i == 0 && j == 0 && k == 0) continue;
-                if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && 
-                        Lorder > 6 && (i +j == 0 || i+k == 0 || j+k  == 0)) continue;
+    if(this->ibrav != TRICLINIC_PRIMITIVE)
+    {
+        printf("\n WARNING this is only work for Triclinic \n");
+        exit(0);
+    }
+    for(int ia = -Lorder/2; ia <= Lorder/2; ia++){
+        if(ia == 0 ) continue;
+        int i, j, k;
+        //axis 0: a1
+        i = ia;
+        j = 0;
+        k = 0;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
-                dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
-                dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
-                dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
+        //axis 1: a2
+        i = 0;
+        j = ia;
+        k = 0;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
-                // This next set of conditions are specific for TRICLINIC and CUBIC_BC
-                if((i!=0) && (j!=0) && (k==0))
-                {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != j*j)) continue;
-                    if((this->ibrav == CUBIC_BC) && (i*i != j*j)) continue;
-                }
-                if((i!=0) && (j==0) && (k!=0))
-                {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (i*i != k*k)) continue;
-                    if((this->ibrav == CUBIC_BC) && (i*i != k*k)) continue;
-                }
-                if((i==0) && (j!=0) && (k!=0))
-                {
-                    if((this->ibrav == TRICLINIC_PRIMITIVE) && (j*j != k*k)) continue;
-                    if((this->ibrav == CUBIC_BC) && (j*j != k*k)) continue;
-                }
-                if((i!=0) && (j!=0) && (k!=0))
-                {
-                    if(this->ibrav == TRICLINIC_PRIMITIVE) continue;
-                } 
-                if(this->ibrav == CUBIC_BC && i!=0 && j!=0 && k!=0 && (i*i != j*j || i*i != k*k)) continue;
+        //axis 2: a3
+        i = 0;
+        j = 0;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
-                dist = sqrt(dx * dx  + dy * dy + dz * dz);
-                point.dist = dist;
-                point.delta[0] = dx;
-                point.delta[1] = dy;
-                point.delta[2] = dz;
-                point.index[0] = i;
-                point.index[1] = j;
-                point.index[2] = k;
-                point.ijk = std::abs(i) + std::abs(j) + std::abs(k);
-                point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-                point.coeff = 0.0;
-                points.push_back(point);
-//                printf("IIII  %f  %f  %f  %f  %d  %d  %d\n",dist,dx,dy,dz,i,j,k);
-            }
-        }
+        //axis 3: a1 + a2
+        i = ia;
+        j = ia;
+        k = 0;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
+        //axis 4: a1 + a3
+        i = ia;
+        j = 0;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
+        //axis 5: a2 + a3
+        i = 0;
+        j = ia;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
+        //axis 6: a1 - a2
+        i = ia;
+        j = -ia;
+        k = 0;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
+        //axis 7: a1 - a3
+        i = ia;
+        j = 0;
+        k = -ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
+        //axis 8: a2 - a3
+        i = 0;
+        j = ia;
+        k = -ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+
+        //axis 9: a1 + a2 + a3
+        i = ia;
+        j = ia;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+
+        //axis 10: a1 + a2 - a3
+        i = ia;
+        j = ia;
+        k = -ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+
+        //axis 11: a1 - a2 + a3
+        i = ia;
+        j = -ia;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+
+        //axis 12: -a1 + a2 + a3
+        i = -ia;
+        j = ia;
+        k = ia;
+        ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
+
     }
 
     std::stable_sort(points.begin(), points.end(), customLess_z);
@@ -595,62 +659,6 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
     std::stable_sort(points.begin(), points.end(), customLess_ijk);
     std::stable_sort(points.begin(), points.end(), customLess_dist);
 
-    if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && Lorder > 6)
-        for(int i = Lorder/2; i > 0; i--)
-        {
-            for(int j = 0; j < 3; j++){
-
-                dx = i*a[j][0]/Ngrid[j];
-                dy = i*a[j][1]/Ngrid[j];
-                dz = i*a[j][2]/Ngrid[j];
-
-                dist = sqrt(dx * dx  + dy * dy + dz * dz);
-                point.dist = dist;
-                point.delta[0] = dx;
-                point.delta[1] = dy;
-                point.delta[2] = dz;
-
-                point.index[0] = 0;
-                point.index[1] = 0;
-                point.index[2] = 0;
-                point.index[j] = i;
-
-                point.ijk = std::abs(i);
-                point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-                point.coeff = 0.0;
-                points.insert(points.begin(), point);
-
-                dx = -i*a[j][0]/Ngrid[j];
-                dy = -i*a[j][1]/Ngrid[j];
-                dz = -i*a[j][2]/Ngrid[j];
-
-                dist = sqrt(dx * dx  + dy * dy + dz * dz);
-                point.dist = dist;
-                point.delta[0] = dx;
-                point.delta[1] = dy;
-                point.delta[2] = dz;
-
-                point.index[0] = 0;
-                point.index[1] = 0;
-                point.index[2] = 0;
-                point.index[j] = -i;
-
-                point.ijk = std::abs(i);
-                point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-                point.coeff = 0.0;
-                points.insert(points.begin(), point);
-            }
-        }
-
-    if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && Lorder == 6)
-    {
-        points.insert(points.begin()+79, points[97]);
-        points.insert(points.begin()+79, points[97]);
-        points.insert(points.begin()+79, points[97]);
-        points.insert(points.begin()+79, points[97]);
-        points.insert(points.begin()+79, points[97]);
-        points.insert(points.begin()+79, points[97]);
-    }
 
 
 }
@@ -659,7 +667,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 {
 
     int num_derivative = der_list.size();
-    
+
     bool iprint = false;
     int info, index;
     std::vector<int> num_points;
@@ -670,27 +678,27 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
             num_points.push_back(i+1);
         }
     }
-    
+
     num_points.push_back((int)points.size());
 
 
     if(iprint)
     {
-      for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
+        for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
 
         std::cout << "num_derivative " << num_derivative << std::endl;
-            index = 0;
-           for(auto a:points)
-           {   
-               // std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<std::endl;
-               std::cout << index <<"  "<<a.dist << "    "<<a.delta[0]<<"  " <<a.delta[1]<<"  " <<a.delta[2] << "  "<<std::endl;
-               index++;
-           }
-           for(auto a:der_list)
-           {   
-               std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<std::endl;
-               index++;
-           }
+        index = 0;
+        for(auto a:points)
+        {   
+            // std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<std::endl;
+            std::cout << index <<"  "<<a.dist << "    "<<a.delta[0]<<"  " <<a.delta[1]<<"  " <<a.delta[2] << "  "<<std::endl;
+            index++;
+        }
+        for(auto a:der_list)
+        {   
+            std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<std::endl;
+            index++;
+        }
     }
 
 
@@ -726,7 +734,6 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
                 for(int i = 1; i <= der_list[irow].index[1]; i++) delta_r *= dy;
                 for(int i = 1; i <= der_list[irow].index[2]; i++) delta_r *= dz;
 
-
                 for(int icol = 0; icol < num_derivative; icol++)
                 {
                     delta_c = points[ip].weight_factor;
@@ -755,12 +762,12 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         for(int i = 0; i < num_derivative * num_derivative; i++) Bm[i] = Am[i];
         dgetrf(&num_derivative, &num_derivative, Am, &num_derivative, ipvt,  &info );
 
-      //printf("\n point_end %d", point_end);
-      //for(int i = 0; i < num_derivative; i++)
-      //{   printf("\n");
-      //    for(int j = 0; j < num_derivative; j++)
-      //        printf("%5.2f", Bm[i*num_derivative + j]);
-      //}
+        //printf("\n point_end %d", point_end);
+        //for(int i = 0; i < num_derivative; i++)
+        //{   printf("\n");
+        //    for(int j = 0; j < num_derivative; j++)
+        //        printf("%5.2f", Bm[i*num_derivative + j]);
+        //}
 
         Uii = true;
         if(info != 0)
@@ -991,7 +998,7 @@ void LaplacianCoeff::GetDerListBCC(std::vector<GridPoint>& der_list, int Lorder)
     der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
 #endif
     GetDerList(der_list, Lorder, 3, 0);
-printf("SIZE = %lu\n",der_list.size());
+    printf("SIZE = %lu\n",der_list.size());
     std::stable_sort(der_list.begin(), der_list.end(), customLess_ijk);
     std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
 
@@ -1062,10 +1069,10 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
                 if(
-                   (i==j && j==k) ||
-                   (i!=0 && j==0 && k==0) ||
-                   (i==0 && j!=0 && k==0) ||
-                   (i==0 && j==0 && k!=0))
+                        (i==j && j==k) ||
+                        (i!=0 && j==0 && k==0) ||
+                        (i==0 && j!=0 && k==0) ||
+                        (i==0 && j==0 && k!=0))
                 {
                     dist = sqrt(dx * dx  + dy * dy + dz * dz);
                     point.dist = dist;

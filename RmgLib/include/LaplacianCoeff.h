@@ -96,6 +96,7 @@ public:
     void GetPointListBCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder);
     void GetDerListBCC(std::vector<GridPoint>& der_list, int Lorder);
+    void ijk_to_point(int i, int j, int k, GridPoint &point, double a[3][3], int Ngrid[3]);
 
 };
 
