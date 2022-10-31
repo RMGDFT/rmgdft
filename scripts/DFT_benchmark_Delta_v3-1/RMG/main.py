@@ -23,10 +23,18 @@ volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 #pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp = ["C", "O","Mn","Ga","Mg","Cr","Mo","Tc","Zn","F","Cl","Ni","Sc","Y","B","Co","Po","Ge","As","Si","Os","I","Li","Cs","In","K","Ru","Ti","Hg","Tl","H","Sb","Se","S","Re","Al","Cd","Br","Be","Ba","P","Nb","Na","Rb","Pb","Pd","Sr","Ta","Sn","Ca","Cu","Hf","Te"];
+pseudo_uspp=["Sb","W","C","Re"]
 
 # ONCV with core corrections
-pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
+#pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
+# Cu needs a 20x20x20 grid
+pseudo_nc=["Nb","V","Bi"]
+
+# Use semilocal form (only available with sg15)
+pseudo_sl=["Ar"]
+
+# Extra cutoff required
+high_cutoff = ["Cu"]
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
@@ -38,14 +46,15 @@ AFM_list1 = ["Cr", "Mn"]
 AFM_list2 = ["O"]
 
 # Denser kpoint mesh for elements in this list. Mostly fcc metals
-high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir"];
+high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu"];
 
 # even denser kpoint mesh for elements in this list
 #veryhigh_k = ["Au", "Pt"];
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
-k_parall = 3;
-pp = 'MIXED'
+k_parall = 8;
+#pp = 'MIXED'
+pp = 'SG15'
 #pp = 'ONCV'
 
 def main():
@@ -56,8 +65,9 @@ cp ~/bin/rmg-cpu .
 
     jobline_desktop = ''
 #    line_run = 'aprun -n 128 -N 8 -d 4 -cc numa_node ../../rmg-cpu input&\n'
-#    line_run = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
-    line_run = 'mpirun -np 24 --bind-to core ~/bin/rmg-cpu input\n'
+    #line_run = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-cpu-crusher input\n'
+    line_run = 'srun -AMAT189_crusher --ntasks=256 -u --gpus-per-node=8 --ntasks-per-node=64 --cpu-bind=sockets  ../../rmg-cpu-crusher input\n'
+#    line_run = 'mpirun -np 24 --bind-to core ~/bin/rmg-cpu input\n'
     
     shell_script_line=''
     dirname = 'Delta_benchmark_dk_%4.2f_hx_%4.2f_%s'%(k_delta, grid_spacing_base, pp)
@@ -86,6 +96,9 @@ cp ~/bin/rmg-cpu .
         grid_spacing = grid_spacing_base;
         if(species in pseudo_uspp):
             grid_spacing = 1.25*grid_spacing_base;
+
+        if(species in high_cutoff):
+            grid_spacing = grid_spacing_base/1.25;
 
         try:
             input_for_rmg(species, '../../../primCIFs/'+filename,  grid_spacing)
@@ -158,7 +171,6 @@ localize_projectors = "false"
 localize_localpp = "false"
 kpoint_distribution = "%d"
 verbose="true"
-kohn_sham_fd_order="10"
 energy_convergence_criterion = "1.00000000e-9"
 """%(k_parall)
 
@@ -178,10 +190,12 @@ energy_convergence_criterion = "1.00000000e-9"
         mag = 0.25
         sign = [1,-1]
         _positions_line +='spin_polarization="true"\n'
+        _positions_line +='AFM="true"\n'
     if(species in AFM_list2):
         mag = 0.25
         sign = [1,1,-1,-1]
         _positions_line +='spin_polarization="true"\n'
+        _positions_line +='AFM="true"\n'
     _positions_line += 'atoms=\n"\n'
     iatom = 0
     for atom in crmg.atoms:
@@ -223,15 +237,20 @@ energy_convergence_criterion = "1.00000000e-9"
     
     jobfile = open('job.bat', 'w') 
     jobfile.write('rm */*.log */*.options\n')
-    jobrun = 'mpirun -n 24 --bind-to core ~/bin/rmg-cpu input\n'
-    #jobrun = 'srun -AMAT189_crusher --ntasks=32 -u -c8 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ../../rmg-gpu-crusher input\n'
+    #jobrun = 'mpirun -n 24 --bind-to core ~/bin/rmg-cpu input\n'
+    jobrun = 'srun -AMAT189_crusher --ntasks=256 -u --gpus-per-node=8 --ntasks-per-node=64 --cpu-bind=sockets  ../../rmg-cpu-crusher input\n'
 
     pp_type = '\n'
     if(species in pseudo_uspp):
         pp_type = 'internal_pseudo_type="ultrasoft"\n'
+        pp_type += 'potential_grid_refinement="3"\n'
 
     if(species in pseudo_nc):
         pp_type = 'internal_pseudo_type="nc_accuracy"\n'
+        pp_type += 'potential_grid_refinement="3"\n'
+
+    if(species in pseudo_sl):
+        pp_type = 'use_bessel_projectors="true"\n'
 
     mg_line = '\n'
     if(species in run_mg):
@@ -244,6 +263,9 @@ energy_convergence_criterion = "1.00000000e-9"
         mg_line += 'charge_density_mixing="0.15"\n'
         mg_line += 'charge_mixing_type="Broyden"\n'
         mg_line += 'potential_acceleration_constant_step="0.0"\n'
+
+    if(species in high_cutoff):
+        mg_line += 'kohn_sham_fd_order="10"\n'
 
     pp_line='\n'
     veca = [0.0,0.0,0.0]
