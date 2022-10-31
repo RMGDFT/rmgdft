@@ -623,6 +623,9 @@ public:
     /** If interntal pseudopotential is wanted which type */
     int internal_pseudo_type;
 
+    /** Factor which controls the number of semilocal projectors */
+    double semilocal_factor;
+
     /** The maximum l quantum number for any species */
     int max_l;
 
