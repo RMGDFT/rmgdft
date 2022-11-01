@@ -861,7 +861,7 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
                 ibrav = 9;
             }
             // Force to triclinic until special operators coded
-            ibrav = 14;
+            ibrav = 12;
         }
         else if ( eqq(cosac,-cosbc) )
         {

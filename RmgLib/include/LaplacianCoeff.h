@@ -86,7 +86,7 @@ public:
     
     void UpdateIndex(int dim[3]);
 
-    void BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension);
+    void BuildSolveLinearEq(std::vector<GridPoint>& points, std::vector<GridPoint>& der_list, int dimension);
     void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction);
     void GetPointList3D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetPointList2D (std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder);
@@ -97,6 +97,7 @@ public:
     void GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder);
     void GetDerListBCC(std::vector<GridPoint>& der_list, int Lorder);
     void ijk_to_point(int i, int j, int k, GridPoint &point, double a[3][3], int Ngrid[3]);
+    void reduce_der_list(std::vector<GridPoint>& der_list);
 
 };
 

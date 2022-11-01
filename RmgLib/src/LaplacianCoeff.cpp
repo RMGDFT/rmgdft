@@ -556,7 +556,6 @@ void LaplacianCoeff::ijk_to_point(int i, int j, int k, GridPoint &point, double 
 void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     points.clear();
-    double dx, dy,dz, dist;    
     if(this->ibrav != TRICLINIC_PRIMITIVE)
     {
         printf("\n WARNING this is only work for Triclinic \n");
@@ -664,7 +663,7 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
 
 }
 
-void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension)
+void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, std::vector<GridPoint>& der_list, int dimension)
 {
 
     int num_derivative = der_list.size();
@@ -718,6 +717,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     int point_start = 0, point_end = num_points[0];
     bool Uii = false;
     index = 0;
+    bool der_list_reduced = false;
     while(!Uii)
     {
         //std::cout << point_start << " point " << point_end<< std::endl;
@@ -778,13 +778,34 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
             if(index >= (int)num_points.size()) 
             {
                 printf ("error in LaplacianCoeff.cpp dgetrf INFO = %d \n", info);
-                printf ("not enough grid points in LaplacianCoeff.cpp\n");
-                fflush (NULL);
-                std::raise(SIGTERM);
+                if(info <0 || der_list_reduced)
+                {
+                    printf ("not enough grid points in LaplacianCoeff.cpp\n");
+                    fflush (NULL);
+                    std::raise(SIGTERM);
+                }
+                else
+                {
+                    printf("\nreduce number of der_list \n");
+
+                    reduce_der_list(der_list);
+                    num_derivative =der_list.size();
+                    for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = 0.0;
+                    //for(int i = 0; i < num_derivative; i++)
+                    //{
+                    //    printf("\n der_list %d %d %d %d", i, der_list[i].index[0], der_list[i].index[1], der_list[i].index[2] );
+                    //}
+                    point_start =0; 
+                    point_end = num_points[0];
+                    der_list_reduced = true;
+                }
             }
-            point_start = point_end;
-            point_end = num_points[index];
-            for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = Bm[i];
+            else
+            {
+                point_start = point_end;
+                point_end = num_points[index];
+                for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = Bm[i];
+            }
         }
 
     }
@@ -1097,6 +1118,35 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
     std::stable_sort(points.begin(), points.end(), customLess_x);
     std::stable_sort(points.begin(), points.end(), customLess_ijk);
     std::stable_sort(points.begin(), points.end(), customLess_dist);
+}
+
+void LaplacianCoeff::reduce_der_list(std::vector<GridPoint>& der_list)
+{
+    int num_derivative = der_list.size();
+    for(int idx = num_derivative -1; idx >=0; idx--)
+    {
+        int i = der_list[idx].index[0];
+        int j = der_list[idx].index[1];
+        int k = der_list[idx].index[2];
+
+        if (i * j * k != 0)
+        {
+            if (i == j && i == k) continue;
+            der_list.erase(der_list.begin() + idx);
+        }
+        else if( i * j != 0 && i != j)
+        {
+            der_list.erase(der_list.begin() + idx);
+        }
+        else if( i * k != 0 && i != k)
+        {
+            der_list.erase(der_list.begin() + idx);
+        }
+        else if( j * k != 0 && j != k)
+        {
+            der_list.erase(der_list.begin() + idx);
+        }
+    }
 }
 
 LaplacianCoeff::~LaplacianCoeff(void)
