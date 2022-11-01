@@ -51,6 +51,12 @@ high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu"];
 # even denser kpoint mesh for elements in this list
 #veryhigh_k = ["Au", "Pt"];
 
+# list of species use CIFs instead of primCIFs
+# I, P, Br, Cl, Ga: use CIFs will have orthorhombic 
+# primCIFs will have monoclinic
+#Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
+use_CIFs = ["I","P","Br","Cl","Ga","Sb","As","Na", "S","B","Li","Bi"]
+
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 8;
 #pp = 'MIXED'
@@ -100,12 +106,10 @@ cp ~/bin/rmg-cpu .
         if(species in high_cutoff):
             grid_spacing = grid_spacing_base/1.25;
 
-        try:
-            input_for_rmg(species, '../../../primCIFs/'+filename,  grid_spacing)
-        except:
-            print("primCIFs has problem for ", species)
-            print("use CIFs instead")
+        if species in use_CIFs:
             input_for_rmg(species, '../../../CIFs/'+filename,  grid_spacing)
+        else:
+            input_for_rmg(species, '../../../primCIFs/'+filename,  grid_spacing)
 
         os.chdir('..')
         jobline_desktop += 'cd ' + species +'\n'
