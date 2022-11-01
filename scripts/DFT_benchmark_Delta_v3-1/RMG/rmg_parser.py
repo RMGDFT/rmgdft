@@ -55,9 +55,16 @@ class rmg_interface():
 
         self.ibrav = 0
         t = LatticeMatrix(self.cell.latticevectors)
+        abc_length = [0,0,0]
         for i in range(3):
             for j in range(3):
                 t[i][j] = self.cell.latticevectors[i][j]*self.cell.lengthscale
+                abc_length[i] += t[i][j] * t[i][j]
+            abc_length[i] = math.sqrt(abc_length[i])    
+        self.cell.a = abc_length[0]
+        self.cell.b = abc_length[1]
+        self.cell.c = abc_length[2]
+
         ortho = abs(self.cell.a - t[0][0]) < 1.0e-5 
         ortho = ortho and abs(self.cell.b - t[1][1]) < 1.0e-5
         ortho = ortho and abs(self.cell.c - t[2][2]) < 1.0e-5
