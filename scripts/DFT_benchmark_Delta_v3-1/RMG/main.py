@@ -60,7 +60,7 @@ high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu","Rn","Cs","Ar"]
 # I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
-use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi"]
+use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi", "F"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 8;
