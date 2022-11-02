@@ -52,10 +52,10 @@ high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu"];
 #veryhigh_k = ["Au", "Pt"];
 
 # list of species use CIFs instead of primCIFs
-# I, P, Br, Cl, Ga: use CIFs will have orthorhombic 
+# I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
-use_CIFs = ["I","P","Br","Cl","Ga","Sb","As","Na", "S","B","Li","Bi"]
+use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 8;
