@@ -17,24 +17,29 @@ from rmg_parser import *
 
 pi = 3.141592653589793238
 
+# Mn, Pt and Os need to use the pslib uspp
+# Lu uses Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF with a "36 36 64" grid
+# since it has f-electrons in valence
+# The script does not automaticially set these up yet.
+#
 # The base value is used for ncpp
 grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 #pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp=["Sb","W","C","Re"]
+pseudo_uspp=["Sb","W","C","Re","Cr","I","Br","Cl","Hg"]
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
 # Cu needs a 20x20x20 grid
-pseudo_nc=["Nb","V","Bi"]
+pseudo_nc=["Nb","V","Bi","Po","Rn","Kr"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar"]
 
 # Extra cutoff required
-high_cutoff = ["Cu"]
+high_cutoff = ["Cu","Ni","Kr","Pt"]
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
@@ -46,7 +51,7 @@ AFM_list1 = ["Cr", "Mn"]
 AFM_list2 = ["O"]
 
 # Denser kpoint mesh for elements in this list. Mostly fcc metals
-high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu"];
+high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu","Rn","Cs","Ar"]
 
 # even denser kpoint mesh for elements in this list
 #veryhigh_k = ["Au", "Pt"];
