@@ -1544,7 +1544,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
-        printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
+        if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
         if(ibrav!=CUBIC_PRIMITIVE && ibrav!=CUBIC_BC && ibrav != CUBIC_FC)
         {
                 celldm[1] *= celldm[0];
@@ -1579,10 +1579,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             throw RmgFatalException() << "a, b, c is not consistent with Cubic Primitive\n";
     }
 
+#if 0
     // Lattice vectors are orthogonal except for Hex which is setup inside latgen
+    // no longer true but need to verify for all types
     celldm[3] = 0.0;
     celldm[4] = 0.0;
     celldm[5] = 0.0;
+#endif
 
     // Set up the lattice vectors
     Rmg_L.set_ibrav_type(ibrav);
