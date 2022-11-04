@@ -523,7 +523,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     FD.cfac[1] = 0.0;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        if(Kptr[kpt]->kp.kmag > 1.0e-8) GetFdFactor();
+        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor();
     }
     MPI_Allreduce(MPI_IN_PLACE, &FD.cfac[0], 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
     MPI_Allreduce(MPI_IN_PLACE, &FD.cfac[1], 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
