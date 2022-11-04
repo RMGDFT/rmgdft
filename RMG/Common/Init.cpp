@@ -518,7 +518,15 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
     // Set up autotuning finite differencing
-    GetFdFactor();
+    FiniteDiff FD(&Rmg_L);
+    FD.cfac[0] = 0.0;
+    FD.cfac[1] = 0.0;
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(Kptr[kpt]->kp.kmag > 1.0e-8) GetFdFactor();
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &FD.cfac[0], 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &FD.cfac[1], 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
     // FDOpt is experimental
     //FDOpt *Fopt = new FDOpt();
     //Fopt->Optimize();
