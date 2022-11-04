@@ -1076,6 +1076,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
          celldm[1]= celldm[0];
          celldm[2]= celldm[0];
          break;
+      case HEXAGONAL2:
       case HEXAGONAL:
          celldm[0] = sqrt( dot_product (a1,a1) );
          celldm[1] = sqrt( dot_product (a2,a2) ) / celldm[0];
