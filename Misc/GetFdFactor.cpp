@@ -26,7 +26,7 @@ double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
 }
 
 
-void GetFdFactor(void)
+void GetFdFactor(int kpt)
 {
     FiniteDiff FD(&Rmg_L);
     std::complex<double> I_t(0.0, 1.0);
@@ -86,6 +86,7 @@ void GetFdFactor(void)
         /*Temporary pointer to the already calculated forward transform. */
         /* Need to fix up for kpoint parrallelization issues.  */
         std::complex<double> *fptr = (std::complex<double> *)sp.forward_orbital;
+        fptr += kpt*sp.num_orbitals*pbasis;
 
         /* Loop over atomic orbitals */
         for (int ip = 0; ip < sp.num_orbitals; ip++)

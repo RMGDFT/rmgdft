@@ -241,7 +241,18 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     FiniteDiff::FdCoeffs.clear();
     for(auto& a:T) delete a.second;
     SetLaplacian();
-    GetFdFactor();
+    FiniteDiff FD(&Rmg_L);
+    FD.cfac[0] = 0.0;
+    FD.cfac[1] = 0.0;
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor(kpt);
+    }
+    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.grid_comm);
+    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);
+    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
+    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
+
     // Kpoint version
     //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
 
