@@ -1545,11 +1545,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
-        if(ibrav!=CUBIC_PRIMITIVE && ibrav!=CUBIC_BC && ibrav != CUBIC_FC)
-        {
-                celldm[1] *= celldm[0];
-                celldm[2] *= celldm[0];
-        }
     }
     else
     {
@@ -1560,14 +1555,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             celldm[1] *= A_a0;
             celldm[2] *= A_a0;
         }
-    }
-
-    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
-    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
-    if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
-    {
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
     }
@@ -1575,7 +1562,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
     {
         if( std::abs(celldm[1] - 1.0 ) > 1.0e-5 || std::abs(celldm[2] - 1.0) > 1.0e-5)
-
             throw RmgFatalException() << "a, b, c is not consistent with Cubic Primitive\n";
     }
 

@@ -1064,17 +1064,19 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
          break;
       case CUBIC_PRIMITIVE:
          celldm[0] = sqrt( dot_product (a1,a1) );
-         celldm[1] = sqrt( dot_product (a2,a2) );
-         celldm[2] = sqrt( dot_product (a3,a3) );
+         celldm[1] = sqrt( dot_product (a2,a2) )/celldm[0];
+         celldm[2] = sqrt( dot_product (a3,a3) )/celldm[0];
          break;
       case CUBIC_FC:
          celldm[0] = sqrt( dot_product (a1,a1) * 2.0 );
+         celldm[1] = 1.0;
+         celldm[2] = 1.0;
          break;
       case -CUBIC_BC:
       case CUBIC_BC:
          celldm[0] = sqrt( dot_product (a1,a1) / 3.0 ) * 2.0;
-         celldm[1]= celldm[0];
-         celldm[2]= celldm[0];
+         celldm[1]= 1.0;
+         celldm[2]= 1.0;
          break;
       case HEXAGONAL2:
       case HEXAGONAL:
@@ -1089,6 +1091,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
 //         break;
       case TETRAGONAL_PRIMITIVE:
          celldm[0]= sqrt( dot_product (a1,a1) );
+         celldm[1]= 1.0;
          celldm[2]= sqrt( dot_product (a3,a3) ) / celldm[0];
          break;
 //      case TETRAGONAL_BC:
