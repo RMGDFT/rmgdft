@@ -17,32 +17,141 @@ from rmg_parser import *
 
 pi = 3.141592653589793238
 
-# Mn, Pt and Os need to use the pslib uspp
-# Lu uses Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF with a "36 36 64" grid
-# since it has f-electrons in valence
+# Adjust grids here
+grids = {
+"Ag":"""wavefunction_grid="20 20 20 """,
+"Al":"""wavefunction_grid="20 20 20 """,
+"Ar":"""wavefunction_grid="32 32 32 """,
+"As":"""wavefunction_grid="28 28 76 """,
+"Au":"""wavefunction_grid="24 24 24 """,
+"Ba":"""wavefunction_grid="36 36 36 """,
+"Be":"""wavefunction_grid="16 16 24 """,
+"Bi":"""wavefunction_grid="32 32 88 """,
+"Br":"""wavefunction_grid="48 24 52 """,
+"B":"""wavefunction_grid="44 44 44 """,
+"Ca":"""wavefunction_grid="28 28 28 """,
+"Cd":"""wavefunction_grid="20 20 40 """,
+"Cl":"""wavefunction_grid="44 24 52 """,
+"Co":"""wavefunction_grid="16 16 28 """,
+"Cr":"""wavefunction_grid="16 16 16 """,
+"Cs":"""wavefunction_grid="44 44 44 """,
+"Cu":"""wavefunction_grid="20 20 20 """,
+"C":"""wavefunction_grid="16 16 56 """,
+"Fe":"""wavefunction_grid="20 20 20 """,
+"F":"""wavefunction_grid="44 48 24 """,
+"Ga":"""wavefunction_grid="32 56 32 """,
+"Ge":"""wavefunction_grid="28 28 28 """,
+"He":"""wavefunction_grid="20 20 32 """,
+"Hf":"""wavefunction_grid="24 24 36 """,
+"Hg":"""wavefunction_grid="24 24 20 """,
+"H":"""wavefunction_grid="28 28 36 """,
+"In":"""wavefunction_grid="24 24 36 """,
+"Ir":"""wavefunction_grid="24 24 24 """,
+"I":"""wavefunction_grid="48 24 56 """,
+"Kr":"""wavefunction_grid="40 40 40 """,
+"K":"""wavefunction_grid="36 36 36 """,
+"Li":"""wavefunction_grid="52 52 52 """,
+"Lu":"""wavefunction_grid="36 36 64 """,
+"Mg":"""wavefunction_grid="24 24 36 """,
+"Mn":"""wavefunction_grid="24 24 36 """,
+"Mo":"""wavefunction_grid="20 20 20 """,
+"Na":"""wavefunction_grid="64 64 64 """,
+"Nb":"""wavefunction_grid="24 24 24 """,
+"Ne":"""wavefunction_grid="24 24 24 """,
+"Ni":"""wavefunction_grid="20 20 20 """,
+"N":"""wavefunction_grid="44 44 44 """,
+"Os":"""wavefunction_grid="24 24 40 """,
+"O":"""wavefunction_grid="32 28 28 """,
+"Pb":"""wavefunction_grid="24 24 24 """,
+"Pd":"""wavefunction_grid="20 20 20 """,
+"Po":"""wavefunction_grid="24 24 24 """,
+"Pt":"""wavefunction_grid="24 24 24 """,
+"P":"""wavefunction_grid="24 80 32 """,
+"Rb":"""wavefunction_grid="40 40 40 """,
+"Re":"""wavefunction_grid="16 16 24 """,
+"Rh":"""wavefunction_grid="20 20 20 """,
+"Rn":"""wavefunction_grid="40 40 40 """,
+"Ru":"""wavefunction_grid="24 24 36 """,
+"Sb":"""wavefunction_grid="24 24 64 """,
+"Sc":"""wavefunction_grid="24 24 36 """,
+"Se":"""wavefunction_grid="32 32 36 """,
+"Si":"""wavefunction_grid="20 20 20 """,
+"Sn":"""wavefunction_grid="32 32 32 """,
+"Sr":"""wavefunction_grid="20 20 20 """,
+"S":"""wavefunction_grid="20 20 20 """,
+"Ta":"""wavefunction_grid="24 24 24 """,
+"Tc":"""wavefunction_grid="20 20 32 """,
+"Te":"""wavefunction_grid="32 32 40 """,
+"Ti":"""wavefunction_grid="20 20 32 """,
+"Tl":"""wavefunction_grid="24 24 40 """,
+"V":"""wavefunction_grid="20 20 20 """,
+"W":"""wavefunction_grid="16 16 16 """,
+"Xe":"""wavefunction_grid="36 36 36 """,
+"Y":"""wavefunction_grid="24 24 40 """,
+"Zn":"""wavefunction_grid="20 20 40""",
+"Zr":"""wavefunction_grid="24 24 36 """}
+
+#external pps here
+external_pps = {
+"Mn":"""Mn.pbe-spn-rrkjus_psl.0.3.1.UPF""",
+"Pt":"""Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
+"Os":"""Os.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
+"Lu":"""Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF""",
+"Ir":"""Ir.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
+"Si":"""Si.pbe-n-rrkjus_psl.1.0.0.UPF""",
+"Ga":"""Ga.pbe-dn-rrkjus_psl.1.0.0.UPF""",
+"Po":"""Po.pbe-dn-rrkjus_psl.1.0.0.UPF""",
+"As":"""As.pbe-n-rrkjus_psl.1.0.0.UPF""",
+"Zn":"""Zn.pbe-spn-rrkjus_psl.1.0.0.UPF"""}
+
+# We use the pslibrary pseudopotentials with some atomic species
+# with info given below. The script does not yet set these up automatically
+#
+# Mn uses Mn.pbe-spn-rrkjus_psl.0.3.1.UPF with a "24 24 36" grid
+# Pt uses Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 24" grid
+# Os uses Os.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 40" grid
+# Lu uses Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF with a "36 36 64" grid since it has f-electrons in valence
+# Ir uses Ir.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 24" grid and pgr=3
+# Si uses Si.pbe-n-rrkjus_psl.1.0.0.UPF with a "20 20 20" grid
+# Ga uses Ga.pbe-dn-rrkjus_psl.1.0.0.UPF with a "32 56 32" grid
+# Po uses Po.pbe-dn-rrkjus_psl.1.0.0.UPF with a ""24 24 24" grid and pgr=3 and fd_order=10
+# As uses As.pbe-n-rrkjus_psl.1.0.0.UPF with a "28 28 76" grid
+# Zn uses Zn.pbe-spn-rrkjus_psl.1.0.0.UPF with a "20 20 40" grid
 # The script does not automaticially set these up yet.
 #
+# Ag uses uspp but needs wavefunction_grid = "20 20 20"
+# Ni uses uspp but needs wavefunction_grid = "20 20 20"
+# Rn uses nc_accuracy but needs wavefunction_grid= "40 40 40"
+# Fe uses sg15 but needs wavefunction_grid = "20 20 20"
+# Au uses sg15 but needs wavefunction_grid = "24 24 24"
 # The base value is used for ncpp
 grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 #pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp=["Sb","W","C","Re","Cr","I","Br","Cl","Hg"]
+pseudo_uspp=["Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","Hg","B","S","Zn","Ir"]
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
 # Cu needs a 20x20x20 grid
-pseudo_nc=["Nb","V","Bi","Po","Rn","Kr"]
+pseudo_nc=["Fe","Nb","V","Bi","Po","Rn","Kr"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar"]
 
 # Extra cutoff required
-high_cutoff = ["Cu","Ni","Kr","Pt"]
+high_cutoff = ["Cu","Ni","Kr","Pt","B","S", "Zn"]
+high_high_cutoff = ["Ir"]
+
+# Higher temperature for convergence
+high_temp = ["Cr"]
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
+
+# Temporary for testing use fft fd
+#fft_fd = ["B","Li","O","S","Na","F"]
 
 FM_list = ["Fe", "Co", "Ni"]
 # spin up, spin down
@@ -60,12 +169,13 @@ high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu","Rn","Cs","Ar"]
 # I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
-use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi", "F"]
+use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 8;
 #pp = 'MIXED'
-pp = 'SG15'
+#pp = 'SG15'
+pp='test'
 #pp = 'ONCV'
 
 def main():
@@ -110,6 +220,12 @@ cp ~/bin/rmg-cpu .
 
         if(species in high_cutoff):
             grid_spacing = grid_spacing_base/1.25;
+
+        if(species in high_cutoff and species in pseudo_uspp):
+            grid_spacing = grid_spacing_base/1.2;
+
+        if(species in high_high_cutoff):
+            grid_spacing = grid_spacing_base/1.75;
 
         if species in use_CIFs:
             input_for_rmg(species, '../../../CIFs/'+filename,  grid_spacing)
@@ -170,7 +286,6 @@ crds_units = "Angstrom"
 lattice_units = "Angstrom"
 atomic_coordinate_type = "Cell Relative"
 occupations_type = "MethfesselPaxton"
-occupation_electron_temperature_eV = "1.0e-2"
 output_wave_function_file = "/dev/null"
 rms_convergence_criterion = "1e-7"
 start_mode="LCAO Start"
@@ -240,7 +355,8 @@ energy_convergence_criterion = "1.00000000e-9"
     else:
         _positions_line += 'kpoint_mesh = "%d %d %d"\n'%(kx, ky, kz)
 
-    _positions_line += 'wavefunction_grid = "%d %d %d"\n'%(nx, ny, nz)
+#    _positions_line += 'wavefunction_grid = "%d %d %d"\n'%(nx, ny, nz)
+    _positions_line += grids[species] + '"'
 
 
     
@@ -249,6 +365,8 @@ energy_convergence_criterion = "1.00000000e-9"
     #jobrun = 'mpirun -n 24 --bind-to core ~/bin/rmg-cpu input\n'
     jobrun = 'srun -AMAT189_crusher --ntasks=256 -u --gpus-per-node=8 --ntasks-per-node=64 --cpu-bind=sockets  ../../rmg-cpu-crusher input\n'
 
+    epps = '\n'
+    
     pp_type = '\n'
     if(species in pseudo_uspp):
         pp_type = 'internal_pseudo_type="ultrasoft"\n'
@@ -276,7 +394,18 @@ energy_convergence_criterion = "1.00000000e-9"
     if(species in high_cutoff):
         mg_line += 'kohn_sham_fd_order="10"\n'
 
-    pp_line='\n'
+    temp_line = 'occupation_electron_temperature_eV = "1.0e-2"\n'
+    if(species in high_temp):
+        temp_line = 'occupation_electron_temperature_eV = "1.0e-1"\n'
+
+#    if(species in fft_fd):
+#        mg_line += 'kohn_sham_ke_fft="true"\n'
+
+    pp_line = '\n'
+    if species in external_pps:
+        pp_line += 'pseudopotential="' + species + ' ' + external_pps[species] + '"\n'
+        pp_line += 'pseudo_dir="../../pseudo"\n'
+
     veca = [0.0,0.0,0.0]
     vecb = [0.0,0.0,0.0]
     vecc = [0.0,0.0,0.0]
@@ -298,6 +427,8 @@ energy_convergence_criterion = "1.00000000e-9"
 #        f.write('a_length="%16.8f"\n'%(a0*vol))
 #        f.write('b_length="%16.8f"\n'%(b0*vol))
 #        f.write('c_length="%16.8f"\n'%(c0*vol))
+        f.write(pp_line)
+        f.write(temp_line)
         f.write(_positions_line)
         f.write(default_line);
         f.write(pp_type)
