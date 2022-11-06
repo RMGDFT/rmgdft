@@ -41,8 +41,8 @@ grids = {
 "F":"""wavefunction_grid="44 48 24 """,
 "Ga":"""wavefunction_grid="32 56 32 """,
 "Ge":"""wavefunction_grid="28 28 28 """,
-"He":"""wavefunction_grid="20 20 32 """,
-"Hf":"""wavefunction_grid="24 24 36 """,
+"He":"""wavefunction_grid="24 24 44 """,
+"Hf":"""wavefunction_grid="24 24 44 """,
 "Hg":"""wavefunction_grid="24 24 20 """,
 "H":"""wavefunction_grid="28 28 36 """,
 "In":"""wavefunction_grid="24 24 36 """,
@@ -59,7 +59,7 @@ grids = {
 "Nb":"""wavefunction_grid="24 24 24 """,
 "Ne":"""wavefunction_grid="24 24 24 """,
 "Ni":"""wavefunction_grid="20 20 20 """,
-"N":"""wavefunction_grid="44 44 44 """,
+"N":"""wavefunction_grid="48 48 48 """,
 "Os":"""wavefunction_grid="24 24 40 """,
 "O":"""wavefunction_grid="32 28 28 """,
 "Pb":"""wavefunction_grid="24 24 24 """,
@@ -102,7 +102,21 @@ external_pps = {
 "Ga":"""Ga.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Po":"""Po.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "As":"""As.pbe-n-rrkjus_psl.1.0.0.UPF""",
+"N":"""N.oncvpsp.upf""",
+"He":"""He_ONCV_PBE-1.0.oncvpsp.upf""",
+"Na":"""Na_ONCV_PBE-1.0.oncvpsp.upf""",
 "Zn":"""Zn.pbe-spn-rrkjus_psl.1.0.0.UPF"""}
+
+#extra options here
+extra_opts = {
+"Bi":"""potential_grid_refinement="3""",
+"Lu":"""potential_grid_refinement="3""",
+"Nb":"""potential_grid_refinement="3"\nkpoint_mesh = "23 23 23 """,
+"Ta":"""kpoint_mesh = "31 31 31 """,
+"Pb":"""kpoint_mesh = "25 25 25 """,
+"Ge":"""kpoint_mesh = "13 13 13 """,
+"K":"""kpoint_mesh = "21 21 21 """
+}
 
 # We use the pslibrary pseudopotentials with some atomic species
 # with info given below. The script does not yet set these up automatically
@@ -145,7 +159,7 @@ high_cutoff = ["Cu","Ni","Kr","Pt","B","S", "Zn"]
 high_high_cutoff = ["Ir"]
 
 # Higher temperature for convergence
-high_temp = ["Cr"]
+high_temp = ["Cr","Na"]
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
@@ -374,7 +388,6 @@ energy_convergence_criterion = "1.00000000e-9"
 
     if(species in pseudo_nc):
         pp_type = 'internal_pseudo_type="nc_accuracy"\n'
-        pp_type += 'potential_grid_refinement="3"\n'
 
     if(species in pseudo_sl):
         pp_type = 'use_bessel_projectors="true"\n'
@@ -406,6 +419,10 @@ energy_convergence_criterion = "1.00000000e-9"
         pp_line += 'pseudopotential="' + species + ' ' + external_pps[species] + '"\n'
         pp_line += 'pseudo_dir="../../pseudo"\n'
 
+    extra_line = '\n'
+    if species in extra_opts:
+        extra_line = extra_opts[species] + '"\n'
+
     veca = [0.0,0.0,0.0]
     vecb = [0.0,0.0,0.0]
     vecc = [0.0,0.0,0.0]
@@ -428,6 +445,7 @@ energy_convergence_criterion = "1.00000000e-9"
 #        f.write('b_length="%16.8f"\n'%(b0*vol))
 #        f.write('c_length="%16.8f"\n'%(c0*vol))
         f.write(pp_line)
+        f.write(extra_line)
         f.write(temp_line)
         f.write(_positions_line)
         f.write(default_line);
