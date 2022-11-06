@@ -8,12 +8,12 @@ data_VESTA_phase_1
 
 
 _pd_phase_name                         'Na                                    '
-_cell_length_a                         9.41813
-_cell_length_b                         9.41813
-_cell_length_c                         9.41813
-_cell_angle_alpha                      22.92203
-_cell_angle_beta                       22.92203
-_cell_angle_gamma                      22.92203
+_cell_length_a                         9.418126
+_cell_length_b                         9.418126
+_cell_length_c                         9.418126
+_cell_angle_alpha                      22.922031
+_cell_angle_beta                       22.922031
+_cell_angle_gamma                      22.922031
 _symmetry_space_group_name_H-M         'P 1'
 _symmetry_Int_Tables_number            1
 
@@ -31,5 +31,5 @@ loop_
    _atom_site_B_iso_or_equiv
    _atom_site_type_symbol
    Na1      1.0    0            0            0           Biso  1.000  Na
-   Na2      1.0    0.22222      0.22222      0.22222     Biso  1.000  Na
-   Na3      1.0    0.77778      0.77778      0.77778     Biso  1.000  Na
+   Na2      1.0    0.22222222      0.22222222      0.22222222     Biso  1.000  Na
+   Na3      1.0    0.77777778      0.77777778      0.77777778     Biso  1.000  Na
