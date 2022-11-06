@@ -625,24 +625,28 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
         j = ia;
         k = -ia;
         ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
         //axis 9: a1 + a2 + a3
         i = ia;
         j = ia;
         k = ia;
         ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
         //axis 10: a1 + a2 - a3
         i = ia;
         j = ia;
         k = -ia;
         ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
         //axis 11: a1 - a2 + a3
         i = ia;
         j = -ia;
         k = ia;
         ijk_to_point(i,j,k,point, a, Ngrid);
+        points.push_back(point);
 
         //axis 12: -a1 + a2 + a3
         i = -ia;
