@@ -439,7 +439,7 @@ energy_convergence_criterion = "1.00000000e-9"
         if not os.path.exists(dir_name): os.mkdir(dir_name)
         f = open(dir_name+'/input', 'w')
         cvol = pow(vol, 1.0/3.0);
-        lattice_line = 'lattice_vector = "\n%f %f %f\n%f %f %f\n%f %f %f"\n'%(veca[0]*cvol,veca[1]*cvol,veca[2]*cvol,vecb[0]*cvol,vecb[1]*cvol,vecb[2]*cvol,vecc[0]*cvol,vecc[1]*cvol,vecc[2]*cvol)
+        lattice_line = 'lattice_vector = "\n%16.12f %16.12f %16.12f\n%16.12f %16.12f %16.12f\n%16.12f %16.12f %16.12f"\n'%(veca[0]*cvol,veca[1]*cvol,veca[2]*cvol,vecb[0]*cvol,vecb[1]*cvol,vecb[2]*cvol,vecc[0]*cvol,vecc[1]*cvol,vecc[2]*cvol)
         f.write(lattice_line)
 #        f.write('a_length="%16.8f"\n'%(a0*vol))
 #        f.write('b_length="%16.8f"\n'%(b0*vol))
