@@ -137,7 +137,7 @@ void GetFdFactor(int kpt)
     {
         for(size_t i=0;i < Atom.Type->fd_slopes.size();i++)
         {
-            if(fabs(Atom.Type->fd_slopes[i]) > 1.0e-5)
+            if(fabs(Atom.Type->fd_slopes[i]) > 1.0e-8)
             {
                 a += Atom.Type->fd_slopes[i] * occ_weight[i] * 
                      (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
