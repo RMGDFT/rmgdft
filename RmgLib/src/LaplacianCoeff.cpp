@@ -117,17 +117,12 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         double id=1.0;
         if(this->ibrav == HEXAGONAL) id = -1.0;
         dimension = 2;
-        double a2d[2][2];
-        a2d[0][0] = a[0][0];
-        a2d[0][1] = a[0][1];
-        a2d[1][0] = a[1][0];
-        a2d[1][1] = a[1][1];
-        double h = a2d[0][0] / (double)Ngrid[0];
+        double h = a[0][0] / (double)Ngrid[0];
         double h2 = h*h;
         double hf = sqrt(3.0/4.0);
         double hf1 = sqrt(3.0);
 
-        GetPointList2D(points1, a2d, Ngrid, Lorder);
+        GetPointList2D(points1, a, Ngrid, Lorder);
         for(auto &a:points1)
         {
             if(a.index[0] != 0 && a.index[1]==0)
@@ -184,13 +179,8 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     {
         dimension = 2;
         GetDerList(der_list, Lorder, dimension, 0);
-        double a2d[2][2];
-        a2d[0][0] = a[0][0];
-        a2d[0][1] = a[0][1];
-        a2d[1][0] = a[1][0];
-        a2d[1][1] = a[1][1];
 
-        GetPointList2D(points1, a2d, Ngrid, Lorder);
+        GetPointList2D(points1, a, Ngrid, Lorder);
         this->BuildSolveLinearEq(points1, der_list, dimension);
         points.insert(std::end(points), std::begin(points1), std::end(points1));
 
@@ -489,50 +479,47 @@ void LaplacianCoeff::GetPointList1D(std::vector<GridPoint>& points, double a, in
     }
 }
 
-void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder){
+void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
-    double dx, dy, dist;    
 
-    for(int i = -Lorder/2; i <= Lorder/2; i++){
-        for(int j = -Lorder/2; j <= Lorder/2; j++){
-            if(i == 0 && j == 0) continue;
+    for(int ia = -Lorder/2; ia <= Lorder/2; ia++){
+        if(ia == 0 ) continue;
+        int i = ia;
+        int j = 0;
+        int k = 0;
+        ijk_to_point(i, j, k, point, a, Ngrid);
+        points.push_back(point);
 
-            dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1];
-            dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1];
-            if((i!=0) && (j!=0))
-            {
-                if((this->ibrav == HEXAGONAL) && (i != j)) continue;
-                if((this->ibrav == HEXAGONAL2) && (i != -j)) continue;
-                if((this->ibrav == MONOCLINIC_PRIMITIVE) && (i*i != j*j)) continue;
-                if((this->ibrav == -MONOCLINIC_PRIMITIVE) && (i*i != j*j)) continue;
-            }
-            dist = sqrt(dx * dx  + dy * dy);
-            point.dist = dist;
-            point.delta[0] = dx;
-            point.delta[1] = dy;
-            point.delta[2] = 0.0;
-            point.index[0] = i;
-            point.index[1] = j;
-            point.index[2] = 0;
-            point.ijk = std::abs(i) + std::abs(j) ;
-            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-            point.coeff = 0.0;
+        i = 0;
+        j = ia;
+        k = 0;
+        ijk_to_point(i, j, k, point, a, Ngrid);
+        points.push_back(point);
+
+        if( this->ibrav == HEXAGONAL ||
+                this->ibrav == MONOCLINIC_PRIMITIVE ||
+                this->ibrav == -MONOCLINIC_PRIMITIVE)
+        {
+            i = ia;
+            j = ia;
+            k = 0;
+            ijk_to_point(i, j, k, point, a, Ngrid);
+            points.push_back(point);
+        }
+
+        if( this->ibrav == HEXAGONAL2 ||
+                this->ibrav == MONOCLINIC_PRIMITIVE ||
+                this->ibrav == -MONOCLINIC_PRIMITIVE)
+        {
+            i = ia;
+            j = -ia;
+            k = 0;
+            ijk_to_point(i, j, k, point, a, Ngrid);
             points.push_back(point);
         }
     }
     std::stable_sort(points.begin(), points.end(), customLess_dist);
 
-    std::vector<GridPoint> points1, points2;
-    for(auto p:points){
-       if((p.index[0] == 0 || p.index[1] == 0 || p.index[0]+p.index[1] == 0) && p.dist -1.0e-4 < Lorder/2 * a[0][0]/Ngrid[0])  points1.push_back(p);
-        else points2.push_back(p);
-   }
-
-    points.clear();
-    points.insert(points.end(), points1.begin(), points1.end());
-    points.insert(points.end(), points2.begin(), points2.end());
-
-   
 }
 void LaplacianCoeff::ijk_to_point(int i, int j, int k, GridPoint &point, double a[3][3], int Ngrid[3])
 {
@@ -782,26 +769,11 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, std::vec
             if(index >= (int)num_points.size()) 
             {
                 printf ("error in LaplacianCoeff.cpp dgetrf INFO = %d \n", info);
-                if(info <0 || der_list_reduced)
+                if(info <0)
                 {
                     printf ("not enough grid points in LaplacianCoeff.cpp\n");
                     fflush (NULL);
                     std::raise(SIGTERM);
-                }
-                else
-                {
-                    printf("\nreduce number of der_list \n");
-
-                    reduce_der_list(der_list);
-                    num_derivative =der_list.size();
-                    for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = 0.0;
-                    //for(int i = 0; i < num_derivative; i++)
-                    //{
-                    //    printf("\n der_list %d %d %d %d", i, der_list[i].index[0], der_list[i].index[1], der_list[i].index[2] );
-                    //}
-                    point_start =0; 
-                    point_end = num_points[0];
-                    der_list_reduced = true;
                 }
             }
             else

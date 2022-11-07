@@ -89,7 +89,7 @@ public:
     void BuildSolveLinearEq(std::vector<GridPoint>& points, std::vector<GridPoint>& der_list, int dimension);
     void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction);
     void GetPointList3D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
-    void GetPointList2D (std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder);
+    void GetPointList2D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetPointList1D (std::vector<GridPoint>& points, double a, int Ngrid, int Lorder, int direction);
 
     void GetPointListFCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
