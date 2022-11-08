@@ -160,6 +160,12 @@ void GetFdFactor(int kpt)
 
     if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
 
+    if(FD.cfac[0] < 0.0)
+    {
+        rmg_error_handler (__FILE__, __LINE__, 
+            "CFAC < 0.0. This probably indicates an error in the cell setup:\n");
+    }
+
     delete [] work;
     fftw_free (gbptr);
     fftw_free (beptr);

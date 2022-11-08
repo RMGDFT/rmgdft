@@ -80,7 +80,8 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius[il], ct.rhocparm, ct.hmingrid/ct.semilocal_factor);
+        //int N = CountRoots(lval, nlradius[il], ct.rhocparm, ct.hmingrid/1.0);
+        int N=ct.semilocal_projectors;
         total_beta += N;
     }
     // ddd0 will hold the normalization coefficients for the projectors
@@ -91,7 +92,8 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius[il], ct.rhocparm, ct.hmingrid/ct.semilocal_factor);
+        //int N = CountRoots(lval, nlradius[il], ct.rhocparm, ct.hmingrid/1.0);
+        int N = ct.semilocal_projectors;
         double_2d_array phi;
         phi.resize(boost::extents[N][this->rg_points]);
 
@@ -102,7 +104,7 @@ void SPECIES::InitSemilocalBessel (void)
             this->llbeta.emplace_back(lval);
             GenBessel(phi.origin() + ib*this->rg_points, this->r, nlradius[il], this->rg_points, lval, ib);
             for(int idx=0;idx < this->rg_points;idx++) phi[ib][idx] *= anorm;
-            for(int idx=0;idx < this->rg_points;idx++) if(this->r[idx] > nlradius[il]) phi[ib][idx] *= 0.0;
+            for(int idx=0;idx < this->rg_points;idx++) if(this->r[idx] > nlradius[il]) phi[ib][idx] = 0.0;
         }
 
         std::vector<double> ci(N, 0.0);
