@@ -706,10 +706,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Mixing parameter for orbital occupations when not using fixed occupations. ",
             "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3. ", OCCUPATION_OPTIONS);
 
-    If.RegisterInputKey("semilocal_factor", &lc.semilocal_factor, 0.25, 4.0, 1.0,
+    If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Controls the number of semilocal projectors.",
-            "semilocal_factor must lie in the range (0.25,4.0). Resetting to the default value of 1.0. ", CONTROL_OPTIONS);
+            "semilocal_factor must lie in the range (6,40). Resetting to the default value of 10 ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
             CHECK_AND_FIX, OPTIONAL, 
