@@ -88,6 +88,15 @@ class rmg_interface():
                     self.ibrav = 4
             #elif setting == 'R':
             #    return 5
+        if system == 'tetragonal':
+            if self.cell.primcell:
+                if setting == 'P':
+                    self.ibrav = 8
+                elif setting == 'I':
+                    self.ibrav = 7
+            else:
+                self.ibrav = 8
+
         self.atoms = []
         for a in self.cell.atomdata:
             for b in a:

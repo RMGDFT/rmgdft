@@ -43,7 +43,7 @@ grids = {
 "Ge":"""wavefunction_grid="28 28 28 """,
 "He":"""wavefunction_grid="24 24 44 """,
 "Hf":"""wavefunction_grid="24 24 44 """,
-"Hg":"""wavefunction_grid="24 24 20 """,
+"Hg":"""wavefunction_grid="24 24 24 """,
 "H":"""wavefunction_grid="28 28 36 """,
 "In":"""wavefunction_grid="24 24 24 """,
 "Ir":"""wavefunction_grid="24 24 24 """,
@@ -344,9 +344,22 @@ energy_convergence_criterion = "1.00000000e-9"
 
     _positions_line += '"\n'
 
-    a0 = crmg.cell.a
-    b0 = crmg.cell.b
-    c0 = crmg.cell.c
+    veca = [0.0,0.0,0.0]
+    vecb = [0.0,0.0,0.0]
+    vecc = [0.0,0.0,0.0]
+
+    for j in range(3):
+        veca[j] = crmg.cell.latticevectors[0][j] * crmg.cell.lengthscale
+        vecb[j] = crmg.cell.latticevectors[1][j] * crmg.cell.lengthscale
+        vecc[j] = crmg.cell.latticevectors[2][j] * crmg.cell.lengthscale
+    if (crmg.ibrav == 7):
+        veca = [ crmg.cell.a *0.5,  crmg.cell.b *0.5, -crmg.cell.c *0.5]
+        vecb = [ crmg.cell.a *0.5, -crmg.cell.b *0.5,  crmg.cell.c *0.5]
+        vecc = [-crmg.cell.a *0.5,  crmg.cell.b *0.5,  crmg.cell.c *0.5]
+
+    a0 = sqrt(veca[0] * veca[0] + veca[1] * veca[1] + veca[2] * veca[2])    
+    b0 = sqrt(vecb[0] * vecb[0] + vecb[1] * vecb[1] + vecb[2] * vecb[2])    
+    c0 = sqrt(vecc[0] * vecc[0] + vecc[1] * vecc[1] + vecc[2] * vecc[2])    
 
 # Adjust grid spacing based on ibrav type
     print("ibrav", crmg.ibrav)
@@ -424,14 +437,6 @@ energy_convergence_criterion = "1.00000000e-9"
     if species in extra_opts:
         extra_line = extra_opts[species] + '"\n'
 
-    veca = [0.0,0.0,0.0]
-    vecb = [0.0,0.0,0.0]
-    vecc = [0.0,0.0,0.0]
-
-    for j in range(3):
-        veca[j] = crmg.cell.latticevectors[0][j] * crmg.cell.lengthscale
-        vecb[j] = crmg.cell.latticevectors[1][j] * crmg.cell.lengthscale
-        vecc[j] = crmg.cell.latticevectors[2][j] * crmg.cell.lengthscale
     for vol in volume_lists:
         dir_name = 'volume_' + str(vol)
         jobfile.write('cd ' + dir_name + '\n')
