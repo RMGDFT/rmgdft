@@ -314,29 +314,16 @@ void LoadUpfPseudo(SPECIES *sp)
             {           
                 std::string slpath = "UPF/PP_SEMILOCAL/PP_VNL." + boost::lexical_cast<std::string>(lindex_r[il]);
                 typedef ptree::path_type path;
+                sp->dVl_l.emplace_back(lvals_r[il]);
                 // Ugh. UPF format has embedded .s so use / as a separator
                 std::string PP_SL = upf_tree.get<std::string>(path(slpath, '/'));
-                double *work = UPF_read_mesh_array(PP_SL, r_total, ibegin);
-                if(lvals_r[il] == lrmax)
-                {
-                    for(int ix = 0;ix < sp->rg_points;ix++) sp->vloc0[ix] = work[ix]/2.0;
-                }
-                else
-                {
-                    sp->dVl_l.emplace_back(lvals_r[il]);
-                    for(int ix = 0;ix < sp->rg_points;ix++) work[ix] = work[ix]/2.0;
-                    sp->dVl.emplace_back(work);
-                }
+                sp->dVl.emplace_back(UPF_read_mesh_array(PP_SL, r_total, ibegin));
+                for(int ix = 0;ix < sp->rg_points;ix++) sp->dVl[il][ix] = sp->dVl[il][ix]/2.0 - sp->vloc0[ix];
             }
             catch(const std::exception& e)
             { 
                throw RmgFatalException() << "Problem reading pseudopotential file in PP_SEMILOCAL section. Terminating.\n";  
             }           
-        }
-
-        for(size_t il = 0;il < sp->dVl.size();il++)
-        {
-            for(int ix = 0;ix < sp->rg_points;ix++) sp->dVl[il][ix] = sp->dVl[il][ix] - sp->vloc0[ix];
         }
     }
 
