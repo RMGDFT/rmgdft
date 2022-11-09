@@ -21,13 +21,13 @@ pi = 3.141592653589793238
 grids = {
 "Ag":"""wavefunction_grid="20 20 20 """,
 "Al":"""wavefunction_grid="20 20 20 """,
-"Ar":"""wavefunction_grid="32 32 32 """,
+"Ar":"""wavefunction_grid="40 40 40 """,
 "As":"""wavefunction_grid="28 28 76 """,
 "Au":"""wavefunction_grid="24 24 24 """,
 "Ba":"""wavefunction_grid="36 36 36 """,
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
-"Br":"""wavefunction_grid="24 24 52 """,
+"Br":"""wavefunction_grid="30 30 64 """,
 "B":"""wavefunction_grid="44 44 44 """,
 "Ca":"""wavefunction_grid="28 28 28 """,
 "Cd":"""wavefunction_grid="20 20 40 """,
@@ -38,24 +38,24 @@ grids = {
 "Cu":"""wavefunction_grid="20 20 20 """,
 "C":"""wavefunction_grid="16 16 56 """,
 "Fe":"""wavefunction_grid="20 20 20 """,
-"F":"""wavefunction_grid="44 48 24 """,
-"Ga":"""wavefunction_grid="32 32 32 """,
+"F":"""wavefunction_grid="48 52 32 """,
+"Ga":"""wavefunction_grid="32 32 36 """,
 "Ge":"""wavefunction_grid="28 28 28 """,
 "He":"""wavefunction_grid="24 24 44 """,
-"Hf":"""wavefunction_grid="24 24 44 """,
-"Hg":"""wavefunction_grid="24 24 24 """,
+"Hf":"""wavefunction_grid="16 16 24 """,
+"Hg":"""wavefunction_grid="36 36 24 """,
 "H":"""wavefunction_grid="28 28 36 """,
 "In":"""wavefunction_grid="24 24 24 """,
 "Ir":"""wavefunction_grid="24 24 24 """,
 "I":"""wavefunction_grid="24 24 56 """,
-"Kr":"""wavefunction_grid="40 40 40 """,
+"Kr":"""wavefunction_grid="36 36 36 """,
 "K":"""wavefunction_grid="36 36 36 """,
 "Li":"""wavefunction_grid="52 52 52 """,
 "Lu":"""wavefunction_grid="36 36 64 """,
-"Mg":"""wavefunction_grid="24 24 36 """,
-"Mn":"""wavefunction_grid="24 24 36 """,
+"Mg":"""wavefunction_grid="20 20 36 """,
+"Mn":"""wavefunction_grid="16 16 24 """,
 "Mo":"""wavefunction_grid="20 20 20 """,
-"Na":"""wavefunction_grid="64 64 64 """,
+"Na":"""wavefunction_grid="72 72 72 """,
 "Nb":"""wavefunction_grid="24 24 24 """,
 "Ne":"""wavefunction_grid="24 24 24 """,
 "Ni":"""wavefunction_grid="20 20 20 """,
@@ -63,18 +63,18 @@ grids = {
 "Os":"""wavefunction_grid="24 24 40 """,
 "O":"""wavefunction_grid="32 28 28 """,
 "Pb":"""wavefunction_grid="24 24 24 """,
-"Pd":"""wavefunction_grid="20 20 20 """,
+"Pd":"""wavefunction_grid="16 16 16 """,
 "Po":"""wavefunction_grid="24 24 24 """,
 "Pt":"""wavefunction_grid="24 24 24 """,
 "P":"""wavefunction_grid="32 32 32 """,
 "Rb":"""wavefunction_grid="40 40 40 """,
-"Re":"""wavefunction_grid="16 16 24 """,
+"Re":"""wavefunction_grid="24 24 36 """,
 "Rh":"""wavefunction_grid="20 20 20 """,
 "Rn":"""wavefunction_grid="40 40 40 """,
 "Ru":"""wavefunction_grid="24 24 36 """,
 "Sb":"""wavefunction_grid="24 24 64 """,
 "Sc":"""wavefunction_grid="24 24 36 """,
-"Se":"""wavefunction_grid="32 32 36 """,
+"Se":"""wavefunction_grid="24 24 28 """,
 "Si":"""wavefunction_grid="20 20 20 """,
 "Sn":"""wavefunction_grid="32 32 32 """,
 "Sr":"""wavefunction_grid="20 20 20 """,
@@ -91,13 +91,90 @@ grids = {
 "Zn":"""wavefunction_grid="20 20 40""",
 "Zr":"""wavefunction_grid="24 24 36 """}
 
+# kpoint mesh
+kpoints = {
+"Ag":"""kpoint_mesh="23 23 23""",
+"Al":"""kpoint_mesh="27 27 27""",
+"Ar":"""kpoint_mesh="23 23 23""",
+"As":"""kpoint_mesh="20 20 7""",
+"Au":"""kpoint_mesh="23 23 23""",
+"B":"""kpoint_mesh="16 16 15""",
+"Ba":"""kpoint_mesh="18 18 18""",
+"Be":"""kpoint_mesh="34 34 21""",
+"Bi":"""kpoint_mesh="17 17 6""",
+"Br":"""kpoint_mesh="13 13 13""",
+"C":"""kpoint_mesh="31 31 8""",
+"Ca":"""kpoint_mesh="20 20 20""",
+"Cd":"""kpoint_mesh="25 25 13""",
+"Cl":"""kpoint_mesh="10 18 8""",
+"Co":"""kpoint_mesh="31 31 19""",
+"Cr":"""kpoint_mesh="27 27 27""",
+"Cs":"""kpoint_mesh="23 23 23""",
+"Cu":"""kpoint_mesh="23 23 23""",
+"F":"""kpoint_mesh="12 11 21""",
+"Fe":"""kpoint_mesh="32 32 32""",
+"Ga":"""kpoint_mesh="17 17 17""",
+"Ge":"""kpoint_mesh="13 13 13""",
+"H":"""kpoint_mesh="19 19 15""",
+"He":"""kpoint_mesh="26 26 16""",
+"Hf":"""kpoint_mesh="21 21 21""",
+"Hg":"""kpoint_mesh="19 19 22""",
+"I":"""kpoint_mesh="16 16 7""",
+"In":"""kpoint_mesh="23 23 15""",
+"Ir":"""kpoint_mesh="23 23 23""",
+"K":"""kpoint_mesh="21 21 21""",
+"Kr":"""kpoint_mesh="17 17 17""",
+"Li":"""kpoint_mesh="10 10 10""",
+"Lu":"""kpoint_mesh="22 22 14""",
+"Mg":"""kpoint_mesh="23 23 23""",
+"Mn":"""kpoint_mesh="21 21 14""",
+"Mo":"""kpoint_mesh="28 28 28""",
+"N":"""kpoint_mesh="12 12 12""",
+"Na":"""kpoint_mesh="15 15 15""",
+"Nb":"""kpoint_mesh="23 23 23""",
+"Ne":"""kpoint_mesh="24 24 24""",
+"Ni":"""kpoint_mesh="31 31 31""",
+"O":"""kpoint_mesh="17 18 18""",
+"Os":"""kpoint_mesh="21 21 25""",
+"P":"""kpoint_mesh="23 6 17""",
+"Pb":"""kpoint_mesh="25 25 25""",
+"Pd":"""kpoint_mesh="21 21 21""",
+"Po":"""kpoint_mesh="21 21 21""",
+"Pt":"""kpoint_mesh="23 23 23""",
+"Rb":"""kpoint_mesh="15 15 15""",
+"Re":"""kpoint_mesh="28 28 17""",
+"Rh":"""kpoint_mesh="23 23 23""",
+"Rn":"""kpoint_mesh="23 23 23""",
+"Ru":"""kpoint_mesh="28 28 18""",
+"S":"""kpoint_mesh="30 30 30""",
+"Sb":"""kpoint_mesh="17 17 6""",
+"Sc":"""kpoint_mesh="23 23 15""",
+"Se":"""kpoint_mesh="17 17 15""",
+"Si":"""kpoint_mesh="20 20 20""",
+"Sn":"""kpoint_mesh="16 16 16""",
+"Sr":"""kpoint_mesh="18 18 18""",
+"Ta":"""kpoint_mesh="31 31 31""",
+"Tc":"""kpoint_mesh="28 28 17""",
+"Te":"""kpoint_mesh="17 17 13""",
+"Ti":"""kpoint_mesh="26 26 16""",
+"Tl":"""kpoint_mesh="21 21 13""",
+"V":"""kpoint_mesh="30 30 30""",
+"W":"""kpoint_mesh="28 28 28""",
+"Xe":"""kpoint_mesh="15 15 15""",
+"Y":"""kpoint_mesh="21 21 13""",
+"Zn":"""kpoint_mesh="29 29 15""",
+"Zr":"""kpoint_mesh="24 24 15"""}
+
 #external pps here
 external_pps = {
-"Mn":"""Mn.pbe-spn-rrkjus_psl.0.3.1.UPF""",
+"Hf":"""Hf_dojo.upf""",
+"F":"""F.oncvpsp.upf""",
 "Pt":"""Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
 "Os":"""Os.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
+"Br":"""Br.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Lu":"""Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF""",
 "Ir":"""Ir.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
+"Pd":"""Pd.pbe-spn-rrkjus_psl.1.0.0.UPF""",
 "Si":"""Si.pbe-n-rrkjus_psl.1.0.0.UPF""",
 "Ga":"""Ga.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Po":"""Po.pbe-dn-rrkjus_psl.1.0.0.UPF""",
@@ -109,13 +186,17 @@ external_pps = {
 
 #extra options here
 extra_opts = {
+"Br":"""potential_grid_refinement="3""",
 "Bi":"""potential_grid_refinement="3""",
 "Lu":"""potential_grid_refinement="3""",
-"Nb":"""potential_grid_refinement="3"\nkpoint_mesh = "23 23 23 """,
-"Ta":"""kpoint_mesh = "31 31 31 """,
-"Pb":"""kpoint_mesh = "25 25 25 """,
-"Ge":"""kpoint_mesh = "13 13 13 """,
-"K":"""kpoint_mesh = "21 21 21 """
+"Nb":"""potential_grid_refinement="3""",
+"Po":"""potential_grid_refinement="3""",
+"Mn":"""potential_grid_refinement="4""",
+"Mg":"""kohn_sham_fd_order="10""",
+"Kr":"""energy_convergence_criterion = "1.0e-12""",
+"Ar":"""energy_convergence_criterion = "1.0e-12""",
+"Hg":"""energy_convergence_criterion = "1.0e-12""",
+"Mn":"""energy_convergence_criterion = "1.0e-12"""
 }
 
 # We use the pslibrary pseudopotentials with some atomic species
@@ -141,31 +222,29 @@ extra_opts = {
 # The base value is used for ncpp
 grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
-#pseudo_extra = ["Ar", "Bi", "He", "Kr", "Lu", "Ne", "Po", "Rn", "Xe"]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp=["Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","Hg","B","S","Zn","Ir"]
+pseudo_uspp=["Se","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","Hg","B","S","Zn","Ir"]
 
 # ONCV with core corrections
-#pseudo_nc = ["Ar", "Kr", "Rn", "W","V"];
-# Cu needs a 20x20x20 grid
-pseudo_nc=["Fe","Nb","V","Bi","Po","Rn","Kr"]
+#pseudo_nc = ["Ar", "Rn", "W","V"];
+pseudo_nc=["Fe","Nb","V","Bi","Po","Rn"]
 
 # Use semilocal form (only available with sg15)
-pseudo_sl=["Ar"]
+pseudo_sl=["Ar","Kr"]
 
 # Extra cutoff required
-high_cutoff = ["Cu","Ni","Kr","Pt","B","S", "Zn"]
+high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","S", "Zn"]
 high_high_cutoff = ["Ir"]
 
 # Higher temperature for convergence
-high_temp = ["Cr","Na"]
+high_temp = ["Mn","Cr"]
 
 # Default solver is davidson but multigrid will be used if a species is in this list
 run_mg = ["O"];
 
 # Temporary for testing use fft fd
-#fft_fd = ["B","Li","O","S","Na","F"]
+#fft_fd = ["Hg"]
 
 FM_list = ["Fe", "Co", "Ni"]
 # spin up, spin down
@@ -184,7 +263,7 @@ high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu","Rn","Cs","Ar"]
 # primCIFs will have monoclinic
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
 #use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
-use_CIFs = ["Lu","Sb","As","Na", "S","B","Li","Bi","F"]
+use_CIFs = ["Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 8;
@@ -378,10 +457,6 @@ energy_convergence_criterion = "1.00000000e-9"
     if (kx == 0): kx = 1
     if (ky == 0): ky = 1
     if (kz == 0): kz = 1
-    if(species in high_k_list):
-        _positions_line += 'kpoint_mesh = "23 23 23"\n'
-    else:
-        _positions_line += 'kpoint_mesh = "%d %d %d"\n'%(kx, ky, kz)
 
 #    _positions_line += 'wavefunction_grid = "%d %d %d"\n'%(nx, ny, nz)
     _positions_line += grids[species] + '"'
@@ -437,6 +512,9 @@ energy_convergence_criterion = "1.00000000e-9"
     if species in extra_opts:
         extra_line = extra_opts[species] + '"\n'
 
+    kpoints_line = '\n'
+    kpoints_line += kpoints[species] + '"\n'
+
     for vol in volume_lists:
         dir_name = 'volume_' + str(vol)
         jobfile.write('cd ' + dir_name + '\n')
@@ -451,6 +529,7 @@ energy_convergence_criterion = "1.00000000e-9"
 #        f.write('b_length="%16.8f"\n'%(b0*vol))
 #        f.write('c_length="%16.8f"\n'%(c0*vol))
         f.write(pp_line)
+        f.write(kpoints_line)
         f.write(extra_line)
         f.write(temp_line)
         f.write(_positions_line)
