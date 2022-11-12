@@ -248,12 +248,6 @@ AFM_list1 = ["Cr", "Mn"]
 #spin up, up, down, down
 AFM_list2 = ["O"]
 
-# Denser kpoint mesh for elements in this list. Mostly fcc metals
-high_k_list = ["Au", "Pt", "Rh", "Ag", "Ir","Cu","Rn","Cs","Ar"]
-
-# even denser kpoint mesh for elements in this list
-#veryhigh_k = ["Au", "Pt"];
-
 # list of species use CIFs instead of primCIFs
 # I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
