@@ -27,10 +27,10 @@ grids = {
 "Ba":"""wavefunction_grid="36 36 36 """,
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
-"Br":"""wavefunction_grid="30 30 64 """,
+"Br":"""wavefunction_grid="24 24 52 """,
 "B":"""wavefunction_grid="44 44 44 """,
-"Ca":"""wavefunction_grid="28 28 28 """,
-"Cd":"""wavefunction_grid="20 20 40 """,
+"Ca":"""wavefunction_grid="24 24 24 """,
+"Cd":"""wavefunction_grid="20 20 44 """,
 "Cl":"""wavefunction_grid="24 24 52 """,
 "Co":"""wavefunction_grid="16 16 28 """,
 "Cr":"""wavefunction_grid="16 16 16 """,
@@ -38,12 +38,12 @@ grids = {
 "Cu":"""wavefunction_grid="20 20 20 """,
 "C":"""wavefunction_grid="16 16 56 """,
 "Fe":"""wavefunction_grid="20 20 20 """,
-"F":"""wavefunction_grid="48 52 32 """,
-"Ga":"""wavefunction_grid="32 32 36 """,
+"F":"""wavefunction_grid="44 48 24 """,
+"Ga":"""wavefunction_grid="32 32 32 """,
 "Ge":"""wavefunction_grid="28 28 28 """,
 "He":"""wavefunction_grid="24 24 44 """,
-"Hf":"""wavefunction_grid="16 16 24 """,
-"Hg":"""wavefunction_grid="36 36 24 """,
+"Hf":"""wavefunction_grid="24 24 44 """,
+"Hg":"""wavefunction_grid="24 24 20 """,
 "H":"""wavefunction_grid="28 28 36 """,
 "In":"""wavefunction_grid="24 24 24 """,
 "Ir":"""wavefunction_grid="24 24 24 """,
@@ -53,7 +53,7 @@ grids = {
 "Li":"""wavefunction_grid="52 52 52 """,
 "Lu":"""wavefunction_grid="36 36 64 """,
 "Mg":"""wavefunction_grid="20 20 36 """,
-"Mn":"""wavefunction_grid="16 16 24 """,
+"Mn":"""wavefunction_grid="20 20 28 """,
 "Mo":"""wavefunction_grid="20 20 20 """,
 "Na":"""wavefunction_grid="72 72 72 """,
 "Nb":"""wavefunction_grid="24 24 24 """,
@@ -63,7 +63,7 @@ grids = {
 "Os":"""wavefunction_grid="24 24 40 """,
 "O":"""wavefunction_grid="32 28 28 """,
 "Pb":"""wavefunction_grid="24 24 24 """,
-"Pd":"""wavefunction_grid="16 16 16 """,
+"Pd":"""wavefunction_grid="20 20 20 """,
 "Po":"""wavefunction_grid="24 24 24 """,
 "Pt":"""wavefunction_grid="24 24 24 """,
 "P":"""wavefunction_grid="32 32 32 """,
@@ -74,11 +74,11 @@ grids = {
 "Ru":"""wavefunction_grid="24 24 36 """,
 "Sb":"""wavefunction_grid="24 24 64 """,
 "Sc":"""wavefunction_grid="24 24 36 """,
-"Se":"""wavefunction_grid="24 24 28 """,
+"Se":"""wavefunction_grid="32 32 36 """,
 "Si":"""wavefunction_grid="20 20 20 """,
 "Sn":"""wavefunction_grid="32 32 32 """,
 "Sr":"""wavefunction_grid="20 20 20 """,
-"S":"""wavefunction_grid="20 20 20 """,
+"S":"""wavefunction_grid="16 16 16 """,
 "Ta":"""wavefunction_grid="24 24 24 """,
 "Tc":"""wavefunction_grid="20 20 32 """,
 "Te":"""wavefunction_grid="32 32 40 """,
@@ -95,17 +95,17 @@ grids = {
 kpoints = {
 "Ag":"""kpoint_mesh="23 23 23""",
 "Al":"""kpoint_mesh="27 27 27""",
-"Ar":"""kpoint_mesh="23 23 23""",
+"Ar":"""kpoint_mesh="13 13 13""",
 "As":"""kpoint_mesh="20 20 7""",
 "Au":"""kpoint_mesh="23 23 23""",
 "B":"""kpoint_mesh="16 16 15""",
 "Ba":"""kpoint_mesh="18 18 18""",
-"Be":"""kpoint_mesh="34 34 21""",
+"Be":"""kpoint_mesh="21 21 11""",
 "Bi":"""kpoint_mesh="17 17 6""",
-"Br":"""kpoint_mesh="13 13 13""",
+"Br":"""kpoint_mesh="9 18 8""",
 "C":"""kpoint_mesh="31 31 8""",
-"Ca":"""kpoint_mesh="20 20 20""",
-"Cd":"""kpoint_mesh="25 25 13""",
+"Ca":"""kpoint_mesh="21 21 21""",
+"Cd":"""kpoint_mesh="21 21 11""",
 "Cl":"""kpoint_mesh="10 18 8""",
 "Co":"""kpoint_mesh="31 31 19""",
 "Cr":"""kpoint_mesh="27 27 27""",
@@ -113,7 +113,7 @@ kpoints = {
 "Cu":"""kpoint_mesh="23 23 23""",
 "F":"""kpoint_mesh="12 11 21""",
 "Fe":"""kpoint_mesh="32 32 32""",
-"Ga":"""kpoint_mesh="17 17 17""",
+"Ga":"""kpoint_mesh="17 10 17""",
 "Ge":"""kpoint_mesh="13 13 13""",
 "H":"""kpoint_mesh="19 19 15""",
 "He":"""kpoint_mesh="26 26 16""",
@@ -123,7 +123,7 @@ kpoints = {
 "In":"""kpoint_mesh="23 23 15""",
 "Ir":"""kpoint_mesh="23 23 23""",
 "K":"""kpoint_mesh="21 21 21""",
-"Kr":"""kpoint_mesh="17 17 17""",
+"Kr":"""kpoint_mesh="13 13 13""",
 "Li":"""kpoint_mesh="10 10 10""",
 "Lu":"""kpoint_mesh="22 22 14""",
 "Mg":"""kpoint_mesh="23 23 23""",
@@ -132,61 +132,58 @@ kpoints = {
 "N":"""kpoint_mesh="12 12 12""",
 "Na":"""kpoint_mesh="15 15 15""",
 "Nb":"""kpoint_mesh="23 23 23""",
-"Ne":"""kpoint_mesh="24 24 24""",
-"Ni":"""kpoint_mesh="31 31 31""",
+"Ne":"""kpoint_mesh="13 13 13""",
+"Ni":"""kpoint_mesh="21 21 21""",
 "O":"""kpoint_mesh="17 18 18""",
+#"Os":"""kpoint_mesh="28 28 18""",
 "Os":"""kpoint_mesh="21 21 25""",
 "P":"""kpoint_mesh="23 6 17""",
 "Pb":"""kpoint_mesh="25 25 25""",
-"Pd":"""kpoint_mesh="21 21 21""",
+"Pd":"""kpoint_mesh="28 28 28""",
 "Po":"""kpoint_mesh="21 21 21""",
 "Pt":"""kpoint_mesh="23 23 23""",
 "Rb":"""kpoint_mesh="15 15 15""",
 "Re":"""kpoint_mesh="28 28 17""",
 "Rh":"""kpoint_mesh="23 23 23""",
-"Rn":"""kpoint_mesh="23 23 23""",
+"Rn":"""kpoint_mesh="13 13 13""",
 "Ru":"""kpoint_mesh="28 28 18""",
-"S":"""kpoint_mesh="30 30 30""",
-"Sb":"""kpoint_mesh="17 17 6""",
+"S":"""kpoint_mesh="23 23 23""",
+"Sb":"""kpoint_mesh="17 17 7""",
 "Sc":"""kpoint_mesh="23 23 15""",
 "Se":"""kpoint_mesh="17 17 15""",
 "Si":"""kpoint_mesh="20 20 20""",
 "Sn":"""kpoint_mesh="16 16 16""",
 "Sr":"""kpoint_mesh="18 18 18""",
-"Ta":"""kpoint_mesh="31 31 31""",
+"Ta":"""kpoint_mesh="21 21 21""",
 "Tc":"""kpoint_mesh="28 28 17""",
 "Te":"""kpoint_mesh="17 17 13""",
 "Ti":"""kpoint_mesh="26 26 16""",
 "Tl":"""kpoint_mesh="21 21 13""",
-"V":"""kpoint_mesh="30 30 30""",
+"V":"""kpoint_mesh="21 21 21""",
 "W":"""kpoint_mesh="28 28 28""",
-"Xe":"""kpoint_mesh="15 15 15""",
-"Y":"""kpoint_mesh="21 21 13""",
+"Xe":"""kpoint_mesh="13 13 13""",
+"Y":"""kpoint_mesh="21 21 11""",
 "Zn":"""kpoint_mesh="29 29 15""",
 "Zr":"""kpoint_mesh="24 24 15"""}
-
 #external pps here
 external_pps = {
-"Hf":"""Hf_dojo.upf""",
-"F":"""F.oncvpsp.upf""",
+"Cl":"""Cl.pbe-n-rrkjus_psl.1.0.0.UPF""",
 "Pt":"""Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
 "Os":"""Os.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
-"Br":"""Br.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Lu":"""Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF""",
 "Ir":"""Ir.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
-"Pd":"""Pd.pbe-spn-rrkjus_psl.1.0.0.UPF""",
 "Si":"""Si.pbe-n-rrkjus_psl.1.0.0.UPF""",
 "Ga":"""Ga.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Po":"""Po.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "As":"""As.pbe-n-rrkjus_psl.1.0.0.UPF""",
 "N":"""N.oncvpsp.upf""",
-"He":"""He_ONCV_PBE-1.0.oncvpsp.upf""",
 "Na":"""Na_ONCV_PBE-1.0.oncvpsp.upf""",
+"Rn":"""Rn.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Zn":"""Zn.pbe-spn-rrkjus_psl.1.0.0.UPF"""}
 
 #extra options here
 extra_opts = {
-"Br":"""potential_grid_refinement="3""",
+"Ne":"""energy_convergence_criterion="1.0e-12""",
 "Bi":"""potential_grid_refinement="3""",
 "Lu":"""potential_grid_refinement="3""",
 "Nb":"""potential_grid_refinement="3""",
@@ -195,8 +192,7 @@ extra_opts = {
 "Mg":"""kohn_sham_fd_order="10""",
 "Kr":"""energy_convergence_criterion = "1.0e-12""",
 "Ar":"""energy_convergence_criterion = "1.0e-12""",
-"Hg":"""energy_convergence_criterion = "1.0e-12""",
-"Mn":"""energy_convergence_criterion = "1.0e-12"""
+"Xe":"""energy_convergence_criterion = "1.0e-12"""
 }
 
 # We use the pslibrary pseudopotentials with some atomic species
@@ -224,11 +220,11 @@ grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 
 # Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp=["Se","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","Hg","B","S","Zn","Ir"]
+pseudo_uspp=["Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","B","S","Zn","Ir"]
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Rn", "W","V"];
-pseudo_nc=["Fe","Nb","V","Bi","Po","Rn"]
+pseudo_nc=["Fe","Nb","V","Bi","Po"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar","Kr"]
@@ -506,7 +502,7 @@ energy_convergence_criterion = "1.00000000e-9"
     pp_line = '\n'
     if species in external_pps:
         pp_line += 'pseudopotential="' + species + ' ' + external_pps[species] + '"\n'
-        pp_line += 'pseudo_dir="../../pseudo"\n'
+        pp_line += 'pseudo_dir="../../../pseudo"\n'
 
     extra_line = '\n'
     if species in extra_opts:
