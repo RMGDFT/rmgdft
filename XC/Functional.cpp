@@ -509,8 +509,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double vtxcgc = 0.0;
     double grho2[2];
     const double epsr=1.0e-6;
-    const double epsg = 1.0e-9;
-    double epsg_guard = 5.0e-8;
+    const double epsg = 1.0e-10;
+    double epsg_guard = ct.epsg_guard;
 
     double *rhoout = new double[this->pbasis];
     double *grho = new double[3*this->pbasis];
@@ -618,8 +618,8 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
 
     double grho2[2];
     const double epsr=1.0e-6;
-    const double epsg = 1.0e-9;
-    double epsg_guard = 1.0e-7;
+    const double epsg = 1.0e-10;
+    double epsg_guard = ct.epsg_guard;
 
     double *grho_up = new double[3*this->pbasis];
     double *grho_down = new double[3*this->pbasis];

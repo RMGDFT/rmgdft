@@ -343,6 +343,9 @@ public:
     /** Total conpensating charge density */
     double crho;
 
+    /** GGA guard value for low density regions */
+    double epsg_guard;
+
     /** Total charge in supercell */
     double tcharge;
 
