@@ -27,7 +27,7 @@ grids = {
 "Ba":"""wavefunction_grid="36 36 36 """,
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
-"Br":"""wavefunction_grid="24 24 52 """,
+"Br":"""wavefunction_grid="30 30 64 """,
 "B":"""wavefunction_grid="44 44 44 """,
 "Ca":"""wavefunction_grid="24 24 24 """,
 "Cd":"""wavefunction_grid="20 20 44 """,
@@ -38,14 +38,14 @@ grids = {
 "Cu":"""wavefunction_grid="20 20 20 """,
 "C":"""wavefunction_grid="16 16 56 """,
 "Fe":"""wavefunction_grid="20 20 20 """,
-"F":"""wavefunction_grid="44 48 24 """,
-"Ga":"""wavefunction_grid="32 32 32 """,
+"F":"""wavefunction_grid="48 52 32 """,
+"Ga":"""wavefunction_grid="32 32 36 """,
 "Ge":"""wavefunction_grid="28 28 28 """,
 "He":"""wavefunction_grid="24 24 44 """,
 "Hf":"""wavefunction_grid="24 24 44 """,
-"Hg":"""wavefunction_grid="24 24 20 """,
+"Hg":"""wavefunction_grid="28 28 24 """,
 "H":"""wavefunction_grid="28 28 36 """,
-"In":"""wavefunction_grid="24 24 24 """,
+"In":"""wavefunction_grid="20 20 32 """,
 "Ir":"""wavefunction_grid="24 24 24 """,
 "I":"""wavefunction_grid="24 24 56 """,
 "Kr":"""wavefunction_grid="36 36 36 """,
@@ -53,7 +53,7 @@ grids = {
 "Li":"""wavefunction_grid="52 52 52 """,
 "Lu":"""wavefunction_grid="36 36 64 """,
 "Mg":"""wavefunction_grid="20 20 36 """,
-"Mn":"""wavefunction_grid="20 20 28 """,
+"Mn":"""wavefunction_grid="16 16 24 """,
 "Mo":"""wavefunction_grid="20 20 20 """,
 "Na":"""wavefunction_grid="72 72 72 """,
 "Nb":"""wavefunction_grid="24 24 24 """,
@@ -74,7 +74,7 @@ grids = {
 "Ru":"""wavefunction_grid="24 24 36 """,
 "Sb":"""wavefunction_grid="24 24 64 """,
 "Sc":"""wavefunction_grid="24 24 36 """,
-"Se":"""wavefunction_grid="32 32 36 """,
+"Se":"""wavefunction_grid="24 24 28 """,
 "Si":"""wavefunction_grid="20 20 20 """,
 "Sn":"""wavefunction_grid="32 32 32 """,
 "Sr":"""wavefunction_grid="20 20 20 """,
@@ -94,7 +94,7 @@ grids = {
 # kpoint mesh
 kpoints = {
 "Ag":"""kpoint_mesh="23 23 23""",
-"Al":"""kpoint_mesh="27 27 27""",
+"Al":"""kpoint_mesh="20 20 20""",
 "Ar":"""kpoint_mesh="13 13 13""",
 "As":"""kpoint_mesh="20 20 7""",
 "Au":"""kpoint_mesh="23 23 23""",
@@ -102,7 +102,7 @@ kpoints = {
 "Ba":"""kpoint_mesh="18 18 18""",
 "Be":"""kpoint_mesh="21 21 11""",
 "Bi":"""kpoint_mesh="17 17 6""",
-"Br":"""kpoint_mesh="9 18 8""",
+"Br":"""kpoint_mesh="13 13 13""",
 "C":"""kpoint_mesh="31 31 8""",
 "Ca":"""kpoint_mesh="21 21 21""",
 "Cd":"""kpoint_mesh="21 21 11""",
@@ -113,14 +113,14 @@ kpoints = {
 "Cu":"""kpoint_mesh="23 23 23""",
 "F":"""kpoint_mesh="12 11 21""",
 "Fe":"""kpoint_mesh="32 32 32""",
-"Ga":"""kpoint_mesh="17 10 17""",
+"Ga":"""kpoint_mesh="13 13 13""",
 "Ge":"""kpoint_mesh="13 13 13""",
 "H":"""kpoint_mesh="19 19 15""",
 "He":"""kpoint_mesh="26 26 16""",
 "Hf":"""kpoint_mesh="21 21 21""",
-"Hg":"""kpoint_mesh="19 19 22""",
+"Hg":"""kpoint_mesh="20 20 20""",
 "I":"""kpoint_mesh="16 16 7""",
-"In":"""kpoint_mesh="23 23 15""",
+"In":"""kpoint_mesh="19 19 15""",
 "Ir":"""kpoint_mesh="23 23 23""",
 "K":"""kpoint_mesh="21 21 21""",
 "Kr":"""kpoint_mesh="13 13 13""",
@@ -135,10 +135,9 @@ kpoints = {
 "Ne":"""kpoint_mesh="13 13 13""",
 "Ni":"""kpoint_mesh="21 21 21""",
 "O":"""kpoint_mesh="17 18 18""",
-#"Os":"""kpoint_mesh="28 28 18""",
 "Os":"""kpoint_mesh="21 21 25""",
 "P":"""kpoint_mesh="23 6 17""",
-"Pb":"""kpoint_mesh="25 25 25""",
+"Pb":"""kpoint_mesh="20 20 20""",
 "Pd":"""kpoint_mesh="28 28 28""",
 "Po":"""kpoint_mesh="21 21 21""",
 "Pt":"""kpoint_mesh="23 23 23""",
@@ -150,7 +149,7 @@ kpoints = {
 "S":"""kpoint_mesh="23 23 23""",
 "Sb":"""kpoint_mesh="17 17 7""",
 "Sc":"""kpoint_mesh="23 23 15""",
-"Se":"""kpoint_mesh="17 17 15""",
+"Se":"""kpoint_mesh="13 13 13""",
 "Si":"""kpoint_mesh="20 20 20""",
 "Sn":"""kpoint_mesh="16 16 16""",
 "Sr":"""kpoint_mesh="18 18 18""",
@@ -165,8 +164,13 @@ kpoints = {
 "Y":"""kpoint_mesh="21 21 11""",
 "Zn":"""kpoint_mesh="29 29 15""",
 "Zr":"""kpoint_mesh="24 24 15"""}
+
 #external pps here
 external_pps = {
+"F":"""F.oncvpsp.upf""",
+"Hf":"""Hf_dojo.upf""",
+"In":"""In.pbe-dn-rrkjus_psl.0.2.2.UPF""",
+"Br":"""Br.pbe-dn-rrkjus_psl.1.0.0.UPF""",
 "Cl":"""Cl.pbe-n-rrkjus_psl.1.0.0.UPF""",
 "Pt":"""Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
 "Os":"""Os.pbe-spfn-rrkjus_psl.1.0.0.UPF""",
@@ -183,55 +187,39 @@ external_pps = {
 
 #extra options here
 extra_opts = {
-"Ne":"""energy_convergence_criterion="1.0e-12""",
+"Ne":"""energy_convergence_criterion="1.0e-12"\nepsg_guard="5.0e-8""",
+"Ar":"""energy_convergence_criterion="1.0e-12"\nepsg_guard="4.0e-8""",
 "Bi":"""potential_grid_refinement="3""",
+"In":"""potential_grid_refinement="3""",
+"Zn":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
+"Br":"""potential_grid_refinement="3""",
 "Lu":"""potential_grid_refinement="3""",
 "Nb":"""potential_grid_refinement="3""",
 "Po":"""potential_grid_refinement="3""",
-"Mn":"""potential_grid_refinement="4""",
+"Ir":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
+"Mn":"""energy_convergence_criterion = "1.0e-12""",
 "Mg":"""kohn_sham_fd_order="10""",
-"Kr":"""energy_convergence_criterion = "1.0e-12""",
-"Ar":"""energy_convergence_criterion = "1.0e-12""",
-"Xe":"""energy_convergence_criterion = "1.0e-12"""
+"Hg":"""kohn_sham_fd_order="10""",
+"Kr":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="3.5e-8""",
+"Rn":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="3.5e-8"\npotential_grid_refinement="3""",
+"Xe":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="4.5e-8"""
 }
 
-# We use the pslibrary pseudopotentials with some atomic species
-# with info given below. The script does not yet set these up automatically
-#
-# Mn uses Mn.pbe-spn-rrkjus_psl.0.3.1.UPF with a "24 24 36" grid
-# Pt uses Pt.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 24" grid
-# Os uses Os.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 40" grid
-# Lu uses Lu.pbe-spdfn-rrkjus_psl.1.0.0.UPF with a "36 36 64" grid since it has f-electrons in valence
-# Ir uses Ir.pbe-spfn-rrkjus_psl.1.0.0.UPF with a "24 24 24" grid and pgr=3
-# Si uses Si.pbe-n-rrkjus_psl.1.0.0.UPF with a "20 20 20" grid
-# Ga uses Ga.pbe-dn-rrkjus_psl.1.0.0.UPF with a "32 56 32" grid
-# Po uses Po.pbe-dn-rrkjus_psl.1.0.0.UPF with a ""24 24 24" grid and pgr=3 and fd_order=10
-# As uses As.pbe-n-rrkjus_psl.1.0.0.UPF with a "28 28 76" grid
-# Zn uses Zn.pbe-spn-rrkjus_psl.1.0.0.UPF with a "20 20 40" grid
-# The script does not automaticially set these up yet.
-#
-# Ag uses uspp but needs wavefunction_grid = "20 20 20"
-# Ni uses uspp but needs wavefunction_grid = "20 20 20"
-# Rn uses nc_accuracy but needs wavefunction_grid= "40 40 40"
-# Fe uses sg15 but needs wavefunction_grid = "20 20 20"
-# Au uses sg15 but needs wavefunction_grid = "24 24 24"
-# The base value is used for ncpp
 grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 
-# Rmg default pseudo is SG15. If a species is in this list then USPP will be used.
-pseudo_uspp=["Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Br","Cl","B","S","Zn","Ir"]
+# Rmg default pseudo is SG15. If a species is in this list then internal USPP will be used.
+pseudo_uspp=["Se","Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Cl","B","S"]
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Rn", "W","V"];
-pseudo_nc=["Fe","Nb","V","Bi","Po"]
+pseudo_nc=["Fe","Nb","V","Bi"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar","Kr"]
 
-# Extra cutoff required
+# Uses 10th order FD
 high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","S", "Zn"]
-high_high_cutoff = ["Ir"]
 
 # Higher temperature for convergence
 high_temp = ["Mn","Cr"]
@@ -253,14 +241,11 @@ AFM_list2 = ["O"]
 # primCIFs will have monoclinic
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
 #use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
-use_CIFs = ["Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
+use_CIFs = ["In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
-k_parall = 8;
-#pp = 'MIXED'
-#pp = 'SG15'
+k_parall = 3;
 pp='test'
-#pp = 'ONCV'
 
 def main():
     jobline = """
@@ -307,9 +292,6 @@ cp ~/bin/rmg-cpu .
 
         if(species in high_cutoff and species in pseudo_uspp):
             grid_spacing = grid_spacing_base/1.2;
-
-        if(species in high_high_cutoff):
-            grid_spacing = grid_spacing_base/1.75;
 
         if species in use_CIFs:
             input_for_rmg(species, '../../../CIFs/'+filename,  grid_spacing)
