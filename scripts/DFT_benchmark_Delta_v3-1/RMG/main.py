@@ -96,7 +96,7 @@ kpoints = {
 "Ag":"""kpoint_mesh="23 23 23""",
 "Al":"""kpoint_mesh="20 20 20""",
 "Ar":"""kpoint_mesh="13 13 13""",
-"As":"""kpoint_mesh="20 20 7""",
+"As":"""kpoint_mesh="21 21 13""",
 "Au":"""kpoint_mesh="23 23 23""",
 "B":"""kpoint_mesh="16 16 15""",
 "Ba":"""kpoint_mesh="18 18 18""",
@@ -116,7 +116,7 @@ kpoints = {
 "Ga":"""kpoint_mesh="13 13 13""",
 "Ge":"""kpoint_mesh="13 13 13""",
 "H":"""kpoint_mesh="19 19 15""",
-"He":"""kpoint_mesh="26 26 16""",
+"He":"""kpoint_mesh="21 21 11""",
 "Hf":"""kpoint_mesh="21 21 21""",
 "Hg":"""kpoint_mesh="20 20 20""",
 "I":"""kpoint_mesh="16 16 7""",
@@ -142,7 +142,7 @@ kpoints = {
 "Po":"""kpoint_mesh="21 21 21""",
 "Pt":"""kpoint_mesh="23 23 23""",
 "Rb":"""kpoint_mesh="15 15 15""",
-"Re":"""kpoint_mesh="28 28 17""",
+"Re":"""kpoint_mesh="21 21 11""",
 "Rh":"""kpoint_mesh="23 23 23""",
 "Rn":"""kpoint_mesh="13 13 13""",
 "Ru":"""kpoint_mesh="28 28 18""",
@@ -154,16 +154,16 @@ kpoints = {
 "Sn":"""kpoint_mesh="16 16 16""",
 "Sr":"""kpoint_mesh="18 18 18""",
 "Ta":"""kpoint_mesh="21 21 21""",
-"Tc":"""kpoint_mesh="28 28 17""",
+"Tc":"""kpoint_mesh="21 21 11""",
 "Te":"""kpoint_mesh="17 17 13""",
-"Ti":"""kpoint_mesh="26 26 16""",
+"Ti":"""kpoint_mesh="21 21 11""",
 "Tl":"""kpoint_mesh="21 21 13""",
 "V":"""kpoint_mesh="21 21 21""",
 "W":"""kpoint_mesh="28 28 28""",
 "Xe":"""kpoint_mesh="13 13 13""",
 "Y":"""kpoint_mesh="21 21 11""",
 "Zn":"""kpoint_mesh="29 29 15""",
-"Zr":"""kpoint_mesh="24 24 15"""}
+"Zr":"""kpoint_mesh="25 25 13"""}
 
 #external pps here
 external_pps = {
@@ -187,6 +187,7 @@ external_pps = {
 
 #extra options here
 extra_opts = {
+"He":"""energy_convergence_criterion="1.0e-12"\nepsg_guard="2.0e-8""",
 "Ne":"""energy_convergence_criterion="1.0e-12"\nepsg_guard="5.0e-8""",
 "Ar":"""energy_convergence_criterion="1.0e-12"\nepsg_guard="4.0e-8""",
 "Bi":"""potential_grid_refinement="3""",
@@ -201,7 +202,7 @@ extra_opts = {
 "Mg":"""kohn_sham_fd_order="10""",
 "Hg":"""kohn_sham_fd_order="10""",
 "Kr":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="3.5e-8""",
-"Rn":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="3.5e-8"\npotential_grid_refinement="3""",
+"Rn":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="2.0e-8"\npotential_grid_refinement="3""",
 "Xe":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="4.5e-8"""
 }
 
