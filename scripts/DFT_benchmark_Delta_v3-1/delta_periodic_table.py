@@ -96,13 +96,15 @@ fig, ax = plt.subplots(figsize=(20,12),dpi=300)
 d_h = 1.500
 
 ax.axis("off")
+plt.subplots_adjust(left=0.2,right=0.8,top=0.9,bottom=0.35)
+
 # these are matplotlib.patch.Patch properties
 #props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 
 # place a text box in upper left in axes coords
 for ele in element_delta:
-    x = ele[1] * 0.05
-    y = 1.0-ele[2] * 0.12
+    x = ele[1] * 0.06
+    y = 1.0-ele[2] * 0.15
     #textstr = '\n'.join((
     #    r'',
     #    ele[0],
@@ -126,6 +128,7 @@ for ele in element_delta:
         horizontalalignment="center",verticalalignment='top', bbox=props)
 
 plt.show()
-plt.savefig('delta.svg')
+#plt.savefig('delta.svg')
+plt.savefig('delta.svg', bbox_inches='tight')
 
 
