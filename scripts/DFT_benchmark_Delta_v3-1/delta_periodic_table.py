@@ -6,7 +6,7 @@ element_delta=[
 ['He',17,0,'springgreen'],
 ['Li',0,1,'violet'],
 ['Be',1,1,'sandybrown'],
-['B',12,1,'lavender'],
+['B',12,1,'purple'],
 ['C',13,1,'greenyellow'],
 ['N',14,1,'greenyellow'],
 ['O',15,1,'greenyellow'],
@@ -15,7 +15,7 @@ element_delta=[
 ['Na',0,2,'violet'],
 ['Mg',1,2,'sandybrown'],
 ['Al',12,2,'dodgerblue'],
-['Si',13,2,'lavender'],
+['Si',13,2,'purple'],
 ['P',14,2,'greenyellow'],
 ['S',15,2,'greenyellow'],
 ['Cl',16,2,'gold'],
@@ -33,8 +33,8 @@ element_delta=[
 ['Cu',10,3,'cyan'],
 ['Zn',11,3,'cyan'],
 ['Ga',12,3,'dodgerblue'],
-['Ge',13,3,'lavender'],
-['As',14,3,'lavender'],
+['Ge',13,3,'purple'],
+['As',14,3,'purple'],
 ['Se',15,3,'greenyellow'],
 ['Br',16,3,'gold'],
 ['Kr',17,3,'springgreen'],
@@ -52,8 +52,8 @@ element_delta=[
 ['Cd',11,4,'cyan'],
 ['In',12,4,'dodgerblue'],
 ['Sn',13,4,'dodgerblue'],
-['Sb',14,4,'lavender'],
-['Te',15,4,'lavender'],
+['Sb',14,4,'purple'],
+['Te',15,4,'purple'],
 ['I' ,16,4,'gold'],
 ['Xe',17,4,'springgreen'],
 ['Cs',0,5,'violet'],
@@ -71,7 +71,7 @@ element_delta=[
 ['Tl',12,5,'dodgerblue'],  
 ['Pb',13,5,'dodgerblue'],  
 ['Bi',14,5,'dodgerblue'],
-['Po',15,5,'lavender'],
+['Po',15,5,'purple'],
 ['At',16,5,'gold'],
 ['Rn',17,5,'springgreen'],
 ]    
@@ -80,7 +80,7 @@ f=open('Delta-out.txt','r')
 all_lines = f.readlines()
 f.close()
 
-delta={'At':'    ---    '}
+delta={'At':'  ---    '}
 for line in all_lines:
     if('#' in line): continue
     if('-' in line): continue
@@ -96,27 +96,39 @@ fig, ax = plt.subplots(figsize=(20,12),dpi=300)
 d_h = 1.500
 
 ax.axis("off")
+plt.subplots_adjust(left=0.2,right=0.8,top=0.9,bottom=0.35)
+
 # these are matplotlib.patch.Patch properties
 #props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 
 # place a text box in upper left in axes coords
 for ele in element_delta:
-    x = ele[1] * 0.05
-    y = 1.0-ele[2] * 0.10
-    textstr = '\n'.join((
-        r'',
-        ele[0],
-        r'%5s' %(delta[ele[0]],),
-        r''))
+    x = ele[1] * 0.06
+    y = 1.0-ele[2] * 0.15
     #textstr = '\n'.join((
+    #    r'',
     #    ele[0],
-    #    r' %.3f ' % (d_h, ),
+    #    r'%5s' %(delta[ele[0]],),
     #    r''))
-    props = dict(facecolor=ele[3], alpha=0.0)
-    ax.text(x, y, textstr, transform=ax.transAxes, fontsize=14,
+    if(ele[0] != 'At'):
+        textstr = '\n'.join((
+            r'',
+            ele[0],
+            r'%5.2f'% (float(delta[ele[0]]),),
+            r''))
+    else:
+        textstr = '\n'.join((
+            r'',
+            ele[0],
+            r'%.8s'% (delta[ele[0]],),
+            r''))
+
+    props = dict(facecolor=ele[3], alpha=0.5)
+    ax.text(x, y, textstr, transform=ax.transAxes, fontsize=16,
         horizontalalignment="center",verticalalignment='top', bbox=props)
 
 plt.show()
-plt.savefig('delta.png')
+#plt.savefig('delta.svg')
+plt.savefig('delta.svg', bbox_inches='tight')
 
 
