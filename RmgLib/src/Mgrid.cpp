@@ -549,6 +549,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
 
         case -CUBIC_BC:
         case CUBIC_BC:
+        case TETRAGONAL_BC:
 
             scale = 1.0 / 52.0;
 
@@ -694,6 +695,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
         case ORTHORHOMBIC_PRIMITIVE:
         case MONOCLINIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
+        case TETRAGONAL_BC:
         case TRICLINIC_PRIMITIVE:
         case None:
             /* transfer coarse grid points to fine grid along with the

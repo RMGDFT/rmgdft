@@ -242,7 +242,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
             ION &Atom = Atoms[ion];
             SPECIES &AtomType = Species[Atom.species];
             double xcry[3], xcrds[3];
-            Rmg_L.to_crystal_half(xcry, Atom.crds);
+            Rmg_L.to_crystal(xcry, Atom.crds);
             Rmg_L.to_cartesian(xcry, xcrds);
             fprintf(fhandle,"%s %#15.12g %#15.12g %#15.12g\n", AtomType.atomic_symbol, 
                     a0_A*xcrds[0], a0_A*xcrds[1], a0_A*xcrds[2]);

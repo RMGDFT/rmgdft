@@ -391,13 +391,15 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             cbya = celldm[2];
             Lattice::a0[0] = alat / 2.0;
             Lattice::a0[1] = Lattice::a0[0];
-            Lattice::a0[2] = cbya * alat / 2.0;
+            Lattice::a0[2] = -cbya * alat / 2.0;
+
             Lattice::a1[0] = Lattice::a0[0];
             Lattice::a1[1] = -Lattice::a0[0];
-            Lattice::a1[2] = Lattice::a0[2];
+            Lattice::a1[2] = -Lattice::a0[2];
+
             Lattice::a2[0] = -Lattice::a0[0];
-            Lattice::a2[1] = -Lattice::a0[0];
-            Lattice::a2[2] = Lattice::a0[2];
+            Lattice::a2[1] = Lattice::a0[0];
+            Lattice::a2[2] = -Lattice::a0[2];
             break;
 
         case CUBIC_PRIMITIVE:
@@ -798,6 +800,7 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
                 {
                     // Trigonal 001 axis
                     ibrav =5;
+                    ibrav = 14;
                 }
                 else
                 {
@@ -815,7 +818,7 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
                // Tetragonal I
                ibrav = 7;
                // Force to triclinic until special operators coded
-               ibrav = 14;
+               //ibrav = 14;
             }
             else
             {
@@ -972,6 +975,7 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
                     (ibb == ORTHORHOMBIC_PRIMITIVE) ||
                     (ibb == CUBIC_PRIMITIVE) ||
                     (ibb == TETRAGONAL_PRIMITIVE) ||
+                    (ibb == TETRAGONAL_BC) ||
                     (ibb == HEXAGONAL) ||
                     (ibb == HEXAGONAL2);
 
@@ -1042,6 +1046,17 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
             a1[1] =  m[0] * SQRT3 / 2.0;
             a2[2] = m[0] * cbya;
             break;
+        case TETRAGONAL_BC:
+            a0[0] = m[0] /2.0;
+            a0[1] = m[0] /2.0;
+            a0[2] = -m[2] /2.0;
+            a1[0] = m[0] /2.0;
+            a1[1] = -m[0] /2.0;
+            a1[2] = m[2] /2.0;
+            a2[0] = -m[0] /2.0;
+            a2[1] = m[0] /2.0;
+            a2[2] = m[2] /2.0;
+            break;
 
     }
 
@@ -1094,10 +1109,10 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
          celldm[1]= 1.0;
          celldm[2]= sqrt( dot_product (a3,a3) ) / celldm[0];
          break;
-//      case TETRAGONAL_BC:
-//         celldm[0] = abs(a1(1))*2.0;
-//         celldm[2] = abs(a1(3)/a1(1));
-//         break;
+      case TETRAGONAL_BC:
+         celldm[0] = abs(a1[0])*2.0;
+         celldm[2] = abs(a1[2]/a1[0]);
+         break;
       case ORTHORHOMBIC_PRIMITIVE:
          celldm[0] = sqrt( dot_product (a1,a1) );
          celldm[1] = sqrt( dot_product (a2,a2) ) / celldm[0];
