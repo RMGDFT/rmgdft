@@ -55,7 +55,7 @@ LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim
 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     iprint = false;
-    if(world_rank == 0) iprint = true;
+    //if(world_rank == 0) iprint = true;
 
 }
 void LaplacianCoeff::CalculateCoeff()
@@ -310,10 +310,9 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
             points.clear();
            // GetPointListBCO(points, a, Ngrid, Lorder);
             GetPointList3D(points, a, Ngrid, Lorder);
-            int num_points = points.size();
             //GetDerListBCO(der_list, Lorder, num_points);
             GetDerList(der_list, Lorder, 3, 0);
-            this->BuildSolveLinearEq(points, der_list, dimension);
+            this->BuildSolveLinearEq(points, der_list, 3);
             std::stable_sort(points.begin(), points.end(), customLess_dist);
         }
         else
