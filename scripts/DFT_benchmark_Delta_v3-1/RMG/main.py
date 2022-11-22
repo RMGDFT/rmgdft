@@ -98,7 +98,7 @@ kpoints = {
 "Ar":"""kpoint_mesh="13 13 13""",
 "As":"""kpoint_mesh="21 21 13""",
 "Au":"""kpoint_mesh="23 23 23""",
-"B":"""kpoint_mesh="16 16 15""",
+"B":"""kpoint_mesh="15 15 15""",
 "Ba":"""kpoint_mesh="18 18 18""",
 "Be":"""kpoint_mesh="21 21 11""",
 "Bi":"""kpoint_mesh="17 17 6""",
@@ -210,7 +210,7 @@ grid_spacing_base = 0.14 # in unit of Angstrom
 volume_lists = [0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06]
 
 # Rmg default pseudo is SG15. If a species is in this list then internal USPP will be used.
-pseudo_uspp=["Se","Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Cl","B","S"]
+pseudo_uspp=["Se","Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Cl","S"]
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Rn", "W","V"];
