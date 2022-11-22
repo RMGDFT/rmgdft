@@ -28,7 +28,7 @@ grids = {
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
 "Br":"""wavefunction_grid="30 30 64 """,
-"B":"""wavefunction_grid="44 44 44 """,
+"B":"""wavefunction_grid="32 32 32 """,
 "Ca":"""wavefunction_grid="24 24 24 """,
 "Cd":"""wavefunction_grid="20 20 44 """,
 "Cl":"""wavefunction_grid="24 24 52 """,
@@ -168,6 +168,7 @@ kpoints = {
 #external pps here
 external_pps = {
 "F":"""F.oncvpsp.upf""",
+"B":"""b_pbe_v1.2.uspp.F.UPF""",
 "Hf":"""Hf_dojo.upf""",
 "In":"""In.pbe-dn-rrkjus_psl.0.2.2.UPF""",
 "Br":"""Br.pbe-dn-rrkjus_psl.1.0.0.UPF""",
