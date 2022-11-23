@@ -7,7 +7,7 @@ STM_bias = " -1.0 -0.5 0.5 1.0 "
 localize_localpp = "false"
 localize_projectors = "false"
 
-test_energy = " -12.04850491"
+test_energy = "-12.04904321"
 
   
 #******* CONTROL OPTIONS *******  

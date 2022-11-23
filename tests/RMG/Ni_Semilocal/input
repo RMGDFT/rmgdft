@@ -1,7 +1,7 @@
 # Description of run.
 description="Nickel atom test using semi-local potential"
 use_bessel_projectors = "true"
-test_energy = "-113.34030769"
+test_energy = "-113.34191089"
 
 # Wavefunction grid
 wavefunction_grid="96 96 96"

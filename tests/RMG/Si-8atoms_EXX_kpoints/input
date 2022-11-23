@@ -1,6 +1,6 @@
 # Description of run.
 description="Si bulk"
-test_energy = "-33.43040768"
+test_energy = "-31.57991193"
 
 #spin_polarization="true"
 
@@ -24,7 +24,7 @@ input_wave_function_file = "Waves/wave.out"
 output_wave_function_file = "Waves/wave.out"
 
 
-write_pseudopotential_plots = "true"
+#write_pseudopotential_plots = "true"
 
 # number of unoccupied states
 occupations_type = "Fixed"
@@ -115,9 +115,4 @@ Si   0.25   0.75   0.75   1 1  1  0.0  90.0 00.0
 Si   0.75   0.25   0.75   1 1  1  0.0  90.0 00.0    
 "
 #kpoint_distribution = "1"
-pseudopotential=
-"
-Si    Si_ONCV_PBE_sr.upf
-"
-
 

@@ -231,7 +231,7 @@ write_data_period="5"
 #write_data_period="50"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-12"
+energy_convergence_criterion="1.0e-9"
 rms_convergence_criterion = "1.0e-8"
 
 atomic_coordinate_type="Cell Relative"
