@@ -9,7 +9,7 @@
 
 # Description of run. Default: "QMD run"
 description="Diamond 16 atom test cell"
-test_energy = "-91.81064686"
+test_energy = "-91.81035226"
 
 # Wavefunction grid
 wavefunction_grid="32 32 32"
@@ -89,7 +89,7 @@ calculation_mode=
 
 # Criterion used to judge SCF convergency 
 rms_convergence_criterion="1.0e-8"
-energy_convergence_criterion="1.0e-12"
+energy_convergence_criterion="1.0e-9"
 
 charge_density_mixing="0.7"
 
@@ -111,8 +111,8 @@ subdiag_driver="lapack"
 potential_acceleration_constant_step="1.0"
 
 
-#kohn_sham_solver="davidson"
-kohn_sham_solver="multigrid"
+kohn_sham_solver="davidson"
+#kohn_sham_solver="multigrid"
 localize_projectors="false"
 localize_localpp="false"
 
