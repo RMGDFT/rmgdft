@@ -58,18 +58,18 @@ template char * Subdiag_Cusolver<std::complex<double> > (Kpoint<std::complex<dou
 char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
-    static char *trans_t = "t";
-    static char *trans_n = "n";
-    static int call_count, folded_call_count;
-    int num_states = kptr->nstates;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 0)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
-    RmgTimer *DiagTimer;
 #if !CUDA_ENABLED
         rmg_printf("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
         return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
 #if CUDA_ENABLED
+    static char *trans_t = "t";
+    static char *trans_n = "n";
+    static int call_count, folded_call_count;
+    int num_states = kptr->nstates;
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 0)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    RmgTimer *DiagTimer;
 
     if(ct.num_usable_gpu_devices == 1 || pct.local_rank == 0)
     {
