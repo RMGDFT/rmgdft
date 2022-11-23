@@ -1,6 +1,6 @@
 # Iron test cell.
 #
-test_energy="-250.34715085"
+test_energy="-250.34837757"
 
 # The normal process is to set thread counts via environment variables
 # but since the tests run in a batch via CTest we set some of them in

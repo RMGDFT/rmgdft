@@ -1,7 +1,7 @@
 # Description of run.
 description="atom_Pt_pp"
 
-test_energy="-45.09801654"
+test_energy="-45.09801696"
 
 #spin_polarization="true"
 
