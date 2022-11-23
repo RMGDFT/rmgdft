@@ -300,6 +300,12 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     /* Now take care of the core charge if nlcc is being used */
     if (this->nlccflag)
     {
+        if(ct.xc_is_hybrid)
+        {
+            rmg_printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
+            printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
+        }
+
         /*Open file for writing core charge */
         if (pct.gridpe == 0 && write_flag)
         {
