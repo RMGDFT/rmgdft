@@ -2,9 +2,9 @@
 description="graphite"
 localize_projectors="false"
 localize_localpp="false"
-wavefunction_grid="24 24 64"
+wavefunction_grid="24 24 72"
 
-test_energy="-22.98280508"
+test_energy="-22.98103762"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
@@ -62,7 +62,7 @@ charge_mixing_type = "Pulay"
 charge_density_mixing = "0.1"
 kohn_sham_mucycles = "3"
 max_scf_steps="20"
-max_md_steps = "10"
+max_md_steps = "20"
 potential_acceleration_constant_step="1.0"
 write_data_period="50"
 
@@ -86,7 +86,6 @@ atoms = "
 #C  C.pbe-mt_fhi.UPF
 #C C.pbe-rrkjus.UPF
 #"
-pseudo_dir = "/home/luw/Pseudopotentials_collect"
 
 #exchange_correlation_type = "LDA"
 #exchange_correlation_type = "vdw-df"
