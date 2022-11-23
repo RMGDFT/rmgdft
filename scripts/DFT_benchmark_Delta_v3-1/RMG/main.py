@@ -27,7 +27,7 @@ grids = {
 "Ba":"""wavefunction_grid="36 36 36 """,
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
-"Br":"""wavefunction_grid="30 30 64 """,
+"Br":"""wavefunction_grid="32 32 72 """,
 "B":"""wavefunction_grid="32 32 32 """,
 "Ca":"""wavefunction_grid="24 24 24 """,
 "Cd":"""wavefunction_grid="20 20 44 """,
@@ -194,7 +194,7 @@ extra_opts = {
 "Bi":"""potential_grid_refinement="3""",
 "In":"""potential_grid_refinement="3""",
 "Zn":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
-"Br":"""potential_grid_refinement="3""",
+"Br":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
 "Lu":"""potential_grid_refinement="3""",
 "Nb":"""potential_grid_refinement="3""",
 "Po":"""potential_grid_refinement="3""",
@@ -215,13 +215,13 @@ pseudo_uspp=["Se","Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Cl","
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Rn", "W","V"];
-pseudo_nc=["Fe","Nb","V","Bi"]
+pseudo_nc=["Fe","Nb","V","Bi","F"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar","Kr"]
 
 # Uses 10th order FD
-high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","S", "Zn"]
+high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","Zn"]
 
 # Higher temperature for convergence
 high_temp = ["Mn","Cr"]
