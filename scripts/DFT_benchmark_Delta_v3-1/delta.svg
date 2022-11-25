@@ -2787,13 +2787,13 @@ z
      <use xlink:href="#DejaVuSans-48"/>
      <use x="75.195312" xlink:href="#DejaVuSans-67"/>
     </g>
-    <!--  0.17 -->
+    <!--  0.20 -->
     <g transform="translate(579.988125 415.389719)scale(0.16 -0.16)">
      <use xlink:href="#DejaVuSans-20"/>
      <use x="31.787109" xlink:href="#DejaVuSans-30"/>
      <use x="95.410156" xlink:href="#DejaVuSans-2e"/>
-     <use x="127.197266" xlink:href="#DejaVuSans-31"/>
-     <use x="190.820312" xlink:href="#DejaVuSans-37"/>
+     <use x="127.197266" xlink:href="#DejaVuSans-32"/>
+     <use x="190.820312" xlink:href="#DejaVuSans-30"/>
     </g>
     <!--  -->
     <g transform="translate(600.343125 433.306219)scale(0.16 -0.16)"/>
