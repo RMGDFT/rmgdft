@@ -9,6 +9,8 @@ Subdiag_Rocsolver.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
-include_directories(${MAGMA_INCLUDES})
-include_directories(${MAGMA_INCLUDES}/magma)
+if(MAGMA_FOUND)
+    include_directories(${MAGMA_INCLUDES})
+    include_directories(${MAGMA_INCLUDES}/magma)
+endif()
 

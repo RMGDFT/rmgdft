@@ -27,8 +27,8 @@ grids = {
 "Ba":"""wavefunction_grid="36 36 36 """,
 "Be":"""wavefunction_grid="16 16 24 """,
 "Bi":"""wavefunction_grid="32 32 88 """,
-"Br":"""wavefunction_grid="30 30 64 """,
-"B":"""wavefunction_grid="44 44 44 """,
+"Br":"""wavefunction_grid="32 32 72 """,
+"B":"""wavefunction_grid="32 32 32 """,
 "Ca":"""wavefunction_grid="24 24 24 """,
 "Cd":"""wavefunction_grid="20 20 44 """,
 "Cl":"""wavefunction_grid="24 24 52 """,
@@ -168,6 +168,7 @@ kpoints = {
 #external pps here
 external_pps = {
 "F":"""F.oncvpsp.upf""",
+"B":"""b_pbe_v1.2.uspp.F.UPF""",
 "Hf":"""Hf_dojo.upf""",
 "In":"""In.pbe-dn-rrkjus_psl.0.2.2.UPF""",
 "Br":"""Br.pbe-dn-rrkjus_psl.1.0.0.UPF""",
@@ -193,7 +194,7 @@ extra_opts = {
 "Bi":"""potential_grid_refinement="3""",
 "In":"""potential_grid_refinement="3""",
 "Zn":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
-"Br":"""potential_grid_refinement="3""",
+"Br":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
 "Lu":"""potential_grid_refinement="3""",
 "Nb":"""potential_grid_refinement="3""",
 "Po":"""potential_grid_refinement="3""",
@@ -214,13 +215,13 @@ pseudo_uspp=["Se","Y","Ca","Mg","Mn","Ag","Ni","Sb","W","C","Re","Cr","I","Cl","
 
 # ONCV with core corrections
 #pseudo_nc = ["Ar", "Rn", "W","V"];
-pseudo_nc=["Fe","Nb","V","Bi"]
+pseudo_nc=["Fe","Nb","V","Bi","F"]
 
 # Use semilocal form (only available with sg15)
 pseudo_sl=["Ar","Kr"]
 
 # Uses 10th order FD
-high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","S", "Zn"]
+high_cutoff = ["Ar","Cu","Ni","Kr","Pt","B","Zn"]
 
 # Higher temperature for convergence
 high_temp = ["Mn","Cr"]

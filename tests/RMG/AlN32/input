@@ -1,12 +1,13 @@
 # Description of run.
 # Energy test
-test_energy="-204.28263077"
+test_energy="-215.98548688"
 
 description="AlN 32 atom wurtzite test cell"
 localize_projectors="false"
 localize_localpp="false"
 wavefunction_grid="48 48 92"
 occupations_type = "Fixed"
+internal_pseudo_type="ultrasoft"
 
 # number of unoccupied states
 unoccupied_states_per_kpoint="16"
