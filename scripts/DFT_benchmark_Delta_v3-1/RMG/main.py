@@ -43,7 +43,7 @@ grids = {
 "Ge":"""wavefunction_grid="28 28 28 """,
 "He":"""wavefunction_grid="24 24 44 """,
 "Hf":"""wavefunction_grid="24 24 44 """,
-"Hg":"""wavefunction_grid="28 28 24 """,
+"Hg":"""wavefunction_grid="24 24 24 """,
 "H":"""wavefunction_grid="28 28 36 """,
 "In":"""wavefunction_grid="20 20 32 """,
 "Ir":"""wavefunction_grid="24 24 24 """,
@@ -118,7 +118,7 @@ kpoints = {
 "H":"""kpoint_mesh="19 19 15""",
 "He":"""kpoint_mesh="21 21 11""",
 "Hf":"""kpoint_mesh="21 21 21""",
-"Hg":"""kpoint_mesh="20 20 20""",
+"Hg":"""kpoint_mesh="23 23 23""",
 "I":"""kpoint_mesh="16 16 7""",
 "In":"""kpoint_mesh="19 19 15""",
 "Ir":"""kpoint_mesh="23 23 23""",
@@ -200,7 +200,7 @@ extra_opts = {
 "Ir":"""potential_grid_refinement="3"\nkohn_sham_fd_order="10""",
 "Mn":"""energy_convergence_criterion = "1.0e-12""",
 "Mg":"""kohn_sham_fd_order="10""",
-"Hg":"""kohn_sham_fd_order="10""",
+"Hg":"""kohn_sham_fd_order="8""",
 "Kr":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="3.5e-8""",
 "Rn":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="2.0e-8"\npotential_grid_refinement="3""",
 "Xe":"""energy_convergence_criterion = "1.0e-12"\nepsg_guard="4.5e-8"""
@@ -240,9 +240,12 @@ AFM_list2 = ["O"]
 # list of species use CIFs instead of primCIFs
 # I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
+#Sb, As Bi: CIFs use hexgonal lattice instead of rhombohedral 
 #Sb,As, Na, S, B, Li, Bi symmetry not recongnized by cif2cell script
 #use_CIFs = ["I","P","Br","Cl","Ga","In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
-use_CIFs = ["In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
+#use_CIFs = ["In","Hg","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
+#Hg use BCO lattice
+use_CIFs = ["In","Lu","Sb","As","Na", "S","B","Li","Bi","F"]
 
 k_delta = 0.08  # in unit of (Anstrom^-1)
 k_parall = 3;

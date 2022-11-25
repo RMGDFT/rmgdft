@@ -55,7 +55,7 @@ LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim
 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     iprint = false;
-    //if(world_rank == 0) iprint = true;
+    if(world_rank == 0) iprint = true;
 
 }
 void LaplacianCoeff::CalculateCoeff()
@@ -308,10 +308,10 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         {
             der_list.clear();
             points.clear();
-           // GetPointListBCO(points, a, Ngrid, Lorder);
-            GetPointList3D(points, a, Ngrid, Lorder);
-            //GetDerListBCO(der_list, Lorder, num_points);
-            GetDerList(der_list, Lorder, 3, 0);
+            GetPointListBCO(points, a, Ngrid, Lorder);
+            GetDerListBCO(der_list, Lorder);
+            //GetPointList3D(points, a, Ngrid, Lorder);
+            //GetDerList(der_list, Lorder, 3, 0);
             this->BuildSolveLinearEq(points, der_list, 3);
             std::stable_sort(points.begin(), points.end(), customLess_dist);
         }
@@ -510,8 +510,8 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         int index  =0;
         for(auto a:points)
         {   
-            printf("COEFF  %2d    %14.8f    %d  %d  %d   %14.8f\n",index, a.dist, 
-                    a.index[0], a.index[1], a.index[2], a.coeff);
+            printf("COEFF  %2d    %14.8f    %d  %d  %d   %14.8e  %14.8e   %14.8e   %14.8e    \n",index, a.dist, 
+                    a.index[0], a.index[1], a.index[2], a.coeff, a.coeff_gx, a.coeff_gy, a.coeff_gz);
             // std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<a.coeff<<std::endl;
             index++;
         }
@@ -1032,7 +1032,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, std::vec
     //        printf("%5.2f", Bm[i*num_derivative + j]);
     //}
 
-    if(info != 0)
+    if(info != 0 )
     {
         if(world_rank == 0) printf ("error in LaplacianCoeff.cpp dgetrf INFO = %d \n", info);
 
@@ -1177,39 +1177,114 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, std::vec
 
 }
 
-void LaplacianCoeff::GetDerListBCO(std::vector<GridPoint>& der_list, int Lorder, int num_points){
+void LaplacianCoeff::GetDerListBCO(std::vector<GridPoint>& der_list, int Lorder){
 
     GridPoint point;
     der_list.clear();
 
-    std::vector<GridPoint> der_list_others;
-    for(int k = 0; k <= Lorder; k+=1){
-        for(int j = 0; j <= Lorder; j+=1){
-            for(int i = 0; i <= Lorder; i+=1){
-                if(i+j+k <= Lorder && i+j+k >0) 
-                {
-                    point.index[0] = i;
+    for (int ia = 1; ia <=Lorder; ia++)
+    {
+        point.index[0] = ia;
+        point.index[1] = 0;
+        point.index[2] = 0;
+        point.dist = ia;
+        der_list.push_back(point);
+
+        point.index[0] = 0;
+        point.index[1] = 0;
+        point.index[2] = ia;
+        point.dist = ia;
+        der_list.push_back(point);
+
+        point.index[0] = 0;
+        point.index[1] = ia;
+        point.index[2] = 0;
+        point.dist = ia;
+        der_list.push_back(point);
+
+        if(ia != 1 ) continue;
+
+        point.index[0] = ia;
+        point.index[1] = 0;
+        point.index[2] = ia;
+        point.dist = ia+ia;
+        der_list.push_back(point);
+        point.index[0] = 0;
+        point.index[1] = ia;
+        point.index[2] = ia;
+        point.dist = ia+ia;
+        der_list.push_back(point);
+        point.index[0] = ia;
+        point.index[1] = ia;
+        point.index[2] = 0;
+        point.dist = ia + ia;
+        der_list.push_back(point);
+
+    }
+
+    for(int j = 3; j <= Lorder; j+=1){
+        if(j%2 == 0) {
+            point.index[0] = j/2+1;
+            point.index[1] = j/2-1;
+            point.index[2] = 0;
+            point.dist = j;
+            der_list.push_back(point);
+            point.index[0] = j/2;
+            point.index[1] = j/2;
+            point.index[2] = 0;
+            point.dist = j;
+            der_list.push_back(point);
+        }
+        else {
+            point.index[0] = j/2;
+            point.index[1] = j/2+1;
+            point.index[2] = 0;
+            point.dist = j;
+            der_list.push_back(point);
+            point.index[0] = j/2+1;
+            point.index[1] = j/2;
+            point.index[2] = 0;
+            point.dist = j;
+            der_list.push_back(point);
+        }
+
+    }
+    for(int k = 1; k <= Lorder; k+=1){
+        for(int j = 1; j <= Lorder; j+=1){
+            if(k+j <= Lorder && k+j >2) 
+            {
+
+                if(j%2 == 0) {
+                    point.index[0] = 1;
+                    point.index[1] = j-1;
+                    point.index[2] = k;
+                    point.dist = j+k;
+                    der_list.push_back(point);
+                    point.index[0] = 0;
                     point.index[1] = j;
                     point.index[2] = k;
-                    point.dist = i+j+k;
-                    point.ijk = 1;
-                    for(int ix = 1; ix <= i; ix++) point.ijk *=ix;
-                    for(int ix = 1; ix <= j; ix++) point.ijk *=ix;
-                    for(int ix = 1; ix <= k; ix++) point.ijk *=ix;
-                    if( (j == 0 && k == 0) || (i == 0 && k == 0) || (i == 0 && j == 0) || 1)
-                    {
-                        der_list.push_back(point);
-                    }
-                    else if(i ==j && j == k)
-                    {
-                        der_list.push_back(point);
-                    }
+                    point.dist = j+k;
+                    der_list.push_back(point);
                 }
+                else {
+                    point.index[0] = j/2;
+                    point.index[1] = j/2+1;
+                    point.index[2] = k;
+                    point.dist = j+k;
+                    der_list.push_back(point);
+                    point.index[0] = j/2+1;
+                    point.index[1] = j/2;
+                    point.index[2] = k;
+                    point.dist = j+k;
+                    der_list.push_back(point);
+                }
+
             }
         }
     }
-
+    std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
 }
+
 void LaplacianCoeff::GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction){
 
     GridPoint point;
