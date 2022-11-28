@@ -136,10 +136,10 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
-            double *work;
-            gpuMalloc((void **)&work, lwork * sizeof(KpointType));
-            DsygvdDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
-            gpuFree(work);
+            double *work = NULL;  // not used by rocsolver variant
+            //gpuMalloc((void **)&work, lwork * sizeof(KpointType));
+            DsygvjDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
+            //gpuFree(work);
 
         }
 

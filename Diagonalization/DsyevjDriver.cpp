@@ -61,6 +61,56 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     DeviceSynchronize();
 }
 
+#elif HIP_ENABLED
+
+#include  <rocsolver.h>
+
+void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
+{
+
+    const rocblas_esort sortdir = rocblas_esort_ascending;
+    const rocblas_evect jobz = rocblas_evect_original;
+    const rocblas_fill uplo = rocblas_fill_upper;
+    const double abstol = 1.0e-9;
+    double *dev_residual = NULL;
+    double *residual;
+    double *devResidual;
+    const rocblas_int max_sweeps = 100;
+    int n_sweeps, *dev_n_sweeps = NULL;
+    rocblas_int *devInfo;
+    int info;
+    rocblas_status status;
+
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
+
+    status = rocsolver_dsyevj(ct.roc_handle,
+                              sortdir,
+                              jobz,
+                              uplo,
+                              n,
+                              A,
+                              ld,
+                              abstol,
+                              devResidual,
+                              max_sweeps,
+                              dev_n_sweeps,
+                              eigs,
+                              devInfo);
+
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
+    gpuMemcpy(&residual, devResidual, sizeof(double), gpuMemcpyDeviceToHost);
+    gpuMemcpy(&n_sweeps, dev_n_sweeps, sizeof(int), gpuMemcpyDeviceToHost);
+    gpuFree(dev_n_sweeps);
+    gpuFree(devResidual);
+    gpuFree(devInfo);
+    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    //printf("RRRRR  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
+
+
+}
+
 #else
 
 void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
