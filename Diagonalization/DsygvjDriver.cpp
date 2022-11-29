@@ -64,6 +64,54 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 }
 
+#elif HIP_ENABLED
+
+void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
+{
+    const rocblas_eform itype = rocblas_eform_ax;
+    const rocblas_esort sortdir = rocblas_esort_ascending;
+    const rocblas_evect jobz = rocblas_evect_original;
+    const rocblas_fill uplo = rocblas_fill_lower;
+    const double abstol = 1.0e-9;
+    double *devResidual = NULL;
+    const rocblas_int max_sweeps = 100;
+    int n_sweeps;
+    int info;
+    double residual;
+    int *dev_n_sweeps;
+    rocblas_int *devInfo;
+    rocblas_status status;
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
+
+    status = rocsolver_dsygvj(ct.roc_handle,
+                             itype,
+                             jobz,
+                             uplo,
+                             n,
+                             A,
+                             ld,
+                             B,
+                             ld,
+                             abstol,
+                             devResidual,
+                             max_sweeps,
+                             dev_n_sweeps,
+                             eigs,
+                             devInfo);
+
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
+    gpuMemcpy(&residual, devResidual, sizeof(double), gpuMemcpyDeviceToHost);
+    gpuMemcpy(&n_sweeps, dev_n_sweeps, sizeof(int), gpuMemcpyDeviceToHost);
+    gpuFree(dev_n_sweeps);
+    gpuFree(devResidual);
+    gpuFree(devInfo);
+    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    //printf("RRRRR  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
+}
+
+
 #else
 
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
