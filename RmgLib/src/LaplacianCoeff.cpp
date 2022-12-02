@@ -55,7 +55,7 @@ LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim
 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     iprint = false;
-    if(world_rank == 0) iprint = true;
+    //if(world_rank == 0) iprint = true;
 
 }
 void LaplacianCoeff::CalculateCoeff()
