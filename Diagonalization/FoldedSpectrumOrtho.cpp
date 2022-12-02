@@ -46,9 +46,6 @@
 #if MAGMA_LIBS
     #include <magma_v2.h>
 #endif
-#if HIP_ENABLED
-#include <hipsolver.h>
-#endif
 
 // Gram-Schmidt ortho for eigenvectors.
 // n = dimensions of the square matrix

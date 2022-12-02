@@ -72,9 +72,10 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     const rocblas_esort sortdir = rocblas_esort_ascending;
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_lower;
-    const double abstol = 1.0e-9;
+    double abstol = 1.0e-3;
+    abstol = std::min(abstol, ct.scf_accuracy);
     double *devResidual = NULL;
-    const rocblas_int max_sweeps = 100;
+    rocblas_int max_sweeps = 15;
     int n_sweeps;
     int info;
     double residual;
@@ -108,7 +109,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(devResidual);
     gpuFree(devInfo);
     if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
-    //printf("RRRRR  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
+    if(ct.verbose) printf("rocsolver_dsygvj  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 }
 
 
