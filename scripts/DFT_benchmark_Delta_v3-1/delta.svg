@@ -1698,13 +1698,13 @@ z
      <use xlink:href="#DejaVuSans-41"/>
      <use x="68.408203" xlink:href="#DejaVuSans-73"/>
     </g>
-    <!--  0.55 -->
+    <!--  0.58 -->
     <g transform="translate(735.508125 272.829719)scale(0.16 -0.16)">
      <use xlink:href="#DejaVuSans-20"/>
      <use x="31.787109" xlink:href="#DejaVuSans-30"/>
      <use x="95.410156" xlink:href="#DejaVuSans-2e"/>
      <use x="127.197266" xlink:href="#DejaVuSans-35"/>
-     <use x="190.820312" xlink:href="#DejaVuSans-35"/>
+     <use x="190.820312" xlink:href="#DejaVuSans-38"/>
     </g>
     <!--  -->
     <g transform="translate(755.863125 290.746219)scale(0.16 -0.16)"/>
@@ -2307,13 +2307,13 @@ z
      <use xlink:href="#DejaVuSans-53"/>
      <use x="63.476562" xlink:href="#DejaVuSans-62"/>
     </g>
-    <!--  0.55 -->
+    <!--  0.14 -->
     <g transform="translate(735.508125 344.109719)scale(0.16 -0.16)">
      <use xlink:href="#DejaVuSans-20"/>
      <use x="31.787109" xlink:href="#DejaVuSans-30"/>
      <use x="95.410156" xlink:href="#DejaVuSans-2e"/>
-     <use x="127.197266" xlink:href="#DejaVuSans-35"/>
-     <use x="190.820312" xlink:href="#DejaVuSans-35"/>
+     <use x="127.197266" xlink:href="#DejaVuSans-31"/>
+     <use x="190.820312" xlink:href="#DejaVuSans-34"/>
     </g>
     <!--  -->
     <g transform="translate(755.863125 362.026219)scale(0.16 -0.16)"/>
@@ -2868,13 +2868,13 @@ z
      <use xlink:href="#DejaVuSans-42"/>
      <use x="68.603516" xlink:href="#DejaVuSans-69"/>
     </g>
-    <!--  0.32 -->
+    <!--  0.27 -->
     <g transform="translate(735.508125 415.389719)scale(0.16 -0.16)">
      <use xlink:href="#DejaVuSans-20"/>
      <use x="31.787109" xlink:href="#DejaVuSans-30"/>
      <use x="95.410156" xlink:href="#DejaVuSans-2e"/>
-     <use x="127.197266" xlink:href="#DejaVuSans-33"/>
-     <use x="190.820312" xlink:href="#DejaVuSans-32"/>
+     <use x="127.197266" xlink:href="#DejaVuSans-32"/>
+     <use x="190.820312" xlink:href="#DejaVuSans-37"/>
     </g>
     <!--  -->
     <g transform="translate(755.863125 433.306219)scale(0.16 -0.16)"/>
