@@ -275,7 +275,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.psi_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
-    ct.psi_alloc[0] *= (size_t)pct.pe_kpoint;
+    ct.psi_alloc[0] *= (size_t)(pct.pe_kpoint * ct.nspin);
 
     OrbitalType *rptr_k;
     rptr_k = rptr;
