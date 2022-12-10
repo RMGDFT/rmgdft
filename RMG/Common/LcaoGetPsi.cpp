@@ -78,7 +78,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     state_count = CountAtomicOrbitals();
 
-    KpointType *npsi = (KpointType *)RmgMallocHost(state_count * pbasis * sizeof(KpointType));
+    // State array is always at least 2*ct.init_states so we can use the upper part for temp storage
+    KpointType *npsi = Kstates[ct.init_states].psi;
 
     if(ct.spinorbit && state_count > nstates)
     {
@@ -262,7 +263,6 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         RmgFreeHost(rmatrix);
         delete [] aidum;
     }
-    RmgFreeHost(npsi);
 
 
     /*Initialize any additional states to random start*/
