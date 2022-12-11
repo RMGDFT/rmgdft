@@ -1098,7 +1098,9 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, grid_comm);
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc[0], 1, MPI_LONG, MPI_SUM, grid_comm);
-    ct.beta_alloc[0] *= (size_t)pct.pe_kpoint; 
+    ct.beta_alloc[0] *= (size_t)(ct.num_kpts_pe * pct.pe_kpoint * ct.nspin);
+    ct.beta_alloc[1] *= (size_t)(ct.num_kpts_pe * pct.pe_kpoint * ct.nspin);
+    ct.beta_alloc[2] *= (size_t)(ct.num_kpts_pe * pct.pe_kpoint * ct.nspin);
 
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
     int stress_factor = 1;
@@ -1134,7 +1136,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
+        madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_NORMAL);
     }
     else
     {
@@ -1263,7 +1265,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     {
         this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->orbital_weight_size*sizeof(KpointType));
         if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_RANDOM);
+        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
 
     }
     else
