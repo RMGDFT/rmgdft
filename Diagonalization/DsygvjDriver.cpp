@@ -75,7 +75,8 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     double abstol = 1.0e-3;
     abstol = std::min(abstol, ct.scf_accuracy);
     double *devResidual = NULL;
-    rocblas_int max_sweeps = 15;
+    rocblas_int max_sweeps = 5;
+    if(ct.scf_steps < 3) max_sweeps = 15;
     int n_sweeps;
     int info;
     double residual;
@@ -86,6 +87,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
 
+    double tstart = my_crtc();
     status = rocsolver_dsygvj(ct.roc_handle,
                              itype,
                              jobz,
@@ -101,7 +103,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
                              dev_n_sweeps,
                              eigs,
                              devInfo);
-
+    if(ct.verbose) printf("\nrocsolver_dsygvj time = %14.6f\n", my_crtc() - tstart);
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     gpuMemcpy(&residual, devResidual, sizeof(double), gpuMemcpyDeviceToHost);
     gpuMemcpy(&n_sweeps, dev_n_sweeps, sizeof(int), gpuMemcpyDeviceToHost);

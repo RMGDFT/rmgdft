@@ -170,6 +170,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     else {
 
         if(participates) {
+        double tstart = my_crtc();
 
             /****************** Find Matrix of Eigenvectors *****************************/
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
@@ -273,6 +274,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             //MainSp->GatherMatrix(eigvectors, distAij);
             MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
             MainSp->ScalapackBlockAllreduce((double *)eigvectors, (size_t)factor * (size_t)num_states * (size_t)num_states);
+            if(ct.verbose && pct.gridpe==0)
+                printf("\nscalapack time = %14.6f\n", my_crtc() - tstart);
         }
 
         // Finally send eigenvalues and vectors to everyone 
