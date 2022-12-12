@@ -45,14 +45,14 @@ void SetLaplacian()
     dim[2] = Rmg_G->get_PZ0_GRID(1);
     hxgrid = Rmg_G->get_hxgrid(1);
 
-    LC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
+    LC = new LaplacianCoeff(a, Ngrid, Lorder, dim, ct.verbose);
     LC->SetBrav(Rmg_L.get_ibrav_type());
     LC->SetOffdiag(ct.laplacian_offdiag);
     LC->CalculateCoeff();
     LC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder, LC});
 
-    LC_6 = new LaplacianCoeff(a, Ngrid, Lorder-2, dim);
+    LC_6 = new LaplacianCoeff(a, Ngrid, Lorder-2, dim, ct.verbose);
     LC_6->SetBrav(Rmg_L.get_ibrav_type());
     LC_6->SetOffdiag(ct.laplacian_offdiag);
     LC_6->CalculateCoeff();
@@ -68,7 +68,7 @@ void SetLaplacian()
     // routines. In that case the coefficients have to be rescaled
     // which is why the different spacings are inserted into the
     // hash table along with the generated grid spacing here.
-    LaplacianCoeff *MLC = new LaplacianCoeff(a, Ngrid, 2, dim);
+    LaplacianCoeff *MLC = new LaplacianCoeff(a, Ngrid, 2, dim, ct.verbose);
     MLC->SetBrav(Rmg_L.get_ibrav_type());
     MLC->SetOffdiag(ct.laplacian_offdiag);
     MLC->CalculateCoeff();
@@ -88,14 +88,14 @@ void SetLaplacian()
     dim[2] = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
     hxgrid = Rmg_G->get_hxgrid(Rmg_G->default_FG_RATIO);
 
-    LaplacianCoeff *HLC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
+    LaplacianCoeff *HLC = new LaplacianCoeff(a, Ngrid, Lorder, dim, ct.verbose);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
     HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();
     HLC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder, HLC});
 
-    HLC = new LaplacianCoeff(a, Ngrid, Lorder-2, dim);
+    HLC = new LaplacianCoeff(a, Ngrid, Lorder-2, dim, ct.verbose);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
     HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();

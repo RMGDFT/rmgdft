@@ -39,7 +39,7 @@ struct {
     }   
 } customLess_ijk;
 
-LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim[3]){
+LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim[3], bool verbose){
 
     // Figure out the rescaling to improve numerical stability
     scale1 = sqrt(a[0][0]*a[0][0] + a[0][1]*a[0][1] + a[0][2]*a[0][2]) / Ngrid[0];
@@ -55,7 +55,7 @@ LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim
 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     iprint = false;
-    if(world_rank == 0) iprint = true;
+    if(world_rank == 0 && verbose) iprint = true;
 
 }
 void LaplacianCoeff::CalculateCoeff()

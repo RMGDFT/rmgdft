@@ -38,7 +38,7 @@ public:
     int Lorder;
     double gen_hxgrid;    // a[0][0] / Ngrid[0] used to identify scale factor in multigrid routines
     LaplacianCoeff ();
-    LaplacianCoeff (double a[3][3], int Ngrid[3], int Lorder, int dim[3]);
+    LaplacianCoeff (double a[3][3], int Ngrid[3], int Lorder, int dim[3], bool verbose);
     void CalculateCoeff (double a[3][3], int Ngrid[3], int Lorder, int dim[3]);
     void CalculateCoeff ();
     ~LaplacianCoeff(void);
