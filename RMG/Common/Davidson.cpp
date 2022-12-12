@@ -84,6 +84,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
+    int max_states = nstates * ct.davidx;
+
     notconv = nstates;
     int nbase = nstates;
     char *trans_t = "t";
@@ -108,23 +110,23 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     int factor = 2;
     if(ct.is_gamma) factor = 1;
 
-    double *eigs = new double[ct.max_states];
-    double *eigsw = new double[2*ct.max_states];
-    bool *converged = new bool[ct.max_states]();
+    double *eigs = new double[max_states];
+    double *eigsw = new double[2*max_states];
+    bool *converged = new bool[max_states]();
 
 #if CUDA_ENABLED || HIP_ENABLED
-    KpointType *h_psi = (KpointType *)RmgMallocHost(pbasis_noncoll * ct.max_states * sizeof(KpointType));
-    KpointType *hr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *sr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *vr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *h_psi = (KpointType *)RmgMallocHost(pbasis_noncoll * max_states * sizeof(KpointType));
+    KpointType *hr = (KpointType *)GpuMallocHost(max_states * max_states * sizeof(KpointType));
+    KpointType *sr = (KpointType *)GpuMallocHost(max_states * max_states * sizeof(KpointType));
+    KpointType *vr = (KpointType *)GpuMallocHost(max_states * max_states * sizeof(KpointType));
 #else
-    KpointType *h_psi = new KpointType[pbasis_noncoll * ct.max_states];
-    KpointType *hr = new KpointType[ct.max_states * ct.max_states]();
-    KpointType *sr = new KpointType[ct.max_states * ct.max_states]();
-    KpointType *vr = new KpointType[ct.max_states * ct.max_states]();
+    KpointType *h_psi = new KpointType[pbasis_noncoll * max_states];
+    KpointType *hr = new KpointType[max_states * max_states]();
+    KpointType *sr = new KpointType[max_states * max_states]();
+    KpointType *vr = new KpointType[max_states * max_states]();
 #endif
 
-    for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = KpointType(1.0);
+    for(int idx = 0;idx < nstates;idx++) vr[idx*max_states + idx] = KpointType(1.0);
 
     // short version
     KpointType *psi = this->orbital_storage;
@@ -152,22 +154,22 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
     // Compute A matrix
     RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, h_psi, pbasis_noncoll, beta, hr, ct.max_states);
+    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, h_psi, pbasis_noncoll, beta, hr, max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
     else
-        BlockAllreduce((double *)hr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+        BlockAllreduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-    BlockAllreduce((double *)hr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+    BlockAllreduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 
 #endif
 
     // Compute S matrix
-    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, ct.max_states);
+    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -178,11 +180,11 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
     else
-        BlockAllreduce((double *)sr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+        BlockAllreduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-    BlockAllreduce((double *)sr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+    BlockAllreduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -191,7 +193,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #endif
     delete RT1;
 
-    GeneralDiag(hr, sr, eigs, vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
+    GeneralDiag(hr, sr, eigs, vr, nstates, nstates, max_states, ct.subdiag_driver);
     for(int st=0;st < nstates;st++)this->Kstates[st].feig[0] = eigs[st];
     for(int st=0;st < nstates;st++)this->Kstates[st].eig[0] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
@@ -206,7 +208,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
             if(!converged[st]) {
 
                 if(np != st) {
-                    for(int idx=0;idx < ct.max_states;idx++) vr[idx + np*ct.max_states] = vr[idx + st*ct.max_states];
+                    for(int idx=0;idx < max_states;idx++) vr[idx + np*max_states] = vr[idx + st*max_states];
                 }
                 eigsw[nbase + np] = eigs[st];
                 np++;                
@@ -217,14 +219,14 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         // expand the basis set with the residuals ( H - e*S )|psi>
         RT1 = new RmgTimer("6-Davidson: generate residuals");
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, s_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
 
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis_noncoll + idx];
         }
 
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, h_psi, pbasis_noncoll, vr, ct.max_states, alpha, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, alpha, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
         delete RT1;
 
         // Apply preconditioner
@@ -273,20 +275,20 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         // Update the reduced Hamiltonian and S matrices
         RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &hr[nbase*ct.max_states], ct.max_states);
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &hr[nbase*max_states], max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
         MPI_Request MPI_reqAij;
         if(ct.use_async_allreduce)
-            MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+            MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
         else
-            BlockAllreduce((double *)&hr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+            BlockAllreduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-        BlockAllreduce((double *)&hr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+        BlockAllreduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*ct.max_states], ct.max_states);
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*max_states], max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for Aij request to finish
@@ -297,11 +299,11 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         // Asynchronously reduce Sij request
         MPI_Request MPI_reqSij;
         if(ct.use_async_allreduce)
-           MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+           MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
         else
-            BlockAllreduce((double *)&sr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+            BlockAllreduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-        BlockAllreduce((double *)&sr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+        BlockAllreduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -320,19 +322,19 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
                 if(typeid(KpointType) == typeid(std::complex<double>))
                 {
-                    hr_C[j + i*ct.max_states] = std::conj(hr_C[i + j*ct.max_states]);
-                    sr_C[j + i*ct.max_states] = std::conj(sr_C[i + j*ct.max_states]);
+                    hr_C[j + i*max_states] = std::conj(hr_C[i + j*max_states]);
+                    sr_C[j + i*max_states] = std::conj(sr_C[i + j*max_states]);
                 }
                 else
                 {
-                    hr[j + i*ct.max_states] = hr[i + j*ct.max_states];
-                    sr[j + i*ct.max_states] = sr[i + j*ct.max_states];
+                    hr[j + i*max_states] = hr[i + j*max_states];
+                    sr[j + i*max_states] = sr[i + j*max_states];
                 }
             }
         }
 
         RT1 = new RmgTimer("6-Davidson: diagonalization");
-        int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
+        int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, max_states, ct.subdiag_driver);
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);
@@ -403,7 +405,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(((steps == (ct.david_max_steps-1)) || ((nbase+notconv) > ct.max_states) || (notconv == 0))) {
+        if(((steps == (ct.david_max_steps-1)) || ((nbase+notconv) > max_states) || (notconv == 0))) {
 
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
@@ -412,7 +414,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #else
             KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
 #endif
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, ct.max_states, beta, npsi, pbasis_noncoll);
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, max_states, beta, npsi, pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
 #if CUDA_ENABLED || HIP_ENABLED
             RmgFreeHost(npsi);
@@ -439,10 +441,10 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
             // refresh s_psi and h_psi
             RT1 = new RmgTimer("6-Davidson: refresh h_psi and s_psi");
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, s_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
             if(!ct.norm_conserving_pp) for(int idx=0;idx < nstates*pbasis_noncoll;idx++)s_psi[idx] = psi[nstates*pbasis_noncoll + idx];
 
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, h_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)h_psi[idx] = psi[nstates*pbasis_noncoll + idx];
             delete RT1;
 
@@ -450,13 +452,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
             // Reset hr,sr,vr
             RT1 = new RmgTimer("6-Davidson: reset hr,sr,vr");
             nbase = nstates;
-            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) hr[ix] = KpointType(0.0);
-            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) sr[ix] = KpointType(0.0);
-            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) vr[ix] = KpointType(0.0);
+            for(int ix=0;ix < max_states*max_states;ix++) hr[ix] = KpointType(0.0);
+            for(int ix=0;ix < max_states*max_states;ix++) sr[ix] = KpointType(0.0);
+            for(int ix=0;ix < max_states*max_states;ix++) vr[ix] = KpointType(0.0);
             for(int st=0;st < nbase;st++) {
-                hr[st + st*ct.max_states] = eigs[st];
-                sr[st + st*ct.max_states] = KpointType(1.0);
-                vr[st + st*ct.max_states] = KpointType(1.0);
+                hr[st + st*max_states] = eigs[st];
+                sr[st + st*max_states] = KpointType(1.0);
+                vr[st + st*max_states] = KpointType(1.0);
             }
             delete RT1;
 
@@ -470,9 +472,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
 
 #if CUDA_ENABLED || HIP_ENABLED
-    RmgFreeHost(vr);
-    RmgFreeHost(sr);
-    RmgFreeHost(hr);
+    GpuFreeHost(vr);
+    GpuFreeHost(sr);
+    GpuFreeHost(hr);
     RmgFreeHost(h_psi);
 #else
     delete [] vr;

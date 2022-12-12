@@ -69,8 +69,11 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
 #if SCALAPACK_LIBS
-    // For folded spectrum start with scalapack if available since cusolver is slow on really large problems
+    // For folded spectrum start with scalapack if available since rocsolver is slow on really large problems
     if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART) && (num_states > 10000))
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+
+    if(ct.scf_steps < 1)
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 

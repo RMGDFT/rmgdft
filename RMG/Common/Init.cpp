@@ -275,7 +275,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.psi_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
-    ct.psi_alloc[0] *= (size_t)pct.pe_kpoint;
+    ct.psi_alloc[0] *= (size_t)(pct.pe_kpoint * ct.nspin);
 
     OrbitalType *rptr_k;
     rptr_k = rptr;
@@ -377,10 +377,39 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     /*Do forward transform for each species and store results on the coarse grid */
+    /* FD optimization requires delocalized orbitals so we set them here */
     RmgTimer *RT1 = new RmgTimer("2-Init: weights");
     for(auto& sp : Species) sp.InitWeights (ct.localize_projectors);
-    for(auto& sp : Species) sp.InitOrbitals (ct.atomic_orbital_type);
+    for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
     delete(RT1);
+
+    // Set up autotuning finite differencing
+    FiniteDiff FD(&Rmg_L);
+    FD.cfac[0] = 0.0;
+    FD.cfac[1] = 0.0;
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor(kpt);
+    }
+    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.grid_comm);
+    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);
+    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
+    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
+    // FDOpt is experimental
+    //FDOpt *Fopt = new FDOpt();
+    //Fopt->Optimize();
+    //Fopt->Analyze_fft(5);
+    //delete Fopt;
+    // Kpoint version
+    //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
+
+    // Switch to localized orbitals if necessary
+    if(ct.atomic_orbital_type == LOCALIZED)
+    {
+        RmgTimer *RT1 = new RmgTimer("2-Init: weights");
+        for(auto& sp : Species) sp.InitOrbitals (ct.atomic_orbital_type);
+        delete(RT1);
+    }
 
 
     /* Update items that change when the ionic coordinates change */
@@ -516,26 +545,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
-
-    // Set up autotuning finite differencing
-    FiniteDiff FD(&Rmg_L);
-    FD.cfac[0] = 0.0;
-    FD.cfac[1] = 0.0;
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-    {
-        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor(kpt);
-    }
-    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.grid_comm);
-    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);
-    MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
-    MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
-    // FDOpt is experimental
-    //FDOpt *Fopt = new FDOpt();
-    //Fopt->Optimize();
-    //Fopt->Analyze_fft(5);
-    //delete Fopt;
-    // Kpoint version
-    //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
