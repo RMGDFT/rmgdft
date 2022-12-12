@@ -170,7 +170,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     else {
 
         if(participates) {
-        double tstart = my_crtc();
 
             /****************** Find Matrix of Eigenvectors *****************************/
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
@@ -181,11 +180,15 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
                 if(ct.is_gamma) {
 
+                    double s1 = my_crtc();
                     int ibtype = 1;
                     double scale=1.0, rone = 1.0;
 
                     pdpotrf(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+                    if(ct.verbose && pct.gridpe == 0)
+                        printf("\nscalapack pdpotrf time = %9.4f\n", my_crtc() - s1);
 
+                    s1 = my_crtc();
                     // Get pdsyngst_ workspace
                     int lwork = -1;
                     double lwork_tmp;
@@ -197,6 +200,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     pdsyngst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
+                    if(ct.verbose && pct.gridpe == 0)
+                        printf("\nscalapack pdsyngst time = %9.4f\n", my_crtc() - s1);
+
+                    s1 = my_crtc();
                     // Get workspace required
                     lwork = -1;
                     int liwork=-1;
@@ -211,9 +218,16 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     // and now solve it 
                     pdsyevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+                    if(ct.verbose && pct.gridpe == 0)
+                        printf("\nscalapack pdsyevd time = %9.4f\n", my_crtc() - s1);
 
+                    s1 = my_crtc();
                     pdtrsm("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
                             (double *)distAij, &ione, &ione, desca);
+
+                    if(ct.verbose && pct.gridpe == 0)
+                        printf("\nscalapack pdtrsm time = %9.4f\n", my_crtc() - s1);
+
                     delete [] iwork;
                     delete [] nwork;
                     delete [] work2;
@@ -274,8 +288,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             //MainSp->GatherMatrix(eigvectors, distAij);
             MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
             MainSp->ScalapackBlockAllreduce((double *)eigvectors, (size_t)factor * (size_t)num_states * (size_t)num_states);
-            if(ct.verbose && pct.gridpe==0)
-                printf("\nscalapack time = %14.6f\n", my_crtc() - tstart);
         }
 
         // Finally send eigenvalues and vectors to everyone 
