@@ -31,34 +31,63 @@
 
 #if USE_ELPA
 #include "RmgException.h"
+#include <elpa/elpa.h>
 #include "Elpa.h"
 #include "blacs.h"
 
+static int once;
+void Elpa::Init(void)
+{
+    int error;
+    int api_version = 20221109;
+    if(!once)
+    {
+        elpa_init(api_version);
+        once = 1;
+    }
+    this->handle = (elpa_t *)elpa_allocate(&error);
+    if(error != ELPA_OK)
+    {
+        throw RmgFatalException() << "Error initializeing elpa in "  << __FILE__ << " at line " << __LINE__ << ".\n";
 
-void set_up_blacsgrid_from_fortran(int mpi_comm_world, int* my_blacs_ctxt,
-                                    int *np_rows, int *np_cols, int *nprow, int *npcol,
-                                    int *my_prow, int *my_pcol);
+    }
 
+    elpa_set((elpa_t)this->handle, "na", this->N, &error);
+    elpa_set((elpa_t)this->handle, "nev", this->N, &error);
+    elpa_set((elpa_t)this->handle, "local_nrows", this->m_dist, &error);
+    elpa_set((elpa_t)this->handle, "local_ncols", this->n_dist, &error);
+    elpa_set((elpa_t)this->handle, "nblk", this->NB, &error);
+    elpa_set((elpa_t)this->handle, "mpi_comm_parent", MPI_Comm_c2f(this->root_comm), &error);
+    elpa_set((elpa_t)this->handle, "process_row", this->my_row, &error);
+    elpa_set((elpa_t)this->handle, "process_col", this->my_col, &error);
+    elpa_set((elpa_t)this->handle, "num_process_rows", this->group_rows, &error);
+    elpa_set((elpa_t)this->handle, "num_process_cols", this->group_cols, &error);
+    //elpa_set((elpa_t)this->handle, "num_processes", this->group_pes, &error);
+    elpa_set((elpa_t)this->handle, "blacs_context", this->context, &error);
+    elpa_setup((elpa_t)this->handle);
+}
 
 // Clean up. Elpa inherits scalapack so scalapack destructor is called automatically on exit
 Elpa::~Elpa(void)
 {
+    int error;
+    elpa_deallocate((elpa_t)this->handle, &error);
+    //elpa_uninit(&error);
 }
 
-// Gets row and column communicators needed by elpa routines
-void Elpa::GetCommunicators(void)
+void Elpa::generalized_eigenvectors(double *a, double *b, double *ev, double *q, int is_already_decomposed, int *error)
 {
-    int mpierr;
-    int np_rows, np_cols;
-    int np_row, np_col;
-    int my_prow, my_pcol;
-    int my_blacs_ctxt;
-
-//    set_up_blacsgrid_from_fortran(MPI_Comm_c2f(this->comm), &my_blacs_ctxt, &this->group_rows, &this->group_cols, &np_row, &np_col, &this->my_row, &this->my_col);
-    mpierr = elpa_get_communicators(MPI_Comm_c2f(this->root_comm), this->my_row, this->my_col, &this->elpa_comm_rows, &this->elpa_comm_cols);
-    printf("MPIERR = %d  %d  %d  %d  %d\n",mpierr, this->my_row, this->my_col, this->elpa_comm_rows, this->elpa_comm_cols);
+    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
+    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AVX_BLOCK2, error);
+    elpa_generalized_eigenvectors((elpa_t)this->handle, a, b, ev, q, is_already_decomposed, error);
 }
 
+void Elpa::generalized_eigenvectors(std::complex<double> *a, std::complex<double> *b, double *ev, std::complex<double> *q, int is_already_decomposed, int *error)
+{
+    elpa_generalized_eigenvectors((elpa_t)this->handle, a, b, ev, q, is_already_decomposed, error);
+}
+
+#if 0
 int Elpa::GetElpaCommRows(void)
 {
     return this->elpa_comm_rows;
@@ -68,4 +97,5 @@ int Elpa::GetElpaCommCols(void)
 {
     return this->elpa_comm_cols;
 }
+#endif
 #endif

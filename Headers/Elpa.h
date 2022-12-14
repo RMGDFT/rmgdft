@@ -27,23 +27,26 @@
 #include <mpi.h>
 #include "Scalapack.h"
 #if USE_ELPA
-#include "elpa.h"
+//#include "elpa/elpa.h"
 #endif
 
 class Elpa: public Scalapack {
 
 public:
 
-  //Elpa(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm);
-  using Scalapack::Scalapack;
-  void GetCommunicators(void);
+  Elpa(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm):Scalapack(ngroups, thisimg, images_per_node, N, NB, last, rootcomm){}
+  void Init(void);
   int GetElpaCommRows(void);
   int GetElpaCommCols(void);
+  void generalized_eigenvectors(double *a, double *b, double *ev, double *q, int is_already_decomposed, int *error);
+  void generalized_eigenvectors(std::complex<double> *a, std::complex<double> *b, double *ev, std::complex<double> *q, int is_already_decomposed, int *error);
 
   ~Elpa(void);
 
 private:
    int elpa_comm_rows, elpa_comm_cols;
+   void *handle;
+//   elpa_autotune_t autotune_handle;  
 
 };
 

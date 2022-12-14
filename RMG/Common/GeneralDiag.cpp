@@ -108,6 +108,7 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
 #endif
 
         // Rocsolver perf is so bad just redirect to scalapack by default
+        case SUBDIAG_ELPA:
         case SUBDIAG_ROCSOLVER:
         case SUBDIAG_SCALAPACK:
             info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
