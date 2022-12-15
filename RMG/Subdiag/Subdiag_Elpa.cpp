@@ -85,6 +85,21 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     //use_folded = false;
 
+    RmgTimer *DiagTimer;
+    static int call_count, folded_call_count;
+    if(use_folded)
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: elpa folded");
+        folded_call_count++;
+        rmg_printf("\nDiagonalization using folded elpa for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count);
+    }
+    else
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: elpa");
+        call_count++;
+        rmg_printf("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps, call_count);
+    }
+
     int ione=1;
     int num_states = kptr->nstates;
     int factor = 1;
@@ -181,24 +196,12 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
             /****************** Find Matrix of Eigenvectors *****************************/
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
-            RT1 = new RmgTimer("4-Diagonalization: ELPA");
-            {
-                if(ct.is_gamma)
-                {
-                    MainElpa->generalized_eigenvectors(distAij, distSij, eigs, distCij, false, &info);
-//for(int i=0;i<num_states;i++){
-//printf("EIGS = %f   %d\n",Ha_eV*eigs[i],info);
-//}
-//printf("INFO4 = %d\n",info);
-
-                }
-                else {
-
-                }
-            }
+            RT1 = new RmgTimer("4-Diagonalization: elpa_general");
+            MainElpa->generalized_eigenvectors(distAij, distSij, eigs, distCij, false, &info);
             delete(RT1);
             
             // Clear eigvectors
+            RT1 = new RmgTimer("4-Diagonalization: distribute ev");
             for (int idx = 0; idx < num_states*num_states; idx++) {
                 eigvectors[idx] = ZERO_t;
             }
@@ -206,7 +209,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
             //MainElpa->GatherMatrix(eigvectors, distAij);
             MainElpa->CopyDistArrayToSquareMatrix(eigvectors, distCij, num_states, desca);
             MainElpa->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
-
+            delete(RT1);
 
         }
 
@@ -218,8 +221,9 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     }
 
-
     delete [] Cij;
+
+    delete DiagTimer;
 
 //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
 //    switch to FOLDED_GSE must uncomment

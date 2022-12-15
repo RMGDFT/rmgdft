@@ -77,8 +77,8 @@ Elpa::~Elpa(void)
 
 void Elpa::generalized_eigenvectors(double *a, double *b, double *ev, double *q, int is_already_decomposed, int *error)
 {
-    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
-    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AVX_BLOCK2, error);
+//    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
+//    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AMD_GPU, error);
     elpa_generalized_eigenvectors((elpa_t)this->handle, a, b, ev, q, is_already_decomposed, error);
 }
 
