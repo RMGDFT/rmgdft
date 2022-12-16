@@ -110,6 +110,9 @@ public:
     // Next level of scalapack
     Scalapack *next;
 
+    size_t *dist_sizes;    // sizes of distributed matrices on all PEs
+    size_t *dist_offsets;  // offsets into global matrix of each PE distributed matrix
+
     ~Scalapack(void);
 
 protected:

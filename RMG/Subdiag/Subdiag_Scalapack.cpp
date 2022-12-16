@@ -89,9 +89,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups but for now use just 1
-        int scalapack_groups = 1;
         int last = !ct.use_folded_spectrum;
-        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
+        MainSp = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, num_states,
                      ct.scalapack_block_factor, last, pct.grid_comm);
 
     }
@@ -133,6 +132,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             }
             saved_dist_length = dist_length;
         }
+
 
         // Copy matrices to dist arrays
         RT1 = new RmgTimer("4-Diagonalization: distribute matrices.");

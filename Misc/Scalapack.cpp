@@ -107,6 +107,8 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     int *pmap, *tgmap;
     pmap = new int[this->npes];
     tgmap = new int[this->npes];
+    this->dist_sizes = new size_t[this->npes];
+    this->dist_offsets = new size_t[this->npes];
 
     // Group rank array
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
@@ -159,8 +161,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
 
     }
-
-
 
     delete [] tgmap;
     delete [] pmap;
@@ -594,6 +594,8 @@ Scalapack::~Scalapack(void)
 #if SCALAPACK_LIBS
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
+    delete [] this->dist_offsets;
+    delete [] this->dist_sizes;
     delete [] this->local_desca;
     delete [] this->dist_desca;
 #endif

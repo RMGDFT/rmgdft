@@ -680,6 +680,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "in addition to the atomic orbitals.", 
             "extra_random_lcao_states must be greater than 0. Terminating. ", DIAG_OPTIONS);
 
+   If.RegisterInputKey("subdiag_groups", &lc.subdiag_groups, 1, 16, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "Number of scalapack or elpa groups.",
+            "subdiag_groups must be in the range (1 <= subdiag_groups <= 16). ", DIAG_OPTIONS);
+
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons ",
@@ -1051,10 +1056,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Expected final energy for testing. ",
             "test_energy must lie in the range (-1.0e9,1.0e9). Ignoring. ", TESTING_OPTIONS);
 
-    If.RegisterInputKey("epsg_guard", &lc.epsg_guard, 0.0, 1.0e-6, 1.0e-7,
+    If.RegisterInputKey("epsg_guard", &lc.epsg_guard, 0.0, 1.0e-5, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
             "GGA guard value for low density regions. ",
-            "epsg_guard must lie in the range (0.0,1.0e-6). Ignoring. ", CONTROL_OPTIONS);
+            "epsg_guard must lie in the range (0.0,1.0e-5). Ignoring. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("test_energy_tolerance", &lc.test_energy_tolerance, 1.0e-8, 1.0e-4, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
