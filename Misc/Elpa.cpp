@@ -57,12 +57,11 @@ void Elpa::Init(void)
     elpa_set((elpa_t)this->handle, "local_nrows", this->m_dist, &error);
     elpa_set((elpa_t)this->handle, "local_ncols", this->n_dist, &error);
     elpa_set((elpa_t)this->handle, "nblk", this->NB, &error);
-    elpa_set((elpa_t)this->handle, "mpi_comm_parent", MPI_Comm_c2f(this->root_comm), &error);
+    elpa_set((elpa_t)this->handle, "mpi_comm_parent", MPI_Comm_c2f(this->comm), &error);
     elpa_set((elpa_t)this->handle, "process_row", this->my_row, &error);
     elpa_set((elpa_t)this->handle, "process_col", this->my_col, &error);
     elpa_set((elpa_t)this->handle, "num_process_rows", this->group_rows, &error);
     elpa_set((elpa_t)this->handle, "num_process_cols", this->group_cols, &error);
-    //elpa_set((elpa_t)this->handle, "num_processes", this->group_pes, &error);
     elpa_set((elpa_t)this->handle, "blacs_context", this->context, &error);
     elpa_setup((elpa_t)this->handle);
 }
