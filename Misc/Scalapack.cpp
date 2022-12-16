@@ -33,7 +33,14 @@
 #include "GlobalSums.h"
 #include "Scalapack.h"
 #include "blacs.h"
+#include "transition.h"
+#include "rmg_error.h"
 
+#if USE_ELPA
+#include <elpa/elpa.h>
+#endif
+
+static int once;
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
@@ -171,6 +178,37 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
   //      this->next = new Scalapack(this->ngroups_next, thisimg, images_per_node, N, NB, true, this->root_comm);
   //
   //   }
+
+#if USE_ELPA
+    int error;
+    int api_version = 20221109;
+    if(!once)
+    {
+        elpa_init(api_version);
+        once = 1;
+    }
+    this->elpa_handle = (elpa_t *)elpa_allocate(&error);
+    if(error != ELPA_OK)
+    {
+        throw RmgFatalException() << "Error initializeing elpa in "  << __FILE__ << " at line " << __LINE__ << ".\n";
+
+    }
+
+    elpa_set((elpa_t)this->elpa_handle, "na", this->N, &error);
+    elpa_set((elpa_t)this->elpa_handle, "nev", this->N, &error);
+    elpa_set((elpa_t)this->elpa_handle, "local_nrows", this->m_dist, &error);
+    elpa_set((elpa_t)this->elpa_handle, "local_ncols", this->n_dist, &error);
+    elpa_set((elpa_t)this->elpa_handle, "nblk", this->NB, &error);
+    elpa_set((elpa_t)this->elpa_handle, "mpi_comm_parent", MPI_Comm_c2f(this->comm), &error);
+    elpa_set((elpa_t)this->elpa_handle, "process_row", this->my_row, &error);
+    elpa_set((elpa_t)this->elpa_handle, "process_col", this->my_col, &error);
+    elpa_set((elpa_t)this->elpa_handle, "num_process_rows", this->group_rows, &error);
+    elpa_set((elpa_t)this->elpa_handle, "num_process_cols", this->group_cols, &error);
+    elpa_set((elpa_t)this->elpa_handle, "blacs_context", this->context, &error);
+    elpa_setup((elpa_t)this->elpa_handle);
+
+#endif
+
 }
 
 MPI_Comm Scalapack::GetRootComm(void)
@@ -350,6 +388,187 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
 
 }
 
+void Scalapack::generalized_eigenvectors(double *a, double *b, double *ev, double *q)
+{
+#if USE_ELPA
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        this->generalized_eigenvectors_elpa(a, b, ev, q);
+        return;
+    }
+#endif    
+
+    this->generalized_eigenvectors_scalapack(a, b, ev, q);
+}
+
+void Scalapack::generalized_eigenvectors(std::complex<double> *a, std::complex<double> *b,
+             double *ev, std::complex<double> *q)
+{
+#if USE_ELPA
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        this->generalized_eigenvectors_elpa(a, b, ev, q);
+        return;
+    }
+#endif    
+
+    this->generalized_eigenvectors_scalapack(a, b, ev, q);
+}
+
+void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double *ev, double *q)
+{
+    /****************** Find Matrix of Eigenvectors *****************************/
+    /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+    char *uplo = "l", *jobz = "v";
+    int info, ione = 1, ibtype = 1;
+    double scale=1.0, rone = 1.0;
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    pdpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
+    if (info)
+    {
+       rmg_printf ("\n pdpotrf failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
+    }
+
+    // Get pdsyngst_ workspace
+    int lwork = -1;
+    double lwork_tmp;
+    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
+            b, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+    lwork = 2*(int)lwork_tmp; 
+    double *work2 = new double[lwork];
+    
+    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
+            b, &ione, &ione, desca, &scale, work2, &lwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyngst failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
+    }
+
+    // Get workspace required
+    lwork = -1;
+    int liwork=-1;
+    int liwork_tmp;
+    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
+            ev, a, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+    lwork = 16*(int)lwork_tmp;
+    liwork = 16*N;
+    double *nwork = new double[lwork];
+    int *iwork = new int[liwork];
+
+    // and now solve it 
+    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
+            ev, a, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+    }
+
+    pdtrsm("Left", uplo, "T", "N", &N, &N, &rone, b, &ione, &ione, desca,
+            a, &ione, &ione, desca);
+
+    if (info)
+    {
+       rmg_printf ("\n pdtrms failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdtrms failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] work2;
+}
+
+void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std::complex<double> *b,
+             double *ev, std::complex<double> *q)
+{
+    int ibtype = 1, ione=1, info;
+    char *uplo = "l", *jobz = "v";
+    double scale=1.0, rone[2] = {1.0, 0.0};
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    pzpotrf(uplo, &N, (double *)b,  &ione, &ione, desca,  &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzpotrf failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzpotrf failed");
+    }
+
+    pzhegst(&ibtype, uplo, &N, (double *)q, &ione, &ione, desca,
+                (double *)b, &ione, &ione, desca, &scale, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzhegst failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzhegst failed");
+    }
+
+    // Get workspace required
+    int lwork = -1, liwork=-1, lrwork=-1;
+    double lwork_tmp[2], lrwork_tmp;
+    int liwork_tmp;
+    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
+                ev, (double *)a, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+
+    lwork = (int)lwork_tmp[0]+1;
+    liwork = 16*N;
+    lrwork = 2*(int)lrwork_tmp;
+    double *rwork = new double[lrwork];
+    double *nwork = new double[lwork*2];
+    int *iwork = new int[liwork];
+
+    // and now solve it
+    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
+                ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzheevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+    }
+
+    pztrsm("Left", uplo, "C", "N", &N, &N, rone, (double *)b, &ione, &ione, desca,
+                (double *)a, &ione, &ione, desca);
+
+    if (info)
+    {
+       rmg_printf ("\n pztrsm failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] rwork;
+
+}
+
+#if USE_ELPA
+void Scalapack::generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q)
+{
+    int error;
+//    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
+//    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AMD_GPU, error);
+    elpa_generalized_eigenvectors((elpa_t)this->elpa_handle, a, b, ev, q, false, &error);
+    size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+    for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+}
+
+
+void Scalapack::generalized_eigenvectors_elpa(std::complex<double> *a, std::complex<double> *b, double *ev, std::complex<double> *q)
+{
+    int error;
+    elpa_generalized_eigenvectors((elpa_t)this->elpa_handle, a, b, ev, q, false, &error);
+    size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+    for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+}
+#endif
 
 void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha, 
                        double *A, int *IA, int *JA, int *desca, 
@@ -599,4 +818,9 @@ Scalapack::~Scalapack(void)
     delete [] this->local_desca;
     delete [] this->dist_desca;
 #endif
+#if USE_ELPA
+    int error;
+    elpa_deallocate((elpa_t)this->elpa_handle, &error);
+#endif
+
 }

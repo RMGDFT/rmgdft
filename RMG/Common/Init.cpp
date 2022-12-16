@@ -53,15 +53,11 @@
 #include "RmgParallelFft.h"
 #include "FiniteDiff.h"
 #include "Scalapack.h"
-#include "Elpa.h"
 #include "GatherScatter.h"
 #include "bfgs.h"
 #include "FDOpt.h"
 
 extern Scalapack *MainSp;
-#if USE_ELPA
-extern Elpa *MainElpa;
-#endif
 
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
@@ -644,12 +640,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 if(MainSp->Participates()) delete MainSp;
                 MainSp = NULL;
             }
-#if USE_ELPA
-            if(MainElpa) {
-                if(MainElpa->Participates()) delete MainElpa;
-                MainElpa = NULL;
-            }
-#endif
 #endif
             delete RT2;
 

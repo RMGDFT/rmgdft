@@ -56,6 +56,21 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #else
 
+#if USE_ELPA
+// Fill in upper triangle of Aij (elpa is only routine that needs it
+    int blocksize = 16;
+#pragma omp parallel for
+    for (int i = 0; i < kptr->nstates; i += blocksize) {
+        for (int j = i; j < kptr->nstates; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < kptr->nstates; row++) {
+                for (int col = j; col < j + blocksize && col < kptr->nstates; col++) {
+                    Aij[col*kptr->nstates+row]=Aij[row*kptr->nstates+col];
+                }
+            }
+        }
+    }
+#endif
+
     KpointType ZERO_t(0.0);
 
     //static char *trans_t = "t";
@@ -75,13 +90,20 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     }
     else
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: scalapack");
+        if(ct.subdiag_driver == SUBDIAG_ELPA)
+        {
+            DiagTimer = new RmgTimer("4-Diagonalization: elpa");
+            rmg_printf("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        }
+        else
+        {
+            DiagTimer = new RmgTimer("4-Diagonalization: scalapack");
+            rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        }
         call_count++;
-        rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps, call_count);
     }
 
 
-    int ione=1;
     int num_states = kptr->nstates;
     int factor = 1;
     if(!ct.is_gamma) factor=2;
@@ -171,112 +193,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         if(participates) {
 
-            /****************** Find Matrix of Eigenvectors *****************************/
-            /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
-            RT1 = new RmgTimer("4-Diagonalization: PDSYGVX/PZHEGVX");
-            {
-                char *uplo = "l", *jobz = "v";
-                int info;
-
-                if(ct.is_gamma) {
-
-                    double s1 = my_crtc();
-                    int ibtype = 1;
-                    double scale=1.0, rone = 1.0;
-
-                    pdpotrf(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
-                    if(ct.verbose && pct.gridpe == 0)
-                        printf("\nscalapack pdpotrf time = %9.4f\n", my_crtc() - s1);
-
-                    s1 = my_crtc();
-                    // Get pdsyngst_ workspace
-                    int lwork = -1;
-                    double lwork_tmp;
-                    pdsyngst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            (double *)distSij, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-                    lwork = 2*(int)lwork_tmp; 
-                    double *work2 = new double[lwork];
-                    
-                    pdsyngst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
-
-                    if(ct.verbose && pct.gridpe == 0)
-                        printf("\nscalapack pdsyngst time = %9.4f\n", my_crtc() - s1);
-
-                    s1 = my_crtc();
-                    // Get workspace required
-                    lwork = -1;
-                    int liwork=-1;
-                    int liwork_tmp;
-                    pdsyevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-                    lwork = 16*(int)lwork_tmp;
-                    liwork = 16*num_states;
-                    double *nwork = new double[lwork];
-                    int *iwork = new int[liwork];
-
-                    // and now solve it 
-                    pdsyevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
-                    if(ct.verbose && pct.gridpe == 0)
-                        printf("\nscalapack pdsyevd time = %9.4f\n", my_crtc() - s1);
-
-                    s1 = my_crtc();
-                    pdtrsm("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
-                            (double *)distAij, &ione, &ione, desca);
-
-                    if(ct.verbose && pct.gridpe == 0)
-                        printf("\nscalapack pdtrsm time = %9.4f\n", my_crtc() - s1);
-
-                    delete [] iwork;
-                    delete [] nwork;
-                    delete [] work2;
-
-                }
-                else {
-
-                    int ibtype = 1;
-                    double scale=1.0, rone[2] = {1.0, 0.0};
-
-                    pzpotrf(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
-
-                    pzhegst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                                (double *)distSij, &ione, &ione, desca, &scale, &info);
-
-                    // Get workspace required
-                    int lwork = -1, liwork=-1, lrwork=-1;
-                    double lwork_tmp[2], lrwork_tmp;
-                    int liwork_tmp;
-                    pzheevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                                eigs, (double *)distAij, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
-                    lwork = (int)lwork_tmp[0]+1;
-                    liwork = 16*num_states;
-                    lrwork = 2*(int)lrwork_tmp;
-                    double *rwork = new double[lrwork];
-                    double *nwork = new double[lwork*2];
-                    int *iwork = new int[liwork];
-
-                    // and now solve it
-                    pzheevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                                eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
-
-                    pztrsm("Left", uplo, "C", "N", &num_states, &num_states, rone, (double *)distSij, &ione, &ione, desca,
-                                (double *)distAij, &ione, &ione, desca);
-
-                    delete [] iwork;
-                    delete [] nwork;
-                    delete [] rwork;
-
-                }
-
-                if (info)
-                {
-                    rmg_printf ("\n PDSYGVX failed, info is %d", info);
-                    rmg_error_handler (__FILE__, __LINE__, "PDSYGVX failed");
-                }
-
-
-            }
+            RT1 = new RmgTimer("4-Diagonalization: ELPA/PDSYGVX/PZHEGVX");
+            MainSp->generalized_eigenvectors(distAij, distSij, eigs, distBij);
             delete(RT1);
             
             // Clear eigvectors

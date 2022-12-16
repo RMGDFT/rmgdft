@@ -77,6 +77,21 @@ public:
     int GetContext(void);
     bool Participates(void);
     Scalapack *GetNextScalapack(void);
+
+    void generalized_eigenvectors(double *a, double *b, double *ev, double *q);
+    void generalized_eigenvectors(std::complex<double> *a, std::complex<double> *b, 
+             double *ev, std::complex<double> *q);
+
+    void generalized_eigenvectors_scalapack(double *a, double *b, double *ev, double *q);
+    void generalized_eigenvectors_scalapack(std::complex<double> *a, std::complex<double> *b, 
+             double *ev, std::complex<double> *q);
+
+#if USE_ELPA
+    void generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q);
+    void generalized_eigenvectors_elpa(std::complex<double> *a, std::complex<double> *b,
+             double *ev, std::complex<double> *q);
+#endif
+
     MPI_Comm GetComm(void);
     MPI_Comm GetRootComm(void);
 
@@ -120,6 +135,9 @@ protected:
     void matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal);
     void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);
 
+#if USE_ELPA
+    void *elpa_handle;
+#endif
 
     int N;              // Operates on matrices of size (N,N)
     int scalapack_npes; // number of processors from the root_com that participate in sp operatrions

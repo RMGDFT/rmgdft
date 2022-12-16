@@ -284,11 +284,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
 #endif
+        case SUBDIAG_ELPA:
         case SUBDIAG_SCALAPACK:
             trans_b = Subdiag_Scalapack (this, Hij, Bij, Sij, eigs, global_matrix1);
-            break;
-        case SUBDIAG_ELPA:
-            trans_b = Subdiag_Elpa (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_CUSOLVER:
 #if CUDA_ENABLED

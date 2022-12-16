@@ -49,7 +49,6 @@ FilenameIncrement.cpp
 Scalapack.cpp
 Smooth.cpp
 Thread_Cbindings.cpp
-Elpa.cpp
 open_restart_file.cpp
 cnpy.cpp
 LinePlot.cpp
