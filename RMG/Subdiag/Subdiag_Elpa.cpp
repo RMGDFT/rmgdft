@@ -108,9 +108,8 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     if(!MainElpa) {
         // Need some code here to decide how to set the number of scalapack groups but for now use just 1
-        int scalapack_groups = 1;
         int last = !ct.use_folded_spectrum;
-        MainElpa = new Elpa(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
+        MainElpa = new Elpa(ct.subdiag_groups, pct.thisimg, ct.images_per_node, num_states,
                      ct.scalapack_block_factor, last, pct.grid_comm);
         MainElpa->Init();
     }
@@ -208,6 +207,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
             // Gather distributed results from distCij into eigvectors
             //MainElpa->GatherMatrix(eigvectors, distAij);
             MainElpa->CopyDistArrayToSquareMatrix(eigvectors, distCij, num_states, desca);
+
             MainElpa->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
             delete(RT1);
 
