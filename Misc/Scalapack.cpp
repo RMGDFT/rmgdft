@@ -331,6 +331,36 @@ Scalapack *Scalapack::GetNextScalapack(void)
     return this->next;
 }
 
+void Scalapack::FillUpper(double *A, int n)
+{
+    int blocksize = 16;
+#pragma omp parallel for
+    for (int i = 0; i < n; i += blocksize) {
+        for (int j = i; j < n; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < n; row++) {
+                for (int col = j; col < j + blocksize && col < n; col++) {
+                    A[col*n + row] = A[row*n + col];
+                }
+            }
+        }
+    }
+}
+
+void Scalapack::FillUpper(std::complex<double> *A, int n)
+{
+    int blocksize = 16;
+#pragma omp parallel for
+    for (int i = 0; i < n; i += blocksize) {
+        for (int j = i; j < n; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < n; row++) {
+                for (int col = j; col < j + blocksize && col < n; col++) {
+                    A[col*n + row] = std::conj(A[row*n + col]);
+                }
+            }
+        }
+    }
+}
+
 
 // Returns ipiv size required by PDGESV
 int Scalapack::GetIpivSize(void)

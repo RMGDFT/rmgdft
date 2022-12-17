@@ -75,6 +75,8 @@ public:
     int ComputeDesca(int m, int n, int *desca);
     int GetIpivSize(void);
     int GetContext(void);
+    static void FillUpper(double *A, int n);
+    static void FillUpper(std::complex<double> *A, int n);
     bool Participates(void);
     Scalapack *GetNextScalapack(void);
 

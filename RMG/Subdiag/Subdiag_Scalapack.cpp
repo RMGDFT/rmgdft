@@ -57,21 +57,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 #else
 
 #if USE_ELPA
-// Fill in upper triangle of Aij (elpa is only routine that needs it
-    int blocksize = 16;
-#pragma omp parallel for
-    for (int i = 0; i < kptr->nstates; i += blocksize) {
-        for (int j = i; j < kptr->nstates; j += blocksize) {
-            for (int row = i; row < i + blocksize && row < kptr->nstates; row++) {
-                for (int col = j; col < j + blocksize && col < kptr->nstates; col++) {
-                    Aij[col*kptr->nstates+row]=Aij[row*kptr->nstates+col];
-                }
-            }
-        }
-    }
+    // Fill in upper triangle of Aij (elpa is only routine that needs it)
+    Scalapack::FillUpper(Aij, kptr->nstates);
 #endif
-
-    KpointType ZERO_t(0.0);
 
     //static char *trans_t = "t";
     static char *trans_n = "n";
@@ -116,6 +104,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                      ct.scalapack_block_factor, last, pct.grid_comm);
 
     }
+
+    KpointType ZERO_t(0.0);
 
     bool participates = MainSp->Participates();
     int scalapack_nprow = MainSp->GetRows();
