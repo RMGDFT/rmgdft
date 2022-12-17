@@ -125,6 +125,9 @@ public:
     void CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, int *desca);
     void CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
 
+    void CopyDistArrayToSquareMatrix(float *A, double *A_dist, int n, int *desca);
+    void CopyDistArrayToSquareMatrix(std::complex<float> *A, std::complex<double> *A_dist, int n, int *desca);
+
     // Next level of scalapack
     Scalapack *next;
 
@@ -137,6 +140,7 @@ protected:
 
     void matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal);
     void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);
+    void matgather (float *globmat, double *dismat, int size, int *desca, bool isreal);
 
 #if USE_ELPA
     void *elpa_handle;

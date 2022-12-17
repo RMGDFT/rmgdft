@@ -180,6 +180,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
   //   }
 
 #if USE_ELPA
+    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
     int error;
     int api_version = 20221109;
     if(!once)
@@ -686,7 +687,21 @@ void Scalapack::CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, in
     }
 }
 
+void Scalapack::CopyDistArrayToSquareMatrix(float *A, double *A_dist, int n, int *desca)
+{
+    if(this->participates) {
+        matgather(A, A_dist, n, desca, true);
+    }
+}
+
 void Scalapack::CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca)
+{
+    if(this->participates) {
+        matgather((double *)A, (double *)A_dist, n, desca, false);
+    }
+}
+
+void Scalapack::CopyDistArrayToSquareMatrix(std::complex<float> *A, std::complex<double> *A_dist, int n, int *desca)
 {
     if(this->participates) {
         matgather((double *)A, (double *)A_dist, n, desca, false);
@@ -764,6 +779,83 @@ void Scalapack::matscatter (double *globmat, double *dismat, int size, int *desc
 
 }
 
+void Scalapack::matgather (float *globmat, double *dismat, int size, int *desca, bool isreal)
+{
+    if(!this->participates) return;
+    int i, j, ii, jj, iii, jjj, li, lj, maxcol, maxrow, jjstart, iistart;
+    int limb, ljnb, izero = 0;
+    int mycol, myrow, nprow, npcol;
+    int mb = desca[4], nb = desca[5], mxllda = desca[8];
+    int mxlloc = numroc(&size, &nb, &this->my_col, &izero, &this->group_cols);
+
+
+    mycol = this->my_col;
+    myrow = this->my_row;
+    nprow = this->group_rows;
+    npcol = this->group_cols;
+
+
+    if(isreal) {
+        for (i = 0; i < size * size; i++)
+            globmat[i] = 0.;
+    }
+    else {
+        for (i = 0; i < 2 * size * size; i++)
+            globmat[i] = 0.;
+    }
+
+
+    maxrow = (size / (nprow * mb)) + 1;
+    maxcol = (size / (npcol * mb)) + 1;
+
+    /* loop on the blocks of size mb*nb */
+    for (li = 0; li < maxrow; li++)
+    {
+
+        iistart = (li * nprow + myrow) * mb;
+        limb = li * mb;
+
+        for (lj = 0; lj < maxcol; lj++)
+        {
+
+            jjstart = (lj * npcol + mycol) * nb;
+            ljnb = lj * nb;
+
+            /* loop in the block */
+            for (i = 0; i < mb; i++)
+            {
+
+                ii = iistart + i;
+                iii = limb + i;
+
+                if (iii < mxllda && ii < size)
+                {
+
+                    for (j = 0; j < nb; j++)
+                    {
+
+                        jj = jjstart + j;
+                        jjj = j + ljnb;
+
+                        //if (jjj < mxllda && jj < size)
+                        if (jjj < mxlloc && jj < size)
+                        {
+                            if(isreal) {
+                                globmat[ii + jj * size] = (float)dismat[iii + jjj * mxllda];
+                            }
+                            else {
+                                globmat[2 * (ii + jj * size)] = (float)dismat[2 * (iii + jjj * mxllda)];
+                                globmat[2 * (ii + jj * size) + 1] =
+                                    (float)dismat[2 * (iii + jjj * mxllda) + 1];
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
 
 void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca, bool isreal)
 {
@@ -855,6 +947,7 @@ Scalapack::~Scalapack(void)
     delete [] this->dist_desca;
 #endif
 #if USE_ELPA
+    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
     int error;
     elpa_deallocate((elpa_t)this->elpa_handle, &error);
 #endif
