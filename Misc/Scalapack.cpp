@@ -644,6 +644,12 @@ void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
     BlockAllreduce(buf, count, this->comm);
 }
 
+// Block inplace float reduction within the group only
+void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
+{
+    BlockAllreduce(buf, count, this->comm);
+}
+
 // Broadcast to everyone in the root
 void Scalapack::BcastRoot(void *buffer, int count, MPI_Datatype datatype)
 {

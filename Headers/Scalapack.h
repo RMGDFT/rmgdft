@@ -99,6 +99,7 @@ public:
 
     void Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op);
     void ScalapackBlockAllreduce(double *buf, size_t count);
+    void ScalapackBlockAllreduce(float *buf, size_t count);
     void BcastRoot(void *buffer, int count, MPI_Datatype datatype);
     void BcastComm(void *buffer, int count, MPI_Datatype datatype);
 
