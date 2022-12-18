@@ -125,14 +125,11 @@ public:
     void CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, int *desca);
     void CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
 
-    void CopyDistArrayToSquareMatrix(float *A, double *A_dist, int n, int *desca);
-    void CopyDistArrayToSquareMatrix(std::complex<float> *A, std::complex<double> *A_dist, int n, int *desca);
+    void GatherEigvectors(double *A, double *distA);
+    void GatherEigvectors(std::complex<double> *A, std::complex<double> *distA);
 
     // Next level of scalapack
     Scalapack *next;
-
-    size_t *dist_sizes;    // sizes of distributed matrices on all PEs
-    size_t *dist_offsets;  // offsets into global matrix of each PE distributed matrix
 
     ~Scalapack(void);
 
@@ -140,7 +137,8 @@ protected:
 
     void matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal);
     void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);
-    void matgather (float *globmat, double *dismat, int size, int *desca, bool isreal);
+    template<typename T1, typename T2> void matgather_t(T1 *globmat, T2 *dismat, int size, 
+                              int my_row, int my_col, int *desca, bool isreal);
 
 #if USE_ELPA
     void *elpa_handle;
@@ -198,7 +196,9 @@ protected:
 #define		pztranc		RMG_FC_GLOBAL(pztranc, PZTRANC)
 #define		pzhegvx		RMG_FC_GLOBAL(pzhegvx, PZHEGVX)
 #define		pdsyevd		RMG_FC_GLOBAL(pdsyevd, PDSYEVD)
+#define		psgeadd		RMG_FC_GLOBAL(psgeadd, PSGEADD)
 #define		pdgeadd		RMG_FC_GLOBAL(pdgeadd, PDGEADD)
+#define		pcgeadd		RMG_FC_GLOBAL(pcgeadd, PCGEADD)
 #define		pzgeadd		RMG_FC_GLOBAL(pzgeadd, PZGEADD)
 #define		pzpotrf		RMG_FC_GLOBAL(pzpotrf, PZPOTRF)
 #define		pzhegst		RMG_FC_GLOBAL(pzhegst, PZHEGST)
@@ -269,8 +269,12 @@ void pzhegvx(int *, char*, char*, char*, int*, double *, int*, int*, int*, doubl
 void pdsyevx(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
        int*, double*, int*, int*, double*, double*, double*, int*,
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
+void psgeadd(char *, int *, int *, float *, float *, int *, int *, int *, float *,
+       float *, int *, int *, int *);               
 void pdgeadd(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
+void pcgeadd(char *, int *, int *, float *, float *, int *, int *, int *, float *,
+       float *, int *, int *, int *);               
 void pzgeadd(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
 void pdtrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,

@@ -187,31 +187,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             MainSp->generalized_eigenvectors(distAij, distSij, eigs, distBij);
             delete(RT1);
             
-            size_t pstop = (size_t)num_states * (size_t)num_states;
             // Gather distributed results from distAij into eigvectors
-            if(typeid(KpointType) == typeid(double))
-            {
-                float *w1 = (float *)Bij;
-                double *w2 = (double *)eigvectors;
-                double *w3 = (double *)distAij;
-                std::fill(w1, w1 + pstop, 0.0);
-                MainSp->CopyDistArrayToSquareMatrix(w1, w3, num_states, desca);
-                MainSp->ScalapackBlockAllreduce(w1, (size_t)num_states * (size_t)num_states);
-                for (size_t idx = 0; idx < pstop; idx++) w2[idx] = (double)w1[idx];
-            }
-            else
-            {
-                std::fill(eigvectors, eigvectors + pstop, ZERO_t);
-                MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
-                float *w1 = (float *)Bij;
-                double *w2 = (double *)eigvectors;
-                for (size_t idx = 0; idx < 2*pstop; idx++) w1[idx] = (float)w2[idx];
-                
-                MainSp->ScalapackBlockAllreduce(w1, (size_t)num_states*(size_t)factor*(size_t)num_states);
-                double *w3 = (double *)eigvectors;
-                float *w4 = (float *)w1;
-                for (size_t idx = 0; idx < 2*pstop; idx++) w3[idx] = w4[idx];
-            }
+            MainSp->GatherEigvectors(eigvectors, distAij);
         }
 
         // Finally send eigenvalues and vectors to everyone 

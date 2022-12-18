@@ -113,8 +113,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     int *pmap, *tgmap;
     pmap = new int[this->npes];
     tgmap = new int[this->npes];
-    this->dist_sizes = new size_t[this->npes];
-    this->dist_offsets = new size_t[this->npes];
 
     // Group rank array
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
@@ -149,8 +147,9 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
         // Set up descriptors for a local matrix (one block on (0,0)
         int izero = 0, info = 0;
         int lld = std::max( numroc( &this->N, &this->N, &this->my_row, &izero, &this->group_rows ), 1 );
-        this->local_desca = new int[this->npes*DLEN];
+        this->local_desca = new int[this->npes*DLEN]();
         descinit( this->local_desca, &this->N, &this->N, &this->N, &this->N, &izero, &izero, &this->context, &lld, &info );
+
 
         // Get dimensions of the local part of the distributed matrix
         this->m_dist = numroc( &this->N, &this->NB, &this->my_row, &izero, &this->group_rows );
@@ -158,13 +157,13 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
         // descriptors for the distributed matrix
         int lld_distr = std::max( this->m_dist, 1 );
-        this->dist_desca = new int[this->npes*DLEN];
+        this->dist_desca = new int[this->npes*DLEN]();
         descinit( this->dist_desca, &this->N, &this->N, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+
         //printf("dist_desca = %d  %d  %d  %d  %d  %d  %d  %d  %d  root_rank=%d\n",
         //      this->dist_desca[0], this->dist_desca[1], this->dist_desca[2],
         //      this->dist_desca[3], this->dist_desca[4], this->dist_desca[5],
         //      this->dist_desca[6], this->dist_desca[7], this->dist_desca[8], this->root_rank);
-
 
     }
 
@@ -209,6 +208,29 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
 #endif
 
+}
+
+// Used to gather the distributed eigenvectors into a local array
+// using conversion to float.
+void Scalapack::GatherEigvectors(double *A, double *distA)
+{
+    if(!this->participates) return;
+    // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
+    int ione = 1;
+    double rone = 1.0, rzero = 0.0;
+    pdgeadd( "N", &this->N, &this->N, &rone, distA, &ione, &ione, this->dist_desca, &rzero, A, &ione, &ione, this->local_desca );
+}
+
+void Scalapack::GatherEigvectors(std::complex<double> *A, std::complex<double> *distA)
+{
+    if(!this->participates) return;
+    // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
+    int ione = 1;
+    double rone[2], rzero[2];
+    rone[0] = 1.0;rone[1] = 0.0;
+    rzero[0] = 0.0;rzero[1] = 0.0;
+    
+    pzgeadd( "N", &this->N, &this->N, rone, (double *)distA, &ione, &ione, this->dist_desca, rzero, (double *)A, &ione, &ione, this->local_desca );
 }
 
 MPI_Comm Scalapack::GetRootComm(void)
@@ -686,27 +708,12 @@ void Scalapack::CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, in
     }
 }
 
-void Scalapack::CopyDistArrayToSquareMatrix(float *A, double *A_dist, int n, int *desca)
-{
-    if(this->participates) {
-        matgather(A, A_dist, n, desca, true);
-    }
-}
-
 void Scalapack::CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca)
 {
     if(this->participates) {
         matgather((double *)A, (double *)A_dist, n, desca, false);
     }
 }
-
-void Scalapack::CopyDistArrayToSquareMatrix(std::complex<float> *A, std::complex<double> *A_dist, int n, int *desca)
-{
-    if(this->participates) {
-        matgather((double *)A, (double *)A_dist, n, desca, false);
-    }
-}
-
 
 
 // Currently only for use on square matrices with desca set up
@@ -778,83 +785,6 @@ void Scalapack::matscatter (double *globmat, double *dismat, int size, int *desc
 
 }
 
-void Scalapack::matgather (float *globmat, double *dismat, int size, int *desca, bool isreal)
-{
-    if(!this->participates) return;
-    int i, j, ii, jj, iii, jjj, li, lj, maxcol, maxrow, jjstart, iistart;
-    int limb, ljnb, izero = 0;
-    int mycol, myrow, nprow, npcol;
-    int mb = desca[4], nb = desca[5], mxllda = desca[8];
-    int mxlloc = numroc(&size, &nb, &this->my_col, &izero, &this->group_cols);
-
-
-    mycol = this->my_col;
-    myrow = this->my_row;
-    nprow = this->group_rows;
-    npcol = this->group_cols;
-
-
-    if(isreal) {
-        for (i = 0; i < size * size; i++)
-            globmat[i] = 0.;
-    }
-    else {
-        for (i = 0; i < 2 * size * size; i++)
-            globmat[i] = 0.;
-    }
-
-
-    maxrow = (size / (nprow * mb)) + 1;
-    maxcol = (size / (npcol * mb)) + 1;
-
-    /* loop on the blocks of size mb*nb */
-    for (li = 0; li < maxrow; li++)
-    {
-
-        iistart = (li * nprow + myrow) * mb;
-        limb = li * mb;
-
-        for (lj = 0; lj < maxcol; lj++)
-        {
-
-            jjstart = (lj * npcol + mycol) * nb;
-            ljnb = lj * nb;
-
-            /* loop in the block */
-            for (i = 0; i < mb; i++)
-            {
-
-                ii = iistart + i;
-                iii = limb + i;
-
-                if (iii < mxllda && ii < size)
-                {
-
-                    for (j = 0; j < nb; j++)
-                    {
-
-                        jj = jjstart + j;
-                        jjj = j + ljnb;
-
-                        //if (jjj < mxllda && jj < size)
-                        if (jjj < mxlloc && jj < size)
-                        {
-                            if(isreal) {
-                                globmat[ii + jj * size] = (float)dismat[iii + jjj * mxllda];
-                            }
-                            else {
-                                globmat[2 * (ii + jj * size)] = (float)dismat[2 * (iii + jjj * mxllda)];
-                                globmat[2 * (ii + jj * size) + 1] =
-                                    (float)dismat[2 * (iii + jjj * mxllda) + 1];
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-}
 
 void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca, bool isreal)
 {
@@ -934,15 +864,93 @@ void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca
     }
 }
 
+template void Scalapack::matgather_t<double, double>(double *, double *, int, int, int, int *, bool);
+template void Scalapack::matgather_t<double, float>(double *, float *, int, int, int, int *, bool);
+
+template<typename T1, typename T2> void Scalapack::matgather_t(T1 *globmat, T2 *dismat, int size,
+                              int myrow, int mycol, int *desca, bool isreal)
+{
+    if(!this->participates) return;
+    int i, j, ii, jj, iii, jjj, li, lj, maxcol, maxrow, jjstart, iistart;
+    int limb, ljnb, izero = 0;
+    int nprow, npcol;
+    int mb = desca[4], nb = desca[5], mxllda = desca[8];
+//printf("SSSS  %d  %d  %d  %d\n",size,nb,mycol,this->group_cols);fflush(NULL);
+    int mxlloc = numroc(&size, &nb, &mycol, &izero, &this->group_cols);
+
+    nprow = this->group_rows;
+    npcol = this->group_cols;
+
+
+    if(isreal) {
+        for (i = 0; i < size * size; i++)
+            globmat[i] = 0.;
+    }
+    else {
+        for (i = 0; i < 2 * size * size; i++)
+            globmat[i] = 0.;
+    }
+
+
+    maxrow = (size / (nprow * mb)) + 1;
+    maxcol = (size / (npcol * mb)) + 1;
+
+    /* loop on the blocks of size mb*nb */
+    for (li = 0; li < maxrow; li++)
+    {
+
+        iistart = (li * nprow + myrow) * mb;
+        limb = li * mb;
+
+        for (lj = 0; lj < maxcol; lj++)
+        {
+
+            jjstart = (lj * npcol + mycol) * nb;
+            ljnb = lj * nb;
+
+            /* loop in the block */
+            for (i = 0; i < mb; i++)
+            {
+
+                ii = iistart + i;
+                iii = limb + i;
+
+                if (iii < mxllda && ii < size)
+                {
+
+                    for (j = 0; j < nb; j++)
+                    {
+
+                        jj = jjstart + j;
+                        jjj = j + ljnb;
+
+                        //if (jjj < mxllda && jj < size)
+                        if (jjj < mxlloc && jj < size)
+                        {
+                            if(isreal) {
+                                globmat[ii + jj * size] = (T1)dismat[iii + jjj * mxllda];
+                            }
+                            else {
+                                globmat[2 * (ii + jj * size)] = (T1)dismat[2 * (iii + jjj * mxllda)];
+                                globmat[2 * (ii + jj * size) + 1] =
+                                    (T1)dismat[2 * (iii + jjj * mxllda) + 1];
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
+
 // Clean up
 Scalapack::~Scalapack(void)
 {
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
-    delete [] this->dist_offsets;
-    delete [] this->dist_sizes;
-    delete [] this->local_desca;
     delete [] this->dist_desca;
+    delete [] this->local_desca;
 #if USE_ELPA
     if(ct.subdiag_driver != SUBDIAG_ELPA) return;
     int error;
