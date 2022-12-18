@@ -44,7 +44,6 @@ static int once;
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
-#if SCALAPACK_LIBS
     this->ngroups = ngroups;
     this->N = N;
     this->NB = NB;
@@ -933,19 +932,17 @@ void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca
             }
         }
     }
-#endif
 }
+
 // Clean up
 Scalapack::~Scalapack(void)
 {
-#if SCALAPACK_LIBS
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
     delete [] this->dist_offsets;
     delete [] this->dist_sizes;
     delete [] this->local_desca;
     delete [] this->dist_desca;
-#endif
 #if USE_ELPA
     if(ct.subdiag_driver != SUBDIAG_ELPA) return;
     int error;
