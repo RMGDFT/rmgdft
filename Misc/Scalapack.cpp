@@ -355,7 +355,7 @@ Scalapack *Scalapack::GetNextScalapack(void)
 
 void Scalapack::FillUpper(double *A, int n)
 {
-    int blocksize = 16;
+    int blocksize = 1;
 #pragma omp parallel for
     for (int i = 0; i < n; i += blocksize) {
         for (int j = i; j < n; j += blocksize) {
@@ -370,7 +370,7 @@ void Scalapack::FillUpper(double *A, int n)
 
 void Scalapack::FillUpper(std::complex<double> *A, int n)
 {
-    int blocksize = 16;
+    int blocksize = 1;
 #pragma omp parallel for
     for (int i = 0; i < n; i += blocksize) {
         for (int j = i; j < n; j += blocksize) {
