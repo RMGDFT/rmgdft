@@ -688,6 +688,10 @@ public:
     // Some GPU information.
     // Total number of gpu devices present in the node
     int num_gpu_devices;
+
+    // Flag to indicate whether or not to use gpu managed memory
+    bool gpu_managed_memory;
+
 #if CUDA_ENABLED || HIP_ENABLED
 
 
