@@ -38,14 +38,29 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     hipError_t hipstat;
-    hipstat = hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
-    RmgGpuError(fname, line, hipstat, "Error: hipHostMalloc failed.\n");
+    if(ct.gpu_managed_memory)
+    {
+        hipstat = hipMallocManaged(&ptr, size);
+        RmgGpuError(fname, line, hipstat, "Error: hipMallocManaaged failed.\n");
+    }
+    else
+    {
+        hipstat = hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
+        RmgGpuError(fname, line, hipstat, "Error: hipHostMalloc failed.\n");
+    }
     return ptr;
 }
 
 void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
-    hipFreeHost(ptr);
+    if(ct.gpu_managed_memory)
+    {
+        hipFree(ptr);
+    }
+    else
+    {
+        hipFreeHost(ptr);
+    }
 }
 
 #elif CUDA_ENABLED
@@ -59,14 +74,29 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     cudaError_t custat;
-    custat = cudaMallocHost ( &ptr, size+16 );
-    RmgGpuError(fname, line, custat, "Error: gpuMallocHost failed.\n");
+    if(ct.gpu_managed_memory)
+    {
+        custat = cudaMallocManaged ( &ptr, size+16 );
+        RmgGpuError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
+    }
+    else
+    {
+        custat = cudaMallocHost ( &ptr, size+16 );
+        RmgGpuError(fname, line, custat, "Error: cudaMallocHost failed.\n");
+    }
     return ptr;
 }
 
 void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
-    cudaFreeHost(ptr);
+    if(ct.gpu_managed_memory)
+    {
+        cudaFree(ptr);
+    }
+    else
+    {
+        cudaFreeHost(ptr);
+    }
 }
 
 #else
