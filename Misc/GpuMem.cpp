@@ -54,8 +54,8 @@ hipError_t gpuMalloc(void **ptr, size_t size)
 
 hipError_t gpuMallocManaged(void **ptr, size_t size)
 {
-    //hipError_t hiperr = hipMallocManaged(ptr, size);
-    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
+    hipError_t hiperr = hipMallocManaged(ptr, size);
+    //hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
 
     if(hiperr != hipSuccess)
     rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
@@ -64,10 +64,17 @@ hipError_t gpuMallocManaged(void **ptr, size_t size)
 
 hipError_t gpuMallocHost(void **ptr, size_t size)
 {
-    hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
-    if(hiperr != hipSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
-    return hiperr;
+    if(ct.gpu_managed_memory)
+    {
+        return gpuMallocManaged(ptr, size);
+    }
+    else
+    {
+        hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
+        if(hiperr != hipSuccess)
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
+        return hiperr;
+    }
 }
 
 hipError_t gpuFree(void *ptr)
@@ -77,7 +84,14 @@ hipError_t gpuFree(void *ptr)
 
 hipError_t gpuFreeHost(void *ptr)
 {
-    return hipFreeHost(ptr);
+    if(ct.gpu_managed_memory)
+    {
+        return hipFree(ptr);
+    }
+    else
+    {
+        return hipFreeHost(ptr);
+    }
 }
 
 hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind)
@@ -171,10 +185,17 @@ cudaError_t gpuMallocManaged(void **ptr, size_t size)
 
 cudaError_t gpuMallocHost(void **ptr, size_t size)
 {
-    cudaError_t cuerr = cudaMallocHost(ptr, size);
-    if(cuerr != cudaSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
-    return cuerr;
+    if(ct.gpu_managed_memory)
+    {
+        return gpuMallocManaged(ptr, size);
+    }
+    else
+    {
+        cudaError_t cuerr = cudaMallocHost(ptr, size);
+        if(cuerr != cudaSuccess)
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
+        return cuerr;
+    }
 }
 
 cudaError_t gpuFree(void *ptr)
@@ -184,7 +205,14 @@ cudaError_t gpuFree(void *ptr)
 
 cudaError_t gpuFreeHost(void *ptr)
 {
-    return cudaFreeHost(ptr);
+    if(ct.gpu_managed_memory)
+    {
+        return cudaFree(ptr);
+    }
+    else
+    {
+        return cudaFreeHost(ptr);
+    }
 }
 
 cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)

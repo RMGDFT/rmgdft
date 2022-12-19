@@ -52,8 +52,6 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "FiniteDiff.h"
-#include "Scalapack.h"
-#include "Elpa.h"
 #include "GatherScatter.h"
 
 

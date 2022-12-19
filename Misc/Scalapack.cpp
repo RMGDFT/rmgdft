@@ -33,11 +33,17 @@
 #include "GlobalSums.h"
 #include "Scalapack.h"
 #include "blacs.h"
+#include "transition.h"
+#include "rmg_error.h"
 
+#if USE_ELPA
+#include <elpa/elpa.h>
+#endif
+
+static int once;
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
-#if SCALAPACK_LIBS
     this->ngroups = ngroups;
     this->N = N;
     this->NB = NB;
@@ -141,8 +147,9 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
         // Set up descriptors for a local matrix (one block on (0,0)
         int izero = 0, info = 0;
         int lld = std::max( numroc( &this->N, &this->N, &this->my_row, &izero, &this->group_rows ), 1 );
-        this->local_desca = new int[this->npes*DLEN];
+        this->local_desca = new int[this->npes*DLEN]();
         descinit( this->local_desca, &this->N, &this->N, &this->N, &this->N, &izero, &izero, &this->context, &lld, &info );
+
 
         // Get dimensions of the local part of the distributed matrix
         this->m_dist = numroc( &this->N, &this->NB, &this->my_row, &izero, &this->group_rows );
@@ -150,17 +157,15 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
         // descriptors for the distributed matrix
         int lld_distr = std::max( this->m_dist, 1 );
-        this->dist_desca = new int[this->npes*DLEN];
+        this->dist_desca = new int[this->npes*DLEN]();
         descinit( this->dist_desca, &this->N, &this->N, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+
         //printf("dist_desca = %d  %d  %d  %d  %d  %d  %d  %d  %d  root_rank=%d\n",
         //      this->dist_desca[0], this->dist_desca[1], this->dist_desca[2],
         //      this->dist_desca[3], this->dist_desca[4], this->dist_desca[5],
         //      this->dist_desca[6], this->dist_desca[7], this->dist_desca[8], this->root_rank);
 
-
     }
-
-
 
     delete [] tgmap;
     delete [] pmap;
@@ -171,6 +176,61 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
   //      this->next = new Scalapack(this->ngroups_next, thisimg, images_per_node, N, NB, true, this->root_comm);
   //
   //   }
+
+#if USE_ELPA
+    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    int error;
+    int api_version = 20221109;
+    if(!once)
+    {
+        elpa_init(api_version);
+        once = 1;
+    }
+    this->elpa_handle = (elpa_t *)elpa_allocate(&error);
+    if(error != ELPA_OK)
+    {
+        throw RmgFatalException() << "Error initializeing elpa in "  << __FILE__ << " at line " << __LINE__ << ".\n";
+
+    }
+
+    elpa_set((elpa_t)this->elpa_handle, "na", this->N, &error);
+    elpa_set((elpa_t)this->elpa_handle, "nev", this->N, &error);
+    elpa_set((elpa_t)this->elpa_handle, "local_nrows", this->m_dist, &error);
+    elpa_set((elpa_t)this->elpa_handle, "local_ncols", this->n_dist, &error);
+    elpa_set((elpa_t)this->elpa_handle, "nblk", this->NB, &error);
+    elpa_set((elpa_t)this->elpa_handle, "mpi_comm_parent", MPI_Comm_c2f(this->comm), &error);
+    elpa_set((elpa_t)this->elpa_handle, "process_row", this->my_row, &error);
+    elpa_set((elpa_t)this->elpa_handle, "process_col", this->my_col, &error);
+    elpa_set((elpa_t)this->elpa_handle, "num_process_rows", this->group_rows, &error);
+    elpa_set((elpa_t)this->elpa_handle, "num_process_cols", this->group_cols, &error);
+    elpa_set((elpa_t)this->elpa_handle, "blacs_context", this->context, &error);
+    elpa_setup((elpa_t)this->elpa_handle);
+
+#endif
+
+}
+
+// Used to gather the distributed eigenvectors into a local array
+// using conversion to float.
+void Scalapack::GatherEigvectors(double *A, double *distA)
+{
+    if(!this->participates) return;
+    // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
+    int ione = 1;
+    double rone = 1.0, rzero = 0.0;
+    pdgeadd( "N", &this->N, &this->N, &rone, distA, &ione, &ione, this->dist_desca, &rzero, A, &ione, &ione, this->local_desca );
+}
+
+void Scalapack::GatherEigvectors(std::complex<double> *A, std::complex<double> *distA)
+{
+    if(!this->participates) return;
+    // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
+    int ione = 1;
+    double rone[2], rzero[2];
+    rone[0] = 1.0;rone[1] = 0.0;
+    rzero[0] = 0.0;rzero[1] = 0.0;
+    
+    pzgeadd( "N", &this->N, &this->N, rone, (double *)distA, &ione, &ione, this->dist_desca, rzero, (double *)A, &ione, &ione, this->local_desca );
 }
 
 MPI_Comm Scalapack::GetRootComm(void)
@@ -293,6 +353,36 @@ Scalapack *Scalapack::GetNextScalapack(void)
     return this->next;
 }
 
+void Scalapack::FillUpper(double *A, int n)
+{
+    int blocksize = 1;
+#pragma omp parallel for
+    for (int i = 0; i < n; i += blocksize) {
+        for (int j = i; j < n; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < n; row++) {
+                for (int col = j; col < j + blocksize && col < n; col++) {
+                    A[col*n + row] = A[row*n + col];
+                }
+            }
+        }
+    }
+}
+
+void Scalapack::FillUpper(std::complex<double> *A, int n)
+{
+    int blocksize = 1;
+#pragma omp parallel for
+    for (int i = 0; i < n; i += blocksize) {
+        for (int j = i; j < n; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < n; row++) {
+                for (int col = j; col < j + blocksize && col < n; col++) {
+                    A[col*n + row] = std::conj(A[row*n + col]);
+                }
+            }
+        }
+    }
+}
+
 
 // Returns ipiv size required by PDGESV
 int Scalapack::GetIpivSize(void)
@@ -350,6 +440,187 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
 
 }
 
+void Scalapack::generalized_eigenvectors(double *a, double *b, double *ev, double *q)
+{
+#if USE_ELPA
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        this->generalized_eigenvectors_elpa(a, b, ev, q);
+        return;
+    }
+#endif    
+
+    this->generalized_eigenvectors_scalapack(a, b, ev, q);
+}
+
+void Scalapack::generalized_eigenvectors(std::complex<double> *a, std::complex<double> *b,
+             double *ev, std::complex<double> *q)
+{
+#if USE_ELPA
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        this->generalized_eigenvectors_elpa(a, b, ev, q);
+        return;
+    }
+#endif    
+
+    this->generalized_eigenvectors_scalapack(a, b, ev, q);
+}
+
+void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double *ev, double *q)
+{
+    /****************** Find Matrix of Eigenvectors *****************************/
+    /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+    char *uplo = "l", *jobz = "v";
+    int info, ione = 1, ibtype = 1;
+    double scale=1.0, rone = 1.0;
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    pdpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
+    if (info)
+    {
+       rmg_printf ("\n pdpotrf failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
+    }
+
+    // Get pdsyngst_ workspace
+    int lwork = -1;
+    double lwork_tmp;
+    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
+            b, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+    lwork = 2*(int)lwork_tmp; 
+    double *work2 = new double[lwork];
+    
+    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
+            b, &ione, &ione, desca, &scale, work2, &lwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyngst failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
+    }
+
+    // Get workspace required
+    lwork = -1;
+    int liwork=-1;
+    int liwork_tmp;
+    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
+            ev, a, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+    lwork = 16*(int)lwork_tmp;
+    liwork = 16*N;
+    double *nwork = new double[lwork];
+    int *iwork = new int[liwork];
+
+    // and now solve it 
+    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
+            ev, a, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+    }
+
+    pdtrsm("Left", uplo, "T", "N", &N, &N, &rone, b, &ione, &ione, desca,
+            a, &ione, &ione, desca);
+
+    if (info)
+    {
+       rmg_printf ("\n pdtrms failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pdtrms failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] work2;
+}
+
+void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std::complex<double> *b,
+             double *ev, std::complex<double> *q)
+{
+    int ibtype = 1, ione=1, info;
+    char *uplo = "l", *jobz = "v";
+    double scale=1.0, rone[2] = {1.0, 0.0};
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    pzpotrf(uplo, &N, (double *)b,  &ione, &ione, desca,  &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzpotrf failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzpotrf failed");
+    }
+
+    pzhegst(&ibtype, uplo, &N, (double *)q, &ione, &ione, desca,
+                (double *)b, &ione, &ione, desca, &scale, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzhegst failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzhegst failed");
+    }
+
+    // Get workspace required
+    int lwork = -1, liwork=-1, lrwork=-1;
+    double lwork_tmp[2], lrwork_tmp;
+    int liwork_tmp;
+    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
+                ev, (double *)a, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+
+    lwork = (int)lwork_tmp[0]+1;
+    liwork = 16*N;
+    lrwork = 2*(int)lrwork_tmp;
+    double *rwork = new double[lrwork];
+    double *nwork = new double[lwork*2];
+    int *iwork = new int[liwork];
+
+    // and now solve it
+    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
+                ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pzheevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+    }
+
+    pztrsm("Left", uplo, "C", "N", &N, &N, rone, (double *)b, &ione, &ione, desca,
+                (double *)a, &ione, &ione, desca);
+
+    if (info)
+    {
+       rmg_printf ("\n pztrsm failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] rwork;
+
+}
+
+#if USE_ELPA
+void Scalapack::generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q)
+{
+    int error;
+//    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
+//    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AMD_GPU, error);
+    elpa_generalized_eigenvectors((elpa_t)this->elpa_handle, a, b, ev, q, false, &error);
+    size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+    for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+}
+
+
+void Scalapack::generalized_eigenvectors_elpa(std::complex<double> *a, std::complex<double> *b, double *ev, std::complex<double> *q)
+{
+    int error;
+    elpa_generalized_eigenvectors((elpa_t)this->elpa_handle, a, b, ev, q, false, &error);
+    size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+    for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+}
+#endif
 
 void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha, 
                        double *A, int *IA, int *JA, int *desca, 
@@ -391,6 +662,12 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
 
 // Block inplace double reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
+{
+    BlockAllreduce(buf, count, this->comm);
+}
+
+// Block inplace float reduction within the group only
+void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
 {
     BlockAllreduce(buf, count, this->comm);
 }
@@ -437,7 +714,6 @@ void Scalapack::CopyDistArrayToSquareMatrix(std::complex<double> *A, std::comple
         matgather((double *)A, (double *)A_dist, n, desca, false);
     }
 }
-
 
 
 // Currently only for use on square matrices with desca set up
@@ -586,15 +862,99 @@ void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca
             }
         }
     }
-#endif
 }
+
+template void Scalapack::matgather_t<double, double>(double *, double *, int, int, int, int *, bool);
+template void Scalapack::matgather_t<double, float>(double *, float *, int, int, int, int *, bool);
+
+template<typename T1, typename T2> void Scalapack::matgather_t(T1 *globmat, T2 *dismat, int size,
+                              int myrow, int mycol, int *desca, bool isreal)
+{
+    if(!this->participates) return;
+    int i, j, ii, jj, iii, jjj, li, lj, maxcol, maxrow, jjstart, iistart;
+    int limb, ljnb, izero = 0;
+    int nprow, npcol;
+    int mb = desca[4], nb = desca[5], mxllda = desca[8];
+//printf("SSSS  %d  %d  %d  %d\n",size,nb,mycol,this->group_cols);fflush(NULL);
+    int mxlloc = numroc(&size, &nb, &mycol, &izero, &this->group_cols);
+
+    nprow = this->group_rows;
+    npcol = this->group_cols;
+
+
+    if(isreal) {
+        for (i = 0; i < size * size; i++)
+            globmat[i] = 0.;
+    }
+    else {
+        for (i = 0; i < 2 * size * size; i++)
+            globmat[i] = 0.;
+    }
+
+
+    maxrow = (size / (nprow * mb)) + 1;
+    maxcol = (size / (npcol * mb)) + 1;
+
+    /* loop on the blocks of size mb*nb */
+    for (li = 0; li < maxrow; li++)
+    {
+
+        iistart = (li * nprow + myrow) * mb;
+        limb = li * mb;
+
+        for (lj = 0; lj < maxcol; lj++)
+        {
+
+            jjstart = (lj * npcol + mycol) * nb;
+            ljnb = lj * nb;
+
+            /* loop in the block */
+            for (i = 0; i < mb; i++)
+            {
+
+                ii = iistart + i;
+                iii = limb + i;
+
+                if (iii < mxllda && ii < size)
+                {
+
+                    for (j = 0; j < nb; j++)
+                    {
+
+                        jj = jjstart + j;
+                        jjj = j + ljnb;
+
+                        //if (jjj < mxllda && jj < size)
+                        if (jjj < mxlloc && jj < size)
+                        {
+                            if(isreal) {
+                                globmat[ii + jj * size] = (T1)dismat[iii + jjj * mxllda];
+                            }
+                            else {
+                                globmat[2 * (ii + jj * size)] = (T1)dismat[2 * (iii + jjj * mxllda)];
+                                globmat[2 * (ii + jj * size) + 1] =
+                                    (T1)dismat[2 * (iii + jjj * mxllda) + 1];
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
+
 // Clean up
 Scalapack::~Scalapack(void)
 {
-#if SCALAPACK_LIBS
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
-    delete [] this->local_desca;
     delete [] this->dist_desca;
+    delete [] this->local_desca;
+#if USE_ELPA
+    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    int error;
+    elpa_deallocate((elpa_t)this->elpa_handle, &error);
 #endif
+
 }

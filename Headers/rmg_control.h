@@ -262,6 +262,9 @@ public:
     /** whether or not they should be used for LCAO starts. */
     bool lcao_use_empty_orbitals;
 
+    /** Number of elpa or scalapack groups to use */
+    int subdiag_groups;
+
     /** RMG normally writes parallel restart files. These require that restarts have the */
     /** same processor topology. If write_serial_restart = \"true\" then RMG will also */
     /** write a serial restart file that can be used with a different processor topology. */
@@ -685,6 +688,10 @@ public:
     // Some GPU information.
     // Total number of gpu devices present in the node
     int num_gpu_devices;
+
+    // Flag to indicate whether or not to use gpu managed memory
+    bool gpu_managed_memory;
+
 #if CUDA_ENABLED || HIP_ENABLED
 
 

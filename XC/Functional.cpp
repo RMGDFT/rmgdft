@@ -507,7 +507,6 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
-    double grho2[2];
     const double epsr=1.0e-6;
     const double epsg = 1.0e-10;
     double epsg_guard = ct.epsg_guard;
@@ -546,6 +545,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int k=0;k < this->pbasis;k++) {
 
         double arho = fabs(rhoout[k]);
+        double grho2[2];
         if(arho > epsr) {
 
             grho2[0] = gx[k]*gx[k] + gy[k]*gy[k] + gz[k]*gz[k];
@@ -616,7 +616,6 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
 
-    double grho2[2];
     const double epsr=1.0e-6;
     const double epsg = 1.0e-10;
     double epsg_guard = ct.epsg_guard;
@@ -656,7 +655,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
         double arho_up = fabs(rhoout_up[k]);
         double arho_down = fabs(rhoout_down[k]);
         double arho = arho_up + arho_down;
-
+        double grho2[2];
         grho2[0] = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
         grho2[1] = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
 
