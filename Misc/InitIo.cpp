@@ -727,6 +727,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     dz[0] = Rmg_G->get_PZ0_GRID(1);
     maxlevel = ct.eig_parm.levels;
     int minsize, maxsize;
+#if 0
     ct.mg_offset_level = 0;
     for(int level=1;level <= ct.eig_parm.levels;level++)
     {
@@ -757,7 +758,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if(minsize != maxsize && minsize < 4) break;
         ct.mg_offset_level++;
     }
-
+#endif
 
     // Write a copy of the options file
     if((pct.imgpe == 0)  && (ct.rmg_branch != RMG_TO_QMC)) {
