@@ -55,133 +55,123 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 {
 
 #if !HIP_ENABLED
-    rmg_printf("This version of RMG was not built with GPU support so Rocsolver cannot be used. Redirecting to LAPACK.");
-    return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
+        rmg_printf("This version of RMG was not built with GPU support so Rocsolver cannot be used. Redirecting to LAPACK.");
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
 #if HIP_ENABLED
-
     static char *trans_t = "t";
     static char *trans_n = "n";
-
-
-    int num_states = kptr->nstates;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
-
-#if SCALAPACK_LIBS
-    // For folded spectrum start with scalapack if available since rocsolver is slow on really large problems
-    if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART) && (num_states > 10000))
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
-
-    if(ct.scf_steps < 1)
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
-#endif
-
-    gpuSetDevice(ct.hip_dev);
-
-    RmgTimer *DiagTimer;
     static int call_count, folded_call_count;
-    if(use_folded)
+    int num_states = kptr->nstates;
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    RmgTimer *DiagTimer;
+
+    // For folded spectrum start with scalapack if available since rocsolver is slow on large problems
+    if(ct.use_folded_spectrum && (ct.scf_steps <= 0)  && (ct.runflag != RESTART) && (num_states > 10000))
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+    if(ct.scf_steps < 2 && ct.runflag != RESTART)
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+
+    if(pct.is_local_master || ct.num_usable_gpu_devices == 1)
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: rocsolver folded");
-        folded_call_count++;
-        rmg_printf("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
-    }
-    else
-    {
-        DiagTimer = new RmgTimer("4-Diagonalization: rocsolver");
-        call_count++;
-        rmg_printf("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
-    }
-    
-    // Rocsolver is not parallel across MPI procs so only have the local master proc on a node perform
-    // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
-    // If folded spectrum is selected we only want the local master to participate on each node as
-    // long as there are at least 12 nodes.
-    int nodes = pct.grid_npes / pct.procs_per_host;
 
-    if(pct.is_local_master || (use_folded && (nodes < 12))) {
+        gpuSetDevice(ct.hip_dev);
+        if(use_folded)
+        {
+            DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver folded");
+            folded_call_count++;
+            rmg_printf("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+        }
+        else
+        {
+            DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver");
+            call_count++;
+            rmg_printf("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+        }
 
-    // Copy A into eigvectors
-//    memcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
-    KpointType *eigvectors_gpu, *Sij_gpu;
-    double *eigs_gpu;
-    gpuMalloc((void **)&eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
-    gpuMalloc((void **)&Sij_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
-    gpuMalloc((void **)&eigs_gpu, (size_t)num_states * sizeof(KpointType));
-    hipMemcpy(eigvectors_gpu, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
-    hipMemcpy(Sij_gpu, Sij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
+        // Copy A into eigvectors
+        //    memcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+        KpointType *eigvectors_gpu, *Sij_gpu;
+        double *eigs_gpu;
+        gpuMalloc((void **)&eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+        gpuMalloc((void **)&Sij_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+        gpuMalloc((void **)&eigs_gpu, (size_t)num_states * sizeof(KpointType));
+        gpuMemcpy(eigvectors_gpu, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
+        gpuMemcpy(Sij_gpu, Sij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
 
 
-    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
 
-    int *ifail = new int[num_states];
-    int liwork = 6 * num_states + 4;
-    int *iwork = new int[2*liwork];
+        int *ifail = new int[num_states];
+        int liwork = 6 * num_states + 4;
+        int *iwork = new int[2*liwork];
 
-    if(ct.is_gamma) {
+        if(ct.is_gamma) {
 
-        if(use_folded) {
+            if(use_folded) {
 
-            int lwork = num_states * num_states / 3 + num_states;
-            lwork = std::max(lwork, 128000);
-            double *work, *Aij_gpu, *Bij_gpu;
-            gpuMalloc((void **)&work, lwork * sizeof(KpointType));
-            gpuMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
-            gpuMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
-            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
-            gpuFree(Bij_gpu);
-            gpuFree(Aij_gpu);
-            gpuFree(work);
+                RmgTimer RT1("4-Diagonalization: Eigensolver: rocsolver: folded");
+                int lwork = num_states * num_states / 3 + num_states;
+                lwork = std::max(lwork, 128000);
+                double *work, *Aij_gpu, *Bij_gpu;
+                gpuMalloc((void **)&work, lwork * sizeof(KpointType));
+                gpuMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+                gpuMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_ROCSOLVER);
+                gpuFree(Bij_gpu);
+                gpuFree(Aij_gpu);
+                gpuFree(work);
+
+            }
+            else {
+                int lwork = 3 * num_states * num_states + 8 * num_states;
+                lwork = std::max(lwork, 128000);
+                double *work=NULL;
+                // rocsolver does not need the work array
+                //gpuMalloc((void **)&work, lwork * sizeof(KpointType));
+                RmgTimer RT1("4-Diagonalization: Eigensolver: rocsolver: Dsygvj");
+                DsygvjDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
+                //gpuFree(work);
+
+            }
 
         }
         else {
 
+            RmgTimer RT1("4-Diagonalization: Eigensolver: rocsolver: Zhegvd");
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
-            double *work = NULL;  // not used by rocsolver variant
-            //gpuMalloc((void **)&work, lwork * sizeof(KpointType));
-            DsygvjDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
-            //gpuFree(work);
+            ZhegvdDriver((std::complex<double> *)eigvectors_gpu, (std::complex<double> *)Sij_gpu, eigs_gpu, NULL, lwork, num_states, num_states);
 
         }
 
+        delete [] iwork;
+        delete [] ifail;
+
+        gpuMemcpy(eigvectors, eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
+        gpuMemcpy(eigs, eigs_gpu, (size_t)num_states * sizeof(double), gpuMemcpyDefault);
+        gpuFree(eigs_gpu);
+        gpuFree(Sij_gpu);
+        gpuFree(eigvectors_gpu);
+        delete DiagTimer;
     }
-    else {
 
-        int lwork = 3 * num_states * num_states + 8 * num_states;
-        lwork = std::max(lwork, 128000);
-        ZhegvdDriver((std::complex<double> *)eigvectors_gpu, (std::complex<double> *)Sij_gpu, eigs_gpu, NULL, lwork, num_states, num_states);
-
-    }
-
-    delete [] iwork;
-    delete [] ifail;
-    delete RT1;
-
-    hipMemcpy(eigvectors, eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
-    hipMemcpy(eigs, eigs_gpu, (size_t)num_states * sizeof(double), hipMemcpyDefault);
-    gpuFree(eigs_gpu);
-    gpuFree(Sij_gpu);
-    gpuFree(eigvectors_gpu);
-
-    } // end if is_local_master
-
-    // If only one proc on this host participated broadcast results to the rest
-    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
-    //if(1){
+    if(ct.num_usable_gpu_devices > 1)
+    {
+        // If only one proc on this host participated broadcast results to the rest
+        //    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) 
+        RmgTimer RT1("4-Diagonalization: Eigensolver: rocsolver: Bcast");
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
         MPI_Bcast(eigs, num_states, MPI_DOUBLE, 0, pct.local_comm);
 
-    }
+    } 
 
-    delete DiagTimer;
     if(use_folded) return trans_t;
     return trans_n;
-
 #endif
-
 }
+
+
 

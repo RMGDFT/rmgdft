@@ -51,8 +51,9 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvjDriver: provided workspace too small.");
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    //double tolerance = 1.0e-5;
-    //cusolverDnXsyevjSetTolerance( dsygvj_params, tolerance);
+    double abstol = 1.0e-5;
+    abstol = std::min(abstol, ct.scf_accuracy);
+    cusolverDnXsyevjSetTolerance( dsygvj_params, abstol);
 
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
     int info;
@@ -72,11 +73,10 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     const rocblas_esort sortdir = rocblas_esort_ascending;
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_lower;
-    double abstol = 1.0e-3;
+    double abstol = 1.0e-5;
     abstol = std::min(abstol, ct.scf_accuracy);
     double *devResidual = NULL;
-    rocblas_int max_sweeps = 5;
-    if(ct.scf_steps < 3) max_sweeps = 15;
+    rocblas_int max_sweeps = 15;
     int n_sweeps;
     int info;
     double residual;
@@ -103,7 +103,8 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
                              dev_n_sweeps,
                              eigs,
                              devInfo);
-    if(ct.verbose) printf("\nrocsolver_dsygvj time = %14.6f\n", my_crtc() - tstart);
+    if(ct.verbose && pct.gridpe==0)
+        printf("\nrocsolver_dsygvj time = %14.6f\n", my_crtc() - tstart);
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     gpuMemcpy(&residual, devResidual, sizeof(double), gpuMemcpyDeviceToHost);
     gpuMemcpy(&n_sweeps, dev_n_sweeps, sizeof(int), gpuMemcpyDeviceToHost);
@@ -111,7 +112,8 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(devResidual);
     gpuFree(devInfo);
     if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
-    if(ct.verbose) printf("rocsolver_dsygvj  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
+    if(ct.verbose && pct.gridpe==0)
+        printf("rocsolver_dsygvj  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 }
 
 
