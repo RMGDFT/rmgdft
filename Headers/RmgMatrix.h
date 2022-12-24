@@ -43,9 +43,14 @@ void DgetrftrsDriver(int n, int m, double *A, double *B);
 void DsygvdMgDriver(double *A, double *B, double *eigs, int n);
 
 void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr);
+void PackSqToTr(char *uplo, int N, double *Sq, int lda, float *Tr);
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr);
+void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<float> *Tr);
+
 void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr);
+void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, float *Tr);
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr);
+void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<float> *Tr);
 
 #endif
 #endif
