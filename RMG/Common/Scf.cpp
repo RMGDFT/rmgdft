@@ -385,8 +385,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1)))
     {
         // If the multigrid solver is selected the total energy calculation from
-        // the loop above is not variational so we do a single davidson step
-        // with a multiplier of 1 to get a variational value for the energy.
+        // the loop above is not variational but the following block of code
+        // will give us a variational energy.
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll)
         {
             for (int idx = 0; idx < FP0_BASIS; idx++)
@@ -399,19 +399,18 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             /*Generate the Dnm_I */
             get_ddd (vtot, vxc, true);
 
-            // Set davidson parameters
-            ct.davidx = 1;
-            ct.david_max_steps = 0;
-            ct.scf_correction = 0.0;
-            int notconv;
-
+            // We save ct.potential_acceleration_constant_step and set it to zero
+            // when we do the diagonalization since otherwise the energy is not variational
+            double potential_acceleration_step = ct.potential_acceleration_constant_step;
+            ct.potential_acceleration_constant_step = 0.0;
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
-                Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
+                Kptr[kpt]->Subdiag(vtot_psi, vxc_psi, ct.subdiag_driver);
                 MPI_Barrier(pct.grid_comm);
             }
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
             GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+            ct.potential_acceleration_constant_step = potential_acceleration_step;
         }
 
         // Evaluate XC energy and potential from the output density
