@@ -114,13 +114,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
-
-    // Apply Nls
-    AppNls(this, newsint_local, Kstates[0].psi, nv, ns, 0, std::min(ct.non_local_block_size, nstates));
-
-    delete RT2;
-    int first_nls = 0;
 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
@@ -140,7 +133,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     for(int ib = 0;ib < nblocks;ib++)
     {
         int bofs = ib * block_size;
-        RmgTimer *RT3 = new RmgTimer("3-MgridSubspace: AppNls");
+        RmgTimer *RT3 = new RmgTimer("4-Diagonalization: AppNls");
         AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
                &this->ns[bofs * pbasis_noncoll],
                bofs, std::min(block_size, this->nstates - bofs));
@@ -149,7 +142,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         {
             SCF_THREAD_CONTROL thread_control;
 
-            RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             int nthreads = active_threads;
             for(int ist = 0;ist < active_threads;ist++) {
                 int sindex = bofs + st1 + ist;
@@ -183,6 +175,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
     } // end for ib
+
     delete(RT1);
 
     /* Operators applied and we now have

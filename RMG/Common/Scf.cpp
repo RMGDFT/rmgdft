@@ -407,8 +407,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
-                //Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
-                Kptr[kpt]->Subdiag(vtot_psi, vxc_psi, ct.subdiag_driver);
+                Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
                 MPI_Barrier(pct.grid_comm);
             }
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
