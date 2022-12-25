@@ -213,7 +213,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set state pointers and initialize state data */
     if(ct.xc_is_hybrid) ct.non_local_block_size = ct.max_states;
     // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
-    if(ct.mpi_queue_mode) ct.non_local_block_size = ct.max_states;
+    //if(ct.mpi_queue_mode) ct.non_local_block_size = ct.max_states;
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
 #if CUDA_ENABLED || HIP_ENABLED
     // Wavefunctions are actually stored here

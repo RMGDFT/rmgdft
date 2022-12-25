@@ -335,6 +335,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // processors in x must be an integral multiple of coalesce factor and grid points in x must be evenly
     // divisible by processors in x. And for now the number of orbitals must be evenly divisible by the
     // number of coalesced grids so we adjust the orbital count later if required.
+    if(!ct.coalesce_states) pct.coalesce_factor = 1;
     int rem1 = pct.pe_x % pct.coalesce_factor;
     int rem2 = Rmg_G->get_NX_GRID(1) % pct.pe_x;
     if(ct.coalesce_states && !rem1 && !rem2)
