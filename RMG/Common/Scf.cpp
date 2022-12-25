@@ -376,6 +376,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Compute variational energy correction term if any
     sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
     ct.scf_correction = sum;
+
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
         if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
@@ -389,6 +390,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         // will give us a variational energy.
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll)
         {
+            ct.scf_correction = 0.0;
             for (int idx = 0; idx < FP0_BASIS; idx++)
             {
                 vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
