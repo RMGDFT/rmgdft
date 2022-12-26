@@ -69,7 +69,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(!ct.is_gamma) factor = 2;
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
-    BaseThread *T = BaseThread::getBaseThread(0);
     // State array is 4 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
@@ -118,63 +117,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
-
-    // We adjust the block size here for threading
-    int block_size = ct.non_local_block_size;
-    block_size = block_size / active_threads;
-    block_size = block_size * active_threads;
-    int nblocks = this->nstates / block_size;
-    int irem = this->nstates % block_size;
-    if(irem) nblocks++;
-
-    for(int ib = 0;ib < nblocks;ib++)
-    {
-        int bofs = ib * block_size;
-        RmgTimer *RT3 = new RmgTimer("4-Diagonalization: AppNls");
-        AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
-               &this->ns[bofs * pbasis_noncoll],
-               bofs, std::min(block_size, this->nstates - bofs));
-        delete(RT3);
-        for(int st1=0;st1 < block_size;st1+=active_threads)
-        {
-            SCF_THREAD_CONTROL thread_control;
-
-            int nthreads = active_threads;
-            for(int ist = 0;ist < active_threads;ist++) {
-                int sindex = bofs + st1 + ist;
-                if(sindex >= this->nstates)
-                {
-                    thread_control.job = HYBRID_SKIP;
-                    if(!ct.mpi_queue_mode && nthreads == active_threads) nthreads = ist;
-                }
-                else
-                {
-                    thread_control.job = HYBRID_APPLY_HAMILTONIAN;
-                    thread_control.vtot = vtot_eig;
-                    thread_control.vxc_psi = vxc_psi;
-                    thread_control.extratag1 = potential_acceleration;
-                    thread_control.istate = sindex;
-                    thread_control.sp = &this->Kstates[sindex];
-                    thread_control.p1 = (void *)Kstates[sindex].psi;
-                    thread_control.p2 = (void *)&h_psi[sindex * pbasis_noncoll];
-                    thread_control.p3 = (void *)this;
-                    thread_control.nv = (void *)&this->nv[(st1 + ist) * pbasis_noncoll];
-                    thread_control.ns = (void *)&this->ns[sindex * pbasis_noncoll];  // ns is not blocked!
-                    thread_control.basetag = this->Kstates[sindex].istate;
-
-                }
-                QueueThreadTask(ist, thread_control);
-            }
-
-            // Thread tasks are set up so run them
-            if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
-        }
-        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-    } // end for ib
+    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
 
     delete(RT1);
 
