@@ -294,20 +294,6 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-    // free memory
-#if HIP_ENABLED || CUDA_ENABLED
-    gpuFreeHost(eigs);
-    GpuFreeHost(Sij);
-    GpuFreeHost(Bij);
-    GpuFreeHost(Hij);
-#else
-    delete [] eigs;
-    delete [] Sij;
-    delete [] Bij;
-    delete [] Hij;
-#endif
-
-
     // Update the orbitals
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
@@ -354,10 +340,23 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     delete(RT1);
 
+#if HIP_ENABLED || CUDA_ENABLED
+    gpuFree(psi_d);
+    gpuFreeHost(eigs);
+    GpuFreeHost(Sij);
+    GpuFreeHost(Bij);
+    GpuFreeHost(Hij);
+#else
+    delete [] eigs;
+    delete [] Sij;
+    delete [] Bij;
+    delete [] Hij;
+#endif
+
 #if CUDA_ENABLED || HIP_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
-    gpuFree(psi_d);
 #endif
+
 }
 
