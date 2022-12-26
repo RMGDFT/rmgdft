@@ -487,7 +487,9 @@ public:
     /** Multigrid parameters for the poisson solver */
     MG_PARM poi_parm;
 
-
+    /** maximum multigrid level where offset routines can be used */
+    int mg_offset_level;
+ 
     /** Nose paramters */
     FINITE_T_PARM nose;
 

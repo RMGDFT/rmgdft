@@ -102,9 +102,13 @@
 #define		dsytri		RMG_FC_GLOBAL(dsytri, DSYTRI)
 #define		dlange		RMG_FC_GLOBAL(dlange, DLANGE)
 #define		dtrttp		RMG_FC_GLOBAL(dtrttp, DTRTTP)
+#define		strttp		RMG_FC_GLOBAL(strttp, STRTTP)
 #define		dtpttr		RMG_FC_GLOBAL(dtpttr, DTPTTR)
+#define		stpttr		RMG_FC_GLOBAL(stpttr, STPTTR)
 #define		ztrttp		RMG_FC_GLOBAL(ztrttp, ZTRTTP)
 #define		ztpttr		RMG_FC_GLOBAL(ztpttr, ZTPTTR)
+#define		ctrttp		RMG_FC_GLOBAL(ctrttp, CTRTTP)
+#define		ctpttr		RMG_FC_GLOBAL(ctpttr, CTPTTR)
 #define		dtrtri		RMG_FC_GLOBAL(dtrtri, DTRTRI)
 #define		zgeqp3		RMG_FC_GLOBAL(zgeqp3, ZGEQP3)
 #define		zgeqpf		RMG_FC_GLOBAL(zgeqpf, ZGEQPF)
@@ -121,9 +125,14 @@ void my_axpy(double alpha, double *in, double *out, int length);
 void my_swap(double *vec1, double *vec2, int length);
 
 void dtrttp(const char *, int *, double *, int *, double *, int *);
+void strttp(const char *, int *, float *, int *, float *, int *);
 void dtpttr( const char *, int *, double *, double *, int *, int *);
+void stpttr( const char *, int *, float *, float *, int *, int *);
 void ztrttp(const char *, int *, std::complex<double> *, int *, std::complex<double> *, int *);
 void ztpttr( const char *, int *, std::complex<double> *, std::complex<double> *, int *, int *);
+void ctrttp(const char *, int *, std::complex<float> *, int *, std::complex<float> *, int *);
+void ctpttr( const char *, int *, std::complex<float> *, std::complex<float> *, int *, int *);
+
 void dtrtri(const char *UPLO, const char *DIAG, int *N, double *A, int *LDA, int *INFO );
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,

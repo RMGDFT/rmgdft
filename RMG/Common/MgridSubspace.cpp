@@ -74,7 +74,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     double min_unocc_res = DBL_MAX;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
-
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
     double *nvtot_psi = vtot_psi;;
     double *coarse_vtot;
@@ -113,11 +112,19 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         delete [] work;
     }
  
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+
+    // We adjust the block size here for threading and coalescing
+    int block_size = ct.non_local_block_size;
+    block_size = block_size / (active_threads * pct.coalesce_factor);
+    block_size = block_size * (active_threads * pct.coalesce_factor);
+    int nblocks = this->nstates / block_size;
+    int irem = this->nstates % block_size;
+    if(irem) nblocks++;
+
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
-
-        int active_threads = ct.MG_THREADS_PER_NODE;
-        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
         // Zero out dvh array if potential acceleration is enabled
         if(potential_acceleration)
@@ -138,78 +145,59 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
         }
 
-
-        /* Update the wavefunctions */
-        int istop = this->nstates / (active_threads * pct.coalesce_factor);
-        istop = istop * active_threads * pct.coalesce_factor;
-
-        // Apply the non-local operators to a block of orbitals
-        RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-        AppNls(this, this->newsint_local, this->Kstates[0].psi, this->nv, this->ns,
-               0, std::min(ct.non_local_block_size, this->nstates));
-        delete(RT1);
-        int first_nls = 0;
-
-        int st1 = 0;
-        while(st1 < this->nstates)
+        for(int ib = 0;ib < nblocks;ib++)
         {
-
-            // Adjust thread count in case num_states is not evenly divisible by the number of threads
-            while(active_threads > 1)
+            int bofs = ib * block_size;
+            RT1 = new RmgTimer("3-MgridSubspace: AppNls");
+            AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
+                   &this->ns[bofs * pbasis_noncoll],
+                   bofs, std::min(block_size, this->nstates - bofs));
+            delete(RT1);
+            for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
             {
-                int icheck = st1 + active_threads*pct.coalesce_factor;
-                if(icheck > this->nstates) 
-                {
-                    active_threads--;
+                SCF_THREAD_CONTROL thread_control;
+
+                RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
+                int istart = my_pe_offset*active_threads;
+                int nthreads = active_threads;
+                for(int ist = 0;ist < active_threads;ist++) {
+                    int sindex = bofs + st1 + ist + istart;
+                    if(sindex >= this->nstates)
+                    {
+                        thread_control.job = HYBRID_SKIP;
+                        if(!ct.mpi_queue_mode && nthreads == active_threads) nthreads = ist;
+                    }
+                    else
+                    {
+                        thread_control.job = HYBRID_EIG;
+                        thread_control.vtot = nvtot_psi;
+                        thread_control.vxc_psi = vxc_psi;
+                        thread_control.coarse_vtot = coarse_vtot;
+                        thread_control.vcycle = vcycle;
+                        thread_control.sp = &this->Kstates[sindex];
+                        thread_control.p3 = (void *)this;
+// this is a hack since we are backing the nv array up before it's start in order to make
+// the code in MgEigState work properly. Fix at some point.
+                        if(pct.coalesce_factor > 1 && ct.coalesce_states)
+                            thread_control.nv = this->nv - bofs * pbasis_noncoll;
+                        else
+                            thread_control.nv = (void *)&this->nv[(st1 + ist + istart) * pbasis_noncoll];
+                        thread_control.ns = (void *)&this->ns[sindex * pbasis_noncoll];  // ns is not blocked!
+                        thread_control.basetag = this->Kstates[sindex].istate;
+                        thread_control.extratag1 = active_threads;
+                        thread_control.extratag2 = bofs + st1;
+                        thread_control.extratag3 = st1 + ist + istart;
+                    }
+                    QueueThreadTask(ist, thread_control);
                 }
-                else
-                {
-                    break;
-                }
+
+                // Thread tasks are set up so run them
+                if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
+                delete RT1;
             }
+            if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-            SCF_THREAD_CONTROL thread_control;
-
-            // Make sure the non-local operators are applied for the next block if needed
-            int check = first_nls + active_threads*pct.coalesce_factor;
-            if(check > ct.non_local_block_size) 
-            {
-                RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-                AppNls(this, this->newsint_local, this->Kstates[st1].psi, this->nv, &this->ns[st1 * pbasis_noncoll],
-                       st1, std::min(ct.non_local_block_size, this->nstates - st1));
-                first_nls = 0;
-                delete(RT1);
-            }
-        
-            RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
-            int istart = my_pe_offset*active_threads;
-            for(int ist = 0;ist < active_threads;ist++) {
-                if((st1 + ist + istart) >= this->nstates) break;
-                thread_control.job = HYBRID_EIG;
-                thread_control.vtot = nvtot_psi;
-                thread_control.vxc_psi = vxc_psi;
-                thread_control.coarse_vtot = coarse_vtot;
-                thread_control.vcycle = vcycle;
-                thread_control.sp = &this->Kstates[st1 + ist + istart];
-                thread_control.p3 = (void *)this;
-                thread_control.nv = (void *)&this->nv[(first_nls + ist + istart) * pbasis_noncoll];
-                thread_control.ns = (void *)&this->ns[(st1 + ist + istart) * pbasis_noncoll];  // ns is not blocked!
-                thread_control.basetag = this->Kstates[st1 + ist + istart].istate;
-                thread_control.extratag1 = active_threads;
-                thread_control.extratag2 = st1;
-                QueueThreadTask(ist, thread_control);
-            }
-
-            // Thread tasks are set up so run them
-            if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
-            if((check >= ct.non_local_block_size) && ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-            delete RT1;
-
-            // Increment index into non-local block and state index
-            first_nls += active_threads*pct.coalesce_factor;
-            st1+=active_threads*pct.coalesce_factor;
-        }
+        } // end for ib
 
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);

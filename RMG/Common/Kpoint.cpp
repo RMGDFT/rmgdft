@@ -290,13 +290,6 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.alloc_states = ct.run_states + 3 * ct.state_block_size;
     ct.alloc_states = std::max(2*ct.init_states, ct.alloc_states);
     if(ct.alloc_states < ct.max_states) ct.alloc_states = ct.max_states;
-    if(ct.init_states > ct.non_local_block_size)
-    {
-        if(ct.coalesce_states)
-            printf("Warning: you have selected state coalescing but non_local_block_size is too small. Try using %d.\n",ct.init_states);
-        ct.coalesce_states = false;
-    }
-
 
     //    if (verify ("calculation_mode", "Band Structure Only"))
     //        nk = 1;

@@ -151,9 +151,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     // Copy nv into local array
     if(ct.coalesce_states)
-        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
+        GatherPsi(G, pbasis_noncoll, sp->istate, nv, nv_t, pct.coalesce_factor);
+//        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
     else
-        GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, pct.coalesce_factor);
+        GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, 1);
 
     // Set up coarse vtot
     for(int idx=0;idx < pbasis;idx++) c_vtot[idx] = -coarse_vtot[idx];

@@ -114,13 +114,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
-
-    // Apply Nls
-    AppNls(this, newsint_local, Kstates[0].psi, nv, ns, 0, std::min(ct.non_local_block_size, nstates));
-
-    delete RT2;
-    int first_nls = 0;
 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
@@ -129,67 +122,62 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
 
-    int istop = nstates / active_threads;
-    istop = istop * active_threads;
-    for(int st1=0;st1 < istop;st1 += active_threads) {
-        SCF_THREAD_CONTROL thread_control;
-        // Make sure the non-local operators are applied for the next block if needed
-        int check = first_nls + active_threads;
-        if(check > ct.non_local_block_size) {
-            RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-            DeviceSynchronize();
-            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
-                    st1, std::min(ct.non_local_block_size, nstates - st1));
-            DeviceSynchronize();
-            first_nls = 0;
-            delete RT3;
+    // We adjust the block size here for threading
+    int block_size = ct.non_local_block_size;
+    block_size = block_size / active_threads;
+    block_size = block_size * active_threads;
+    int nblocks = this->nstates / block_size;
+    int irem = this->nstates % block_size;
+    if(irem) nblocks++;
+
+    for(int ib = 0;ib < nblocks;ib++)
+    {
+        int bofs = ib * block_size;
+        RmgTimer *RT3 = new RmgTimer("4-Diagonalization: AppNls");
+        AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
+               &this->ns[bofs * pbasis_noncoll],
+               bofs, std::min(block_size, this->nstates - bofs));
+        delete(RT3);
+        for(int st1=0;st1 < block_size;st1+=active_threads)
+        {
+            SCF_THREAD_CONTROL thread_control;
+
+            int nthreads = active_threads;
+            for(int ist = 0;ist < active_threads;ist++) {
+                int sindex = bofs + st1 + ist;
+                if(sindex >= this->nstates)
+                {
+                    thread_control.job = HYBRID_SKIP;
+                    if(!ct.mpi_queue_mode && nthreads == active_threads) nthreads = ist;
+                }
+                else
+                {
+                    thread_control.job = HYBRID_APPLY_HAMILTONIAN;
+                    thread_control.vtot = vtot_eig;
+                    thread_control.vxc_psi = vxc_psi;
+                    thread_control.extratag1 = potential_acceleration;
+                    thread_control.istate = sindex;
+                    thread_control.sp = &this->Kstates[sindex];
+                    thread_control.p1 = (void *)Kstates[sindex].psi;
+                    thread_control.p2 = (void *)&h_psi[sindex * pbasis_noncoll];
+                    thread_control.p3 = (void *)this;
+                    thread_control.nv = (void *)&this->nv[(st1 + ist) * pbasis_noncoll];
+                    thread_control.ns = (void *)&this->ns[sindex * pbasis_noncoll];  // ns is not blocked!
+                    thread_control.basetag = this->Kstates[sindex].istate;
+
+                }
+                QueueThreadTask(ist, thread_control);
+            }
+
+            // Thread tasks are set up so run them
+            if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
         }
+        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-        for(int ist = 0;ist < active_threads;ist++) {
-            thread_control.job = HYBRID_APPLY_HAMILTONIAN;
-            thread_control.vtot = vtot_eig;
-            thread_control.vxc_psi = vxc_psi;
-            thread_control.extratag1 = potential_acceleration;
-            thread_control.istate = st1 + ist;
-            thread_control.sp = &Kstates[st1 + ist];
-            thread_control.p1 = (void *)Kstates[st1 + ist].psi;
-            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis_noncoll];
-            thread_control.p3 = (void *)this;
-            thread_control.nv = (void *)&nv[(first_nls + ist) * pbasis_noncoll];
-            thread_control.ns = (void *)&ns[(st1 + ist) * pbasis_noncoll];  // ns is not blocked!
-            thread_control.basetag = Kstates[st1 + ist].istate;
-            QueueThreadTask(ist, thread_control);
-        }
+    } // end for ib
 
-        // Thread tasks are set up so wake them
-        if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
-        if((check >= ct.non_local_block_size) && ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-        // Increment index into non-local block
-        first_nls += active_threads;
-
-    }
-
-
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-    // Process any remaining orbitals serially
-    for(int st1 = istop;st1 < nstates;st1++) {
-        // Make sure the non-local operators are applied for the next state if needed
-        int check = first_nls + 1;
-        if(check > ct.non_local_block_size) {
-            RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-            DeviceSynchronize();
-            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-            DeviceSynchronize();
-            first_nls = 0;
-            delete RT3;
-        }
-        ApplyHamiltonian<KpointType, KpointType> (this, st1, Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
-
-        first_nls++;
-    }
     delete(RT1);
+
     /* Operators applied and we now have
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
@@ -253,7 +241,6 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     UnPackSqToTr("L", nstates, Hij, nstates, Bij);
     UnPackSqToTr("L", nstates, Sij, nstates, global_matrix1);
-    int blocksize = 16;
 
     // Fill in upper triangle of S
     Scalapack::FillUpper(Sij, nstates);
@@ -307,20 +294,6 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-    // free memory
-#if HIP_ENABLED || CUDA_ENABLED
-    gpuFreeHost(eigs);
-    GpuFreeHost(Sij);
-    GpuFreeHost(Bij);
-    GpuFreeHost(Hij);
-#else
-    delete [] eigs;
-    delete [] Sij;
-    delete [] Bij;
-    delete [] Hij;
-#endif
-
-
     // Update the orbitals
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
@@ -367,10 +340,23 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     delete(RT1);
 
+#if HIP_ENABLED || CUDA_ENABLED
+    gpuFree(psi_d);
+    gpuFreeHost(eigs);
+    GpuFreeHost(Sij);
+    GpuFreeHost(Bij);
+    GpuFreeHost(Hij);
+#else
+    delete [] eigs;
+    delete [] Sij;
+    delete [] Bij;
+    delete [] Hij;
+#endif
+
 #if CUDA_ENABLED || HIP_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
-    gpuFree(psi_d);
 #endif
+
 }
 

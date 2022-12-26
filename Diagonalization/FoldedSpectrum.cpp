@@ -92,7 +92,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     FoldedSpectrumSetup(n, FS_NPES, FS_RANK, eig_start, eig_stop, eig_step,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
-
 #if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
@@ -155,12 +154,11 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     DeviceSynchronize();
 
-#if CUDA_ENABLED
-    if(ct.cuda_version >= 9020)
-        DsyevjDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
-    else
+#if CUDA_ENABLED || HIP_ENABLED
+    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
+#else
+    DsyevdDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
 #endif
-        DsyevdDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
 
     // Store the eigen vector from the submatrix
 #if CUDA_ENABLED || HIP_ENABLED
