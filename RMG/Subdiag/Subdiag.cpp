@@ -75,6 +75,14 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     KpointType *tmp_arrayT = Kstates[0].psi;
     tmp_arrayT += nstates * pbasis_noncoll ;
 
+    // Apply operators on each wavefunction
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
+    KpointType *h_psi = (KpointType *)tmp_arrayT;
+    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
+    delete(RT1);
+    DeviceSynchronize();
+    /* Operators applied and we now have tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
+
     static KpointType *global_matrix1;
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
@@ -110,21 +118,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     char *trans_c = "c";
     char *trans_a = trans_t;
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
-
-    // Apply operators on each wavefunction
-    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-
-    // Each thread applies the operator to one wavefunction
-    KpointType *h_psi = (KpointType *)tmp_arrayT;
-
-    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
-
-    delete(RT1);
-
-    /* Operators applied and we now have
-tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
-
-    DeviceSynchronize();
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
