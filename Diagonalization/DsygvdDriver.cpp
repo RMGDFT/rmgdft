@@ -29,6 +29,8 @@
 #include "RmgMatrix.h"
 #include "blas.h"
 
+void DsygvdDriver_lapack(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld);
+
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
@@ -85,6 +87,12 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
+    if(ct.subdiag_driver == SUBDIAG_LAPACK)
+    {
+        DsygvdDriver_lapack(A, B, eigs, work, worksize, n, ld);
+        return;
+    }
+
     rocblas_status status;
     rocblas_int *devInfo;
     const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
@@ -107,6 +115,12 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
+    DsygvdDriver_lapack(A, B, eigs, work, worksize, n, ld);
+}
+#endif
+
+void DsygvdDriver_lapack(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
+{
     char *cuplo = "l", *jobz="V";
     int lwork, info=0, *iwork, liwork, ione=1;
 
@@ -122,4 +136,3 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     delete [] iwork;
 }
-#endif
