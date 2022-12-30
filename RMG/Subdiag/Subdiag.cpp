@@ -60,9 +60,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 {
     RmgTimer RT0("4-Diagonalization");
 
-    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0) && (ct.scf_steps > 0);
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-
 
     // For MPI routines
     int factor = 1;
@@ -101,6 +99,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     double *eigs = new double[2*nstates];
 #endif
 
+    KpointType *D = new KpointType[2*nstates];
+
 //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
 //  for HIP its a GPU buffer.
     KpointType *psi_d = orbital_storage;
@@ -131,18 +131,24 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
-    PackSqToTr("L", nstates, Hij, nstates, Bij);
+    if(typeid(KpointType) == typeid(std::complex<double>))
+        PackSqToTr("L", nstates, (std::complex<double> *)Hij, nstates, (std::complex<float> *)Bij);
+    else
+        PackSqToTr("L", nstates, (double *)Hij, nstates, (float *)Bij);
+
+    // Save diagonal elements
+    for(int i=0;i < nstates;i++) D[i] = Hij[i*nstates + i];
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqHij;
     MPI_Request MPI_reqSij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqHij);
+        MPI_Iallreduce(MPI_IN_PLACE, (float *)Bij, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        BlockAllreduce((double *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        BlockAllreduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    BlockAllreduce((double *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    BlockAllreduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
     // Compute S matrix
@@ -155,17 +161,23 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
+    // Save diagonal elements
+    for(int i=0;i < nstates;i++) D[i+nstates] = Sij[i*nstates + i];
+
     // Sij is symmetric or Hermetian so pack into triangular array for reduction call. Use global_matrix1 for scratch space
-    PackSqToTr("L", nstates, Sij, nstates, global_matrix1);
+    if(typeid(KpointType) == typeid(std::complex<double>))
+        PackSqToTr("L", nstates, (std::complex<double> *)Sij, nstates, (std::complex<float> *)global_matrix1);
+    else
+        PackSqToTr("L", nstates, (double *)Sij, nstates, (float *)global_matrix1);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        BlockAllreduce((double *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        BlockAllreduce((float *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    BlockAllreduce((double *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    BlockAllreduce((float *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
 
@@ -175,8 +187,21 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
 
-    UnPackSqToTr("L", nstates, Hij, nstates, Bij);
-    UnPackSqToTr("L", nstates, Sij, nstates, global_matrix1);
+    if(typeid(KpointType) == typeid(std::complex<double>))
+    {
+        UnPackSqToTr("L", nstates, (std::complex<double> *)Hij, nstates, (std::complex<float> *)Bij);
+        UnPackSqToTr("L", nstates, (std::complex<double> *)Sij, nstates, (std::complex<float> *)global_matrix1);
+    }
+    else
+    {
+        UnPackSqToTr("L", nstates, (double *)Hij, nstates, (float *)Bij);
+        UnPackSqToTr("L", nstates, (double *)Sij, nstates, (float *)global_matrix1);
+    }
+
+    // Reduce diagonal elements in double precision
+    MPI_Allreduce(MPI_IN_PLACE, (double *)D, 2 * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    for(int i=0;i < nstates;i++) Hij[i*nstates + i] = D[i];
+    for(int i=0;i < nstates;i++) Sij[i*nstates + i] = D[i+nstates];
 
     // Fill in upper triangle of S
     Scalapack::FillUpper(Sij, nstates);
@@ -275,6 +300,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     }
 
     delete(RT1);
+
+    delete [] D;
 
 #if HIP_ENABLED || CUDA_ENABLED
     gpuFree(psi_d);
