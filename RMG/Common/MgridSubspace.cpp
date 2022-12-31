@@ -115,12 +115,20 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
+    // When grid coalescing is enabled we need nstates to be an integral
+    // multiple of (active_threads * pct.coalesce_factor) in order for the
+    // coalescing routines to work correctly. So we pad nstates to satisfy
+    // that condition where required (stored in mstates).
+    int mstates = this->nstates / (active_threads * pct.coalesce_factor);
+    if(this->nstates % (active_threads * pct.coalesce_factor)) mstates++;
+    mstates = mstates * (active_threads * pct.coalesce_factor);
+
     // We adjust the block size here for threading and coalescing
     int block_size = ct.non_local_block_size;
     block_size = block_size / (active_threads * pct.coalesce_factor);
     block_size = block_size * (active_threads * pct.coalesce_factor);
-    int nblocks = this->nstates / block_size;
-    int irem = this->nstates % block_size;
+    int nblocks = mstates / block_size;
+    int irem = mstates % block_size;
     if(irem) nblocks++;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
@@ -136,7 +144,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, weight);
+        this->BetaProjector->project(this, this->newsint_local, 0, mstates * ct.noncoll_factor, weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -151,7 +159,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             RT1 = new RmgTimer("3-MgridSubspace: AppNls");
             AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
                    &this->ns[bofs * pbasis_noncoll],
-                   bofs, std::min(block_size, this->nstates - bofs));
+                   bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
             for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
             {
@@ -162,7 +170,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 int nthreads = active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
                     int sindex = bofs + st1 + ist + istart;
-                    if(sindex >= this->nstates)
+                    if(sindex >= mstates)
                     {
                         thread_control.job = HYBRID_SKIP;
                         if(!ct.mpi_queue_mode && nthreads == active_threads) nthreads = ist;
