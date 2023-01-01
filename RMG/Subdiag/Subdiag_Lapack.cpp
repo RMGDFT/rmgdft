@@ -64,12 +64,6 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
     return Subdiag_Cusolver(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
-#if SCALAPACK_LIBS
-    // For folded spectrum start with scalapack if available since lapack is so slow on larger problems
-    if(ct.use_folded_spectrum && (ct.scf_steps < 6)  && (ct.runflag != RESTART))
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
-#endif
-
     RmgTimer *DiagTimer;
     static int call_count, folded_call_count;
     if(use_folded)

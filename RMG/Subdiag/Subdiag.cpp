@@ -52,6 +52,9 @@
 #endif
 
 
+template <typename KpointType>
+char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi);
+
 
 template void Kpoint<double>::Subdiag(double *, double *, int);
 template void Kpoint<std::complex<double>>::Subdiag(double *, double *, int);
@@ -79,7 +82,14 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     ComputeHpsi(vtot_eig, vxc_psi, h_psi);
     delete(RT1);
     DeviceSynchronize();
-    /* Operators applied and we now have tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
+
+    // Operators applied and we now have h_psi:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+    // The distributed solvers are handled in a different routine now
+    if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        Subdiag_Scalapack(this, h_psi);
+        return;
+    }
 
     static KpointType *global_matrix1;
 
@@ -173,7 +183,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (float *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
     else
         BlockAllreduce((float *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
@@ -223,10 +233,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
             trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
 #endif
-        case SUBDIAG_ELPA:
-        case SUBDIAG_SCALAPACK:
-            trans_b = Subdiag_Scalapack (this, Hij, Bij, Sij, eigs, global_matrix1);
-            break;
         case SUBDIAG_CUSOLVER:
 #if CUDA_ENABLED
             trans_b = Subdiag_Cusolver (this, Hij, Bij, Sij, eigs, global_matrix1);

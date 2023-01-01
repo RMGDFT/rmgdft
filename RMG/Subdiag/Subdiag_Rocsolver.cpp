@@ -55,8 +55,8 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 {
 
 #if !HIP_ENABLED
-        rmg_printf("This version of RMG was not built with GPU support so Rocsolver cannot be used. Redirecting to LAPACK.");
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+    rmg_error_handler (__FILE__, __LINE__, "This version of RMG was not built with GPU support so Rocsolver cannot be used.");
+
 #endif
 
 #if HIP_ENABLED
@@ -66,12 +66,6 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     int num_states = kptr->nstates;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     RmgTimer *DiagTimer;
-
-    // For folded spectrum start with scalapack if available since rocsolver is slow on large problems
-    if(ct.use_folded_spectrum && (ct.scf_steps <= 0)  && (ct.runflag != RESTART) && (num_states > 10000))
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
-    if(ct.scf_steps < 2 && ct.runflag != RESTART)
-        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 
     if(pct.is_local_master || ct.num_usable_gpu_devices == 1)
     {

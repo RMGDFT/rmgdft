@@ -219,15 +219,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
 #if CUDA_ENABLED || HIP_ENABLED
     // Blocks of pinned host memory
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
+    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap) ||
+              (ct.subdiag_driver == SUBDIAG_SCALAPACK) || 
+              (ct.subdiag_driver == SUBDIAG_ELPA))
     {
         InitGpuMallocHost((size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType)); 
     }
     else
     {
-        InitGpuMallocHost((size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)); 
+        InitGpuMallocHost((size_t)3*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)/2); 
     }
-
 
     // Wavefunctions are actually stored here
     size_t galloc = ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType);
