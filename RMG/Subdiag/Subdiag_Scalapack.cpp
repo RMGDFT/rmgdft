@@ -173,7 +173,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     // Save diagonal elements
     for(int i=0;i < nstates;i++) D[i] = global_matrix1[i*nstates + i];
-    MPI_Allreduce(MPI_IN_PLACE, (float *)Tij, (nstates+2)*nstates*factor/2, MPI_FLOAT, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
+
 
     if(typeid(KpointType) == typeid(std::complex<double>))
     {
@@ -218,7 +219,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     else
         PackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
 
-    MPI_Allreduce(MPI_IN_PLACE, (float *)Tij, (nstates+2)*nstates*factor/2, MPI_FLOAT, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
 
     if(typeid(KpointType) == typeid(std::complex<double>))
     {

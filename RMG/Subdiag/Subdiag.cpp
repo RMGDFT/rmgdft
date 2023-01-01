@@ -114,13 +114,20 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
 //  for HIP its a GPU buffer.
     KpointType *psi_d = orbital_storage;
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
     // and use it repeatedly to compute the matrix elements. This is much faster but puts
     // more pressure on GPU memory. A blas implementation that overlapped communication and
     // computation would make this unnecessary.
     gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
     gpuMemcpy(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+#endif
+#if CUDA_ENABLED
+    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
+    {
+        gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
+        gpuMemcpy(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+    }
 #endif
 
     char *trans_t = "t";
