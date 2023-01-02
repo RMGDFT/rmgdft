@@ -216,8 +216,8 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     int pstride = K.OrbitalProjector->get_pstride();
 
     // allocate memory for sint_compack;
-    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states * ct.noncoll_factor;
-    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() * ct.noncoll_factor;
+    size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
+    size_t alloc1 = (size_t)pstride * (size_t)num_nonloc_ions * ct.noncoll_factor;
 #if CUDA_ENABLED || HIP_ENABLED
     KpointType *sint_compack = (KpointType *)GpuMallocHost(alloc * sizeof(KpointType));
     std::fill(sint_compack, sint_compack + alloc, 0.0);
@@ -234,9 +234,9 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     // and for the diagonal part of ns_occ
     std::complex<double> *lambda_C = (std::complex<double> *)lambda;
     boost::multi_array_ref<KpointType, 6> nlambda{lambda,
-        boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
+        boost::extents[ct.noncoll_factor][num_nonloc_ions][pstride][ct.noncoll_factor][num_nonloc_ions][pstride]};
     boost::multi_array_ref<std::complex<double>, 6> nlambda_C{lambda_C,
-        boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
+        boost::extents[ct.noncoll_factor][num_nonloc_ions][pstride][ct.noncoll_factor][num_nonloc_ions][pstride]};
 
     // Repack the sint array
     boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[K.nstates][ct.noncoll_factor][Atoms.size()][pstride]};
@@ -269,19 +269,20 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
         {
             int ispin = is1 * ct.noncoll_factor + is2;
-            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+            for (size_t ion = 0, i_end = num_nonloc_ions; ion < i_end; ++ion)
             {
+                int gion = nonloc_ions_list[ion];
                 for(int i=0;i < pstride;i++)
                 {
                     for(int j=0;j < pstride;j++)
                     {
                         if(ct.is_gamma) 
                         {
-                            nlambda[is1][ion][i][is2][ion][j] = std::real(this->vhub_ns[ispin][ion][i][j]);
+                            nlambda[is1][ion][i][is2][ion][j] = std::real(this->vhub_ns[ispin][gion][i][j]);
                         }
                         else
                         {
-                            nlambda_C[is1][ion][i][is2][ion][j] = this->vhub_ns[ispin][ion][i][j];
+                            nlambda_C[is1][ion][i][is2][ion][j] = this->vhub_ns[ispin][gion][i][j];
                         }
 
                     }
