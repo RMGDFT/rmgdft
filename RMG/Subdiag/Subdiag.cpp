@@ -317,7 +317,15 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     delete [] D;
 
 #if HIP_ENABLED || CUDA_ENABLED
+#if CUDA_ENABLED
+    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
+    {
+        gpuFree(psi_d);
+    }
+#endif
+#if HIP_ENABLED
     gpuFree(psi_d);
+#endif
     gpuFreeHost(eigs);
     GpuFreeHost(Sij);
     GpuFreeHost(Bij);
