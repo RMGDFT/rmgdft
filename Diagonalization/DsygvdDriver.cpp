@@ -83,7 +83,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     delete [] iwork;
 }
 #else
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {

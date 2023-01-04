@@ -42,7 +42,7 @@
 #include "RmgMatrix.h"
 
 #if HIP_ENABLED
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 #endif
 
 

@@ -57,7 +57,7 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
 }
 
 #elif HIP_ENABLED
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize, int n, int ld);
 void DsyevdDriver_magma(double *A, double *eigs, double *work, int worksize, int n, int ld);

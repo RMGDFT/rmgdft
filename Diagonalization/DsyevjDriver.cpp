@@ -63,7 +63,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
 #elif HIP_ENABLED
 
-#include  <rocsolver.h>
+#include  <rocsolver/rocsolver.h>
 
 void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
 {

@@ -10,8 +10,8 @@
 #endif
 
 #if HIP_ENABLED
-    #include <hipblas.h>
-    #include <rocsolver.h>
+    #include <hipblas/hipblas.h>
+    #include <rocsolver/rocsolver.h>
 #endif
 
 #include "Klist.h"

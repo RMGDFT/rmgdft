@@ -44,7 +44,7 @@
 
 #if HIP_ENABLED
     #include <hip/hip_runtime.h>
-    #include <rocfft.h>
+    #include <rocfft/rocfft.h>
 #endif
 
 #include "BaseGrid.h"

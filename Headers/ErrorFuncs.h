@@ -14,7 +14,7 @@ void ProcessGpublasError(cublasStatus_t custat);
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
-#include <hipblas.h>
+#include <hipblas/hipblas.h>
 void RmgGpuError(const char *file, int line, const hipError_t hipStatus, const char * errorMessage);
 void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage);
 void ProcessGpublasError(hipblasStatus_t hipstat);

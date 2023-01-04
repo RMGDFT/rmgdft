@@ -68,7 +68,7 @@ struct rmg_user_allocator
     {return reinterpret_cast<char *>(rmg_pool_malloc(bytes)); }
     static void free(char * const block)
 #if HIP_ENABLED
-    { hipHostFree(block); }
+    {hipError_t herr = hipHostFree(block); }
 #else
     { std::free(block); }
 #endif

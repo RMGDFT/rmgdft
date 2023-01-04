@@ -24,7 +24,7 @@
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
 #include <hip/hip_runtime_api.h>
-#include <hipblas.h>
+#include <hipblas/hipblas.h>
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
 

@@ -48,7 +48,7 @@
 #endif
 
 #if HIP_ENABLED
-    #include <hipblas.h>
+    #include <hipblas/hipblas.h>
     #include "GpuAlloc.h"
 #endif
 

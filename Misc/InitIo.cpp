@@ -61,8 +61,8 @@
 #if HIP_ENABLED
     #include <hip/hip_runtime_api.h>
     #include <hip/hip_vector_types.h>
-    #include <rocfft.h>
-    #include <rocsolver.h>
+    #include <rocfft/rocfft.h>
+    #include <rocsolver/rocsolver.h>
     #if MAGMA_LIBS
         #include <magma_v2.h>
     #endif

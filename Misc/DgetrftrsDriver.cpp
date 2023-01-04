@@ -78,7 +78,7 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
     rmg_error_handler (__FILE__, __LINE__, " dgestrs  not programmed.");
 }
 #else
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
