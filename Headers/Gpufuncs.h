@@ -135,7 +135,7 @@ cudaStream_t getGpuStream(void);
 #endif
 
 #if HIP_ENABLED
-#include "hip/hip_runtime.h"
+#include <hip/hip_runtime.h>
 #include <hip/hip_complex.h>
 void init_hip_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
