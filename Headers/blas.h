@@ -113,6 +113,10 @@
 #define		zgeqp3		RMG_FC_GLOBAL(zgeqp3, ZGEQP3)
 #define		zgeqpf		RMG_FC_GLOBAL(zgeqpf, ZGEQPF)
 #define		zgesvd		RMG_FC_GLOBAL(zgesvd, ZGESVD)
+#define		simatcopy	RMG_FC_GLOBAL(simatcopy, SIMATCOPY)
+#define		dimatcopy	RMG_FC_GLOBAL(dimatcopy, DIMATCOPY)
+#define		cimatcopy	RMG_FC_GLOBAL(cimatcopy, CIMATCOPY)
+#define		zimatcopy	RMG_FC_GLOBAL(zimatcopy, ZIMATCOPY)
 
 #if __cplusplus
 extern "C" {
@@ -226,6 +230,10 @@ void zgeqpf(int *, int *, std::complex<double> *, int *, int *, std::complex<dou
 void zgesvd(char *, char *, int *, int *, std::complex<double> *, int *, double *, std::complex<double> *, int*,
         std::complex<double> *, int *, std::complex<double> *, int *, double *, int*);
 
+void simatcopy(char *, char *, int *, int *, float  *, float  *, int *, int *);
+void dimatcopy(char *, char *, int *, int *, double  *, double  *, int *, int *);
+void cimatcopy(char *, char *, int *, int *, float  *, float  *, int *, int *);
+void zimatcopy(char *, char *, int *, int *, double  *, double  *, int *, int *);
 
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);

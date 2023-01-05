@@ -52,6 +52,8 @@ void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, float *Tr);
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr);
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<float> *Tr);
 
+template <typename T> void TransposeMatrix(T *A, int n, int m);
+
 #endif
 #endif
 

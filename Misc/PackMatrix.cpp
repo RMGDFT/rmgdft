@@ -24,6 +24,7 @@
 #include "blas.h"
 #include "main.h"
 #include "transition.h"
+#include "RmgMatrix.h"
 
 
 #if CUDA_ENABLED
@@ -250,4 +251,27 @@ void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::com
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<float> *Tr)
 {
     ztpttr(uplo, N, Tr, Sq);
+}
+
+template void TransposeMatrix(double *, int, int);
+template void TransposeMatrix(std::complex<double> *, int, int);
+
+// Inplace matrix transpose with conjugation for complex data
+template <typename T> void TransposeMatrix(T *A, int n, int m)
+{
+    double alpha = 1.0;
+    char *trans = "t";
+    char * ordering = "R";
+    if(typeid(T) == typeid(double))
+    {
+        dimatcopy(ordering, trans, &m, &n, &alpha, (double *)A, &n, &m);
+    }
+    else if(typeid(T) == typeid(std::complex<double>))
+    {
+        zimatcopy(ordering, trans, &m, &n, &alpha, (double *)A, &n, &m);
+    }
+    else
+    {
+        rmg_error_handler(__FILE__, __LINE__, " Data type not implemented.\n");
+    }
 }
