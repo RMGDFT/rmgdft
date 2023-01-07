@@ -215,6 +215,13 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 void Scalapack::GatherEigvectors(double *A, double *distA)
 {
     if(!this->participates) return;
+    if(N >= 16000)
+    {
+        CopyDistArrayToSquareMatrix(A, distA, N, dist_desca);
+        ScalapackBlockAllreduce((double *)A, (size_t)N * (size_t)N);
+        return;
+    }
+
     // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
     int ione = 1;
     double rone = 1.0, rzero = 0.0;
@@ -224,7 +231,14 @@ void Scalapack::GatherEigvectors(double *A, double *distA)
 void Scalapack::GatherEigvectors(std::complex<double> *A, std::complex<double> *distA)
 {
     if(!this->participates) return;
-    // Call pdgeadd_ to gather matrix (i.e. copy distA into A)
+    if(N >= 16000)
+    {
+        CopyDistArrayToSquareMatrix(A, distA, N, dist_desca);
+        ScalapackBlockAllreduce((double *)A, (size_t)N * (size_t)(2*N));
+        return;
+    }
+
+    // Call pzgeadd_ to gather matrix (i.e. copy distA into A)
     int ione = 1;
     double rone[2], rzero[2];
     rone[0] = 1.0;rone[1] = 0.0;
