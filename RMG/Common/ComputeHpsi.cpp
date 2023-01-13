@@ -73,7 +73,6 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHpsi (double *vtot_e
     tmp_arrayT += nstates * pbasis_noncoll ;
 
     // Apply operators on each wavefunction
-    RmgTimer *RT1 = new RmgTimer("Compute Hpsi: apply operators");
 
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
@@ -90,11 +89,12 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHpsi (double *vtot_e
     for(int ib = 0;ib < nblocks;ib++)
     {
         int bofs = ib * block_size;
-        RmgTimer *RT3 = new RmgTimer("4-Diagonalization: AppNls");
+        RmgTimer *RT3 = new RmgTimer("Compute Hpsi: AppNls");
         AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
                &this->ns[bofs * pbasis_noncoll],
                bofs, std::min(block_size, this->nstates - bofs));
         delete(RT3);
+        RT3 = new RmgTimer("Compute Hpsi: Threaded Apply H");
         for(int st1=0;st1 < block_size;st1+=active_threads)
         {
             SCF_THREAD_CONTROL thread_control;
@@ -131,9 +131,8 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHpsi (double *vtot_e
         }
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
+        delete(RT3);
     } // end for ib
-
-    delete(RT1);
 
     DeviceSynchronize();
 

@@ -42,6 +42,7 @@ static double *fixed_vector2 = NULL;
 static MPI_Comm *coalesced_comm_pool;
 static MPI_Comm *coalesced_local_comm_pool;
 
+size_t block_size = 67103864;
 
 void GlobalSumsInit(void) {
     int retval;
@@ -180,7 +181,6 @@ void BlockAllreduce(double *mat, size_t count, MPI_Comm comm)
     if(T->is_loop_over_states())
         rmg_error_handler(__FILE__, __LINE__, "BlockAllReduce cannot be called from a threaded region.\n");
 
-    size_t block_size = 134217728;
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
     double *tptr = mat;
@@ -200,7 +200,6 @@ void BlockAllreduce(float *mat, size_t count, MPI_Comm comm)
     if(T->is_loop_over_states())
         rmg_error_handler(__FILE__, __LINE__, "BlockAllReduce cannot be called from a threaded region.\n");
 
-    size_t block_size = 134217728;
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
     float *tptr = mat;
@@ -220,7 +219,6 @@ void BlockAllreduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
     if(T->is_loop_over_states())
         rmg_error_handler(__FILE__, __LINE__, "BlockAllReduce cannot be called from a threaded region.\n");
 
-    size_t block_size = 134217728;
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
     double *tptr = (double *)mat;
@@ -240,7 +238,6 @@ void BlockAllreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
     if(T->is_loop_over_states())
         rmg_error_handler(__FILE__, __LINE__, "BlockAllReduce cannot be called from a threaded region.\n");
 
-    size_t block_size = 134217728;
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
     float *tptr = (float *)mat;

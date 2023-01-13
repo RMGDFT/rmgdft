@@ -166,23 +166,30 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     }
 #endif
 
-    RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
+    RT1 = new RmgTimer("4-Diagonalization: matrix");
+    RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
     if(ct.is_gamma)
         RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, hpsi, pbasis_noncoll, beta, global_matrix1, nstates);
     else
         RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, hpsi, pbasis_noncoll, beta, global_matrix1, nstates);
+    delete RT1a;
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Tij for scratch space
+    RT1a = new RmgTimer("4-Diagonalization: matrix: SqToTr");
     if(typeid(KpointType) == typeid(std::complex<double>))
         PackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
     else
         PackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
+    delete RT1a;
 
     // Save diagonal elements
+    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
     for(int i=0;i < nstates;i++) D[i] = global_matrix1[i*nstates + i];
     BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
+    delete RT1a;
 
 
+    RT1a = new RmgTimer("4-Diagonalization: matrix: TrToSq");
     if(typeid(KpointType) == typeid(std::complex<double>))
     {
         UnPackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
@@ -191,9 +198,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     {
         UnPackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
     }
+    delete RT1a;
 
     // Reduce diagonal elements in double precision and pack back into global_matrix1
+    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
     MPI_Allreduce(MPI_IN_PLACE, (double *)D, nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    delete RT1a;
 
     for(int i=0;i < nstates;i++) global_matrix1[i*nstates + i] = D[i];
 
@@ -203,11 +213,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 #endif
 
     // Distribute Aij
-    RmgTimer *RT3 = new RmgTimer("4-Diagonalization: distribute matrices");
+    RmgTimer *RT3 = new RmgTimer("4-Diagonalization: matrix: distribute");
     MainSp->CopySquareMatrixToDistArray(global_matrix1, distAij, nstates, desca);
     delete RT3;
 
     // Compute S matrix
+    RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
     if(ct.norm_conserving_pp && ct.is_gamma)
     {
         RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, global_matrix1, nstates);
@@ -216,18 +227,24 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     {
         RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, kptr->ns, pbasis_noncoll, beta, global_matrix1, nstates);
     }
+    delete RT1a;
 
     // Save diagonal elements in double precision
     for(int i=0;i < nstates;i++) D[i] = global_matrix1[i*nstates + i];
 
     // Sij is symmetric or Hermetian so pack into triangular array for reduction call.
+    RT1a = new RmgTimer("4-Diagonalization: matrix: SqToTr");
     if(typeid(KpointType) == typeid(std::complex<double>))
         PackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
     else
         PackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
+    delete RT1a;
 
+    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
     BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
+    delete RT1a;
 
+    RT1a = new RmgTimer("4-Diagonalization: matrix: TrToSq");
     if(typeid(KpointType) == typeid(std::complex<double>))
     {
         UnPackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
@@ -236,9 +253,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     {
         UnPackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
     }
+    delete RT1a;
 
     // Reduce diagonal elements in double precision and pack back into global_matrix1
+    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
     MPI_Allreduce(MPI_IN_PLACE, (double *)D, nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    delete RT1a;
     for(int i=0;i < nstates;i++) global_matrix1[i*nstates + i] = D[i];
 
     // Fill in upper triangle of S
@@ -246,25 +266,21 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     delete RT1;
 
     // Distribute Sij
-    RT3 = new RmgTimer("4-Diagonalization: distribute matrices");
+    RT3 = new RmgTimer("4-Diagonalization: matrix: distribute");
     MainSp->CopySquareMatrixToDistArray(global_matrix1, distSij, nstates, desca);
     delete RT3;
 
-    RmgTimer *DiagTimer;
     static int call_count;
     if(ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: elpa");
         rmg_printf("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     else
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: scalapack");
         rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     call_count++;
 
-    RmgTimer *RT4 = new RmgTimer("4-Diagonalization: Eigensolver");
     if (participates)
     {
         RmgTimer *RT2 = new RmgTimer("4-Diagonalization: ELPA/PDSYGVX/PZHEGVX");
@@ -273,19 +289,19 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
 
         MainSp->generalized_eigenvectors(distAij, distSij, eigs, distBij);
+        delete RT2;
         
+        RT2 = new RmgTimer("4-Diagonalization: EigenvectorGathering");
         // Gather distributed results from distAij into eigvectors
         MainSp->GatherEigvectors(global_matrix1, distAij);
         delete RT2;
     }
-    delete DiagTimer;
 
     // Finally send eigenvalues and vectors to everyone 
     RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
     MainSp->BcastRoot(global_matrix1, factor * nstates * nstates, MPI_DOUBLE);
     MainSp->BcastRoot(eigs, nstates, MPI_DOUBLE);
     delete RT1;
-    delete RT4;
 
     // Begin rotation
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
