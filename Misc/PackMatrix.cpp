@@ -253,6 +253,7 @@ void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::com
     ztpttr(uplo, N, Tr, Sq);
 }
 
+#if 0
 template void TransposeMatrix(double *, int, int);
 template void TransposeMatrix(std::complex<double> *, int, int);
 
@@ -275,3 +276,4 @@ template <typename T> void TransposeMatrix(T *A, int n, int m)
         rmg_error_handler(__FILE__, __LINE__, " Data type not implemented.\n");
     }
 }
+#endif
