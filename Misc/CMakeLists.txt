@@ -3,6 +3,7 @@ PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
+kind.f90
 DistributeToGlobal.cpp    
 OptimizeFdCoeff.cpp
 GetPlanarAnisotropy.cpp
