@@ -26,9 +26,10 @@ MODULE basic_algebra_routines
   !
   !! Written by Carlo Sbraccia (16/12/2003)
   !
-  USE kinds,  ONLY : DP
   !
   IMPLICIT NONE
+  INTEGER, PARAMETER :: DP = selected_real_kind(14,200)
+
   !
   INTERFACE OPERATOR( .dot. )
      !
