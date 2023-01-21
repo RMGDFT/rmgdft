@@ -231,7 +231,7 @@ void Scalapack::GatherEigvectors(double *A, double *distA)
 void Scalapack::GatherEigvectors(std::complex<double> *A, std::complex<double> *distA)
 {
     if(!this->participates) return;
-    if(N >= 16000)
+    if(N >= 16000 || 1)
     {
         CopyDistArrayToSquareMatrix(A, distA, N, dist_desca);
         ScalapackBlockAllreduce((double *)A, (size_t)N * (size_t)(2*N));

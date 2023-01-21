@@ -107,19 +107,14 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
             saved_dist_length = dist_length;
         }
     }
-
-    // For Matrix multiplications
-    double vel = kptr->L->get_omega() /
-                ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
-    KpointType alpha(1.0);
-    KpointType alphavel(vel);
+    int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
+     KpointType alpha(1.0);
     KpointType beta(0.0);
 
     // For MPI routines
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
 
-    int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
     // State array is 2 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
@@ -133,142 +128,18 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
 
-    float *Tij;
+    KpointType *psi = kptr->orbital_storage;
+    HS_Scalapack (nstates, pbasis_noncoll, psi, hpsi, desca, distAij, distSij);
+
+
 #if HIP_ENABLED || CUDA_ENABLED
     if(!global_matrix1) gpuMallocHost((void **)&global_matrix1, nstates * nstates * sizeof(KpointType));
-    Tij = (float *)GpuMallocHost((nstates+2)*nstates*factor/2 * sizeof(float));
     double *eigs;
     eigs = (double *)GpuMallocHost(2*nstates * sizeof(double));
 #else
     if(!global_matrix1) global_matrix1 = new KpointType[nstates * nstates];
-    Tij = new float[((nstates + 2)*nstates*factor)/2]();
     double *eigs = new double[2*nstates];
 #endif
-
-    KpointType *D = new KpointType[nstates];
-
-//  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
-//  for HIP its a GPU buffer.
-    KpointType *psi_d = kptr->orbital_storage;
-#if HIP_ENABLED
-    // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
-    // and use it repeatedly to compute the matrix elements. This is much faster but puts
-    // more pressure on GPU memory. A blas implementation that overlapped communication and
-    // computation would make this unnecessary.
-    gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
-    gpuMemcpy(psi_d, kptr->orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-#endif
-#if CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
-        gpuMemcpy(psi_d, kptr->orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-    }
-#endif
-
-    RT1 = new RmgTimer("4-Diagonalization: matrix");
-    RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-    if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, hpsi, pbasis_noncoll, beta, global_matrix1, nstates);
-    else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, hpsi, pbasis_noncoll, beta, global_matrix1, nstates);
-    delete RT1a;
-
-    // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Tij for scratch space
-    RT1a = new RmgTimer("4-Diagonalization: matrix: SqToTr");
-    if(typeid(KpointType) == typeid(std::complex<double>))
-        PackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
-    else
-        PackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
-    delete RT1a;
-
-    // Save diagonal elements
-    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-    for(int i=0;i < nstates;i++) D[i] = global_matrix1[i*nstates + i];
-    BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
-    delete RT1a;
-
-
-    RT1a = new RmgTimer("4-Diagonalization: matrix: TrToSq");
-    if(typeid(KpointType) == typeid(std::complex<double>))
-    {
-        UnPackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
-    }
-    else
-    {
-        UnPackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
-    }
-    delete RT1a;
-
-    // Reduce diagonal elements in double precision and pack back into global_matrix1
-    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-    MPI_Allreduce(MPI_IN_PLACE, (double *)D, nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    delete RT1a;
-
-    for(int i=0;i < nstates;i++) global_matrix1[i*nstates + i] = D[i];
-
-#if USE_ELPA
-    // Fill in upper triangle of Aij (elpa is only routine that needs it)
-    Scalapack::FillUpper(global_matrix1, nstates);
-#endif
-
-    // Distribute Aij
-    RmgTimer *RT3 = new RmgTimer("4-Diagonalization: matrix: distribute");
-    MainSp->CopySquareMatrixToDistArray(global_matrix1, distAij, nstates, desca);
-    delete RT3;
-
-    // Compute S matrix
-    RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-    if(ct.norm_conserving_pp && ct.is_gamma)
-    {
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, global_matrix1, nstates);
-    }
-    else
-    {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, kptr->ns, pbasis_noncoll, beta, global_matrix1, nstates);
-    }
-    delete RT1a;
-
-    // Save diagonal elements in double precision
-    for(int i=0;i < nstates;i++) D[i] = global_matrix1[i*nstates + i];
-
-    // Sij is symmetric or Hermetian so pack into triangular array for reduction call.
-    RT1a = new RmgTimer("4-Diagonalization: matrix: SqToTr");
-    if(typeid(KpointType) == typeid(std::complex<double>))
-        PackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
-    else
-        PackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
-    delete RT1a;
-
-    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-    BlockAllreduce((float *)Tij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, pct.grid_comm);
-    delete RT1a;
-
-    RT1a = new RmgTimer("4-Diagonalization: matrix: TrToSq");
-    if(typeid(KpointType) == typeid(std::complex<double>))
-    {
-        UnPackSqToTr("L", nstates, (std::complex<double> *)global_matrix1, nstates, (std::complex<float> *)Tij);
-    }
-    else
-    {
-        UnPackSqToTr("L", nstates, (double *)global_matrix1, nstates, (float *)Tij);
-    }
-    delete RT1a;
-
-    // Reduce diagonal elements in double precision and pack back into global_matrix1
-    RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-    MPI_Allreduce(MPI_IN_PLACE, (double *)D, nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    delete RT1a;
-    for(int i=0;i < nstates;i++) global_matrix1[i*nstates + i] = D[i];
-
-    // Fill in upper triangle of S
-    Scalapack::FillUpper(global_matrix1, nstates);
-    delete RT1;
-
-    // Distribute Sij
-    RT3 = new RmgTimer("4-Diagonalization: matrix: distribute");
-    MainSp->CopySquareMatrixToDistArray(global_matrix1, distSij, nstates, desca);
-    delete RT3;
 
     static int call_count;
     if(ct.subdiag_driver == SUBDIAG_ELPA)
@@ -313,8 +184,11 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         }
     }
 
+    if(pct.gridpe == 0) for(int i = 0; i < nstates ; i++) printf("\n %d %e eeee", i, eigs[i]);
+
+   // if(pct.gridpe == 0) for(int i = 0; i < nstates * nstates; i++) printf("\n %d %e bbbb", i, global_matrix1[i]);
     RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nstates, alpha, 
-            psi_d, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
+            psi, pbasis_noncoll, global_matrix1, nstates, beta, hpsi, pbasis_noncoll);
 
     // And finally copy them back
     size_t istart = 0;
@@ -342,7 +216,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         }
     }
 
-    memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen);
+    memcpy(&kptr->orbital_storage[istart], &hpsi[istart], tlen);
 
     // Rotate EXX
     if(ct.xc_is_hybrid && Functional::is_exx_active())
@@ -350,28 +224,16 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
         // vexx is not in managed memory yet so that might create an issue
         RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nstates, alpha, 
-                kptr->vexx, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
-        memcpy(kptr->vexx, tmp_arrayT, tlen);
+                kptr->vexx, pbasis_noncoll, global_matrix1, nstates, beta, hpsi, pbasis_noncoll);
+        memcpy(kptr->vexx, hpsi, tlen);
     }
     delete RT1;
 // End rotation
 
 #if HIP_ENABLED || CUDA_ENABLED
-#if CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuFree(psi_d);
-    }
-#endif
-#if HIP_ENABLED
-    gpuFree(psi_d);
-#endif
     GpuFreeHost(eigs);
-    GpuFreeHost(Tij);
 #else
-    delete [] D;
     delete [] eigs;
-    delete [] Tij;
 #endif
 
 
