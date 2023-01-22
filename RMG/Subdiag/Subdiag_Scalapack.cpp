@@ -84,7 +84,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     int dist_length=0;
     static int saved_dist_length;
     
-    static KpointType *global_matrix1;
     int nstates = kptr->nstates;
 
     if (participates)
@@ -133,11 +132,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
 #if HIP_ENABLED || CUDA_ENABLED
-    if(!global_matrix1) gpuMallocHost((void **)&global_matrix1, nstates * nstates * sizeof(KpointType));
     double *eigs;
     eigs = (double *)GpuMallocHost(2*nstates * sizeof(double));
 #else
-    if(!global_matrix1) global_matrix1 = new KpointType[nstates * nstates];
     double *eigs = new double[2*nstates];
 #endif
 
@@ -162,20 +159,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         MainSp->generalized_eigenvectors(distAij, distSij, eigs, distBij);
         delete RT2;
         
-        RT2 = new RmgTimer("4-Diagonalization: EigenvectorGathering");
-        // Gather distributed results from distAij into eigvectors
-        MainSp->GatherEigvectors(global_matrix1, distAij);
-        delete RT2;
     }
 
     // Finally send eigenvalues and vectors to everyone 
     RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
-    MainSp->BcastRoot(global_matrix1, factor * nstates * nstates, MPI_DOUBLE);
     MainSp->BcastRoot(eigs, nstates, MPI_DOUBLE);
     delete RT1;
 
-    // Begin rotation
-    RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
     // If subspace diagonalization is used every step, use eigenvalues obtained here 
     // as the correct eigenvalues
     if (ct.diag == 1) {
@@ -184,11 +174,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         }
     }
 
-    if(pct.gridpe == 0) for(int i = 0; i < nstates ; i++) printf("\n %d %e eeee", i, eigs[i]);
-
-   // if(pct.gridpe == 0) for(int i = 0; i < nstates * nstates; i++) printf("\n %d %e bbbb", i, global_matrix1[i]);
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nstates, alpha, 
-            psi, pbasis_noncoll, global_matrix1, nstates, beta, hpsi, pbasis_noncoll);
+    // Begin rotation
+    RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
+    KpointType *matrix_diag = new KpointType[nstates];
+    PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi, hpsi,  matrix_diag);
 
     // And finally copy them back
     size_t istart = 0;
@@ -203,32 +192,27 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         tlen = (size_t)nstates * (size_t)pbasis_noncoll - (size_t)(kptr->highest_occupied + 1) * (size_t)pbasis_noncoll;
     }
 
+    memcpy(&kptr->orbital_storage[istart], &hpsi[istart], tlen);
+
     // And finally make sure they follow the same sign convention when using hybrid XC
     // Optimize this for GPUs!
     if(ct.xc_is_hybrid)
     {
-        for(int istate=0;istate < nstates;istate++)
+        tlen = (size_t)nstates * (size_t)pbasis_noncoll;
+        PsiUpdate(nstates, pbasis_noncoll, distAij, desca, kptr->vexx, hpsi,  matrix_diag);
+        memcpy(kptr->vexx, hpsi, tlen);
+        for(int istate=istart;istate < nstates;istate++)
         {
-            if(std::real(global_matrix1[istate*nstates + istate]) < 0.0)
+            if(std::real(matrix_diag[istate*nstates + istate]) < 0.0)
             {
                 for(int idx=0;idx < pbasis_noncoll;idx++) kptr->Kstates[istate].psi[idx] = -kptr->Kstates[istate].psi[idx];
             }
         }
     }
 
-    memcpy(&kptr->orbital_storage[istart], &hpsi[istart], tlen);
 
-    // Rotate EXX
-    if(ct.xc_is_hybrid && Functional::is_exx_active())
-    {
-        tlen = nstates * pbasis_noncoll * sizeof(KpointType);
-        // vexx is not in managed memory yet so that might create an issue
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nstates, alpha, 
-                kptr->vexx, pbasis_noncoll, global_matrix1, nstates, beta, hpsi, pbasis_noncoll);
-        memcpy(kptr->vexx, hpsi, tlen);
-    }
     delete RT1;
-// End rotation
+    // End rotation
 
 #if HIP_ENABLED || CUDA_ENABLED
     GpuFreeHost(eigs);
@@ -242,8 +226,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
 #endif
 
-//    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
-//    switch to FOLDED_GSE must uncomment
+    //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
+    //    switch to FOLDED_GSE must uncomment
     return trans_n;
 
 }

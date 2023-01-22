@@ -101,6 +101,9 @@ int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *
 template <typename KpointType>
 void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, int *desca, KpointType *distHij, KpointType *distSij);
 
+template <typename KpointType>
+void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);
+
 
 #endif
 
