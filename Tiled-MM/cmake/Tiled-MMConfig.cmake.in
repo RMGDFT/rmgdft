@@ -1,0 +1,17 @@
+if(NOT TARGET Tiled-MM::Tiled-MM)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+    include(CMakeFindDependencyMacro)
+
+    set(TILEDMM_GPU_BACKEND "@TILEDMM_GPU_BACKEND@")
+
+    if(TILEDMM_GPU_BACKEND STREQUAL "CUDA")
+        find_package(CUDAToolkit REQUIRED)
+    endif()
+
+    if(TILEDMM_GPU_BACKEND STREQUAL "ROCM")
+        find_package(HIPLIBS REQUIRED)
+        find_package(ROCBLAS REQUIRED)
+    endif()
+
+    include("${CMAKE_CURRENT_LIST_DIR}/Tiled-MMTargets.cmake")
+endif()

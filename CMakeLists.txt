@@ -746,6 +746,10 @@ endif()
 
 if(RMG_HIP_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
+    add_subdirectory(Tiled-MM EXCLUDE_FROM_ALL)
+    include_directories("${PROJECT_SOURCE_DIR}/Tiled-MM/src/Tiled-MM/")
+    add_definitions(-DTILED_MM_ROCM=1)
+    list(APPEND RMGLIBS Tiled-MM)
 endif()
 
 # Target specific code subdirectories. If no target
