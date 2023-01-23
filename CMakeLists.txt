@@ -725,6 +725,17 @@ if(QMCPACK_SUPPORT)
     include_directories("${PROJECT_SOURCE_DIR}/Interfaces/")
 endif()
 
+if(RMG_CUDA_ENABLED)
+    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
+endif()
+
+if(RMG_HIP_ENABLED)
+    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
+    add_subdirectory(Tiled-MM EXCLUDE_FROM_ALL)
+    include_directories("${PROJECT_SOURCE_DIR}/Tiled-MM/src/Tiled-MM/")
+    add_definitions(-DTILED_MM_ROCM=1)
+    list(APPEND RMGLIBS Tiled-MM)
+endif()
 
 # Common code subdirectories
 add_subdirectory (RmgLib EXCLUDE_FROM_ALL) 
@@ -740,17 +751,6 @@ add_subdirectory (XC EXCLUDE_FROM_ALL)
 add_subdirectory (dftd3 EXCLUDE_FROM_ALL) 
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 add_subdirectory (Diagonalization EXCLUDE_FROM_ALL) 
-if(RMG_CUDA_ENABLED)
-    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
-endif()
-
-if(RMG_HIP_ENABLED)
-    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
-    add_subdirectory(Tiled-MM EXCLUDE_FROM_ALL)
-    include_directories("${PROJECT_SOURCE_DIR}/Tiled-MM/src/Tiled-MM/")
-    add_definitions(-DTILED_MM_ROCM=1)
-    list(APPEND RMGLIBS Tiled-MM)
-endif()
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default

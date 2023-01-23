@@ -754,6 +754,7 @@ public:
     hipblasHandle_t gpublas_handle;
     hipStream_t rocsolver_stream;
     rocsolver_handle roc_handle;
+    bool use_cublasxt;
 
 #endif
     
