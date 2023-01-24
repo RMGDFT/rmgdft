@@ -137,9 +137,9 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
         delete RT1;
 
 #if HIP_ENABLED 
-    gpuMemcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * nstates * sizeof(KpointType), gpuMemcpyDeviceToHost);
+    gpuMemcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * pbasis_noncoll * sizeof(KpointType), gpuMemcpyDeviceToHost);
 #else
-    memcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * nstates * sizeof(KpointType));
+    memcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * pbasis_noncoll * sizeof(KpointType));
 
 #endif
                 
