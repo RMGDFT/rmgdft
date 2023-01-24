@@ -221,11 +221,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 #endif
 
 
-#if CUDA_ENABLED || HIP_ENABLED
-    // After the first step this matrix does not need to be as large
-    if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
-#endif
-
     //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
     //    switch to FOLDED_GSE must uncomment
     return trans_n;

@@ -67,10 +67,26 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
     //
     char *trans_n = "n";
     KpointType *block_matrix;
+
 #if HIP_ENABLED || CUDA_ENABLED
-    block_matrix = (KpointType *)GpuMallocHost( nb * states * sizeof(KpointType));
+    block_matrix = (KpointType *)GpuMallocHost( nb * nstates * sizeof(KpointType));
 #else
     block_matrix = new KpointType[nstates * nb];
+#endif
+
+    KpointType *block_matrix_dev;
+    KpointType *psi_dev;
+    KpointType *psi_new_dev;
+
+#if HIP_ENABLED 
+    gpuMalloc((void **)&psi_new_dev, nb * pbasis_noncoll * sizeof(KpointType));
+    gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
+    gpuMalloc((void **)&block_matrix_dev, nb * nstates * sizeof(KpointType));
+    gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+#else
+    block_matrix_dev = block_matrix;
+    psi_dev = psi;
+    psi_new_dev = new KpointType[nb*pbasis_noncoll];
 #endif
     
     int num_blocks = (nstates + nb -1)/nb;
@@ -109,18 +125,37 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
         for(int i = 0; i < this_block_size_row; i++) matrix_diag[i] = block_matrix[i * nstates + ib*mb + i];
         delete RT1;
 
+
+
         RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
+#if HIP_ENABLED 
+    gpuMemcpy(block_matrix_dev, block_matrix, this_block_size_row * nstates * sizeof(KpointType), gpuMemcpyHostToDevice);
+#endif
         RmgGemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
-                psi, pbasis_noncoll, block_matrix, nstates, 
-                beta, &hpsi[ib * nb * pbasis_noncoll], pbasis_noncoll);
+                psi_dev, pbasis_noncoll, block_matrix_dev, nstates, 
+                beta, psi_new_dev, pbasis_noncoll);
         delete RT1;
 
+#if HIP_ENABLED 
+    gpuMemcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * nstates * sizeof(KpointType), gpuMemcpyDeviceToHost);
+#else
+    memcpy(&hpsi[ib*nb*pbasis_noncoll], psi_new_dev, this_block_size_row * nstates * sizeof(KpointType));
+
+#endif
+                
     }
+
+#if HIP_ENABLED 
+    gpuFree(psi_dev);
+    gpuFree(psi_new_dev);
+    gpuFree(block_matrix_dev);
+#endif
 
 #if HIP_ENABLED || CUDA_ENABLED
     GpuFreeHost(block_matrix);
 #else
     delete [] block_matrix;
+    delete [] psi_new_dev;
 #endif
 
 }

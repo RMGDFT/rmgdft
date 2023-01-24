@@ -84,7 +84,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
 
     KpointType *block_matrix;
 #if HIP_ENABLED || CUDA_ENABLED
-    block_matrix = (KpointType *)GpuMallocHost( mb * states * sizeof(KpointType));
+    block_matrix = (KpointType *)GpuMallocHost( mb * nstates * sizeof(KpointType));
 #else
     block_matrix = new KpointType[nstates * mb];
 #endif
