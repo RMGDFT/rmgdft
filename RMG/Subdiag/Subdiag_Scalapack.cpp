@@ -372,6 +372,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     delete RT1;
 // End rotation
 
+    delete [] D;
 #if HIP_ENABLED || CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
@@ -380,7 +381,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     GpuFreeHost(eigs);
     GpuFreeHost(Tij);
 #else
-    delete [] D;
     delete [] eigs;
     delete [] Tij;
 #endif
