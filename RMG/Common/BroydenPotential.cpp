@@ -170,7 +170,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
 
    // New density. This is the place to do things with screening and frequency based mixing
    if(ct.drho_precond) Precond_drho(rhout);
-   for(int k=0;k < pbasis_noncoll;k++)  rhoin[k] =  rhoin[k] + ct.charge_broyden_scale*rhout[k];
+   for(int k=0;k < pbasis_noncoll;k++)  rhoin[k] =  rhoin[k] + ct.mix*rhout[k];
    for(int k=0;k < pbasis_noncoll;k++)  rho[k] = rhoin[k];
 
    delete [] rhoin;

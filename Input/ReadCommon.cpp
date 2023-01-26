@@ -488,10 +488,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "when hybrid functional is used, the fraction of Exx",
             "when the value is negative, it is defined from Functionals ", XC_OPTIONS);
 
-    If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
+    If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, true, 
             "if set true, charge density mixing the residual in G space ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("drho_precond", &lc.drho_precond, false, 
+    If.RegisterInputKey("drho_precond", &lc.drho_precond, true, 
             "if set true, charge density residual is preconded with q^2/(q^2+q0^2) ", MIXING_OPTIONS);
 
     If.RegisterInputKey("cube_rho", &lc.cube_rho, true, 
@@ -746,12 +746,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of previous steps to use when Pulay mixing is used to update the charge density.",
             "", MIXING_OPTIONS);
 
-    If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, 0.0, 1.0, 0.50,
-            CHECK_AND_FIX, OPTIONAL,
-            "",
-            "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50 ", MIXING_OPTIONS);
-
-
     If.RegisterInputKey("ldau_pulay_order", &lc.ldau_pulay_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Pulay mixing is used to update the ldau occupation .",
@@ -780,11 +774,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Broyden mixing is used to update the charge density.",
             "", MIXING_OPTIONS);
-
-    If.RegisterInputKey("charge_broyden_scale", &lc.charge_broyden_scale, 0.0, 1.0, 0.50,
-            CHECK_AND_FIX, OPTIONAL,
-            "",
-            "charge_broyden_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50 ", MIXING_OPTIONS);
 
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,

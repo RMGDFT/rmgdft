@@ -401,15 +401,9 @@ public:
     /*How often to refresh Pulay history*/
     int charge_pulay_refresh;
 
-    /*Scale parameter for residuals in Pulay mixing*/
-    double charge_pulay_scale;
-
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
 
-    /* Scale factor for Broyden mixing of charge density*/
-    double charge_broyden_scale;
-    
     int ldau_mixing_type;
     int ldau_pulay_refresh;
     int ldau_pulay_order;
