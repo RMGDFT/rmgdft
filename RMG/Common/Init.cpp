@@ -226,7 +226,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else
     {
         if((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA))
-            InitGpuMallocHost((size_t)3*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)/2); 
+            InitGpuMallocHost((size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType)); 
         else
             InitGpuMallocHost((size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType)); 
     }
