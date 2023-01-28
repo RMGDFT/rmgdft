@@ -82,22 +82,9 @@ class Symmetry
         double symprec;
         double angprec;
 
-        std::vector<uint8_t> sym_index_x8;
-        std::vector<uint8_t> sym_index_y8;
-        std::vector<uint8_t> sym_index_z8;
-        std::vector<uint16_t> sym_index_x16;
-        std::vector<uint16_t> sym_index_y16;
-        std::vector<uint16_t> sym_index_z16;
+        std::vector<uint32_t> sym_idx;
 
-        template <typename T>
-            void init_symm_ijk(std::vector<T> &sym_x_idx, std::vector<T> &sym_y_idx, std::vector<T> &sym_z_idx);
-
-        template <typename T, typename U>
-            void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
-        template <typename U>
-            void symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
-        template <typename U>
-            void symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
+        void init_symm_ijk();
 
     public:
         int nsym;
@@ -117,8 +104,7 @@ class Symmetry
         std::vector<int> sym_rotate;
         std::vector<double> sym_trans;
 
-        template <typename T>
-            void symmetrize_grid_object(T *object);
+        void symmetrize_grid_object(double *object);
 
         void setgrid(BaseGrid &G, int density);
         void symmetrize_grid_vector(double *mag_rho);

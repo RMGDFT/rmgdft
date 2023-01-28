@@ -34,9 +34,6 @@
 
 Symmetry *Rmg_Symm;
 
-template void Symmetry::symmetrize_grid_object<double>(double *);
-template void Symmetry::symmetrize_grid_object<std::complex<double>>(std::complex<double> *);
-
 
 void symm_ijk(int *srotate, int *strans, int &ix, int &iy, int &iz, int &ixx, int &iyy, int &izz,
         int &nx, int &ny, int &nz)
@@ -479,10 +476,14 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     delete [] ityp;
 }
 
-template <typename T> void Symmetry::init_symm_ijk(std::vector<T> &sym_x_idx, std::vector<T> &sym_y_idx, std::vector<T> &sym_z_idx)
+void Symmetry::init_symm_ijk()
 {
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
+
+    int incx1 = 1;
+    int incy1 = nx_grid;
+    int incz1 = nx_grid * ny_grid;
 
     int ixx, iyy, izz;
     for(int isy = 0; isy < nsym; isy++)
@@ -495,28 +496,14 @@ template <typename T> void Symmetry::init_symm_ijk(std::vector<T> &sym_x_idx, st
                     int iz1 = iz + zoff;
 
                     symm_ijk(&sym_rotate[isy *9], &ftau[isy*3], ix1, iy1, iz1, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
-                    sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] = ixx;
-                    sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] = iyy;
-                    sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] = izz;
+                    int idx = izz *incz1 + iyy *incy1 + ixx *incx1;
+                    sym_idx[isy * pbasis + ix * incx + iy * incy + iz] = idx;
                 }
             }
         }
     }
 }
 void Symmetry::symmetrize_grid_vector(double *object)
-{
-    if(max_pdim < 256)
-    {
-        symmetrize_grid_vector_int(object, sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        symmetrize_grid_vector_int(object, sym_index_x16, sym_index_y16, sym_index_z16);
-    }
-}
-
-    template <typename U>
-void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
 {
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
@@ -553,11 +540,8 @@ void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &
             for (int iy = 0; iy < py_grid; iy++) {
                 for (int iz = 0; iz < pz_grid; iz++) {
 
-                    int ixx = sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int iyy = sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int izz = sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int idx = sym_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
 
-                    int idx = izz *incz1 + iyy *incy1 + ixx *incx1;
                     vec[0] = da[idx + 0 * nbasis];
                     vec[1] = da[idx + 1 * nbasis];
                     vec[2] = da[idx + 2 * nbasis];
@@ -607,21 +591,7 @@ void Symmetry::symm_vec(int isy, double *vec)
 
 }
 
-    template <typename T>
-void Symmetry::symmetrize_grid_object(T *object)
-{
-    if(max_pdim < 256)
-    {
-        symmetrize_grid_object_int(object, sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        symmetrize_grid_object_int(object, sym_index_x16, sym_index_y16, sym_index_z16);
-    }
-}
-
-    template <typename T, typename U>
-void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
+void Symmetry::symmetrize_grid_object(double *object)
 {
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
@@ -631,7 +601,7 @@ void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x
     int incz1 = nx_grid * ny_grid;
 
     // Allocate a global array object and put this processors object into the correct location
-    T *da = new T[nbasis]();
+    double *da = new double[nbasis]();
 
     for (int ix = 0; ix < px_grid; ix++) {
         for (int iy = 0; iy < py_grid; iy++) {
@@ -643,7 +613,6 @@ void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x
 
     /* Call global sums to give everyone the full array */
     int length = nbasis;
-    if(typeid(T) == typeid(std::complex<double>)) length *= 2;
     GlobalSums ((double *)da, length, pct.grid_comm);
 
     for(int ix=0;ix < pbasis;ix++) object[ix] = 0.0;
@@ -654,11 +623,9 @@ void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x
             for (int iy = 0; iy < py_grid; iy++) {
                 for (int iz = 0; iz < pz_grid; iz++) {
 
-                    int ixx = sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int iyy = sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int izz = sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int idx = sym_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
 
-                    object[ix * incx + iy*incy + iz] += da[izz *incz1 + iyy *incy1 + ixx *incx1];
+                    object[ix * incx + iy*incy + iz] += da[idx];
                 }
             }
         }
@@ -1255,20 +1222,8 @@ void Symmetry::setgrid(BaseGrid &G, int density)
     pbasis = px_grid * py_grid * pz_grid;
     nbasis = nx_grid * ny_grid * nz_grid;
     // sym index arrays dimensioned to size of smallest possible integer type
-    if(max_pdim < 256)
-    {
-        sym_index_x8.resize(nsym * pbasis);
-        sym_index_y8.resize(nsym * pbasis);
-        sym_index_z8.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        sym_index_x16.resize(nsym * pbasis);
-        sym_index_y16.resize(nsym * pbasis);
-        sym_index_z16.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
-    }
+    sym_idx.resize(nsym * pbasis);
+    init_symm_ijk();
 
     ct.nsym = nsym;
 }
@@ -1278,18 +1233,6 @@ Symmetry::~Symmetry(void)
 
 
 void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
-{
-    if(max_pdim < 256)
-    {
-        symmetrize_rho_AFM_int(rho, rho_oppo, sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        symmetrize_rho_AFM_int(rho, rho_oppo, sym_index_x16, sym_index_y16, sym_index_z16);
-    }
-}
-    template <typename U>
-void Symmetry::symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
 {
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
@@ -1330,11 +1273,7 @@ void Symmetry::symmetrize_rho_AFM_int(double *rho, double *rho_oppo, const std::
             for (int iy = 0; iy < py_grid; iy++) {
                 for (int iz = 0; iz < pz_grid; iz++) {
 
-                    int ixx = sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int iyy = sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    int izz = sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-
-                    int idx = izz *incz1 + iyy *incy1 + ixx *incx1;
+                    int idx = sym_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
                     if(time_rev[isy]) 
                     {
                         rho[ ix * incx + iy*incy + iz] += da2[idx];
