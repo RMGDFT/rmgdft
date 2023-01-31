@@ -47,7 +47,7 @@ template void LdaplusUxpsi<std::complex<double> >(Kpoint<std::complex<double>> *
 template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
-    if(ct.num_ldaU_ions <= 0) return;
+    //if(ct.num_ldaU_ions <= 0) return;
     int first_soc = first_state * ct.noncoll_factor;
     int nstate_soc = nstates * ct.noncoll_factor;
     

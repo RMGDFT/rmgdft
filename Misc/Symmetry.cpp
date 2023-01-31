@@ -481,9 +481,9 @@ void Symmetry::init_symm_ijk()
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
 
-    int incx1 = 1;
-    int incy1 = nx_grid;
-    int incz1 = nx_grid * ny_grid;
+    int incx1 = ny_grid * nz_grid;
+    int incy1 = nz_grid;
+    int incz1 = 1;
 
     int ixx, iyy, izz;
     for(int isy = 0; isy < nsym; isy++)
@@ -508,9 +508,9 @@ void Symmetry::symmetrize_grid_vector(double *object)
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
 
-    int incx1 = 1;
-    int incy1 = nx_grid;
-    int incz1 = nx_grid * ny_grid;
+    int incx1 = ny_grid * nz_grid;
+    int incy1 = nz_grid;
+    int incz1 = 1;
 
     // Allocate a global array object and put this processors object into the correct location
     double *da = new double[nbasis*3]();
@@ -596,9 +596,9 @@ void Symmetry::symmetrize_grid_object(double *object)
     int incx = py_grid * pz_grid;
     int incy = pz_grid;
 
-    int incx1 = 1;
-    int incy1 = nx_grid;
-    int incz1 = nx_grid * ny_grid;
+    int incx1 = ny_grid * nz_grid;
+    int incy1 = nz_grid;
+    int incz1 = 1;
 
     // Allocate a global array object and put this processors object into the correct location
     double *da = new double[nbasis]();
@@ -1078,15 +1078,16 @@ int Symmetry::type_symm(double sr[3][3])
     return 0; 
 
 }
-void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
+void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax, std::vector<int> map_to_ldaU_ion, std::vector<int> ldaU_ion_index)
 {
     boost::multi_array<std::complex<double>, 5> ns_occ_sum, ns_occ;
     int num_spin = 1;
     if (ct.nspin != 1) num_spin = 2;
-    ns_occ_sum.resize(boost::extents[num_spin][num_spin][Atoms.size()][mmax][mmax]);
-    ns_occ.resize(boost::extents[num_spin][num_spin][Atoms.size()][mmax][mmax]);
+    int num_ldaU_ions = ldaU_ion_index.size();
+    ns_occ_sum.resize(boost::extents[num_spin][num_spin][num_ldaU_ions][mmax][mmax]);
+    ns_occ.resize(boost::extents[num_spin][num_spin][num_ldaU_ions][mmax][mmax]);
 
-    int size_each_spin = Atoms.size() * mmax * mmax;
+    int size_each_spin = num_ldaU_ions * mmax * mmax;
     if(ct.nspin == 1)
     {
         for(int idx = 0; idx < size_each_spin; idx++)
@@ -1114,15 +1115,15 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
         }
     }
 
-    size_t occ_size = num_spin * num_spin * Atoms.size() * mmax * mmax;
+    size_t occ_size = num_spin * num_spin * num_ldaU_ions * mmax * mmax;
     for(size_t idx = 0; idx < occ_size; idx++)ns_occ_sum.data()[idx] = 0.0;
     //  the loops below can be optimized if it is slow    
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (int ion = 0; ion < num_ldaU_ions; ion++)
     {
 
-        int num_orb = Species[Atoms[ion].species].num_ldaU_orbitals;
-        if(num_orb == 0) continue;
-        int l_val = Species[Atoms[ion].species].ldaU_l;
+        int ion_idx = ldaU_ion_index[ion];
+        int num_orb = Species[Atoms[ion_idx].species].num_ldaU_orbitals;
+        int l_val = Species[Atoms[ion_idx].species].ldaU_l;
         for(int is1 = 0; is1 < num_spin; is1++)
         {
             for(int is2 = 0; is2 < num_spin; is2++)
@@ -1133,7 +1134,8 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                     { 
                         for(int isy = 0; isy < nsym; isy++)
                         {
-                            int ion1 = sym_atom[isy * ct.num_ions + ion];
+                            int ion1_idx = sym_atom[isy * ct.num_ions + ion_idx];
+                            int ion1 = map_to_ldaU_ion[ion1_idx];
 
                             for(int is3 = 0; is3 < num_spin; is3++)
                             {     

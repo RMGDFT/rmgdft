@@ -47,6 +47,8 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
 
     double *kvec = kp.kvec;
 
+    Projector<KpointType> *P = OrbitalProjector;
+    size_t stride = P->get_pstride();
 
     for(size_t idx = 0; idx < orbital_weight_size; idx++)
         orbital_weight[idx] = 0.0;
@@ -66,22 +68,27 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         }
     }
 
-    int state_count = CountAtomicOrbitals();
-
-    KpointType *npsi = (KpointType *)RmgMallocHost(state_count * pbasis * sizeof(KpointType));
-
-    if(ct.spinorbit && state_count > nstates)
-    {
-        rmg_printf("state_count %d != nstates %d", state_count, nstates);
-        //        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
-
-    }
-    double coeff = 1.0;
-    int wave_idx = 0;
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    int num_allorbitals_ldaUion = 0;
+    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
     {
         /* Generate ion pointer */
-        ION &Atom = Atoms[ion];
+        int ion_idx = this->ldaU->ldaU_ion_index[ion];
+        ION &Atom = Atoms[ion_idx];
+
+        /* Get species type */
+        SPECIES &AtomType = Species[Atom.species];
+        num_allorbitals_ldaUion += AtomType.num_orbitals;
+    }
+
+    KpointType *npsi = (KpointType *)RmgMallocHost(num_allorbitals_ldaUion * pbasis * sizeof(KpointType));
+
+    double coeff = 1.0;
+    int wave_idx = 0;
+    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
+    {
+        /* Generate ion pointer */
+        int ion_idx = this->ldaU->ldaU_ion_index[ion];
+        ION &Atom = Atoms[ion_idx];
 
         /* Get species type */
         SPECIES &AtomType = Species[Atom.species];
@@ -94,6 +101,8 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         }
         else
         {
+            std::cout << "LDA+U not working with localized orbitals" << std::endl;
+            rmg_error_handler(__FILE__,__LINE__,"Used delocalized orbital for LDA+U, Terminating.");
             /*Loop over atomic wavefunctions for given ion*/
             for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
             {
@@ -115,19 +124,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
 
     wave_idx = 0;
 
-    Projector<KpointType> *P = OrbitalProjector;
-    size_t stride = P->get_pstride();
     KpointType *weight;
 
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    for (int ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
     {
-        ION &Atom = Atoms[ion];
+        int ion_idx = this->ldaU->ldaU_ion_index[ion];
+        ION &Atom = Atoms[ion_idx];
         SPECIES &AtomType = Species[Atom.species];
-        if(!AtomType.is_ldaU) 
-        {
-            wave_idx += AtomType.num_orbitals;
-            continue;
-        }
         size_t offset = (size_t)ion * stride * (size_t)pbasis;
         weight = &orbital_weight[offset];
         //        std::complex<double> *Umm = AtomType.Umm;

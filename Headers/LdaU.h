@@ -47,6 +47,9 @@ public:
     void Hubbard_matrix();
 
     void calc_energy();
+    int num_ldaU_ions;
+    std::vector<int>ldaU_ion_index;
+    std::vector<int>map_to_ldaU_ion;
     int ldaU_m;
     double Ehub;
     double Ecorrect;

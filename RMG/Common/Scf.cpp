@@ -253,11 +253,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     {
         RmgTimer("3-MgridSubspace: ldaUop x psi");
         int pstride = Kptr[0]->ldaU->ldaU_m;
-        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+        int num_ldaU_ions = Kptr[0]->ldaU->num_ldaU_ions;
+        int occ_size = ct.nspin * num_ldaU_ions * pstride * pstride;
 
         doubleC_4d_array old_ns_occ, new_ns_occ;
-        old_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
-        new_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+        old_ns_occ.resize(boost::extents[ct.nspin][num_ldaU_ions][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+        new_ns_occ.resize(boost::extents[ct.nspin][num_ldaU_ions][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
 
         old_ns_occ =  Kptr[0]->ldaU->ns_occ;
 
@@ -273,13 +274,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
+        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
 
     // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
         if(ct.nspin == 2)
         {
             MPI_Status status;
-            int len = 2 * Atoms.size() * pstride * pstride;
+            int len = 2 * Kptr[0]->ldaU->num_ldaU_ions * pstride * pstride;
             double *sendbuf = (double *)new_ns_occ.data();
             double *recvbuf = sendbuf + len;
             MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,

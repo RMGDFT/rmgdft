@@ -115,7 +115,7 @@ class Symmetry
         void rotate_ylm();
         void rotate_spin();
         int type_symm(double sr[3][3]);
-        void symm_nsocc(std::complex<double> *ns_occ, int mmax);
+        void symm_nsocc(std::complex<double> *ns_occ, int mmax, std::vector<int> map_to_ldaU_ion, std::vector<int> ldaU_ion_index);
 
 
 };

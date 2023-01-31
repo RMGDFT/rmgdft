@@ -49,7 +49,7 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
 {
     char newname[MAX_PATH + 200];
     int pstride = kptr->ldaU->ldaU_m;
-    size_t occ_size_bytes = ct.nspin * Atoms.size() * pstride * pstride * sizeof(std::complex<double>);
+    size_t occ_size_bytes = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride * sizeof(std::complex<double>);
 
     if(pct.imgpe == 0)
     {
@@ -65,7 +65,7 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
         close(fhand);
     }
 
-    int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+    int occ_size = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride;
     MPI_Bcast(kptr->ldaU->ns_occ.data(), occ_size*2, MPI_DOUBLE, 0, pct.img_comm);
 
 }

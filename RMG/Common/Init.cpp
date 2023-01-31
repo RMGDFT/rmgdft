@@ -676,10 +676,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             RmgTimer("3-MgridSubspace: ldaUop x psi");
             int pstride = Kptr[0]->ldaU->ldaU_m;
-            int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+            int num_ldaU_ions = Kptr[0]->ldaU->num_ldaU_ions;
+            int occ_size = ct.nspin * num_ldaU_ions * pstride * pstride;
 
             doubleC_4d_array new_ns_occ;
-            new_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+            new_ns_occ.resize(boost::extents[ct.nspin][num_ldaU_ions][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
 
             for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
@@ -693,7 +694,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-            if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
+            if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
 
 
             for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
