@@ -80,15 +80,18 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     if (ct.nspin == 2)
         get_rho_oppo (rho,  &rho[FP0_BASIS]);
-    if(ct.AFM)
+    if(ct.is_use_symmetry)
     {
-        Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
-    }
-    else
-    {
-        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
-        if(ct.noncoll && Rmg_Symm)
-            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+        if(ct.AFM)
+        {
+            Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
+        }
+        else
+        {
+            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+            if(ct.noncoll && Rmg_Symm)
+                Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+        }
     }
 
 

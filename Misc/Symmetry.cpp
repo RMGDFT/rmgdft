@@ -128,6 +128,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     }
     else
     {
+        nsym_atom = 1;
         sa[0] = 1;
         sa[4] = 1;
         sa[8] = 1;
