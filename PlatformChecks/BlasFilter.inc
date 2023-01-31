@@ -7,7 +7,7 @@ if(${BLA_VENDOR} MATCHES "Goto")
 endif()
 
 # Check for openblas library supporting changing number of threads
-if(${BLAS_LIBRARIES} MATCHES "openblas")
+if("${BLAS_LIBRARIES}" MATCHES "openblas")
     include("PlatformChecks/CheckOpenBlasSetNumThreads.inc")
     if(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
         add_definitions(-DOPENBLAS_SET_NUM_THREADS=1)

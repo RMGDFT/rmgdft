@@ -366,7 +366,7 @@ void WriteHeader (void)
             printf ("Linear  (Mixing constant %4.2f)\n", ct.mix);
             break;
 	case 1:
-	    printf ("Pulay  (Order:%d Scale:%4.2f Refresh:%d)\n", ct.charge_pulay_order, ct.charge_pulay_scale, ct.charge_pulay_refresh);
+	    printf ("Pulay  (Order:%d Scale:%4.2f Refresh:%d)\n", ct.charge_pulay_order, ct.mix, ct.charge_pulay_refresh);
 	    break;
 	case 2:
 	    printf ("Broyden\n");

@@ -57,10 +57,11 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     for(int idx = 0;idx < pbasis*factor;idx++) augrho[idx] = 0.0;
+    if(ct.norm_conserving_pp) return;
+
     double *taugrho = new double[pbasis*factor]();
 
 
-    if(ct.norm_conserving_pp) return;
 
     std::complex<double> *product = new std::complex<double>[max_product * factor];
     std::complex<double> *product_tem = new std::complex<double>[max_product * factor];

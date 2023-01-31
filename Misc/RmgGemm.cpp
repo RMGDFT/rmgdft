@@ -1,3 +1,6 @@
+#if HIP_ENABLED
+#include "tiled_mm.hpp"
+#endif
 #include <complex>
 #include <typeinfo>
 #include <string.h>
@@ -17,6 +20,7 @@
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 #endif
+
 
 #define         dgemm           RMG_FC_GLOBAL(dgemm, DGEMM)
 #define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
@@ -178,6 +182,23 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     return;
 
 #elif HIP_ENABLED
+    // For Tiled-MM
+    if(ct.use_cublasxt)
+    {
+       static std::unique_ptr<gpu::mm_handle<DataType>> ctx;
+       // can probably tune these
+       if(!ctx) ctx = gpu::make_context<DataType>(2, 5000, 5000, 2000);
+       gpu::gemm<DataType>(*ctx,
+          *transa, *transb,
+          m, n, k,
+          alpha,
+          A, lda, 
+          B, ldb, 
+          beta,
+          C, ldc, false, true);
+          return;
+    }
+
     //hipDeviceSynchronize();
     hipPointerAttribute_t attr;
     hipError_t hiperr;

@@ -41,7 +41,6 @@ MODULE bfgs_module
    !!    Landscapes and Rare Events.
    !
    USE iso_c_binding
-   USE kinds,     ONLY : DP
    USE constants, ONLY : eps4, eps8, eps16, RYTOEV
    !
    USE basic_algebra_routines

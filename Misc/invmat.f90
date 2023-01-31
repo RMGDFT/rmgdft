@@ -31,8 +31,8 @@ MODULE matrix_inversion
 #if defined(_OPENMP)
   USE omp_lib
 #endif
-  USE kinds, ONLY : DP
   IMPLICIT NONE
+  INTEGER, PARAMETER :: DP = selected_real_kind(14,200)
   INTEGER, INTENT(in) :: n
   REAL(DP), DIMENSION (n,n), INTENT(inout)  :: a
   REAL(DP), DIMENSION (n,n), INTENT(out), OPTIONAL :: a_inv

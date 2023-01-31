@@ -409,6 +409,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
                 Kptr[kpt]->Subdiag(vtot_psi, vxc_psi, ct.subdiag_driver);
+                Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                       Kptr[kpt]->nstates*ct.noncoll_factor, 
+                       Kptr[kpt]->nl_weight);
+                if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+                {
+                    LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+                    Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+                }
                 MPI_Barrier(pct.grid_comm);
             }
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
