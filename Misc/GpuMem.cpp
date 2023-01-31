@@ -72,7 +72,10 @@ hipError_t gpuMallocHost(void **ptr, size_t size)
     {
         hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
         if(hiperr != hipSuccess)
-        rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
+        {
+            std::cout << "memory size: " << size/1024 << " MB" << std::endl; 
+            rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory . Terminating.");
+        }
         return hiperr;
     }
 }
