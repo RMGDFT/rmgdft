@@ -30,6 +30,7 @@
 
 #include "rmg_error.h"
 #include <signal.h>
+#include <boost/stacktrace.hpp>
 
 static void *(*rmgerrfunc)(const char *filename, int line, char const *message) = NULL;
 static int do_print=true;
@@ -46,6 +47,7 @@ void RmgErrorSetPrint(int doprint)
 
 void rmg_error_handler(const char *filename, int line, char const *message)
 {
+    std::cout << boost::stacktrace::stacktrace();
     if(!rmgerrfunc) {
         if(do_print) printf("%s at LINE %d in %s.\n", message, line, filename);
         fflush (NULL);
