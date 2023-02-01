@@ -29,6 +29,7 @@
 
 
 #include "rmg_error.h"
+#include <iostream>
 #include <signal.h>
 #include <boost/stacktrace.hpp>
 
