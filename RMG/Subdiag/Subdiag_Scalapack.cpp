@@ -122,7 +122,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
     KpointType *psi = kptr->orbital_storage;
-    HS_Scalapack (nstates, pbasis_noncoll, psi, hpsi, desca, distAij, distSij);
+    HS_Scalapack (nstates, pbasis_noncoll, psi, hpsi, kptr->ns, desca, distAij, distSij);
 
 
 #if HIP_ENABLED || CUDA_ENABLED

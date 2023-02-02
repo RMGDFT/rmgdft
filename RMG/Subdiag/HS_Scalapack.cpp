@@ -45,11 +45,11 @@
 
 
 
-template void HS_Scalapack (int nstates, int pbasis_noncoll, double *psi, double *hpsi, int *desca, double *distHij, double *distSij);
-template void HS_Scalapack (int nstates, int pbasis_noncoll, std::complex<double> *psi, std::complex<double> *hpsi, int *desca, std::complex<double> *distHij, std::complex<double> *distSij);
+template void HS_Scalapack (int nstates, int pbasis_noncoll, double *psi, double *hpsi, double *ns, int *desca, double *distHij, double *distSij);
+template void HS_Scalapack (int nstates, int pbasis_noncoll, std::complex<double> *psi, std::complex<double> *hpsi, std::complex<double> *ns, int *desca, std::complex<double> *distHij, std::complex<double> *distSij);
 
 template <typename KpointType>
-void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, int *desca, KpointType *distHij, KpointType *distSij)
+void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij)
 {
     RmgTimer *RT1;
 
@@ -94,6 +94,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
     //  for HIP its a GPU buffer.
     KpointType *psi_dev = psi;
     KpointType *hpsi_dev = hpsi;
+    KpointType *ns_dev = ns;
 #if HIP_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
     // and use it repeatedly to compute the matrix elements. This is much faster but puts
@@ -103,6 +104,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
     gpuMalloc((void **)&hpsi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
     gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
     gpuMemcpy(hpsi_dev, hpsi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+    ns_dev = hpsi_dev; 
 #endif
 #if CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
@@ -111,6 +113,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
         gpuMalloc((void **)&hpsi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
         gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
         gpuMemcpy(hpsi_dev, hpsi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+        ns_dev = hpsi_dev; 
     }
 #endif
 
@@ -185,9 +188,22 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
         }
 
 
+
+
         RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
+
+#if HIP_ENABLED
+    gpuMemcpy(ns_dev, ns, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+#endif
+#if CUDA_ENABLED
+    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
+    {
+        gpuMemcpy(ns_dev, ns, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+    }
+#endif
+
         RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
-                &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
+                &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
         delete RT1a;
 
         RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
