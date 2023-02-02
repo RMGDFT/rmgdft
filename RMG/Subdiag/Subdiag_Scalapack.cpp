@@ -107,12 +107,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         }
     }
     int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
-     KpointType alpha(1.0);
-    KpointType beta(0.0);
-
-    // For MPI routines
-    int factor = 1;
-    if(!ct.is_gamma) factor = 2;
 
     // State array is 2 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
@@ -210,6 +204,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         }
     }
 
+    delete [] matrix_diag;
 
     delete RT1;
     // End rotation
