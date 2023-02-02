@@ -327,7 +327,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].istate = st1;
             rptr_k +=P0_BASIS * ct.noncoll_factor;
         }
-        if(!need_ns) Kptr[kpt]->ns = Kptr[kpt]->Kstates[0].psi;
 
     }
 
