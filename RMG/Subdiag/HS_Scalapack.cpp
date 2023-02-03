@@ -134,8 +134,8 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
         this_block_size = std::min(nb, length_block);
 
         RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
-                &hpsi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
+        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
+                &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
         delete RT1a;
 
         RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
