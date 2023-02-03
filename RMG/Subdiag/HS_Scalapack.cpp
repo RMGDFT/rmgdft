@@ -100,15 +100,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
         ns_dev = psi_dev;
     }
 
-#if HIP_ENABLED
-    // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
-    // and use it repeatedly to compute the matrix elements. This is much faster but puts
-    // more pressure on GPU memory. A blas implementation that overlapped communication and
-    // computation would make this unnecessary.
-    gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
-    gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-#endif
-#if CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
         gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
@@ -248,17 +240,11 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
 
     delete RT1;
 #if HIP_ENABLED || CUDA_ENABLED
-#if CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
         gpuFree(psi_dev);
         gpuFree(hpsi_dev);
     }
-#endif
-#if HIP_ENABLED
-    gpuFree(psi_dev);
-    gpuFree(hpsi_dev);
-#endif
     GpuFreeHost(block_matrix);
 #else
     delete [] block_matrix;

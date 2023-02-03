@@ -80,15 +80,8 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
     psi_new_dev = new KpointType[nb*pbasis_noncoll];
 #endif
 
-#if HIP_ENABLED 
-    gpuMalloc((void **)&psi_new_dev, nb * pbasis_noncoll * sizeof(KpointType));
-    gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
-    gpuMalloc((void **)&block_matrix_dev, nb * nstates * sizeof(KpointType));
-    gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-#else
     block_matrix_dev = block_matrix;
     psi_dev = psi;
-#endif
     
 
     int num_blocks = (nstates + nb -1)/nb;
@@ -130,9 +123,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 
 
         RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
-#if HIP_ENABLED 
-        gpuMemcpy(block_matrix_dev, block_matrix, this_block_size_row * nstates * sizeof(KpointType), gpuMemcpyHostToDevice);
-#endif
+printf("PPPPP  %d  %d  %d\n",this_block_size_row, nb, mb);
         RmgGemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
                 psi_dev, pbasis_noncoll, block_matrix_dev, nstates, 
                 beta, psi_new_dev, pbasis_noncoll);
@@ -146,11 +137,6 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 #endif
                 
     }
-
-#if HIP_ENABLED 
-    gpuFree(psi_dev);
-    gpuFree(block_matrix_dev);
-#endif
 
 #if HIP_ENABLED || CUDA_ENABLED
     GpuFreeHost(block_matrix);
