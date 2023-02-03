@@ -243,7 +243,6 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
         gpuFree(psi_dev);
-        gpuFree(hpsi_dev);
     }
     GpuFreeHost(block_matrix);
 #else
