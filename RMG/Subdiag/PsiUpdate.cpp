@@ -123,7 +123,6 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 
 
         RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
-printf("PPPPP  %d  %d  %d\n",this_block_size_row, nb, mb);
         RmgGemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
                 psi_dev, pbasis_noncoll, block_matrix_dev, nstates, 
                 beta, psi_new_dev, pbasis_noncoll);
