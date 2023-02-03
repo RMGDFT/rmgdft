@@ -49,7 +49,7 @@ template void HS_Scalapack (int nstates, int pbasis_noncoll, double *psi, double
 template void HS_Scalapack (int nstates, int pbasis_noncoll, std::complex<double> *psi, std::complex<double> *hpsi, std::complex<double> *ns, int *desca, std::complex<double> *distHij, std::complex<double> *distSij);
 
 template <typename KpointType>
-void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij)
+void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij)
 {
     RmgTimer *RT1;
 
@@ -92,21 +92,11 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
 
     //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
     //  for HIP its a GPU buffer.
-    KpointType *psi_dev = psi;
-    KpointType *hpsi_dev = hpsi;
     KpointType *ns_dev = ns;
     if(ct.norm_conserving_pp)
     {
         ns_dev = psi_dev;
     }
-
-#if HIP_ENABLED || CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
-        gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-    }
-#endif
 
     RT1 = new RmgTimer("4-Diagonalization: matrix");
 
@@ -126,7 +116,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
         this_block_size = std::min(nb, length_block);
 
         RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
+        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll, 
                 &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
         delete RT1a;
 
@@ -240,10 +230,6 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType 
 
     delete RT1;
 #if HIP_ENABLED || CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuFree(psi_dev);
-    }
     GpuFreeHost(block_matrix);
 #else
     delete [] block_matrix;

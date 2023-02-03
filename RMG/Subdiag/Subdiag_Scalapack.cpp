@@ -122,7 +122,16 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
     KpointType *psi = kptr->orbital_storage;
-    HS_Scalapack (nstates, pbasis_noncoll, psi, hpsi, kptr->ns, desca, distAij, distSij);
+    KpointType *psi_dev = psi;
+#if HIP_ENABLED || CUDA_ENABLED
+    if(ct.gpu_managed_memory == false)
+    {
+        gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
+        gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+    }
+#endif
+
+    HS_Scalapack (nstates, pbasis_noncoll, psi_dev, hpsi, kptr->ns, desca, distAij, distSij);
 
 
 #if HIP_ENABLED || CUDA_ENABLED
@@ -171,7 +180,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     // Begin rotation
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
     KpointType *matrix_diag = new KpointType[nstates];
-    PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi, hpsi,  matrix_diag);
+    PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
 
     // And finally copy them back
     size_t istart = 0;
@@ -193,7 +202,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     if(ct.xc_is_hybrid)
     {
         tlen = (size_t)nstates * (size_t)pbasis_noncoll;
-        PsiUpdate(nstates, pbasis_noncoll, distAij, desca, kptr->vexx, hpsi,  matrix_diag);
+#if HIP_ENABLED || CUDA_ENABLED
+        if(ct.gpu_managed_memory == false)
+        {
+            gpuMemcpy(psi_dev, kptr->vexx, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+        }
+#endif
+        PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
         memcpy(kptr->vexx, hpsi, tlen);
         for(int istate=istart;istate < nstates;istate++)
         {
@@ -211,6 +226,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 #if HIP_ENABLED || CUDA_ENABLED
     GpuFreeHost(eigs);
+    if(ct.gpu_managed_memory == false)
+    {
+        gpuFree(psi_dev);
+    }
 #else
     delete [] eigs;
 #endif
