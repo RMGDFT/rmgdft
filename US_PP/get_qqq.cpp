@@ -74,7 +74,8 @@ void get_qqq ()
                     sum = 0.0;
                     if (ncount)
                     {
-                        for (icount = 0; icount < ncount; icount++)
+#pragma omp parallel for reduction(+:sum)
+                        for (int icount = 0; icount < ncount; icount++)
                         {
                             sum += GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
                         }
