@@ -336,6 +336,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
     RmgFreeHost(lambda);
     RmgFreeHost(nwork);
+    RmgFreeHost(nwork_ion);
     RmgFreeHost(sint_compack);
 }
 
