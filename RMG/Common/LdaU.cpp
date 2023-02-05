@@ -245,9 +245,9 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     // and for the diagonal part of ns_occ
     std::complex<double> *lambda_C = (std::complex<double> *)lambda;
     boost::multi_array_ref<KpointType, 5> nlambda{lambda,
-        boost::extents[num_nonloc_ions][pstride][ct.noncoll_factor][pstride][ct.noncoll_factor]};
+        boost::extents[num_nonloc_ions][ct.noncoll_factor][pstride][ct.noncoll_factor][pstride]};
     boost::multi_array_ref<std::complex<double>, 5> nlambda_C{lambda_C,
-        boost::extents[num_nonloc_ions][pstride][ct.noncoll_factor][pstride][ct.noncoll_factor]};
+        boost::extents[num_nonloc_ions][ct.noncoll_factor][pstride][ct.noncoll_factor][pstride]};
 
     // Repack the sint array
     boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[K.nstates][ct.noncoll_factor][num_nonloc_ions][pstride]};
@@ -286,11 +286,11 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
                     {
                         if(ct.is_gamma) 
                         {
-                            nlambda[ion][i][is1][j][is2] = std::real(this->vhub_ns[ispin][gion][i][j]);
+                            nlambda[ion][is1][i][is2][j] = std::real(this->vhub_ns[ispin][gion][i][j]);
                         }
                         else
                         {
-                            nlambda_C[ion][i][is1][j][is2] = this->vhub_ns[ispin][gion][i][j];
+                            nlambda_C[ion][is1][i][is2][j] = this->vhub_ns[ispin][gion][i][j];
                         }
 
                     }
