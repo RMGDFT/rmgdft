@@ -2,6 +2,9 @@
 description="atom_Pt_pp"
 
 test_energy="-45.09801696"
+test_steps = "9"
+test_steps_tolerance = "1"
+
 
 #spin_polarization="true"
 

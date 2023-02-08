@@ -1,6 +1,9 @@
 # Description of run.
 # Energy test
 test_energy="-215.98548688"
+test_steps = "14"
+test_steps_tolerance = "1"
+
 
 description="AlN 32 atom wurtzite test cell"
 localize_projectors="false"

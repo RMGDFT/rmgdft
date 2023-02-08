@@ -79,9 +79,26 @@ void check_tests(void)
             fprintf(elog, "deviation             : %15.8f Ha\n", eps);
             fprintf(elog, "tolerance             : %15.8f Ha\n", ct.test_energy_tolerance);
             if(eps < ct.test_energy_tolerance)
-                fprintf(elog, "test status: pass\n");
+            {
+                if(ct.test_steps)
+                {
+                    fprintf(elog, "reference steps to converge: %6d Ha\n", ct.test_steps);
+                    fprintf(elog, "current   steps to converge: %6d Ha\n", ct.scf_steps);
+                    fprintf(elog, "tolerance                  : %6d Ha\n", ct.test_steps_tolerance);
+                    if(ct.scf_steps > (ct.test_steps + ct.test_steps_tolerance))
+                        fprintf(elog, "test status: fail\n");
+                    else
+                        fprintf(elog, "test status: pass\n");
+                }
+                else
+                {
+                    fprintf(elog, "test status: pass\n");
+                }
+            }
             else
+            {
                 fprintf(elog, "test status: fail\n");
+            }
         }
 
         // Bond length test. Always performed between the first and second atoms

@@ -1045,15 +1045,20 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Expected final energy for testing. ",
             "test_energy must lie in the range (-1.0e9,1.0e9). Ignoring. ", TESTING_OPTIONS);
 
-    If.RegisterInputKey("epsg_guard", &lc.epsg_guard, 0.0, 1.0e-5, 1.0e-7,
-            CHECK_AND_FIX, OPTIONAL,
-            "GGA guard value for low density regions. ",
-            "epsg_guard must lie in the range (0.0,1.0e-5). Ignoring. ", CONTROL_OPTIONS);
-
     If.RegisterInputKey("test_energy_tolerance", &lc.test_energy_tolerance, 1.0e-8, 1.0e-4, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
             "Test final energy tolerance. ",
             "test_energy_tolerance must lie in the range (1.0e-8,1.0e-4). Resetting to the default value of 1.0e-7. ", TESTING_OPTIONS);
+
+    If.RegisterInputKey("test_steps", &lc.test_steps, 0, 1000, 0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Expected number of scf steps for testing. ",
+            "test_steps must lie in the range (0,1000). Ignoring. ", TESTING_OPTIONS);
+
+    If.RegisterInputKey("test_steps_tolerance", &lc.test_steps_tolerance, 0, 10, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "Test scf steps tolerance. ",
+            "test_steps_tolerance must lie in the range (0,10). Ignoring. ", TESTING_OPTIONS);
 
     If.RegisterInputKey("test_bond_length", &lc.test_bond_length, 0.0 , 20.0, (double)NAN,
             CHECK_AND_FIX, OPTIONAL,
@@ -1064,6 +1069,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Test bond length tolerance. ",
             "test_bond_length_tolerance must lie in the range (1.0e-4,1.0e-1). Resetting to the default value of 1.0e-3. ", TESTING_OPTIONS);
+
+    If.RegisterInputKey("epsg_guard", &lc.epsg_guard, 0.0, 1.0e-5, 1.0e-7,
+            CHECK_AND_FIX, OPTIONAL,
+            "GGA guard value for low density regions. ",
+            "epsg_guard must lie in the range (0.0,1.0e-5). Ignoring. ", CONTROL_OPTIONS);
 
 
     // Booleans next. Booleans are never required.

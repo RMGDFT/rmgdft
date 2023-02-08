@@ -10,6 +10,9 @@ compressed_infile = "false"
 compressed_outfile = "false"
 
 test_energy = "-11.38920211"
+test_steps = "9"
+test_steps_tolerance = "2"
+
 
 # Wavefunction grid
 wavefunction_grid="16 16 16"

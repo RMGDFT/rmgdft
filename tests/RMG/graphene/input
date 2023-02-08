@@ -8,6 +8,9 @@ localize_localpp = "false"
 localize_projectors = "false"
 
 test_energy = "-12.04904321"
+test_steps = "11"
+test_steps_tolerance = "1"
+
 
   
 #******* CONTROL OPTIONS *******  

@@ -993,6 +993,8 @@ public:
    double test_energy_tolerance=1.0e-7;
    double test_bond_length=NAN;
    double test_bond_length_tolerance=1.0e-3;
+   int test_steps=0;
+   int test_steps_tolerance=0;
 
 };
 
