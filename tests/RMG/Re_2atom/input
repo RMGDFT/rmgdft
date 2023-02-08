@@ -1,6 +1,9 @@
 # Rhenium test cell. Structure is HCP with gamma=60
 #
 test_energy = "-159.84996716"
+test_steps = "10"
+test_steps_tolerance = "1"
+
 
 lattice_vector = "
     2.77447000        0.00000000        0.00000000

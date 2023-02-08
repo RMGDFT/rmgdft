@@ -4,6 +4,9 @@ description="atom_O_pp"
 # Expected test energy
 test_energy="-15.87872917"
 test_energy_tolerance = "1.00000000e-06"
+test_steps = "9"
+test_steps_tolerance = "1"
+
 
 #spin_polarization="true"
 

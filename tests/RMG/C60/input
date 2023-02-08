@@ -3,6 +3,9 @@ description="C60 test example using Davidson diagonalization"
 
 # Used to compare test energy
 test_energy="-343.84736795"
+test_steps = "15"
+test_steps_tolerance = "1"
+
 
 # Wavefunction grid
 wavefunction_grid="48 48 48"
