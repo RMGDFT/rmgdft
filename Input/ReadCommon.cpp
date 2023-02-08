@@ -494,7 +494,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("drho_precond", &lc.drho_precond, true, 
             "if set true, charge density residual is preconded with q^2/(q^2+q0^2) ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("cube_rho", &lc.cube_rho, true, 
+    If.RegisterInputKey("cube_rho", &lc.cube_rho, false, 
             "if set true, charge density is printed out in cube format ");
 
     If.RegisterInputKey("cube_vh", &lc.cube_vh, false, 
