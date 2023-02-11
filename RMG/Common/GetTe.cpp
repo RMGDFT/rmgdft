@@ -102,7 +102,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double ldaU_H = 0.0;
 
     int nspin = 1;
-    if(ct.nspin == 2) nspin = 2;
+    if(ct.nspin == 2 && !ct.AFM) nspin = 2;
     for (idx = 0; idx < nspin; idx++)
     {
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -122,6 +122,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
 
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
+    if(ct.AFM) eigsum *= 2.0;
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
     {

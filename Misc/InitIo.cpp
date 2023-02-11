@@ -250,7 +250,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[1] == 0);
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[2] == 0);
     ct.is_gamma = ct.is_gamma && (!ct.noncoll);
-    ct.is_use_symmetry = ct.is_use_symmetry && (!ct.is_gamma);
     if(!ct.is_gamma && !ct.is_use_symmetry && pct.worldrank == 0) 
     {
         printf("\n **********************************************************************");
@@ -258,13 +257,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         printf("\n          use_symmetry = \"true\" to turn on symmetry");
         printf("\n *********************************************************************\n\n");
     }
-    if(ct.AFM && !ct.is_use_symmetry && pct.worldrank == 0) 
-    {
-        printf("\n **********************************************************************");
-        printf("\n WARNING: AFM will not be forced since you turned off the symmetry");
-        printf("\n          use_symmetry = \"true\" to turn on symmetry");
-        printf("\n *********************************************************************\n\n");
-    }
+
     Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
 
 

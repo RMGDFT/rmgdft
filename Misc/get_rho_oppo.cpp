@@ -27,16 +27,23 @@
 #include <stdio.h>
 #include "main.h"
 #include "common_prototypes.h"
+#include "transition.h"
 
 
 
 
 void  get_rho_oppo (double * rho, double * rho_oppo)
 {
-    MPI_Status status;
-
-    MPI_Sendrecv(rho,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, 
-	    rho_oppo,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    if(ct.AFM)
+    {
+         Rmg_Symm->symmetrize_rho_AFM(rho, &rho[get_FP0_BASIS()]);
+    }
+    else
+    {
+        MPI_Status status;
+        MPI_Sendrecv(rho,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, 
+                rho_oppo,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    }
 }                               /* end scf */
 
 

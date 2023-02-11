@@ -343,7 +343,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
         /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
-        if (ct.nspin == 2)
+        if (ct.nspin == 2 )
         {
             get_rho_oppo (rho, rho_oppo);
             GetOppositeEigvals (Kptr);
@@ -670,7 +670,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         }
 
-        if (ct.nspin == 2)
+        if (ct.nspin == 2 )
             GetOppositeEigvals (Kptr);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)

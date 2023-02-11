@@ -31,6 +31,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "blas.h"
 
 
 template void GetOppositeOccupancies(Kpoint<double> **);
@@ -63,8 +64,16 @@ void GetOppositeOccupancies (Kpoint<KpointType> ** Kptr)
 
 
     /*Communicate for spin up and spin down occupations*/    
-    MPI_Sendrecv(occ_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+    if(ct.AFM)
+    {
+        int ione = 1;
+          dcopy(&st, occ_sd, &ione, occ_rv, &ione);
+    }
+    else
+    {
+        MPI_Sendrecv(occ_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
             occ_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    }
 
 
     /* Unpack the received occupations to state structure */
