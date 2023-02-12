@@ -164,7 +164,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     // Need to sum over k-points and symmetrize here then may need to reimpose hermiticity
 
     // Get occupation matrix from opposite spin case
-    if(ct.nspin == 2)
+    if(ct.nspin == 2 && !ct.AFM)
     {
         MPI_Status status;
         int len = 2 * this->num_ldaU_ions * pstride * pstride;
@@ -173,6 +173,10 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
         MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
                 recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
+    }
+    if(ct.AFM)
+    {
+        Rmg_Symm->nsocc_AFM(ns_occ, this->ldaU_m, this->map_to_ldaU_ion, this->ldaU_ion_index);
     }
     delete [] sint_compack;
 }
@@ -185,7 +189,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
 
     for (size_t ion = 0, i_end = this->num_ldaU_ions; ion < i_end; ++ion)
     {
-        fprintf(ct.logfile, "  ion %lu  LDA+U occupation matrix_real\n", ldaU_ion_index[ion]);
+        fprintf(ct.logfile, "  ion %d  LDA+U occupation matrix_real\n", ldaU_ion_index[ion]);
         for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
         {
             for(int i=0;i < ldaU_m;i++)
@@ -200,7 +204,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
                 fprintf(ct.logfile, "\n");
             }
         }
-        fprintf(ct.logfile, "  ion %lu  LDA+U vhub_ns matrix_real\n", ldaU_ion_index[ion]);
+        fprintf(ct.logfile, "  ion %d  LDA+U vhub_ns matrix_real\n", ldaU_ion_index[ion]);
         for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
         {
             for(int i=0;i < ldaU_m;i++)
@@ -592,7 +596,7 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
         int num_orb = Species[Atoms[ion_idx].species].num_ldaU_orbitals;
         if(totocc > 2.0 * num_orb || totocc < 1.0e-5) 
         {
-            fprintf(ct.logfile, " hubbard_occ = %f lda_m = %d for atom %lu\n", totocc, num_orb, ion_idx);
+            fprintf(ct.logfile, " hubbard_occ = %f lda_m = %d for atom %d\n", totocc, num_orb, ion_idx);
             fprintf(ct.logfile, " WARNING: this may be wrong\n");
 
         }
@@ -643,7 +647,7 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
             }
 
         }
-        fprintf(ct.logfile, "  ion %lu  LDA+U init occupation matrix_real\n", ion_idx);
+        fprintf(ct.logfile, "  ion %d  LDA+U init occupation matrix_real\n", ion_idx);
         for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
         {
             for(int i=0;i < ldaU_m;i++)

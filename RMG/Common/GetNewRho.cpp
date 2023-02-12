@@ -78,21 +78,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         delete [] augrho;
     }
 
-    if (ct.nspin == 2)
-        get_rho_oppo (rho,  &rho[FP0_BASIS]);
     if(ct.is_use_symmetry)
     {
-        if(ct.AFM)
-        {
-            Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
-        }
-        else
-        {
-            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
-            if(ct.noncoll && Rmg_Symm)
-                Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
-        }
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+        if(ct.noncoll && Rmg_Symm)
+            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
     }
+    if (ct.nspin == 2)
+        get_rho_oppo (rho,  &rho[FP0_BASIS]);
 
 
     /* Check total charge. */
@@ -100,6 +93,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     for (int idx = 0; idx < FP0_BASIS; idx++)
         ct.tcharge += rho[idx];
 
+    if(ct.AFM) ct.tcharge *=2.0;
     /* ct.tcharge = real_sum_all (ct.tcharge); */
     ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
     ct.tcharge = real_sum_all (ct.tcharge, pct.spin_comm);

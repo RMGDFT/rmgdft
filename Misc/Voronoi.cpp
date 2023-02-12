@@ -67,6 +67,10 @@ Voronoi::Voronoi()
     localrho_atomic = new double[Atoms.size()];
     double *atomic_rho = new double[ct.nspin*pbasis];
     InitLocalObject (atomic_rho, pct.localatomicrho, ATOMIC_RHO, false);
+    if(ct.AFM) 
+    {
+        Rmg_Symm->symmetrize_rho_AFM(atomic_rho, &atomic_rho[pbasis]);
+    }
     LocalCharge(atomic_rho, localrho_atomic);
     delete [] atomic_rho;
 
@@ -89,6 +93,10 @@ void Voronoi::LocalCharge(double *rho, double *localrho)
 
     for(size_t ion = 0; ion < Atoms.size(); ion++) localrho[ion] = 0.0;
     for(int idx = 0; idx < pbasis; idx++) localrho[grid_to_atom[idx]] += vol * rho[idx];
+    if(ct.AFM) 
+    {
+        for(int idx = 0; idx < pbasis; idx++) localrho[grid_to_atom[idx]] += vol * rho[idx + pbasis];
+    }
     GlobalSums(localrho, (int)Atoms.size(), pct.grid_comm);  
     GlobalSums(localrho, (int)Atoms.size(), pct.spin_comm);  
 }

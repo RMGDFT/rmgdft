@@ -176,9 +176,16 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     t[0] *= get_vel_f();
 
     /* get the averaged value over each spin and each fine grid */
-    t[1] = sqrt (t[1] / ((double) (ct.nspin * ct.psi_fnbasis)));  
-    t[2] /= ((double) (ct.nspin * ct.psi_fnbasis));   
-
+    if(ct.AFM)
+    {
+        t[1] = sqrt (t[1] / ((double) (ct.psi_fnbasis)));  
+        t[2] /= ((double) (ct.psi_fnbasis));   
+    }
+    else
+    {
+        t[1] = sqrt (t[1] / ((double) (ct.nspin * ct.psi_fnbasis)));  
+        t[2] /= ((double) (ct.nspin * ct.psi_fnbasis));   
+    }
     ct.rms = t[1];
 
     if(std::isnan(ct.rms))
@@ -194,7 +201,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-  	if (ct.scf_steps && t[1] < ct.thr_rms) CONVERGED = true;
+        if (ct.scf_steps && t[1] < ct.thr_rms) CONVERGED = true;
     }
 
     // Transfer vtot from the fine grid to the wavefunction grid
@@ -207,7 +214,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     /*Generate the Dnm_I */
     get_ddd (vtot, vxc, true);
-
 
 
     // Loop over k-points
@@ -276,8 +282,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
 
-    // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
-        if(ct.nspin == 2)
+        // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
+        if(ct.nspin == 2 && !ct.AFM)
         {
             MPI_Status status;
             int len = 2 * Kptr[0]->ldaU->num_ldaU_ions * pstride * pstride;
@@ -321,7 +327,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
     GetNewRho(Kptr, new_rho);
-    if (ct.nspin == 2)
+    if (ct.nspin == 2 )
         get_rho_oppo (new_rho,  new_rho_oppo);
     delete(RT1);
 
@@ -367,6 +373,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Compute convergence measure (2nd order variational term) and average by nspin
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
+    if(ct.AFM) 
+    {
+        for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i+FP0_BASIS] - rho[i+FP0_BASIS]);
+    }
     sum = 0.5 * vel * sum;
 
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -410,8 +420,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             {
                 Kptr[kpt]->Subdiag(vtot_psi, vxc_psi, ct.subdiag_driver);
                 Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                       Kptr[kpt]->nstates*ct.noncoll_factor, 
-                       Kptr[kpt]->nl_weight);
+                        Kptr[kpt]->nstates*ct.noncoll_factor, 
+                        Kptr[kpt]->nl_weight);
                 if(ct.ldaU_mode != LDA_PLUS_U_NONE)
                 {
                     LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);

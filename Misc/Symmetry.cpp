@@ -104,14 +104,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     }
 
     int nsym_atom=1;
-    if(ct.is_use_symmetry)
-    {
-        nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
-    }
-    else
-    {
-        nsym_atom = 1;
-    }
+    nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
     int *sa = new int[9 * nsym_atom]();
     std::vector<double> translation(3 * nsym_atom);
     ftau.resize(3 * nsym_atom);
@@ -122,20 +115,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     sym_trans.resize(3 * nsym_atom);
     sym_rotate.resize(9 * nsym_atom);
 
-    if(ct.is_use_symmetry)
-    {
-        nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
-    }
-    else
-    {
-        nsym_atom = 1;
-        sa[0] = 1;
-        sa[4] = 1;
-        sa[8] = 1;
-        translation[0] = 0.0;
-        translation[1] = 0.0;
-        translation[2] = 0.0;
-    }
+    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
     if(!ct.time_reversal) time_reversal = false;
 
@@ -439,16 +419,19 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         if(already_in) sym_to_be_removed.push_back(isym);
     }
 
-    for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+    if (sym_to_be_removed.size() > 0)
     {
-        int isym = *it;
-        ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
-        ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
-        sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
-        sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
-        sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
-        inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
-        time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+        {
+            int isym = *it;
+            ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+            ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+            sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+            sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+            sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+            time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+        }
     }
 
     if(ct.verbose && pct.imgpe == 0)
@@ -465,10 +448,60 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
     nsym = (int)sym_rotate.size()/9;
+
+    // if use_symmetry = false and AFM = true, just use one time_rev symmetry + unitary
+    if(!ct.is_use_symmetry)
+    {
+        sym_to_be_removed.clear();
+        if(ct.AFM)
+        {
+            bool find_AFM_sym = false;
+            for(int isy = 1; isy < nsym; isy++)
+            {
+                if(time_rev[isy] && !find_AFM_sym) 
+                {
+                    find_AFM_sym = true;
+                }
+                else
+                {
+                    sym_to_be_removed.push_back(isy);
+                }
+
+            }
+        }
+        else 
+        {
+            for(int isy = 1; isy < nsym; isy++)
+                sym_to_be_removed.push_back(isy);
+        }
+
+        if (sym_to_be_removed.size() > 0)
+        {
+            for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+            {
+                int isym = *it;
+                ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+                ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+                sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+                sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+                sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+                inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+                time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            }
+        }
+    }
+
+    nsym = (int)sym_rotate.size()/9;
     n_time_rev = 0;
     for (auto t_r = time_rev.begin(); t_r != time_rev.end(); ++t_r)
     {
         if(*t_r) n_time_rev++;
+    }
+
+    if(n_time_rev == 0 && ct.AFM)
+    {
+        std::cout << " no AFM symmetry is found from initial spin set up " << std::endl;
+        rmg_error_handler(__FILE__, __LINE__, "no AFM symmetry found Exiting.\n");
     }
     rotate_ylm();
     rotate_spin(); 
@@ -618,8 +651,11 @@ void Symmetry::symmetrize_grid_object(double *object)
 
     for(int ix=0;ix < pbasis;ix++) object[ix] = 0.0;
 
+    int nsym_rho = 0;
     for(int isy = 0; isy < nsym; isy++)
     {
+        if(time_rev[isy]) continue;
+        nsym_rho++;
         for (int ix = 0; ix < px_grid; ix++) {
             for (int iy = 0; iy < py_grid; iy++) {
                 for (int iz = 0; iz < pz_grid; iz++) {
@@ -632,7 +668,7 @@ void Symmetry::symmetrize_grid_object(double *object)
         }
     }
 
-    double t1 = (double) nsym;
+    double t1 = (double) nsym_rho;
     t1 = 1.0 / t1;
     for(int ix = 0; ix < pbasis; ix++) object[ix] = object[ix] * t1;
 
@@ -1079,6 +1115,66 @@ int Symmetry::type_symm(double sr[3][3])
     return 0; 
 
 }
+void Symmetry::nsocc_AFM(boost::multi_array<std::complex<double>, 4> &ns_occ, int mmax, std::vector<int> map_to_ldaU_ion, std::vector<int> ldaU_ion_index)
+{
+    int num_ldaU_ions = ldaU_ion_index.size();
+
+
+    for(int ion = 0; ion < num_ldaU_ions; ion++)
+    {
+        for(int i = 0; i< mmax; i++)
+        {
+            for(int j = 0; j < mmax; j++)
+            {
+                ns_occ[1][ion][i][j] = 0.0;
+            }
+        }
+    }
+
+
+    //  the loops below can be optimized if it is slow    
+    for (int ion = 0; ion < num_ldaU_ions; ion++)
+    {
+
+        int ion_idx = ldaU_ion_index[ion];
+        int num_orb = Species[Atoms[ion_idx].species].num_ldaU_orbitals;
+        int l_val = Species[Atoms[ion_idx].species].ldaU_l;
+        for(int i1 = 0; i1 < num_orb; i1++)
+        {
+            for(int i2 = 0; i2 < num_orb; i2++)
+            { 
+                for(int isy = 0; isy < nsym; isy++)
+                {
+                    if(!time_rev[isy] ) continue;
+                    int ion1_idx = sym_atom[isy * ct.num_ions + ion_idx];
+                    int ion1 = map_to_ldaU_ion[ion1_idx];
+
+                    for(int i3 = 0; i3 < num_orb; i3++)
+                    {
+                        for(int i4 = 0; i4 < num_orb; i4++)
+                        { 
+                            ns_occ[1][ion][i1][i2] += rot_ylm[isy][l_val][i1][i3] *
+                                ns_occ[0][ion1][i4][i3] * rot_ylm[isy][l_val][i2][i4];
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    for(int ion = 0; ion < num_ldaU_ions; ion++)
+    {
+        for(int i = 0; i< mmax; i++)
+        {
+            for(int j = 0; j < mmax; j++)
+            {
+                ns_occ[1][ion][i][j] /= (double)n_time_rev;
+            }
+        }
+    }
+}
+
 void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax, std::vector<int> map_to_ldaU_ion, std::vector<int> ldaU_ion_index)
 {
     boost::multi_array<std::complex<double>, 5> ns_occ_sum, ns_occ;
@@ -1095,7 +1191,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax, std::vector<
         {
             ns_occ.data()[idx] = ns_occ_g[idx];
         }
-            
+
     }
     else if(ct.nspin == 2)
     {
@@ -1106,7 +1202,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax, std::vector<
             ns_occ.data()[idx + 2*size_each_spin] = 0.0;
             ns_occ.data()[idx + 3*size_each_spin] = ns_occ_g[idx + size_each_spin];
         }
-    
+
     }
     else 
     {
@@ -1246,15 +1342,12 @@ void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
 
     // Allocate a global array object and put this processors object into the correct location
     double *da1 = new double[nbasis]();
-    double *da2 = new double[nbasis]();
 
     for (int ix = 0; ix < px_grid; ix++) {
         for (int iy = 0; iy < py_grid; iy++) {
             for (int iz = 0; iz < pz_grid; iz++) {
                 da1[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
                     = rho[ ix * incx + iy*incy + iz];
-                da2[ (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
-                    = rho_oppo[ ix * incx + iy*incy + iz];
             }
         }
     }
@@ -1262,43 +1355,26 @@ void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis;
     BlockAllreduce(da1, length, pct.grid_comm);
-    BlockAllreduce(da2, length, pct.grid_comm);
 
-    for(int ix=0;ix < pbasis;ix++) 
-    {
-        rho[ix] = 0.0;
-        rho_oppo[ix] = 0.0;
-    }
-
+    for(int idx = 0; idx < px_grid * py_grid * pz_grid; idx++) rho_oppo[idx] = 0.0;
     for(int isy = 0; isy < nsym; isy++)
     {
-        for (int ix = 0; ix < px_grid; ix++) {
-            for (int iy = 0; iy < py_grid; iy++) {
-                for (int iz = 0; iz < pz_grid; iz++) {
+        if(time_rev[isy]) 
+        {
+            for (int ix = 0; ix < px_grid; ix++) {
+                for (int iy = 0; iy < py_grid; iy++) {
+                    for (int iz = 0; iz < pz_grid; iz++) {
 
-                    int idx = sym_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
-                    if(time_rev[isy]) 
-                    {
-                        rho[ ix * incx + iy*incy + iz] += da2[idx];
+                        int idx = sym_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
                         rho_oppo[ix * incx + iy*incy + iz] += da1[idx];
-                    }
-                    else
-                    {
-                        rho[ ix * incx + iy*incy + iz] += da1[idx];
-                        rho_oppo[ix * incx + iy*incy + iz] += da2[idx];
                     }
                 }
             }
         }
     }
 
-    double t1 = (double) nsym;
-    t1 = 1.0 / t1;
-    for(int ix = 0; ix < pbasis; ix++) rho[ix] = rho[ix] * t1;
-    for(int ix = 0; ix < pbasis; ix++) rho_oppo[ix] = rho_oppo[ix] * t1;
-
+    for(int idx = 0; idx < px_grid * py_grid * pz_grid; idx++) rho_oppo[idx] /= (double)n_time_rev;
     delete [] da1;
-    delete [] da2;
 
 }
 
