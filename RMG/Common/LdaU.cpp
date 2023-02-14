@@ -174,10 +174,6 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
                 recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
     }
-    if(ct.AFM)
-    {
-        Rmg_Symm->nsocc_AFM(ns_occ, this->ldaU_m, this->map_to_ldaU_ion, this->ldaU_ion_index);
-    }
     delete [] sint_compack;
 }
 
