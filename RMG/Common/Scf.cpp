@@ -280,7 +280,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+        Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+        if(ct.AFM)
+        {
+            Rmg_Symm->nsocc_AFM(new_ns_occ, Kptr[0]->ldaU->ldaU_m, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+        }
+
 
         // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
         if(ct.nspin == 2 && !ct.AFM)
@@ -422,13 +427,59 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
                 Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                         Kptr[kpt]->nstates*ct.noncoll_factor, 
                         Kptr[kpt]->nl_weight);
-                if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+                MPI_Barrier(pct.grid_comm);
+            }
+
+            if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+            {
+                int pstride = Kptr[0]->ldaU->ldaU_m;
+                int num_ldaU_ions = Kptr[0]->ldaU->num_ldaU_ions;
+                int occ_size = ct.nspin * num_ldaU_ions * pstride * pstride;
+
+                doubleC_4d_array old_ns_occ, new_ns_occ;
+                new_ns_occ.resize(boost::extents[ct.nspin][num_ldaU_ions][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+
+                for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
                 {
                     LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
                     Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+                    for(int idx = 0; idx< occ_size; idx++)
+                    {
+                        new_ns_occ.data()[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+                    }
                 }
-                MPI_Barrier(pct.grid_comm);
+
+                MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+                Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+                if(ct.AFM)
+                {
+                    Rmg_Symm->nsocc_AFM(new_ns_occ, Kptr[0]->ldaU->ldaU_m, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+                }
+
+
+                // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
+                if(ct.nspin == 2 && !ct.AFM)
+                {
+                    MPI_Status status;
+                    int len = 2 * Kptr[0]->ldaU->num_ldaU_ions * pstride * pstride;
+                    double *sendbuf = (double *)new_ns_occ.data();
+                    double *recvbuf = sendbuf + len;
+                    MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+                            recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+
+                }
+
+
+                for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+                {
+                    Kptr[kpt]->ldaU->ns_occ = new_ns_occ;
+                    Kptr[kpt]->ldaU->calc_energy();
+                }
+                if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
             }
+
+
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
             GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
             ct.potential_acceleration_constant_step = potential_acceleration_step;

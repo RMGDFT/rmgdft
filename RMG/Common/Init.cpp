@@ -604,15 +604,55 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
-            if(ct.runflag == RESTART)
-            {
-                Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
-                Kptr[kpt]->ldaU->calc_energy();
-            }
         }
         delete RT3;
     }
 
+    if(ct.runflag == RESTART )
+    {
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            int pstride = Kptr[0]->ldaU->ldaU_m;
+            int num_ldaU_ions = Kptr[0]->ldaU->num_ldaU_ions;
+            int occ_size = ct.nspin * num_ldaU_ions * pstride * pstride;
+
+            doubleC_4d_array new_ns_occ;
+            new_ns_occ.resize(boost::extents[ct.nspin][num_ldaU_ions][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+
+            std::fill(new_ns_occ.data(), new_ns_occ.data()+occ_size, 0.0); 
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+
+
+                Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+                for(int idx = 0; idx< occ_size; idx++)
+                {
+                    new_ns_occ.data()[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+                }
+            }
+
+            MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+            Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+            if(ct.AFM)
+            {
+                Rmg_Symm->nsocc_AFM(new_ns_occ, Kptr[0]->ldaU->ldaU_m, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+            }
+
+
+
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                Kptr[kpt]->ldaU->ns_occ = new_ns_occ;
+                Kptr[kpt]->ldaU->calc_energy();
+            }
+
+            if(ct.verbose) rmg_printf("Restart ns_occ \n");
+            if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
+
+        }
+    }
 
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
@@ -661,10 +701,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
 #if HIP_ENABLED || CUDA_ENABLED
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                       Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
 #else
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                       Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 #endif
             delete RT3;
 
@@ -695,7 +735,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-            if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+            Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+            if(ct.AFM)
+            {
+                Rmg_Symm->nsocc_AFM(new_ns_occ, Kptr[0]->ldaU->ldaU_m, Kptr[0]->ldaU->map_to_ldaU_ion, Kptr[0]->ldaU->ldaU_ion_index);
+            }
+
 
 
             for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
@@ -763,7 +808,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(pct.gridpe == 0)
     {
         init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
-               &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
+                &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
     }
 
 }                               /* end init */

@@ -362,36 +362,14 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         if(ct.verbose) rmg_printf ("read_data: read 'occupations'\n"); 
 
-
-        if (ct.forceflag != BAND_STRUCTURE)
-        {
-            double occ_total = 0.0; 
-
-            for (ik = 0; ik < nk; ik++)
-                for (is = 0; is < ct.num_states; is++)
-                {
-                    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
-                }
-
-
-            // 'renormalize' the occupations
-
+        for (ik = 0; ik < nk; ik++)
+            for (is = 0; is < ns; is++)
             {
-                double iocc_total = (double) (int) (occ_total + 0.5);
-                double fac = iocc_total / occ_total;
-
-                for (ik = 0; ik < nk; ik++)
-                    for (is = 0; is < ct.num_states; is++)
-                    {
-                        Kptr[ik]->Kstates[is].occupation[0] *= fac;
-                    }
-                /* end of normalization*/
+                Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is];
             }
 
-        }             /* end if */
 
         delete [] occ;
-
     }           /* end of read occupations */
 
 
@@ -408,8 +386,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             {
                 read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
             }
-
-        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
 
         if(ct.verbose) rmg_printf ("read_data: read 'eigenvalues'\n");
 
