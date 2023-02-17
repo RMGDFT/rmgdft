@@ -81,7 +81,7 @@ template void TradeImages::trade_imagesx_central_local<double>(double*, double*,
 
 
 // Constructor
-TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor)
+TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images_in)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -89,12 +89,12 @@ TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, Mpi
     this->queue_mode = new_queue_mode;
     this->queue = newQM;
     this->max_cfactor = max_coalesce_factor;
-
+    this->max_images = images_in;
     int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2;
 
-    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
+    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
+    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
     if(grid_xp > grid_yp) {
         grid_max1 = grid_xp;
         if(grid_yp > grid_zp) {
@@ -115,7 +115,7 @@ TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, Mpi
      }
 
 
-     TradeImages::max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
+     TradeImages::max_alloc = 6 * this->max_images * grid_max1 * grid_max2 * T->get_threads_per_node();
      int retval = MPI_Alloc_mem(sizeof(std::complex<double>) * this->max_alloc , MPI_INFO_NULL, &swbuf1x);
      if(retval != MPI_SUCCESS) {
          rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
@@ -210,6 +210,10 @@ void TradeImages::set_coalesce_factor(int factor)
 int TradeImages::get_coalesce_factor(void)
 {
     return TradeImages::cfactor;
+}
+int TradeImages::get_max_images(void)
+{
+    return TradeImages::max_images;
 }
 MPI_Comm TradeImages::get_MPI_comm(void)
 {
@@ -918,8 +922,8 @@ int GRID_MAX2;
 
 
 
-#define MAX_IMG2 (MAX_TRADE_IMAGES*MAX_TRADE_IMAGES)
-#define MAX_IMG3 (MAX_TRADE_IMAGES*MAX_TRADE_IMAGES*MAX_TRADE_IMAGES)
+#define MAX_IMG2 (this->max_images*this->max_images)
+#define MAX_IMG3 (this->max_images*this->max_images*this->max_images)
 
 
 
@@ -1025,11 +1029,11 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
 
     THREADS_PER_NODE = T->get_threads_per_node();
 
-    //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
+    //printf("Using Async trade_images with max images = %d.\n", this->max_images);
 
-    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
+    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
+    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*this->max_images;
     if(grid_xp > grid_yp) {
         GRID_MAX1 = grid_xp;
         if(grid_yp > grid_zp) {
@@ -1087,18 +1091,18 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
 
 
     // Allocate memory buffers using MPI_Alloc_mem
-    TradeImages::allocate_buffers(frdx1, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdx2, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdy1, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdy2, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdz1, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdz2, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdx1n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdx2n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdy1n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdy2n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdz1n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
-    TradeImages::allocate_buffers(frdz2n, THREADS_PER_NODE, MAX_TRADE_IMAGES * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdx1, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdx2, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdy1, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdy2, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdz1, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdz2, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdx1n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdx2n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdy1n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdy2n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdz1n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
+    TradeImages::allocate_buffers(frdz2n, THREADS_PER_NODE, this->max_images * GRID_MAX1 * GRID_MAX2, elem_len);
 
 
     //retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
@@ -1227,7 +1231,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     m0_s_f = (RmgType *)TradeImages::m0_s[0];
     m0_r_f = (RmgType *)TradeImages::m0_r[0];
 
-    if(images > MAX_TRADE_IMAGES) {
+    if(images > this->max_images) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
@@ -1825,7 +1829,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
     frdz2n_f = (RmgType *)TradeImages::frdz2n[0];
 
 
-    if(images > MAX_TRADE_IMAGES) {
+    if(images > this->max_images) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
@@ -2067,7 +2071,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
 template <typename RmgType>
 void TradeImages::trade_imagesx_central_async_managed (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
-    if(images > MAX_TRADE_IMAGES) {
+    if(images > this->max_images) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
@@ -4370,7 +4374,7 @@ template <typename RmgType>
 void TradeImages::trade_imagesx_async_managed (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
 
-    if(images > MAX_TRADE_IMAGES) {
+    if(images > this->max_images) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 

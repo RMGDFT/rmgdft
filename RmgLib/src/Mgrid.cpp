@@ -235,7 +235,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     scale = step * scale;
 
 
-    if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
+    if(pot || (k != 0.0) || (pre_cyc[level] > T->get_max_images()) || !check)
 // EMIL -- this needs a lot more checking if we want to enable the offset loop
     //if(pot || (k != 0.0) || !check)
     {
@@ -339,7 +339,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
 
         /* re-solve on this grid level */
-        if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
+        if(pot || (k != 0.0) || (pre_cyc[level] > T->get_max_images()) || !check)
         //if(pot || (k != 0.0) || !check)
         {
             if(!this->central_trade)
