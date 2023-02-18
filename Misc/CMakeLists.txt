@@ -4,6 +4,7 @@ COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
 kind.f90
+CheckSetDefault.cpp
 DistributeToGlobal.cpp    
 OptimizeFdCoeff.cpp
 GetPlanarAnisotropy.cpp

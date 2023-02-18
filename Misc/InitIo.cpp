@@ -163,6 +163,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ReadDynamics(ct.cfile, ct, ControlMap);
     }
 
+    CheckSetDefault();
     /* Get the crystal or cartesian coordinates of the ions */
     init_pos ();
 

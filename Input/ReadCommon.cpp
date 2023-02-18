@@ -1521,9 +1521,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
         rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
 
-    if(ibrav == None && lc.stress)
-        rmg_error_handler(__FILE__,__LINE__, "\nStress not supported for arbitary lattice vectors. You need to specify bravais_lattice_type.: Terminating.\n");
-
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.
     if(ibrav == None)

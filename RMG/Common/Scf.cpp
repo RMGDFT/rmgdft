@@ -396,7 +396,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
         if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
-        if (ct.scf_steps && fabs(ct.scf_accuracy < 1.0e-15)) CONVERGED = true;
     }
 
     if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1)))
