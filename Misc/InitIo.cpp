@@ -692,7 +692,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.mpi_queue_mode = false;
     }
 
-    Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q, pct.coalesce_factor);
+    int max_images = std::max(8, ct.kohn_sham_fd_order / 2);
+    max_images = std::max(max_images, ct.force_grad_order / 2);
+    Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q, pct.coalesce_factor, max_images);
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 

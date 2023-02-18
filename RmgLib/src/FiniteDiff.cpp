@@ -311,12 +311,10 @@ template void FiniteDiff::fd_gradient_general<double, 10> (double *, double *, d
 template void FiniteDiff::fd_gradient_general<std::complex<double>, 10> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<std::complex<float>, 10> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
 
-#ifdef TWELFTH_ORDER_FD
 template void FiniteDiff::fd_gradient_general<float, 12> (float *, float *, float *, float *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<double, 12> (double *, double *, double *, double *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<std::complex<double>, 12> (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, double, int, int, int);
 template void FiniteDiff::fd_gradient_general<std::complex<float>, 12> (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, double, int, int, int);
-#endif
 
 template double FiniteDiff::app_combined<float,2>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<double,2>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
@@ -339,12 +337,10 @@ template double FiniteDiff::app_combined<double,10>(double *, double *, int, int
 template double FiniteDiff::app_combined<std::complex <float>, 10>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <double>, 10>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 
-#ifdef TWELFTH_ORDER_FD
 template double FiniteDiff::app_combined<float,12>(float *, float *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<double,12>(double *, double *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <float>, 12>(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
 template double FiniteDiff::app_combined<std::complex <double>, 12>(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, double *kvec, bool use_gpu);
-#endif
 
 template void FiniteDiff::fd_gradient_coeffs<float>(int , double, int , float *, float *, float *);
 template void FiniteDiff::fd_gradient_coeffs<double>(int , double, int , double *, double *, double *);

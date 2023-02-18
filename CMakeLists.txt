@@ -88,7 +88,6 @@ set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentia
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
-set(TWELFTH_ORDER_FD OFF CACHE BOOL "Build 12th order laplacian for testing")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
@@ -96,10 +95,6 @@ if(BLAS_PROFILING)
     add_definitions(-DBLAS_PROFILE=1)
 else()
     add_definitions(-DBLAS_PROFILE=0)
-endif()
-
-if(TWELFTH_ORDER_FD)
-    add_definitions(-DTWELFTH_ORDER_FD=1)
 endif()
 
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)

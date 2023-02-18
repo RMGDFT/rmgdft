@@ -208,8 +208,6 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         if(ct.verbose) delete RTA;
         return cc;
     }
-#ifdef TWELFTH_ORDER_FD
-    // Order 12 is for testing
     else if(order == APP_CI_TWELVE)
     {
         RmgTimer *RTA=NULL;
@@ -218,7 +216,6 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         if(ct.verbose) delete RTA;
         return cc;
     }
-#endif
 
     rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
     return 0;   // Just to keep the compiler from complaining
