@@ -862,7 +862,7 @@ public:
     double simpson_tol;
 
     bool is_gamma;
-    bool is_use_symmetry;
+    int is_use_symmetry;
     bool time_reversal;
     bool frac_symm;
 

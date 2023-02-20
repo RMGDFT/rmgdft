@@ -574,7 +574,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of Multigrid/Davidson threads each MPI process will use. A value of 0 means set automatically.", 
             "threads_per_node cannnot be a negative number and must be less than 64. ", PERF_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
+    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 1, 4, 2, 
             CHECK_AND_FIX, OPTIONAL, 
             "Ratio of the potential grid density to the wavefunction grid "
             "density. For example if the wavefunction grid is (72,72,72) and "
@@ -582,7 +582,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "(144,144,144). The default value is 2 but it may sometimes be "
             "beneficial to adjust this. (For USPP the minimum value is also 2 "
             "and it cannot be set lower. NCPP can be set to 1).",
-            "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset. ", CELL_OPTIONS);
+            "potential_grid_refinement must be in the range (1 <= ratio <= 4) ", CELL_OPTIONS);
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -986,8 +986,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "if set to true, we use Cpdgemr2d to change matrix distribution");
 
     //RMG2BGW options
-    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, true, 
-            "For non-gamma point, always true, for gamma point, optional", CELL_OPTIONS);
+    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, 0, 2, 2, 
+            CHECK_AND_FIX, OPTIONAL,
+            "0: never use symmetry, 1: always use symmetry, ", 
+            "2: For non-gamma point, use symmetry, for gamma point, don't use symmetry", CELL_OPTIONS);
 
     If.RegisterInputKey("frac_symmetry", &lc.frac_symm, true, 
             "For supercell calculation, one can disable the fractional translation symmetry", CELL_OPTIONS);
