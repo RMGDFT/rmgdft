@@ -98,11 +98,11 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
 
   coarse_pwaves->FftForward(base_coarse, base_coarse);
   // Zero higher frequency components
-  for(int ix = 0;ix < pbasis_c;ix++)
-  {
+//  for(int ix = 0;ix < pbasis_c;ix++)
+//  {
       //if(!coarse_pwaves->gmask[ix]) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-  }
+//      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
+//  }
 
 
 
