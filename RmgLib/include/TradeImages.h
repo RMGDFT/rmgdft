@@ -47,12 +47,6 @@
 #define FULL_TRADE 1
 #define CENTRAL_TRADE 2
 
-/* Maximum number of images for finite difference routines */
-#ifndef TWELFTH_ORDER_FD
-  #define MAX_TRADE_IMAGES 5
-#else
-  #define MAX_TRADE_IMAGES 6
-#endif
 #define MAX_CFACTOR 16
 
 #if __cplusplus
@@ -71,6 +65,7 @@ private:
     MpiQueue *queue;
     void allocate_buffers(double ** &P, int nthreads, int length_per_thread, size_t elem_len);
     bool queue_mode;
+    int max_images;
 
     // x-coalesce factor
     int cfactor;
@@ -139,7 +134,7 @@ public:
     /// MPI communicator to use
     MPI_Comm comm;
 
-    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor);
+    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images);
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
@@ -148,6 +143,7 @@ public:
     void set_MPI_comm(MPI_Comm comm);
     void set_coalesce_factor(int factor);
     int get_coalesce_factor(void);
+    int get_max_images(void);
     MPI_Comm get_MPI_comm(void);
     void set_gridpe(int gridpe);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
