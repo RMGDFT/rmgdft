@@ -104,6 +104,7 @@ template void Mgrid::mg_prolong_cubic(std::complex<double>*, std::complex<double
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 int Mgrid::level_warning;
+std::vector<int> Mgrid::toffsets;
 
 Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 {
@@ -216,11 +217,9 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }
 
     int ixoff, iyoff, izoff;
-    int mindim = std::min(dimx, dimy);
-    mindim = std::min(mindim, dimz);
+    int mindim = Mgrid::toffsets[level-1];
     int offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
-    // This could be set lower if grids are the same size on all procs but how to check from here?
-    bool check = (dimx >= 4) && (dimy >= 4) && (dimz >= 4) && (dimx*dimy*dimz < 16*16*16);
+    bool check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
 
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);

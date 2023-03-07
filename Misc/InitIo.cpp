@@ -671,13 +671,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     ct.poi_parm.levels = maxlevel;
 
     // Now we have to determine the max multigrid level where the Kohn-Sham solver can still
-    // use the offset routines. If 
+    // use the offset routines.
     dx[0] = pct.coalesce_factor * Rmg_G->get_PX0_GRID(1);
     dy[0] = Rmg_G->get_PY0_GRID(1);
     dz[0] = Rmg_G->get_PZ0_GRID(1);
+    dimx = dx[0];
+    dimy = dy[0];
+    dimz = dz[0];
     maxlevel = ct.eig_parm.levels;
-    int minsize, maxsize;
-#if 0
+    int minsizex, maxsizex;
+    int minsizey, maxsizey;
+    int minsizez, maxsizez;
     ct.mg_offset_level = 0;
     for(int level=1;level <= ct.eig_parm.levels;level++)
     {
@@ -685,7 +689,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         dy2 = MG.MG_SIZE (dy[level-1], level-1, Rmg_G->get_NY_GRID(1), Rmg_G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
         dz2 = MG.MG_SIZE (dz[level-1], level-1, Rmg_G->get_NZ_GRID(1), Rmg_G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
 
-        if((dx2 < 2) || (dy2 < 2) || (dz2 < 2))
+        if((dx2 < 1) || (dy2 < 1) || (dz2 < 1))
         {
             maxlevel = level - 1;
             break;
@@ -694,21 +698,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         dy[level] = dy2;
         dz[level] = dz2;
 
-        minsize=dx2, maxsize=dx2;
-        MPI_Allreduce(MPI_IN_PLACE, &minsize, 1, MPI_INT, MPI_MIN, pct.grid_comm);
-        MPI_Allreduce(MPI_IN_PLACE, &maxsize, 1, MPI_INT, MPI_MAX, pct.grid_comm);
-        if(minsize != maxsize && minsize < 4) break;
-        minsize=dy2, maxsize=dy2;
-        MPI_Allreduce(MPI_IN_PLACE, &minsize, 1, MPI_INT, MPI_MIN, pct.grid_comm);
-        MPI_Allreduce(MPI_IN_PLACE, &maxsize, 1, MPI_INT, MPI_MAX, pct.grid_comm);
-        if(minsize != maxsize && minsize < 4) break;
-        minsize=dz2, maxsize=dz2;
-        MPI_Allreduce(MPI_IN_PLACE, &minsize, 1, MPI_INT, MPI_MIN, pct.grid_comm);
-        MPI_Allreduce(MPI_IN_PLACE, &maxsize, 1, MPI_INT, MPI_MAX, pct.grid_comm);
-        if(minsize != maxsize && minsize < 4) break;
+        minsizex=dx2, maxsizex=dx2;
+        MPI_Allreduce(MPI_IN_PLACE, &minsizex, 1, MPI_INT, MPI_MIN, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &maxsizex, 1, MPI_INT, MPI_MAX, pct.grid_comm);
+        minsizey=dy2, maxsizey=dy2;
+        MPI_Allreduce(MPI_IN_PLACE, &minsizey, 1, MPI_INT, MPI_MIN, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &maxsizey, 1, MPI_INT, MPI_MAX, pct.grid_comm);
+        minsizez=dz2, maxsizez=dz2;
+        MPI_Allreduce(MPI_IN_PLACE, &minsizez, 1, MPI_INT, MPI_MIN, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &maxsizez, 1, MPI_INT, MPI_MAX, pct.grid_comm);
+
+        Mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
         ct.mg_offset_level++;
     }
-#endif
 
     // Write a copy of the options file
     if((pct.imgpe == 0)  && (ct.rmg_branch != RMG_TO_QMC)) {
