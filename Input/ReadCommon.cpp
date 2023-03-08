@@ -574,7 +574,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of Multigrid/Davidson threads each MPI process will use. A value of 0 means set automatically.", 
             "threads_per_node cannnot be a negative number and must be less than 64. ", PERF_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
+    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 1, 4, 2, 
             CHECK_AND_FIX, OPTIONAL, 
             "Ratio of the potential grid density to the wavefunction grid "
             "density. For example if the wavefunction grid is (72,72,72) and "
@@ -582,7 +582,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "(144,144,144). The default value is 2 but it may sometimes be "
             "beneficial to adjust this. (For USPP the minimum value is also 2 "
             "and it cannot be set lower. NCPP can be set to 1).",
-            "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset. ", CELL_OPTIONS);
+            "potential_grid_refinement must be in the range (1 <= ratio <= 4) ", CELL_OPTIONS);
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -822,18 +822,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
             "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
 
-#ifdef TWELFTH_ORDER_FD
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 12, 8,
-#else
-    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 10, 8,
-#endif
             CHECK_AND_FIX, OPTIONAL,
             "RMG uses finite differencing to represent the kinetic energy operator "
             "and the accuracy of the representation is controllable by the "
             "kohn_sham_fd_order parameter. The default is 8 and is fine for most "
-            "purposes but higher accuracy is obtainable with 10th order at the cost "
-            "of some additional computational expense.",
-            "kohn_sham_fd_order must lie in the range (6,10). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "purposes but higher accuracy is obtainable with 10th or 12th order at "
+            "the cost of some additional computational expense.",
+            "kohn_sham_fd_order must lie in the range (6,12). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("use_gpu_fd", &lc.use_gpu_fd, false, 
             "Use gpus for kohn-sham orbital finite differencing. Depending on the "
@@ -990,8 +986,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "if set to true, we use Cpdgemr2d to change matrix distribution");
 
     //RMG2BGW options
-    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, true, 
-            "For non-gamma point, always true, for gamma point, optional", CELL_OPTIONS);
+    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, 0, 2, 2, 
+            CHECK_AND_FIX, OPTIONAL,
+            "0: never use symmetry, 1: always use symmetry, ", 
+            "2: For non-gamma point, use symmetry, for gamma point, don't use symmetry", CELL_OPTIONS);
 
     If.RegisterInputKey("frac_symmetry", &lc.frac_symm, true, 
             "For supercell calculation, one can disable the fractional translation symmetry", CELL_OPTIONS);
@@ -1520,9 +1518,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Check if a lattice vector was specified and if not 
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
         rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
-
-    if(ibrav == None && lc.stress)
-        rmg_error_handler(__FILE__,__LINE__, "\nStress not supported for arbitary lattice vectors. You need to specify bravais_lattice_type.: Terminating.\n");
 
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.

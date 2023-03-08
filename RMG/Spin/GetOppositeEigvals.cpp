@@ -30,6 +30,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "blas.h"
 
 
 template void GetOppositeEigvals(Kpoint<double> **);
@@ -62,8 +63,17 @@ void GetOppositeEigvals (Kpoint<KpointType> ** Kptr)
 
 
     /*Communicate for spin up and spin down energy eigenvalues*/    
-    MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
-            eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    if(ct.AFM)
+    {
+        int ione = 1;
+        dcopy(&st, eigval_sd, &ione, eigval_rv, &ione);
+    }
+    else
+    {
+
+        MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+                eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    }
 
 
     /* Unpack the received eigenvalue to state structure */
@@ -91,8 +101,16 @@ void GetOppositeEigvals (Kpoint<KpointType> ** Kptr)
 
 
     /*Communicate for spin up and spin down energy eigenvalues*/    
-    MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+    if(ct.AFM)
+    {
+        int ione = 1;
+        dcopy(&st, eigval_sd, &ione, eigval_rv, &ione);
+    }
+    else
+    {
+        MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
             eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    }
 
 
     /* Unpack the received eigenvalue to state structure */

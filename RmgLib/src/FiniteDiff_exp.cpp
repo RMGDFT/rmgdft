@@ -349,7 +349,6 @@ void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __re
 #include "rmg_complex.h"
 
 
-#ifdef TWELFTH_ORDER_FD
 template double FiniteDiff::app12_del2<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app12_del2<double>(double *, double *, int, int, int, double, double, double);
 template double FiniteDiff::app12_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
@@ -550,4 +549,3 @@ double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
 } /* end app12_del2 */
 
-#endif

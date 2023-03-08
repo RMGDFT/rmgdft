@@ -98,11 +98,11 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
 
   coarse_pwaves->FftForward(base_coarse, base_coarse);
   // Zero higher frequency components
-  for(int ix = 0;ix < pbasis_c;ix++)
-  {
+//  for(int ix = 0;ix < pbasis_c;ix++)
+//  {
       //if(!coarse_pwaves->gmask[ix]) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-  }
+//      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
+//  }
 
 
 
@@ -119,17 +119,20 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
 
                   int p1 = offset_x + ixx;
                   if(p1 > n[0]/2) p1 -= n[0];
+                  if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = 0;
                   double rp1 = (double)(p1)*(double)(ix)/dratio / (double)n[0];
 
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
 
                       int p2 = offset_y + iyy;
                       if(p2 > n[1]/2) p2 -= n[1];
+                      if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = 0;
                       double rp2 = (double)(p2)*(double)(iy)/dratio / (double)n[1];
 
                       for(int izz = 0;izz < dimz_c;izz++) {
                           int p3 = offset_z + izz;
                           if(p3 > n[2]/2) p3 -= n[2];
+                          if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = 0;
                           double rp3 = (double)p3*(double)(iz)/dratio / (double)n[2];
                           double theta = 2.0*PI*(rp1 + rp2 + rp3);
                           std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));

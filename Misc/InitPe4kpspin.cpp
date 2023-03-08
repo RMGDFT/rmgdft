@@ -38,6 +38,7 @@ void InitPe4kpspin()
     std::vector<int> kpt_factors = {1};
     GetPrimeFactors(kpt_factors, ct.num_kpts, ct.num_kpts);
     int nspin = 1+ct.spin_flag;
+    if(ct.AFM) nspin = 1;
     if(pct.image_npes[pct.thisimg] % nspin !=0)
     {
         printf("\n npes %d for image needs to be even for spin-polarized case spin = %d", pct.image_npes[pct.thisimg], ct.spin_flag);

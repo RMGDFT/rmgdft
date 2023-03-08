@@ -362,6 +362,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
         t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
         t2 = real_sum_all (t2, pct.spin_comm);
+        if(ct.AFM) t2 *= 2.0;
 
         double t1 = ct.nel / t2;
         double difference = fabs(t1 - 1.0);
