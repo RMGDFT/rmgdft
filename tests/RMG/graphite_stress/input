@@ -4,7 +4,12 @@ localize_projectors="false"
 localize_localpp="false"
 wavefunction_grid="24 24 72"
 
-test_energy="-22.98103762"
+
+alt_laplacian = "false"
+
+#kohn_sham_ke_fft = "true"
+
+test_energy="-24.10093469"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
@@ -49,6 +54,7 @@ stress="true"
 cell_relax="true"
 cell_movable="1  1  0  1  1  0  0 0 1"
 start_mode="LCAO Start"
+relax_method = "LBFGS"
 #start_mode="Random Start"
 #start_mode="Restart From File"
 
@@ -72,7 +78,9 @@ energy_convergence_criterion="1.0e-9"
 
 #atomic_coordinate_type="Absolute"
 atomic_coordinate_type="Cell Relative"
-internal_pseudo_type = "ultrasoft"
+#internal_pseudo_type = "ultrasoft"
+internal_pseudo_type = "nc_accuracy"
+#internal_pseudo_type = "sg15"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
@@ -82,10 +90,9 @@ atoms = "
  C     0.166666666667     0.166666666667      0.75
  C     0.833333333333     0.5                 0.7500000
 "
+#pseudo_dir = "/home/luw/ONCVPSP/abinit"
 #pseudopotential="
-#C  C.pbe-mt_fhi.UPF
-#C C.pbe-rrkjus.UPF
-#"
+#C  C_ONCV_PBE_sr.upf"
 
 #exchange_correlation_type = "LDA"
 #exchange_correlation_type = "vdw-df"
