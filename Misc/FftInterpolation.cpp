@@ -97,14 +97,10 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   }
 
   coarse_pwaves->FftForward(base_coarse, base_coarse);
-  // Zero higher frequency components
-//  for(int ix = 0;ix < pbasis_c;ix++)
-//  {
-      //if(!coarse_pwaves->gmask[ix]) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-//      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-//  }
 
-
+  // This factor is used to correct the magnitude of the Nyquist frequency when phase shifting.
+  // Right now it is correct only for a grid ratio of 2.
+  double pfac = sqrt(2.0);
 
   // Loop over phase shifts.
   for(int ix = 0;ix < ratio;ix++) {
@@ -116,27 +112,31 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               // Multiply coarse transform by phase shifts and 
               int idx = 0;
               for(int ixx = 0;ixx < dimx_c;ixx++) {
-
+                  double d1 = 1.0;
                   int p1 = offset_x + ixx;
+                  if(p1 == n[0]/2) d1 = pfac;
                   if(p1 > n[0]/2) p1 -= n[0];
-                  if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = 0;
+                  //if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = 0;
                   double rp1 = (double)(p1)*(double)(ix)/dratio / (double)n[0];
 
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
-
+                      double d2 = 1.0;
                       int p2 = offset_y + iyy;
+                      if(p2 == n[1]/2) d2 = pfac;
                       if(p2 > n[1]/2) p2 -= n[1];
-                      if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = 0;
+                      //if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = 0;
                       double rp2 = (double)(p2)*(double)(iy)/dratio / (double)n[1];
 
                       for(int izz = 0;izz < dimz_c;izz++) {
+                          double d3 = 1.0;
                           int p3 = offset_z + izz;
+                          if(p3 == n[2]/2) d3 = pfac;
                           if(p3 > n[2]/2) p3 -= n[2];
-                          if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = 0;
+                          //if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = 0;
                           double rp3 = (double)p3*(double)(iz)/dratio / (double)n[2];
                           double theta = 2.0*PI*(rp1 + rp2 + rp3);
                           std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));
-                          shifted_coarse[idx] = phase * base_coarse[idx];
+                          shifted_coarse[idx] = d1 * d2 * d3 * phase * base_coarse[idx];
                           idx++;
 
                       }
