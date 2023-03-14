@@ -67,7 +67,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   int dimz_f = G.get_PZ0_GRID(ratio); 
   double scale = 1.0 / (double)(n[0]*n[1]*n[2]);
   double dratio = (double)ratio;
-    double rootrho;
+  double rootrho;
 
   // Array strides
   int incx_c = dimy_c * dimz_c;
@@ -85,7 +85,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   int offset_x, offset_y, offset_z;
   G.find_node_offsets(G.get_rank(), n[0], n[1], n[2], &offset_x, &offset_y, &offset_z);
 
-
   // Get the forward transform
   if(use_sqrt)
   {
@@ -98,10 +97,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
 
   coarse_pwaves->FftForward(base_coarse, base_coarse);
 
-  // This factor is used to correct the magnitude of the Nyquist frequency when phase shifting.
-  // Right now it is correct only for a grid ratio of 2.
-  double pfac = sqrt(2.0);
-
   // Loop over phase shifts.
   for(int ix = 0;ix < ratio;ix++) {
 
@@ -112,31 +107,25 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               // Multiply coarse transform by phase shifts and 
               int idx = 0;
               for(int ixx = 0;ixx < dimx_c;ixx++) {
-                  double d1 = 1.0;
                   int p1 = offset_x + ixx;
-                  if(p1 == n[0]/2) d1 = pfac;
                   if(p1 > n[0]/2) p1 -= n[0];
-                  //if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = 0;
+                  //if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = -p1;
                   double rp1 = (double)(p1)*(double)(ix)/dratio / (double)n[0];
 
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
-                      double d2 = 1.0;
                       int p2 = offset_y + iyy;
-                      if(p2 == n[1]/2) d2 = pfac;
                       if(p2 > n[1]/2) p2 -= n[1];
-                      //if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = 0;
+                      //if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = -p2;
                       double rp2 = (double)(p2)*(double)(iy)/dratio / (double)n[1];
 
                       for(int izz = 0;izz < dimz_c;izz++) {
-                          double d3 = 1.0;
                           int p3 = offset_z + izz;
-                          if(p3 == n[2]/2) d3 = pfac;
                           if(p3 > n[2]/2) p3 -= n[2];
-                          //if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = 0;
+                          //if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = -p3;
                           double rp3 = (double)p3*(double)(iz)/dratio / (double)n[2];
                           double theta = 2.0*PI*(rp1 + rp2 + rp3);
                           std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));
-                          shifted_coarse[idx] = d1 * d2 * d3 * phase * base_coarse[idx];
+                          shifted_coarse[idx] = phase * base_coarse[idx];
                           idx++;
 
                       }
@@ -150,14 +139,15 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               for(int ixx = 0;ixx < dimx_c;ixx++) {
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
                       for(int izz = 0;izz < dimz_c;izz++) {
-                          rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                           if(use_sqrt)
                           {
+                              rootrho =  std::abs(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                               fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                                     scale*scale*rootrho*rootrho;
+                                     (scale*scale)*(rootrho*rootrho);
                           }
                           else
                           {
+                              rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                               fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
                                      scale*rootrho;
                           }
