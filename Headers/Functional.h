@@ -49,6 +49,8 @@ private:
 
     int pbasis;     // Grid points on this processing node
 
+    double *etxca;  // Accumulator for etxc
+
     // Total number of grid points
     int N;
 

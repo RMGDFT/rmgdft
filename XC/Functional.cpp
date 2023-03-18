@@ -107,6 +107,7 @@ std::string Functional::saved_dft_name;
 
 double SMALL_CHARGE=1.0e-10;
 
+
 // Utility function to convert a c-string to a fixed length fortran string
 void CstrToFortran(char* fstring, std::size_t flen, const char* cstring)
 {
@@ -292,6 +293,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     double *rho_up=NULL, *rho_down=NULL;
     double *v_up=NULL, *v_down=NULL;
     double *rho = new double[nspin*this->pbasis];
+    this->etxca = new double[nspin*this->pbasis]();
 
     for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
     // for collinear case, spin up and down are in different processor groups.
@@ -356,6 +358,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
                 xc( &trho, &ex, &ec, &vx, &vc);
                 v[ix] = vx + vc;
                 etxcl = etxcl + ( ex + ec ) * trho;
+                this->etxca[ix] = ( ex + ec ) * trho;
                 vtxcl = vtxcl + v[ix] * rho[ix];
 
             }
@@ -366,6 +369,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
                 double frac = std::cbrt(atrho/SMALL_CHARGE);
                 v[ix] = (vx + vc) * frac;
                 etxcl = etxcl + ( ex + ec ) * trho * frac;
+                this->etxca[ix] = ( ex + ec ) * trho * frac;
                 vtxcl = vtxcl + v[ix] * rho[ix];
 
             }
@@ -401,11 +405,12 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
                 v_up[ix] = vx0 + vc0;
                 v_down[ix] = vx1 + vc1;
                 etxcl = etxcl + ( ex + ec ) * trho;
+                this->etxca[ix] += ( ex + ec ) * trho;
                 vtxcl = vtxcl + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
 
             }
             else {
-
+                
             }
 
         }
@@ -476,6 +481,12 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
     etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
 
+    FftFilter(this->etxca, *fine_pwaves, *coarse_pwaves, LOW_PASS);
+    etxc = 0.0;
+    for(int ix=0;ix < this->pbasis;ix++) etxc += this->etxca[ix];
+    etxc = etxc * L->omega / (double)this->N;
+    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+    delete [] this->etxca;
     delete [] rho;
 }
 
@@ -566,6 +577,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 // 
                 vtxcgc = vtxcgc+( v1x + v1c ) * ( rhoout[k] - rho_core[k] );
                 etxcgc = etxcgc+( sx + sc ) * segno;
+                this->etxca[k] += ( sx + sc ) * segno;
 
             }
         }
@@ -599,6 +611,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     vtxc = vtxc + vtxcgc + vtxcgc_1;
     etxc = etxc + etxcgc;
+
 
     delete [] h;
     delete [] d2rho;
@@ -710,6 +723,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
                 vtxcgc = vtxcgc + 
                     ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
                 etxcgc = etxcgc + ( sx + sc );
+                this->etxca[k] += ( sx + sc );
 
                 //  used later for second term of the gradient correction
                 vxc2_up[k] = ( v2xup + v2cup );
