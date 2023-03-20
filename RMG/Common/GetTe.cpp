@@ -97,13 +97,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
     for(int i=0;i < ct.nspin*FP0_BASIS;i++)vxc[i] = vxc_in[i];
 
-    // Required for double counting terms
-    FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
-    FftFilter(vxc, *fine_pwaves, *coarse_pwaves, LOW_PASS);
-    if(ct.nspin == 2)
-        FftFilter(vxc_down, *fine_pwaves, *coarse_pwaves, LOW_PASS);
-
-
     vel = get_vel_f();
 
     /* Loop over states and get sum of the eigenvalues and any LDA+U corrections */

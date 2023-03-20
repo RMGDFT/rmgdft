@@ -477,6 +477,12 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
 
     delete [] rho;
+    if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1))
+    {
+        for(int is = 0; is < nspin; is++)
+            FftFilter(&v[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+    }
+
 }
 
 // Applies non-local corrections for the correlation

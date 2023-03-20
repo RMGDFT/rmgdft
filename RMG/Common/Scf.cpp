@@ -103,11 +103,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
-    if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
-    {
-        for(int is = 0; is < ct.nspin; is++)
-            FftFilter(&vxc[is*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
-    }
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
     delete F;
     delete RT1;
