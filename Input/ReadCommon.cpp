@@ -1140,7 +1140,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_alt_zgemm", &lc.use_alt_zgemm, false,
             "Flag indicating whether or not to use alternate zgemm implementation.", PERF_OPTIONS);
 
-    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
+    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, true,
             "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
