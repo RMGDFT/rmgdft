@@ -78,3 +78,31 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
 }
 
+void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
+               Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
+               Pw &c_pwaves, // IN: Plane wave structure for the coarse grid.
+               double factor)  // IN: LOW_PASS or HIGH_PASS, defined in const.h
+{
+
+  double g2cut = factor*c_pwaves.gcut;
+  int global_basis = pwaves.global_basis;
+  int pbasis = pwaves.pbasis;
+  int size = pbasis;
+  std::complex<double> *crho = new std::complex<double>[size];
+
+  for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
+  pwaves.FftForward(crho, crho);
+
+  for(int ig=0;ig < pbasis;ig++) {
+      if(pwaves.gmags[ig] >= g2cut) {
+          crho[ig] = std::complex<double>(0.0, 0.0);
+      }
+  }
+
+  pwaves.FftInverse(crho, crho);
+  for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
+
+  delete [] crho;
+
+}
+
