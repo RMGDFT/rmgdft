@@ -195,7 +195,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     RLogGridToGLogGrid(this->atomic_rho, this->r, this->rab, this->arho_g,
             this->rg_points, 0, bessel_rg);
     Der_Localpp_g(work, this->r, this->rab, this->der_localpp_g, this->rg_points);
-
+    this->arho_g[0] = Zv;
     if (pct.gridpe == 0 && write_flag)
     {
         for (int idx = 0; idx < this->rg_points; idx++)
