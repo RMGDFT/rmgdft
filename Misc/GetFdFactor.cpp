@@ -122,10 +122,13 @@ void GetFdFactor(int kpt)
             double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
             double x_int = - diffs[0] / m;
             sp.fd_slopes.push_back(m);
-            sp.fd_xint.push_back(x_int);
             sp.fd_yint.push_back(diffs[0]);
 
             if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
+            x_int = std::min(x_int, 1.0);
+            x_int = std::max(x_int, 0.0);
+            sp.fd_xint.push_back(x_int);
+
             sp.fd_factor1.push_back(x_int);
             sp.fd_fke1.push_back(fft_ke);
         }
