@@ -811,7 +811,7 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
 
         }
     }
-    this->ApplyBoundary(&this->storage_cpu[st * P0_BASIS], st);
+    //this->ApplyBoundary(&this->storage_cpu[st * P0_BASIS], st);
 }
 
 template void LocalObject<double>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);

@@ -42,6 +42,7 @@ void init_wf_lcao(STATE * states)
 
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
+        int P0_BASIS = LocalOrbital->pbasis;
         for (int st = 0; st < LocalOrbital->num_thispe; st++)
         {
             int st_glob = LocalOrbital->index_proj_to_global[st];
@@ -49,6 +50,8 @@ void init_wf_lcao(STATE * states)
             get_one_orbital(states, st_glob, phi);
             
             LocalOrbital->AssignOrbital(st, phi);
+            LocalOrbital->ApplyBoundary(&LocalOrbital->storage_cpu[st * P0_BASIS], st);
+
         }
     }
     else
