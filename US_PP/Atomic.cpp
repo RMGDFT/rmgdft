@@ -35,6 +35,11 @@
 
 
 
+// Sign copy function
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 
 int Atomic::Log_grid_initialized = false;
 double Atomic::r_filtered[MAX_LOGGRID];
@@ -419,6 +424,30 @@ void Atomic::RLogGridToGLogGrid (
 
     /* Release memory */
     delete [] work1;
+
+    // This next bit of code tries to detect if f_g becomes oscillatory
+    // for some g=gosc and if so zeros it out for larger g
+    int icut = RADIAL_GVECS;
+    for(int ix=0;ix < RADIAL_GVECS-10;ix++)
+    {
+        int switches = 0;
+        int sgn0 = sgn(f_g[ix]);
+        for(int iy=ix+1;iy < ix + 10;iy++)
+        {
+           if(sgn0 != sgn(f_g[iy]))
+           {
+               switches++;
+               sgn0 = sgn(f_g[iy]);
+           }
+        }
+        if(switches >= 3)
+        {
+            icut = ix;
+            break;
+        }
+    }
+    if(ct.verbose && pct.gridpe==0)printf("ICUT = %d   %d\n", icut, RADIAL_GVECS);
+    for(int ix=0;ix < RADIAL_GVECS;ix++) if(ix >= icut) f_g[ix] = 0.0;
 
 } // end RLogGridToGLogGrid
 
