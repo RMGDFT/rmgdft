@@ -45,7 +45,7 @@ public:
 
     // For laplacian
     // 0=x,1=y,2=z,3=xy,4=xz,5=yz,6=nxy,7=nxz,8=nyz
-    double axis_lc[13][12];
+    double axis_lc[13][13];
     double plane_centers[13];
     double plane_dists[13];
     bool include_axis[13];
