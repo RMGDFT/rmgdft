@@ -50,10 +50,12 @@
 #include <stdio.h>
 
 #include "negf_prototypes.h"
+#include "common_prototypes.h"
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
+#include "Mgrid.h"
 
 
 void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
@@ -149,7 +151,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
 
 /* evaluate residual */
-    eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+    eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
     pack_stop(resid, work, dimx, dimy, dimz);
 
@@ -228,7 +230,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
         if (i < (mu_cyc - 1))
         {
 
-            eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+            eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
 
             trade_images(resid, dimx, dimy, dimz, FULL_TRADE);

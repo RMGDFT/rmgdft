@@ -158,7 +158,7 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
 
 
 /* evaluate residual */
-    eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+    eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
     if (flag_local == 1)
     {
@@ -285,7 +285,7 @@ ZeroBoundary(v_mat, dimx,dimy,dimz);
         if (i < (mu_cyc - 1))
         {
 
-            eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+            eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
 
             if (flag_local == 1)

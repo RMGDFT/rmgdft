@@ -1,0 +1,5 @@
+rmgnegf="/home/luw/rmgdft/build/rmg-negf-cpu"
+cd bias_0.0
+mpirun -n 8 ${rmgnegf} input
+mpirun -n 8 ${rmgnegf} input.110
+cd ..

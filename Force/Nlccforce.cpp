@@ -44,6 +44,13 @@
 void Nlccforce (double * rho, double * vxc, double *force_nlcc)
 {
 
+    bool core_correction = false;
+    for(auto &sp : Species)
+    {
+        if(sp.nlccflag) core_correction= true; 
+    }
+    if(!core_correction) return;
+
     if(!ct.localize_localpp) pct.num_loc_ions = ct.num_ions;
 
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);

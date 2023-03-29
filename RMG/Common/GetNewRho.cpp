@@ -106,7 +106,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     /*Write out normalization constant if needed*/
     double difference = fabs(t1 - 1.0);
     if ((ct.verbose == 1) || (difference > 0.01))
-        rmg_printf ("Charge normalization constant: %f\n", t1);
+        rmg_printf ("Charge normalization constant -1.0: %e\n", t1-1.0);
 
 }
 

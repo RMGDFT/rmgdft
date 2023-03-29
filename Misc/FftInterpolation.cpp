@@ -67,7 +67,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   int dimz_f = G.get_PZ0_GRID(ratio); 
   double scale = 1.0 / (double)(n[0]*n[1]*n[2]);
   double dratio = (double)ratio;
-    double rootrho;
+  double rootrho;
 
   // Array strides
   int incx_c = dimy_c * dimz_c;
@@ -85,7 +85,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   int offset_x, offset_y, offset_z;
   G.find_node_offsets(G.get_rank(), n[0], n[1], n[2], &offset_x, &offset_y, &offset_z);
 
-
   // Get the forward transform
   if(use_sqrt)
   {
@@ -97,14 +96,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   }
 
   coarse_pwaves->FftForward(base_coarse, base_coarse);
-  // Zero higher frequency components
-//  for(int ix = 0;ix < pbasis_c;ix++)
-//  {
-      //if(!coarse_pwaves->gmask[ix]) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-//      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-//  }
-
-
 
   // Loop over phase shifts.
   for(int ix = 0;ix < ratio;ix++) {
@@ -116,26 +107,35 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               // Multiply coarse transform by phase shifts and 
               int idx = 0;
               for(int ixx = 0;ixx < dimx_c;ixx++) {
-
                   int p1 = offset_x + ixx;
                   if(p1 > n[0]/2) p1 -= n[0];
-                  if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = 0;
+                  //if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = -p1;
                   double rp1 = (double)(p1)*(double)(ix)/dratio / (double)n[0];
+                  double theta_x = 2.0*PI*rp1;
+                  std::complex<double> phase_x = std::complex<double>(cos(theta_x), sin(theta_x));
+//                  if(p1 == n[0]/2) phase_x = std::real(phase_x);
+                  //if(p1 == n[0]/2) phase_x = 1.0;
 
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
-
                       int p2 = offset_y + iyy;
                       if(p2 > n[1]/2) p2 -= n[1];
-                      if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = 0;
+                      //if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = -p2;
                       double rp2 = (double)(p2)*(double)(iy)/dratio / (double)n[1];
+                      double theta_y = 2.0*PI*rp2;
+                      std::complex<double> phase_y = std::complex<double>(cos(theta_y), sin(theta_y));
+                      //if(p2 == n[1]/2) phase_y = std::real(phase_y);
+                      //if(p2 == n[1]/2) phase_y = 1.0;
 
                       for(int izz = 0;izz < dimz_c;izz++) {
                           int p3 = offset_z + izz;
                           if(p3 > n[2]/2) p3 -= n[2];
-                          if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = 0;
+                          //if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = -p3;
                           double rp3 = (double)p3*(double)(iz)/dratio / (double)n[2];
-                          double theta = 2.0*PI*(rp1 + rp2 + rp3);
-                          std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));
+                          double theta_z = 2.0*PI*rp3;
+                          std::complex<double> phase_z = std::complex<double>(cos(theta_z), sin(theta_z));
+                          //if(p3 == n[2]/2) phase_z = std::real(phase_z);
+                          //if(p3 == n[2]/2) phase_z = 1.0;
+                          std::complex<double> phase = phase_x * phase_y * phase_z;
                           shifted_coarse[idx] = phase * base_coarse[idx];
                           idx++;
 
@@ -150,16 +150,94 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               for(int ixx = 0;ixx < dimx_c;ixx++) {
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
                       for(int izz = 0;izz < dimz_c;izz++) {
-                          rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                           if(use_sqrt)
                           {
+                              rootrho =  std::abs(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                               fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                                     scale*scale*rootrho*rootrho;
+                                  (scale*scale)*(rootrho*rootrho);
                           }
                           else
                           {
+                              rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                               fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                                     scale*rootrho;
+                                  scale*rootrho;
+                          }
+
+                      }
+                  }
+              }
+
+          }
+
+      }
+
+  }
+
+  // Loop over phase shifts.
+  for(int ix = 0;ix < ratio;ix++) {
+
+      for(int iy = 0;iy < ratio;iy++) {
+
+          for(int iz = 0;iz < ratio;iz++) {
+
+              // Multiply coarse transform by phase shifts and 
+              int idx = 0;
+              for(int ixx = 0;ixx < dimx_c;ixx++) {
+                  int p1 = offset_x + ixx;
+                  if(p1 > n[0]/2) p1 -= n[0];
+                  if(ct.sqrt_interpolation && (p1 == n[0]/2)) p1 = -p1;
+                  double rp1 = (double)(p1)*(double)(ix)/dratio / (double)n[0];
+                  double theta_x = 2.0*PI*rp1;
+                  std::complex<double> phase_x = std::complex<double>(cos(theta_x), sin(theta_x));
+//                  if(p1 == n[0]/2) phase_x = std::real(phase_x);
+                  //if(p1 == n[0]/2) phase_x = 1.0;
+
+                  for(int iyy = 0;iyy < dimy_c;iyy++) {
+                      int p2 = offset_y + iyy;
+                      if(p2 > n[1]/2) p2 -= n[1];
+                     if(ct.sqrt_interpolation && (p2 == n[1]/2)) p2 = -p2;
+                      double rp2 = (double)(p2)*(double)(iy)/dratio / (double)n[1];
+                      double theta_y = 2.0*PI*rp2;
+                      std::complex<double> phase_y = std::complex<double>(cos(theta_y), sin(theta_y));
+                      //if(p2 == n[1]/2) phase_y = std::real(phase_y);
+                      //if(p2 == n[1]/2) phase_y = 1.0;
+
+                      for(int izz = 0;izz < dimz_c;izz++) {
+                          int p3 = offset_z + izz;
+                          if(p3 > n[2]/2) p3 -= n[2];
+                         if(ct.sqrt_interpolation && (p3 == n[2]/2)) p3 = -p3;
+                          double rp3 = (double)p3*(double)(iz)/dratio / (double)n[2];
+                          double theta_z = 2.0*PI*rp3;
+                          std::complex<double> phase_z = std::complex<double>(cos(theta_z), sin(theta_z));
+                          //if(p3 == n[2]/2) phase_z = std::real(phase_z);
+                          //if(p3 == n[2]/2) phase_z = 1.0;
+                          std::complex<double> phase = phase_x * phase_y * phase_z;
+                          shifted_coarse[idx] = phase * base_coarse[idx];
+                          idx++;
+
+                      }
+                  }
+              }
+
+              // Backtransform phase shifted coefficients
+              coarse_pwaves->FftInverse(shifted_coarse, backshifted_coarse);
+
+              // Pack interpolated values into the fine grid
+              for(int ixx = 0;ixx < dimx_c;ixx++) {
+                  for(int iyy = 0;iyy < dimy_c;iyy++) {
+                      for(int izz = 0;izz < dimz_c;izz++) {
+                          if(use_sqrt)
+                          {
+                              rootrho =  std::abs(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
+                              fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
+                              (fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] + 
+                                  (scale*scale)*(rootrho*rootrho))/2.0;
+                          }
+                          else
+                          {
+                              rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
+                              fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
+                                  scale*rootrho;
                           }
 
                       }
@@ -180,26 +258,26 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
 }
 
 void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine, 
-                            int dimx_c, int dimy_c, int dimz_c, 
-                            int xshift, int yshift, int zshift, 
-                            double scale, int ratio)
+        int dimx_c, int dimy_c, int dimz_c, 
+        int xshift, int yshift, int zshift, 
+        double scale, int ratio)
 {
 
-  // Array strides
-  int incx_c = dimy_c * dimz_c;
-  int incy_c = dimz_c;
+    // Array strides
+    int incx_c = dimy_c * dimz_c;
+    int incy_c = dimz_c;
 
-  int incx_f = ratio * ratio * dimy_c * dimz_c;
-  int incy_f = ratio * dimz_c;
+    int incx_f = ratio * ratio * dimy_c * dimz_c;
+    int incy_f = ratio * dimz_c;
 
-  // Pack interpolated values into the fine grid
-  for(int ixx = 0;ixx < dimx_c;ixx++) {
-      for(int iyy = 0;iyy < dimy_c;iyy++) {
-          for(int izz = 0;izz < dimz_c;izz++) {
-              fine[(ratio*ixx + xshift)*incx_f + (ratio*iyy + yshift)*incy_f + (ratio*izz + zshift)] = 
-                 scale * (std::real(coarse[ixx*incx_c + iyy*incy_c + izz]));
+    // Pack interpolated values into the fine grid
+    for(int ixx = 0;ixx < dimx_c;ixx++) {
+        for(int iyy = 0;iyy < dimy_c;iyy++) {
+            for(int izz = 0;izz < dimz_c;izz++) {
+                fine[(ratio*ixx + xshift)*incx_f + (ratio*iyy + yshift)*incy_f + (ratio*izz + zshift)] = 
+                    scale * (std::real(coarse[ixx*incx_c + iyy*incy_c + izz]));
 
-          }
-      }
-  }
+            }
+        }
+    }
 }

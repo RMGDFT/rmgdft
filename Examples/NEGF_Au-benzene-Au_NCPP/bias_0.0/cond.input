@@ -1,0 +1,10 @@
+#  input for conductance calculations 
+
+505 162 162  nC nL nR 
+3 162 181  162  num_blocks, block_dim 
+-2.0 2.0 401 Emin,Emax, E_points 
+0.005  small imaginary part 
+0.05  kbt 
+2001 1 1   
+1   number of conductance curve from lead i to lead j
+1  2  lead i to lead j

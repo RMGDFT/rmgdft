@@ -34,7 +34,7 @@ void mgrid_solv (double *v_mat, double *f_mat, double *work,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag);
-void eval_residual (double *mat, double *f_mat, int dimx, int dimy, int dimz,
+void eval_residual (double *mat, double *f_mat, double *work, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, double *res);
 void solv_pois (double *vmat, double *fmat, double *work,
                 int dimx, int dimy, int dimz, double gridhx,

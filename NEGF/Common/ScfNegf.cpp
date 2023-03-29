@@ -70,7 +70,7 @@ void ScfNegf (DoubleC *sigma_all, double *rho_matrix_local, double *vxc,
     {
         if(ct.charge_mixing_type == 0) ct.charge_pulay_order = 1;
         Pulay_rho = new PulayMixing(fpbasis, ct.charge_pulay_order, ct.charge_pulay_refresh, 
-                ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
+                ct.mix, ct.mix, pct.grid_comm); 
 
     }
 

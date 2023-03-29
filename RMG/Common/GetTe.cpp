@@ -77,6 +77,8 @@ double  vdw_d2_energy(Lattice &, std::vector<ION> &);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
 
+//extern double *rhovxc;
+
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
@@ -88,11 +90,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     FP0_BASIS = get_FP0_BASIS();
 
     double *vh = new double[FP0_BASIS];
-    double *vxc_up = vxc_in;
-    double *vxc_down = vxc_in + FP0_BASIS;
+    double *vxc = new double[ct.nspin * FP0_BASIS];
+    double *vxc_up = vxc;
+    double *vxc_down = vxc + FP0_BASIS;
 
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
-
+    for(int i=0;i < ct.nspin*FP0_BASIS;i++)vxc[i] = vxc_in[i];
 
     vel = get_vel_f();
 
@@ -170,7 +173,9 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
     else
     {
-        for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc_in[idx];
+        //for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc_in[idx];
+        for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc[idx];
+        //for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rhovxc[idx] * vxc[idx];
     }
 
     /*XC potential energy */
@@ -237,6 +242,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Release our memory */
+    delete [] vxc;
     delete [] vh;
 
 }                               /* end get_te */
