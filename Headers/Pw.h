@@ -119,7 +119,7 @@ public:
     void FftForward (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftInverse (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
-    double InscribedSphere();
+    static double InscribedSphere(Lattice *Lt, int global_nx, int global_ny, int global_nz);
 
     ~Pw(void);
 
