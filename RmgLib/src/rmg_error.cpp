@@ -50,7 +50,7 @@ void rmg_error_handler(const char *filename, int line, char const *message)
 {
     std::cout << boost::stacktrace::stacktrace();
     if(!rmgerrfunc) {
-        if(do_print) printf("%s at LINE %d in %s.\n", message, line, filename);
+        if(do_print) printf("\n\n%s at LINE %d in %s.\n\n\n", message, line, filename);
         fflush (NULL);
         raise(SIGTERM);
     }
