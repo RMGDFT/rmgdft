@@ -45,7 +45,9 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
 
     if(!boost::filesystem::exists(meta1) )
     {
-        std::cout << "\n using default path and input"; 
+        int my_rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+        if(my_rank == 0) std::cout << "\nInput file not found. Using default path and input.\n" << std::endl; 
         std::strncpy(pelc.image_path[0], "./", sizeof(pelc.image_path[0]));
         std::strncpy(pelc.image_path[0], "", sizeof(pelc.image_path[0]));
         std::strncpy(pelc.image_input[0], "input", sizeof(pelc.image_input[0]));
