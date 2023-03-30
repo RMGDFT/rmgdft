@@ -69,7 +69,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
 add_definitions( "-DMIN_CUDA_ARCH=${MIN_ARCH}" )
 set(LIB_TYPE STATIC)
-  CUDA_ADD_LIBRARY(Gpufuncs ${LIB_TYPE}
+  add_library(Gpufuncs ${LIB_TYPE}
   ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuNegate.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/gramsch_update_psi_gpu.cu

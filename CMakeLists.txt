@@ -25,7 +25,7 @@
 #
 
 
-cmake_minimum_required (VERSION 3.1) 
+cmake_minimum_required (VERSION 3.17) 
 
 
 # force an out-of-source build
@@ -40,9 +40,13 @@ if( RMG_COMPILE_INPLACE )
     Where -jX with X=ncpus to compile with and target may be rmg-cpu or rmg-gpu")
 endif()
 
-
-enable_language(Fortran)
-project (RMG CXX C Fortran) 
+if(RMG_CUDA_ENABLED)
+    enable_language(Fortran CUDA)
+    project (RMG CXX C Fortran CUDA) 
+else()
+    enable_language(Fortran)
+    project (RMG CXX C Fortran) 
+endif()
 
 
 # Extract revision information to include in executables
@@ -638,29 +642,30 @@ endif()
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_CUDA_ENABLED)
-    find_package(CUDA REQUIRED)
-    message( WARNING "CUDA_VERSION_MAJOR = ${CUDA_VERSION_MAJOR}")
-    message( WARNING "CUDA_VERSION_MINOR = ${CUDA_VERSION_MINOR}")
-    if(${CUDA_VERSION_MAJOR} LESS 6)
-        message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set CUDA_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
+    find_package(CUDAToolkit 11.0 REQUIRED)
+    message( WARNING "CUDAToolkit_VERSION_MAJOR = ${CUDAToolkit_VERSION_MAJOR}")
+    message( WARNING "CUDAToolkit_VERSION_MINOR = ${CUDAToolkit_VERSION_MINOR}")
+    if(${CUDAToolkit_VERSION_MAJOR} LESS 11)
+        message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 11.0 or greater. Either set CUDA_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
     endif()
 
     if(NOT CRAY_HOST)
         list(APPEND RMGLIBS ${CUDA_CUDA_LIBRARY})
-        list(APPEND RMGLIBS ${CUDA_CUDART_LIBRARY})
         list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
         list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
     endif()
+    list(APPEND RMGLIBS ${CUDA_cuda_driver_LIBRARY})
+    list(APPEND RMGLIBS ${CUDA_cudart_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cublas_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
     include_directories(${CUDA_INCLUDE_DIRS})
-    find_library (cusolverMg_LIBRARY NAMES cusolverMg PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    list(APPEND RMGLIBS ${cusolverMg_LIBRARY})
+#    find_library (cusolverMg_LIBRARY NAMES cusolverMg PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+#    list(APPEND RMGLIBS ${cusolverMg_LIBRARY})
     # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
-    add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
-    add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
+    add_definitions(-DCUDA_VERSION_MAJOR=${CUDAToolkit_VERSION_MAJOR})
+    add_definitions(-DCUDA_VERSION_MINOR=${CUDAToolkit_VERSION_MINOR})
 endif()
 
 
