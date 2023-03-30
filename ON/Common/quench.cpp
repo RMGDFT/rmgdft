@@ -61,9 +61,40 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     double exx_start_time = start_time;
     double step_time;
     double exx_step_time;
+    int pbasis = Rmg_G->get_P0_BASIS(1);
 
     int outer_steps = 1;
+    double *rho_pre, *trho;
+    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local, *CC_res_local;
+    double *Hij_glob, *Sij_glob;
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
+                ct.mix, ct.mix, pct.grid_comm); 
+        Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
 
+        int tot_size = LocalOrbital->num_thispe * pbasis;
+        Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
+                ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
+        Pulay_orbital->SetPrecond(Preconditioner);
+        Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
+        Pulay_orbital->SetBroyden(pbasis);
+
+        rho_pre = new double[nfp0];
+        trho = new double[nfp0];
+        int num_orb = LocalOrbital->num_thispe;
+        rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        CC_res_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+
+        int num_tot = LocalOrbital->num_tot;
+        Hij_glob = new double[num_tot * num_tot];
+        Sij_glob = new double[num_tot * num_tot];
+
+    }
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
@@ -80,7 +111,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
         exx_step_time = my_crtc ();
 
-       // Adjust exx convergence threshold
+        // Adjust exx convergence threshold
         if(ct.xc_is_hybrid)
         {
             if(ct.exx_steps)
@@ -109,7 +140,9 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                 if(ct.LocalizedOrbitalLayout == LO_projection)
                 {
                     Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                            rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital);
+                            rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital, 
+                            rho_pre, trho, rho_matrix_local, theta_local, CC_res_local,
+                            Hij_local, Sij_local, Hij_glob, Sij_glob);
                 }
                 else
                 {
@@ -131,7 +164,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                     printf ("\n\n Convergence has been achieved. stopping ...\n");
                 break;
             }
-            
+
             // Write out progress info
             double elapsed_time = my_crtc() - start_time;
             ProgressTag(step_time, elapsed_time);
@@ -140,7 +173,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
         if(ct.xc_is_hybrid)
         {
-            
+
             size_t size = LocalOrbital->num_thispe * LocalOrbital->pbasis * sizeof(double);
             memcpy(Exx_onscf->PreOrbital, LocalOrbital->storage_cpu, size);
             F->start_exx_rmg();
@@ -154,7 +187,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             mat_dist_to_global(mat_X, pct.desca, rho_mat_global);
             mat_dist_to_global(matB, pct.desca, Sij_inverse);
             mat_dist_to_global(zz_dis, pct.desca, Cij_global);
-            
+
             if(ct.nspin == 1) 
             {
                 double half = 0.5; 
@@ -235,7 +268,6 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             }
         }
 
-        int pbasis = Rmg_G->get_P0_BASIS(1);
         //  calculate the wavefuctions from localized orbitals
         double *psi = new double[2* LocalOrbital->num_tot * pbasis]();
         double *Cij_global = new double[LocalOrbital->num_tot * LocalOrbital->num_tot];
@@ -265,5 +297,17 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         Exx.Vexx_integrals(ct.exx_int_file);
     }
 
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        delete [] trho;
+        delete [] rho_pre;
+        RmgFreeHost(rho_matrix_local);
+        RmgFreeHost(theta_local);
+        RmgFreeHost(CC_res_local);
+        RmgFreeHost(Hij_local);
+        RmgFreeHost(Sij_local);
+        delete [] Hij_glob;
+        delete [] Sij_glob;
+    }
 
 }

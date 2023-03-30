@@ -32,7 +32,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 
 
 
-
     /* save old vtot, vxc, vh */
     dcopy(&nfp0, vxc, &ione, vxc_old, &ione);
     dcopy(&nfp0, vh, &ione, vh_old, &ione);
@@ -53,12 +52,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 //delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
-    if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1))
-    {
-        for(int is = 0; is < ct.nspin; is++)
-            FftFilter(&vxc[is*nfp0], *fine_pwaves, *coarse_pwaves, LOW_PASS);
-    }
-
     delete F;
 
 
