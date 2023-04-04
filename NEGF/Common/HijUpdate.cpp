@@ -61,6 +61,7 @@ void HijUpdate (double *vtot_c)
         }
     }
 
+    MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
     LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
 
     for(int ib = 0; ib < ct.num_blocks; ib++)
