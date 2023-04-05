@@ -382,6 +382,8 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         delete [] beta;
     }
 
+    MemcpyHostDevice(this->storage_size, this->storage_cpu, this->storage_gpu);
+
 }
 
 template void LocalObject<double>::GetAtomicOrbitals(int, BaseGrid &BG);
@@ -1152,10 +1154,10 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
                     //    boundary[st][idx] =0.0;
                     //else
                     //    boundary[st][idx] =1.0;
-                    //if(mask[st * P0_BASIS + idx])
-                    //    boundary[st][idx] = 1.0;
-                    //else
-                    //    boundary[st][idx] = 0.0;
+                    if(mask[st * P0_BASIS + idx])
+                        boundary[st][idx] = 1.0;
+                    else
+                        boundary[st][idx] = 0.0;
                 }
             }
             //if(st == 0) printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);

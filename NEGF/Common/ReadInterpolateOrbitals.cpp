@@ -103,6 +103,8 @@ void ReadInterpolateOrbitals ()
     delete [] psi_rotate;
 
     MPI_Barrier(pct.img_comm);
+    MemcpyHostDevice(LocalOrbital->storage_size, LocalOrbital->storage_cpu, LocalOrbital->storage_gpu);
+
 
 }                               /* end read_data */
 static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *iymin, int *iymax, int ipart)
