@@ -49,6 +49,7 @@ void init_state_size(STATE * states)
         printf("\n  States orbital size: x.y.z   \n");
 
     item = 1<<(ct.eig_parm.levels+1);
+    item = 2;
         printf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_hxgrid(), get_xside(), item);
 
     for (state = 0; state < ct.num_states; state++)
