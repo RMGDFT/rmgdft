@@ -4,6 +4,8 @@ COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
 kind.f90
+tetra.f90
+Tetrahedron.cpp
 CheckSetDefault.cpp
 DistributeToGlobal.cpp    
 OptimizeFdCoeff.cpp

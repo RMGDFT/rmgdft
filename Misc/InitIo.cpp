@@ -51,6 +51,7 @@
 #include "Functional.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
+#include "Tetrahedron.h"
 
 #if CUDA_ENABLED
     #include <cuda.h>
@@ -222,6 +223,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
     }
 
+
     InitPe4kpspin();
 
     AutoSet(ct, pct, ControlMap);
@@ -231,6 +233,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(Rmg_Symm) Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
 
+    // Set up Tetrahedron stuff. Uncomment to test.
+    //Tetrahedron *Tetra = new Tetrahedron();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
     /* Next address grid coalescence. Grids are only coalesced in the x-coordinate. For example if the
