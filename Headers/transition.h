@@ -22,6 +22,7 @@
 #include "LaplacianCoeff.h"
 #include "PulayMixing.h"
 #include "Symmetry.h"
+#include "Tetrahedron.h"
 #include "rmgfiles.h"
 
 
@@ -34,6 +35,7 @@ extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 extern Symmetry *Rmg_Symm;
+extern Tetrahedron *Tetra;
 
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 

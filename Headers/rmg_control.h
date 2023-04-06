@@ -594,6 +594,9 @@ public:
     /* fermi energy */
     double efermi;
 
+    /* Tetrahedron method. 0=Bloechl, 1=Linear, 2=Optimized */
+    int tetra_method;
+
     /** Total number of k-points being used in the calculation */
     int num_kpts;
     int num_kpts_pe;

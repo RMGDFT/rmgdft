@@ -36,13 +36,19 @@ MODULE ktetra
   !! Weights for the optimized tetrahedron method
   !
   PUBLIC :: tetra, ntetra, nntetra
-  PUBLIC :: tetra_init, tetra_weights, tetra_weights_only
+  PUBLIC :: tetra_init, tetra_weights, tetra_weights_only, tetra_set_method
   PUBLIC :: opt_tetra_init, opt_tetra_weights, opt_tetra_weights_only,  &
             tetra_type, wlsm
   PUBLIC :: deallocate_tetra
   !
 CONTAINS
   !
+  SUBROUTINE tetra_set_method(method) bind(C, name="tetra_set_method")
+  USE iso_c_binding
+  INTEGER, INTENT(IN) :: method
+  tetra_type = method
+  END SUBROUTINE tetra_set_method
+
   !--------------------------------------------------------------------------
   SUBROUTINE tetra_init( nsym, s, time_reversal, t_rev, at, bg, npk, &
                          k1,k2,k3, nk1,nk2,nk3, nks, xk ) bind(C, name="tetra_init")
@@ -110,20 +116,20 @@ CONTAINS
   !
   ALLOCATE( xkg(3,nkr) )
   ALLOCATE( equiv(nkr) )
-write(6,*)'K123 = ',k1,'  ',k2,'  ',k3
-write(6,*)'NK123 = ',nk1,'  ',nk2,'  ',nk3
-write(6,*)'AT0 = ',at(1,1),'  ',at(2,1),'  ',at(3,1)
-write(6,*)'AT1 = ',at(1,2),'  ',at(2,2),'  ',at(3,2)
-write(6,*)'AT2 = ',at(1,3),'  ',at(2,3),'  ',at(3,3)
-write(6,*)'BG0 = ',bg(1,1),'  ',bg(2,1),'  ',bg(3,1)
-write(6,*)'BG1 = ',bg(1,2),'  ',bg(2,2),'  ',bg(3,2)
-write(6,*)'BG2 = ',bg(1,3),'  ',bg(2,3),'  ',bg(3,3)
-DO n = 1, npk
-  write(6,*)'KK = ',xk(1,n),'  ',xk(2,n),'  ', xk(3,n)
-ENDDO
+!write(6,*)'K123 = ',k1,'  ',k2,'  ',k3
+!write(6,*)'NK123 = ',nk1,'  ',nk2,'  ',nk3
+!write(6,*)'AT0 = ',at(1,1),'  ',at(2,1),'  ',at(3,1)
+!write(6,*)'AT1 = ',at(1,2),'  ',at(2,2),'  ',at(3,2)
+!write(6,*)'AT2 = ',at(1,3),'  ',at(2,3),'  ',at(3,3)
+!write(6,*)'BG0 = ',bg(1,1),'  ',bg(2,1),'  ',bg(3,1)
+!write(6,*)'BG1 = ',bg(1,2),'  ',bg(2,2),'  ',bg(3,2)
+!write(6,*)'BG2 = ',bg(1,3),'  ',bg(2,3),'  ',bg(3,3)
+!DO n = 1, npk
+!  write(6,*)'KK = ',xk(1,n),'  ',xk(2,n),'  ', xk(3,n)
+!ENDDO
 
   !
-  DO i = 1, nks
+  DO i = 1, nk1
      DO j = 1, nk2
         DO k = 1, nk3
            !  this is nothing but consecutive ordering

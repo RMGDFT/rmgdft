@@ -233,8 +233,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(Rmg_Symm) Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
 
-    // Set up Tetrahedron stuff. Uncomment to test.
-    //Tetrahedron *Tetra = new Tetrahedron();
+    // Set up Tetrahedron stuff.
+    if(ct.occ_flag == OCC_TETRA)
+    {
+        Tetrahedron *Tetra = new Tetrahedron();
+    }
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
     /* Next address grid coalescence. Grids are only coalesced in the x-coordinate. For example if the
