@@ -38,7 +38,7 @@ class Tetrahedron
 
     public:
       Tetrahedron (void);
-
+      ~Tetrahedron (void);
 
 };
 #endif

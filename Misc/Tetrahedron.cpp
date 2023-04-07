@@ -34,6 +34,9 @@
 //#define opt_tetra_weights_only    RMG_FC_MODULE(ktetra,opt_tetra_weights_only,mod_KTETRA,OPT_TETRA_WEIGHTS_ONLY)
 //#define deallocate_tetra      RMG_FC_MODULE(ktetra,deallocate_tetra,mod_KTETRA,DEALLOCATE_TETRA)
 
+Tetrahedron *Tetra;
+
+extern "C" void tetra_set_method(int *method); 
 extern "C" void tetra_init( int *nsym, int *s, bool *time_reversal, int *t_rev, 
                  double *at, double *bg, int *npk,
                  int *k1, int *k2, int *k3, 
@@ -58,12 +61,16 @@ extern "C" void deallocate_tetra(void);
 
 Tetrahedron::Tetrahedron(void)
 {
+    tetra_set_method(&ct.tetra_method);
+
     int *so = Rmg_Symm->sym_rotate.data();
     int s[48][3][3];
     double at[9], bg[9];
     double *xk = new double[3*ct.num_kpts];
-    int *t_rev = new int[48]();  // Initialize to false for now
+    int *t_rev = new int[48]();
     double alat = Rmg_L.celldm[0];
+
+    for(int is=0;is < ct.nsym;is++) t_rev[is] = (int)Rmg_Symm->time_rev[is];
 
     for(int is=0;is < ct.nsym;is++)
     {
@@ -71,7 +78,7 @@ Tetrahedron::Tetrahedron(void)
         {
             for(int j=0;j < 3;j++)
             {
-                s[is][i][j] = so[is*48 + 3*i + j];
+                s[is][i][j] = so[is*9 + 3*i + j];
             }
         }
     }
@@ -93,15 +100,32 @@ Tetrahedron::Tetrahedron(void)
         xk[kpt*3] = ct.kp[kpt].kvec[0]/kunit;
         xk[kpt*3+1] = ct.kp[kpt].kvec[1]/kunit;
         xk[kpt*3+2] = ct.kp[kpt].kvec[2]/kunit;
-
     }
 
-    tetra_init(&ct.nsym, &s[0][0][0], &Rmg_Symm->time_reversal, t_rev,
+    if(ct.tetra_method == 0)
+    {
+        tetra_init(&ct.nsym, &s[0][0][0], &Rmg_Symm->time_reversal, t_rev,
                at, bg, &ct.num_kpts,
                &ct.kpoint_is_shift[0], &ct.kpoint_is_shift[1], &ct.kpoint_is_shift[2],
                &ct.kpoint_mesh[0], &ct.kpoint_mesh[1], &ct.kpoint_mesh[2],
                &ct.num_kpts, xk);
+    }
+    else
+    {
+        int ione = 1; 
+        opt_tetra_init(&ct.nsym, &s[0][0][0], &Rmg_Symm->time_reversal, t_rev,
+               at, bg, &ct.num_kpts,
+               &ct.kpoint_is_shift[0], &ct.kpoint_is_shift[1], &ct.kpoint_is_shift[2],
+               &ct.kpoint_mesh[0], &ct.kpoint_mesh[1], &ct.kpoint_mesh[2],
+               &ct.num_kpts, xk, &ione);
+    }
 
     delete [] t_rev;
     delete [] xk;
+
+}
+
+Tetrahedron::~Tetrahedron(void)
+{
+    deallocate_tetra();
 }
