@@ -236,7 +236,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // Set up Tetrahedron stuff.
     if(ct.occ_flag == OCC_TETRA)
     {
-        Tetrahedron *Tetra = new Tetrahedron();
+        Tetra = new Tetrahedron();
     }
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);

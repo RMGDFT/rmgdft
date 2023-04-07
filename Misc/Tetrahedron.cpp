@@ -36,6 +36,9 @@
 
 Tetrahedron *Tetra;
 
+template double Tetrahedron::FillTetra (Kpoint<double> **Kptr);
+template double Tetrahedron::FillTetra (Kpoint<std::complex<double>> **Kptr);
+
 extern "C" void tetra_set_method(int *method); 
 extern "C" void tetra_init( int *nsym, int *s, bool *time_reversal, int *t_rev, 
                  double *at, double *bg, int *npk,
@@ -62,7 +65,6 @@ extern "C" void deallocate_tetra(void);
 Tetrahedron::Tetrahedron(void)
 {
     tetra_set_method(&ct.tetra_method);
-
     int *so = Rmg_Symm->sym_rotate.data();
     int s[48][3][3];
     double at[9], bg[9];
@@ -123,6 +125,66 @@ Tetrahedron::Tetrahedron(void)
     delete [] t_rev;
     delete [] xk;
 
+}
+
+template <typename KpointType>
+double Tetrahedron::FillTetra (Kpoint<KpointType> **Kptr)
+{
+    size_t knum_states = ct.num_kpts*ct.num_states;
+    size_t alloc = knum_states;
+    if(ct.nspin == 2) alloc *=2;
+
+    double *eigs = new double[alloc]();
+    double *wg = new double[alloc];
+    // Copy eigs into compact array
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    {
+        int kpt1 = kpt + pct.kstart;
+        for(int st = 0;st < ct.num_states;st++)
+        {
+            eigs[kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[0];
+            if(ct.nspin == 2)
+                eigs[knum_states + kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[1];
+        }
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, eigs, alloc, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Bcast(eigs, alloc, MPI_DOUBLE, 0, pct.kpsub_comm);
+
+
+    if(ct.nspin == 1)
+    {
+        int is = 0;
+        int *isk = new int[ct.num_kpts]();
+        std::fill(isk, isk + ct.num_kpts, 1);
+        if(ct.tetra_method == 0)  // Bloechl
+        {
+                tetra_weights( &ct.num_kpts, &ct.nspin, &ct.num_states, &ct.nel,
+                       eigs, &this->ef, wg, &is, isk );
+        }
+        else  // Linear=1, Optimized=2
+        {
+                opt_tetra_weights( &ct.num_kpts, &ct.nspin, &ct.num_states, &ct.nel,
+                       eigs, &this->ef, wg, &is, isk );
+        }
+
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+        {
+            int kpt1 = kpt + pct.kstart;
+            for(int st = 0;st < ct.num_states;st++)
+            {
+                Kptr[kpt]->Kstates[st].occupation[0] = wg[kpt1*ct.num_states + st]/ct.kp[kpt1].kweight;
+                //printf("WEIGHT for KPT %d  STATE %d = %f\n",kpt, st, Kptr[kpt]->Kstates[st].occupation[0]);
+            }
+        }
+
+        delete [] isk;
+    }
+    delete [] wg;
+    delete [] eigs;
+
+    //printf("EFERMI  %f\n", this->ef);fflush(NULL);
+    return this->ef;
 }
 
 Tetrahedron::~Tetrahedron(void)

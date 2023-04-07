@@ -1381,7 +1381,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "use scdm method to set the trial wannier functions ",
             "0: isolated, 1: gaussian, 2: erfc ");
 
-    If.RegisterInputKey("tetra_method", NULL, &lc.tetra_method, "Optimized",
+    If.RegisterInputKey("tetra_method", NULL, &lc.tetra_method, "Bloechl",
             CHECK_AND_TERMINATE, OPTIONAL, tetra_method,
             "tetrahedron method to use ",
             "tetra_method must be one of  \"Bloechl\", \"Linear\", or \"Optimized\". Terminating. ",

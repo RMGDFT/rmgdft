@@ -29,6 +29,7 @@
 #include "rmgtypedefs.h"
 #include "BaseGrid.h"
 #include "Lattice.h"
+#include "Kpoint.h"
 #include <boost/multi_array.hpp>
 
 class Tetrahedron
@@ -39,6 +40,8 @@ class Tetrahedron
     public:
       Tetrahedron (void);
       ~Tetrahedron (void);
-
+      template <typename KpointType>
+      double FillTetra (Kpoint<KpointType> **Kptr);
+      double ef, ef_up, ef_down;
 };
 #endif
