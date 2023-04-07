@@ -159,6 +159,7 @@ public:
     int vdw_corr;
     int dftd3_version;
     double Evdw;
+    double ldaU_E;
     double *force_vdw=NULL;
     double stress_vdw[9];
 

@@ -48,6 +48,8 @@
 #include "Voronoi.h"
 #include "GpuAlloc.h"
 #include "Wannier.h"
+#include "RmgSumAll.h"
+
 
 
 // Local function prototypes
@@ -233,7 +235,61 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     rmg_printf ("\n");
     progress_tag ();
-    rmg_printf ("final total energy = %16.8f Ha\n", ct.TOTAL);
+
+
+
+    double *v_psi, *vxc_psi;
+    int pbasis = Kptr[0]->pbasis;
+    v_psi = new double[pbasis];
+    vxc_psi = new double[pbasis]();
+    int nstates = Kptr[0]->nstates;
+    OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+    OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+
+    bool is_xc_hybrid = ct.xc_is_hybrid;
+
+    ct.xc_is_hybrid = false;
+
+    GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
+
+    ct.xc_is_hybrid = false;
+
+    double kin_energy=0.0, pseudo_energy= 0.0;
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
+
+        for (int st = 0; st < nstates; st++)
+        {
+            double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
+            kin_energy += std::real(Hcore_kin[kpt * nstates * nstates + st * nstates + st]) * occ;
+            pseudo_energy += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+        }
+    }
+    kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
+    kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
+    pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+    pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+
+    pseudo_energy -= kin_energy;
+    //Kptr[0]->ldaU->Ecorrect
+    double total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
+
+
+    /* Print contributions to total energies into output file */
+    double efactor = ct.energy_output_conversion[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
+    rmg_printf ("\n@@ TOTAL ENEGY Components \n");
+    rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+    rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+    rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+    rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+    rmg_printf ("@@ ion-electron       = %15.6f %s\n", efactor*pseudo_energy, eunits);
+    rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+    rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+    rmg_printf ("@@ total              = %15.6f %s\n", efactor*total_e, eunits);
+
+    rmg_printf ("final total energy from eig sum = %16.8f Ha\n", ct.TOTAL);
+    rmg_printf ("final total energy from direct =  %16.8f Ha\n", total_e);
 
 
     // Exact exchange integrals
@@ -247,27 +303,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 Kptr[0]->orbital_storage, ct.exx_mode);
         if(ct.exx_mode == EXX_LOCAL_FFT)
             Exx->WriteWfsToSingleFile();
-        
-        double *v_psi, *vxc_psi;
-        int pbasis = Kptr[0]->pbasis;
-        v_psi = new double[pbasis];
-        vxc_psi = new double[pbasis]();
-        int nstates = Kptr[0]->nstates;
-        OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
-        OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
-
-        bool is_xc_hybrid = ct.xc_is_hybrid;
-
-        ct.xc_is_hybrid = false;
-
-        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
-
-        ct.xc_is_hybrid = false;
-
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
-        }
-        
         if(ct.qmc_nband == 0) ct.qmc_nband = ct.num_states;
         if(ct.qmc_nband > ct.num_states)
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
@@ -275,12 +310,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         Exx->SetHcore(Hcore, Hcore_kin, nstates);
         Exx->Vexx_integrals(ct.exx_int_file);
         ct.xc_is_hybrid = is_xc_hybrid;
-        RmgFreeHost(Hcore);
-        RmgFreeHost(Hcore_kin);
-        delete [] v_psi;
-        delete [] vxc_psi;
         delete Exx;
     }
+
+    RmgFreeHost(Hcore);
+    RmgFreeHost(Hcore_kin);
+    delete [] v_psi;
+    delete [] vxc_psi;
 
 
     /* output final eigenvalues with occupations */
