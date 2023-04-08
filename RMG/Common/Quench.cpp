@@ -266,8 +266,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
     }
     kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
-    kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
-    pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+    kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
+    pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
     pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
 
     pseudo_energy -= kin_energy;
