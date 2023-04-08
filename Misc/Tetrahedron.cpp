@@ -27,13 +27,6 @@
 #include "Symmetry.h"
 #include "Tetrahedron.h"
 
-//#define tetra_init            RMG_FC_MODULE(ktetra,tetra_init,mod_KTETRA,TETRA_INIT)
-//#define opt_tetra_init        RMG_FC_MODULE(ktetra,opt_tetra_init,mod_KTETRA,OPT_TETRA_INIT)
-//#define tetra_weights         RMG_FC_MODULE(ktetra,tetra_weights,mod_KTETRA,TETRA_WEIGHTS)
-//#define tetra_weights_only    RMG_FC_MODULE(ktetra,tetra_weights_only,mod_KTETRA,TETRA_WEIGHTS_ONLY)
-//#define opt_tetra_weights_only    RMG_FC_MODULE(ktetra,opt_tetra_weights_only,mod_KTETRA,OPT_TETRA_WEIGHTS_ONLY)
-//#define deallocate_tetra      RMG_FC_MODULE(ktetra,deallocate_tetra,mod_KTETRA,DEALLOCATE_TETRA)
-
 Tetrahedron *Tetra;
 
 template double Tetrahedron::FillTetra (Kpoint<double> **Kptr);
@@ -131,57 +124,57 @@ template <typename KpointType>
 double Tetrahedron::FillTetra (Kpoint<KpointType> **Kptr)
 {
     size_t knum_states = ct.num_kpts*ct.num_states;
-    size_t alloc = knum_states;
-    if(ct.nspin == 2) alloc *=2;
+    int nspin = (ct.spin_flag + 1);
 
-    double *eigs = new double[alloc]();
-    double *wg = new double[alloc];
-    // Copy eigs into compact array
+    std::vector<double> eigs(nspin * ct.num_kpts * ct.num_states);
+    std::vector<double> wg(nspin * ct.num_kpts * ct.num_states);
+    eigs.assign(nspin * ct.num_kpts * ct.num_states, 0.0);
+
+    // Need to collect eigenvalues into a contiguous array. If spin polarized first
+    // ct.num_states*ct.num_kpts is spin up and next ct.num_states*ct.num_kpts is down
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    {
+        int kpt1 = pct.kstart + kpt;  // absolute kpoint index
+        for(int st = 0;st < ct.num_states;st++)
+        {   
+            eigs[kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[0];
+            if(nspin == 2)
+            {
+                eigs[kpt1*ct.num_states + st + ct.num_kpts * ct.num_states] = Kptr[kpt]->Kstates[st].eig[1];
+            }
+        }
+    }
+    MPI_Allreduce (MPI_IN_PLACE, eigs.data(), nspin * ct.num_kpts * ct.num_states, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Bcast(eigs.data(), nspin * ct.num_kpts * ct.num_states, MPI_DOUBLE, 0, pct.kpsub_comm);
+
+    int is = 0;
+    std::vector<int> isk(nspin*ct.num_kpts);
+    isk.assign(ct.num_kpts, 1);
+    if(nspin == 2) for(int ix=0;ix < ct.num_kpts;ix++) isk[ix+ct.num_kpts] = 2;
+    int nks;
+    nks = nspin*ct.num_kpts;
+    if(ct.tetra_method == 0)  // Bloechl
+    {
+        tetra_weights( &nks, &nspin, &ct.num_states, &ct.nel,
+               eigs.data(), &this->ef, wg.data(), &is, isk.data() );
+    }
+    else  // Linear=1, Optimized=2
+    {
+        opt_tetra_weights( &nks, &nspin, &ct.num_states, &ct.nel,
+               eigs.data(), &this->ef, wg.data(), &is, isk.data() );
+    }
+
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
     {
         int kpt1 = kpt + pct.kstart;
         for(int st = 0;st < ct.num_states;st++)
         {
-            eigs[kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[0];
-            if(ct.nspin == 2)
-                eigs[knum_states + kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[1];
+            Kptr[kpt]->Kstates[st].occupation[0] = wg[kpt1*ct.num_states + st]/ct.kp[kpt1].kweight;
+            if(nspin == 2)
+                Kptr[kpt]->Kstates[st].occupation[1] = wg[kpt1*ct.num_states + st + ct.num_kpts * ct.num_states]/ct.kp[kpt1].kweight;
+            //printf("WEIGHT for KPT %d  STATE %d = %f\n",kpt, st, Kptr[kpt]->Kstates[st].occupation[0]);
         }
     }
-
-    MPI_Allreduce(MPI_IN_PLACE, eigs, alloc, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    MPI_Bcast(eigs, alloc, MPI_DOUBLE, 0, pct.kpsub_comm);
-
-
-    if(ct.nspin == 1)
-    {
-        int is = 0;
-        int *isk = new int[ct.num_kpts]();
-        std::fill(isk, isk + ct.num_kpts, 1);
-        if(ct.tetra_method == 0)  // Bloechl
-        {
-                tetra_weights( &ct.num_kpts, &ct.nspin, &ct.num_states, &ct.nel,
-                       eigs, &this->ef, wg, &is, isk );
-        }
-        else  // Linear=1, Optimized=2
-        {
-                opt_tetra_weights( &ct.num_kpts, &ct.nspin, &ct.num_states, &ct.nel,
-                       eigs, &this->ef, wg, &is, isk );
-        }
-
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
-        {
-            int kpt1 = kpt + pct.kstart;
-            for(int st = 0;st < ct.num_states;st++)
-            {
-                Kptr[kpt]->Kstates[st].occupation[0] = wg[kpt1*ct.num_states + st]/ct.kp[kpt1].kweight;
-                //printf("WEIGHT for KPT %d  STATE %d = %f\n",kpt, st, Kptr[kpt]->Kstates[st].occupation[0]);
-            }
-        }
-
-        delete [] isk;
-    }
-    delete [] wg;
-    delete [] eigs;
 
     //printf("EFERMI  %f\n", this->ef);fflush(NULL);
     return this->ef;
