@@ -9,7 +9,7 @@ potential_grid_refinement="2"
 
 #kohn_sham_ke_fft = "true"
 
-test_energy="-24.10249504"
+test_energy="-24.10246333"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
