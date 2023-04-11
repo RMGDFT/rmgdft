@@ -153,14 +153,17 @@ double Tetrahedron::FillTetra (Kpoint<KpointType> **Kptr)
     if(nspin == 2) for(int ix=0;ix < ct.num_kpts;ix++) isk[ix+ct.num_kpts] = 2;
     int nks;
     nks = nspin*ct.num_kpts;
+    // The next bit is used to match the QE routine expectation for the noncollinear case
+    int nspin1 = nspin;
+    if(ct.noncoll_factor) nspin1 = 4;
     if(ct.tetra_method == 0)  // Bloechl
     {
-        tetra_weights( &nks, &nspin, &ct.num_states, &ct.nel,
+        tetra_weights( &nks, &nspin1, &ct.num_states, &ct.nel,
                eigs.data(), &this->ef, wg.data(), &is, isk.data() );
     }
     else  // Linear=1, Optimized=2
     {
-        opt_tetra_weights( &nks, &nspin, &ct.num_states, &ct.nel,
+        opt_tetra_weights( &nks, &nspin1, &ct.num_states, &ct.nel,
                eigs.data(), &this->ef, wg.data(), &is, isk.data() );
     }
 
