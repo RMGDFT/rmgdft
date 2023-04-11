@@ -929,9 +929,6 @@ public:
    // Use a faster but less accurate method for generating the charge density
    bool fast_density;
 
-   // Filter density dependent potentials
-   bool filter_dpot;
-
    // Alternate laplacian discretization
    bool alt_laplacian;
 

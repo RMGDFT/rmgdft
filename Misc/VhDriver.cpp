@@ -76,7 +76,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     }
 
     delete [] rho_tot;
-    if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
+    if(Rmg_G->default_FG_RATIO > 1) 
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
     return residual;
 }
