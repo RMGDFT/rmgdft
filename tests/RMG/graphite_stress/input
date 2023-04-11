@@ -2,14 +2,14 @@
 description="graphite"
 localize_projectors="false"
 localize_localpp="false"
-wavefunction_grid="24 24 72"
+wavefunction_grid="24 24 64"
+potential_grid_refinement="2"
 
 
-alt_laplacian = "false"
 
 #kohn_sham_ke_fft = "true"
 
-test_energy="-24.10249534"
+test_energy="-24.10249504"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
@@ -18,12 +18,9 @@ test_energy_tolerance = "1.00000000e-06"
 omp_threads_per_node = "1"
 rmg_threads_per_node = "1"
 
-
-
 occupations_type = "Fixed"
-
 # number of unoccupied states
-unoccupied_states_per_kpoint="16"
+unoccupied_states_per_kpoint="8"
 #kohn_sham_mg_levels = "2"
 
 # Units for bravais_lattice_type and atoms
@@ -39,15 +36,13 @@ a_length="4.64117"
 b_length="4.64117"
 c_length="12.653685887999998"
 
-
-verbose="true"
 kpoint_is_shift = "1 1 1 "
 kpoint_mesh = "4 4 2 "
 kpoint_distribution = "1"
 
 
 #force_grad_order = "0"
-potential_grid_refinement = "2"
+potential_grid_refinement = "3"
 
 
 stress="true"
@@ -73,7 +68,7 @@ potential_acceleration_constant_step="1.0"
 write_data_period="50"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
+energy_convergence_criterion="1.0e-10"
 #rms_convergence_criterion = "1.0e-10"
 
 #atomic_coordinate_type="Absolute"
