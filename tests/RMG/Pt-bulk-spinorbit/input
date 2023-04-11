@@ -1,7 +1,7 @@
 # Description of run.
 description="atom_Pt_pp"
 
-test_energy="-45.09801711"
+test_energy="-45.09949676"
 test_steps = "9"
 test_steps_tolerance = "1"
 
@@ -15,8 +15,8 @@ compressed_infile = "false"
 compressed_outfile = "false"
 
 # Wavefunction grid
-wavefunction_grid="32 32 32"
-potential_grid_refinement = "2"
+wavefunction_grid="20 20 20"
+potential_grid_refinement = "3"
 
 # The normal process is to set thread counts via environment variables
 # but since the tests run in a batch via CTest we set some of them in
@@ -30,7 +30,8 @@ rmg_threads_per_node = "1"
 # number of unoccupied states
 #occupations_type = "Fixed"
 #occupations_type = "Fermi Dirac"
-occupations_type = "MethfesselPaxton"
+#occupations_type = "MethfesselPaxton"
+occupations_type = "Tetrahedron"
 
 #sqrt_interpolation = "true"
 #fast_density = "false"
@@ -85,7 +86,7 @@ charge_mixing_type = "Broyden"
 charge_density_mixing = "0.5"
 kohn_sham_mucycles = "3"
 max_scf_steps="100"
-potential_acceleration_constant_step="1.0"
+#potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
