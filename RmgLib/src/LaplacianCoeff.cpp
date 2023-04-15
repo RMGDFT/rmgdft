@@ -72,7 +72,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         this->include_axis[i] = false;
         this->plane_centers[i] = 0.0;
         this->plane_dists[i] = 10000000.0;
-        for(int j=0;j<12;j++)
+        for(int j=0;j<13;j++)
         {
             this->axis_lc[i][j] = 0.0;
             this->axis_gc_x[i][j] = 0.0;
