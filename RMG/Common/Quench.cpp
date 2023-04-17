@@ -49,6 +49,8 @@
 #include "GpuAlloc.h"
 #include "Wannier.h"
 #include "RmgSumAll.h"
+#include "FDOpt.h"
+
 
 
 
@@ -235,6 +237,19 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     rmg_printf ("\n");
     progress_tag ();
+
+    if(0)
+    {
+        if(ct.is_gamma) 
+        {
+            FDOpt *Fopt = new FDOpt();
+
+            double *one_orbital = (double *)Kptr[0]->Kstates[0].psi;
+            Fopt->Analyze_fft(one_orbital);
+            delete Fopt;
+        }
+
+    }
 
 
 

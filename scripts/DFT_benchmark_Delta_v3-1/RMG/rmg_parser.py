@@ -102,6 +102,9 @@ class rmg_interface():
             for b in a:
                 self.atoms.append([b.spcstring(), b.position[0],b.position[1],b.position[2]])
         #print(self.atoms)
+        if system == 'triclinic':
+            print("lattice", self.cell.a, self.cell.b, self.cell.c)
+            print("angle", self.cell.alpha, self.cell.beta, self.cell.gamma)
 
     def cell2rmg(self, mag):
         filestring = "#****  LATTICE and ATOMS  ****   \n"

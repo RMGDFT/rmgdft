@@ -48,6 +48,7 @@ public:
     FDOpt(void);
     ~FDOpt(void);
     void Analyze_fft(int orb_index);
+    void Analyze_fft(double *one_orbital);
     double Optimize(void);
     static double evaluate(void *,
              const double *x,
