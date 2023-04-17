@@ -280,6 +280,9 @@ public:
     bool write_qmcpack_restart_localized;
     int qmc_nband;
 
+    /** If true compute direct energies */
+    bool compute_direct;
+
     /** Number of run states */
     int run_states;
 

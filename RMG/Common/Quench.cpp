@@ -240,7 +240,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     if(0)
     {
-        if(ct.is_gamma) 
+        if(ct.is_gamma)
         {
             FDOpt *Fopt = new FDOpt();
 
@@ -269,26 +269,32 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     ct.xc_is_hybrid = false;
 
-    double kin_energy=0.0, pseudo_energy= 0.0;
-    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-        Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
+    bool compute_direct = (ct.write_qmcpack_restart ||
+                           ct.compute_direct ||
+                           ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
-        for (int st = 0; st < nstates; st++)
-        {
-            double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
-            kin_energy += std::real(Hcore_kin[kpt * nstates * nstates + st * nstates + st]) * occ;
-            pseudo_energy += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+    double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0;
+    if(compute_direct)
+    {
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
+
+            for (int st = 0; st < nstates; st++)
+            {
+                double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
+                kin_energy += std::real(Hcore_kin[kpt * nstates * nstates + st * nstates + st]) * occ;
+                pseudo_energy += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+            }
         }
+        kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
+        kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
+        pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
+        pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+
+        pseudo_energy -= kin_energy;
+        //Kptr[0]->ldaU->Ecorrect
+        total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
     }
-    kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
-    kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
-    pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
-    pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
-
-    pseudo_energy -= kin_energy;
-    //Kptr[0]->ldaU->Ecorrect
-    double total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
-
 
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
@@ -297,14 +303,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-    rmg_printf ("@@ ion-electron       = %15.6f %s\n", efactor*pseudo_energy, eunits);
+    if(compute_direct)
+        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+    if(compute_direct)
+        rmg_printf ("@@ ion-electron       = %15.6f %s\n", efactor*pseudo_energy, eunits);
     rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
     rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
     rmg_printf ("@@ total              = %15.6f %s\n", efactor*total_e, eunits);
 
     rmg_printf ("final total energy from eig sum = %16.8f Ha\n", ct.TOTAL);
-    rmg_printf ("final total energy from direct =  %16.8f Ha\n", total_e);
+    if(compute_direct)
+        rmg_printf ("final total energy from direct =  %16.8f Ha\n", total_e);
 
 
     // Exact exchange integrals
