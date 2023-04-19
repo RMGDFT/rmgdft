@@ -711,6 +711,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Mixing parameter for orbital occupations when not using fixed occupations. ",
             "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3. ", OCCUPATION_OPTIONS);
 
+    If.RegisterInputKey("afd_cfac", &lc.afd_cfac, 0.0, 10.0, 0.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Adaptive finite differencing parameter. ",
+            "afd_cfac must lie in the range (0.0,3.0). Resetting to auto. ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Controls the number of semilocal projectors.",

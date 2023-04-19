@@ -935,6 +935,9 @@ public:
    // Alternate laplacian discretization
    bool alt_laplacian;
 
+   // Value for CFAC read from input file instead of being computed
+   double afd_cfac;
+
    // Flag is true if the ddd is non-diagonal for any atomic species
    bool is_ddd_non_diagonal;
 

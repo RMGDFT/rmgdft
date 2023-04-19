@@ -29,6 +29,14 @@ double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
 void GetFdFactor(int kpt)
 {
     FiniteDiff FD(&Rmg_L);
+
+    if(ct.afd_cfac > 0.0)
+    {
+        FD.cfac[0] = ct.afd_cfac;
+        FD.cfac[1] = ct.afd_cfac;
+        return;
+    }
+
     std::complex<double> I_t(0.0, 1.0);
 
     int nlxdim = get_NX_GRID();
