@@ -711,6 +711,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Mixing parameter for orbital occupations when not using fixed occupations. ",
             "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3. ", OCCUPATION_OPTIONS);
 
+    If.RegisterInputKey("afd_cfac", &lc.afd_cfac, 0.0, 10.0, 0.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Adaptive finite differencing parameter. ",
+            "afd_cfac must lie in the range (0.0,3.0). Resetting to auto. ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Controls the number of semilocal projectors.",
@@ -1116,6 +1121,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("write_qmcpack_restart", &lc.write_qmcpack_restart, false,
             "If true then a QMCPACK restart file is written as well as a serial restart file.", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("compute_direct", &lc.compute_direct, false,
+            "If true then direct energy values are computed for QMCPACK.", CONTROL_OPTIONS);
+
     If.RegisterInputKey("write_qmcpack_restart_localized", &lc.write_qmcpack_restart_localized, false,
             "If true then a QMCPACK restart file for localized orbitals", CONTROL_OPTIONS);
 
@@ -1139,9 +1148,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("use_alt_zgemm", &lc.use_alt_zgemm, false,
             "Flag indicating whether or not to use alternate zgemm implementation.", PERF_OPTIONS);
-
-    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
-            "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
             "Flag indicating whether or not to use square root technique for density interpolation.", MISC_OPTIONS|EXPERT_OPTION);
@@ -1380,6 +1386,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "use scdm method to set the trial wannier functions ",
             "0: isolated, 1: gaussian, 2: erfc ");
+
+    If.RegisterInputKey("tetra_method", NULL, &lc.tetra_method, "Bloechl",
+            CHECK_AND_TERMINATE, OPTIONAL, tetra_method,
+            "tetrahedron method to use ",
+            "tetra_method must be one of  \"Bloechl\", \"Linear\", or \"Optimized\". Terminating. ",
+             OCCUPATION_OPTIONS);
 
     // Command line help request?
     bool cmdline = (std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end());

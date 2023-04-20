@@ -40,40 +40,22 @@ void update_pot(double *, double *, double *, double *, double *, double *, doub
 
 void Scf_on_proj(STATE * states, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
-        double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital)
+        double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital,
+        double *rho_pre, double *trho, double *rho_matrix_local, double *theta_local,
+        double *CC_res_local, double *Hij_local, double *Sij_local,
+        double *Hij_glob, double *Sij_glob)
 {
     int idx, ione = 1;
     double tem;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int pbasis= Rmg_G->get_P0_BASIS(1);
-    double *rho_pre;
 
-    RmgTimer *RT0 = new RmgTimer("init orbital");
-    if(ct.scf_steps == 0)
-    {
-        Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
-                ct.mix, ct.mix, pct.grid_comm); 
-        Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
+    RmgTimer *RT0;
 
-        int tot_size = LocalOrbital->num_thispe * pbasis;
-        Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
-                ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
-        Pulay_orbital->SetPrecond(Preconditioner);
-        Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
-        Pulay_orbital->SetBroyden(pbasis);
-    }
-
-    rho_pre = new double[nfp0];
-    double *trho = new double[nfp0];
-
-    MPI_Barrier(pct.img_comm);
-    delete RT0;
 
     RmgTimer *RT = new RmgTimer("2-SCF");
-    RT0 = new RmgTimer("2-SCF: set zero boundary");
 
     MemcpyHostDevice(LocalOrbital->storage_size, LocalOrbital->storage_cpu, LocalOrbital->storage_gpu);
-    delete RT0;
 
     RT0 = new RmgTimer("2-SCF: Kbpsi");
 
@@ -92,9 +74,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     MPI_Barrier(MPI_COMM_WORLD);
     RT1 = new RmgTimer("2-SCF: Kbpsi: local_to_tri");
-    BlockTriMatrix<double> Kbpsi_tri(ct.num_blocks, LocalProj->num_tot, LocalOrbital->num_tot, ct.block_dim_nl, ct.block_dim_phi, true);
+    //BlockTriMatrix<double> Kbpsi_tri(ct.num_blocks, LocalProj->num_tot, LocalOrbital->num_tot, ct.block_dim_nl, ct.block_dim_phi, true);
 
-    Kbpsi_tri.Local2BlockTri(Kbpsi_mat_local,  *LocalProj, *LocalOrbital);
+    //Kbpsi_tri.Local2BlockTri(Kbpsi_mat_local,  *LocalProj, *LocalOrbital);
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: Kbpsi: global_to_local");
@@ -107,18 +89,10 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RT0 = new RmgTimer("2-SCF: HS mat");
     // mat_X charge density matrix in distributed way
     // uu_dis theta = (S^-1 H) in distributed way.
-    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local, *CC_res_local;
 
     int num_orb = LocalOrbital->num_thispe;
-    rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    CC_res_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
 
     int num_tot = LocalOrbital->num_tot;
-    double *Hij_glob = new double[num_tot * num_tot];
-    double *Sij_glob = new double[num_tot * num_tot];
     RT1 = new RmgTimer("2-SCF: HS mat: ApplyH");
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
     MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
@@ -192,8 +166,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
             }
     }
 
-    delete [] Hij_glob;
-    delete [] Sij_glob;
 
     if(ct.num_ldaU_ions > 0)
     {
@@ -292,7 +264,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     /* Update the orbitals */
-    if(!freeze_orbital)
+    if(!freeze_orbital )
     {
         if(ct.scf_steps == ct.freeze_rho_steps ) 
             ct.restart_mix = 1;
@@ -306,37 +278,21 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
 
-            LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
+          //  LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
             //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
             //    H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
 
-        double *vh_out = new double[pbasis];
-        double *vh_in = new double[pbasis];
-
-        GetVtotPsi (vh_out, vh, Rmg_G->default_FG_RATIO);
-        GetVtotPsi (vh_in, vh_old, Rmg_G->default_FG_RATIO);
-
         Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
         //Pulay_orbital->MixingOrbitalBroyden(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu, vh_out, vh_in);
         RmgTimer *RT1 = new RmgTimer("2-SCF: orbital precond and mixing: normalize");
         LocalOrbital->Normalize();
-        delete [] vh_out;
-        delete [] vh_in;
         delete RT1;
         delete RT0;
 
     }
     delete(RT);
-
-    delete [] trho;
-    delete [] rho_pre;
-    RmgFreeHost(rho_matrix_local);
-    RmgFreeHost(theta_local);
-    RmgFreeHost(CC_res_local);
-    RmgFreeHost(Hij_local);
-    RmgFreeHost(Sij_local);
 
 }                               /* end scf */
 

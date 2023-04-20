@@ -99,13 +99,21 @@ static std::unordered_map<std::string, int> dos_method = {
         {"tetrahedra", 0},
         {"Gaussian", 1},
         };
+
+static std::unordered_map<std::string, int> tetra_method = {
+        {"Bloechl", 0},
+        {"Linear", 1},
+        {"Optimized", 2}
+        };
+
 static std::unordered_map<std::string, int> occupations_type = {
         {"Fixed", 0},
-        {"Fermi Dirac", 1},
-        {"Gaussian", 2},
-        {"Error Function", 3},
-        {"Cold Smearing", 4},
-        {"MethfesselPaxton", 5}
+        {"Fermi Dirac", OCC_FD},
+        {"Gaussian", OCC_GS},
+        {"Error Function", OCC_EF},
+        {"Cold Smearing", OCC_MV},
+        {"MethfesselPaxton", OCC_MP},
+        {"Tetrahedron", OCC_TETRA}
         };
 
 static std::unordered_map<std::string, int> subdiag_driver = {

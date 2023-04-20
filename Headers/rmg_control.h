@@ -159,6 +159,7 @@ public:
     int vdw_corr;
     int dftd3_version;
     double Evdw;
+    double ldaU_E;
     double *force_vdw=NULL;
     double stress_vdw[9];
 
@@ -278,6 +279,9 @@ public:
     bool write_qmcpack_restart;
     bool write_qmcpack_restart_localized;
     int qmc_nband;
+
+    /** If true compute direct energies */
+    bool compute_direct;
 
     /** Number of run states */
     int run_states;
@@ -593,6 +597,9 @@ public:
 
     /* fermi energy */
     double efermi;
+
+    /* Tetrahedron method. 0=Bloechl, 1=Linear, 2=Optimized */
+    int tetra_method;
 
     /** Total number of k-points being used in the calculation */
     int num_kpts;
@@ -925,11 +932,11 @@ public:
    // Use a faster but less accurate method for generating the charge density
    bool fast_density;
 
-   // Filter density dependent potentials
-   bool filter_dpot;
-
    // Alternate laplacian discretization
    bool alt_laplacian;
+
+   // Value for CFAC read from input file instead of being computed
+   double afd_cfac;
 
    // Flag is true if the ddd is non-diagonal for any atomic species
    bool is_ddd_non_diagonal;

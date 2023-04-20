@@ -240,20 +240,16 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
             trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
 #endif
-        case SUBDIAG_CUSOLVER:
 #if CUDA_ENABLED
+        case SUBDIAG_CUSOLVER:
             trans_b = Subdiag_Cusolver (this, Hij, Bij, Sij, eigs, global_matrix1);
-#else
-            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
-#endif
             break;
-        case SUBDIAG_ROCSOLVER:
+#endif
 #if HIP_ENABLED
+        case SUBDIAG_ROCSOLVER:
             trans_b = Subdiag_Rocsolver (this, Hij, Bij, Sij, eigs, global_matrix1);
-#else
-            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
-#endif
             break;
+#endif
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
 

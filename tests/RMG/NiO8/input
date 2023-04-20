@@ -1,8 +1,8 @@
 # Description of run.
 description="NiO 8 atom cell in anti-ferromagnetic configuration solved using Davidson diagonalization"
-test_energy="-677.73681717"
+test_energy="-677.73681711"
 test_energy_tolerance="1.0e-7"
-test_steps = "16"
+test_steps = "19"
 test_steps_tolerance = "2"
 
 

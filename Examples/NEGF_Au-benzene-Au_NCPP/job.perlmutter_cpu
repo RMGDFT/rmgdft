@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH -A m526
+#SBATCH -C gpu
+#SBATCH -q regular
+#SBATCH -t 0:25:00
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=4
+#SBATCH -c 32
+#SBATCH --gpus-per-task=1
+
+
+export SLURM_CPU_BIND="cores"
+
+export OMP_NUM_THREADS=1
+export RMG_NUM_THREADS=1
+export OMP_WAIT_POLICY="passive"
+
+# Edit the destination location as needed
+
+cd lead1
+srun $CFS/m526/RMG/bin/rmg-on-cpu input
+cd ../center
+srun $CFS/m526/RMG/bin/rmg-on-cpu input
+cd ../3lead_lead1
+srun $CFS/m526/RMG/bin/rmg-negf-cpu input
+cd ../bias_0.0
+srun $CFS/m526/RMG/bin/rmg-negf-cpu input
+srun $CFS/m526/RMG/bin/rmg-negf-cpu input.110
+

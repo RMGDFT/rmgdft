@@ -69,6 +69,7 @@ template double Fill (Kpoint<std::complex<double> > **, double, double, double, 
     template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order)
 {
+    if(ct.occ_flag == OCC_TETRA) return Tetra->FillTetra(Kptr);
 
     const int maxit = 100;
     const double charge_tol = 1.0e-10;

@@ -9,6 +9,7 @@ num_processor ="8"
 processor_grid="2 2 2"
 Hamiltonia_processor_grid ="2 4"
 
+filter_dpot = "true"
 
 threads_per_node = "1"
 
@@ -20,7 +21,7 @@ rms_convergence_criterion = "1e-7"
 
 # **** Mixing controls **** 
 orbital_mixing = "0.1"  
-orbital_pulay_refresh="20"
+orbital_pulay_refresh="100"
 sqrt_interpolation = "true"
 
 charge_density_mixing = "0.1"
@@ -28,6 +29,8 @@ charge_mixing_type = "Pulay"
 charge_pulay_order = "5"
 charge_pulay_scale = "0.1"
 charge_pulay_refresh = "20"
+drho_precond = "false"
+charge_pulay_Gspace = "false"
 
 # **** Setup  ****
 

@@ -113,6 +113,8 @@ void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc,
 template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order);
 template <typename KpointType>
+double FillTetra(Kpoint<KpointType> **Kptr);
+template <typename KpointType>
 void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 
 template <typename OrbitalType>

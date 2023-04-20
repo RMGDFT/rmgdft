@@ -403,6 +403,24 @@ void WriteHeader (void)
             printf ("Cubic\n");
     }
 
+    FiniteDiff FD(&Rmg_L);
+
+    printf ("\n");
+    printf ("Finite Difference parameters\n");
+    printf ("    Kohn Sham FD Order:                      %-4d\n", ct.kohn_sham_fd_order);
+    if(ct.force_grad_order > 0)
+        printf ("    Force Gradient Order:                    %-4d\n", ct.force_grad_order);
+    else
+        printf ("    Force Gradient Order:                    FFT\n");
+    if(ct.alt_laplacian)
+    {
+        printf ("    Adaptive Finite Differencing:            On\n");
+        printf ("    Adaptive CFAC:                          %12.9f\n", FD.cfac[0]);
+    }
+    else
+    {
+        printf ("    Adaptive Finite Differencing:            Off\n");
+    }
     
     printf ("\n");
     printf ("Subspace Diagonalization Options\n");

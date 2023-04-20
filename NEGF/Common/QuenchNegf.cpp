@@ -191,6 +191,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgTimer *RT3 = new RmgTimer("2-Quench: set H and S first");
 
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+    MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
 
     LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
     LO_x_LO(*LocalOrbital, *LocalOrbital, S_local, *Rmg_G);
@@ -200,7 +201,6 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         print_matrix(Kbpsi_mat, 6, LocalProj->num_tot);
     }
 
-    fflush(NULL);
     for(int ib = 0; ib < ct.num_blocks; ib++)
     {
 
@@ -248,7 +248,6 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgFreeHost(S_tem);
     RmgFreeHost(H_local);
     RmgFreeHost(S_local);
-
 
     /* ========= interaction between L3-L4 is zero ========== */
 

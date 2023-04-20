@@ -51,9 +51,9 @@ public:
     bool include_axis[13];
 
     // For gradients
-    double axis_gc_x[13][12];
-    double axis_gc_y[13][12];
-    double axis_gc_z[13][12];
+    double axis_gc_x[13][13];
+    double axis_gc_y[13][13];
+    double axis_gc_z[13][13];
 
     // For rescaling to improve numercal stability
     double scale1;

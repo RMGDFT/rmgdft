@@ -203,7 +203,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction + ct.Evdw;
+    ct.ldaU_E = ldaU_E;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
 
     /* Print contributions to total energies into output file */

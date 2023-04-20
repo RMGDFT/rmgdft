@@ -66,20 +66,21 @@ FDOpt::FDOpt(void)
     // determine and initialize coeffients
 //  LC_6 is 2 orders lower than LC, not necessary to be 6 order
     ct.alt_laplacian = false;
-    for (int ax = 0; ax < 13; ax++)
-    {
-        double c2 = FD.cfac[ax];
-        double c1 = 1.0+c2;
-        if(!LC->include_axis[ax]) continue;
-        LC->plane_centers[ax] = c1 * LC->plane_centers[ax] - c2 * LC_6->plane_centers[ax];
-        LC->axis_lc[ax][0] *= c1;
-        coeff.push_back(LC->axis_lc[ax][0]);
-        for(int i = 1; i < LC->Lorder/2; i++)
-        {
-            LC->axis_lc[ax][i] = c1*LC->axis_lc[ax][i] - c2 * LC_6->axis_lc[ax][i-1];
-            coeff.push_back(LC->axis_lc[ax][i]);
-        } 
-    }
+  for (int ax = 0; ax < 13; ax++)
+  {
+      double c2 = FD.cfac[ax];
+      c2 = 0.0;
+      double c1 = 1.0+c2;
+      if(!LC->include_axis[ax]) continue;
+      LC->plane_centers[ax] = c1 * LC->plane_centers[ax] - c2 * LC_6->plane_centers[ax];
+      LC->axis_lc[ax][0] *= c1;
+      coeff.push_back(LC->axis_lc[ax][0]);
+      for(int i = 1; i < LC->Lorder/2; i++)
+      {
+          LC->axis_lc[ax][i] = c1*LC->axis_lc[ax][i] - c2 * LC_6->axis_lc[ax][i-1];
+          coeff.push_back(LC->axis_lc[ax][i]);
+      } 
+  }
     coeff_grad.resize(coeff.size());
     num_coeff = coeff.size();
 
@@ -661,3 +662,104 @@ void FDOpt::Analyze_fft(int orb_index)
 
 
 
+void FDOpt::Analyze_fft(double *waves)
+{
+    double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
+    int nx = get_NX_GRID();
+    int ny = get_NY_GRID();
+    int nz = get_NZ_GRID();
+
+    double *kin_fft = new double[ct.num_states]();
+    double *kin_sfd = new double[ct.num_states]();
+    double *kin_afd = new double[ct.num_states]();
+    double *rms_sfd = new double[ct.num_states]();
+    double *rms_afd = new double[ct.num_states]();
+
+    double *work_fft = new double[pbasis]();
+    double *work_sfd = new double[pbasis]();
+    double *work_afd = new double[pbasis]();
+    
+    for (int st = 0; st < ct.num_states; st++)
+    {
+
+        double *one_orbital = &waves[st * pbasis];
+        FftLaplacianCoarse(one_orbital, work_fft);
+        for(int idx = 0; idx < pbasis; idx++) kin_fft[st] += work_fft[idx] * one_orbital[idx] * get_vel();
+
+        //  for xz plane
+        ct.alt_laplacian = false;
+        ApplyAOperator (one_orbital, work_sfd, kvec);
+        for(int idx = 0; idx < pbasis; idx++) kin_sfd[st] += work_sfd[idx] * one_orbital[idx] * get_vel();
+
+        ct.alt_laplacian = true;
+        ApplyAOperator (one_orbital, work_afd, kvec);
+        for(int idx = 0; idx < pbasis; idx++) kin_afd[st] += work_afd[idx] * one_orbital[idx] * get_vel();
+
+        for(int idx = 0; idx < pbasis; idx++) rms_afd[st] += (work_afd[idx] - work_fft[idx])*(work_afd[idx] - work_fft[idx]);
+        for(int idx = 0; idx < pbasis; idx++) rms_sfd[st] += (work_sfd[idx] - work_fft[idx])*(work_sfd[idx] - work_fft[idx]);
+
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, kin_fft, ct.num_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, kin_afd, ct.num_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, kin_sfd, ct.num_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, rms_sfd, ct.num_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, rms_afd, ct.num_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+
+    if(pct.gridpe == 0)
+    {
+        for (int st = 0; st < ct.num_states; st++)
+        {
+            printf("\n %d %18.12e  %18.12e  kin_diff", st, kin_afd[st] - kin_fft[st], kin_sfd[st] - kin_fft[st]);
+            printf("\n %d %18.12e  %18.12e  rms_diff", st, sqrt(rms_afd[st]), sqrt(rms_sfd[st]));
+        }
+    }
+
+    double *work_glob = new double[nx * ny * nz];
+    // HOMO of NiO64 cell
+    for(int st = 383; st < 385; st++)
+    {
+
+        double *one_orbital = &waves[st * pbasis];
+        FftLaplacianCoarse(one_orbital, work_fft);
+
+        //  for xz plane
+        ct.alt_laplacian = false;
+        ApplyAOperator (one_orbital, work_sfd, kvec);
+
+        ct.alt_laplacian = true;
+        ApplyAOperator (one_orbital, work_afd, kvec);
+
+        for(int idx = 0; idx < pbasis; idx++) work_sfd[idx] -= work_fft[idx];
+        for(int idx = 0; idx < pbasis; idx++) work_afd[idx] -= work_fft[idx];
+        DistributeToGlobal(work_afd, work_glob);
+
+        if(pct.gridpe == 0)
+        {
+            for(int ix = 0; ix < nx; ix++) printf("\n %d  %e  adaptive diff  along 111", ix, work_glob[ix * ny * nz + ix * nz + ix]);
+            printf("\n &   diff along 111");
+
+        }
+        DistributeToGlobal(work_sfd, work_glob);
+        if(pct.gridpe == 0)
+        {
+            for(int ix = 0; ix < nx; ix++) printf("\n %d  %e  standard diff  along 111", ix, work_glob[ix * ny * nz + ix * nz + ix]);
+            printf("\n &   diff along 111");
+
+        }
+    }
+
+
+    delete [] work_glob;
+
+    delete [] kin_fft;
+    delete [] kin_sfd;
+    delete [] kin_afd;
+    delete [] rms_sfd;
+    delete [] rms_afd;
+    delete [] work_fft;
+    delete [] work_sfd;
+    delete [] work_afd;
+
+}

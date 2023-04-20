@@ -1,6 +1,6 @@
 # Description of run.
 # Energy test
-test_energy="-215.98792090"
+test_energy="-215.98790746"
 test_steps = "14"
 test_steps_tolerance = "1"
 

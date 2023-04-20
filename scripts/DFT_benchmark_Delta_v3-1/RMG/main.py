@@ -238,6 +238,25 @@ AFM_list1 = ["Cr", "Mn"]
 #spin up, up, down, down
 AFM_list2 = ["O"]
 
+rhomb_latt_list = ["Bi","Li","Na","As", "Sb", "S", "B"]
+rhomb2hex = ["Bi", "Li", "Na", "As"]
+grids_rhomb2hex = {
+"Bi":"""wavefunction_grid="32 32 96 """,
+"As":"""wavefunction_grid="24 24 72 """,
+"Li":"""wavefunction_grid="48 48 128 """,
+"Na":"""wavefunction_grid="64 64 192 """
+}
+kpoints_rhomb2hex = {
+"Bi":"""kpoint_mesh="15 15 5""",
+"As":"""kpoint_mesh="15 15 5""",
+"Li":"""kpoint_mesh="15 15 5""",
+"Na":"""kpoint_mesh="15 15 5"""
+}
+
+for species in rhomb2hex:
+    grids[species] = grids_rhomb2hex[species]
+    kpoints[species] = kpoints_rhomb2hex[species]
+
 # list of species use CIFs instead of primCIFs
 # I, P, Br, Cl, Ga, In, Hg: use CIFs will have orthorhombic 
 # primCIFs will have monoclinic
@@ -351,8 +370,47 @@ cp ~/bin/rmg-cpu .
 def input_for_rmg(species, ciffile, grid_spacing):
 
 
-
     crmg = rmg_interface(ciffile, "cif")
+
+    if species in rhomb2hex:
+            crmg.ibrav = 4
+            crmg.cell.c = crmg.cell.a * sqrt(3 + 6*cos(crmg.cell.alpha*pi/180))
+            crmg.cell.a = 2 * crmg.cell.a * sin(crmg.cell.alpha*pi/360)
+            crmg.cell.b = crmg.cell.a
+            crmg.cell.alpha = 90.0
+            crmg.cell.beta = 90.0
+            crmg.cell.gamma = 120.0
+            third = 1.0/3.0
+            crmg.cell.latticevectors[0][0] = 1.0
+            crmg.cell.latticevectors[0][1] = 0.0 
+            crmg.cell.latticevectors[0][2] = 0.0
+            crmg.cell.latticevectors[1][0] = -0.5 
+            crmg.cell.latticevectors[1][1] = sqrt(3.0)/2.0 
+            crmg.cell.latticevectors[1][2] = 0.0
+            crmg.cell.latticevectors[2][0] = 0.0
+            crmg.cell.latticevectors[2][1] = 0.0 
+            crmg.cell.latticevectors[2][2] = crmg.cell.c/crmg.cell.a
+            crmg.cell.lengthscale = crmg.cell.a
+
+            rhomb2hextrans= LatticeMatrix([[2*third, third, third],
+                                           [-third, third, third],
+                                           [-third, -2*third, third]])
+            crmg.atoms = []
+            for a in crmg.cell.atomdata:
+                for b in a:
+                    position = Vector(mvmult3(rhomb2hextrans,b.position))
+                    crmg.atoms.append([b.spcstring(), position[0],position[1],position[2]])
+
+                    position1 = position +[2.0 *third, third, third]
+                    if position1[2] > 1.0: position1[2] -= 1.0
+                    if position1[2] < 0.0: position1[2] += 1.0
+                    crmg.atoms.append([b.spcstring(), position1[0],position1[1],position1[2]])
+
+                    position2 = position +[third, 2.0*third, 2.0*third]
+                    if position2[2] > 1.0: position2[2] -= 1.0
+                    if position2[2] < 0.0: position2[2] += 1.0
+                    crmg.atoms.append([b.spcstring(), position2[0],position2[1],position2[2]])
+
 
     default_line = """
 crds_units = "Angstrom"
@@ -605,3 +663,4 @@ def read_cif(filename, cif_blocks):
 
 if __name__ == '__main__':
     main()
+

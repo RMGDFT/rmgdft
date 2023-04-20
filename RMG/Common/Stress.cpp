@@ -314,6 +314,12 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     int ione = 1;
 
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+    // How do we filter here for the noncollinear case?
+    if(Rmg_G->default_FG_RATIO > 1)
+    {
+        for(int is = 0; is < ct.nspin; is++)
+            FftFilter(&F->vxc2[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+    }
 
     // get gradient of rho+rhocore
     daxpy (&pbasis, &alpha, rhocore, &ione, rho, &ione);
