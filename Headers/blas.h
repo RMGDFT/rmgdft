@@ -79,6 +79,7 @@
 #define		zgetri		RMG_FC_GLOBAL(zgetri, ZGETRI)
 #define		dpotri		RMG_FC_GLOBAL(dpotri, DPOTRI)
 #define		dgesv		RMG_FC_GLOBAL(dgesv, DGESV)
+#define		dgesvd		RMG_FC_GLOBAL(dgesvd, DGESVD)
 #define		zgesv		RMG_FC_GLOBAL(zgesv, ZGESV)
 #define		dgemv		RMG_FC_GLOBAL(dgemv, DGEMV)
 #define		dsygvx		RMG_FC_GLOBAL(dsygvx, DSYGVX)
@@ -191,6 +192,8 @@ void zhegst(int *, const char *, int *, double *, int *, double *, int *, int *)
 void zheevd(const char *, const char *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dgesv (int *, int*, double *, int *, int *, double *, int *, int *);
 void zgesv (int *, int*, double *, int *, int *, double *, int *, int *);
+void dgesvd(char *, char *, int *, int *, double *, int *, double *, double *,
+            int *, double *, int *, double *, int *, int *);
 void dgemv ( char *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void dsygvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
              int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, int *iwork, int *ifail, int *info);
