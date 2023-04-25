@@ -7,6 +7,52 @@
 #include "LaplacianCoeff.h"
 #include "blas.h"
 
+
+int pinverse(double *a, int m, int n)
+{
+    int info;
+    int lwork = 5*m*n;
+    int alloc = std::max(m, n) * std::max(m, n);
+    double *work = new double[lwork * sizeof(double)]();
+    double *u = new double[alloc]();
+    double *vt = new double[alloc]();
+    double *s = new double[std::max(m, n)];
+    
+    int lda = n;
+    int ldu = n;
+    int ldvt = n;
+
+    // SVD
+    char *jobu = "S";
+    dgesvd( jobu, jobu, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work, &lwork, &info );
+    if( info > 0 ) {
+        printf( "The algorithm computing SVD failed to converge.\n" );
+        return info;
+    }
+
+    int incx=1;
+    for(int i=0; i<n; i++)
+    {
+        double ss;
+        if(s[i] > 1.0e-9)
+            ss=1.0/s[i];
+        else
+            ss=s[i];
+
+        dscal(&m, &ss, &u[i*m], &incx);
+    }
+
+    double alpha=1.0, beta=0.0;
+    int ld_inva = n;
+    char *trans = "T";
+    dgemm(trans, trans, &n, &m, &n, &alpha, vt, &ldvt, u, &ldu, &beta, a, &ld_inva);
+
+    delete [] s;
+    delete [] vt;
+    delete [] u;
+    delete [] work;
+    return info;
+}
 struct {
     bool operator()(GridPoint a, GridPoint b) const
     {   
