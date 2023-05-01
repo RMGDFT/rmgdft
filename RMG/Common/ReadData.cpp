@@ -81,7 +81,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
-    if (ct.forceflag == BAND_STRUCTURE) kstart = 0;
+    if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) kstart = 0;
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
 
 
@@ -138,7 +138,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 
     read_int (fhand, &nk, 1);
-    if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
+    if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE && ct.forceflag != NSCF)    /* bandstructure calculation */
         rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
     if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
@@ -153,6 +153,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
 
+    fflush(NULL);
 
     /* read the hartree potential, electronic density and xc potential */
     if(ct.compressed_infile)
@@ -179,6 +180,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
     }
 
+    if(ct.forceflag == NSCF) 
+    {
+        close(fhand);
+        return;
+    }
     /* read wavefunctions */
     {
         double *psi_R = new double[grid_size];
@@ -234,10 +240,12 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
                 }
 
+                std::cout << "is = " << is << "  " << ik << std::endl;
             }
 
+            std::cout << "ik = " <<  ik << std::endl;
             // for band structure calculation, just read wave functions for first kpoints
-            if(ct.forceflag == BAND_STRUCTURE) break;
+            if(ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) break;
         }
 
         if(ct.verbose) rmg_printf ("read_data: read 'wfns'\n");
@@ -354,6 +362,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     }
 
 
+    if(ct.forceflag == BAND_STRUCTURE) return;
     /* read state occupations */
     {
         double *occ = new double[nk * ct.num_states]();
@@ -376,7 +385,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 
     /* read state eigenvalues, needed for STM calc */
-    if (ct.forceflag != BAND_STRUCTURE)
+    if (ct.forceflag != BAND_STRUCTURE && ct.forceflag != NSCF)
     {
 
         /* Read eigenvalue in pairwised case, while in polarized case, 

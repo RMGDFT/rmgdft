@@ -332,7 +332,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("If not an initial run read data from files");
-    if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) || (ct.forceflag == STM) )
+    if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) || 
+            (ct.forceflag == STM) || (ct.forceflag == NSCF))
+
     {
         ct.num_states = ct.run_states;
         std::string serial_name(ct.infile);
@@ -428,7 +430,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     delete(RT1);
 
     /* Initialize orbitals */
-    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM))
+    //if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START) || (ct.forceflag == NSCF) ) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM))
+    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START) ) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM) )
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++){
@@ -484,7 +487,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         WriteHeader (); 
     }
 
-    if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM) 
+    if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM || ct.forceflag == NSCF) 
     {
         ct.num_states = ct.run_states;
         return;

@@ -138,8 +138,16 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
             /* perform a single self-consistent step */
             step_time = my_crtc ();
-            CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
-                    rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+            if(ct.forceflag == NSCF)
+            {
+                CONVERGED = Nscf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
+                        rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+            }
+            else
+            {
+                CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
+                        rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+            }
             step_time = my_crtc () - step_time;
 
             // Save data to file for future restart at checkpoint interval if this is a quench run.
@@ -270,12 +278,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     ct.xc_is_hybrid = false;
 
     bool compute_direct = (ct.write_qmcpack_restart ||
-                           ct.compute_direct ||
-                           ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
+            ct.compute_direct ||
+            ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
     double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0;
     if(compute_direct)
     {
+        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+        GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
 

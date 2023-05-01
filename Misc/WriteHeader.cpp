@@ -144,6 +144,9 @@ void WriteHeader (void)
     case STM:
         printf ("calculate STM charge density \n");
         break;
+    case NSCF:
+        printf ("NSCF calculate \n");
+        break;
 
 
     default:
