@@ -322,9 +322,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
     rmg_printf ("@@ total              = %15.6f %s\n", efactor*total_e, eunits);
 
-    rmg_printf ("final total energy from eig sum = %16.8f Ha\n", ct.TOTAL);
+    rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
     if(compute_direct)
-        rmg_printf ("final total energy from direct =  %16.8f Ha\n", total_e);
+        rmg_printf ("final total energy from direct =  %16.8f Ha\n", efactor*total_e, eunits);
 
 
     // Exact exchange integrals
