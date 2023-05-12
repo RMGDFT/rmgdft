@@ -152,6 +152,7 @@ calculation_mode="Quench Electrons"
 # multigrid solver often being a better choice for very large
 # problems.
 kohn_sham_solver="davidson"
+davidson_premg="0"
 #kohn_sham_solver="multigrid"
 
 # Davidson solver options.
