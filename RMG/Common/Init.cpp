@@ -407,11 +407,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);
     MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
-    // FDOpt is experimental
-    //FDOpt *Fopt = new FDOpt();
-    //Fopt->Optimize();
-    //Fopt->Analyze_fft(5);
-    //delete Fopt;
+
+    if(0){
+        // FDOpt is experimental
+        FDOpt *Fopt = new FDOpt();
+        //Fopt->Optimize();
+        Fopt->Analyze_fft(5);
+        delete Fopt;
+    }
     // Kpoint version
     //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
 
@@ -598,10 +601,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
 #if HIP_ENABLED || CUDA_ENABLED
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
 #else
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 
 #endif
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)

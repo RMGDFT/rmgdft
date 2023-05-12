@@ -615,46 +615,103 @@ void FDOpt::Analyze_fft(int orb_index)
     int ny = get_NY_GRID();
     int nz = get_NZ_GRID();
 
-    ct.alt_laplacian = false;
+    double hx = Rmg_L.celldm[0]/nx * 0.529177;
+    ct.alt_laplacian = true;
     double *one_orbital = &orbitals[orb_index * pbasis];
     double *work_glob = new double[nx * ny * nz];
     double *gmags_glob = new double[nx * ny * nz];
+    double *work_fft = new double[pbasis];
+    double *rwork_fft = new double[pbasis];
     DistributeToGlobal(coarse_pwaves->gmags, gmags_glob);
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
-    FftLaplacianCoarse(one_orbital, work);
-    for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(work[idx],0.0);
+    FftLaplacianCoarse(one_orbital, rwork_fft);
+
+
+    for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(rwork_fft[idx],0.0);
     coarse_pwaves->FftForward(gbptr, beptr);
 
-    for(int idx = 0; idx < pbasis; idx++) work[idx] = std::real(beptr[idx]);
-    DistributeToGlobal(work, work_glob);
-    //  for xz plane
-    if(pct.gridpe == 0)
-    {
-        for (int ix = 0; ix < nx; ix++)
-        {
-            int idx = ix * ny * nz +ix ;
-            printf("\n %10.3f %18.12e   FFT_xz", gmags_glob[idx] *tpiba2, work_glob[idx]);
-        }
-    }
+    for(int idx = 0; idx < pbasis; idx++) work_fft[idx] = std::real(beptr[idx]);
 
     ApplyAOperator (one_orbital, work, kvec);
     for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(work[idx],0.0);
     coarse_pwaves->FftForward(gbptr, beptr);
 
-    for(int idx = 0; idx < pbasis; idx++) work[idx] = std::real(beptr[idx]);
+    for(int idx = 0; idx < pbasis; idx++) work_fft[idx] -= std::real(beptr[idx]);
+    for(int idx = 0; idx < pbasis; idx++) work[idx] -= rwork_fft[idx];
     DistributeToGlobal(work, work_glob);
+    if(pct.gridpe == 0)
+    {
+        FILE *fh = fopen("FD_FFT_realspace.dat", "w+");
+
+        fprintf(fh, "& FD-FFT along xz direction in real space\n");
+        for (int ix = -nx/2; ix < nx/2; ix++)
+        {
+            int ixx = ix;
+            if(ixx < 0) ixx += nx;
+            int idx = ixx * ny * nz +ixx ;
+            fprintf(fh, "\n %10.3f %18.12e    ", ix * hx * sqrt(2.0), work_glob[idx]);
+        }
+
+        fclose(fh);
+    }
+    DistributeToGlobal(work_fft, work_glob);
     //  for xz plane
     if(pct.gridpe == 0)
     {
+        FILE *fh = fopen("FD_FFT_gspace.dat", "w+");
+
+            fprintf(fh, "& FD- FFT along xz direction Gmax = %f\n",sqrt(coarse_pwaves->gmax *tpiba2)/0.529177 );
         for (int ix = 0; ix < nx; ix++)
         {
             int idx = ix * ny * nz +ix ;
-            printf("\n %10.3f %18.12e    FD_xz", gmags_glob[idx] *tpiba2, work_glob[idx]);
+            fprintf(fh, "\n %10.3f %18.12e    ", sqrt(gmags_glob[idx]/coarse_pwaves->gmax), work_glob[idx]);
         }
+
+        fclose(fh);
+    }
+
+
+    DistributeToGlobal(one_orbital, work_glob);
+    if(pct.gridpe == 0)
+    {
+        FILE *fh = fopen("xz.dat", "w+");
+
+        fprintf(fh, "& orbital in real space along xz direction\n");
+        for (int ix = -nx/2; ix < nx/2; ix++)
+        {
+            int ixx = ix;
+            if(ixx < 0) ixx += nx;
+            int idx = ixx * ny * nz +ixx ;
+            fprintf(fh, "\n %10.3f %18.12e", ix*hx*sqrt(2.0), work_glob[idx]);
+        }
+
+        fclose(fh);
+    }
+
+
+    for(int idx = 0; idx < pbasis; idx++) gbptr[idx] = std::complex<double>(one_orbital[idx],0.0);
+    coarse_pwaves->FftForward(gbptr, beptr);
+
+    for(int idx = 0; idx < pbasis; idx++) work_fft[idx] = std::real(beptr[idx]);
+    DistributeToGlobal(work_fft, work_glob);
+    if(pct.gridpe == 0)
+    {
+        FILE *fh = fopen("xz_G.dat", "w+");
+
+        fprintf(fh, "& orbital in G space along xz direction Gmax = %f\n", sqrt(coarse_pwaves->gmax * tpiba2)/0.529177);
+        for (int ix = 0; ix <= nx/2; ix++)
+        {
+            int idx = ix * ny * nz +ix ;
+            fprintf(fh, "\n %10.3f %18.12e  ", sqrt(gmags_glob[idx]/coarse_pwaves->gmax), work_glob[idx]);
+        }
+
+        fclose(fh);
     }
 
     delete [] work_glob;
+    delete [] work_fft;
+    delete [] gmags_glob;
     fftw_free (gbptr);
     fftw_free (beptr);
 }
