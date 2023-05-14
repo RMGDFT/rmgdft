@@ -55,7 +55,12 @@ void WriteXyz (char *name)
              rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
         }
 
-        fprintf(fhandle,"%lu\n\n", Atoms.size());
+        fprintf(fhandle,"%lu\n", Atoms.size());
+
+        fprintf(fhandle, "Lattice=\" ");
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g  ", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g  ", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
+        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\"\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {   
