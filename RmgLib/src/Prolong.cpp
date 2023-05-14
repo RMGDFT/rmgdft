@@ -126,7 +126,90 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
     int incx3 = (dimz / ratio + order) * dimy;
 
+    // Optimized most common case
+    if(order == 10 && ratio == 2)
+    {
+        T* fulla0 = new T[(dimy / ratio + order) * (dimz / ratio + order)];
+        T* fulla1 = new T[(dimy / ratio + order) * (dimz / ratio + order)];
+        T* fullb0 = new T[dimy * (dimz / ratio + order)];
+        T* fullb1 = new T[dimy * (dimz / ratio + order)];
 
+        for (int ix = 0; ix < dimx / 2; ix++)
+        {
+            for (int iy = 0; iy < dimy / 2 + 10; iy++)
+            {
+                for (int iz = 0; iz < dimz / 2 + 10; iz++)
+                {
+                    T sum = 0.0;
+                    T *halfptr = &sg_half[(ix + 1) * incx + iy * incy + iz];
+                    for(int k = 0;k < 10;k++) sum+= a[0][k] * halfptr[k*incx];
+                    fulla0[iy * incy + iz] = sum;
+                    sum = 0.0;
+                    for(int k = 0;k < 10;k++) sum+= a[1][k] * halfptr[k*incx];
+                    fulla1[iy * incy + iz] = sum;
+                }
+            }
+
+            for (int iy = 0; iy < dimy / 2; iy++)
+            {
+                for (int iz = 0; iz < dimz / 2 + 10; iz++)
+                {
+                    T sum = 0.0;
+                    T *full_tmp = &fulla0[(iy + 1) * incy + iz];
+
+                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k*incy];
+                    fullb0[(2 * iy + 0) * incy + iz] = sum;
+
+                    sum = 0.0;
+                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k*incy];
+                    fullb0[(2 * iy + 1) * incy + iz] = sum;
+
+                    sum = 0.0;
+                    full_tmp = &fulla1[(iy + 1) * incy + iz];
+                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k*incy];
+                    fullb1[(2 * iy + 0) * incy + iz] = sum;
+
+                    sum = 0.0;
+                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k*incy];
+                    fullb1[(2 * iy + 1) * incy + iz] = sum;
+
+                }
+            }
+
+            for (int iy = 0; iy < dimy; iy++)
+            {
+                for (int iz = 0; iz < dimz / 2; iz++)
+                {
+                    T sum = 0.0;
+                    T *full_tmp = &fullb0[iy * incy + iz + 1];
+                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k];
+                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = sum;
+
+                    sum = 0.0;
+                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k];
+                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = sum;
+
+                    sum = 0.0;
+                    full_tmp = &fullb1[iy * incy + iz + 1];
+                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k];
+                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = sum;
+
+                    sum = 0.0;
+                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k];
+                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = sum;
+
+                }
+            }
+        }
+
+
+        delete [] fullb1;
+        delete [] fullb0;
+        delete [] fulla1;
+        delete [] fulla0;
+        delete [] sg_half;
+        return;
+    }
 
     T* fulla = new T[dimx * (dimy / ratio + order) * (dimz / ratio + order)];
     T* fullb = new T[ dimx * dimy * (dimz / ratio + order)];
