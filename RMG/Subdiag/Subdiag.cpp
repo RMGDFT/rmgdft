@@ -87,7 +87,10 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // The distributed solvers are handled in a different routine now
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        Subdiag_Scalapack(this, h_psi);
+        if(ct.xc_is_hybrid)
+            Subdiag_Scalapack1(this, h_psi);
+        else
+            Subdiag_Scalapack(this, h_psi);
         return;
     }
 
@@ -234,7 +237,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         case SUBDIAG_LAPACK:
             trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
-        // Redirect to scalapack for now
 #if MAGMA_LIBS
         case SUBDIAG_MAGMA:
             trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, global_matrix1);
