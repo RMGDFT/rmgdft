@@ -159,7 +159,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     //rmg_printf("\n");
 
     if(ct.is_use_symmetry)
-        throw RmgFatalException() << "set use_symmetry=\"false\" to read kpoints " << __FILE__ << " at line " << __LINE__ << "\n";
+        throw RmgFatalException() << "set use_symmetry=\"0\" to read kpoints " << __FILE__ << " at line " << __LINE__ << "\n";
 
 
     ct.klist.num_k_all = ct.num_kpts;
@@ -169,6 +169,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     ct.klist.k_map_symm.resize(ct.klist.num_k_all, 0);
 
     ct.klist.num_k_ire = ct.kp.size();
+    if(ct.verbose) printf("\n num_k_ire = %d %d", ct.klist.num_k_ire, ct.klist.num_k_all);
     ct.klist.k_ire_xtal.resize(boost::extents[ct.klist.num_k_ire][3]);
     ct.klist.k_ire_cart.resize(boost::extents[ct.klist.num_k_ire][3]);
     ct.klist.kweight.resize(ct.klist.num_k_ire, 1.0);
@@ -196,13 +197,14 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     if (ct.verbose)
     {
-        printf("\n num_k %d", ct.num_kpts);
         for(int kpt = 0; kpt < ct.num_kpts; kpt++)
             printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
         for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
-            printf("\n kall %d %f %f %f %d %d %d", kpt,
+        {
+            printf("\n kall %d %f %f %f %d %d %d ", kpt,
                     ct.klist.k_all_cart[kpt][0],ct.klist.k_all_cart[kpt][1],ct.klist.k_all_cart[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
                     (int)Rmg_Symm->time_rev[std::abs(ct.klist.k_map_symm[kpt])-1 ]);
+        }
     }
 
 }

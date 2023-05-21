@@ -151,6 +151,7 @@
 #define     Exx_only    11
 #define     BAND_WANNIER    12
 #define     STM    13
+#define     NSCF    14
 
 /* MD integration flags */
 #define		ORDER_2         0

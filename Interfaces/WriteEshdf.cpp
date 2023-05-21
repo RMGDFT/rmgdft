@@ -678,7 +678,7 @@ void eshdfFile::handleRho(hid_t groupLoc) {
 
     fftContainer rho_fftCont(nx,ny,nz);
 
-    std::string rhofname(ct.infile);
+    std::string rhofname(ct.outfile);
     rhofname = rhofname + ".rho";
 
     int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);

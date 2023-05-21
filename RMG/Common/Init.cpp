@@ -332,7 +332,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("If not an initial run read data from files");
-    if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) || (ct.forceflag == STM) )
+    if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) || 
+            (ct.forceflag == STM) || (ct.forceflag == NSCF))
+
     {
         ct.num_states = ct.run_states;
         std::string serial_name(ct.infile);
@@ -405,11 +407,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);
     MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.kpsub_comm);
-    // FDOpt is experimental
-    //FDOpt *Fopt = new FDOpt();
-    //Fopt->Optimize();
-    //Fopt->Analyze_fft(5);
-    //delete Fopt;
+
+    if(0){
+        // FDOpt is experimental
+        FDOpt *Fopt = new FDOpt();
+        //Fopt->Optimize();
+        Fopt->Analyze_fft(5);
+        delete Fopt;
+    }
     // Kpoint version
     //for (int kpt =0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->GetFdFactor();
 
@@ -428,7 +433,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     delete(RT1);
 
     /* Initialize orbitals */
-    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM))
+    //if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START) || (ct.forceflag == NSCF) ) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM))
+    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START) ) && (ct.forceflag != BAND_STRUCTURE) && (ct.forceflag != STM) )
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++){
@@ -484,7 +490,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         WriteHeader (); 
     }
 
-    if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM) 
+    if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM || ct.forceflag == NSCF) 
     {
         ct.num_states = ct.run_states;
         return;
@@ -595,10 +601,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
 #if HIP_ENABLED || CUDA_ENABLED
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
 #else
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
-                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 
 #endif
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)

@@ -65,7 +65,7 @@ template <typename KpointType> void AppS(Kpoint<KpointType> *kpoint, KpointType 
             KpointType *psi, KpointType *ns, int first_state, int num_states);
 template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,
           double *rho, double *new_rho, double *vh, double *vh_in);
-template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
+template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
 template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr,

@@ -224,15 +224,24 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
+    double sum1 = 1.0;
+    if(ct.norm_conserving_pp)
+    {
+        sum1 = 0.0;
+        for (int idx = 0; idx < FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
+        GlobalSums(&sum1, 1, pct.grid_comm);
+        sum1 = 1.0 / sum1 / get_vel_f();
+    }
+
     for (int idx = 0; idx < FP0_BASIS; idx++)
     {
-        work[idx] += scale * std::norm(psi_f[idx]);
+        work[idx] += sum1 * scale * std::norm(psi_f[idx]);
         if(ct.noncoll)
         {
             psiud = 2.0 * psi_f[idx] * std::conj(psi_f[idx + FP0_BASIS]);
-            work[idx + 1 * FP0_BASIS] += scale * std::real(psiud);
-            work[idx + 2 * FP0_BASIS] += scale * std::imag(psiud);
-            work[idx + 3 * FP0_BASIS] += scale * std::norm(psi_f[idx + FP0_BASIS]);
+            work[idx + 1 * FP0_BASIS] += sum1 * scale * std::real(psiud);
+            work[idx + 2 * FP0_BASIS] += sum1 * scale * std::imag(psiud);
+            work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
 
