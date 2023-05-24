@@ -291,12 +291,15 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     OrbitalType *vexx_ptr = NULL;
     if(ct.xc_is_hybrid)
     {
+        // Need to pad by the number of threads
+        int maxthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
+        size_t valloc = ((size_t)ct.num_kpts_pe * (size_t)(ct.run_states + maxthreads) * (size_t)P0_BASIS * ct.noncoll_factor); 
 #if HIP_ENABLED || CUDA_ENABLED
-    gpuMallocHost((void **)&vexx_ptr, ((size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+        gpuMallocHost((void **)&vexx_ptr, valloc * sizeof(OrbitalType));
 #else
-    vexx_ptr = new OrbitalType[(size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024];
+        vexx_ptr = new OrbitalType[valloc];
 #endif
-        ct.vexx_alloc[0] = sizeof(OrbitalType) * (size_t)ct.run_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor * (size_t)ct.num_kpts_pe;
+        ct.vexx_alloc[0] = sizeof(OrbitalType) * valloc;
         MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
         MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, &ct.vexx_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
