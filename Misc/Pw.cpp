@@ -27,6 +27,9 @@
 #include "rmg_error.h"
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
+#include "vkFFT.h"
+
+
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
@@ -162,7 +165,15 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
 
+#if (VKFFT_BACKEND == 2)
+      vk_plans.resize(num_streams);
+      vk_plans_f.resize(num_streams);
+      vk_plans_r2c.resize(num_streams);
+      vk_plans_d2z.resize(num_streams);
 #endif
+
+#endif
+
 
 #if CUDA_ENABLED
       for (int i = 0; i < num_streams; i++)
@@ -227,6 +238,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       lengths[1] = this->global_dimy;
       lengths[2] = this->global_dimx;
 
+      std::string vkcode;
       for (int i = 0; i < num_streams; i++)
       {
           status = rocfft_plan_create(&gpu_plans[i], rocfft_placement_inplace, 
@@ -306,6 +318,47 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
           RmgGpuError(__FILE__, __LINE__, 
                    gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
                    "Error: gpuMalloc failed.\n");
+
+#if (VKFFT_BACKEND == 2)
+          VkFFTConfiguration vkconf = {};
+          vk_plans[i] = {};
+          vkconf.stream = &streams[i];
+          vkconf.doublePrecision = 1;
+          vkconf.performR2C = 0;
+          vkconf.buffer = (void **)&dev_bufs[i];
+          vkconf.FFTdim = 3;
+          vkconf.size[0] = lengths[0];
+          vkconf.size[1] = lengths[1];
+          vkconf.size[2] = lengths[2];
+          vkconf.num_streams = 1;
+          vkconf.disableSetLocale = 1;
+          vkconf.device = &ct.hip_dev;
+          size_t bufSize = (size_t)this->global_basis_alloc * sizeof(std::complex<double>);
+          vkconf.bufferSize = &bufSize;
+          VkFFTResult resFFT;
+          resFFT = initializeVkFFT(&vk_plans[i], vkconf);
+          if (resFFT != VKFFT_SUCCESS) 
+          {
+              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+          }
+          vk_plans_r2c[i] = {};
+          vkconf.doublePrecision = 0;
+          vkconf.performR2C = 1;
+          resFFT = initializeVkFFT(&vk_plans_r2c[i], vkconf);
+          if (resFFT != VKFFT_SUCCESS) 
+          {
+              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+          }
+
+          vk_plans_d2z[i] = {};
+          vkconf.doublePrecision = 1;
+          vkconf.performR2C = 1;
+          resFFT = initializeVkFFT(&vk_plans_d2z[i], vkconf);
+          if (resFFT != VKFFT_SUCCESS) 
+          {
+              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+          }
+#endif
 
       }
 
@@ -512,7 +565,13 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
 	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
 	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_d2z[tid], -1, &lp);
+#else
       rocfft_execute(gpu_plans_d2z[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {
 	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
@@ -584,7 +643,13 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
 	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
 	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_r2c[tid], -1, &lp);
+#else
       rocfft_execute(gpu_plans_r2c[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {
 	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
@@ -653,7 +718,15 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
+
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans[tid], -1, &lp);
+#else
       rocfft_execute(gpu_plans[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+#endif
+
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
@@ -798,7 +871,13 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_d2z[tid], 1, &lp);
+#else
       rocfft_execute(gpu_plans_z2d[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {
           hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
@@ -861,7 +940,13 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_r2c[tid], 1, &lp);
+#else
       rocfft_execute(gpu_plans_c2r[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {
           hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
@@ -922,7 +1007,14 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans[tid], 1, &lp);
+#else
       rocfft_execute(gpu_plans_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+#endif
+
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
