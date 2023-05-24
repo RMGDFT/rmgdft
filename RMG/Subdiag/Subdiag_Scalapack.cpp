@@ -201,7 +201,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     // Optimize this for GPUs!
     if(ct.xc_is_hybrid)
     {
-        tlen = (size_t)nstates * (size_t)pbasis_noncoll;
+        tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType);
 #if HIP_ENABLED || CUDA_ENABLED
         if(ct.gpu_managed_memory == false)
         {
@@ -210,13 +210,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 #endif
         PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
         memcpy(kptr->vexx, hpsi, tlen);
-        for(int istate=istart;istate < nstates;istate++)
-        {
-            if(std::real(matrix_diag[istate*nstates + istate]) < 0.0)
-            {
-                for(int idx=0;idx < pbasis_noncoll;idx++) kptr->Kstates[istate].psi[idx] = -kptr->Kstates[istate].psi[idx];
-            }
-        }
     }
 
     delete [] matrix_diag;
