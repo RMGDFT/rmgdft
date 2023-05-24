@@ -27,7 +27,9 @@
 #include "rmg_error.h"
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
-#include "vkFFT.h"
+#if (VKFFT_BACKEND == 2)
+    #include "vkFFT.h"
+#endif
 
 
 
