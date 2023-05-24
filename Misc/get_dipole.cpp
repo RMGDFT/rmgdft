@@ -14,7 +14,7 @@ void get_dipole (double * rho, double *dipole)
 
     double hxgrid, hygrid, hzgrid;
     double xc, yc, zc, ax[3], bx[3], x, y, z, temp, icharge, vel;
-    int j, ix, iy, iz, ion, FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, dimx, dimy, dimz ;
+    int ix, iy, iz, ion, FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, dimx, dimy, dimz ;
     ION *iptr;
 
 
@@ -35,21 +35,26 @@ void get_dipole (double * rho, double *dipole)
 
 
     /*This gets dipole moment for electrons */
-    xc = FPX_OFFSET * hxgrid;
 
-    j = 0;
     for (ix = 0; ix < dimx; ix++)
     {
 
-        yc = FPY_OFFSET * hygrid;
         for (iy = 0; iy < dimy; iy++)
         {
 
-            zc = FPZ_OFFSET * hzgrid;
             for (iz = 0; iz < dimz; iz++)
             {
 
                 /*vector between a grid point and a middle of the cell in crystal coordinates */
+                int ixx = ix + FPX_OFFSET;
+                int iyy = iy + FPY_OFFSET;
+                int izz = iz + FPZ_OFFSET;
+                xc = ixx * hxgrid;
+                yc = iyy * hygrid;
+                zc = izz * hzgrid;
+                if(ixx == 0) xc = 0.5;
+                if(iyy == 0) yc = 0.5;
+                if(izz == 0) zc = 0.5;
                 ax[0] = xc - 0.5;
                 ax[1] = yc - 0.5;
                 ax[2] = zc - 0.5;
@@ -60,23 +65,18 @@ void get_dipole (double * rho, double *dipole)
                 y = bx[1];
                 z = bx[2];
 
-                /*temp = rho[ix*incx + iy*incy +iz] * c->vel; */
-                temp = rho[j];
+                temp = rho[ix * dimy * dimz + iy * dimz + iz];
 
                 dipole[0] += x * temp;
                 dipole[1] += y * temp;
                 dipole[2] += z * temp;
 
-                zc += hzgrid;
-                j++;
 
             }                   /* end for */
 
-            yc += hygrid;
 
         }                       /* end for */
 
-        xc += hxgrid;
 
     }                           /* end for */
 

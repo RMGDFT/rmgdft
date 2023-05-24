@@ -451,7 +451,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         /*Now we need to convert to debye units */
         if (pct.imgpe==0)
         {
-            printf("\n\n Dipole moment [Debye]: (%.3f,%.3f, %.3f)", 
+            printf("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
                     DEBYE_CONVERSION *dipole[0], 
                     DEBYE_CONVERSION *dipole[1], 
                     DEBYE_CONVERSION *dipole[2]);
