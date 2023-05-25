@@ -202,12 +202,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType);
-        psi_dev = kptr->vexx;
 #if HIP_ENABLED || CUDA_ENABLED
         if(ct.gpu_managed_memory == false)
         {
             gpuMemcpy(psi_dev, kptr->vexx, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
         }
+#else
+        psi_dev = kptr->vexx;
 #endif
         PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
         memcpy(kptr->vexx, hpsi, tlen);
