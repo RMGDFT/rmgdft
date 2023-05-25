@@ -268,64 +268,76 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     int nstates = Kptr[0]->nstates;
     OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
     OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+    OrbitalType *Hcore_localpp = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
     bool is_xc_hybrid = ct.xc_is_hybrid;
 
     ct.xc_is_hybrid = false;
 
-    GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
-
-    ct.xc_is_hybrid = false;
 
     bool compute_direct = (ct.write_qmcpack_restart ||
             ct.compute_direct ||
             ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
-    double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0;
     if(compute_direct)
     {
+        double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+
+        GetNewRho(Kptr, rho);
+        if (ct.nspin == 2 )
+            get_rho_oppo (rho,  rho_oppo);
+
+        VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0e-12);
         GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
+
+        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates], &Hcore_localpp[kpt * nstates * nstates]);
 
             for (int st = 0; st < nstates; st++)
             {
                 double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
                 kin_energy += std::real(Hcore_kin[kpt * nstates * nstates + st * nstates + st]) * occ;
                 pseudo_energy += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+                E_localpp += std::real(Hcore_localpp[kpt * nstates * nstates + st * nstates + st]) * occ;
             }
         }
         kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
         kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
         pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
         pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+        E_localpp = RmgSumAll(E_localpp, pct.kpsub_comm);
+        E_localpp = RmgSumAll(E_localpp, pct.spin_comm);
 
         pseudo_energy -= kin_energy;
+        E_nonlocalpp = pseudo_energy - E_localpp;
+
+
         //Kptr[0]->ldaU->Ecorrect
         total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
-    }
 
-    /* Print contributions to total energies into output file */
-    double efactor = ct.energy_output_conversion[ct.energy_output_units];
-    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
-    rmg_printf ("\n@@ TOTAL ENEGY Components \n");
-    rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-    rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-    rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    if(compute_direct)
+        /* Print contributions to total energies into output file */
+        double efactor = ct.energy_output_conversion[ct.energy_output_units];
+        const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
+        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
+        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
         rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-    if(compute_direct)
-        rmg_printf ("@@ ion-electron       = %15.6f %s\n", efactor*pseudo_energy, eunits);
-    rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
-    rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
-    rmg_printf ("@@ total              = %15.6f %s\n", efactor*total_e, eunits);
+        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
 
-    rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-    if(compute_direct)
-        rmg_printf ("final total energy from direct =  %16.8f Ha\n", efactor*total_e, eunits);
+        if(ct.vdw_corr)
+            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
 
+        rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
+
+    }
 
     // Exact exchange integrals
     if(ct.exx_int_flag)
@@ -344,12 +356,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         Exx->SetHcore(Hcore, Hcore_kin, nstates);
         Exx->Vexx_integrals(ct.exx_int_file);
-        ct.xc_is_hybrid = is_xc_hybrid;
         delete Exx;
     }
+    ct.xc_is_hybrid = is_xc_hybrid;
 
     RmgFreeHost(Hcore);
     RmgFreeHost(Hcore_kin);
+    RmgFreeHost(Hcore_localpp);
     delete [] v_psi;
     delete [] vxc_psi;
 

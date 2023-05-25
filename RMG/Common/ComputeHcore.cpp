@@ -53,12 +53,12 @@
 
 
 
-template void Kpoint<double>::ComputeHcore(double *, double *, double *Hij, double *Hij_kin);
+template void Kpoint<double>::ComputeHcore(double *, double *, double *Hij, double *Hij_kin, double *Hij_localpp);
 template void Kpoint<std::complex<double>>::ComputeHcore(double *, double *, std::complex<double> *Hij,
-    std::complex<double> *Hij_kin);
+    std::complex<double> *Hij_kin, std::complex<double> *Hij_localpp);
 
 template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_eig, double *vxc_psi, 
-        KpointType *Hij, KpointType *Hij_kin)
+        KpointType *Hij, KpointType *Hij_kin, KpointType *Hij_localpp)
 {
     RmgTimer RT0("4-Hcore");
 
@@ -187,17 +187,16 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     KpointType alphavel(vel);
     KpointType beta(0.0);
 
-   RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     BlockAllreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
 
+    int density = 1;
+    int dimx = this->G->get_PX0_GRID(density);
+    int dimy = this->G->get_PY0_GRID(density);
+    int dimz = this->G->get_PZ0_GRID(density);
     for(int st = 0; st < nstates; st++) {
-        int density = 1;
-        int dimx = this->G->get_PX0_GRID(density) * this->T->get_coalesce_factor();
-        int dimy = this->G->get_PY0_GRID(density);
-        int dimz = this->G->get_PZ0_GRID(density);
-        int pbasis = dimx*dimy*dimz;
         double gridhx = this->G->get_hxgrid(density);
         double gridhy = this->G->get_hygrid(density);
         double gridhz = this->G->get_hzgrid(density);
@@ -219,6 +218,27 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     delete(RT1);
 
+#if CUDA_ENABLED
+    DeviceSynchronize();
+#endif
+    for(int st = 0; st < nstates; st++) {
+        for (int idx = 0; idx < pbasis; idx++)
+        {
+            h_psi[st * pbasis_noncoll + idx] = vtot_eig[idx] * Kstates[st].psi[idx];
+        }
+        if(ct.noncoll)
+        {
+            for (int idx = 0; idx < pbasis; idx++)
+            {
+                h_psi[st * pbasis_noncoll + pbasis + idx] = vtot_eig[idx] * Kstates[st].psi[pbasis + idx];
+            }
+        }
+    }
+
+    alphavel = vel;
+    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
+            pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_localpp, nstates);
+    BlockAllreduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
     if(pct.gridpe ==0 && ct.verbose)
     {
