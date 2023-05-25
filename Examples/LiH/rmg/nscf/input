@@ -1,0 +1,49 @@
+
+description="LiH-scf.in"  
+#******** REAL SPACE GRID ********   
+wavefunction_grid="40 40 40"  
+potential_grid_refinement="2"  
+input_wave_function_file = "../scf/Waves/wave.out"
+  
+#******* CONTROL OPTIONS *******  
+start_mode          ="LCAO Start"  
+calculation_mode    ="NSCF"  
+kohn_sham_solver    ="davidson"  
+subdiag_driver      ="auto"  
+#auto: if cuda available, use cusolver, otherwise use lapack for n<128 and scaplack for large system  
+  
+#********* K POINT SETUP *********  
+kpoint_mesh = "-8 8 8"  
+kpoint_shift = "1 1 1"  
+use_symmetry="0" 
+kpoints= "
+0.0  0.0  0.0  0.5
+0.5  0.0  0.0  0.5
+"
+kpoint_distribution = "1"
+
+  
+#******* Pseudopotentials *******   
+pseudo_dir = "../../"  
+pseudopotential = "  
+Li   Li_ONCV_PBE_sr.upf 
+H   H_ONCV_PBE_sr.upf 
+"  
+write_pseudopotential_plots ="False"  
+  
+#*****Exchange Correlation ******  
+exchange_correlation_type="AUTO_XC"  
+#AUTO_XC: XC will be determined from pseudopotential  
+  
+#****  LATTICE and ATOMS  ****   
+bravais_lattice_type="Cubic Face Centered"  
+crds_units = "Bohr"  
+lattice_units = "Bohr"  
+a_length="      7.10000000"  
+b_length="      7.10000000"  
+c_length="      7.10000000"  
+atomic_coordinate_type = "Cell Relative"  
+atoms="  
+Li  0.000000000000e+00 0.000000000000e+00 0.000000000000e+00  1 1 1   0.00   0.00   0.00  
+H  5.000000000000e-01 5.000000000000e-01 5.000000000000e-01  1 1 1   0.00   0.00   0.00  
+"  
