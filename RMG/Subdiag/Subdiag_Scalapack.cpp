@@ -122,13 +122,19 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
     KpointType *psi = kptr->orbital_storage;
-    KpointType *psi_dev = psi;
+    KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED
     if(ct.gpu_managed_memory == false)
     {
         gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
         gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
     }
+    else
+    {
+        psi_dev = psi;
+    }
+#else
+    psi_dev = psi;
 #endif
 
     HS_Scalapack (nstates, pbasis_noncoll, psi_dev, hpsi, kptr->ns, desca, distAij, distSij);
@@ -206,6 +212,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         if(ct.gpu_managed_memory == false)
         {
             gpuMemcpy(psi_dev, kptr->vexx, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
+        }
+        else
+        {
+            psi_dev = kptr->vexx;
         }
 #else
         psi_dev = kptr->vexx;
