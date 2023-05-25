@@ -64,9 +64,16 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
 
 
     // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
-    this->nlradius = ct.projector_expansion_factor * 4.5 * GetRange(&this->beta[0][0], this->r, this->rab, this->rg_points, 0.999999999);
-    this->nlradius = std::max(this->nlradius, ct.min_nlradius);
-    this->nlradius = std::min(this->nlradius, ct.max_nlradius);
+    if(this->nbeta)
+    {
+        this->nlradius = ct.projector_expansion_factor * 4.5 * GetRange(&this->beta[0][0], this->r, this->rab, this->rg_points, 0.999999999);
+        this->nlradius = std::max(this->nlradius, ct.min_nlradius);
+        this->nlradius = std::min(this->nlradius, ct.max_nlradius);
+    }
+    else
+    {
+        this->nlradius = 1.0;
+    }
 
 
     /*Get nldim */
