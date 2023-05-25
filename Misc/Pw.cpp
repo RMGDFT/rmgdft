@@ -343,6 +343,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
           {
               rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
           }
+
           vk_plans_r2c[i] = {};
           vkconf.doublePrecision = 0;
           vkconf.performR2C = 1;
@@ -356,6 +357,15 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
           vkconf.doublePrecision = 1;
           vkconf.performR2C = 1;
           resFFT = initializeVkFFT(&vk_plans_d2z[i], vkconf);
+          if (resFFT != VKFFT_SUCCESS) 
+          {
+              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+          }
+
+          vk_plans_f[i] = {};
+          vkconf.doublePrecision = 0;
+          vkconf.performR2C = 0;
+          resFFT = initializeVkFFT(&vk_plans_f[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
               rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
@@ -800,7 +810,13 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_f[tid], -1, &lp);
+#else
       rocfft_execute(gpu_plans_f[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
@@ -1087,7 +1103,13 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
+#if (VKFFT_BACKEND == 2)
+      VkFFTLaunchParams lp = {};
+      lp.buffer = (void **)&dev_bufs[tid];
+      VkFFTResult resFFT = VkFFTAppend(&vk_plans_f[tid], 1, &lp);
+#else
       rocfft_execute(gpu_plans_f_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+#endif
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
