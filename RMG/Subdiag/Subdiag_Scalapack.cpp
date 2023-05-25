@@ -199,9 +199,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     // And finally make sure they follow the same sign convention when using hybrid XC
     // Optimize this for GPUs!
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType);
+        psi_dev = kptr->vexx;
 #if HIP_ENABLED || CUDA_ENABLED
         if(ct.gpu_managed_memory == false)
         {
