@@ -140,4 +140,10 @@ void CheckSetDefault(void)
     }
 
 
+    if(ct.write_qmcpack_restart)
+    {
+        ct.localize_localpp = false;
+    }
+
+
 }

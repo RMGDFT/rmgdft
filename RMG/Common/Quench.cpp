@@ -336,10 +336,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
 
     }
-    else
-    {
-        rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-    }
+
+    rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
 
     // Exact exchange integrals
     if(ct.exx_int_flag)
