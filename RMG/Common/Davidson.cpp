@@ -80,6 +80,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-4 );
+    // If the unoccupied tol factor was set lower then we need to set the upper limit lower too.
+    if(ct.unoccupied_tol_factor < 1000.0) unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-8);
     if(ct.spinorbit || ct.noncoll) unoccupied_tol /= 8.0;
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
