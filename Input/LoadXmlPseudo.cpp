@@ -55,7 +55,7 @@ void LoadXmlPseudo(SPECIES *sp)
     if(pct.imgpe == 0) {
 
         // Check for file existence
-        boost::filesystem::path pp_filepath(sp->pseudo_filename);
+        boost::filesystem::path pp_filepath(ct.pseudo_dir +"/" + sp->pseudo_filename);
         if( !boost::filesystem::exists(pp_filepath) ) {
 
             Msg = "Pseudopotential file " + boost::lexical_cast<std::string>(sp->pseudo_filename) + " does not exist.\n";
@@ -66,7 +66,7 @@ void LoadXmlPseudo(SPECIES *sp)
             try {
                 std::ifstream pp_file;
                 pp_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
-                pp_file.open(sp->pseudo_filename);
+                pp_file.open(ct.pseudo_dir +"/" + sp->pseudo_filename);
                 pp_file.seekg(0, std::ios::end);
                 pp_buffer_len = pp_file.tellg();
                 pp_file.seekg(0, std::ios::beg);
