@@ -279,6 +279,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             ct.compute_direct ||
             ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
+    double efactor = ct.energy_output_conversion[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
@@ -319,8 +321,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
 
         /* Print contributions to total energies into output file */
-        double efactor = ct.energy_output_conversion[ct.energy_output_units];
-        const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
         rmg_printf ("\n@@ TOTAL ENEGY Components \n");
         rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
         rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
@@ -335,8 +335,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
         rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
 
+    }
+    else
+    {
         rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-
     }
 
     // Exact exchange integrals
