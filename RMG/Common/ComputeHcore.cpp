@@ -207,10 +207,15 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
                     dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, this->kp.kvec);
         }
 
+        double tmag(0.5 * this->kp.kmag);
+        for(int idx = 0;idx < pbasis_noncoll;idx++){
+            h_psi[st * pbasis_noncoll + idx] = -0.5 * h_psi[st * pbasis_noncoll + idx] + tmag*Kstates[st].psi[idx];
+        }
+
     }
 
     // - 0.5 for laplacian 
-    alphavel = -0.5 * vel;
+    alphavel = vel;
     RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_kin, nstates);
 
@@ -248,6 +253,20 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             printf("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
                 printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
+        }
+        printf("\n Hkin");
+        for(int i= 0; i < std::min(8, nstates); i++)
+        {
+            printf("\n");
+            for(int j = 0; j < std::min(8, nstates); j++)
+                printf(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
+        }
+        printf("\n H_localpp");
+        for(int i= 0; i < std::min(8, nstates); i++)
+        {
+            printf("\n");
+            for(int j = 0; j < std::min(8, nstates); j++)
+                printf(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
         }
 
     }
