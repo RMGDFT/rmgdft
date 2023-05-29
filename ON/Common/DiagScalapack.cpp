@@ -24,15 +24,27 @@
 #if !ELEMENTAL_LIBS
 #include "blas.h"
 
+Scalapack *MainSp;
+extern Scalapack *MainSp;
+
 
 
 void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 {
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
+    if(!MainSp) 
+    {
+        int scalapack_groups = 1;
+        int last = 1;
+        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
+                ct.scalapack_block_factor, last, pct.grid_comm);
+    }
+
+
+    bool participates = MainSp->Participates();
+
     int ione = 1;    /* blas constants */
-    char *uplo = "l", *jobz = "v";
-    int *desca = pct.desca;
 
     int info;
     double zero = 0., one = 1., alpha;
@@ -63,58 +75,11 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     /* Transform the generalized eigenvalue problem to a sStandard form */
     dcopy(&mxllda2, Hij_dist, &ione, uu_dis, &ione);
+    dcopy(&mxllda2, Hij_dist, &ione, zz_dis, &ione);
     dcopy(&mxllda2, Sij_dist, &ione, l_s, &ione);
-//dcopy(&mxllda2, matB, &ione, l_s, &ione);
-//pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
-//           &half, matB, &ione, &ione, pct.desca);
 
-
-    int ibtype = 1;
-    double scale=1.0, rone = 1.0;
-
-    pdpotrf(uplo, &numst, (double *)l_s,  &ione, &ione, desca,  &info);
-
-    // Get pdsyngst_ workspace
-    int lwork = -1;
-    double lwork_tmp;
-    pdsyngst(&ibtype, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
-            (double *)l_s, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-    lwork = 2*(int)lwork_tmp;
-    double *work2 = new double[lwork];
-
-    pdsyngst(&ibtype, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
-            (double *)l_s, &ione, &ione, desca, &scale, work2, &lwork, &info);
-
-    // Get workspace required
-    lwork = -1;
-    int liwork=-1;
-    int liwork_tmp;
-    pdsyevd(jobz, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
-            eigs, (double *)zz_dis, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-    lwork = 16*(int)lwork_tmp;
-    liwork = 16*numst;
-    double *nwork = new double[lwork];
-    int *iwork = new int[liwork];
-
-    // and now solve it 
-    pdsyevd(jobz, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
-            eigs, (double *)zz_dis, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
-
-    pdtrsm("Left", uplo, "T", "N", &numst, &numst, &rone, (double *)l_s, &ione, &ione, desca,
-            (double *)zz_dis, &ione, &ione, desca);
-    delete [] iwork;
-    delete [] nwork;
-    delete [] work2;
-
-
-
-    if (info)
-    {
-        printf ("\n pdsygvx failed, info is %d", info);
-        exit(0);
-    }
-
-
+    if(participates)
+        MainSp->generalized_eigenvectors(zz_dis, l_s, eigs, uu_dis);
 
     delete(RT);
 
@@ -186,13 +151,15 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     double t1 = 2.0;
     dscal(&mxllda2, &t1, uu_dis, &ione);
 
-    lwork = -1;
-    liwork = -1;
+    int lwork = -1;
+    int liwork = -1;
+    double lwork_tmp;
+    int liwork_tmp;
     pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
     lwork = (int)lwork_tmp + 8;
     liwork = (int)liwork_tmp + 8;
-    nwork = new double[lwork];
-    iwork = new int[liwork];
+    double *nwork = new double[lwork];
+    int *iwork = new int[liwork];
     pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, nwork, &lwork, iwork, &liwork, &info);
 
 
