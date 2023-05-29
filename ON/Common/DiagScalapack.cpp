@@ -41,6 +41,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
                 ct.scalapack_block_factor, last, pct.grid_comm);
     }
 
+    int factor = 1;
+    if(!ct.is_gamma) factor = 2;
 
     bool participates = MainSp->Participates();
 
@@ -55,8 +57,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     int mb= pct.desca[4];
     int  mxllda2;
     mxllda2 = MXLLDA * MXLCOL;
-
-
+    int mat_size = MXLLDA * MXLCOL * sizeof(double) * factor;
 
     RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */
@@ -74,9 +75,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
      */
 
     /* Transform the generalized eigenvalue problem to a sStandard form */
-    dcopy(&mxllda2, Hij_dist, &ione, uu_dis, &ione);
-    dcopy(&mxllda2, Hij_dist, &ione, zz_dis, &ione);
-    dcopy(&mxllda2, Sij_dist, &ione, l_s, &ione);
+    memcpy(uu_dis, Hij_dist, mat_size);
+    memcpy(zz_dis, Hij_dist, mat_size);
+    memcpy(l_s, Sij_dist, mat_size);
 
     if(participates)
         MainSp->generalized_eigenvectors(zz_dis, l_s, eigs, uu_dis);
@@ -108,7 +109,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");
     //   uu_dis = zz_dis *(occ_diag)
-    dcopy(&mxllda2, zz_dis, &ione, uu_dis, &ione);
+    memcpy(uu_dis, zz_dis, mat_size);
+    
     for(st1 = 0; st1 <  MXLCOL; st1++)
     {
 
@@ -118,7 +120,10 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
             alpha = 0.0;
         else
             alpha = states[st_g].occupation[0];
-        dscal(&MXLLDA, &alpha, &uu_dis[st1 * MXLLDA], &ione);
+
+        for(int st2 = 0; st2 < MXLLDA; st2++)
+            uu_dis[st1 * MXLLDA + st2] *= alpha;
+                 
     }
 
     delete(RT5);
@@ -144,12 +149,12 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         exit(0);
     }
 
-    dcopy(&mxllda2, Hij_dist, &ione, uu_dis, &ione);
+    memcpy(uu_dis, Hij_dist, mat_size);
     pdgetrs("N", &numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, 
             uu_dis, &ione, &ione, pct.desca, &info);
 
     double t1 = 2.0;
-    dscal(&mxllda2, &t1, uu_dis, &ione);
+    for(int i = 0; i < mxllda2; i++) uu_dis[i] *= t1;
 
     int lwork = -1;
     int liwork = -1;
