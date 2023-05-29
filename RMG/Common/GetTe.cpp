@@ -206,6 +206,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     ct.ldaU_E = ldaU_E;
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
+    // AFM case requires counting FOCK energy twice
+    if(ct.xc_is_hybrid && Functional::is_exx_active() && ct.AFM) ct.TOTAL -= ct.FOCK;
 
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
