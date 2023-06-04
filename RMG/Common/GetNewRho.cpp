@@ -44,7 +44,6 @@
 #include "RmgThread.h"
 #include "Symmetry.h"
 #include "Voronoi.h"
-#include "RmgSumAll.h"
 
 
 
@@ -171,7 +170,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
     }                           /*end for kpt */
-    //if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -202,7 +201,7 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
         if(ct.norm_conserving_pp)
         {
             double sum1 = 0.0;
-            sum1 = RmgSumAll(sum1, pct.grid_comm);
+            GlobalSums(&sum1, 1, pct.grid_comm);
             return;
         }
     }
@@ -228,7 +227,7 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     {
         sum1 = 0.0;
         for (int idx = 0; idx < FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
-        sum1 = RmgSumAll(sum1, pct.grid_comm);
+        GlobalSums(&sum1, 1, pct.grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
