@@ -135,7 +135,7 @@ void CheckSetDefault(void)
     {
         printf("\n **********************************************************************");
         printf("\n WARNING: You turned off the symmetry for non-gamma point calculation ");
-        printf("\n          use_symmetry = \"true\" to turn on symmetry");
+        printf("\n          use_symmetry = \"1\" to turn on symmetry");
         printf("\n *********************************************************************\n\n");
     }
 
@@ -145,5 +145,9 @@ void CheckSetDefault(void)
         ct.localize_localpp = false;
     }
 
+    if(ct.AFM)
+    {
+        ct.is_use_symmetry = 1;
+    }
 
 }
