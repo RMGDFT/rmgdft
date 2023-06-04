@@ -44,6 +44,7 @@
 #include "RmgThread.h"
 #include "Symmetry.h"
 #include "Voronoi.h"
+#include "RmgSumAll.h"
 
 
 
@@ -114,24 +115,23 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 // and summing them. 
 template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho)
 {
-
+    BaseThread *T = BaseThread::getBaseThread(0);
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
-    BaseThread *T = BaseThread::getBaseThread(0);
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     Prolong P(ratio, 10, *Rmg_T);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
-    double *work = new double[FP0_BASIS * factor * ct.MG_THREADS_PER_NODE]();
+    double *work = new double[FP0_BASIS * factor]();
 
 
     int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--; 
 
     int istop = nstates / active_threads;
+    if(nstates % active_threads) istop++;
     istop = istop * active_threads;
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -145,18 +145,24 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
             for(int ist = 0;ist < active_threads;ist++)
             {
-                if(fabs(Kpts[kpt]->Kstates[st1+ist].occupation[0]) > 1.0e-10)
+                thread_control.job = HYBRID_GET_RHO;
+                if((st1 + ist) < nstates)
                 {
-                    thread_control.job = HYBRID_GET_RHO;
                     double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
                     OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
                     thread_control.p1 = (void *)psi;
                     thread_control.p2 = (void *)&P;
-                    thread_control.p3 = (void *)&work[ist*FP0_BASIS * factor];
+                    thread_control.p3 = (void *)work;
                     thread_control.fd_diag = scale;
                     thread_control.basetag = st1 + ist;
-                    QueueThreadTask(ist, thread_control);
                 }
+                else
+                {
+                    // A little bit of a hack here. The NULL value tells the lower level
+                    // routine that this is just some padding for the thread loop.
+                    thread_control.p1 = NULL;
+                }
+                QueueThreadTask(ist, thread_control);
             }
             // Thread tasks are set up so wake them
             if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
@@ -164,27 +170,9 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
         } 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-        // Process any remaining states in serial fashion
-        for(int st1 = istop;st1 < nstates;st1++) 
-        {
-            if(fabs(Kpts[kpt]->Kstates[st1].occupation[0]) > 1.0e-10)
-            {
-                double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
-                OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
-                GetNewRhoOne(psi, &P, work, scale);
-            }
-        }
-
     }                           /*end for kpt */
+    //if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-    // Combine contributions from all of the threads
-    for(int st2=1;st2 < active_threads;st2++)
-    {
-        for(int idx=0;idx < FP0_BASIS*factor;idx++)
-        {
-            work[idx] += work[st2*FP0_BASIS*factor+idx];
-        } 
-    }
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
@@ -203,10 +191,21 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     delete [] work;
 }
 
-
+std::mutex rhomutex;
 
 template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, double *work, double scale)
 {
+    // If psi is NULL it's an unoccupied state so we don't need to do the interpolation
+    // and accumulation but we need this to keep the collective routines happy
+    if(!psi)
+    {
+        if(ct.norm_conserving_pp)
+        {
+            double sum1 = 0.0;
+            sum1 = RmgSumAll(sum1, pct.grid_comm);
+            return;
+        }
+    }
 
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
@@ -229,10 +228,11 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     {
         sum1 = 0.0;
         for (int idx = 0; idx < FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
-        GlobalSums(&sum1, 1, pct.grid_comm);
+        sum1 = RmgSumAll(sum1, pct.grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
+    rhomutex.lock();
     for (int idx = 0; idx < FP0_BASIS; idx++)
     {
         work[idx] += sum1 * scale * std::norm(psi_f[idx]);
@@ -244,6 +244,7 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
+    rhomutex.unlock();
 
     delete [] psi_f;
 
