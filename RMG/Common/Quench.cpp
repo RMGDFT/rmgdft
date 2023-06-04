@@ -70,6 +70,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     bool CONVERGED = false;
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
+    static std::vector<double> etot;
+
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave("tempwave");
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
@@ -118,7 +120,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     ct.vexx_rms = DBL_MAX;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
-
         exx_step_time = my_crtc ();
         RMSdV.clear();
 
@@ -127,9 +128,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             Exx_scf->vexx_RMS[ct.exx_steps] = 0.0;
             if(ct.exx_steps)
-                ct.adaptive_thr_energy = std::min(1.0e-9, ct.vexx_rms / 100000.0);
+                ct.adaptive_thr_energy = std::max(1.0e-15,std::min(1.0e-8, ct.vexx_rms / 1000.0));
             else
-                ct.adaptive_thr_energy = 1.0e-9;
+                ct.adaptive_thr_energy = 1.0e-8;
         }
 
         for (ct.scf_steps = 0, CONVERGED = false;
@@ -177,6 +178,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
         /* ---------- end scf loop ---------- */
 
+        etot.push_back(ct.TOTAL);
+
         // If a hybrid calculation compute vexx
         if(ct.xc_is_hybrid)
         {
@@ -194,7 +197,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             exx_step_time = my_crtc () - exx_step_time;
             exx_elapsed_time = my_crtc() - exx_start_time;
 
-            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion)
+            double deltaE = 1.0;
+            if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
+            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7)
             { 
                 printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
