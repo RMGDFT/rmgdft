@@ -27,6 +27,12 @@
 void LoadPseudo(SPECIES *sp)
 {
 
+    if(ct.internal_pseudo_type == ALL_ELECTRON)
+    {
+        LoadAllElectronPseudo(sp);
+        return;
+    }
+
     std::string Msg;
     if(!std::strcmp(sp->atomic_symbol, "DLO")) {
 

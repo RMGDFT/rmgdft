@@ -237,16 +237,139 @@ std::unordered_map<std::string, const int> SymbolToMass ({
 });
 
 
+std::unordered_map<std::string, std::string> SymbolToConfig ({
+{"H", "1s1"},
+{"He", "1s2"},
+{"Li", "1s22s1"},
+{"Be", "1s22s2"},
+{"B", "1s22s22p1"},
+{"C", "1s22s22p2"},
+{"N", "1s22s22p3"},
+{"O", "1s22s22p4"},
+{"F", "1s22s22p5"},
+{"Ne", "1s22s22p6"},
+{"Na", "1s22s22p63s1"},
+{"Mg", "1s22s22p63s2"},
+{"Al", "1s22s22p63s23p1"},
+{"Si", "1s22s22p63s23p2"},
+{"P", "1s22s22p63s23p3"},
+{"S", "1s22s22p63s23p4"},
+{"Cl", "1s22s22p63s23p5"},
+{"Ar", "1s22s22p63s23p6"},
+{"K", "1s22s22p63s23p64s1"},
+{"Ca", "1s22s22p63s23p64s2"},
+{"Sc", "1s22s22p63s23p64s23d1"},
+{"Ti", "1s22s22p63s23p64s23d2"},
+{"V", "1s22s22p63s23p64s23d3"},
+{"Cr", "1s22s22p63s23p64s13d5"},
+{"Mn", "1s22s22p63s23p64s23d5"},
+{"Fe", "1s22s22p63s23p64s23d6"},
+{"Co", "1s22s22p63s23p64s23d7"},
+{"Ni", "1s22s22p63s23p64s23d8"},
+{"Cu", "1s22s22p63s23p64s13d10"},
+{"Zn", "1s22s22p63s23p64s23d10"},
+{"Ga", "1s22s22p63s23p64s23d104p1"},
+{"Ge", "1s22s22p63s23p64s23d104p2"},
+{"As", "1s22s22p63s23p64s23d104p3"},
+{"Se", "1s22s22p63s23p64s23d104p4"},
+{"Br", "1s22s22p63s23p64s23d104p5"},
+{"Kr", "1s22s22p63s23p64s23d104p6"},
+{"Rb", "1s22s22p63s23p64s23d104p65s1"},
+{"Sr", "1s22s22p63s23p64s23d104p65s2"},
+{"Y", "1s22s22p63s23p64s23d104p65s24d1"},
+{"Zr", "1s22s22p63s23p64s23d104p65s24d2"},
+{"Nb", "1s22s22p63s23p64s23d104p65s14d4"},
+{"Mb", "1s22s22p63s23p64s23d104p65s14d5"},
+{"Tc", "1s22s22p63s23p64s23d104p65s24d5"},
+{"Ru", "1s22s22p63s23p64s23d104p65s14d7"},
+{"Rh", "1s22s22p63s23p64s23d104p65s14d8"},
+{"Pd", "1s22s22p63s23p64s23d104p64d10"},
+{"Ag", "1s22s22p63s23p64s23d104p65s14d10"},
+{"Cd", "1s22s22p63s23p64s23d104p65s24d10"},
+{"In", "1s22s22p63s23p64s23d104p65s24d105p1"},
+{"Sn", "1s22s22p63s23p64s23d104p65s24d105p2"},
+{"Sb", "1s22s22p63s23p64s23d104p65s24d105p3"},
+{"Te", "1s22s22p63s23p64s23d104p65s24d105p4"},
+{"I", "1s22s22p63s23p64s23d104p65s24d105p5"},
+{"Xe", "1s22s22p63s23p64s23d104p65s24d105p6"},
+{"Cs", "1s22s22p63s23p64s23d104p65s24d105p66s1"},
+{"Ba", "1s22s22p63s23p64s23d104p65s24d105p66s2"},
+{"La", "1s22s22p63s23p64s23d104p65s24d105p66s25d1"},
+{"Ce", "1s22s22p63s23p64s23d104p65s24d105p66s25d14f1"},
+{"Pr", "1s22s22p63s23p64s23d104p65s24d105p66s24f3"},
+{"Nd", "1s22s22p63s23p64s23d104p65s24d105p66s24f4"},
+{"Pm", "1s22s22p63s23p64s23d104p65s24d105p66s24f5"},
+{"Sm", "1s22s22p63s23p64s23d104p65s24d105p66s24f6"},
+{"Eu", "1s22s22p63s23p64s23d104p65s24d105p66s24f7"},
+{"Gd", "1s22s22p63s23p64s23d104p65s24d105p66s24f75d1"},
+{"Tb", "1s22s22p63s23p64s23d104p65s24d105p66s24f9"},
+{"Dy", "1s22s22p63s23p64s23d104p65s24d105p66s24f10"},
+{"Ho", "1s22s22p63s23p64s23d104p65s24d105p66s24f11"},
+{"Er", "1s22s22p63s23p64s23d104p65s24d105p66s24f12"},
+{"Tm", "1s22s22p63s23p64s23d104p65s24d105p66s24f13"},
+{"Yb", "1s22s22p63s23p64s23d104p65s24d105p66s24f14"},
+{"Lu", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d1"},
+{"Hf", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d2"},
+{"Ta", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d3"},
+{"W", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d4"},
+{"Re", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d5"},
+{"Os", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d6"},
+{"Ir", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d7"},
+{"Pt", "1s22s22p63s23p64s23d104p65s24d105p66s14f145d9"},
+{"Au", "1s22s22p63s23p64s23d104p65s24d105p66s14f145d10"},
+{"Hg", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d10"},
+{"Tl", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p1"},
+{"Pb", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p2"},
+{"Bi", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p3"},
+{"Po", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p4"},
+{"At", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p5"},
+{"Rn", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p6"},
+{"Fr", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s1"},
+{"Ra", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s2"},
+{"Ac", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s26d1"},
+{"Th", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s26d2"},
+{"Pa", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f26d1"},
+{"U", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f36d1"},
+{"Np", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f46d1"},
+{"Pu", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f6"},
+{"Am", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f7"},
+{"Cm", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f76d1"},
+{"Bk", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f9"},
+{"Cf", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f10"},
+{"Es", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f11"},
+{"Fm", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f12"},
+{"Md", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f13"},
+{"No", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f14"},
+{"Lr", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f147p1"},
+{"Rf", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d2"},
+{"Db", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d3"},
+{"Sg", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d4"},
+{"Bh", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d5"},
+{"Hs", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d6"},
+{"Mt", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d7"},
+{"Ds", "1s22s22p63s23p64s23d104p65s24d105p66s24f145d106p67s25f146d8"}
+});
+
 int GetAtomicNumber(std::string symbol)
 {
 
+    try {
+        return SymbolToConfig[symbol].length()/3;
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "Unknown atomic symbol " << symbol << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+
+}
+
+int GetNumberOrbitals(std::string symbol)
+{
     try {
         return SymbolToNumber[symbol];
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "Unknown atomic symbol " << symbol << " in " << __FILE__ << " at line " << __LINE__ << "\n";
     }
-
 }
 
 double GetAtomicMass(std::string symbol)

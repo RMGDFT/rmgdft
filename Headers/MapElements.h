@@ -5,5 +5,6 @@
 extern "C" int GetAtomicNumber(std::string symbol);
 extern "C" const char * GetAtomicSymbol(int number);
 extern "C" double GetAtomicMass(std::string symbol);
+extern "C" int GetNumberOrbitals(std::string symbol);
 
 #endif

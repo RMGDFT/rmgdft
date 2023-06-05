@@ -32,7 +32,8 @@ static std::unordered_map<std::string, int> atomic_orbital_type = {
 static std::unordered_map<std::string, int> internal_pseudo_type = {
         {"ultrasoft", ULTRASOFT_GBRV},
         {"sg15", NORM_CONSERVING_SG15},
-        {"nc_accuracy", NORM_CONSERVING_ACCURACY}};
+        {"nc_accuracy", NORM_CONSERVING_ACCURACY},
+        {"all_electron", ALL_ELECTRON}};
 
 static std::unordered_map<std::string, int> energy_output_units = {
         {"Hartrees", 0},
