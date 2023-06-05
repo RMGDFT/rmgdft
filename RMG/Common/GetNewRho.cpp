@@ -194,6 +194,8 @@ std::mutex rhomutex;
 
 template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, double *work, double scale)
 {
+    BaseThread *T = BaseThread::getBaseThread(0);
+    T->thread_barrier_wait(false);
     // If psi is NULL it's an unoccupied state so we don't need to do the interpolation
     // and accumulation but we need this to keep the collective routines happy
     if(!psi)
