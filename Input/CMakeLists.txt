@@ -17,6 +17,7 @@ ReadCommon.cpp
 MapElements.cpp
 LoadPseudo.cpp
 LoadUpfPseudo.cpp
+LoadAllElectronPseudo.cpp
 LoadXmlPseudo.cpp
 ReadPseudo.cpp
 ReadTFAtoms.cpp
