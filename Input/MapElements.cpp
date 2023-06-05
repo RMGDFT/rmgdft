@@ -354,7 +354,7 @@ int GetAtomicNumber(std::string symbol)
 {
 
     try {
-        return SymbolToConfig[symbol].length()/3;
+        return SymbolToNumber[symbol];
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "Unknown atomic symbol " << symbol << " in " << __FILE__ << " at line " << __LINE__ << "\n";
