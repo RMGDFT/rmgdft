@@ -146,8 +146,13 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     RmgTimer *RT5 = new RmgTimer("2-Force: corrections");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
-    CorrectForces (vh, vh_in, vxc, vxc_in, force_tmp);
-    for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
+    // Need high quality atomic orbitals to correct forces but
+    // we don't have those for the all electron case.
+    if(ct.internal_pseudo_type != ALL_ELECTRON)
+    {
+        CorrectForces (vh, vh_in, vxc, vxc_in, force_tmp);
+        for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
+    }
     delete RT5;
 
     if(ct.verbose) output_force(force_tmp, "Correction force:");

@@ -82,7 +82,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->generated = std::string("Generated internally using procedure of F.Gygi\nJournal of Chemical Theory and Computation 2023 19 (4), 1300-1309");
     sp->author = std::string("");
 
-    // Store UPF functional stringl for later processing
+    // Store UPF functional string for later processing
     sp->functional = std::string("PBE");
 
     // Use our internal radial mesh from Atomic
@@ -132,48 +132,25 @@ void LoadAllElectronPseudo(SPECIES *sp)
     for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
 
     // Number of atomic orbitals
-    sp->num_atomic_waves = GetNumberOrbitals(sp->atomic_symbol);
-
-    sp->num_atomic_waves_m = 0;
+    sp->num_atomic_waves = GetNumberOrbitalsL(sp->atomic_symbol);
+    sp->num_atomic_waves_m = GetNumberOrbitalsM(sp->atomic_symbol);
     if(sp->num_atomic_waves  > 0) {
 
         sp->atomic_wave.resize(sp->num_atomic_waves);
-        sp->atomic_wave_l.resize(sp->num_atomic_waves);
-        sp->atomic_wave_l.assign(sp->num_atomic_waves, 0);
-        sp->atomic_wave_j.resize(sp->num_atomic_waves);
-        sp->atomic_wave_j.assign(sp->num_atomic_waves, 0.0);
-        sp->atomic_wave_oc.resize(sp->num_atomic_waves);
-        sp->atomic_wave_oc.assign(sp->num_atomic_waves, 0.0);
-        sp->atomic_wave_energy.resize(sp->num_atomic_waves);
-        sp->atomic_wave_energy.assign(sp->num_atomic_waves, 0.0);
-        sp->aradius.resize(sp->num_atomic_waves);
-        sp->aradius.assign(sp->num_atomic_waves, 12.0);
-        sp->atomic_wave_label.resize(sp->num_atomic_waves);
+        SetupAllElectonOrbitals(sp->atomic_symbol,
+                                sp->atomic_wave_l,
+                                sp->atomic_wave_j,
+                                sp->atomic_wave_oc,
+                                sp->atomic_wave_energy,
+                                sp->aradius,
+                                sp->atomic_wave_label);
 
-        for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
-            // Ugh. UPF format has embedded .s so use / as a separator
+        for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++)
+        {
             sp->atomic_wave[iwf] = new double[sp->rg_points]();
-
-//            sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
-//            sp->atomic_wave_label[iwf] = upf_tree.get<std::string>(path(chi + "/<xmlattr>/label", '/'));
-//            sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
-
-            // Pseudo energy?
-            sp->atomic_wave_energy[iwf] = 0.0;
-
-            if((sp->atomic_wave_oc[iwf] == 0.0) && (sp->atomic_wave_energy[iwf] < 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
-            if(ct.lcao_use_empty_orbitals && (sp->atomic_wave_oc[iwf] == 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
-            if(sp->atomic_wave_l[iwf] == 0 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
-            if(sp->atomic_wave_l[iwf] == 1 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
-            if(sp->atomic_wave_l[iwf] == 2 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
-            if(sp->atomic_wave_l[iwf] == 3 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 7;
-
-            // UPF stores atomic wavefunctions * r so divide through
-            for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
         }
         ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
         sp->num_orbitals = sp->num_atomic_waves_m;
-
     }
 
     // Number of projectors
@@ -181,7 +158,6 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->is_ddd_diagonal = true;
     sp->nqf=0;
     sp->nlc=0;
-
 
 
     // Set the maximum number of non-local projecters needed
