@@ -49,10 +49,6 @@ double VofR(double r, int a_in)
   double hdprime = (-2.0*a*a*b - 4.0*a/sqrt(PI) + (4.0*a*a*a*a*b + 4.0*a*a*a/sqrt(PI))*r*r) *
                    exp(-a*a*r*r);
   V += hprime/r + hprime*hprime/2.0 + hdprime/2.0;
-if(pct.gridpe==0)
-{
-    printf("\nVVVV   %14.8e   %14.8e\n", r, V);
-}
   return V;
 }
 
