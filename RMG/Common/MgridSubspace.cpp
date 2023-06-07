@@ -161,11 +161,11 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                    &this->ns[bofs * pbasis_noncoll],
                    bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
-            RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
             {
                 SCF_THREAD_CONTROL thread_control;
 
+                RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
                 int istart = my_pe_offset*active_threads;
                 int nthreads = active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
@@ -201,16 +201,15 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
                 // Thread tasks are set up so run them
                 if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
+                delete RT1;
             }
             if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-            delete RT1;
 
         } // end for ib
 
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
-
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
