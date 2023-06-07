@@ -386,7 +386,9 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
 #if MKLBLAS_SET_NUM_THREADS
     mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
 #endif
-    B = BaseThread::getBaseThread(ct.MG_THREADS_PER_NODE);
+    int rthreads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && ct.MG_THREADS_PER_NODE > 1) rthreads--;
+    B = BaseThread::getBaseThread(rthreads);
     B->RegisterThreadFunction(run_threads, pct.grid_comm);
 
 }

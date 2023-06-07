@@ -115,9 +115,15 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
             if(flag)
             {
-                qobj.is_completed->store(true, std::memory_order_release);
                 if((qobj.type == RMG_MPI_IRECV) || (qobj.type == RMG_MPI_ISEND))
+                {
+                    qobj.is_completed->store(true, std::memory_order_release);
                     qobj.group_count->fetch_sub(1, std::memory_order_release);
+                }
+                else
+                {
+                    qobj.is_completed->store(true, std::memory_order_seq_cst);
+                }
             }
             else
             {
