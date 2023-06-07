@@ -713,7 +713,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("afd_cfac", &lc.afd_cfac, 0.0, 10.0, 0.0,
             CHECK_AND_FIX, OPTIONAL,
-            "Adaptive finite differencing parameter. ",
+            "Manual setting for the adaptive finite differencing parameter. ",
             "afd_cfac must lie in the range (0.0,3.0). Resetting to auto. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
@@ -981,12 +981,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of folded spectrum iterations to perform. ",
             "folded_spectrum_iterations must lie in the range (0,20). Resetting to the default value of 2. ", DIAG_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
-            "if set to true, we use LaplacianCoeff.cpp to generate coeff", MISC_OPTIONS|EXPERT_OPTION);
-
-    If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
-            "if set to true, we use LaplacianCoeff.cpp to generate coeff", MISC_OPTIONS|EXPERT_OPTION);
-
     If.RegisterInputKey("use_cpdgemr2d", &lc.use_cpdgemr2d, true, 
             "if set to true, we use Cpdgemr2d to change matrix distribution");
 
@@ -1104,7 +1098,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("fast_density", &lc.fast_density, false,
             "Use a faster but less accurate method to generate the charge density from the electronic wavefunctions. "
             "As the cutoff (grid-density) increases this method improves in accuracy. This option should be set to "
-            "false if you receive warnings about negative charge densities after interpolation.");
+            "false if you receive warnings about negative charge densities after interpolation.", MISC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
             "Some pseudopotentials contain unbound atomic orbitals and this flag indicates "

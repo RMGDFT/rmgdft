@@ -135,7 +135,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     Lorder = Lorder /2 * 2;
     if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || 
         this->ibrav == CUBIC_PRIMITIVE  ||
-        this->ibrav == TETRAGONAL_PRIMITIVE) && !this->offdiag)
+        this->ibrav == TETRAGONAL_PRIMITIVE))
     {
         dimension = 1;
         points.clear();
@@ -226,7 +226,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         std::stable_sort(points.begin(), points.end(), customLess_dist);
 
     }
-    else if((this->ibrav == MONOCLINIC_PRIMITIVE) && !this->offdiag)
+    else if((this->ibrav == MONOCLINIC_PRIMITIVE))
     {
         dimension = 2;
         GetDerList(der_list, Lorder, dimension, 0);
@@ -244,7 +244,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
-    else if( this->ibrav == CUBIC_FC && !this->offdiag )
+    else if( this->ibrav == CUBIC_FC)
     {
         
         dimension = 3;
@@ -258,7 +258,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         std::stable_sort(points.begin(), points.end(), customLess_dist);
 
     }
-    else if( abs(this->ibrav) == CUBIC_BC && !this->offdiag )
+    else if( abs(this->ibrav) == CUBIC_BC)
     {
         double x[20], w1[20], w2[20];
         for(int i=0;i<20;i++) x[i] = (double)i;
@@ -348,7 +348,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         points.insert(std::end(points), std::begin(points1), std::end(points1));
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
-    else if( abs(this->ibrav) == TETRAGONAL_BC && !this->offdiag )
+    else if( abs(this->ibrav) == TETRAGONAL_BC)
     {
         if(1)
         {

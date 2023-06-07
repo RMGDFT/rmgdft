@@ -27,7 +27,6 @@ private:
     int Ngrid[3];
     int dim[3];
     int weight_power = 6;
-    bool offdiag = true;
     int ibrav = ORTHORHOMBIC_PRIMITIVE;
     
     int iprint, world_rank;
@@ -66,9 +65,6 @@ public:
     }
     void SetWeightPower(int wp){ this->weight_power = wp;}
 
-    void SetOffdiag(bool flag){
-         this->offdiag = flag;
-        }
     void SetBrav(int ibrav){
          this->ibrav = ibrav;
         }
