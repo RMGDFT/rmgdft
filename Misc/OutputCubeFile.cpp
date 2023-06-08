@@ -13,6 +13,8 @@ template void OutputCubeFile(std::complex<double> *array_3d, int grid, std::stri
 template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string filename)
 {
 
+    RmgTimer RT0("CubeFile output");
+
     int sizes[3], subsizes[3], starts[3];
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET; 
 
