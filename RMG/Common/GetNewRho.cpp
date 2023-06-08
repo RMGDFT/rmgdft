@@ -116,11 +116,10 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 {
     BaseThread *T = BaseThread::getBaseThread(0);
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
-
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    Prolong P(ratio, 10, *Rmg_T);
+    static Prolong P(ratio, 10, *Rmg_T);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[FP0_BASIS * factor]();
@@ -130,7 +129,6 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--; 
 
     int istop = nstates / active_threads;
-    if(nstates % active_threads) istop++;
     istop = istop * active_threads;
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -145,22 +143,13 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = HYBRID_GET_RHO;
-                if((st1 + ist) < nstates)
-                {
-                    double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
-                    OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
-                    thread_control.p1 = (void *)psi;
-                    thread_control.p2 = (void *)&P;
-                    thread_control.p3 = (void *)work;
-                    thread_control.fd_diag = scale;
-                    thread_control.basetag = st1 + ist;
-                }
-                else
-                {
-                    // A little bit of a hack here. The NULL value tells the lower level
-                    // routine that this is just some padding for the thread loop.
-                    thread_control.p1 = NULL;
-                }
+                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
+                thread_control.p1 = (void *)psi;
+                thread_control.p2 = (void *)&P;
+                thread_control.p3 = (void *)work;
+                thread_control.fd_diag = scale;
+                thread_control.basetag = st1 + ist;
                 QueueThreadTask(ist, thread_control);
             }
             // Thread tasks are set up so wake them
@@ -169,9 +158,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
         } 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
+        for(int st1=istop;st1 < nstates;st1++)
+        {
+            OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
+            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
+            GetNewRhoOne(psi, &P, work, scale);
+        }
+        MPI_Barrier(pct.grid_comm);
     }                           /*end for kpt */
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
@@ -196,17 +190,6 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
 {
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
-    // If psi is NULL it's an unoccupied state so we don't need to do the interpolation
-    // and accumulation but we need this to keep the collective routines happy
-    if(!psi)
-    {
-        if(ct.norm_conserving_pp)
-        {
-            double sum1 = 0.0;
-            GlobalSums(&sum1, 1, pct.grid_comm);
-            return;
-        }
-    }
 
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
