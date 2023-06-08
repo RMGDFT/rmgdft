@@ -416,17 +416,20 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
         std::string filename = "density"+spinindex+".cube";
         OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename);
 
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
 
-        double *rho_atoms = new double[ct.nspin * FP0_BASIS]();
-        InitLocalObject (rho_atoms, pct.localatomicrho, ATOMIC_RHO, false);
+        if(0)
+        {
+            int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+            double *rho_atoms = new double[ct.nspin * FP0_BASIS]();
+            InitLocalObject (rho_atoms, pct.localatomicrho, ATOMIC_RHO, false);
 
-        for(int idx = 0; idx < FP0_BASIS; idx++) rho_atoms[idx] = rho[idx] - rho_atoms[idx];
+            for(int idx = 0; idx < FP0_BASIS; idx++) rho_atoms[idx] = rho[idx] - rho_atoms[idx];
 
-        filename = "dipole_density"+spinindex+".cube";
+            filename = "dipole_density"+spinindex+".cube";
 
-        OutputCubeFile(rho_atoms, Rmg_G->default_FG_RATIO, filename);
+            OutputCubeFile(rho_atoms, Rmg_G->default_FG_RATIO, filename);
+        }
     }
     if(ct.cube_vh)
     {
