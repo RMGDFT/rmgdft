@@ -378,6 +378,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Integration order for molecular dynamics. ", 
                      "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating. ", MD_OPTIONS);
 
+    If.RegisterInputKey("all_electron_parm", &lc.all_electron_parm, 1, 12, 4,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Gygi all electron parameter.",
+                     "all_electron_parm must lie in the range (1,12). Resetting to the default value of 4. ",
+                     PSEUDO_OPTIONS|EXPERIMENTAL_OPTION|EXPERT_OPTION);
+
     If.RegisterInputKey("z_average_output_mode", NULL, &lc.zaverage, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, z_average_output_mode,
                      "z_average_output_mode. ", 
@@ -510,16 +516,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "plot the states listed here", "");
 
     If.RegisterInputKey("exx_int_flag", &lc.exx_int_flag, false, 
-            "if set true, calculate the exact exchange integrals ");
+            "If set true, calculate the exact exchange integrals. ");
 
     If.RegisterInputKey("noncollinear", &lc.noncoll, false, 
-            "if set true, calculate noncollinear ", CONTROL_OPTIONS);
+            "If set true, noncollinear calculation. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("spinorbit", &lc.spinorbit, false, 
-            "if set true, calculate with spinorbit coupling ", CONTROL_OPTIONS);
+            "If set true, spinorbit coupling calculation. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("AFM", &lc.AFM, false, 
-            "if set true, anti-feromagnetic will be forced by symmetry operation if exist ", CONTROL_OPTIONS);
+            "If true, anti-feromagnetic will be forced by symmetry operation if possible. ", CONTROL_OPTIONS);
    
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
@@ -668,8 +674,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
             CHECK_AND_FIX, OPTIONAL, 
-            "state_block used in nlforce. ", 
-            "it is better to be 2^n. ", PERF_OPTIONS|EXPERT_OPTION);
+            "State block size used in nlforce. Larger values require more memory but can ", 
+            "be faster. For best results the value should be 2^n. ", PERF_OPTIONS|EXPERT_OPTION);
 
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
@@ -698,12 +704,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     std::string stm_bias_str;
     If.RegisterInputKey("STM_bias", &stm_bias_str, "-1.0 1.0",
             CHECK_AND_FIX, OPTIONAL,
-            "bias (in unit of Volt)  for STM calculation  ",
+            "Bias (in unit of Volt)  for STM calculation  ",
             "integrate density in energy window EF->EF+bias ", CONTROL_OPTIONS);
     std::string stm_height_str;
     If.RegisterInputKey("STM_height", &stm_height_str, "2.0 4.0",
             CHECK_AND_FIX, OPTIONAL,
-            "height range for STM calculation  ",
+            "Height range for STM calculation  ",
             "vaccum must be along z direction, height is above the maximum z coordinate ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 1.0,
@@ -723,7 +729,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
             CHECK_AND_FIX, OPTIONAL, 
-            "order of Methefessel Paxton occupation.", 
+            "Order of Methefessel Paxton occupation. ", 
             "0 means simple error function as distribution ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
@@ -782,7 +788,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
-            "When using localized projectors the radius can be adjusted with this parameter.",
+            "When using localized projectors the radius can be adjusted with this parameter. ",
             "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
@@ -792,7 +798,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
             CHECK_AND_FIX, OPTIONAL,
-            "How often to output eigenvalues in units of scf steps.",
+            "How often to output eigenvalues in units of scf steps. ",
             "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,

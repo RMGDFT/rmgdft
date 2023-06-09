@@ -119,7 +119,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     // Get into our internal units
     for(int ix = 0;ix < sp->rg_points;ix++)
     {
-        sp->vloc0[ix] = VofZ(sp->atomic_number, sp->r[ix], 4);
+        sp->vloc0[ix] = VofZ(sp->atomic_number, sp->r[ix], ct.all_electron_parm);
     }
 
     // Get the l-value for the local potential if present
