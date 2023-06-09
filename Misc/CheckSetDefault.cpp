@@ -166,4 +166,9 @@ void CheckSetDefault(void)
         ct.is_use_symmetry = 1;
     }
 
+    if(ct.forceflag== TDDFT)
+    {
+        ct.potential_acceleration_constant_step = 0.0;
+
+    }
 }
