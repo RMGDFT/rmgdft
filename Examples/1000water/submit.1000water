@@ -1,33 +1,14 @@
 #!/bin/bash
-# Begin LSF directives
-#BSUB -P CHP107
-##BSUB -P MAT151
-#BSUB -J N96
-#BSUB -o tst.o%J
-#BSUB -W 0:30
-#BSUB -nnodes 96
-#BSUB -alloc_flags smt4
-# End LSF directives and begin shell commands
-module load gcc/6.4.0
-module load boost
-module load essl
-module load cuda
-module load fftw
-module load hdf5
-module load bzip2
+#SBATCH -A MAT151
+#SBATCH -J NiO512
+#SBATCH -o %x-%j.out
+#SBATCH -t 00:30:00
+#SBATCH -p batch
+#SBATCH -N 48
+export OMP_NUM_THREADS=7
+export RMG_NUM_THREADS=5
+MPICH_GPU_SUPPORT_ENABLED="0"
+export HSA_XNACK=0
 
-cd $PROJWORK/chp107/elbriggs/1000Water/
-cp ~/bin/rmg-gpu $PROJWORK/chp107/elbriggs/1000Water/
+srun -AMAT189_crusher --ntasks=384 -u -c7 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ./rmg-gpu-frontier Water1000.rmg
 
-#ldd ./rmg-gpu
-export OMP_NUM_THREADS=6
-export RMG_NUM_THREADS=6
-export OMP_DYNAMIC=TRUE
-export OMP_WAIT_POLICY=passive
-export PAMI_IBV_ENABLE_DCT=1
-export PAMI_ENABLE_STRIPING=0
-export PAMI_IBV_ADAPTER_AFFINITY=1
-export PAMI_IBV_DEVICE_NAME=mlx5_0:1
-export PAMI_IBV_DEVICE_NAME_1=mlx5_3:1
-
-jsrun -n576 -a1 -g1 -r6 -c7 --bind none --latency_priority cpu-memory ./rmg-gpu input
