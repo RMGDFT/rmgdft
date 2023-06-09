@@ -340,8 +340,21 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);
+            #if CUDA_ENABLED || HIP_ENABLED
+                GpuFreeHost(vr);
+                GpuFreeHost(sr);
+                GpuFreeHost(hr);
+                RmgFreeHost(h_psi);
+            #else
+                delete [] vr;
+                delete [] sr;
+                delete [] hr;
+                delete [] h_psi;
+            #endif
+            // Not clear what is the best path forward here. Sometimes we can recover from this but
+            // sometimes the calculation is hosed so for now print a warming.
             return;
-            throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+            //throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
         // Check convergence
