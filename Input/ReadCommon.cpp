@@ -378,6 +378,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Integration order for molecular dynamics. ", 
                      "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating. ", MD_OPTIONS);
 
+    If.RegisterInputKey("all_electron_parm", &lc.all_electron_parm, 1, 12, 4,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Gygi all electron parameter.",
+                     "all_electron_parm must lie in the range (1,12). Resetting to the default value of 4. ",
+                     PSEUDO_OPTIONS|EXPERIMENTAL_OPTION|EXPERT_OPTION);
+
     If.RegisterInputKey("z_average_output_mode", NULL, &lc.zaverage, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, z_average_output_mode,
                      "z_average_output_mode. ", 

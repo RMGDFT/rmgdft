@@ -630,6 +630,9 @@ public:
     /** If interntal pseudopotential is wanted which type */
     int internal_pseudo_type;
 
+    /** Gygi all-electron parameter **/
+    int all_electron_parm;
+
     /** Number of semilocal projectors */
     int semilocal_projectors;
 

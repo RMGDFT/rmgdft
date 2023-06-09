@@ -47,8 +47,8 @@
 // data into and out of the GPU.
 
 
-#define         GPU_ALIGNMENT   1024  
-#define         MAX_HOSTGPU_BLOCKS  20
+#define         GPU_ALIGNMENT   1024
+#define         MAX_HOSTGPU_BLOCKS  32
 
 
 static void *host_gpubuffer;

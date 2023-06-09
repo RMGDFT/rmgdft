@@ -139,6 +139,22 @@ void CheckSetDefault(void)
         printf("\n *********************************************************************\n\n");
     }
 
+    if(ct.internal_pseudo_type == ALL_ELECTRON)
+    {
+        ct.kohn_sham_fd_order = 12;
+        ct.afd_cfac = 0.5;
+        if( ct.force_grad_order != 0)  
+        {
+            ct.force_grad_order = 12;
+        }
+        if(pct.worldrank == 0)
+        {
+            printf("\n **********************************************************************");
+            printf("\n WARNING: All electron calculations are experimental! These are only ");
+            printf("\n          intended for use by experts. ");
+            printf("\n *********************************************************************\n\n");
+        }
+    }
 
     if(ct.write_qmcpack_restart)
     {
