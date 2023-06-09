@@ -475,6 +475,7 @@ public:
 
     /** total background smearing charge -- for charged supercells */
     double background_charge;
+    double system_charge;
 
 
     /** Multigrid parameters for the eigenvalue solver */

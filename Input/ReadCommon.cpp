@@ -685,7 +685,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of scalapack or elpa groups.",
             "subdiag_groups must be in the range (1 <= subdiag_groups <= 16). ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
+    If.RegisterInputKey("system_charge", &lc.system_charge, -DBL_MAX, DBL_MAX, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons ",
             "system_charge must be a real number. ", CONTROL_OPTIONS);
@@ -1638,7 +1638,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if(Verify("calculation_mode", "NEB Relax", InputMap)) lc.constrainforces = 5;
 
     // Background charge is defined to be the opposite of system charge
-    lc.background_charge *= -1.0;
+    lc.background_charge = -lc.system_charge;
 
     lc.occ_width *= eV_Ha;
     lc.e_field *= eV_Ha;
