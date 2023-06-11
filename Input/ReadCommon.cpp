@@ -325,6 +325,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "poisson solver. ", 
                      "poisson_solver must be multigrid or pfft. Resetting to pfft. ", POISSON_OPTIONS);
 
+    If.RegisterInputKey("kpoint_units", NULL, &lc.kpoint_units, "Reciprocal lattice",
+                     CHECK_AND_FIX, OPTIONAL, kpoint_units,
+                     "kpoint units for reading kpoint ", 
+                     "kpoint units When read kpoints or in bandstrcuture kpoints", CELL_OPTIONS);
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,

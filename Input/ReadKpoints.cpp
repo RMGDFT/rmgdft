@@ -126,14 +126,12 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     lc.is_gamma = true;
     if(lc.noncoll) lc.is_gamma = false;
-    for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
-        double v1, v2, v3;
-        v1 = 0.0;
-        v2 = 0.0;
-        v3 = 0.0;
+    if(ct.kpoint_units == KPOINT_LATT_UNIT)
+    {
 
-        for(int ir = 0; ir<3; ir++)
-        {
+        for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
+            double v1, v2, v3;
+
             v1 = lc.kp[kpt].kpt[0] *Rmg_L.b0[0]
                 + lc.kp[kpt].kpt[1] *Rmg_L.b1[0] 
                 + lc.kp[kpt].kpt[2] *Rmg_L.b2[0];
@@ -143,14 +141,41 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
             v3 = lc.kp[kpt].kpt[0] *Rmg_L.b0[2]
                 + lc.kp[kpt].kpt[1] *Rmg_L.b1[2] 
                 + lc.kp[kpt].kpt[2] *Rmg_L.b2[2];
+
+            lc.kp[kpt].kvec[0] = v1 * twoPI;
+            lc.kp[kpt].kvec[1] = v2 * twoPI;
+            lc.kp[kpt].kvec[2] = v3 * twoPI;
+            lc.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
+
+            if(lc.kp[kpt].kmag != 0.0) lc.is_gamma = false;
+        }
+    }
+    else
+    {
+        for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
+            lc.kp[kpt].kvec[0] = lc.kp[kpt].kpt[0] * twoPI/Rmg_L.celldm[0];
+            lc.kp[kpt].kvec[1] = lc.kp[kpt].kpt[1] * twoPI/Rmg_L.celldm[0];
+            lc.kp[kpt].kvec[2] = lc.kp[kpt].kpt[2] * twoPI/Rmg_L.celldm[0];
+            lc.kp[kpt].kmag = lc.kp[kpt].kvec[0] * lc.kp[kpt].kvec[1] * lc.kp[kpt].kvec[2];
+
+            if(lc.kp[kpt].kmag != 0.0) lc.is_gamma = false;
+
+            double v1, v2, v3;
+            v1 = lc.kp[kpt].kvec[0] *Rmg_L.a0[0]
+                + lc.kp[kpt].kvec[1] *Rmg_L.a1[0] 
+                + lc.kp[kpt].kvec[2] *Rmg_L.a2[0];
+            v2 = lc.kp[kpt].kvec[0] *Rmg_L.a0[1]
+                + lc.kp[kpt].kvec[1] *Rmg_L.a1[1] 
+                + lc.kp[kpt].kvec[2] *Rmg_L.a2[1];
+            v3 = lc.kp[kpt].kvec[0] *Rmg_L.a0[2]
+                + lc.kp[kpt].kvec[1] *Rmg_L.a1[2] 
+                + lc.kp[kpt].kvec[2] *Rmg_L.a2[2];
+            lc.kp[kpt].kpt[0] = v1/twoPI;
+            lc.kp[kpt].kpt[1] = v2/twoPI;
+            lc.kp[kpt].kpt[2] = v3/twoPI;
+
         }
 
-        lc.kp[kpt].kvec[0] = v1 * twoPI;
-        lc.kp[kpt].kvec[1] = v2 * twoPI;
-        lc.kp[kpt].kvec[2] = v3 * twoPI;
-        lc.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
-
-        if(lc.kp[kpt].kmag != 0.0) lc.is_gamma = false;
     }
 
     //rmg_printf("\n num_k %d", ct.num_kpts);
