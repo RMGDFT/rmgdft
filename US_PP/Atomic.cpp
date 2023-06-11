@@ -28,12 +28,14 @@
 #include "GlobalSums.h"
 #include "RmgException.h"
 #include "Atomic.h"
-#include "BesselRoots.h"
+//#include "BesselRoots.h"
 #include <boost/math/special_functions/math_fwd.hpp>
 #include <boost/math/special_functions/bessel.hpp>
 #include "blas.h"
 
 
+std::vector<double *> J_roots;
+int NUM_BESSEL_ROOTS = 400;
 
 // Sign copy function
 template <typename T> int sgn(T val) {
@@ -63,8 +65,8 @@ typedef policy<promote_double<false> > bessel_policy;
 Atomic::Atomic(void)
 {
 
-    if(!Log_grid_initialized) {
-
+    if(!Log_grid_initialized)
+    {
         r_filtered[0] = LOGGRID_START;
         log_r_filtered[0] = log(r_filtered[0]);
         for(int idx = 1;idx < MAX_LOGGRID;idx++) {
@@ -72,13 +74,23 @@ Atomic::Atomic(void)
             log_r_filtered[idx] = log(r_filtered[idx]);
         }
 
-
         b = log((r_filtered[2] - r_filtered[1]) / (r_filtered[1] - r_filtered[0]));
         Atomic_inv_b = 1.0 / b;
         a = r_filtered[0];
         Atomic_inv_a = 1.0 / a;
         Log_grid_initialized = true;
 
+        // Set up bessel roots
+        J_roots.resize(8);
+        if(ct.internal_pseudo_type == ALL_ELECTRON) NUM_BESSEL_ROOTS = 2000;
+        for(int i = 0;i < 8;i++)
+        {
+            J_roots[i] = new double[NUM_BESSEL_ROOTS];
+            for(int j = 0;j < NUM_BESSEL_ROOTS;j++)
+            {
+               J_roots[i][j]= boost::math::cyl_bessel_j_zero((double)i+0.5, j+1);
+            }
+        }
     }
 
 }
@@ -142,6 +154,12 @@ double Atomic::BesselToLogGrid (
 
     int N = Atomic::CountRoots(lval, rcut, cparm, hmin);
 
+    if(N >= NUM_BESSEL_ROOTS)
+    {
+       printf("Bessel table not big enough. N=%d  NUM_BESSEL_ROOTS=%d\n",N, NUM_BESSEL_ROOTS);
+       fflush(NULL);
+       exit(0);
+    }
     //rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
     if(ct.localize_projectors)rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1]));
     //if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  l = %d   hmin = %12.6f\n",N, rcut, lval, hmin);

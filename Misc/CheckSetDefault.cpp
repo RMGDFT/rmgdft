@@ -135,9 +135,40 @@ void CheckSetDefault(void)
     {
         printf("\n **********************************************************************");
         printf("\n WARNING: You turned off the symmetry for non-gamma point calculation ");
-        printf("\n          use_symmetry = \"true\" to turn on symmetry");
+        printf("\n          use_symmetry = \"1\" to turn on symmetry");
         printf("\n *********************************************************************\n\n");
     }
 
+    if(ct.internal_pseudo_type == ALL_ELECTRON)
+    {
+        ct.kohn_sham_fd_order = 12;
+        ct.afd_cfac = 0.5;
+        if( ct.force_grad_order != 0)  
+        {
+            ct.force_grad_order = 12;
+        }
+        if(pct.worldrank == 0)
+        {
+            printf("\n **********************************************************************");
+            printf("\n WARNING: All electron calculations are experimental! These are only ");
+            printf("\n          intended for use by experts. ");
+            printf("\n *********************************************************************\n\n");
+        }
+    }
 
+    if(ct.write_qmcpack_restart)
+    {
+        ct.localize_localpp = false;
+    }
+
+    if(ct.AFM)
+    {
+        ct.is_use_symmetry = 1;
+    }
+
+    if(ct.forceflag== TDDFT)
+    {
+        ct.potential_acceleration_constant_step = 0.0;
+
+    }
 }

@@ -98,6 +98,7 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
     if(ct.mpi_queue_mode && T->is_loop_over_states())
     {
         int tid = T->get_thread_tid();
+        int cfac = Rmg_T->get_coalesce_factor();
         if(tid < 0) tid = 0;
         int istate = T->get_thread_basetag();
         std::atomic_bool is_completed;
@@ -106,7 +107,7 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         mpi_queue_item_t qi;
         qi.is_completed = &is_completed;
         qi.type = RMG_MPI_SUM;
-        if(ct.coalesce_states && (pct.coalesce_factor > 1))
+        if(ct.coalesce_states && (cfac > 1))
         {
             int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
             qi.comm = coalesced_comm_pool[comm_index];

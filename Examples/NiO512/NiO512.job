@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH -A MAT151
+#SBATCH -J NiO512
+#SBATCH -o %x-%j.out
+#SBATCH -t 00:30:00
+#SBATCH -p batch
+#SBATCH -N 48
+export OMP_NUM_THREADS=7
+export RMG_NUM_THREADS=5
+MPICH_GPU_SUPPORT_ENABLED="0"
+export HSA_XNACK=0
+
+srun -AMAT189_crusher --ntasks=384 -u -c7 --gpus-per-node=8 --ntasks-per-node=8 --gpus-per-task=1 --gpu-bind=single:1 --cpu-bind=sockets  ./rmg-gpu-frontier input
+

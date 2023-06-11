@@ -47,6 +47,13 @@
     #include <rocfft/rocfft.h>
 #endif
 
+#if (VKFFT_BACKEND == 2)
+  #ifndef __HIP_PLATFORM_HCC__
+  #define __HIP_PLATFORM_HCC__
+  #endif
+  #include "vkFFT.h"
+#endif
+
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
@@ -187,6 +194,14 @@ public:
     std::vector<std::complex<double> *> work_bufs;  // Needed for rocfft
     std::vector<rocfft_execution_info> roc_x_info;
 #endif    
+
+#if (VKFFT_BACKEND == 2)
+    std::vector<VkFFTApplication> vk_plans;
+    std::vector<VkFFTApplication> vk_plans_f;
+    std::vector<VkFFTApplication> vk_plans_r2c;
+    std::vector<VkFFTApplication> vk_plans_d2z;
+#endif
+
 };
 
 

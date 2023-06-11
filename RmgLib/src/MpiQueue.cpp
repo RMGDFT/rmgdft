@@ -76,33 +76,43 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         // into a separate queue that we then check for completion.
         for(int tid=0;tid < Q->max_threads;tid++)
         {
-            while(Q->queue[tid]->pop(qobj))
+            if(qcount > 10)
             {
-                if(qobj.type == RMG_MPI_IRECV)
+                //usleep(1000);
+                int flag;
+                MPI_Request req = MPI_REQUEST_NULL;
+                MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
+            }
+//            else
+            {
+                while(Q->queue[tid]->pop(qobj))
                 {
-                    MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
-                }
-                else if(qobj.type == RMG_MPI_ISEND)
-                {
-                    MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
-                }
-                else if(qobj.type == RMG_MPI_SUM)
-                {
-                    if(qobj.datatype == MPI_DOUBLE)
-                        MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
-                    if(qobj.datatype == MPI_FLOAT)
-                        MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
-                    if(qobj.datatype == MPI_INT)
-                        MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
-                }
-                else 
-                {
-                    printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
-                }
+                    if(qobj.type == RMG_MPI_IRECV)
+                    {
+                        MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                    }
+                    else if(qobj.type == RMG_MPI_ISEND)
+                    {
+                        MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                    }
+                    else if(qobj.type == RMG_MPI_SUM)
+                    {
+                        if(qobj.datatype == MPI_DOUBLE)
+                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
+                        if(qobj.datatype == MPI_FLOAT)
+                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
+                        if(qobj.datatype == MPI_INT)
+                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
+                    }
+                    else 
+                    {
+                        printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
+                    }
 
-                // Now push it into our already posted queues which are only accessed by this thread so faster
-                if(!postedq->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
-                qcount++;
+                    // Now push it into our already posted queues which are only accessed by this thread so faster
+                    if(!postedq->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
+                    qcount++;
+                }
             }
         }
 
@@ -112,7 +122,8 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         {
             qcount--;
             int flag=false;
-            MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
+            MPI_Status mstat;
+            int ierr = MPI_Test(&qobj.req, &flag, &mstat);
             if(flag)
             {
                 qobj.is_completed->store(true, std::memory_order_release);
@@ -121,6 +132,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             }
             else
             {
+if(ierr)printf("IERR=%d\n",ierr);
                 // Not complete so push it back on the queue and loop around again
                 qcount++;
                 postedq->push(qobj);

@@ -47,14 +47,12 @@ void SetLaplacian()
 
     LC = new LaplacianCoeff(a, Ngrid, Lorder, dim, ct.verbose);
     LC->SetBrav(Rmg_L.get_ibrav_type());
-    LC->SetOffdiag(ct.laplacian_offdiag);
     LC->CalculateCoeff();
     LC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder, LC});
 
     LC_6 = new LaplacianCoeff(a, Ngrid, Lorder-2, dim, ct.verbose);
     LC_6->SetBrav(Rmg_L.get_ibrav_type());
-    LC_6->SetOffdiag(ct.laplacian_offdiag);
     LC_6->CalculateCoeff();
     LC_6->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder-2, LC_6});
@@ -70,7 +68,6 @@ void SetLaplacian()
     // hash table along with the generated grid spacing here.
     LaplacianCoeff *MLC = new LaplacianCoeff(a, Ngrid, 2, dim, ct.verbose);
     MLC->SetBrav(Rmg_L.get_ibrav_type());
-    MLC->SetOffdiag(ct.laplacian_offdiag);
     MLC->CalculateCoeff();
     MLC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+2, MLC});
@@ -90,14 +87,12 @@ void SetLaplacian()
 
     LaplacianCoeff *HLC = new LaplacianCoeff(a, Ngrid, Lorder, dim, ct.verbose);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
-    HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();
     HLC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder, HLC});
 
     HLC = new LaplacianCoeff(a, Ngrid, Lorder-2, dim, ct.verbose);
     HLC->SetBrav(Rmg_L.get_ibrav_type());
-    HLC->SetOffdiag(ct.laplacian_offdiag);
     HLC->CalculateCoeff();
     HLC->gen_hxgrid = hxgrid;
     FiniteDiff::FdCoeffs.insert({FiniteDiff::LCkey(hxgrid)+Lorder-2, HLC});

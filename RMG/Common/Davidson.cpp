@@ -80,6 +80,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-4 );
+    // If the unoccupied tol factor was set lower then we need to set the upper limit lower too.
+    if(ct.unoccupied_tol_factor < 1000.0) unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-8);
     if(ct.spinorbit || ct.noncoll) unoccupied_tol /= 8.0;
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
@@ -338,8 +340,21 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);
+            #if CUDA_ENABLED || HIP_ENABLED
+                GpuFreeHost(vr);
+                GpuFreeHost(sr);
+                GpuFreeHost(hr);
+                RmgFreeHost(h_psi);
+            #else
+                delete [] vr;
+                delete [] sr;
+                delete [] hr;
+                delete [] h_psi;
+            #endif
+            // Not clear what is the best path forward here. Sometimes we can recover from this but
+            // sometimes the calculation is hosed so for now print a warming.
             return;
-            throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+            //throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
         // Check convergence

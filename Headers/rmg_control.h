@@ -365,8 +365,6 @@ public:
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
-    bool laplacian_offdiag;
-    bool laplacian_autocoeff;
     int force_grad_order;
     bool kohn_sham_ke_fft;
 
@@ -477,6 +475,7 @@ public:
 
     /** total background smearing charge -- for charged supercells */
     double background_charge;
+    double system_charge;
 
 
     /** Multigrid parameters for the eigenvalue solver */
@@ -631,6 +630,9 @@ public:
 
     /** If interntal pseudopotential is wanted which type */
     int internal_pseudo_type;
+
+    /** Gygi all-electron parameter **/
+    int all_electron_parm;
 
     /** Number of semilocal projectors */
     int semilocal_projectors;

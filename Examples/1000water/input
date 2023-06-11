@@ -7,7 +7,7 @@ kohn_sham_mucycles = "3"
 non_local_block_size = "6000"
 use_async_allreduce="false"
 coalesce_states = "true"
-coalesce_factor="4"
+coalesce_factor="2"
 
 
 
@@ -26,6 +26,7 @@ occupations_type = "Fixed"
 bravais_lattice_type="Cubic Primitive"
 
 state_block_size="64"
+
 # Lattice constants 
 a_length="62.0"
 b_length="62.0"
@@ -45,16 +46,16 @@ localize_projectors = "true"
 calculation_mode="Quench Electrons"
 #calculation_mode="Relax Structure"
 kohn_sham_solver="multigrid"
-subdiag_driver="cusolver"
+subdiag_driver="scalapack"
 scalapack_block_factor = "64"
 
 charge_mixing_type = "Linear"
-charge_density_mixing = "0.6"
+charge_density_mixing = "0.7"
 max_scf_steps="50"
 verbose="false"
 #fast_density="false"
 
-potential_acceleration_constant_step="1.0"
+potential_acceleration_constant_step="1.5"
 write_data_period="50"
 #write_pseudopotential_plots="true"
 # Criterion used to judge SCF convergency 

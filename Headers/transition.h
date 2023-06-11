@@ -124,6 +124,7 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
 void LoadPseudo(SPECIES *sp);
 void LoadUpfPseudo(SPECIES *sp);
 void LoadXmlPseudo(SPECIES *sp);
+void LoadAllElectronPseudo(SPECIES *sp);
 double * UPF_str_to_double_array(std::string str, int max_count, int start);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );

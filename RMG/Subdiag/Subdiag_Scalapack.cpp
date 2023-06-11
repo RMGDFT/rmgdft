@@ -122,13 +122,19 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
     KpointType *psi = kptr->orbital_storage;
-    KpointType *psi_dev = psi;
+    KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED
     if(ct.gpu_managed_memory == false)
     {
         gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
         gpuMemcpy(psi_dev, psi, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
     }
+    else
+    {
+        psi_dev = psi;
+    }
+#else
+    psi_dev = psi;
 #endif
 
     HS_Scalapack (nstates, pbasis_noncoll, psi_dev, hpsi, kptr->ns, desca, distAij, distSij);
@@ -199,24 +205,23 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     // And finally make sure they follow the same sign convention when using hybrid XC
     // Optimize this for GPUs!
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
-        tlen = (size_t)nstates * (size_t)pbasis_noncoll;
+        tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType);
 #if HIP_ENABLED || CUDA_ENABLED
         if(ct.gpu_managed_memory == false)
         {
             gpuMemcpy(psi_dev, kptr->vexx, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
         }
+        else
+        {
+            psi_dev = kptr->vexx;
+        }
+#else
+        psi_dev = kptr->vexx;
 #endif
         PsiUpdate(nstates, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
         memcpy(kptr->vexx, hpsi, tlen);
-        for(int istate=istart;istate < nstates;istate++)
-        {
-            if(std::real(matrix_diag[istate*nstates + istate]) < 0.0)
-            {
-                for(int idx=0;idx < pbasis_noncoll;idx++) kptr->Kstates[istate].psi[idx] = -kptr->Kstates[istate].psi[idx];
-            }
-        }
     }
 
     delete [] matrix_diag;

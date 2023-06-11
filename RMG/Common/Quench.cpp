@@ -70,6 +70,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     bool CONVERGED = false;
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
+    static std::vector<double> etot;
+
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave("tempwave");
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
@@ -118,7 +120,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     ct.vexx_rms = DBL_MAX;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
-
         exx_step_time = my_crtc ();
         RMSdV.clear();
 
@@ -127,9 +128,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             Exx_scf->vexx_RMS[ct.exx_steps] = 0.0;
             if(ct.exx_steps)
-                ct.adaptive_thr_energy = std::min(1.0e-9, ct.vexx_rms / 100000.0);
+                ct.adaptive_thr_energy = std::max(1.0e-15,std::min(1.0e-8, ct.vexx_rms / 1000.0));
             else
-                ct.adaptive_thr_energy = 1.0e-9;
+                ct.adaptive_thr_energy = 1.0e-8;
         }
 
         for (ct.scf_steps = 0, CONVERGED = false;
@@ -177,6 +178,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
         /* ---------- end scf loop ---------- */
 
+        etot.push_back(ct.TOTAL);
+
         // If a hybrid calculation compute vexx
         if(ct.xc_is_hybrid)
         {
@@ -194,7 +197,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             exx_step_time = my_crtc () - exx_step_time;
             exx_elapsed_time = my_crtc() - exx_start_time;
 
-            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion)
+            double deltaE = 1.0;
+            if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
+            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7)
             { 
                 printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
@@ -268,64 +273,76 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     int nstates = Kptr[0]->nstates;
     OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
     OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+    OrbitalType *Hcore_localpp = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
     bool is_xc_hybrid = ct.xc_is_hybrid;
 
     ct.xc_is_hybrid = false;
 
-    GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
-
-    ct.xc_is_hybrid = false;
 
     bool compute_direct = (ct.write_qmcpack_restart ||
             ct.compute_direct ||
             ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
-    double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0;
+    double efactor = ct.energy_output_conversion[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
     if(compute_direct)
     {
+        double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+
+        GetNewRho(Kptr, rho);
+        if (ct.nspin == 2 )
+            get_rho_oppo (rho,  rho_oppo);
+
+        VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0e-12);
         GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
+
+        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates], &Hcore_localpp[kpt * nstates * nstates]);
 
             for (int st = 0; st < nstates; st++)
             {
                 double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
                 kin_energy += std::real(Hcore_kin[kpt * nstates * nstates + st * nstates + st]) * occ;
                 pseudo_energy += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+                E_localpp += std::real(Hcore_localpp[kpt * nstates * nstates + st * nstates + st]) * occ;
             }
         }
         kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
         kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
         pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
         pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
+        E_localpp = RmgSumAll(E_localpp, pct.kpsub_comm);
+        E_localpp = RmgSumAll(E_localpp, pct.spin_comm);
 
         pseudo_energy -= kin_energy;
+        E_nonlocalpp = pseudo_energy - E_localpp;
+
+
         //Kptr[0]->ldaU->Ecorrect
         total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
+
+        /* Print contributions to total energies into output file */
+        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
+        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+
+        if(ct.vdw_corr)
+            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
+
     }
 
-    /* Print contributions to total energies into output file */
-    double efactor = ct.energy_output_conversion[ct.energy_output_units];
-    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
-    rmg_printf ("\n@@ TOTAL ENEGY Components \n");
-    rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-    rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-    rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    if(compute_direct)
-        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-    if(compute_direct)
-        rmg_printf ("@@ ion-electron       = %15.6f %s\n", efactor*pseudo_energy, eunits);
-    rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
-    rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
-    rmg_printf ("@@ total              = %15.6f %s\n", efactor*total_e, eunits);
-
     rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-    if(compute_direct)
-        rmg_printf ("final total energy from direct =  %16.8f Ha\n", efactor*total_e, eunits);
-
 
     // Exact exchange integrals
     if(ct.exx_int_flag)
@@ -344,12 +361,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         Exx->SetHcore(Hcore, Hcore_kin, nstates);
         Exx->Vexx_integrals(ct.exx_int_file);
-        ct.xc_is_hybrid = is_xc_hybrid;
         delete Exx;
     }
+    ct.xc_is_hybrid = is_xc_hybrid;
 
     RmgFreeHost(Hcore);
     RmgFreeHost(Hcore_kin);
+    RmgFreeHost(Hcore_localpp);
     delete [] v_psi;
     delete [] vxc_psi;
 
@@ -451,7 +469,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         /*Now we need to convert to debye units */
         if (pct.imgpe==0)
         {
-            printf("\n\n Dipole moment [Debye]: (%.3f,%.3f, %.3f)", 
+            printf("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
                     DEBYE_CONVERSION *dipole[0], 
                     DEBYE_CONVERSION *dipole[1], 
                     DEBYE_CONVERSION *dipole[2]);

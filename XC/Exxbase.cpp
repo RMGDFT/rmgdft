@@ -43,6 +43,7 @@
 #include "blas.h"
 #include "HdfHelpers.h"
 #include "Gpufuncs.h"
+#include "GlobalSums.h"
 
 using namespace hdfHelper;
 // This class implements exact exchange for delocalized orbitals.
@@ -50,6 +51,7 @@ using namespace hdfHelper;
 // decomposed. The file name is given by wavefile_in which is
 // mmapped to an array. We only access the array in read-only mode.
 
+std::vector<double> vxrms;
 
 template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
@@ -178,6 +180,7 @@ template <class T> Exxbase<T>::Exxbase (
         double *occ_in,
         T *psi_in, int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
 {
+vxrms.resize(nstates_in);
     RmgTimer RT0("5-Functional: Exx init");
     for(int st=0;st < nstates;st++) occ.push_back(init_occ[st]);
     if(ct.qpoint_mesh[0] <= 0 || ct.qpoint_mesh[1] <= 0 || ct.qpoint_mesh[2] <=0)
@@ -662,6 +665,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         MPI_Wait(&req, &mrstatus);
         if(i)
         {
+            double cm = 0.25;
             if(i < nstates_occ)
             {
                 double t1 = 0.0;
@@ -669,7 +673,20 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 for(int idx=0;idx < pbasis;idx++) t1 += (atbuf[idx] - old_vexx[idx])*(atbuf[idx] - old_vexx[idx]);
                 tvexx_RMS += t1;
             }
-            memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+            // Simple mixing/extrapolation
+            double *vptr = &vexx[(size_t)(i-1) * (size_t)pbasis];
+            if(ct.exx_steps > 0 && ct.vexx_rms >=  1.0e-8 && cm != 0.0)
+            {
+                for(int ii=0;ii < pbasis;ii++) vptr[ii] = (1.0+cm)*atbuf[ii] - cm*vptr[ii];
+            }
+            else if(ct.exx_steps > 1 && ct.vexx_rms < 1.0e-8)
+            {
+                for(int ii=0;ii < pbasis;ii++) vptr[ii] = 0.7*atbuf[ii] + 0.3*vptr[ii];
+            }
+            else
+            {
+                memcpy(vptr, atbuf, pbasis * sizeof(double));
+            }
         }
 
         // Remap so we can use MPI_Reduce_scatter
