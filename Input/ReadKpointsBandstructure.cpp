@@ -150,14 +150,11 @@ int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::s
     ct.kp[nkpts].kpt[1] = ky0;
     ct.kp[nkpts].kpt[2] = kz0;
 
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
-        double v1, v2, v3;
-        v1 = 0.0;
-        v2 = 0.0;
-        v3 = 0.0;
+    if(ct.kpoint_units == KPOINT_LATT_UNIT)
+    {
 
-        for(int ir = 0; ir<3; ir++)
-        {
+        for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
+            double v1, v2, v3;
             v1 = ct.kp[kpt].kpt[0] *Rmg_L.b0[0]
                 + ct.kp[kpt].kpt[1] *Rmg_L.b1[0] 
                 + ct.kp[kpt].kpt[2] *Rmg_L.b2[0];
@@ -167,23 +164,52 @@ int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::s
             v3 = ct.kp[kpt].kpt[0] *Rmg_L.b0[2]
                 + ct.kp[kpt].kpt[1] *Rmg_L.b1[2] 
                 + ct.kp[kpt].kpt[2] *Rmg_L.b2[2];
+
+            ct.kp[kpt].kvec[0] = v1 * twoPI;
+            ct.kp[kpt].kvec[1] = v2 * twoPI;
+            ct.kp[kpt].kvec[2] = v3 * twoPI;
+            ct.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
+
         }
+    }
+    else
+    {
+        for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
+            ct.kp[kpt].kvec[0] = ct.kp[kpt].kpt[0] * twoPI/Rmg_L.celldm[0];
+            ct.kp[kpt].kvec[1] = ct.kp[kpt].kpt[1] * twoPI/Rmg_L.celldm[0];
+            ct.kp[kpt].kvec[2] = ct.kp[kpt].kpt[2] * twoPI/Rmg_L.celldm[0];
+            ct.kp[kpt].kmag = ct.kp[kpt].kvec[0] * ct.kp[kpt].kvec[1] * ct.kp[kpt].kvec[2];
 
-        ct.kp[kpt].kvec[0] = v1 * twoPI;
-        ct.kp[kpt].kvec[1] = v2 * twoPI;
-        ct.kp[kpt].kvec[2] = v3 * twoPI;
-        ct.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
+            double v1, v2, v3;
+            v1 = ct.kp[kpt].kvec[0] *Rmg_L.a0[0]
+                + ct.kp[kpt].kvec[1] *Rmg_L.a1[0]
+                + ct.kp[kpt].kvec[2] *Rmg_L.a2[0];
+            v2 = ct.kp[kpt].kvec[0] *Rmg_L.a0[1]
+                + ct.kp[kpt].kvec[1] *Rmg_L.a1[1]
+                + ct.kp[kpt].kvec[2] *Rmg_L.a2[1];
+            v3 = ct.kp[kpt].kvec[0] *Rmg_L.a0[2]
+                + ct.kp[kpt].kvec[1] *Rmg_L.a1[2]
+                + ct.kp[kpt].kvec[2] *Rmg_L.a2[2];
+            ct.kp[kpt].kpt[0] = v1/twoPI;
+            ct.kp[kpt].kpt[1] = v2/twoPI;
+            ct.kp[kpt].kpt[2] = v3/twoPI;
 
+        }
     }
 
 
+    if(pct.gridpe == 0 && 0) 
+    {
+        rmg_printf("\n num_kkkk %d", ct.num_kpts);
+        for(int kpt = 0; kpt < ct.num_kpts; kpt++)
+        {
+            rmg_printf("\n kpt %d  %f %f %f %s", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].symbol);
+            rmg_printf("\n kvec %d  %f %f %f %s", kpt, ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ct.kp[kpt].symbol);
+        }
+        rmg_printf("\n");
+    }
+
     return 1;
-
-//    rmg_printf("\n num_k %d", ct.num_kpts);
-//    for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-//       rmg_printf("\n kvec %d  %f %f %f %s", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].symbol);
-//    rmg_printf("\n");
-
-//    exit(0);
+    //    exit(0);
 
 }

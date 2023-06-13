@@ -281,3 +281,6 @@
 #define NORM_CONSERVING_SG15  1
 #define NORM_CONSERVING_ACCURACY  2
 #define ALL_ELECTRON 3
+
+#define KPOINT_LATT_UNIT 0
+#define KPOINT_2pi_alat 1
