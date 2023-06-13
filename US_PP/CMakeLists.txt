@@ -33,6 +33,7 @@ get_qqq_dk.cpp
 radint1.cpp
 get_ddd.cpp
 radint.cpp
+hae.f90
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 

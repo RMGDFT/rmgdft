@@ -22,6 +22,14 @@
 #include "InternalPseudo.h"
 #include "Atomic.h"
 
+#include "rmg_mangling.h"
+#define sratom       RMG_FC_MODULE(haesratom,sratom,mod_HAESRATOM,SRATOM)
+
+extern "C" void sratom(int *na, int *la, double *ea, double *fa,
+                       double *rpk, int *nc, int *ncv, int *it,
+                       double *rhoc, double *rho, double *rr, double *vi,
+                       double *zz, int *mmax, int *iexc, double *etot, int *ierr, double *uu);
+
 double bparm[12] = {
 -3.6442293856e-01,
 -1.9653418982e-01,
@@ -57,6 +65,15 @@ double VofZ(int Z, double r, int a)
   double Zr = r*(double)Z;
   return VofR(Zr, a) * (double)(Z*Z);
 }
+extern "C" double vofz_(double *Z, double *r, int *a)
+{
+  double r1 = r[0];
+  double z1 = Z[0];
+  int a1 = a[0];
+  double Zr = r1 * z1;
+  return VofR(Zr, a1) * (z1 * z1);
+}
+
 
 // Generates an all electron potential using the formula developed by F. Gygi
 // All-Electron Plane-Wave Electronic Structure Calculations
@@ -126,32 +143,65 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->local = 0;
 
     // Atomic charge density
-    sp->atomic_rho = new double[sp->rg_points];
-
-    // UPF stores rhoatom * r^2 so rescale
-    for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
+    sp->atomic_rho = new double[sp->rg_points]();
 
     // Number of atomic orbitals
     sp->num_atomic_waves = GetNumberOrbitalsL(sp->atomic_symbol);
     sp->num_atomic_waves_m = GetNumberOrbitalsM(sp->atomic_symbol);
-    if(sp->num_atomic_waves  > 0) {
+    std::vector<int> pqn;
+    sp->atomic_wave.resize(sp->num_atomic_waves);
+    SetupAllElectonOrbitals(sp->atomic_symbol,
+                            pqn,
+                            sp->atomic_wave_l,
+                            sp->atomic_wave_j,
+                            sp->atomic_wave_oc,
+                            sp->atomic_wave_energy,
+                            sp->aradius,
+                            sp->atomic_wave_label);
 
-        sp->atomic_wave.resize(sp->num_atomic_waves);
-        SetupAllElectonOrbitals(sp->atomic_symbol,
-                                sp->atomic_wave_l,
-                                sp->atomic_wave_j,
-                                sp->atomic_wave_oc,
-                                sp->atomic_wave_energy,
-                                sp->aradius,
-                                sp->atomic_wave_label);
-
-        for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++)
-        {
-            sp->atomic_wave[iwf] = new double[sp->rg_points]();
-        }
-        ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
-        sp->num_orbitals = sp->num_atomic_waves_m;
+    for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++)
+    {
+        sp->atomic_wave[iwf] = new double[sp->rg_points]();
     }
+    ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
+    sp->num_orbitals = sp->num_atomic_waves_m;
+
+    int ierr;
+    int iexc = 3;
+    int nc = 0;
+    int ncv = sp->num_atomic_waves;
+    int its;
+    double aenergy;
+    double *rpk = new double[sp->num_atomic_waves];
+    double *vi = new double[sp->rg_points];
+    double *rhoc = new double[sp->rg_points];
+    double *uu = new double[sp->rg_points * sp->num_atomic_waves];
+    sratom(pqn.data(), sp->atomic_wave_l.data(), sp->atomic_wave_energy.data(),
+           sp->atomic_wave_oc.data(), rpk, &nc, &ncv, &its,
+                       rhoc, sp->atomic_rho, sp->r, vi,
+                       &sp->zvalence, &sp->rg_points, &iexc, &aenergy, &ierr, uu);
+printf("IIII  %d  %d\n", its, ierr);
+    // Normalize rho for 3D grid
+    for(int idx = 0;idx < sp->rg_points;idx++)
+    {
+        sp->atomic_rho[idx] /= 4.0*PI;
+    }
+
+    for(int i = 0;i < sp->num_atomic_waves;i++)
+    {
+        printf("BBBB  %f  %f\n", sp->atomic_wave_energy[i], aenergy);
+        for(int idx = 0;idx < sp->rg_points;idx++)
+        {
+            double ut = uu[i*sp->rg_points+idx] / sp->r[idx];
+            //printf("RRRR  %14.8e  %14.8e\n", sp->r[idx], ut);
+            sp->atomic_wave[i][idx] = ut;
+        }
+    }
+
+    delete [] uu;
+    delete [] rhoc;
+    delete [] vi;
+    delete [] rpk;
 
     // Number of projectors
     sp->nbeta = 0;
@@ -184,7 +234,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     int iend = sp->rg_points - 1;
     for(int i = 0;i < sp->rg_points;i++) {
         iend = i;
-        if(sp->r[i] > 50.0) break;
+        if(sp->r[i] > 12.0) break;
     }
 
     sp->rg_points = iend + 1;
