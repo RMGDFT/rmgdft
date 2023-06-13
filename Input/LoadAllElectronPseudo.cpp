@@ -45,6 +45,7 @@ double bparm[12] = {
 -3.4841573775e-02,
 };
 
+double lrc;
 
 // For Z=1
 double VofR(double r, int a_in)
@@ -65,13 +66,17 @@ double VofZ(int Z, double r, int a)
   double Zr = r*(double)Z;
   return VofR(Zr, a) * (double)(Z*Z);
 }
-extern "C" double vofz_(double *Z, double *r, int *a)
+extern "C" double vofz_(double *Z, double *r)
 {
   double r1 = r[0];
   double z1 = Z[0];
-  int a1 = a[0];
   double Zr = r1 * z1;
-  return VofR(Zr, a1) * (z1 * z1);
+  double V0 = VofR(z1*LOGGRID_START, ct.all_electron_parm) * (z1 * z1);
+  double V1 = VofR(Zr, ct.all_electron_parm) * (z1 * z1);
+  double rc = fabs(2.0 * z1 / sqrt(PI) / V0);
+
+  V1 = V1 + z1 * boost::math::erf (r1 / rc) / r1;
+  return V1;
 }
 
 

@@ -74,7 +74,7 @@ CONTAINS
  integer :: nin,mch
  real(dp) :: amesh,al
  real(dp) :: dr,eeel,eexc,et,rl,rl1,sd,sf,sn,eeig
- real(dp) :: thl,vn,zion
+ real(dp) :: thl,vn,zion,vofz
  integer :: ii,jj
  logical :: convg
  logical :: srel
@@ -113,7 +113,7 @@ CONTAINS
 
 ! big self  self-consietency loop
 
- do it=1,100
+ do it=1,500
    convg=.true.
 
    rhoc(:) = 0.0d0
@@ -188,12 +188,13 @@ CONTAINS
   &   + bl*((1.0d0-thl)*vo(ii) + thl*vo1(ii))
      vi1(ii)=vi(ii)
      vo1(ii)=vo(ii)
-     vi(ii)=vn
+!     vi(ii)=vn
+     vi(ii)=0.3*(vofz(zz, rr(ii)) + vo(ii)) + 0.7*vi(ii)
    end do
 
    if(convg) exit
 
-   if(it==100 .and. .not. convg) then
+   if(it==500 .and. .not. convg) then
      write(6,'(/a)') 'sratom: WARNING failed to converge'
    end if
 
@@ -201,7 +202,7 @@ CONTAINS
 
 ! EMIL all electon stuff
 ! do idx=1,mmax
-!     write(6,*)'AEPLOT  ',rr(idx),'  ', vo(idx)
+!     write(6,*)'AEPLOT  ',rr(idx),'  ', vo(idx),'  ',vi(idx)
 ! end do
 
  if(.not. convg .and. ierr==0) then
