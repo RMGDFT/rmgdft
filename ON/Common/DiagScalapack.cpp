@@ -21,14 +21,15 @@
 //#include "RmgTimer.h"
 
 
-#if !ELEMENTAL_LIBS
 #include "blas.h"
+#include "transition.h"
 
 Scalapack *MainSp;
 extern Scalapack *MainSp;
+template void DiagScalapack<double>(STATE *states, int numst, double *Hij_dist, double *Sij_dist);
+template void DiagScalapack<std::complex<double>>(STATE *states, int numst, double *Hij_dist, double *Sij_dist);
 
-
-
+template <typename KpointType>
 void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 {
 
@@ -177,5 +178,4 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     delete(RT0);
 }
-#endif
 

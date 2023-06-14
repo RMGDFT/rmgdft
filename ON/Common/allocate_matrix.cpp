@@ -70,9 +70,8 @@ void allocate_matrix()
 
     sizeofmatrix = MXLLDA * MXLCOL;
 
-#if !GAMMA_PT
-    sizeofmatrix *= 2.0;
-#endif
+    if(!ct.is_gamma)
+        sizeofmatrix *= 2.0;
 
 
     my_malloc_init( statearray, sizeofmatrix, double );

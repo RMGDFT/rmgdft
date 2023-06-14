@@ -96,7 +96,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
 
-    DiagScalapack(states, ct.num_states, Hij, matB);
+    DiagScalapack<double>(states, ct.num_states, Hij, matB);
     // mat_X charge density matrix in distributed way
     // uu_dis theta = (S^-1 H) in distributed way.
 
