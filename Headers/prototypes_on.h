@@ -1,6 +1,9 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+void MatrixKpoint (STATE *states, double *Hij, double *Sij, int *desca,
+        std::complex<double> *Hk, std::complex<double> *Sk, double kpt[3]);
+
 void InitBlockTriDims();
 void WriteXyz(char *);
 void Preconditioner(double *, int);

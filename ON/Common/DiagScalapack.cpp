@@ -21,19 +21,19 @@
 //#include "RmgTimer.h"
 
 
-#if !ELEMENTAL_LIBS
 #include "blas.h"
+#include "transition.h"
 
-Scalapack *MainSp;
-extern Scalapack *MainSp;
+template void DiagScalapack<double>(STATE *states, int numst, double *Hij_dist, double *Sij_dist);
+template void DiagScalapack<std::complex<double>>(STATE *states, int numst, double *Hij_dist, double *Sij_dist);
 
-
-
+template <typename KpointType>
 void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 {
 
+    static Scalapack *MainSp = NULL;
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
-    if(!MainSp) 
+    if(MainSp == NULL)
     {
         int scalapack_groups = 1;
         int last = 1;
@@ -75,12 +75,26 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
      */
 
     /* Transform the generalized eigenvalue problem to a sStandard form */
-    memcpy(uu_dis, Hij_dist, mat_size);
-    memcpy(zz_dis, Hij_dist, mat_size);
-    memcpy(l_s, Sij_dist, mat_size);
+
+    KpointType *Hk = (KpointType *)uu_dis;
+    KpointType *Sk = (KpointType *)l_s;
+    KpointType *eigvec = (KpointType *)zz_dis;
+
+
+    if(ct.is_gamma)
+    {
+        memcpy(Hk, Hij_dist, mat_size);
+        memcpy(eigvec, Hij_dist, mat_size);
+        memcpy(Sk, Sij_dist, mat_size);
+    }
+    else
+    {
+        MatrixKpoint (states, Hij_dist, Sij_dist, pct.desca,
+            (std::complex<double> *)Hk, (std::complex<double> *)Sk, ct.kp[0].kpt);
+    }
 
     if(participates)
-        MainSp->generalized_eigenvectors(zz_dis, l_s, eigs, uu_dis);
+        MainSp->generalized_eigenvectors(eigvec, Sk, eigs, Hk);
 
     delete(RT);
 
@@ -109,8 +123,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");
     //   uu_dis = zz_dis *(occ_diag)
-    memcpy(uu_dis, zz_dis, mat_size);
-    
+    memcpy(Hk, eigvec, mat_size);
+
     for(st1 = 0; st1 <  MXLCOL; st1++)
     {
 
@@ -122,17 +136,31 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
             alpha = states[st_g].occupation[0];
 
         for(int st2 = 0; st2 < MXLLDA; st2++)
-            uu_dis[st1 * MXLLDA + st2] *= alpha;
-                 
+            Hk[st1 * MXLLDA + st2] *= alpha;
+
     }
 
     delete(RT5);
 
     RmgTimer *RT3 = new RmgTimer("3-DiagScalapack: gemm ");
 
-    pdgemm("N", "T", &numst, &numst, &numst, &one,
+    if(ct.is_gamma)
+    {
+        pdgemm("N", "T", &numst, &numst, &numst, &one,
             uu_dis, &ione, &ione, pct.desca,
             zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
+    }
+    else
+    {
+        std::complex<double> oneC(1.0), zeroC(0.0);
+        pzgemm("N", "C", &numst, &numst, &numst, &oneC,
+                (std::complex<double> *)Hk, &ione, &ione, pct.desca,
+                (std::complex<double> *)eigvec, &ione, &ione, pct.desca, &zeroC, 
+                (std::complex<double> *)Sk, &ione, &ione, pct.desca);
+        for(int idx = 0; idx <mxllda2; idx++) 
+            mat_X[idx] = std::real(Sk[idx]);
+    }
+
 
     delete(RT3);
 
@@ -177,5 +205,4 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     delete(RT0);
 }
-#endif
 
