@@ -172,7 +172,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->num_orbitals = sp->num_atomic_waves_m;
 
     int ierr;
-    int iexc = 3;
+    int iexc = 4;  // PBE
     int nc = 0;
     int ncv = sp->num_atomic_waves;
     int its;
