@@ -1,4 +1,3 @@
-# from numpy import *
 from __future__ import division
 import numpy
 import os
@@ -14,8 +13,6 @@ try:
     import CifFile
 except ImportError:
     NO_CIF = True
-
-# from drawbox import *
 
 
 class conf:
@@ -207,15 +204,10 @@ class Configuration(myQtW.QWidget):
 
     def open_and_read(self, filename):
         filenames = filename.split(".")
-        # filenames=re.split('.',filename)
-        # print filenames[len(filenames)-2]
-        # print filenames
         if filenames[len(filenames) - 1] == "cif":
             self.open_and_read_cif(filename)
         if filenames[len(filenames) - 1] == "xyz":
             self.open_and_read_xyz(filename)
-        #       if filenames[len(filenames)-1]=='input':
-        #           self.open_and_read_input(filename)
         if "input" == filename.split("/")[len(filename.split("/")) - 1]:
             self.open_and_read_input(filename)
 
@@ -260,8 +252,6 @@ class Configuration(myQtW.QWidget):
             coords.append(coord)
         self.conf = conf(lattice, elements, coords)
 
-    #           print elements
-
     def open_and_read_cif(self, filename):
         if NO_CIF:
             raise RuntimeError(
@@ -290,14 +280,9 @@ class Configuration(myQtW.QWidget):
         sites_base = cb.GetLoop("_atom_site_label")
 
         elements_base = cb["_atom_site_label"]
-        #           print 'good'
-        #           occupancy_base=cb['_atom_site_occupancy']
         x_base = cb["_atom_site_fract_x"]
         y_base = cb["_atom_site_fract_y"]
         z_base = cb["_atom_site_fract_z"]
-        #           print x_base
-
-        # site_base['_atom_site_fract_x']:
 
         i = 0
         new_sites = []
@@ -326,7 +311,6 @@ class Configuration(myQtW.QWidget):
                     newsite.append(newelement)
             i += 1
 
-            #               symmatrix=i
             new_sites += newsite
 
         coords = []
@@ -336,7 +320,6 @@ class Configuration(myQtW.QWidget):
         for site in new_sites:
             element = "".join([i for i in site[0] if not i.isdigit()])
             elements.append(element)
-            # elements.append(site[0])
             coords.append(
                 [
                     float(site[1][0]) * a,
