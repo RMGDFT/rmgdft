@@ -15,4 +15,6 @@ From within this directory:
 
 `python RMG_GUI.py`
 
-Set `_NCSMURG_ADDON_PATH` in `IOControl.py` if you have any local add-ons.
+Set `_NCSMURG_ADDON_PATH` in `IOControl.py`, `Misc.py`, and `Mdscf.py` if you have any local add-ons.
+
+_Disclaimer_: I (Jackson) don't know what (if anything) the above does.
