@@ -18,3 +18,5 @@ From within this directory:
 Set `_NCSMURG_ADDON_PATH` in `IOControl.py`, `Misc.py`, `Setup.py`, and `Mdscf.py` if you have any local add-ons.
 
 _Disclaimer_: I (Jackson) don't know what (if anything) the above does.
+
+Set the default prefix and suffix for pseudopotentials in `Species.py`.
