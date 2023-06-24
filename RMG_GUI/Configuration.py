@@ -1,12 +1,13 @@
 from __future__ import division
-import numpy
+
 import os
 
+import numpy
 import pymol
 from pymol import cmd
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal
 from PyQt5 import QtWidgets as myQtW
+from PyQt5.QtCore import pyqtSignal
 
 NO_CIF = False
 try:

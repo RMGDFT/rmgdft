@@ -6,8 +6,8 @@
 # Update Jun 24, 2023:
 # - Update by Jackson Burns for Python 3
 
-from math import acos, sqrt
 import warnings
+from math import acos, sqrt
 
 
 def saturate_C(elements, coords, a, b, c):

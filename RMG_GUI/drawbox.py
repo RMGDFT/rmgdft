@@ -1,5 +1,5 @@
-from pymol.cgo import LINEWIDTH, BEGIN, LINES, COLOR, VERTEX, END
 from pymol import cmd
+from pymol.cgo import BEGIN, COLOR, END, LINES, LINEWIDTH, VERTEX
 
 
 def drawbox(x0, y0, z0, x1, y1, z1, linewidth=2.0, r=1.0, g=1.0, b=1.0):

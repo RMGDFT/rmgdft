@@ -1,18 +1,10 @@
-import os
-
-from PyQt5 import QtGui, QtCore
-
-from distutils.sysconfig import get_python_lib
-
-
 def write_out_jobfiles(configuration, setup, grids):
     """
-       write out job script files
+    write out job script files
     """
 
-    if(setup._machine.currentText() == 'Summit'):
-
-        jobcommon ="""
+    if setup._machine.currentText() == "Summit":
+        jobcommon = """
 #!/bin/bash
 # Begin LSF directives
 #BSUB -P CHP107
@@ -75,5 +67,5 @@ export RMG_NUM_THREADS=1
 jsrun -n12 -a6 -g1 -r6 -c7 -d plane:6 --latency_priority cpu-memory --smpiargs "-gpu" $rmgbin rmg.input
 
 """
-        with open('job','w') as inc_file:
+        with open("job", "w") as inc_file:
             inc_file.write(jobcommon)

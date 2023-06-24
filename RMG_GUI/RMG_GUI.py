@@ -1,34 +1,31 @@
 # Wenchang Lu at NCSU
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5 import QtWidgets as myQtW
-
 import os
 import sys
+from distutils.sysconfig import get_python_lib
 
-from Setup import Setup
-#from RMG_para import rmg_para
-from lattice import lattice
-#from write_out_LCR import write_out_LCR
-#from write_out_others import write_out_others
-from write_out_jobfiles import write_out_jobfiles
+from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets as myQtW
+
+from Configuration import Configuration
 #from position_orbital import position_orbital
 #from position_orbital_3part import position_orbital_3part
 #from position_orbital_negf import position_orbital_negf
 #from position_orbital_center_ON import position_orbital_center_ON
 #from position_orbital_center_ON_nop import position_orbital_center_ON_nop
 from default_input_para import default_input_para
-from Misc import Misc
 from Grids import Grids
 from IOcontrol import IOcontrol
-from species import species
+#from RMG_para import rmg_para
+from lattice import lattice
 from Mdscf import Mdscf
-from Configuration import Configuration
+from Misc import Misc
+from Setup import Setup
+from species import species
+#from write_out_LCR import write_out_LCR
+#from write_out_others import write_out_others
+from write_out_jobfiles import write_out_jobfiles
 
-from distutils.sysconfig import get_python_lib
-
-
-    
 ########################### begin class definition
 
 
