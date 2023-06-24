@@ -1,5 +1,7 @@
 # RMG GUI
 
+Originally written by Wenchang Lu at NCSU in Python 2, updated by Jackson Burns for Python 3 in 2023.
+
 ## Requirements
 
  - Python >= 3.7
@@ -12,3 +14,5 @@
 From within this directory:
 
 `python RMG_GUI.py`
+
+Set `_NCSMURG_ADDON_PATH` in `IOControl.py` if you have any local add-ons.
