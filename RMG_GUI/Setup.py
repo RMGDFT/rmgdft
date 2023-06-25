@@ -48,7 +48,13 @@ class Setup(myQtW.QWidget):
         # Start mode
         label = myQtW.QLabel("Start mode")
         self._start_mode = myQtW.QComboBox()
-        self._start_mode.addItems(["LCAO Start", "Restart From File", "Random Start"])
+        self._start_mode.addItems(
+            [
+                "LCAO Start",
+                "Restart From File",
+                "Random Start",
+            ]
+        )
         form_layout.addRow(label, self._start_mode)
 
         # Calculation mode

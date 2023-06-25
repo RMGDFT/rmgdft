@@ -7,14 +7,15 @@
 
 # defaults: ideally should be customizeable
 # but keeping them fixed as requested by Wenchang
-PP_PREFIX = "../"
-PP_SUFFIX = ".pp"
 
 import warnings
 
 from PyQt5 import QtCore, QtGui
 from PyQt5 import QtWidgets
 from PyQt5 import QtWidgets as myQtW
+
+PP_PREFIX = "../"
+PP_SUFFIX = ".pp"
 
 
 class species(QtWidgets.QWidget):
@@ -192,7 +193,11 @@ class species(QtWidgets.QWidget):
                 self.pp_lines[i_pp].setText(filename)
         except Exception as e:
             print(e)
-            warnings.warn("Error selecting pseudopotential id = {:d} ".format(i_pp))
+            warnings.warn(
+                "Error selecting pseudopotential id = {:d} ".format(
+                    i_pp,
+                )
+            )
 
     def state(self):
         """
