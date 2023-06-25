@@ -36,3 +36,6 @@
 scalapack/BLACS/INSTALL/Makefile
 scalapack/BLACS/INSTALL/cmake_install.cmake
 scalapack/BLACS/INSTALL/xintface
+
+# Python Cache
+*.pyc

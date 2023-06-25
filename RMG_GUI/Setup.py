@@ -209,16 +209,16 @@ class Setup(myQtW.QWidget):
         """
         input_setup_lines = (
             "# description of run\n"
-            'description = "' + self._description.text() + '"\n'
+            'description = "' + self._description.text() + '"\n\n'
             "# Uncommenting this will print out more information\n"
-            '#verbose="true"\n'
+            '#verbose="true"\n\n'
             "# In most cases LCAO or Restart but certain special scenarios\n"
             "# may require a Random or Modified LCAO start\n"
             '#start_mode="LCAO Start"\n'
             '#start_mode="Random Start"\n'
             '#start_mode="Modified LCAO Start"\n'
             '#start_mode="Restart From File"\n'
-            'start_mode = "' + self._start_mode.currentText() + '"\n'
+            'start_mode = "' + self._start_mode.currentText() + '"\n\n'
             "# This is not an exhaustive list of options but does\n"
             "# contain the most frequently used ones.\n"
             '#calculation_mode="Quench Electrons"\n'
@@ -227,14 +227,14 @@ class Setup(myQtW.QWidget):
             '#calculation_mode="Constant Temperature And Energy"\n'
             '#calculation_mode="Band Structure Only"\n'
             'calculation_mode = "' + self._calculation_mode.currentText() + '"\n'
-            'relax_method ="' + self._relaxmethod.currentText() + '"\n'
+            'relax_method ="' + self._relaxmethod.currentText() + '"\n\n'
             "# Most pseudopotentials specify the exchange correlation type they\n"
             "# were generated with and the default value of AUTO_XC means that\n"
-            "# the type specified in the pseudopotial is what RMG will use. That\n"
+            "# the type specified in the pseudopotential is what RMG will use. That\n"
             "# can be overridden by specifying a value here. For a full list of\n"
             "# the available types look in the source distribution at the file\n"
             "# Headers/InputOpts.h around line 146.\n"
-            'exchange_correlation_type = "' + self._ecf.currentText() + '"\n'
+            'exchange_correlation_type = "' + self._ecf.currentText() + '"\n\n'
             "# RMG supports the following lattice types (Hexagonal at gamma-only)\n"
             '#bravais_lattice_type="Cubic Primitive"\n'
             '#bravais_lattice_type="Orthorhombic Primitive"\n'
@@ -254,24 +254,24 @@ class Setup(myQtW.QWidget):
             '#occupations_type = "MethfesselPaxton"\n'
             'occupations_type = "' + self._occ.currentText() + '"\n'
             'occupation_electron_temperature_eV = "' + str(self._occtem.text()) + '"\n'
-            'occupation_number_mixing = "' + str(self._occmix.text()) + '"\n'
+            'occupation_number_mixing = "' + str(self._occmix.text()) + '"\n\n'
         )
         input_units_lines = (
-            "#  length unit in Bohr or Angerstrom\n"
+            "#  length unit in Bohr or Angstrom\n"
             "# Default is Bohr\n"
             '#crds_units="Bohr"\n'
             '#crds_units="Angstrom"\n'
             'crds_units = "' + self._lengthunit.currentText() + '"\n'
             '#atomic_coordinate_type="Cell Relative"\n'
             '#atomic_coordinate_type="Absolute"\n'
-            'atomic_coordinate_type = "' + self._atomcoor.currentText() + '"\n'
+            'atomic_coordinate_type = "' + self._atomcoor.currentText() + '"\n\n'
         )
 
         state = {
             "input_setup_lines": input_setup_lines,
             "input_units_lines": input_units_lines,
             "input_occupation_lines": input_occupation_lines,
-            "length_units": str(self._lengthunit.currentText()),
+            "length_units": str(self._lengthunit.currentText()) + "\n",
         }
         return state
 

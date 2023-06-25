@@ -96,9 +96,7 @@ class Configuration(myQtW.QWidget):
         self.button.setToolTip("select an nput file name")
 
         self.button.clicked.connect(self.createConnect())
-        #       self.createConnect()
         self.open_and_read(self.inputfile.text())
-        #       self.selectfile()
         self.pymolshow.clicked.connect(self.createshow())
         self.quitshow.clicked.connect(self.quitpymol)
 
@@ -187,8 +185,8 @@ class Configuration(myQtW.QWidget):
     # padding and bbx
     def selectfile(self):
         dialog = myQtW.QFileDialog(self)
-        directory = os.getcwd()  # myQtW.QFileDialog.getExistingDirectory(self)
-        dialog.setDirectory(directory)  # self.inputfile.text() )
+        directory = os.getcwd()
+        dialog.setDirectory(directory)
         if QtCore.QDir(self.inputfile.text()).exists():
             dialog.selectFile(self.inputfile.text())
         if dialog.exec_():
@@ -213,27 +211,36 @@ class Configuration(myQtW.QWidget):
             self.open_and_read_input(filename)
 
     def open_and_read_input(self, filename):
-        f = open(filename)
-        input_file = f.readlines()
         input_para = {}
-        uncomment_input = [x for x in input_file if x[0] != "#"]
-        input_stream = "".join(uncomment_input)
-        input_elements = input_stream.split('"')
-        i = 0
-        for x in input_elements:
-            if i == 0:
-                key = x.translate(None, "\n= ")
-                i = 1
-            else:
-                value = x.translate(None, "\n")
-                i = 0
-                input_para.update({key: value})
-        #       print input_para
+        with open(filename) as file:
+            file_iter = iter(file.readlines())
+            line = "#"
+            while line is not None:
+                # skip commented and blank lines
+                if line[0] != "#" and len(line) > 0:
+                    processed_line = self._proc_line(line)
+                    # k-v-p lines
+                    if len(processed_line) == 2:
+                        input_para.update(
+                            {processed_line[0]: processed_line[1]},
+                        )
+                    # special cases for atoms, pseudopotential and
+                    # atomic_orbital_files
+                    if processed_line[0] in (
+                        "atoms",
+                        "pseudopotential",
+                        "atomic_orbital_files",
+                    ):
+                        # next few lines, until a blank one, will have
+                        # the files/coords
+                        next_pp_line = self._proc_line(next(file_iter))
+                        while len(next_pp_line[0]) > 0:
+                            input_para[processed_line[0]] += next_pp_line[0]
+                            next_pp_line = self._proc_line(next(file_iter))
+                line = next(file_iter, None)
         self.input_para = input_para
         atoms = input_para["atoms"]
-        #       print atoms
         conf_sp = atoms.split()
-        #       print conf_sp
 
         elements = []
         lattice = [
@@ -252,6 +259,20 @@ class Configuration(myQtW.QWidget):
             ]
             coords.append(coord)
         self.conf = conf(lattice, elements, coords)
+
+    def _proc_line(self, line):
+        # break RMG input lines into key-value-pairs
+        return (
+            line.replace(
+                "\n",
+                "",
+            )
+            .replace(
+                '"',
+                "",
+            )
+            .split("=")
+        )
 
     def open_and_read_cif(self, filename):
         if NO_CIF:
@@ -341,6 +362,8 @@ class Configuration(myQtW.QWidget):
             self.CONF_CHANGED.emit()
             f = open(filename)
             num_atoms = int(f.readline())
+            # skip the name line
+            _ = f.readline()
             elements = []
             coords = []
             for k in range(num_atoms):
@@ -375,6 +398,8 @@ class Configuration(myQtW.QWidget):
                 self.latticec.setText(str(self.az + 10.0))
 
             else:
+                # advance to the actual lattice info
+                line = f.readline()
                 linesp = line.split()
                 lattice = [
                     float(linesp[0]) * a_to_bohr,
@@ -390,9 +415,9 @@ class Configuration(myQtW.QWidget):
                 self.latticea.setText(str(self.ax))
                 self.latticeb.setText(str(self.ay))
                 self.latticec.setText(str(self.az))
-                print(lattice)
-        except FileNotFoundError:
-            print("no such a file === ", filename)
+                print("Set lattice to:", lattice)
+        except FileNotFoundError as e:
+            print("Could not open file", filename, "\nOriginal Exception:", str(e))
 
     def createshow(self):
         """

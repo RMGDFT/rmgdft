@@ -142,7 +142,7 @@ class Misc(QtWidgets.QWidget):
             '#kohn_sham_solver="multigrid"\n'
             "#poisson solver can be either pfft or multigrid\n"
             'kohn_sham_solver  = "' + self.KS_solver.currentText() + '"\n'
-            'poisson_solver  = "' + self.VH_solver.currentText() + '"\n'
+            'poisson_solver  = "' + self.VH_solver.currentText() + '"\n\n'
             "# RMG supports a variety of subspace diagonalization options depending\n"
             "# on the hardware and libraries available for a specific platform\n"
             'subdiag_diver  = "' + self.subdiag_solver.currentText() + '"\n'

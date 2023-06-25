@@ -3,6 +3,8 @@
 # Update Jun 24, 2023:
 # - Update by Jackson Burns for Python 3
 
+import warnings
+
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets as myQtW
 
@@ -184,12 +186,12 @@ class Grids(myQtW.QWidget):
             )
             form_layout.addRow(label)
             max_klines = 5
-            self.kk_layouts = range(max_klines + 1)
-            self.kx_band = range(max_klines + 1)
-            self.ky_band = range(max_klines + 1)
-            self.kz_band = range(max_klines + 1)
-            self.kpts_band = range(max_klines + 1)
-            self.ksymbol_band = range(max_klines + 1)
+            self.kk_layouts = list(range(max_klines + 1))
+            self.kx_band = list(range(max_klines + 1))
+            self.ky_band = list(range(max_klines + 1))
+            self.kz_band = list(range(max_klines + 1))
+            self.kpts_band = list(range(max_klines + 1))
+            self.ksymbol_band = list(range(max_klines + 1))
             for i in range(max_klines):
                 self.kk_layouts[i] = myQtW.QHBoxLayout()
                 self.kx_band[i] = myQtW.QLineEdit()
@@ -210,7 +212,7 @@ class Grids(myQtW.QWidget):
                 form_layout.addRow(self.kk_layouts[i])
 
         except Exception as e:
-            print(" Grids layout error", e)
+            print(" Grids layout error", str(e))
 
         try:
             self.button.clicked.connect(self.changeNxgrid)
@@ -319,7 +321,7 @@ class Grids(myQtW.QWidget):
                 + " bohr"
             )
         except Exception as e:
-            print("load the coordinate files .xyz ... first", e)
+            warnings.warn("Load the coordinate files .xyz ... first", str(e))
 
     def state(self):
         """
@@ -329,14 +331,14 @@ class Grids(myQtW.QWidget):
             input_grids_lines = (
                 "\n#wavefunction grid  and processor grid\n"
                 'wavefunction_grid ="{:d} {:d} {:d}"\n'
-                'processor_grid="{:d} {:d} {:d}"\n'
+                'processor_grid="{:d} {:d} {:d}"\n\n'
                 "# Ratio of the potential grid density to the wavefunction grid\n"
                 "# density. For example if the wavefunction grid is (72,72,72) and\n"
                 '# potential_grid_refinement = "2" then the potential grid would be\n'
                 "# (144,144,144). The default value is 2 but it may sometimes be\n"
                 "# beneficial to adjust this. (For USPP the minimum value is also 2\n"
                 "# and it cannot be set lower. NCPP can be set to 1).\n"
-                'potential_grid_refinement="{:d} "\n'
+                'potential_grid_refinement="{:d} "\n\n'
                 "#kpoint mesh set up\n"
                 '#kpoint_is_shift ="0 0 0" include gamma point\n'
                 'kpoint_mesh = "{:d} {:d} {:d}"\n'
@@ -368,7 +370,7 @@ class Grids(myQtW.QWidget):
                 input_grids_lines += "{:s}  {:s}  {:s}  {:d}  {:s}\n".format(
                     kx, ky, kz, num, symbol
                 )
-            input_grids_lines += '"\n'
+            input_grids_lines += '"\n\n'
         except Exception as e:
             print("Grid  state error1", e)
 

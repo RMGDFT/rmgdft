@@ -33,7 +33,7 @@ class species(QtWidgets.QWidget):
         """
 
         try:
-            ## Initialize base class
+            # Initialize base class
             myQtW.QWidget.__init__(self, parent)
 
             # list of present elements - to ensure the correct order
@@ -62,19 +62,19 @@ class species(QtWidgets.QWidget):
             form_layout.addRow(self.error_label)
 
             # create an array of max_n copies of PP selectors
-            self.pp_layouts = range(self.max_n)
-            self.pp_labels = range(self.max_n)
-            self.pp_labels1 = range(self.max_n)
-            self.pp_labels2 = range(self.max_n)
-            self.pp_lines = range(self.max_n)
-            self.pp_buttons = range(self.max_n)
-            self.num_orbital = range(self.max_n)
-            self.orbital_radius = range(self.max_n)
-            self.hubbard_u = range(self.max_n)
+            self.pp_layouts = list(range(self.max_n))
+            self.pp_labels = list(range(self.max_n))
+            self.pp_labels1 = list(range(self.max_n))
+            self.pp_labels2 = list(range(self.max_n))
+            self.pp_lines = list(range(self.max_n))
+            self.pp_buttons = list(range(self.max_n))
+            self.num_orbital = list(range(self.max_n))
+            self.orbital_radius = list(range(self.max_n))
+            self.hubbard_u = list(range(self.max_n))
 
-            ## first define slot-like versions of the
-            ## selectPPDir() function, to be used for the
-            ## connections below
+            # first define slot-like versions of the
+            # selectPPDir() function, to be used for the
+            # connections below
             def createPPConnect(i_pp):
                 """
                 internal lambda-creating function to connect

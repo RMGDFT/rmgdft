@@ -69,3 +69,4 @@ jsrun -n12 -a6 -g1 -r6 -c7 -d plane:6 --latency_priority cpu-memory --smpiargs "
 """
         with open("job", "w") as inc_file:
             inc_file.write(jobcommon)
+            print("Wrote job file for", setup._machine.currentText())
