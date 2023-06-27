@@ -310,11 +310,16 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
         case MD_QUENCH:            /* Quench the electrons */
         case NSCF:            /* Quench the electrons */
             {
-                if (ct.xctype == MGGA_TB09)
-                    //relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
-                    ;
-                else 
-                    Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                if(ct.wannier90)
+                {
+                    int scdm = ct.wannier90_scdm;
+                    double scdm_mu = ct.wannier90_scdm_mu;
+                    double scdm_sigma = ct.wannier90_scdm_sigma;
+                    int n_wannier = ct.num_wanniers;
+                    Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
+                            n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
+                }
+                Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
                 break;
             }
 

@@ -1,0 +1,12 @@
+(1) mkdir Wannier90_rmg in the project directory
+(2) prepare Wannier90_rmg/wannier90.win file and rmg input file
+(3)~/wannier90/wannier90.x -pp wannier90.win
+(4) mpirun -n 24 ~/bin/rmg-cpu input  
+   input with kpoint_mesh for scf 
+(5) mpirun -n 24 ~/bin/rmg-cpu input_nscf
+   non-scf calculation with kpoint mesh for wannier90
+(6) if kpoint list from wannier90.nnkp does not match with input_nscf,
+    wannier90.win_init will be generated and 
+   copy kpoint from wannier90.win_init to wannier90.win and 
+   rerun step (3), (5)
+(7) wannier90.x wannier90.win 
