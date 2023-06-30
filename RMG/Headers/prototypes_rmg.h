@@ -86,6 +86,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 template <typename KpointType>
 void Read_nsocc (char *name, Kpoint<KpointType> * Kptr);
 template <typename KpointType>
+void Write_nsocc (char *name, Kpoint<KpointType> * Kptr);
+template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 void GetOppositeEigvals (Kpoint<KpointType> **Kptr);

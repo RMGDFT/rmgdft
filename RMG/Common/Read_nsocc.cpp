@@ -42,8 +42,6 @@
 template void Read_nsocc(char *, Kpoint<double> *);
 template void Read_nsocc(char *, Kpoint<std::complex<double> > *);
 
-/* Reads the hartree potential, the wavefunctions, the */
-/* compensating charges and various other things from a file. */
 template <typename KpointType>
 void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
 {
@@ -67,6 +65,35 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
 
     int occ_size = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride;
     MPI_Bcast(kptr->ldaU->ns_occ.data(), occ_size*2, MPI_DOUBLE, 0, pct.img_comm);
+
+}
+
+
+
+template void Write_nsocc(char *, Kpoint<double> *);
+template void Write_nsocc(char *, Kpoint<std::complex<double> > *);
+
+template <typename KpointType>
+void Write_nsocc(char *name, Kpoint<KpointType> * kptr)
+{
+    int pstride = kptr->ldaU->ldaU_m;
+    size_t occ_size_bytes = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride * sizeof(std::complex<double>);
+
+    std::string newname = std::string(name) + "_spin" + std::to_string(pct.spinpe) + "_nsocc";
+
+    if(pct.imgpe == 0)
+    {
+        int fhand = FileOpenAndCreate(newname, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        if (fhand < 0) {
+            rmg_printf("Can't open data file %s", newname);
+            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        }
+
+
+        write(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
+        close(fhand);
+    }
+
 
 }
 
