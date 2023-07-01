@@ -122,6 +122,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         {
             Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
             Read_nsocc(ct.infile, Kptr[kpt]);
+            Kptr[kpt]->ldaU->calc_energy();
             Kptr[kpt]->GetDelocalizedOrbital ();
         }
 

@@ -538,6 +538,7 @@ template <class T> void Wannier<T>::Read_nnkpts()
             printf("\n number kpoints in wannier90.nnkpts = %d\n", num_k);
         }
 
+        WriteWinEig();
         throw RmgFatalException() << "num kpoints in wannier90.nnkpts not match the kmesh \n";
     }
 
