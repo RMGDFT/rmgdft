@@ -171,4 +171,8 @@ void CheckSetDefault(void)
         ct.potential_acceleration_constant_step = 0.0;
 
     }
+     if(ct.wannier90) {
+         ct.frac_symm = false;
+         ct.time_reversal = false;
+     }
 }
