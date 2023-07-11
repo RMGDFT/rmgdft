@@ -6,7 +6,7 @@ frac_symmetry = "false"
 use_symmetry = "1"
 time_reversal = "false"
 
-max_scf_steps = "20"
+max_scf_steps = "40"
 processor_grid = "2 2 36"
 
 potential_grid_refinement="2"  
