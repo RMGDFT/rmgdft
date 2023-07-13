@@ -224,8 +224,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     Scalapack::FillUpper(Sij, nstates);
     delete(RT1);
 
-    if(pct.gridpe == 0) printf("\n aaa %f %f %f %f", Hij[0], Hij[1]);
-    if(pct.gridpe == 0) printf("\n bbb %f %f %f %f", Sij[0], Sij[1]);
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
     // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
