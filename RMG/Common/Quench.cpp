@@ -293,10 +293,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
         GetNewRho(Kptr, rho);
+    
         if (ct.nspin == 2 )
             get_rho_oppo (rho,  rho_oppo);
 
         VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0e-12);
+
         GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
 
         GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
@@ -324,29 +326,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         //Kptr[0]->ldaU->Ecorrect
         total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
-
         /* Print contributions to total energies into output file */
-        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
-        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
-        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
-
-        if(ct.vdw_corr)
-            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
-        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
-        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
-
-    }
-
-    rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-
-    // Exact exchange integrals
-    if(ct.exx_int_flag)
-    {
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
@@ -361,8 +341,32 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         Exx->SetHcore(Hcore, Hcore_kin, nstates);
         Exx->Vexx_integrals(ct.exx_int_file);
+
+        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
+        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        if(ct.vdw_corr)
+            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
+        rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
+
+        total_e = kin_energy + pseudo_energy + Exx->Coulomb_energy + Exx->Ex_energy + +ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
+        rmg_printf ("\n@@ ELECTROSTATIC   from integral   =  %15.6f %s\n", efactor*Exx->Coulomb_energy, eunits);
+        rmg_printf ("@@ Exchange Energy from integral     =  %15.6f %s\n", efactor*Exx->Ex_energy, eunits);
+        rmg_printf ("total energy including Exx term      =  %16.8f %s\n", efactor*total_e, eunits);
+
+        fflush(NULL);
         delete Exx;
+
     }
+
+
     ct.xc_is_hybrid = is_xc_hybrid;
 
     RmgFreeHost(Hcore);

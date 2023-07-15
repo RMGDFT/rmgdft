@@ -202,6 +202,7 @@ public:
     double *gfac_dev_packed;
 
     std::vector<double> vexx_RMS;
+    double Coulomb_energy, Ex_energy;
 };
 
 #endif
