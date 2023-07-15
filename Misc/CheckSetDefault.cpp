@@ -159,6 +159,9 @@ void CheckSetDefault(void)
     if(ct.write_qmcpack_restart)
     {
         ct.localize_localpp = false;
+        ct.exxdiv_treatment= EXX_DIV_NONE;
+        ct.gamma_extrapolation = false;
+        ct.exx_mode = EXX_LOCAL_FFT;
     }
 
     if(ct.AFM)
