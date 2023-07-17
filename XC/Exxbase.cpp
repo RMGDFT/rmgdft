@@ -738,6 +738,7 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
+
     return energy;
 }
 
@@ -1168,6 +1169,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
             int my_rank = pct.gridpe;
+            if(my_rank == 0)
             {
 
                 double cou = 0.0;
@@ -1191,7 +1193,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
                 double ex = 0.0;
                 for (int i = 0; i < ct.qmc_nband; i++)
                 {
-                    for (int j = i+1; j < ct.qmc_nband; j++)
+                    for (int j = 0; j < ct.qmc_nband; j++)
                     {
                         int ij = i * ct.qmc_nband + j;
                         int ji = j * ct.qmc_nband + i;
@@ -1205,9 +1207,11 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
                     }
                 }
 
-                Ex_energy = -ex;
+                Ex_energy = -0.5 * ex;
 
-                printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, -ex);
+                if(ct.nspin == 1) Ex_energy *= 0.5;
+
+                printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, Ex_energy);
 
             }
 
@@ -1446,7 +1450,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                             for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][kl][iv]); 
 
                             //    psi_i(r1) psi_j(r2) 1/|r1-r2| conj(psi_k(r1)) conj(psi_l(r2))
-                            printf("\n K_ijkl %d %d %d %d  %f %f", i, j, k, l, tem);
+                            printf("\n K_ijkl %d %d %d %d  %f %f", i, j, k, l, std::real(tem), std::imag(tem));
                         }
         }
 
@@ -1476,7 +1480,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             double ex = 0.0;
             for (int i = 0; i < ct.qmc_nband; i++)
             {
-                for (int j = i+1; j < ct.qmc_nband; j++)
+                for (int j = 0; j < ct.qmc_nband; j++)
                 {
                     int ij = i * ct.qmc_nband + j;
 
@@ -1489,9 +1493,11 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                 }
             }
 
-            Ex_energy = -ex;
+            Ex_energy = -0.5 * ex;
+            // same spin contribute to exchange term
+            if(ct.nspin == 1) Ex_energy *= 0.5;
 
-            printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, -ex);
+            printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, Ex_energy);
 
         }
 
