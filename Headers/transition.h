@@ -188,6 +188,7 @@ void GetQI(void);
 void GetPhaseSpecies(SPECIES *sp, std::complex<double> *phaseptr);
 void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::complex<double> *);
 double IonIonEnergy_Ewald();
+double  MadelungConstant();
 void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
 template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);

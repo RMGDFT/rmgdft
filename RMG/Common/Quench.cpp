@@ -351,7 +351,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
         rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
 
+        double Madelung = MadelungConstant();
+        rmg_printf ("MadelungConstant      =  %16.8f \n", Madelung);
+
+        double vme = 0.5 * ct.nel * Madelung;
         total_e = kin_energy + pseudo_energy + Exx->Coulomb_energy + Exx->Ex_energy + ct.II + ct.Evdw + ct.ldaU_E;
+        total_e += vme;
         rmg_printf ("\n Hartree Fock total energy \n");
         rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
         rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*Exx->Coulomb_energy, eunits);
@@ -359,13 +364,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
         rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
         rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        rmg_printf ("@@ Madelung           = %15.6f %s\n", efactor*vme, eunits);
         if(ct.vdw_corr)
             rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
 
-        rmg_printf ("total energy Hartree Fock      =  %16.8f %s\n", efactor*total_e, eunits);
+        rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
 
+       
         fflush(NULL);
         delete Exx;
 
