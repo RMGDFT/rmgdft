@@ -676,11 +676,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             }
             // Simple mixing/extrapolation
             double *vptr = &vexx[(size_t)(i-1) * (size_t)pbasis];
-            if(ct.exx_steps > 0 && ct.vexx_rms >=  1.0e-8 && cm != 0.0)
+            if( ct.exx_steps > 0 && ct.vexx_rms >=  1.0e-8 && cm != 0.0)
             {
                 for(int ii=0;ii < pbasis;ii++) vptr[ii] = (1.0+cm)*atbuf[ii] - cm*vptr[ii];
             }
-            else if(ct.exx_steps > 1 && ct.vexx_rms < 1.0e-8)
+            else if( ct.exx_steps > 1 && ct.vexx_rms < 1.0e-8)
             {
                 for(int ii=0;ii < pbasis;ii++) vptr[ii] = 0.7*atbuf[ii] + 0.3*vptr[ii];
             }
@@ -1169,51 +1169,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
             int my_rank = pct.gridpe;
-            if(my_rank == 0)
-            {
-
-                double cou = 0.0;
-                for (int i = 0; i < ct.qmc_nband; i++)
-                {
-                    for (int j = 0; j < ct.qmc_nband; j++)
-                    {
-                        int ij = i * ct.qmc_nband + i;
-                        int ji = j * ct.qmc_nband + j;
-
-                        int idx = ij * ct.qmc_nband * ct.qmc_nband + ji;
-
-                        if(my_rank == 0 && ct.verbose == 1) 
-                            printf("\n i ij: %d %d Chol<ij|ij>= %f ", i, j, ExxInt[idx]);
-                        cou += ExxInt[idx] * occ[i] * occ[j];
-
-                    }
-                }
-                Coulomb_energy = 0.5 * cou;
-
-                double ex = 0.0;
-                for (int i = 0; i < ct.qmc_nband; i++)
-                {
-                    for (int j = 0; j < ct.qmc_nband; j++)
-                    {
-                        int ij = i * ct.qmc_nband + j;
-                        int ji = j * ct.qmc_nband + i;
-
-                        int idx = ij * ct.qmc_nband * ct.qmc_nband + ji;
-
-                        if(my_rank == 0 && ct.verbose == 1) 
-                            printf("\n  ij: %d %d Chol<ij|ij>= %f ", i, j, ExxInt[idx]);
-                        ex += ExxInt[idx] * occ[i] * occ[j];
-
-                    }
-                }
-
-                Ex_energy = -0.5 * ex;
-
-                if(ct.nspin == 1) Ex_energy *= 0.5;
-
-                printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, Ex_energy);
-
-            }
 
             std::vector<double> ExxIntGlob;
             ExxIntGlob = ExxInt;
@@ -1452,53 +1407,6 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                             //    psi_i(r1) psi_j(r2) 1/|r1-r2| conj(psi_k(r1)) conj(psi_l(r2))
                             printf("\n K_ijkl %d %d %d %d  %f %f", i, j, k, l, std::real(tem), std::imag(tem));
                         }
-        }
-
-        if(my_rank == 0 ) 
-        {
-            boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
-
-            std::complex<double> tem = 0.0;
-            double cou = 0.0;
-            for (int i = 0; i < ct.qmc_nband; i++)
-            {
-                for (int j = 0; j < ct.qmc_nband; j++)
-                {
-                    int ij = i * ct.qmc_nband + i;
-                    int ji = j * ct.qmc_nband + j;
-
-                    tem = 0.0;
-                    for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][ji][iv]); 
-                    if(my_rank == 0 && ct.verbose == 1) 
-                        printf("\n iq: %d  ij: %d %d Chol<ij|ij>= %f %f", iq, i, j, std::real(tem), std::imag(tem));
-                    cou += std::real(tem) * occ[i] * occ[j];
-
-                }
-            }
-            Coulomb_energy = 0.5 * cou;
-
-            double ex = 0.0;
-            for (int i = 0; i < ct.qmc_nband; i++)
-            {
-                for (int j = 0; j < ct.qmc_nband; j++)
-                {
-                    int ij = i * ct.qmc_nband + j;
-
-                    tem = 0.0;
-                    for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][ij][iv]); 
-                    if(my_rank == 0 && ct.verbose == 1) 
-                        printf("\n ex: iq: %d  ij: %d %d Chol<ij|ij>= %f %f", iq, i, j, std::real(tem), std::imag(tem));
-                    ex += std::real(tem) * occ[i] * occ[j];
-
-                }
-            }
-
-            Ex_energy = -0.5 * ex;
-            // same spin contribute to exchange term
-            if(ct.nspin == 1) Ex_energy *= 0.5;
-
-            printf("\n Coulomb  %f  Ex energy %f", Coulomb_energy, Ex_energy);
-
         }
 
         if(pct.worldrank == 0) {

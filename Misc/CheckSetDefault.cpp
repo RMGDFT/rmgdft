@@ -162,6 +162,9 @@ void CheckSetDefault(void)
         ct.exxdiv_treatment= EXX_DIV_NONE;
         ct.gamma_extrapolation = false;
         ct.exx_mode = EXX_LOCAL_FFT;
+
+        if(!ct.norm_conserving_pp)
+            rmg_error_handler (__FILE__, __LINE__, "qmcpack restart only worked with norm-conserving pseudopotentials.\n");
     }
 
     if(ct.AFM)
