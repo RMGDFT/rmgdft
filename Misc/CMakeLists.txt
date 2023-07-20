@@ -1,7 +1,3 @@
-set_source_files_properties(WriteHeader.cpp
-PROPERTIES
-COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
-
 add_library (Misc
 kind.f90
 tetra.f90
