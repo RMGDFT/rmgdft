@@ -27,6 +27,10 @@
 
 cmake_minimum_required (VERSION 3.17) 
 
+set(RMG_VERSION_MAJOR "5")
+set(RMG_VERSION_MINOR "4")
+set(RMG_VERSION_PATCH "0")
+set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
 # force an out-of-source build
 string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
@@ -46,27 +50,6 @@ if(RMG_CUDA_ENABLED)
 else()
     enable_language(Fortran)
     project (RMG CXX C Fortran) 
-endif()
-
-
-# Extract revision information to include in executables
-find_package(Git)
-if(Git_FOUND)
-    set(VERSION_COMMAND "git")
-    set(VERSION_ARGS "describe")
-    unset(git_version CACHE)
-    execute_process (COMMAND "${VERSION_COMMAND}" "${VERSION_ARGS}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_version)
-    if(git_version)
-        string(REPLACE "\n" ";" git_version1 ${git_version})
-        string(REPLACE "-" "_" git_version_clean ${git_version1})
-        add_definitions(-DRMG_REVISION="${git_version_clean}")
-    else()
-        add_definitions(-DRMG_REVISION="Unknown")
-        set(git_version_clean "Unknown")
-    endif()
-else()
-    add_definitions(-DRMG_REVISION="Unknown")
-    set(git_version_clean "Unknown")
 endif()
 
 
@@ -104,6 +87,20 @@ endif()
 
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
+endif()
+
+# Set Version and extract revision information to include in executables
+find_package(Git)
+if(Git_FOUND)
+    set(VERSION_COMMAND "git")
+    unset(git_id CACHE)
+    execute_process (COMMAND ${VERSION_COMMAND} rev-parse --short HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_id OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process (COMMAND ${VERSION_COMMAND} rev-parse --abbrev-ref HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_branch OUTPUT_STRIP_TRAILING_WHITESPACE)
+    add_definitions(-DRMG_REVISION="${COMPLETE_VERSION}")
+    add_definitions(-DRMG_COMMIT="${git_id}")
+    add_definitions(-DRMG_BRANCH="${git_branch}")
+else()
+    add_definitions(-DRMG_REVISION="${COMPLETE_VERSION}")
 endif()
 
 
@@ -809,15 +806,15 @@ set(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_GENERATOR "DEB")
 
-set(CPACK_PACKAGE_VERSION_MAJOR "5")
-set(CPACK_PACKAGE_VERSION_MINOR "4")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION_MAJOR "${RMG_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${RMG_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${RMG_VERSION_PATCH}")
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Emil Briggs")
 set(CPACK_PACKAGE_VENDOR "North Carolina State University")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+
 
 include(CPack)
 
