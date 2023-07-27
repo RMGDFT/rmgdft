@@ -91,6 +91,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     {
         MatrixKpoint (states, Hij_dist, Sij_dist, pct.desca,
             (std::complex<double> *)Hk, (std::complex<double> *)Sk, ct.kp[0].kpt);
+        memcpy(eigvec, Hk, mat_size);
     }
 
     if(participates)
@@ -157,10 +158,10 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
                 (std::complex<double> *)Hk, &ione, &ione, pct.desca,
                 (std::complex<double> *)eigvec, &ione, &ione, pct.desca, &zeroC, 
                 (std::complex<double> *)Sk, &ione, &ione, pct.desca);
+
         for(int idx = 0; idx <mxllda2; idx++) 
             mat_X[idx] = std::real(Sk[idx]);
     }
-
 
     delete(RT3);
 
@@ -169,37 +170,44 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     int *ipiv = new int[numst];
     /* Compute matrix theta = matB^-1 * Hij  */
-    pdgetrf(&numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, &info);
-    if(info !=0)
-    { 
-        printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
-        fflush(NULL);
-        exit(0);
+    if(ct.is_gamma)
+    {
+        pdgetrf(&numst, &numst, (double *)Sij_dist, &ione, &ione, pct.desca, ipiv, &info);
+        if(info !=0)
+        { 
+            printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
+            fflush(NULL);
+            exit(0);
+        }
+        memcpy(uu_dis, Hij_dist, mat_size);
+        pdgetrs("N", &numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, 
+                uu_dis, &ione, &ione, pct.desca, &info);
+
+        double t1 = 2.0;
+        for(int i = 0; i < mxllda2; i++) uu_dis[i] *= t1;
+
     }
+    else
+    {
+        MatrixKpoint (states, Hij_dist, Sij_dist, pct.desca,
+                (std::complex<double> *)Hk, (std::complex<double> *)Sk, ct.kp[0].kpt);
+        pzgetrf(&numst, &numst, (std::complex<double> *)Sk, &ione, &ione, pct.desca, ipiv, &info);
+        if(info !=0)
+        { 
+            printf("\n error in pzgetrf in mg_eig.c INFO = %d\n", info);
+            fflush(NULL);
+            exit(0);
+        }
 
-    memcpy(uu_dis, Hij_dist, mat_size);
-    pdgetrs("N", &numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, 
-            uu_dis, &ione, &ione, pct.desca, &info);
-
-    double t1 = 2.0;
-    for(int i = 0; i < mxllda2; i++) uu_dis[i] *= t1;
-
-    int lwork = -1;
-    int liwork = -1;
-    double lwork_tmp;
-    int liwork_tmp;
-    pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-    lwork = (int)lwork_tmp + 8;
-    liwork = (int)liwork_tmp + 8;
-    double *nwork = new double[lwork];
-    int *iwork = new int[liwork];
-    pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, nwork, &lwork, iwork, &liwork, &info);
+        pzgetrs("N", &numst, &numst, (std::complex<double> *)Sk, &ione, &ione, pct.desca, ipiv, 
+                (std::complex<double> *)Hk, &ione, &ione, pct.desca, &info);
+        double t1 = 2.0;
+        for(int i = 0; i < mxllda2; i++) uu_dis[i] = t1 * std::real(Hk[i]);
+    }
 
 
     delete(RT1b);
 
-    delete [] nwork;
-    delete [] iwork;
     delete [] ipiv;
 
 

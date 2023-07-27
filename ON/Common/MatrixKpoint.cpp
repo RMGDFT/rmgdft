@@ -83,7 +83,8 @@ void MatrixKpoint (STATE *states, double *Hij, double *Sij, int *desca,
                     }
                 }
 
-                min_index[k *mxllda + j] = *std::min_element(dists.begin(), dists.end());
+                std::vector<double>::iterator min_iter = std::min_element(dists.begin(), dists.end());
+                min_index[k *mxllda + j] = std::distance(dists.begin(), min_iter);
             }
         }
     }
