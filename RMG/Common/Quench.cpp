@@ -280,6 +280,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
+    rmg_printf ("\nfinal total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
@@ -355,7 +356,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
         rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
-        rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
 
         double Madelung = MadelungConstant();
         rmg_printf ("MadelungConstant      =  %16.8f \n", Madelung);
