@@ -44,6 +44,17 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
 
+    static std::vector<int> min_index;
+    KpointType phase_k[27];
+    std::complex<double> *phase_k_C = (std::complex<double> *)phase_k;
+
+    if(min_index.size() == 0)
+    {
+        min_index.resize(MXLLDA * MXLCOL);
+        MatrixKpointPhase (states, pct.desca, min_index);
+    }
+
+
     bool participates = MainSp->Participates();
 
     int ione = 1;    /* blas constants */
@@ -89,8 +100,25 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     }
     else
     {
-        MatrixKpoint (states, Hij_dist, Sij_dist, pct.desca,
-            (std::complex<double> *)Hk, (std::complex<double> *)Sk, ct.kp[0].kpt);
+      std::complex<double> I(0.0, 1.0);
+      int idx = 0;
+       double *kpt = ct.kp[0].kpt;
+        for(int ix = -1; ix <= 1; ix++)
+        {
+            for(int iy = -1; iy <= 1; iy++)
+            {
+                for(int iz = -1; iz <= 1; iz++)
+                {
+                    phase_k_C[idx] = std::exp(+I * (ix * kpt[0] + iy * kpt[1] + iz * kpt[2]));
+                    idx++;
+                }
+            }
+        }
+        for (int i = 0; i < MXLLDA * MXLCOL; i++)
+        {
+            Hk[i] = Hij_dist[i] * phase_k[ min_index[i] ];
+            Sk[i] = Sij_dist[i] * phase_k[ min_index[i] ];
+        }
         memcpy(eigvec, Hk, mat_size);
     }
 
@@ -148,8 +176,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     if(ct.is_gamma)
     {
         pdgemm("N", "T", &numst, &numst, &numst, &one,
-            uu_dis, &ione, &ione, pct.desca,
-            zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
+                uu_dis, &ione, &ione, pct.desca,
+                zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
     }
     else
     {
@@ -160,7 +188,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
                 (std::complex<double> *)Sk, &ione, &ione, pct.desca);
 
         for(int idx = 0; idx <mxllda2; idx++) 
-            mat_X[idx] = std::real(Sk[idx]);
+            mat_X[idx] = std::real(Sk[idx] * phase_k[ min_index[idx] ]);
     }
 
     delete(RT3);
@@ -189,8 +217,10 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     }
     else
     {
-        MatrixKpoint (states, Hij_dist, Sij_dist, pct.desca,
-                (std::complex<double> *)Hk, (std::complex<double> *)Sk, ct.kp[0].kpt);
+        for (int i = 0; i < MXLLDA * MXLCOL; i++)
+        {
+            Sk[i] = Sij_dist[i] * phase_k[ min_index[i] ];
+        }
         pzgetrf(&numst, &numst, (std::complex<double> *)Sk, &ione, &ione, pct.desca, ipiv, &info);
         if(info !=0)
         { 
@@ -202,7 +232,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         pzgetrs("N", &numst, &numst, (std::complex<double> *)Sk, &ione, &ione, pct.desca, ipiv, 
                 (std::complex<double> *)Hk, &ione, &ione, pct.desca, &info);
         double t1 = 2.0;
-        for(int i = 0; i < mxllda2; i++) uu_dis[i] = t1 * std::real(Hk[i]);
+        for(int i = 0; i < mxllda2; i++) uu_dis[i] = t1 * std::real(Hk[i] * phase_k[ min_index[i] ]);
     }
 
 

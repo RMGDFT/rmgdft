@@ -3,6 +3,8 @@
 #include "LocalObject.h"
 void MatrixKpoint (STATE *states, double *Hij, double *Sij, int *desca,
         std::complex<double> *Hk, std::complex<double> *Sk, double kpt[3]);
+void MatrixKpointPhase (STATE *states, int *desca, std::vector<int> &min_index);
+
 
 void InitBlockTriDims();
 void WriteXyz(char *);
