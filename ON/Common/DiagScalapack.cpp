@@ -83,7 +83,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     mxllda2 = MXLLDA * MXLCOL;
     int mat_size = MXLLDA * MXLCOL * sizeof(double) * factor;
 
-    RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */
     if (pct.scalapack_myrow < 0)
     {  
@@ -138,15 +137,13 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
             memcpy(eigvec, Hk, mat_size);
         }
 
+        RmgTimer *RT1 = new RmgTimer("3-DiagScalapack: diag");
         if(participates)
             MainSp->generalized_eigenvectors(eigvec, Sk, eigs, Hk);
 
-        delete(RT);
-
-
         MPI_Bcast(eigs, numst, MPI_DOUBLE, 0, pct.grid_comm);
+        delete(RT1);
 
-        RmgTimer *RT1 = new RmgTimer("3-DiagScalapack: calc_occ");
         for (st1 = 0; st1 < numst; st1++)
         {
             eigs_all[kpt * numst + st1 ] = eigs[st1];
@@ -154,7 +151,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
 
 
-        delete(RT1);
 
         RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");
         //   uu_dis = zz_dis *(occ_diag)
@@ -162,16 +158,17 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
         for(st1 = 0; st1 <  MXLCOL; st1++)
         {
+                st_g = (st1/mb) * pct.scalapack_npcol * mb + pct.scalapack_mycol *mb +st1%mb;
 
-            st_g = (st1/mb) * pct.scalapack_npcol * mb + pct.scalapack_mycol *mb +st1%mb;
-
-            if(st_g >= numst) 
-                alpha = 0.0;
-            else
-                alpha = occ[kpt * numst + st_g];
+                if(st_g >= numst) 
+                    alpha = 0.0;
+                else
+                    alpha = occ[kpt * numst + st_g];
 
             for(int st2 = 0; st2 < MXLLDA; st2++)
+            {
                 Hk[st1 * MXLLDA + st2] *= alpha;
+            }
 
         }
 
@@ -182,19 +179,20 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         if(ct.is_gamma)
         {
             pdgemm("N", "T", &numst, &numst, &numst, &one,
-                    uu_dis, &ione, &ione, pct.desca,
-                    zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
+                    zz_dis, &ione, &ione, pct.desca,
+                    uu_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
         }
         else
         {
             std::complex<double> oneC(1.0), zeroC(0.0);
             pzgemm("N", "C", &numst, &numst, &numst, &oneC,
-                    (std::complex<double> *)Hk, &ione, &ione, pct.desca,
-                    (std::complex<double> *)eigvec, &ione, &ione, pct.desca, &zeroC, 
+                    (std::complex<double> *)eigvec, &ione, &ione, pct.desca,
+                    (std::complex<double> *)Hk, &ione, &ione, pct.desca, &zeroC, 
                     (std::complex<double> *)Sk, &ione, &ione, pct.desca);
 
             for(int idx = 0; idx <mxllda2; idx++) 
-                mat_X[idx] = std::real(Sk[idx] * phase_k[ min_index[idx] ]);
+                mat_X[idx] = std::real(Sk[idx] * std::conj(phase_k[ min_index[idx] ]));
+
         }
 
         delete(RT3);
