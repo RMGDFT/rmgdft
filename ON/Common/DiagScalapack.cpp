@@ -104,6 +104,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     KpointType *eigvec = (KpointType *)zz_dis;
     int *ipiv = new int[numst];
 
+    for(int idx = 0; idx <mxllda2; idx++) 
+        mat_X[idx] =0.0;
 
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -191,7 +193,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
                     (std::complex<double> *)Sk, &ione, &ione, pct.desca);
 
             for(int idx = 0; idx <mxllda2; idx++) 
-                mat_X[idx] = std::real(Sk[idx] * std::conj(phase_k[ min_index[idx] ]));
+                mat_X[idx] += kweight[kpt] * std::real(Sk[idx] * std::conj(phase_k[ min_index[idx] ]));
 
         }
 
