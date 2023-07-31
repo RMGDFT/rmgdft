@@ -46,8 +46,8 @@ double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
 void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 void constrain( void );
 void cross_product (double *a, double *b, double *c);
-double Fill_on (STATE *states, double width, double nel, double mix,
-           int num_st, int occ_flag, int mp_order);
+double Fill_on (std::vector<double> &eig_all, std::vector<double> &kweight, std::vector<double> &occ, double width, double nel, double mix,
+           int occ_flag, int mp_order);
 
 void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
 void get_phase (ION *iptr, double *rtptr, int icount, int *dvec);

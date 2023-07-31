@@ -270,7 +270,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     /* Update the orbitals */
-    if(!freeze_orbital )
+    if(!freeze_orbital && ct.is_gamma)
     {
         if(ct.scf_steps == ct.freeze_rho_steps ) 
             ct.restart_mix = 1;
