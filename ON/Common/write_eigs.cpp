@@ -26,11 +26,11 @@
 
 
 /* Writes eigenvalues */
-void write_eigs(STATE * states)
+void write_eigs(STATE * states, double *kpt)
 {
     int i;
 
-    printf("\n  KOHN-SHAM EIGENVALUES: [eV]\n");
+    printf("\n  KOHN-SHAM EIGENVALUES: [eV] at K =[%f %f %f]\n", kpt[0]/(2.0*PI), kpt[1]/(2.0*PI),kpt[2]/(2.0*PI));
 
     for (i = 0; i < ct.num_states; i++)
         printf("  %8.3f [%4.2f]%s", states[i].eig[0] * Ha_eV,

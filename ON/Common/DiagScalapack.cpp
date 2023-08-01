@@ -109,6 +109,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
+        double *kpt_xtal = ct.kp[pct.kstart + kpt].kpt;
         if(ct.is_gamma)
         {
             memcpy(Hk, Hij_dist, mat_size);
@@ -119,7 +120,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         {
             std::complex<double> I(0.0, 1.0);
             int idx = 0;
-            double *kpt_xtal = ct.kp[pct.kstart + kpt].kpt;
             for(int ix = -1; ix <= 1; ix++)
             {
                 for(int iy = -1; iy <= 1; iy++)
@@ -249,9 +249,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         {
             ct.kp[pct.kstart+kpt].kstate[st].eig[0]= eigs_all[kpt * numst + st];
         }
+        if(pct.gridpe == 0) write_eigs(ct.kp[kpt].kstate, kpt_xtal);
     }
 
-    if(pct.gridpe == 0) write_eigs(ct.kp[0].kstate);
     fflush(NULL);
     ct.efermi = Fill_on(eigs_all, kweight, occ, ct.occ_width, ct.nel, ct.occ_mix, ct.occ_flag, ct.mp_order);
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)

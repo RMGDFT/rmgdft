@@ -99,8 +99,8 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     }
 
 
-
-    if(pct.gridpe == 0) write_eigs(states);
+    double kpt_xtal[3]{0.0, 0.0, 0.0};
+    if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
     fflush(NULL);
     if(ct.spin_flag)
     {

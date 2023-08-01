@@ -119,7 +119,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     for(int st = 0; st < numst; st++) states[st].occupation[0] = occ[st];
 
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-    if(pct.gridpe == 0) write_eigs(states);
+    double kpt_xtal[3]{0.0, 0.0, 0.0};
+    if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
         rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);

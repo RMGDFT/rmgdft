@@ -239,7 +239,7 @@ void write_avgv (double * vh, double * vnuc);
 void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
-void write_eigs (STATE * states);
+void write_eigs (STATE * states, double *kpt);
 void write_timings (void);
 double rand0 (long *idum);
 
@@ -463,7 +463,6 @@ void write_avgv (double * vh, double * vnuc);
 void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
-void write_eigs (STATE * states);
 void write_occ (STATE * states);
 void write_timings (void);
 double rand0 (long *idum);
