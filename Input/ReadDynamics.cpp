@@ -52,6 +52,11 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
             CHECK_AND_FIX, OPTIONAL,
             "",
             "");
+    If.RegisterInputKey("FermiEnergy", &lc.efermi, -1.0e9, 1.0e9, 0.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "read in Fermi energy for band strcuture plot ",
+            "Only needed for band structure  ", MISC_OPTIONS);
+
 
     If.LoadInputKeys();
 

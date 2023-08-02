@@ -261,7 +261,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     {
         for(size_t st = 0; st < eigs_all.size(); st++)
         {
-            eigs_all[st] *= Ha_eV;
+            eigs_all[st] = (eigs_all[st] - ct.efermi) * Ha_eV;
         } 
         OutputBandPlot(eigs_all.data());
         std::raise(SIGTERM);
