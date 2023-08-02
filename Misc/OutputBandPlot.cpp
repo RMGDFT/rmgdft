@@ -83,7 +83,7 @@ void OutputBandPlot(double *eig_all)
             {
                 for(int ik = 0; ik < ct.num_kpts; ik++)
                 {
-                    int idx = ispin * ct.num_kpts * ct.num_states + is * ct.num_kpts + ik;
+                    int idx = ispin * ct.num_kpts * ct.num_states + ik * ct.num_states + is;
 
                     fprintf (bs_f, "\n %f  %16.8f ", x[ik], eig_all[idx]);
                     eig_max = std::max(eig_max, eig_all[idx]);
@@ -176,7 +176,7 @@ void OutputBandPlot(double *eig_all)
 
                 for(int ik = 0; ik < ct.num_kpts; ik++)
                 {
-                    int idx = ispin * ct.num_kpts * ct.num_states + is * ct.num_kpts + ik;
+                    int idx = ispin * ct.num_kpts * ct.num_states + ik * ct.num_states + is;
 
                     fprintf (bs_f, "\n %f  %16.8f ", x[ik], eig_all[idx]);
 

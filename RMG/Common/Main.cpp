@@ -378,7 +378,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                         for(int ik = 0; ik < ct.num_kpts_pe; ik++)
                         {
                             int kpt = pct.kstart + ik;
-                            eig_all[pct.spinpe * ct.num_kpts * ct.num_states + is * ct.num_kpts + kpt]
+                            eig_all[pct.spinpe * ct.num_kpts * ct.num_states + kpt * ct.num_states + is ]
                                 = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
                         }
                     }

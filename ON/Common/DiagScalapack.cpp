@@ -6,6 +6,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdexcept>
+#include <sstream>
+#include <string>
+#include <csignal>
+
 
 #include "params.h"
 #include "rmgtypedefs.h"
@@ -251,7 +256,16 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         }
         if(pct.gridpe == 0) write_eigs(ct.kp[kpt].kstate, kpt_xtal);
     }
-
+    
+    if(ct.forceflag == BAND_STRUCTURE) 
+    {
+        for(size_t st = 0; st < eigs_all.size(); st++)
+        {
+            eigs_all[st] *= Ha_eV;
+        } 
+        OutputBandPlot(eigs_all.data());
+        std::raise(SIGTERM);
+    }
     fflush(NULL);
     ct.efermi = Fill_on(eigs_all, kweight, occ, ct.occ_width, ct.nel, ct.occ_mix, ct.occ_flag, ct.mp_order);
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
