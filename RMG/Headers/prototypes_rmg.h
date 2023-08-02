@@ -116,8 +116,6 @@ template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order);
 template <typename KpointType>
 double FillTetra(Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 
 template <typename OrbitalType>
     void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,

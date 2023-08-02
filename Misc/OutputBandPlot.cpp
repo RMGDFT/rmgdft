@@ -45,40 +45,14 @@
 #include "Subdiag.h"
 #include "Plots.h"
 
-
-template void OutputBandPlot(Kpoint<double> **);
-template void OutputBandPlot(Kpoint<std::complex<double> > **);
-
-template <typename KpointType>
-void OutputBandPlot(Kpoint<KpointType> ** Kptr)
+void OutputBandPlot(double *eig_all)
 {
 
     double kx, ky, kz;
     char filename[4*MAX_PATH];
     FILE *bs_f;
-    double *eig_all;
     int nspin = 1;
     if(ct.nspin == 2) nspin = 2;
-
-    int tot_num_eigs = nspin * ct.num_kpts * ct.num_states;
-    eig_all = new double[tot_num_eigs];
-
-
-    for(int idx = 0; idx < tot_num_eigs; idx++) eig_all[idx] = 0.0;
-
-    for (int is = 0; is < ct.num_states; is++)
-    {
-        for(int ik = 0; ik < ct.num_kpts_pe; ik++)
-        {
-            int kpt = pct.kstart + ik;
-            eig_all[pct.spinpe * ct.num_kpts * ct.num_states + is * ct.num_kpts + kpt] 
-                = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
-        }
-    }
-
-    GlobalSums (eig_all, tot_num_eigs, pct.kpsub_comm);
-    GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
-
 
     double *x = new double[ct.num_kpts];
     x[0] = 0.0;

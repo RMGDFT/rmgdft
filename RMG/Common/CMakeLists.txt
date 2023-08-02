@@ -31,7 +31,6 @@ LcaoGetPsi.cpp
 ReadData.cpp
 Read_nsocc.cpp
 ReadSerialData.cpp
-OutputBandPlot.cpp
 AssignWeight.cpp
 GatherScatter.cpp
 GetDelocalizedWeight.cpp

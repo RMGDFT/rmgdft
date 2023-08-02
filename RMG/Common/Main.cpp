@@ -52,6 +52,8 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
+#include "GlobalSums.h"
+
 
 
 void initialize (int argc, char **argv);
@@ -361,7 +363,31 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     std::vector<bool> exclude_bands;
                     BandStructure (Kptr, vh, vxc, vnuc, exclude_bands);
                     if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
-                    OutputBandPlot(Kptr);
+                    double *eig_all;
+                    int nspin = 1;
+                    if(ct.nspin == 2) nspin = 2;
+
+                    int tot_num_eigs = nspin * ct.num_kpts * ct.num_states;
+                    eig_all = new double[tot_num_eigs];
+
+
+                    for(int idx = 0; idx < tot_num_eigs; idx++) eig_all[idx] = 0.0;
+
+                    for (int is = 0; is < ct.num_states; is++)
+                    {
+                        for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+                        {
+                            int kpt = pct.kstart + ik;
+                            eig_all[pct.spinpe * ct.num_kpts * ct.num_states + is * ct.num_kpts + kpt]
+                                = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
+                        }
+                    }
+
+                    GlobalSums (eig_all, tot_num_eigs, pct.kpsub_comm);
+                    GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
+
+                    OutputBandPlot(eig_all);
+                    delete eig_all;
                 }
 
                 break;

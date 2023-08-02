@@ -40,6 +40,7 @@ extern Tetrahedron *Tetra;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void OutputBandPlot(double *);
 void CheckSetDefault();
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void OptimizeFdCoeff();
