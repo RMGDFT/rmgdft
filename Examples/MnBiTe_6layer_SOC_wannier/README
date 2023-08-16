@@ -1,0 +1,8 @@
+(1) cd Wannier90_rmg
+    wannier90.x -pp wannier90.win
+    wannier90.nnkp is generated, it will be used by rmg to calculation Amn and Mmn
+(2) cd .. (directory of this example)
+    submit job to run rmg-cpu or rmg-gpu with input_wannier: scf and Wannier90 interface
+    job.sumbit is the job script on summit
+(3) calculate band structure from RMG rmg-gpu input_band
+(4) After Amn and Mmn are generated, run wannier90.x wannier90.win 

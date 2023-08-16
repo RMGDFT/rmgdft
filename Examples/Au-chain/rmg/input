@@ -1,0 +1,106 @@
+#start_mode="FIREBALL Start"
+start_mode="LCAO Start"
+#start_mode="Restart From File"
+#space grid and processor grid control
+
+output_wave_function_file = "Waves/wave.out"
+
+wavefunction_grid ="96 64 64"
+max_nlradius = "6.00000000"
+num_processor ="8"
+processor_grid="2 2 2"
+Hamiltonia_processor_grid ="2 4"
+filter_dpot = "true"
+
+
+threads_per_node = "1"
+
+# **** SCF controls ****  
+  
+max_scf_steps = "100"
+freeze_orbital_step="80"
+rms_convergence_criterion = "1e-7"
+
+# **** Mixing controls **** 
+orbital_mixing = "0.1"  
+orbital_pulay_refresh="20"
+sqrt_interpolation = "true"
+
+charge_density_mixing = "0.1"
+charge_mixing_type = "Pulay"
+charge_mixing_type = "Linear"
+charge_pulay_order = "5"
+charge_pulay_scale = "0.1"
+charge_pulay_refresh = "20"
+
+
+# **** Setup  ****
+
+description = "Au lead1"
+exchange_correlation_type = "LDA"
+bravais_lattice_type = "Orthorhombic Primitive"
+system_charge = "0.0"
+
+# *****Occupation *****
+
+occupations_type = "Fermi Dirac"
+occupations_type = "Tetrahedron"
+occupation_electron_temperature_eV = "0.1"
+
+
+#  **** IO control  ****
+
+write_eigvals_period = "10"
+
+# **** Pseudopotential **** 
+pseudopotential = "
+Au ../Au.UPF"
+
+# **** Units  ****
+
+length_units = "Bohr"
+atomic_coordinate_type = "Absolute"
+
+# Lattice constants in (x, y, z) directions
+# a, b, c, cos(alpha), cos(beta), cos(gamma)
+a_length="25.3223401622" b_length="17.7130393044" c_length="17.7130393044"
+alpha="0.0" beta="0.0" gamma="0.0"
+
+
+ #  atomic coordinates  
+atoms=
+"
+ Au     2.532234016218e+00    7.558907511097e+00    7.558907511097e+00      1   1   9
+ Au     7.596702048653e+00    7.558907511097e+00    7.558907511097e+00      1   1   9
+ Au     1.266117008109e+01    7.558907511097e+00    7.558907511097e+00      1   1   9
+ Au     1.772563811352e+01    7.558907511097e+00    7.558907511097e+00      1   1   9
+ Au     2.279010614596e+01    7.558907511097e+00    7.558907511097e+00      1   1   9
+"
+
+ #  orbital centers  
+orbitals=
+"
+ 9      2.532234016218e+00    7.558907511097e+00    7.558907511097e+00     6.5  1  1  
+ 9      7.596702048653e+00    7.558907511097e+00    7.558907511097e+00     6.5  1  1  
+ 9      1.266117008109e+01    7.558907511097e+00    7.558907511097e+00     6.5  1  1  
+ 9      1.772563811352e+01    7.558907511097e+00    7.558907511097e+00     6.5  1  1  
+ 9      2.279010614596e+01    7.558907511097e+00    7.558907511097e+00     6.5  1  1  
+"
+
+number_of_atoms="5"
+number_of_species="1"
+number_of_orbitals="45"
+
+#  **** default parameters for order-n input  ***** 
+
+localize_localpp = "true"
+localize_projectors = "true"
+
+kpoint_distribution = "1"
+kpoint_is_shift = "1 0 0 "
+kpoint_mesh = "4 1 1 "
+
+
+potential_grid_refinement="2"
+LocalizedOrbitalLayout="Projection"
+

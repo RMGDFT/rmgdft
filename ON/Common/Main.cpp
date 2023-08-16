@@ -268,6 +268,7 @@ int main(int argc, char **argv)
         switch (ct.forceflag)
         {
             case MD_QUENCH:            /* Quench the electrons */
+            case BAND_STRUCTURE:
 
                 quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;

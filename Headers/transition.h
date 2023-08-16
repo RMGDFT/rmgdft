@@ -40,6 +40,7 @@ extern Tetrahedron *Tetra;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void OutputBandPlot(double *);
 void CheckSetDefault();
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void OptimizeFdCoeff();
@@ -89,7 +90,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
 void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
-void DiagScalapack(STATE *, int, double *, double*);
+template <typename T> void DiagScalapack(STATE *, int, double *, double*);
 void DiagGpu(STATE *, int, double *, double*, double *, double *, double *);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);
 void BandwidthReduction(int num_ions, std::vector<ION> &ions, unsigned int *);
@@ -188,6 +189,7 @@ void GetQI(void);
 void GetPhaseSpecies(SPECIES *sp, std::complex<double> *phaseptr);
 void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::complex<double> *);
 double IonIonEnergy_Ewald();
+double  MadelungConstant();
 void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
 template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);

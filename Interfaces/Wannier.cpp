@@ -81,15 +81,6 @@ template <class T> Wannier<T>::Wannier (
     scdm_mu(scdm_mu_in), scdm_sigma(scdm_sigma_in), psi(psi_in)
 {
 
-    if(ct.kpoint_mesh[0] <= 0 || ct.kpoint_mesh[1] <= 0 || ct.kpoint_mesh[2] <=0)
-    {
-        throw RmgFatalException() << "kpoint mesh must be set up  \n";
-    }
-    if(ct.kpoint_is_shift[0] != 0 || ct.kpoint_is_shift[1] != 0 || ct.kpoint_is_shift[2] !=0)
-    {
-        throw RmgFatalException() << "kpoint must include gamma point, kpoint_is_shift=0, 0, 0  \n";
-    }
-
     nx_grid = G.get_NX_GRID(1);
     ny_grid = G.get_NY_GRID(1);
     nz_grid = G.get_NZ_GRID(1);
@@ -527,6 +518,57 @@ template <class T> void Wannier<T>::Read_nnkpts()
     }
 
     std::string oneline;
+    std::vector<std::string> kn_info;
+    std::string whitespace_delims = " \n\t";
+
+    while(getline(fnnk, oneline) )
+    {
+        if(oneline.find("kpoints") != std::string::npos ) break;
+    }
+    
+    getline(fnnk, oneline);
+
+    boost::trim(oneline);
+    int num_k = std::stoi(oneline);
+    if(num_k != ct.klist.num_k_all)
+    {
+        if(pct.gridpe == 0)
+        {
+            printf("\nkpoint_mesh : %d %d %d\n", ct.kpoint_mesh[0], ct.kpoint_mesh[1], ct.kpoint_mesh[2]);
+            printf("\n number kpoints in wannier90.nnkpts = %d\n", num_k);
+        }
+
+        WriteWinEig();
+        throw RmgFatalException() << "num kpoints in wannier90.nnkpts not match the kmesh \n";
+    }
+
+    for(int i = 0; i < ct.klist.num_k_all; i++)
+    {
+        getline(fnnk, oneline);
+        boost::trim(oneline);
+        boost::algorithm::split( kn_info, oneline, boost::is_any_of(whitespace_delims), boost::token_compress_on );
+        if (kn_info.size() != 3)
+        {
+            std::cout << "kpoint line = " << oneline << std::endl;
+            throw RmgFatalException() << "kpoints line is not 3 numbers \n";
+        }
+        double k_diff = std::abs(ct.klist.k_all_xtal[i][0] - std::stof(kn_info[0]));
+        k_diff += std::abs(ct.klist.k_all_xtal[i][1] - std::stof(kn_info[1]));
+        k_diff += std::abs(ct.klist.k_all_xtal[i][2] - std::stof(kn_info[2]));
+
+        if (k_diff > 1.0e-5)
+        {
+            if(pct.gridpe == 0) 
+            {
+                printf("\n k from mesh %f %f %f", ct.klist.k_all_xtal[i][0], ct.klist.k_all_xtal[i][1], ct.klist.k_all_xtal[i][2]);
+                printf("\n k from nnkpts %f %f %f\n", std::stof(kn_info[0]), std::stof(kn_info[1]), std::stof(kn_info[2]));
+                fflush(NULL);
+            }
+            WriteWinEig();
+            throw RmgFatalException() << "copy kpoint from wannier90.win_init to wannier.win and runwannier90.x -pp wannier90.win\n";
+        }
+    }
+
     // find the first nnkpts 
     while(getline(fnnk, oneline) )
     {
@@ -541,11 +583,9 @@ template <class T> void Wannier<T>::Read_nnkpts()
     //k_neighbors [][][5]: the dk index
     ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][6]);
 
-    std::vector<std::string> kn_info;
     if(pct.imgpe == 0 && ct.verbose) 
         printf("\n kpoint neighbors from nnkpts \n");
 
-    std::string whitespace_delims = " \n\t";
     int num_extra_k = 0;
     for(int i = 0; i < ct.klist.num_k_all; i++)
     {
@@ -693,7 +733,6 @@ template <class T> void Wannier<T>::Read_nnkpts()
             throw RmgFatalException() << "set spinors = true in .win file and get .nnkp file\n";
         }
 
-        std::cout << oneline << std::endl;
         getline(fnnk, oneline);
         boost::trim(oneline);
         if( std::stoi(oneline) != n_wannier)

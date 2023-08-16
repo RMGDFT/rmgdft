@@ -73,7 +73,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     static std::vector<double> etot;
 
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    std::string tempwave("tempwave");
+    std::string tempwave = std::string(ct.outfile) + "_serial";
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
     double *vh_in = new double[FP0_BASIS];
     double *vxc_in = new double[FP0_BASIS * ct.nspin];
@@ -275,17 +275,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
     OrbitalType *Hcore_localpp = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
-    bool is_xc_hybrid = ct.xc_is_hybrid;
-
-    ct.xc_is_hybrid = false;
-
-
     bool compute_direct = (ct.write_qmcpack_restart ||
-            ct.compute_direct ||
             ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
 
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
+    rmg_printf ("\nfinal total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
@@ -293,10 +288,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
         GetNewRho(Kptr, rho);
+    
         if (ct.nspin == 2 )
             get_rho_oppo (rho,  rho_oppo);
 
         VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0e-12);
+
         GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
 
         GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
@@ -323,30 +320,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
         //Kptr[0]->ldaU->Ecorrect
-        total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E;
-
+        total_e = kin_energy + pseudo_energy + ct.ES + ct.XC + ct.II + ct.Evdw + ct.ldaU_E + ct.FOCK;
         /* Print contributions to total energies into output file */
-        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
-        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
-        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
-
-        if(ct.vdw_corr)
-            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
-        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
-        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
-
-    }
-
-    rmg_printf ("final total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
-
-    // Exact exchange integrals
-    if(ct.exx_int_flag)
-    {
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
@@ -360,10 +335,57 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
 
         Exx->SetHcore(Hcore, Hcore_kin, nstates);
-        Exx->Vexx_integrals(ct.exx_int_file);
+        if(ct.exx_int_flag)
+        {
+            Exx->Vexx_integrals(ct.exx_int_file);
+        }
+        ct.exx_fraction = 1.0;
+        ct.exx_steps = 0;
+        Exx->Vexx(Kptr[0]->vexx, false);
+        double E_exchange = Exx->Exxenergy(Kptr[0]->vexx);
+
+        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
+        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        if(ct.vdw_corr)
+            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
+
+        double Madelung = MadelungConstant();
+        rmg_printf ("MadelungConstant      =  %16.8f \n", Madelung);
+
+        double vme = 0.5 * ct.nel * Madelung;
+        total_e = kin_energy + pseudo_energy + ct.ES + E_exchange + ct.II + ct.Evdw + ct.ldaU_E;
+        total_e += vme;
+        rmg_printf ("\n Hartree Fock total energy \n");
+        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg_printf ("@@ Exchange           = %15.6f %s\n", efactor*E_exchange, eunits);
+        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        rmg_printf ("@@ Madelung           = %15.6f %s\n", efactor*vme, eunits);
+        if(ct.vdw_corr)
+            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+
+        rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
+        rmg_printf ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
+
+       
+        fflush(NULL);
         delete Exx;
+
     }
-    ct.xc_is_hybrid = is_xc_hybrid;
+
+
 
     RmgFreeHost(Hcore);
     RmgFreeHost(Hcore_kin);
@@ -484,8 +506,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         double scdm_mu = ct.wannier90_scdm_mu;
         double scdm_sigma = ct.wannier90_scdm_sigma;
         int n_wannier = ct.num_wanniers;
-
-
 
         Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "WfsForWannier90/wfs", Kptr[0]->nstates, 
                 n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);

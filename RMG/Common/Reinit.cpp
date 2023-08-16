@@ -197,7 +197,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
             delete sp->prj_pwave;
             sp->prj_pwave = new Pw(*OG, *L, 1, false);
-            delete L;
+        //    delete L;
         }
         else
         {

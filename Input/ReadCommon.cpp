@@ -1126,9 +1126,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("write_qmcpack_restart", &lc.write_qmcpack_restart, false,
             "If true then a QMCPACK restart file is written as well as a serial restart file.", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("compute_direct", &lc.compute_direct, false,
-            "If true then direct energy values are computed for QMCPACK.", CONTROL_OPTIONS);
-
     If.RegisterInputKey("write_qmcpack_restart_localized", &lc.write_qmcpack_restart_localized, false,
             "If true then a QMCPACK restart file for localized orbitals", CONTROL_OPTIONS);
 

@@ -79,6 +79,12 @@ void WriteHeader (void)
         
 
     printf ("\nCode Revision:     %s", RMG_REVISION);
+#ifdef RMG_BRANCH
+    printf ("-%s", RMG_BRANCH);
+#endif
+#ifdef RMG_COMMIT
+    printf ("-%s", RMG_COMMIT);
+#endif
     printf ("\nBuild Date:        %s  %s", __DATE__, __TIME__);
     printf ("\nStart time:        %s", timeptr);
 

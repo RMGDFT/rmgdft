@@ -1,0 +1,18 @@
+#!/bin/bash
+# Replace with your project
+#SBATCH -A m526
+#SBATCH -C gpu
+#SBATCH -q regular
+#SBATCH -t 0:10:00
+#SBATCH -N 4
+# Perlmutter has 4 GPUs/node so we run with 1 task per GPU
+#SBATCH --ntasks-per-node=4
+# 16 cores 
+#SBATCH -c 16
+#SBATCH --gpus-per-task=1
+
+export OMP_NUM_THREADS=8
+export RMG_NUM_THREADS=8
+export SLURM_CPU_BIND="cores"
+srun ~/bin/rmg-gpu input
+

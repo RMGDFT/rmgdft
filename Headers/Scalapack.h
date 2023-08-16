@@ -214,6 +214,7 @@ protected:
 #define		pzgetri		RMG_FC_GLOBAL(pzgetri, PZGETRI)
 #define		pdgetri		RMG_FC_GLOBAL(pdgetri, PDGETRI)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
+#define		pzgetrs		RMG_FC_GLOBAL(pzgetrs, PZGETRS)
 #define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
 #define		pztranu		RMG_FC_GLOBAL(pztranu, PZTRANU)
 #ifdef __cplusplus
@@ -227,6 +228,7 @@ int numroc (int *, int *, int *, int *, int *);
 int indxg2p (int *, int *, int *, int *, int *);
 void pdgetrf( int *, int *, double *, int *, int *, int *, int *, int * );
 void pdgetrs( char *, int *, int *, double *, int *, int *, int *, int *, double *, int *, int *, int *, int *);
+void pzgetrs( char *, int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, int *, int *, int *, int *);
 void descinit (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
 void pdgesv (int *, int *, double *, int * , int *, int *, int *, double *,

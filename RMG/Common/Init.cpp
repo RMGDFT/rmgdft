@@ -211,7 +211,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.forceflag == BAND_STRUCTURE && (!ct.rmg2bgw)) kpt_storage = 1;
 
     /* Set state pointers and initialize state data */
-    if(ct.xc_is_hybrid) ct.non_local_block_size = ct.max_states;
+    if(ct.xc_is_hybrid || ct.write_qmcpack_restart) ct.non_local_block_size = ct.max_states;
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
     {
         ct.non_local_block_size = ct.max_states;
@@ -225,7 +225,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
     else
     {
-        if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid)
+        if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid && !ct.write_qmcpack_restart)
             InitGpuMallocHost((size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType)); 
         else
             InitGpuMallocHost((size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)); 
@@ -289,7 +289,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     OrbitalType *rptr_k;
     rptr_k = rptr;
     OrbitalType *vexx_ptr = NULL;
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid || ct.write_qmcpack_restart)
     {
         // Need to pad by the number of threads
         int maxthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
@@ -308,7 +308,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
 
         size_t vexx_offset = (size_t)kpt * (size_t)ct.run_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor;
-        if(ct.xc_is_hybrid)
+        if(ct.xc_is_hybrid || ct.write_qmcpack_restart)
         {
             Kptr[kpt]->vexx = &vexx_ptr[vexx_offset];
         }

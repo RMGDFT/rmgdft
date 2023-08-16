@@ -96,7 +96,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
 
-    DiagScalapack(states, ct.num_states, Hij, matB);
+    DiagScalapack<double>(states, ct.num_states, Hij, matB);
     // mat_X charge density matrix in distributed way
     // uu_dis theta = (S^-1 H) in distributed way.
 
@@ -110,10 +110,17 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
     /* Generate new density */
 
-    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
+    std::vector<double> eigs_all, kweight, occ;
+    eigs_all.resize(numst);
+    occ.resize(numst);
+    kweight.resize(1);
+    kweight[0] = 1.0;
+    ct.efermi = Fill_on(eigs_all, kweight, occ, ct.occ_width, ct.nel, ct.occ_mix, ct.occ_flag, ct.mp_order);
+    for(int st = 0; st < numst; st++) states[st].occupation[0] = occ[st];
 
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-    if(pct.gridpe == 0) write_eigs(states);
+    double kpt_xtal[3]{0.0, 0.0, 0.0};
+    if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
         rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);

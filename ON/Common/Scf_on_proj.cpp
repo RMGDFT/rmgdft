@@ -158,7 +158,11 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 mat_global_to_dist(Hij, pct.desca, Hij_glob);
                 mat_global_to_dist(matB, pct.desca, Sij_glob);
 
-                DiagScalapack(states, ct.num_states, Hij, matB);
+                if(ct.is_gamma)
+                    DiagScalapack<double>(states, ct.num_states, Hij, matB);
+                else
+                    DiagScalapack<std::complex<double>>(states, ct.num_states, Hij, matB);
+
 
                 mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
                 mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
@@ -247,7 +251,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         }
 
         if(ct.scf_steps >= ct.freeze_rho_steps)
+        {
             Pulay_rho->Mixing(rho, rho_old);
+        }
 
     }
 
@@ -264,7 +270,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     /* Update the orbitals */
-    if(!freeze_orbital )
+    if(!freeze_orbital && ct.is_gamma)
     {
         if(ct.scf_steps == ct.freeze_rho_steps ) 
             ct.restart_mix = 1;
@@ -278,7 +284,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
 
-          //  LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
+            LocalOrbital->ApplyBoundary(&H_LocalOrbital->storage_cpu[st * pbasis], st);
             //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
             //    H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
         }

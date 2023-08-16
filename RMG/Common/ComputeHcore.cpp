@@ -67,6 +67,10 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     bool potential_acceleration = false;
 
 
+    bool is_xc_hybrid = ct.xc_is_hybrid;
+    ct.xc_is_hybrid = false;
+
+
     // For MPI routines
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
@@ -272,6 +276,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
 
+    ct.xc_is_hybrid = is_xc_hybrid;
 
 }
 

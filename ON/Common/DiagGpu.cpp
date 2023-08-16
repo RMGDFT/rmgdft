@@ -99,8 +99,8 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     }
 
 
-
-    if(pct.gridpe == 0) write_eigs(states);
+    double kpt_xtal[3]{0.0, 0.0, 0.0};
+    if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
     fflush(NULL);
     if(ct.spin_flag)
     {
@@ -108,7 +108,15 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     }
     /* Generate new density */
 
-    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
+    std::vector<double> eigs_all, kweight, occ;
+    eigs_all.resize(numst);
+    occ.resize(numst);
+    kweight.resize(1);
+    kweight[0] = 1.0;
+    for(int st = 0; st < numst; st++) eigs_all[st] = states[st].eig[0];
+    ct.efermi = Fill_on(eigs_all, kweight, occ, ct.occ_width, ct.nel, ct.occ_mix, ct.occ_flag, ct.mp_order);
+    for(int st = 0; st < numst; st++) states[st].occupation[0] = occ[st];
+
 
 
     int num_occ_states = 0;
