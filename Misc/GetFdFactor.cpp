@@ -93,8 +93,7 @@ void GetFdFactor(int kpt)
 
         /*Temporary pointer to the already calculated forward transform. */
         /* Need to fix up for kpoint parrallelization issues.  */
-        std::complex<double> *fptr = (std::complex<double> *)sp.forward_orbital;
-        fptr += kpt*sp.num_orbitals*pbasis;
+        std::complex<double> *fptr = (std::complex<double> *)sp.forward_orbital_gamma;
 
         /* Loop over atomic orbitals */
         for (int ip = 0; ip < sp.num_orbitals; ip++)

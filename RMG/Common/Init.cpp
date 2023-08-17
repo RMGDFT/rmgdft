@@ -402,9 +402,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     FiniteDiff FD(&Rmg_L);
     FD.cfac[0] = 0.0;
     FD.cfac[1] = 0.0;
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    //for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor(kpt);
+        // use gamma point atomic orbital now
+        int kpt = 0;
+        GetFdFactor(kpt);
     }
     MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.grid_comm);
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);

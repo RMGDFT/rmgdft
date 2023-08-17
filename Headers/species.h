@@ -333,6 +333,7 @@ public:
     fftw_complex *forward_beta=NULL;
     fftw_complex *forward_beta_r[3] = {NULL, NULL, NULL};
     fftw_complex *forward_orbital=NULL;
+    fftw_complex *forward_orbital_gamma=NULL;
 
     /*Some parameters for Q function*/
     std::vector<int> indv;

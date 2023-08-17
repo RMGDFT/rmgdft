@@ -84,8 +84,10 @@ void SPECIES::InitDelocalizedOrbital (void)
     /*This array will store forward fourier transform on the coarse grid for all atomic orbitals of this species */
     if(this->forward_orbital) fftw_free(this->forward_orbital);
     this->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_orbitals * pbasis * ct.num_kpts_pe);
+    if(this->forward_orbital_gamma) fftw_free(this->forward_orbital_gamma);
+    this->forward_orbital_gamma = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_orbitals * pbasis);
 
-    if (this->forward_orbital == NULL)
+    if (this->forward_orbital == NULL || this->forward_orbital_gamma == NULL)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
 
@@ -134,6 +136,39 @@ void SPECIES::InitDelocalizedOrbital (void)
             }
             for(int idx=0;idx < pbasis;idx++) betaptr[idx] =  weptr[idx]/vol;
 
+        }
+
+        // initilize orbital for gamma point used in GetFdFactor to optimize the FD operator
+        {
+            std::complex<double> *betaptr = (std::complex<double> *)&this->forward_orbital_gamma[proj.proj_index * pbasis];
+            for(int idx = 0;idx < pbasis;idx++)
+            {
+                if(!coarse_pwaves->gmask[idx]) continue;
+                weptr[idx] = std::complex<double>(0.0,0.0);
+                ax[0] = coarse_pwaves->g[idx].a[0] * tpiba;
+                ax[1] = coarse_pwaves->g[idx].a[1] * tpiba;
+                ax[2] = coarse_pwaves->g[idx].a[2] * tpiba;
+
+                double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+                if(gval >= gcut) continue;
+                double t1 = AtomicInterpolateInline_Ggrid(this->atomic_wave_g[proj.ip], gval);
+                weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
+
+            }
+
+            // Shift atom to the center instead of corner.
+            for(int ix = 0; ix < dimx; ix++)
+            {
+                for(int iy = 0; iy < dimy; iy++)
+                {
+                    for(int iz = 0; iz < dimz; iz++)
+                    {
+                        int idx = ix * dimy * dimz + iy * dimz + iz;
+                        weptr[idx] *= std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
+                    }
+                }
+            }
+            for(int idx=0;idx < pbasis;idx++) betaptr[idx] =  weptr[idx]/vol;
         }
 
     }  // end for
