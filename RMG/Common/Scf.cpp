@@ -250,7 +250,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
 
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) )
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) && ct.scf_steps  < ct.freeze_ldaU_steps )
     {
         RmgTimer("3-MgridSubspace: ldaUop x psi");
         int pstride = Kptr[0]->ldaU->ldaU_m;
@@ -393,7 +393,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
     }
 
-    if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1)))
+    if( (CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) && ct.potential_acceleration_constant_step > 1.0e-5)
     {
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code

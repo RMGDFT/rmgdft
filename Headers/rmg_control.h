@@ -969,6 +969,7 @@ public:
    int ldaU_mode;
    int num_ldaU_ions;
    int max_ldaU_l;  // max ldaU l value for any ion
+   int freeze_ldaU_steps;
 
 
    bool stress;
