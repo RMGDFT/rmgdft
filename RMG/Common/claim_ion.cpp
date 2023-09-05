@@ -58,6 +58,7 @@ int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, in
         igridx++;
     
     if (igridx >= nxgrid) igridx -= nxgrid ;
+    if (igridx <0) igridx += nxgrid ;
     
     t1 = (xtal[1]) * (double) nygrid;
     t1 = modf (t1, &t2);
@@ -66,6 +67,7 @@ int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, in
         igridy++;
     
     if (igridy >= nygrid) igridy -= nygrid ;
+    if (igridy <0) igridy += nygrid ;
     
     t1 = (xtal[2]) * (double) nzgrid;
     t1 = modf (t1, &t2);
@@ -74,6 +76,7 @@ int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, in
         igridz++;
     
     if (igridz >= nzgrid) igridz -= nzgrid ;
+    if (igridz <0) igridz += nzgrid ;
 
     /*Now find the rank of the owner*/
 //    pe = (igridx / pxgrid) * PE_Y * PE_Z + (igridy / pygrid) * PE_Z + (igridz / pzgrid);
