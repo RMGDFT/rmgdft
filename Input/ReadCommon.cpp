@@ -746,7 +746,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of self consistent steps to perform. Inner loop for hybrid functionals. ", 
             "max_scf_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("freeze_ldaU_steps", &lc.freeze_ldaU_steps, 1, INT_MAX, 20,
+    If.RegisterInputKey("freeze_ldaU_steps", &lc.freeze_ldaU_steps, 1, INT_MAX, 500,
             CHECK_AND_FIX, OPTIONAL, 
             "freeze the ldaU occupations ns_occ after this step. ", 
             "freeze_ldaU_steps must be greater than 1. Resetting to the default value of 20 ", CONTROL_OPTIONS);

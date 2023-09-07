@@ -73,7 +73,6 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     double mu = 0.0, dmu, mu1, mu2, f, fmid;
 
     nks = eigs.size();
-    int ntot_states = nspin * nks;
 
     if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
     {
@@ -107,7 +106,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     mu1 = 1.0e30;
     mu2 = -mu1; 
 
-    for(idx = 0; idx < ntot_states; idx++)
+    for(idx = 0; idx < nks; idx++)
     {
         mu1 = std::min (eigs[idx], mu1);
         mu2 = std::max (eigs[idx], mu2); 
@@ -117,6 +116,8 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     double mu2_tem = mu2;    
     MPI_Allreduce (&mu1_tem, &mu1, 1, MPI_DOUBLE, MPI_MIN, pct.kpsub_comm);
     MPI_Allreduce (&mu2_tem, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
+    MPI_Allreduce (&mu1_tem, &mu1, 1, MPI_DOUBLE, MPI_MIN, pct.spin_comm);
+    MPI_Allreduce (&mu2_tem, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.spin_comm);
 
 
     fmid = occ_allstates (mu2, occ, eigs, width, nel, weight, occ_flag, mp_order);

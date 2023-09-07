@@ -250,7 +250,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
 
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) && ct.scf_steps  < ct.freeze_ldaU_steps )
+//    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) && ct.scf_steps  < ct.freeze_ldaU_steps )
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0))
     {
         RmgTimer("3-MgridSubspace: ldaUop x psi");
         int pstride = Kptr[0]->ldaU->ldaU_m;
@@ -302,7 +303,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         }
         ct.ns_occ_rms = sqrt(ct.ns_occ_rms / occ_size);
 
-        MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
+        if( ct.scf_steps  < ct.freeze_ldaU_steps )
+        {
+           MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
+        }
 
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
@@ -393,12 +397,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
     }
 
-    if( (CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) && ct.potential_acceleration_constant_step > 1.0e-5)
+    if( (CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) )
     {
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code
         // will give us a variational energy.
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll)
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll 
+                && ct.potential_acceleration_constant_step > 1.0e-5)
         {
             ct.scf_correction = 0.0;
             for (int idx = 0; idx < FP0_BASIS; idx++)

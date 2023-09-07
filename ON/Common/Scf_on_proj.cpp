@@ -171,7 +171,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     }
 
 
-    if(ct.num_ldaU_ions > 0)
+    if(ct.num_ldaU_ions > 0 && ct.scf_steps < ct.freeze_ldaU_steps)
     {
         RT0 = new RmgTimer("2-SCF: LDA+U");
         ldaU_on->calc_ns_occ(*LocalOrbital, mat_X, *Rmg_G);

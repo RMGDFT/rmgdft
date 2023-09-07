@@ -109,7 +109,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      "Output file/path to store wavefunctions and other binary data.\n",
                      "");
 
-    If.RegisterInputKey("LocalizedOrbitalLayout", NULL, &lc.LocalizedOrbitalLayout, "Distribute",
+    If.RegisterInputKey("LocalizedOrbitalLayout", NULL, &lc.LocalizedOrbitalLayout, "Projection",
             CHECK_AND_FIX, OPTIONAL, orbital_layout, 
             "Localized rbitals layout \"Distribute\", \"Projetion\".\n", 
             "Localized Orbital Layout mustbe one of \"Distribute\", or \"Projetion\".\n");

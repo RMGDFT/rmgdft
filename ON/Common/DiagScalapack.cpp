@@ -254,6 +254,11 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         {
             ct.kp[pct.kstart+kpt].kstate[st].eig[0]= eigs_all[kpt * numst + st];
         }
+        if(ct.spin_flag)
+        {
+            get_opposite_eigvals( states );
+        }
+
         if(pct.gridpe == 0) write_eigs(ct.kp[kpt].kstate, kpt_xtal);
     }
     
