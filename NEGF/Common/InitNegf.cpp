@@ -337,5 +337,19 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     if (pct.imgpe == 0) printf ("completed: initnegf \n");
 
+
+    for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
+
+    // Set up autotuning finite differencing
+    FiniteDiff FD(&Rmg_L);
+    FD.cfac[0] = 0.0;
+    FD.cfac[1] = 0.0;
+    //for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        // use gamma point atomic orbital now
+        int kpt = 0;
+        GetFdFactor(kpt);
+    }
+
 }                               /* end init */
 
