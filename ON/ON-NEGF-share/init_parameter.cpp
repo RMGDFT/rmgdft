@@ -77,8 +77,6 @@ void init_parameter(STATE * states)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
 
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
-        ct.kp[kpt + (int)ct.spin_polarization * ct.num_states].kstate =
-            &states[kpt * ct.num_states + (int)ct.spin_polarization * ct.num_kpts * ct.num_states];
         ct.kp[kpt].kidx = kpt;
 
     }                           /* end for */

@@ -212,6 +212,14 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     else     /* in case no fixed occupations available, calculate number of states */
     {
         ct.nel = ct.ionic_charge + ct.background_charge;
+        if(ct.num_unocc_states < 0)
+        {
+            // num of unocc states set to 10 or 10% which is larger
+            ct.num_unocc_states = std::max(10, int(ct.nel * 0.5 * 0.1) );
+        }
+
+
+
         for (idx = 0; idx < nspin_occ; idx++) {
             num_states_spf[idx] = (int) ceil(0.5 * ct.nel * ct.noncoll_factor) + ct.num_unocc_states;
             if(idx == 0) ct.nel_up = 0.5*(ct.nel + 1.0);

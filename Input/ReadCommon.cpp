@@ -671,10 +671,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The number of band used in rmg-qmcpack interface. ", 
             "By default without this input, it will be set to number of states. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
+    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, -INT_MAX, INT_MAX, -1, 
             CHECK_AND_FIX, OPTIONAL, 
             "The number of unoccupied orbitals. A value that is 15-20% of the number of occupied orbitals generally works well.", 
-            "Unoccupied_states_per_kpoint must be greater than 0. Setting to default value of 10. ", OCCUPATION_OPTIONS);
+            "if Unoccupied_states_per_kpoint < 0, it will be set to 10% of the number of occupied states or 10 which is larger", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
             CHECK_AND_FIX, OPTIONAL, 
