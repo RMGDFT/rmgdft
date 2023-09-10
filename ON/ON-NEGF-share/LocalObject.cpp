@@ -497,6 +497,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     fftw_free (gbptr);
     fftw_free (beptr);
 
+    MemcpyHostDevice(this->storage_size, this->storage_cpu, this->storage_gpu);
 }
 
 //localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
