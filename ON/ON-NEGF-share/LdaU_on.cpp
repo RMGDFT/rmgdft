@@ -88,6 +88,20 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
         }
     }
 
+    map_to_ldaU_ion.resize(Atoms.size());
+    int ion_tem = 0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        map_to_ldaU_ion[ion] = -1;
+        if(Species[ Atoms[ion].species ].num_ldaU_orbitals > 0)
+        {
+            map_to_ldaU_ion[ion] = ion_tem;
+            ion_tem++;
+            ldaU_ion_index.push_back(ion);
+        }
+    }
+
+    this->num_ldaU_ions = ldaU_ion_index.size();
     this->Ehub = 0.0;
     this->Ecorrect = 0.0;
 
@@ -256,4 +270,6 @@ void LdaU_on::write_ldaU(void)
         }
     }
 }
+
+
 

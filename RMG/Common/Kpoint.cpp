@@ -225,6 +225,12 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             if(idx == 0) ct.nel_up = 0.5*(ct.nel + 1.0);
             if(idx == 1) ct.nel_down = 0.5*(ct.nel - 1.0);
         }
+
+        if(nspin_occ == 1)
+        {
+            ct.nel_up = 0.5 * ct.nel;
+            ct.nel_down = 0.5 * ct.nel;
+        }
     }
 
     /* re-assign the number of states for global variables */

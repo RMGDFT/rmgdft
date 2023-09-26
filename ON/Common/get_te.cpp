@@ -237,9 +237,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     if (ct.spin_flag)
     {
         /* Print the total magetization and absolute magnetization into output file */
-        progress_tag ();
         printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-        progress_tag ();
         printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 

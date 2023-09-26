@@ -46,6 +46,10 @@ public:
     void ReadLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
     void write_ldaU(void);
 
+    int num_ldaU_ions;
+    std::vector<int>ldaU_ion_index;
+    std::vector<int>map_to_ldaU_ion;
+
 
     LocalObject<double> *AtomicOrbital;
     int tot_orbitals_ldaU;

@@ -1168,8 +1168,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         {
             MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
-            int my_rank = pct.gridpe;
-
             std::vector<double> ExxIntGlob;
             ExxIntGlob = ExxInt;
             ExxInt.resize(nst2 * nst2_perpe);
@@ -2362,8 +2360,17 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     dims.resize(8, 0);
     dims[2] = ct.klist.num_k_all;
     dims[3] = ct.qmc_nband * dims[2];
-    dims[4] = ct.qmc_nband;
-    dims[5] = ct.qmc_nband;
+    int Nalpha = std::round(ct.nel_up);
+    int Nbeta = std::round(ct.nel_down);
+
+    if(Nalpha+ Nbeta != ct.nel)
+    {
+        std::cout << "Napha + Nbeta != nel" << Nalpha << "  " << Nbeta << "  " << ct.nel << std::endl;
+        throw RmgFatalException() << "spin up and down electron count iis wrong  \n";
+    }
+
+    dims[4] = Nalpha * dims[2];
+    dims[5] = Nbeta * dims[2];
     dims[7] = 0;
 
     writeNumsToHDF("dims", dims, h_group);
@@ -2411,26 +2418,41 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     hid_t msd_group = makeHDFGroup("NOMSD", wf_group);
 
     int M = ct.qmc_nband;
-    int Nalpha = ct.qmc_nband;
-    int Nbeta = ct.qmc_nband;
-    int nnz = ct.qmc_nband;
+    int Nalpha = std::round(ct.nel_up);
+    int Nbeta = std::round(ct.nel_down);
+
+    if(Nalpha+ Nbeta != ct.nel) 
+    {
+        std::cout << "Napha + Nbeta != nel" << Nalpha << "  " << Nbeta << "  " << ct.nel << std::endl;
+        throw RmgFatalException() << "spin up and down electron count iis wrong  \n";
+    }
+
+    M = M * ct.klist.num_k_all;
+    Nalpha = Nalpha * ct.klist.num_k_all;
+    Nbeta = Nbeta * ct.klist.num_k_all;
+    int nnz = Nalpha;
     int Nd = 1;
     int walker_type = 1;
 
     //for spin 0
     {
         std::vector<double> psi0_alpha;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nalpha; j++) {
-                if(i == j) {
-                    psi0_alpha.push_back(1.0);
-                    psi0_alpha.push_back(0.0);
-                }
-                else {
-                    psi0_alpha.push_back(0.0);
-                    psi0_alpha.push_back(0.0);
-                }
 
+        for(int k1 = 0; k1 < ct.klist.num_k_all; k1++){
+            for(int i = 0; i < ct.qmc_nband; i++)  {
+                for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+                    for(int j = 0; j < Nalpha/ct.klist.num_k_all; j++) {
+                        if(i == j && k1 == k2) {
+                            psi0_alpha.push_back(1.0);
+                            psi0_alpha.push_back(0.0);
+                        }
+                        else {
+                            psi0_alpha.push_back(0.0);
+                            psi0_alpha.push_back(0.0);
+                        }
+
+                    }
+                }
             }
         }
 
@@ -2447,14 +2469,20 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
         writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
 
         std::vector<int> dims_t;
-        dims_t.push_back(M);
         dims_t.push_back(Nalpha);
+        dims_t.push_back(M);
         dims_t.push_back(nnz);
         writeNumsToHDF("dims", dims_t, T0_group);
 
         std::vector<int> jdata, ptr_begin, ptr_end;
+
+        for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+            for(int j = 0; j < Nalpha/ct.klist.num_k_all; j++) {
+                jdata.push_back(k2 * ct.qmc_nband + j);
+            }
+        }
+
         for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
             ptr_begin.push_back(i);
             ptr_end.push_back(i+1);
         }
@@ -2482,20 +2510,24 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     if(ct.nspin == 2)
     {
         std::vector<double> psi0_beta;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nbeta; j++) {
-                if(i == j) {
-                    psi0_beta.push_back(1.0);
-                    psi0_beta.push_back(0.0);
-                }
-                else {
-                    psi0_beta.push_back(0.0);
-                    psi0_beta.push_back(0.0);
+        for(int k1 = 0; k1 < ct.klist.num_k_all; k1++){
+            for(int i = 0; i < ct.qmc_nband; i++)  {
+                for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+                    for(int j = 0; j < Nbeta/ct.klist.num_k_all; j++) {
+                        if(i == j && k1 == k2) {
+                            psi0_beta.push_back(1.0);
+                            psi0_beta.push_back(0.0);
+                        }
+                        else {
+                            psi0_beta.push_back(0.0);
+                            psi0_beta.push_back(0.0);
+                        }
+
+                    }
                 }
 
             }
         }
-
         hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nbeta), 2};
         writeNumsToHDF("Psi0_beta", psi0_beta, msd_group, 3, dims);
 
@@ -2509,14 +2541,18 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
         writeNumsToHDF("data_", t1_data, T1_group, 2, dims_t1);
 
         std::vector<int> dims_t;
-        dims_t.push_back(M);
         dims_t.push_back(Nbeta);
+        dims_t.push_back(M);
         dims_t.push_back(nnz);
         writeNumsToHDF("dims", dims_t, T1_group);
 
         std::vector<int> jdata, ptr_begin, ptr_end;
+        for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+            for(int j = 0; j < Nbeta/ct.klist.num_k_all; j++) {
+                jdata.push_back(k2 * ct.qmc_nband + j);
+            }
+        }
         for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
             ptr_begin.push_back(i);
             ptr_end.push_back(i+1);
         }

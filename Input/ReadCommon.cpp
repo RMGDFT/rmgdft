@@ -741,7 +741,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Diagonalization period (per scf step). Mainly for debugging and should not be changed for production.", 
             "Diagonalization period must be greater than 0. Resetting to the default value of 1. ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
+    If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 100,
             CHECK_AND_FIX, OPTIONAL, 
             "Maximum number of self consistent steps to perform. Inner loop for hybrid functionals. ", 
             "max_scf_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
