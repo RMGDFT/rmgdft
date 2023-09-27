@@ -2377,7 +2377,7 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
 
     std::vector<double> Energies;
 
-    Energies.push_back(ct.II);
+    Energies.push_back(ct.II * ct.klist.num_k_all);
     Energies.push_back(0.0);
     writeNumsToHDF("Energies", Energies, h_group);
 
