@@ -88,6 +88,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     std::vector<std::string>::iterator it, it1;
     nkpts=0;
 
+    double norm_weight = 0.0;
     for (it = KpointList.begin(); it != KpointList.end(); ++it) {
 
         std::string Kpoint = *it;
@@ -120,8 +121,13 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
             lc.kp[nkpts].kweight = 1.0;
         }
 
+        norm_weight += lc.kp[nkpts].kweight;
         nkpts++;
 
+    }
+
+    for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
+        lc.kp[kpt].kweight /= norm_weight;
     }
 
     lc.is_gamma = true;
