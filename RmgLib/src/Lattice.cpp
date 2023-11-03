@@ -237,7 +237,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
     /* Initialise the appropriate variables */
 
-    if(Lattice::ibrav == None || flag)
+    if(Lattice::ibrav == No_Lattice || flag)
     {
         for (ir = 0; ir < 3; ir++)
         {
@@ -307,7 +307,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             Lattice::a2[ir] = 0.0;
         }
     }
-    if(Lattice::ibrav == None) return;
+    if(Lattice::ibrav == No_Lattice) return;
 
     alat = celldm[0];
     switch (Lattice::ibrav)
@@ -1074,7 +1074,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
 */
   switch(ibrav)
   {
-      case None:
+      case No_Lattice:
          celldm[0] = 1.0;
          break;
       case CUBIC_PRIMITIVE:

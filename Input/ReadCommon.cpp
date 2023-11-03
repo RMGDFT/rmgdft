@@ -1534,12 +1534,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     }
 
     // Check if a lattice vector was specified and if not 
-    if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
+    if(lattice_vector.vals == def_lattice_vector.vals && ibrav == No_Lattice)
         rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
 
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.
-    if(ibrav == None)
+    if(ibrav == No_Lattice)
     {
         double Lunit = 1.0;
         if (Verify ("lattice_units", "Angstrom", InputMap))
