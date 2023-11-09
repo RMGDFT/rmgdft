@@ -85,7 +85,7 @@ void Write_nsocc(char *name, Kpoint<KpointType> * kptr)
     {
         int fhand = FileOpenAndCreate(newname, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if (fhand < 0) {
-            rmg_printf("Can't open data file %s", newname);
+            rmg_printf("Can't open data file %s", newname.c_str());
             rmg_error_handler(__FILE__, __LINE__, "Terminating.");
         }
 
