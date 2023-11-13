@@ -244,7 +244,11 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 		    rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
 	    }
 
-	    fprintf(fhandle,"%lu\n\n", Atoms.size());
+	    fprintf(fhandle,"%lu\n", Atoms.size());
+	    fprintf(fhandle, "Lattice=\"");
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g ", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g ", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g\"\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
 	    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
 	    {   
@@ -257,10 +261,6 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 				    a0_A*xcrds[0], a0_A*xcrds[1], a0_A*xcrds[2]);
 	    }
 
-	    fprintf(fhandle, "lattice vectors\n");
-	    fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
-	    fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
-	    fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
 	    fclose (fhandle);
 	    fflush(NULL);
