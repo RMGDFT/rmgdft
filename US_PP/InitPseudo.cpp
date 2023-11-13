@@ -142,7 +142,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         s1 = (double)this->nldim / (double)G->get_NZ_GRID(1);
         a2[0] = s1*L.get_a2(0);a2[1] = s1*L.get_a2(1);a2[2] = s1*L.get_a2(2);
 
-        LL->set_ibrav_type(None);
+        LL->set_ibrav_type(No_Lattice);
         LL->latgen(celldm, &omega, a0, a1, a2, true);
 
         this->prj_pwave = new Pw(*OG, *LL, 1, false);
