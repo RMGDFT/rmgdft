@@ -107,7 +107,9 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
     MPI_Comm_size (this_comm, &npes);
     if (nprow * npcol > npes)
     {
-        error_handler ("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
+        if(pct.gridpe==0) 
+            printf("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
 

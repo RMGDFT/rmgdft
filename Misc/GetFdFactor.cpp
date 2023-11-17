@@ -122,7 +122,7 @@ void GetFdFactor(int kpt)
                 ApplyAOperator (orbital, work, kvec);
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
                 if(ct.verbose && pct.gridpe == 0) 
-                    printf("FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
+                    fprintf(ct.logfile, "FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
                 c2 += 1.0; 
@@ -132,7 +132,7 @@ void GetFdFactor(int kpt)
             sp.fd_slopes.push_back(m);
             sp.fd_yint.push_back(diffs[0]);
 
-            if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
+            if(ct.verbose && pct.gridpe==0)fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
             x_int = std::max(x_int, 0.0);
             sp.fd_xint.push_back(x_int);
 
@@ -168,7 +168,7 @@ void GetFdFactor(int kpt)
         FD.cfac[1] = a / fweight;
     }
 
-    if(ct.verbose && pct.gridpe == 0) printf("NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
+    if(ct.verbose && pct.gridpe == 0) fprintf(ct.logfile,"NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
 
     if(FD.cfac[0] < 0.0)
     {

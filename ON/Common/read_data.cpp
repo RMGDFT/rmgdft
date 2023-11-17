@@ -142,7 +142,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
             if (nbytes != (size_t)idx)
             {
                 printf("\n read %zd is different from %d for state %d", nbytes, idx, state);
-                error_handler("Unexpected end of file orbit");
+                rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
             }
 
             close(fhand);

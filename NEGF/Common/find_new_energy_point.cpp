@@ -55,7 +55,8 @@ double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, 
 
     if(tot_energy_point % 4 != 1) 
     {   
-        error_handler("\n tot_energy_point is not equal n*4+1 %d", tot_energy_point);
+        if(pct.gridpe==0) printf("\n tot_energy_point is not equal n*4+1 %d", tot_energy_point);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
     //  copy the original conductance and energy point to a work array

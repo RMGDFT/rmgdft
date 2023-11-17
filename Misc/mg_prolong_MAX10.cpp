@@ -59,8 +59,10 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
 
     /*Order has to be even number */
     if (order % 2)
-        error_handler ("This function works only for even orders, but order %d was specified",
-                       order);
+    {
+        if(pct.gridpe==0) printf("This function works only for even orders, but order %d was specified", order);
+        rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+    }
 
 
     for (ix = 0; ix < MAX_ORDER; ix++)

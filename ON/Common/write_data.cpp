@@ -161,7 +161,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
             amode = S_IREAD | S_IWRITE;
             int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
             if (fhand < 0)
-                error_handler(" Unable to write file ");
+                rmg_error_handler(__FILE__, __LINE__, " Unable to write file ");
 
             write(fhand, states[state].psiR, states[state].size * sizeof(double));
 
@@ -262,7 +262,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
         int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0)
-            error_handler(" Unable to write file ");
+            rmg_error_handler(__FILE__, __LINE__, " Unable to write file ");
 
         write(fhand, &ixmin, sizeof(int));
         write(fhand, &ixmax, sizeof(int));

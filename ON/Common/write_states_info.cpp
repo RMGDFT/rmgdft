@@ -45,7 +45,7 @@ void write_states_info(char *name, STATE * states)
 
         fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0)
-            error_handler(" Unable to write file ");
+            rmg_error_handler(__FILE__, __LINE__, " Unable to write file ");
 
         for (st = 0; st < ct.num_states; st++)
         {

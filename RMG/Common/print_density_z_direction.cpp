@@ -50,9 +50,9 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
 
     /*Check consistency */
     if ((grid_x >= get_PE_X() * px0_grid) || (grid_x < 0))
-        error_handler ("grid_x is specified incorrectly");
+        rmg_error_handler (__FILE__, __LINE__, "grid_x is specified incorrectly");
     if ((grid_y >= get_PE_Y() * py0_grid) || (grid_y < 0))
-        error_handler ("grid_y is specified incorrectly");
+        rmg_error_handler (__FILE__, __LINE__, "grid_y is specified incorrectly");
 
     p0_basis = px0_grid * py0_grid * pz0_grid;
 

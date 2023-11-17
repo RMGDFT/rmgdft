@@ -57,7 +57,7 @@ STATE *init_states ()
     {
     	repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
     	if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )
-		error_handler ("Fixed occupation for both spin up and down must be specified !!!");
+		rmg_error_handler (__FILE__,__LINE__,"Fixed occupation for both spin up and down must be specified !!!");
 	tbuf[0] = ct.occupation_str_spin_up;
 	tbuf[1] = ct.occupation_str_spin_down;
 	num_states_spf[0] = 0;
@@ -84,7 +84,7 @@ STATE *init_states ()
         	{
             		count_states[idx] += n;
             		if (nocc[idx] == MAX_NOCC)
-                		error_handler ("Too many blocks in repeat count for state occupations");  
+                		rmg_error_handler (__FILE__,__LINE__,"Too many blocks in repeat count for state occupations");  
 				/* two block example  3 1.0  4 0.0*/
             		occ[nocc[idx] + MAX_NOCC * idx].n = n;
             		occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
@@ -98,7 +98,7 @@ STATE *init_states ()
         if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
 	{       
 		printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
-		error_handler("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
+		rmg_error_handler(__FILE__,__LINE__,"num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
 	}
         
 	ct.background_charge = ct.nel - ct.ionic_charge; 

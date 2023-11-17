@@ -111,7 +111,7 @@ void init_parameter(STATE * states)
     if (get_anisotropy() > 1.1)
     {
         dprintf("\n ct.hmaxgrid  %f %f ", ct.hmaxgrid, ct.hmingrid);
-        error_handler(" Anisotropy too large");
+        rmg_error_handler(__FILE__, __LINE__, " Anisotropy too large");
     }
     /* Set discretization array */
     ct.xcstart = ZERO;

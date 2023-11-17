@@ -91,7 +91,7 @@ void get_cond_frommatrix_kyz ()
 	ntot = nkp[0] * nkp[1] * nkp[2];
 	printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-	if (ntot == 0 ) error_handler ("wrong number of kpoints in cond.in");
+	if (ntot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
 
 	my_malloc( kvecx, ntot, double );
 	my_malloc( kvecy, ntot, double );

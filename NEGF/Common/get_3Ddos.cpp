@@ -57,7 +57,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     int nkp_tot = nkp[0] * nkp[1] * nkp[2];
     printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-    if (nkp_tot == 0 ) error_handler ("wrong number of kpoints in cond.in");
+    if (nkp_tot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
 
     my_malloc( kvecx, nkp_tot, double );
     my_malloc( kvecy, nkp_tot, double );

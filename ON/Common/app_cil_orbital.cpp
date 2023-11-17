@@ -361,7 +361,7 @@ double app_cil_orbital (double * a, double * b, int dimx, int dimy, int dimz,
 
         break;
     default:
-        error_handler ("Lattice type not implemented");
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 
     }                           /* end switch */
 

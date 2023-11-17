@@ -51,7 +51,7 @@ void init_wf_atom(STATE * states)
             {
                 printf("\n ddd %d %d %d", st_glob, ion, species);
                 printf("\n unable to open file: %s \n", newname);
-                error_handler(" Unable to open file ");
+                rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
             }
 
             idx = states[st_glob].size * sizeof(double);
@@ -61,7 +61,7 @@ void init_wf_atom(STATE * states)
                 printf("\n read %d is different from %d ", nbytes, idx);
                 printf("\n file name: %s\n", newname);
 
-                error_handler("Unexpected end of file orbit");
+                rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
             }
             LocalOrbital->AssignOrbital(st, phi);
         }
@@ -84,7 +84,7 @@ void init_wf_atom(STATE * states)
             {
                 printf("\n ddd %d %d %d", state, ion, species);
                 printf("\n unable to open file: %s \n", newname);
-                error_handler(" Unable to open file ");
+                rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
             }
 
             idx = states[state].size * sizeof(double);
@@ -94,7 +94,7 @@ void init_wf_atom(STATE * states)
                 printf("\n read %d is different from %d ", nbytes, idx);
                 printf("\n file name: %s\n", newname);
 
-                error_handler("Unexpected end of file orbit");
+                rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
             }
 
 

@@ -26,6 +26,10 @@
  * SOURCE
  */
 
+#ifndef RMG_COMMON_PROTOTYPES1_H
+#define RMG_COMMON_PROTOTYPES1_H 1
+
+
 #include <stdbool.h>
 
 /* Function prototypes */
@@ -299,4 +303,12 @@ void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
 void set_pbc(double *position, int num_ions, int num_images);
+void inline progress_tag(void)
+{
+    if(pct.gridpe==0)
+        fprintf(ct.logfile, "[ %3d %3d %4d %8.0f ] %s: ",
+           ct.md_steps, ct.scf_steps, ct.total_scf_steps,
+           my_crtc() - ct.time0, (strrchr(__FILE__, '/')+1));
+}
 
+#endif
