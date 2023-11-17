@@ -459,21 +459,61 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     {
         double timex = my_crtc ();
         double *localrho = new double[Atoms.size()];
-        Voronoi_charge->LocalCharge(rho, localrho);
-        for(size_t ion = 0; ion < Atoms.size(); ion++)
-            Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
+        if(ct.nspin == 1)
+        {
+            Voronoi_charge->LocalCharge(rho, localrho);
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
+        }
+
+        if(ct.nspin == 2)
+        {
+            double *localrho_up = new double[Atoms.size()];
+            double *localrho_dn = new double[Atoms.size()];
+            Voronoi_charge->LocalCharge(rho, localrho_up);
+            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_dn);
+
+            printf("\n@ION  Ion  Species      Magnetization(Voronoi)\n");
+
+            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+            {
+                ION &Atom = Atoms[ion];
+                SPECIES &AtomType = Species[Atom.species];
+
+                printf ("@ION  %3lu  %4s        %7.3f \n",
+                        ion + 1, AtomType.atomic_symbol,localrho_up[ion]-localrho_dn[ion]);
+            }
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho_up[ion] - localrho_dn[ion];
+            delete [] localrho_up;
+            delete [] localrho_dn;
+        }
+
         if(ct.noncoll)
         {
-            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho);
+            Voronoi_charge->LocalCharge(rho, localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_x %ld %f", ion, localrho[ion]);
-            Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho);
-            for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_y %ld %f", ion, localrho[ion]);
-            Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho);
-            for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_z %ld %f", ion, localrho[ion]);
+                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
+            double *localrho_x = new double[Atoms.size()];
+            double *localrho_y = new double[Atoms.size()];
+            double *localrho_z = new double[Atoms.size()];
 
+            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_x);
+            Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho_y);
+            Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho_z);
+            printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
+            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+            {
+                ION &Atom = Atoms[ion];
+                SPECIES &AtomType = Species[Atom.species];
+
+                printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
+                        ion + 1, AtomType.atomic_symbol,localrho_x[ion], localrho_y[ion], localrho_z[ion]);
+            }
+
+            delete [] localrho_x;
+            delete [] localrho_y;
+            delete [] localrho_z;
         }
         delete [] localrho;
 
