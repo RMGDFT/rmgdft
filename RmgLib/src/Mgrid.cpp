@@ -217,9 +217,15 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }
 
     int ixoff, iyoff, izoff;
-    int mindim = Mgrid::toffsets[level-1];
-    int offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
-    bool check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
+    int mindim, offset;
+    bool check;
+    if(level)
+    {
+        mindim = Mgrid::toffsets[level-1];
+        offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
+        check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
+    } 
+    if(!check) offset = 1;
 
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);

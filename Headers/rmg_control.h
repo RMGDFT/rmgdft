@@ -14,6 +14,11 @@
     #include <rocsolver/rocsolver.h>
 #endif
 
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include <sycl/queue.hpp>
+#endif
+
 #include "Klist.h"
 
 /** @name CONTROL
@@ -757,7 +762,7 @@ public:
     bool use_cublasxt;
 
 #endif
-    
+
     /* RMG2BGW options */
     bool rmg2bgw;
     double ecutrho, ecutwfc;

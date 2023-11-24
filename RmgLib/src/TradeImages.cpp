@@ -349,11 +349,11 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     stop = zlen * ACTIVE_THREADS;
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<12),
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<12), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<12),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<12), TradeImages::comm, &mrstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -418,11 +418,11 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     stop = ylen * ACTIVE_THREADS;
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<12),
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<12), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<12),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<12), TradeImages::comm, &mrstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -485,11 +485,11 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     T->thread_barrier_wait(false);
     if(tid == 0) {
 
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<16),
-                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_E], (5<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<12),
+                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_E], (5<<12), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_E], (6<<16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_E], (6<<12),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<12), TradeImages::comm, &mrstatus);
 
     }
     T->thread_barrier_wait(false);
@@ -725,8 +725,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     stop = dimx * dimy * ACTIVE_THREADS;
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<16), swbuf2x_f, factor*stop,
-		  MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<12), swbuf2x_f, factor*stop,
+		  MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<12), TradeImages::comm, &mstatus);
     } 
     T->thread_barrier_wait(false);
 
@@ -756,8 +756,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     stop = dimx * dimy * ACTIVE_THREADS;
     T->thread_barrier_wait(false);
    if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<16), swbuf2x_f, factor*stop,
-                      MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<12), swbuf2x_f, factor*stop,
+                      MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<12), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -790,8 +790,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<12), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<12), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -816,8 +816,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<12), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<12), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -846,8 +846,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_E], (5<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_E], (5<<12), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<12), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait(false);
 
@@ -859,8 +859,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait(false);
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[this->cfactor][NB_E], (6<<16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<12), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[this->cfactor][NB_E], (6<<12), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait(false);
     for(int idx = 0;idx < stop;idx++)
@@ -935,11 +935,9 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
 
     factor = sizeof(RmgType);
 
-    // The actual tag passed to mpi consists of the state index shifted left 5 bits and
-    // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
-    // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
-    // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
-    ntag = (istate<<5) + tag;
+    // The actual tag passed to mpi consists of the state index hashed with 2003
+    // shifted left 5 bits and the passed tag parameter. 
+    ntag = ((istate%2003)<<5) + tag;
 
     target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
 
@@ -964,11 +962,9 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    // The actual tag passed to mpi consists of the state index shifted left 5 bits and
-    // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
-    // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
-    // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
-    qitem.mpi_tag = (istate<<5) + tag;
+    // The actual tag passed to mpi consists of the state index hashed with 2003
+    // shifted left 5 bits and the passed tag parameter. 
+    qitem.mpi_tag = ((istate%2003)<<5) + tag;
     qitem.target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
     qitem.type = type;
     qitem.buf = (void *)buf;

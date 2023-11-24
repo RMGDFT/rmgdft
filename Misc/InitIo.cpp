@@ -69,6 +69,12 @@
     #endif
 #endif
 
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include "oneapi/mkl/blas.hpp"
+    #include "mkl.h"
+#endif
+
 #if LINUX
 void get_topology(void)
 {
@@ -604,6 +610,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #endif
 
+#endif
+
+#if SYCL_ENABLED
+//    auto sycl_context = ct.Rmg_SyclQ.get_context();
+    sycl::queue Q(sycl::gpu_selector{});
+    std::string dev_str = Q.get_device().get_info<sycl::info::device::name>();
+    rmg_printf("Running on: %s\n", dev_str.c_str());
 #endif
 
     // This is placed down here since the IO is not setup yet when provided is obtained above.
