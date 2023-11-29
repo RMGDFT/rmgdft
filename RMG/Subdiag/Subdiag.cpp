@@ -94,7 +94,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     static KpointType *global_matrix1;
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     if(!global_matrix1) gpuMallocHost((void **)&global_matrix1, nstates * nstates * sizeof(KpointType));     
     KpointType *Hij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
@@ -311,7 +311,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     delete [] D;
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
 #if CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
@@ -332,7 +332,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     delete [] Hij;
 #endif
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
 #endif

@@ -112,7 +112,27 @@ cudaError_t gpuGetDeviceCount(int *count);
     }                                                                                       \
 }
 
+#elif SYCL_ENABLED
 
+int gpuMalloc(void **ptr, size_t size);
+int gpuMallocManaged(void **ptr, size_t size);
+int gpuMallocHost(void **ptr, size_t size);
+int gpuFree(void *ptr);
+int gpuFreeHost(void *ptr);
+//int gpuMemcpy(void *dst, const void *src, size_t sizeBytes);
+//int gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream);
+//int gpuStreamSynchronize (cudaStream_t stream);
+//int gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream);
+//int gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags);
+//int gpuStreamDestroy (cudaStream_t stream);
+//int gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
+int gpuDeviceReset (void);
+int gpuSetDevice (int deviceId);
+int gpuGetDevice (int *deviceId);
+int gpuSetDeviceFlags (unsigned flags);
+int gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
+int gpuHostUnregister(void *hostPtr);
+int gpuGetDeviceCount(int *count); 
 
 #else
 void gpuMalloc(void **ptr, size_t size);

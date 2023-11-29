@@ -26,7 +26,7 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
 // Since cudamalloc is very slow we grab a large buffer of GPU ram
 // at initialization time and use GpuMalloc to return pointers into
@@ -56,7 +56,7 @@ void InitGpuMalloc(size_t bufsize)
     // Add alignment factors
     bufsize += GPU_ALIGNMENT * MAX_GPU_BLOCKS;
     custat = gpuMalloc((void **)&gpubuffer , bufsize  );
-    RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed in InitGpuMalloc\n");
+    //RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed in InitGpuMalloc\n");
     max_size = bufsize;
     curptr = (unsigned char*)gpubuffer;
 

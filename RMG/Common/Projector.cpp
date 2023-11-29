@@ -658,7 +658,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     if(this->num_tot_proj == 0) return;
     int pbasis = kptr->pbasis;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     KpointType *nlarray = (KpointType *)RmgMallocHost(sizeof(KpointType) * this->num_tot_proj * num_states);
 #else
     KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
@@ -681,7 +681,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
         }
     }
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     RmgFreeHost(nlarray);
 #else
     delete [] nlarray;

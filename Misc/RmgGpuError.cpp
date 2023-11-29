@@ -131,5 +131,22 @@ void ProcessGpublasError(hipblasStatus_t hipstat)
 
 }
 
+#elif SYCL_ENABLED
+#include "rmgtypedefs.h"
+void RmgGpuError(const char *file, int line, const gpuError_t hipStatus, const char * errorMessage)
+{
+//    if (hipStatus != hipSuccess) {
+//        rmg_error_handler(file, line, errorMessage);
+//    }
+}
+
+
+//void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage)
+//{
+//    if (status != HIPBLAS_STATUS_SUCCESS) {
+//        rmg_error_handler(file, line, errorMessage);
+//    }
+//}
+
 #endif
 

@@ -99,6 +99,20 @@ void DRmgFreeHost(void *ptr, const char *fname, size_t line)
     }
 }
 
+#elif SYCL_ENABLED
+
+void *DRmgMallocHost(size_t size, const char *fname, size_t line)
+{
+    void *ptr;
+    int retval = gpuMallocHost ( &ptr, size+16 );
+    return ptr;
+}
+
+void DRmgFreeHost(void *ptr, const char *fname, size_t line)
+{
+    gpuFreeHost(ptr);
+}
+
 #else
 
 void *DRmgMallocHost(size_t size, const char *fname, size_t line)

@@ -699,7 +699,7 @@ public:
     // Flag to indicate whether or not to use gpu managed memory
     bool gpu_managed_memory;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
 
     // Total number of usable gpu devices present in the node

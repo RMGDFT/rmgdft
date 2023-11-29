@@ -26,7 +26,7 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
 #include <sys/mman.h>
 
@@ -69,7 +69,7 @@ void InitGpuMallocHost(size_t bufsize)
     gpuError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
     custat = gpuMallocHost((void **)&host_gpubuffer , bufsize );
-    RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuHostMalloc failed in InitGpuHostMalloc\n");
+    //RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuHostMalloc failed in InitGpuHostMalloc\n");
     host_max_size = bufsize;
     host_curptr = (unsigned char*)host_gpubuffer;
 
@@ -79,7 +79,7 @@ void InitGpuMallocHost(size_t bufsize)
 void *DGpuMallocHost(size_t size, const char *fname, size_t line)
 {
 
-#if LINUX
+#if LINUX && !SYCL_ENABLED
     if(ct.require_huge_pages)
     {
         void *tptr = malloc(size);
@@ -115,7 +115,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
 
 void DGpuFreeHost(void *ptr, const char *fname, size_t line)
 {
-#if LINUX
+#if LINUX && !SYCL_ENABLED
     if(ct.require_huge_pages)
     {
         gpuHostUnregister( ptr );

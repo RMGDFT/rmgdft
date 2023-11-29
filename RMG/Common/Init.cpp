@@ -217,7 +217,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.non_local_block_size = ct.max_states;
     }
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
-#if CUDA_ENABLED || HIP_ENABLED
+
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // Blocks of pinned host memory
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
     {
@@ -294,7 +295,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         // Need to pad by the number of threads
         int maxthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
         size_t valloc = ((size_t)ct.num_kpts_pe * (size_t)(ct.run_states + maxthreads) * (size_t)P0_BASIS * ct.noncoll_factor); 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         gpuMallocHost((void **)&vexx_ptr, valloc * sizeof(OrbitalType));
 #else
         vexx_ptr = new OrbitalType[valloc];

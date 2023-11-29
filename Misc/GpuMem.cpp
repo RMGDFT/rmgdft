@@ -272,6 +272,121 @@ cudaError_t gpuGetDeviceCount(int *count)
 {
     return cudaGetDeviceCount(count);
 }
+#elif SYCL_ENABLED
+#include <omp.h>
+
+void MallocHostOrDevice(void **ptr, size_t size)
+{
+   gpuMalloc(ptr, size);
+}
+void FreeHostOrDevice(void *ptr)
+{
+    int device_id = omp_get_default_device();
+    omp_target_free(ptr, device_id);
+}
+int gpuMalloc(void **ptr, size_t size)
+{
+    int device_id = omp_get_default_device();
+    *ptr = (void *) omp_target_alloc_device(size, device_id);
+
+    if(!ptr)
+    {
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
+        return -1;
+    }
+    return 0;
+}
+
+//cudaError_t gpuMallocManaged(void **ptr, size_t size)
+//{
+//    cudaError_t cuerr = cudaMallocManaged(ptr, size);
+//    if(cuerr != cudaSuccess)
+//    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+//    return cuerr;
+//}
+
+int gpuMallocHost(void **ptr, size_t size)
+{
+    int device_id = omp_get_initial_device();
+    *ptr = (void *) omp_target_alloc_shared(size, device_id);
+
+    if(!ptr)
+    {
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
+        return -1;
+    }
+    return 0;
+}
+
+int gpuFree(void *ptr)
+{
+    int device_id = omp_get_default_device();
+    omp_target_free(ptr, device_id);
+    return 0;
+}
+
+int gpuFreeHost(void *ptr)
+{
+    int device_id = omp_get_initial_device();
+    omp_target_free(ptr, device_id);
+    return 0;
+}
+#if 0
+int gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)
+{
+    return cudaMemcpy(dst, src, sizeBytes, kind);
+}
+
+cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
+{
+    return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);
+}
+
+cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream)
+{
+    return cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
+}
+cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags)
+{
+    return cudaStreamCreateWithFlags (stream, flags);
+}
+cudaError_t gpuStreamDestroy (cudaStream_t stream)
+{
+    return cudaStreamDestroy (stream);
+}
+cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind)
+{
+    return cudaMemcpy2D (dst, dpitch, src, spitch, width, height, kind);
+}
+cudaError_t gpuDeviceReset (void)
+{
+    return cudaDeviceReset();
+}
+cudaError_t gpuSetDevice (int deviceId)
+{
+    return cudaSetDevice (deviceId);
+}
+cudaError_t gpuGetDevice (int *deviceId)
+{
+    return cudaGetDevice (deviceId);
+}
+cudaError_t gpuSetDeviceFlags (unsigned flags)
+{
+    return cudaSetDeviceFlags (flags);
+}
+cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
+{   
+    return cudaHostRegister(hostPtr, sizeBytes, flags);
+}
+cudaError_t gpuHostUnregister(void *hostPtr)	
+{
+    return cudaHostUnregister(hostPtr);
+}
+cudaError_t gpuGetDeviceCount(int *count)
+{
+    return cudaGetDeviceCount(count);
+}
+#endif
 #else
 void MallocHostOrDevice(void **ptr, size_t size)
 {

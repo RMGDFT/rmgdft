@@ -116,7 +116,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     double *eigsw = new double[2*max_states];
     bool *converged = new bool[max_states]();
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     KpointType *h_psi = (KpointType *)RmgMallocHost(pbasis_noncoll * max_states * sizeof(KpointType));
     KpointType *hr = (KpointType *)GpuMallocHost(max_states * max_states * sizeof(KpointType));
     KpointType *sr = (KpointType *)GpuMallocHost(max_states * max_states * sizeof(KpointType));
@@ -340,7 +340,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);
-            #if CUDA_ENABLED || HIP_ENABLED
+            #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
                 GpuFreeHost(vr);
                 GpuFreeHost(sr);
                 GpuFreeHost(hr);
@@ -424,14 +424,14 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
             KpointType *npsi = (KpointType *)RmgMallocHost(nstates*pbasis_noncoll*sizeof(KpointType));
 #else
             KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
 #endif
             RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, max_states, beta, npsi, pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
             RmgFreeHost(npsi);
 #else
             delete [] npsi;
@@ -486,7 +486,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
 
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     GpuFreeHost(vr);
     GpuFreeHost(sr);
     GpuFreeHost(hr);

@@ -21,11 +21,27 @@
 #define         dgemm           RMG_FC_GLOBAL(dgemm, DGEMM)
 #define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
 
+#if NOTYET_SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include "oneapi/mkl/blas.hpp"
+    #include "mkl.h"
+        auto exception_handler = [] (cl::sycl::exception_list exceptions) { 
+                for (std::exception_ptr const& e : exceptions) {
+                        try {
+                                std::rethrow_exception(e);
+                        } catch(cl::sycl::exception const& e) {
+                                std::cout << "Caught asynchronous SYCL exception during GEMM:\n"
+                                << e.what() << std::endl;
+                        }   
+                }
+        };
+#else
+
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
 }
-
+#endif
 
 /*
   These functions are used to hide the details of the matrix multiplication data types and GPU 
@@ -230,6 +246,51 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
         if(!a_dev) gpuFree(dA);
         ProcessGpublasError(hipstat);
         RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasDgemm");
+    }
+
+#elif NOTYET_SYCL_ENABLED
+
+    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
+    oneapi::mkl::transpose sycl_transB = oneapi::mkl::transpose::nontrans;
+
+    if(!strcmp(transa, "t")) sycl_transA = oneapi::mkl::transpose::trans;
+    if(!strcmp(transa, "T")) sycl_transA = oneapi::mkl::transpose::trans;
+    if(!strcmp(transa, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
+    if(!strcmp(transa, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
+
+    if(!strcmp(transb, "t")) sycl_transB = oneapi::mkl::transpose::trans;
+    if(!strcmp(transb, "T")) sycl_transB = oneapi::mkl::transpose::trans;
+    if(!strcmp(transb, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    if(!strcmp(transb, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+
+    int ka = m;
+    if(!strcmp("n", transa)) ka = k;
+    if(!strcmp("N", transa)) ka = k;
+
+    int kb = k;
+    if(!strcmp("n", transb)) kb = n;
+    if(!strcmp("N", transb)) kb = n;
+
+    size_t a_size = (size_t)lda * (size_t)ka * (size_t)batchCount;
+    size_t b_size = (size_t)ldb * (size_t)kb * (size_t)batchCount;
+    size_t c_size = (size_t)ldc * (size_t)n * (size_t)batchCount;
+
+    cl::sycl::device dev;
+    dev = cl::sycl::device(cl::sycl::gpu_selector());
+    cl::sycl::queue q(dev, exception_handler);
+
+    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size);
+    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size);
+    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size);
+    if(beta != 0.0) memcpy(bufC.get_pointer(), C, c_size * sizeof(DataType));
+    try {
+        oneapi::mkl::blas::gemm_batch(q, sycl_transA, sycl_transB, m, n, k, alpha,
+                                bufA, lda, strideA, bufB, ldb, strideB,
+                                beta, bufC, ldc, strideC, batchCount);
+    }
+    catch(cl::sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during GEMM:\n"
+        << e.what() << std::endl << std::endl;
     }
 
 #else

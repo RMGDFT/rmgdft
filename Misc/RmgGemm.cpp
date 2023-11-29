@@ -329,9 +329,9 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     dev = cl::sycl::device(cl::sycl::gpu_selector());
     cl::sycl::queue q(dev, exception_handler);
 
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size);
-    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size);
-    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size);
+    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
+    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
+    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
     try {
         oneapi::mkl::blas::gemm(q, sycl_transA, sycl_transB, m, n, k, alpha, 
                                 bufA, lda, bufB, ldb, beta, bufC, ldc);
