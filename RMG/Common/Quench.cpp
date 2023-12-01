@@ -201,14 +201,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
             if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7)
             { 
-                printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                printf(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.scf_steps, exx_step_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
             }
         }
@@ -473,14 +473,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             Voronoi_charge->LocalCharge(rho, localrho_up);
             Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_dn);
 
-            printf("\n@ION  Ion  Species      Magnetization(Voronoi)\n");
+            rmg_printf("\n@ION  Ion  Species      Magnetization(Voronoi)\n");
 
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
                 ION &Atom = Atoms[ion];
                 SPECIES &AtomType = Species[Atom.species];
 
-                printf ("@ION  %3lu  %4s        %7.3f \n",
+                rmg_printf ("@ION  %3lu  %4s        %7.3f \n",
                         ion + 1, AtomType.atomic_symbol,localrho_up[ion]-localrho_dn[ion]);
             }
             for(size_t ion = 0; ion < Atoms.size(); ion++)
@@ -501,13 +501,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_x);
             Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho_y);
             Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho_z);
-            printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
+            rmg_printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
                 ION &Atom = Atoms[ion];
                 SPECIES &AtomType = Species[Atom.species];
 
-                printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
+                rmg_printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
                         ion + 1, AtomType.atomic_symbol,localrho_x[ion], localrho_y[ion], localrho_z[ion]);
             }
 
@@ -531,7 +531,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         /*Now we need to convert to debye units */
         if (pct.imgpe==0)
         {
-            printf("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
+            rmg_printf("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
                     DEBYE_CONVERSION *dipole[0], 
                     DEBYE_CONVERSION *dipole[1], 
                     DEBYE_CONVERSION *dipole[2]);
