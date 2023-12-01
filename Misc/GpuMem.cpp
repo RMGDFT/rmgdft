@@ -274,6 +274,11 @@ cudaError_t gpuGetDeviceCount(int *count)
 }
 #elif SYCL_ENABLED
 #include <omp.h>
+#include <unordered_map>
+
+std::unordered_map<void *, size_t> dmap; 
+std::unordered_map<void *, size_t> hmap; 
+std::unordered_map<void *, size_t> smap; 
 
 void MallocHostOrDevice(void **ptr, size_t size)
 {
@@ -291,30 +296,37 @@ int gpuMalloc(void **ptr, size_t size)
 
     if(!ptr)
     {
-        rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating device memory. Terminating.");
         return -1;
     }
+    dmap.emplace(*ptr, size);
     return 0;
 }
 
-//cudaError_t gpuMallocManaged(void **ptr, size_t size)
-//{
-//    cudaError_t cuerr = cudaMallocManaged(ptr, size);
-//    if(cuerr != cudaSuccess)
-//    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
-//    return cuerr;
-//}
+int gpuMallocManaged(void **ptr, size_t size)
+{
+    int device_id = omp_get_default_device();
+    *ptr = (void *) omp_target_alloc_shared(size, device_id);
+    if(!ptr)
+    {
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating shared memory. Terminating.");
+        return -1;
+    }
+    smap.emplace(*ptr, size);
+    return 0;
+}
 
 int gpuMallocHost(void **ptr, size_t size)
 {
     int device_id = omp_get_initial_device();
-    *ptr = (void *) omp_target_alloc_shared(size, device_id);
+    *ptr = (void *) omp_target_alloc_host(size, device_id);
 
     if(!ptr)
     {
         rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
         return -1;
     }
+    hmap.emplace(*ptr, size);
     return 0;
 }
 
@@ -322,6 +334,8 @@ int gpuFree(void *ptr)
 {
     int device_id = omp_get_default_device();
     omp_target_free(ptr, device_id);
+    dmap.erase(ptr);
+    smap.erase(ptr);
     return 0;
 }
 
@@ -329,14 +343,45 @@ int gpuFreeHost(void *ptr)
 {
     int device_id = omp_get_initial_device();
     omp_target_free(ptr, device_id);
+    hmap.erase(ptr);
+    smap.erase(ptr);
     return 0;
 }
-#if 0
-int gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)
+
+bool sycl_is_dev_ptr(void *ptr, size_t sizeBytes)
 {
-    return cudaMemcpy(dst, src, sizeBytes, kind);
+   if (auto search = dmap.find(ptr); search != dmap.end())
+   {
+       return true;
+   }
+   return false;
+}
+bool sycl_is_shared_ptr(void *ptr, size_t sizeBytes)
+{
+   if (auto search = smap.find(ptr); search != smap.end())
+   {
+       return true;
+   }
+   return false;
+}
+bool sycl_is_host_ptr(void *ptr, size_t sizeBytes)
+{
+   if (auto search = hmap.find(ptr); search != hmap.end())
+   {
+       return true;
+   }
+   return false;
 }
 
+int gpuMemcpy(void *dst, const void *src, size_t sizeBytes, int kind)
+{
+    if(kind == gpuMemcpyHostToDevice)
+        return omp_target_memcpy( dst, src, sizeBytes, 0, 0, ct.sycl_dev, ct.host_dev);
+    else
+        return omp_target_memcpy( dst, src, sizeBytes, 0, 0, ct.host_dev, ct.sycl_dev);
+}
+
+#if 0
 cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
 {
     return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);

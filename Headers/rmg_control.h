@@ -763,6 +763,11 @@ public:
 
 #endif
 
+#if SYCL_ENABLED
+    int sycl_dev;
+    int host_dev;
+#endif
+
     /* RMG2BGW options */
     bool rmg2bgw;
     double ecutrho, ecutwfc;

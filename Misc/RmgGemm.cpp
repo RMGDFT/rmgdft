@@ -13,6 +13,7 @@
 #include "ErrorFuncs.h"
 #include "RmgTimer.h"
 #include "transition.h"
+#include "rmg_error.h"
 
 
 #if CUDA_ENABLED
@@ -328,9 +329,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     cl::sycl::device dev;
     dev = cl::sycl::device(cl::sycl::gpu_selector());
     cl::sycl::queue q(dev, exception_handler);
-
     cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
+    bufA.set_final_data(nullptr);
     cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
+    bufB.set_final_data(nullptr);
     cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
     try {
         oneapi::mkl::blas::gemm(q, sycl_transA, sycl_transB, m, n, k, alpha, 
@@ -339,7 +341,8 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     catch(cl::sycl::exception const& e) {
         std::cout << "\t\tCaught synchronous SYCL exception during GEMM:\n"
         << e.what() << std::endl << std::endl;
-}
+        rmg_error_handler (__FILE__, __LINE__, "Terminating");
+    }
 
 #else
 

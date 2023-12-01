@@ -1130,13 +1130,13 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         int device = -1;
         gpuGetDevice(&device);
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        custat = cudaMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
 #elif HIP_ENABLED
         int device = -1;
         gpuGetDevice(&device);
         hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-        custat = hipMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
 #elif SYCL_ENABLED
         custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));

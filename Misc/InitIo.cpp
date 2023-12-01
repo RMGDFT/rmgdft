@@ -73,6 +73,7 @@
     #include <CL/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
+    #include <omp.h>
 #endif
 
 #if LINUX
@@ -616,7 +617,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 //    auto sycl_context = ct.Rmg_SyclQ.get_context();
     sycl::queue Q(sycl::gpu_selector{});
     std::string dev_str = Q.get_device().get_info<sycl::info::device::name>();
-    rmg_printf("Running on: %s\n", dev_str.c_str());
+    rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
+    ct.host_dev = omp_get_initial_device();
+    ct.sycl_dev = omp_get_default_device();
 #endif
 
     // This is placed down here since the IO is not setup yet when provided is obtained above.

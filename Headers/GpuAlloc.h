@@ -119,7 +119,11 @@ int gpuMallocManaged(void **ptr, size_t size);
 int gpuMallocHost(void **ptr, size_t size);
 int gpuFree(void *ptr);
 int gpuFreeHost(void *ptr);
-//int gpuMemcpy(void *dst, const void *src, size_t sizeBytes);
+bool sycl_is_dev_ptr(void *ptr, size_t sizeBytes);
+bool sycl_is_shared_ptr(void *ptr, size_t sizeBytes);
+bool sycl_is_host_ptr(void *ptr, size_t sizeBytes);
+
+int gpuMemcpy(void *dst, const void *src, size_t sizeBytes, int kind);
 //int gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream);
 //int gpuStreamSynchronize (cudaStream_t stream);
 //int gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream);
