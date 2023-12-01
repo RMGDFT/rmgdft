@@ -306,7 +306,7 @@ int gpuMalloc(void **ptr, size_t size)
 int gpuMallocManaged(void **ptr, size_t size)
 {
     int device_id = omp_get_default_device();
-    *ptr = (void *) omp_target_alloc_shared(size, device_id);
+    *ptr = (void *) omp_target_alloc_host(size, device_id);
     if(!ptr)
     {
         rmg_error_handler(__FILE__, __LINE__, "Error allocating shared memory. Terminating.");
