@@ -620,6 +620,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
     ct.host_dev = omp_get_initial_device();
     ct.sycl_dev = omp_get_default_device();
+    ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector{});
+    for (const auto & p : sycl::platform::get_platforms())
+    {
+        for (const auto& d: p.get_devices())
+        {
+            if(pct.gridpe == 0)
+                std::cout << "name: " << d.get_info<sycl::info::device::name>() << std::endl;
+        }
+    }
 #endif
 
     // This is placed down here since the IO is not setup yet when provided is obtained above.

@@ -766,6 +766,7 @@ public:
 #if SYCL_ENABLED
     int sycl_dev;
     int host_dev;
+    cl::sycl::queue sycl_Q;
 #endif
 
     /* RMG2BGW options */

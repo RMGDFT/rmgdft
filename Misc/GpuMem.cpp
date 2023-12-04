@@ -277,18 +277,6 @@ cudaError_t gpuGetDeviceCount(int *count)
 #include "GpuAlloc.h"
 #include <omp.h>
 
-auto alloc_exception_handler = [] (cl::sycl::exception_list exceptions) {
-	for (std::exception_ptr const& e : exceptions) {
-		try {
-			std::rethrow_exception(e);
-		} catch(cl::sycl::exception const& e) {
-			std::cout << "Caught asynchronous SYCL exception during memory allocation:\n"
-			<< e.what() << std::endl;
-                        rmg_error_handler(__FILE__, __LINE__, "SYCL memory allocation error. Terminating.");
-		}
-	}
-};
-
 void MallocHostOrDevice(void **ptr, size_t size)
 {
    gpuMalloc(ptr, size);
@@ -300,9 +288,7 @@ void FreeHostOrDevice(void *ptr)
 }
 int gpuMalloc(void **ptr, size_t size)
 {
-    cl::sycl::device dev = cl::sycl::device(cl::sycl::gpu_selector());
-    cl::sycl::queue q(dev, alloc_exception_handler);
-    *ptr = cl::sycl::malloc_device(size, q);
+    *ptr = cl::sycl::malloc_device(size, ct.sycl_Q);
 
     if(!ptr)
     {
@@ -322,8 +308,7 @@ int gpuMalloc(void **ptr, size_t size)
 
 int gpuMallocHost(void **ptr, size_t size)
 {
-    cl::sycl::queue q;
-    *ptr = cl::sycl::malloc_host(size, q);
+    *ptr = cl::sycl::malloc_host(size, ct.sycl_Q);
     if(!ptr)
     {
         rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
@@ -334,22 +319,19 @@ int gpuMallocHost(void **ptr, size_t size)
 
 int gpuFree(void *ptr)
 {
-    cl::sycl::queue q;
-    cl::sycl::free(ptr, q);
+    cl::sycl::free(ptr, ct.sycl_Q);
     return 0;
 }
 
 int gpuFreeHost(void *ptr)
 {
-    cl::sycl::queue q;
-    cl::sycl::free(ptr, q);
+    cl::sycl::free(ptr, ct.sycl_Q);
     return 0;
 }
 int gpuMemcpy(void *dst, const void *src, size_t sizeBytes, int kind)
 {
-    cl::sycl::queue q;
-    q.memcpy( dst, src, sizeBytes);
-    q.wait();
+    ct.sycl_Q.memcpy( dst, src, sizeBytes);
+    ct.sycl_Q.wait();
     return 0;
 }
 

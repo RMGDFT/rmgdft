@@ -33,16 +33,6 @@
     #include <CL/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
-        auto exception_handler = [] (cl::sycl::exception_list exceptions) {
-                for (std::exception_ptr const& e : exceptions) {
-                        try {
-                                std::rethrow_exception(e);
-                        } catch(cl::sycl::exception const& e) {
-                                std::cout << "Caught asynchronous SYCL exception during GEMM:\n"
-                                << e.what() << std::endl;
-                        }
-                }
-        };
 #endif
 
 template void RmgSyrkx<double>(char *, char *, int, int, double, double *, int, double *, int, 
@@ -274,16 +264,13 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     size_t b_size = (size_t)ldb * (size_t)n;
     size_t c_size = (size_t)ldc * (size_t)n;
 
-    cl::sycl::device dev;
-    dev = cl::sycl::device(cl::sycl::gpu_selector());
-    cl::sycl::queue q(dev, exception_handler);
     cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
     bufA.set_final_data(nullptr);
     cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
     if(A == B)
     {
         try {
-            oneapi::mkl::blas::gemmt(q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
+            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
                                     bufA, lda, bufA, ldb, beta, bufC, ldc);
         }
         catch(cl::sycl::exception const& e) {
@@ -297,7 +284,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
         cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
         bufB.set_final_data(nullptr);
         try {
-            oneapi::mkl::blas::gemmt(q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
+            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
                                     bufA, lda, bufB, ldb, beta, bufC, ldc);
         }
         catch(cl::sycl::exception const& e) {
