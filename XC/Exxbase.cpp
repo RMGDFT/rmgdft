@@ -57,7 +57,11 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padde
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -74,7 +78,11 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, double *padd
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, double *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double *padded)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -91,7 +99,11 @@ template void Exxbase<double>::UnpadR2C(float *in, double *out);
 template void Exxbase<double>::UnpadR2C(float *in, float *out);
 template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -106,7 +118,11 @@ template void Exxbase<double>::UnpadR2C_Accumulate(double *in, double *psi_j, do
 template void Exxbase<double>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -120,7 +136,11 @@ template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j
 
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -136,7 +156,11 @@ template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
 template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
 template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -149,7 +173,11 @@ template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 
 template <class T> void Exxbase<T>::UnpadR2C(float *in, float *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -218,7 +246,7 @@ vxrms.resize(nstates_in);
     gfac = (double *)RmgMallocHost((size_t)pwave->pbasis*sizeof(double));
     gfac_packed = (double *)RmgMallocHost((size_t)pwave->global_basis_packed*sizeof(double));
     std::fill(gfac_packed, gfac_packed + pwave->global_basis_packed, 0.0);
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
     gpuMalloc((void **)&gfac_dev_packed, pwave->global_basis_packed*sizeof(double));
 #endif
@@ -334,6 +362,14 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
+#elif SYCL_ENABLED
+        double *pp = (double *)pwave->host_bufs[tid];
+        PadR2C(psi_i, psi_j, pp);
+        pwave->FftForward(pp, (std::complex<double> *)p, true, false, true);
+        // Packed R2C and D2Z doesn't work yet for SYCL
+        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->queues[tid]);
+        pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
+        UnpadR2C(pp, p);
 #else
         double *pp = (double *)pwave->host_bufs[tid];
         std::complex<double> *ppp = (std::complex<double> *)pp;
@@ -357,6 +393,14 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         PadR2C((double *)psi_i, (double *)psi_j, pp);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
+        UnpadR2C(pp, workbuf);
+#elif SYCL_ENABLED
+        float *pp = (float *)pwave->host_bufs[tid];
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
+        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
+        // Packed R2C and D2Z doesn't work yet for SYCL
+        GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->queues[tid]);
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
 #else
@@ -510,7 +554,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         }
 
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  gpuMemcpyHostToDevice);
     gpuMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double), gpuMemcpyHostToDevice);
     DeviceSynchronize();
@@ -719,6 +763,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if SYCL_ENABLED
+        pwave->queues[tid].wait();
+#endif
         fftw_free(wvec[tid]);
         fftw_free(pvec[tid]);
     }
@@ -1763,7 +1810,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     if(mode == EXX_DIST_FFT) return;
 
     RmgFreeHost(gfac);
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuFree(gfac_dev);
     gpuFree(gfac_dev_packed);
 #endif
@@ -2156,6 +2203,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     RmgFreeHost(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if SYCL_ENABLED
+        pwave->queues[tid].wait();
+#endif
         fftw_free(wvec[tid]);
         fftw_free(pvec[tid]);
     }

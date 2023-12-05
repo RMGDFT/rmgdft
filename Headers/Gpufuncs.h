@@ -152,4 +152,12 @@ void app8_del2_gpu(T * __restrict__ a,
 hipStream_t getGpuStream(void);
 #endif
 
+#if SYCL_ENABLED
+#include <CL/sycl.hpp>
+#include "oneapi/mkl/vm.hpp"
+#include <sycl/queue.hpp>
+
+void GpuEleMul(double *dx, std::complex<double> *dy, int n, sycl::queue &Q);
+void GpuEleMul(double *dx, std::complex<float> *dy, int n, sycl::queue &Q);
+#endif
 #endif

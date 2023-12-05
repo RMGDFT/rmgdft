@@ -257,7 +257,7 @@ if(RMG_SYCL_ENABLED)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qopenmp -fopenmp-targets=spir64 -Xs")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qopenmp -fopenmp-targets=spir64")
     set(CMAKE_EXE_LINKER_FLAGS "-qopenmp -qmkl=parallel -lsycl -lOpenCL")
 endif()
 

@@ -107,6 +107,7 @@ bfgs_module.f90
 basic_algebra_routines.f90
 invmat.f90
 GetFdFactor.cpp 
+GpuEleMul_sycl.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/XC/")
