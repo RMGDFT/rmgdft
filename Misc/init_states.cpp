@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "main.h"
+#include "transition.h"
 
 #define MAX_NOCC 10
 
@@ -97,7 +98,7 @@ STATE *init_states ()
     	
         if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
 	{       
-		printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+		rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
 		rmg_error_handler(__FILE__,__LINE__,"num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
 	}
         
@@ -176,10 +177,10 @@ STATE *init_states ()
 
 
     /* Print out results to output file */ 
-    printf ("\n");
-    printf ("total pseudopotential charge =  %8.3f e\n", ct.ionic_charge);
-    printf ("total electronic charge      =  %8.3f e\n", -ct.nel);
-    printf ("total system charge          =  %8.3f e\n", -ct.background_charge);
+    rmg_printf ("\n");
+    rmg_printf ("total pseudopotential charge =  %8.3f e\n", ct.ionic_charge);
+    rmg_printf ("total electronic charge      =  %8.3f e\n", -ct.nel);
+    rmg_printf ("total system charge          =  %8.3f e\n", -ct.background_charge);
 
     return states;
 }
