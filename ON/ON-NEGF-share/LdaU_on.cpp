@@ -175,22 +175,22 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     //{
     //    for(int i = 0; i < 5; i++)
     //    {
-    //        printf("\n");
+    //        rmg_printf("\n");
     //        for(int j = 0; j < 5; j++)
     //        {
-    //            printf(" %f ", this->ns_occ[i*nldaU + j]);
+    //            rmg_printf(" %f ", this->ns_occ[i*nldaU + j]);
     //        } 
 //
  //       }
   //  }
 
-    //      printf("\n");
+    //      rmg_printf("\n");
     //  for(int i = 0; i < norb; i++)
     //  {
-    //      printf("\n");
+    //      rmg_printf("\n");
     //      for(int j = 0; j < nldaU; j++)
     //      {
-    //          printf(" %f ", this->Upsi_mat[i*nldaU + j]);
+    //          rmg_printf(" %f ", this->Upsi_mat[i*nldaU + j]);
     //      } 
 
     //  }

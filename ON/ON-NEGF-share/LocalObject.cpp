@@ -248,7 +248,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
         fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if(fhand < 0)
         {
-            printf ("\n %s \n", newname.c_str());
+            rmg_printf ("\n %s \n", newname.c_str());
             fflush(NULL);
             exit(0);
         }
@@ -257,7 +257,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
         size_t nbytes = read(fhand, psi, size);
         if (nbytes != size)
         {
-            printf ("\n read %d is different from %d for state %d", (int) nbytes, (int)size, st_glob);
+            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, (int)size, st_glob);
             fflush(NULL);
             exit(0);
         }
@@ -520,7 +520,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
     if(fhand < 0)
     {
-        printf ("\n cannot open file: %s \n", newname.c_str());
+        rmg_printf ("\n cannot open file: %s \n", newname.c_str());
         fflush(NULL);
         exit(0);
     }
@@ -836,7 +836,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
     fhand = open(newname.c_str(),  O_RDWR, S_IREAD | S_IWRITE);
     if(fhand < 0)
     {
-        printf ("\n cannot open file: %s \n", newname.c_str());
+        rmg_printf ("\n cannot open file: %s \n", newname.c_str());
         fflush(NULL);
         exit(0);
     }
@@ -906,9 +906,9 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
         }
         if(pct.gridpe == 0 && 0)
         {
-            printf("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
+            rmg_printf("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
             for(size_t i = 0; i < this->OrbitalOwnedProcs_pelist[st].size(); i++)
-                printf("\n             %d    %d   %d   %d", 
+                rmg_printf("\n             %d    %d   %d   %d", 
                         this->OrbitalOwnedProcs_pelist[st][i], 
                         this->OrbitalOwnedProcs_xoffset[st][i], 
                         this->OrbitalOwnedProcs_yoffset[st][i], 
@@ -1043,7 +1043,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             fhand = open(newname.c_str(),  O_CREAT | O_TRUNC |O_RDWR, S_IREAD | S_IWRITE);
             if(fhand < 0)
             {
-                printf ("\n cannot open file: %s \n", newname.c_str());
+                rmg_printf ("\n cannot open file: %s \n", newname.c_str());
                 fflush(NULL);
                 exit(0);
             }
@@ -1161,7 +1161,7 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
                         boundary[st][idx] = 0.0;
                 }
             }
-            //if(st == 0) printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);
+            //if(st == 0) rmg_printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);
         }
     }
 

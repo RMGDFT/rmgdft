@@ -9,6 +9,7 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 
 
 void state_corner_xyz(STATE * states)
@@ -47,7 +48,7 @@ void state_corner_xyz(STATE * states)
 
     if(pct.gridpe == 0)
     {
-        printf("\n lagest orbital size: %d %d %d", ct.max_orbit_nx, ct.max_orbit_ny, ct.max_orbit_nz);
+        rmg_printf("\n lagest orbital size: %d %d %d", ct.max_orbit_nx, ct.max_orbit_ny, ct.max_orbit_nz);
     }
 
 }
