@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 #define 	MAX_STEPS 	300
 
@@ -61,7 +63,7 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
         f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
-            printf("kain.c ---Could not allocate memory for x or f \n");
+            rmg_printf("kain.c ---Could not allocate memory for x or f \n");
             fflush(NULL);
             exit(-1);
         }
@@ -117,13 +119,13 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 
         if (pct.gridpe == 0)
         {
-            printf("\n");
+            rmg_printf("\n");
             for (i = 0; i < size; i++)
             {
                 sum_ci += b[i];
-                printf(" KAIN_b[%d] = %f  ", i, b[i]);
+                rmg_printf(" KAIN_b[%d] = %f  ", i, b[i]);
             }
-            printf("\n");
+            rmg_printf("\n");
         }
 
 

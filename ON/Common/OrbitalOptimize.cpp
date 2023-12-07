@@ -155,7 +155,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         mix_steps = 0;
         Pulay_orbital->Refresh();
         if (pct.gridpe == 0)
-            printf("\n restart the orbital mixing at step %d \n", ct.scf_steps);
+            rmg_printf("\n restart the orbital mixing at step %d \n", ct.scf_steps);
     }
 
 
@@ -170,7 +170,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
         double residual = 0.0;
         for(int i = 0; i < ixx * iyy *izz; i++) residual += states1[st1].psiR[i] * states1[st1].psiR[i];
-        //   printf("\n state residual %d %e", st1, residual);  
+        //   rmg_printf("\n state residual %d %e", st1, residual);  
 
     }
     double gamma = -0.5;
@@ -188,7 +188,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
                     states1[ct.state_begin].psiR, ct.orbital_pulay_order);
             break;
         default:
-            printf("\n Undefined mg_method \n ");
+            rmg_printf("\n Undefined mg_method \n ");
             fflush(NULL);
             exit(0);
     }

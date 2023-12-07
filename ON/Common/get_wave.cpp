@@ -14,6 +14,7 @@ Get a particular wave st and store it in wave_global
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 #include "init_var.h"
 
 
@@ -34,24 +35,24 @@ void get_wave(int st, STATE * states)
 
 	my_malloc_init( wave_temp, get_P0_BASIS(), double );
 	if (pct.gridpe == 0)
-		printf(" Compute %d th wave\n", st);
+		rmg_printf(" Compute %d th wave\n", st);
 
-	printf("print out zz_dis right before transpose to cc :\n");
+	rmg_printf("print out zz_dis right before transpose to cc :\n");
 
 /*
         for (j=0;  j< MXLLDA * MXLCOL; j++)
 	{
-		printf("proc %d:   zz_dis[%d] = %f\n", pct.gridpe, j, zz_dis[j]);
+		rmg_printf("proc %d:   zz_dis[%d] = %f\n", pct.gridpe, j, zz_dis[j]);
 	}
 */        
         pdtran(&numst, &numst, &one, zz_dis, &IA, &JA, pct.desca, &zero, cc_dis, &IB, &JB, pct.desca);//transpose zz_dis to cc_dis
 
-	printf("print out cc_dis right after transpose to cc :\n");
+	rmg_printf("print out cc_dis right after transpose to cc :\n");
 
 /*
         for (j=0;  j< MXLLDA * MXLCOL; j++)
 	{
-		printf("proc %d:   cc_dis[%d] = %f\n", pct.gridpe, j, cc_dis[j]);
+		rmg_printf("proc %d:   cc_dis[%d] = %f\n", pct.gridpe, j, cc_dis[j]);
 	}
 */        
 
@@ -60,10 +61,10 @@ void get_wave(int st, STATE * states)
 
 
 /*
-	printf("print coefficient_matrix_row right after Cpdgemr2d in proc %d:\n", pct.gridpe);
+	rmg_printf("print coefficient_matrix_row right after Cpdgemr2d in proc %d:\n", pct.gridpe);
         for (j=0;  j< numst*(ct.state_end - ct.state_begin); j++)
 	{
-		printf("proc %d:  coefficient[%d] = %f\n",pct.gridpe, j, coefficient_matrix_row[j]);
+		rmg_printf("proc %d:  coefficient[%d] = %f\n",pct.gridpe, j, coefficient_matrix_row[j]);
 	}
 
 */        
@@ -115,7 +116,7 @@ void get_wave(int st, STATE * states)
 	charge_from_wave *= get_vel();
 
 	if (pct.gridpe == 0)
-		printf("\n total charge from %d wave = %f  with get_vel() = %f \n", st, charge_from_wave, get_vel());
+		rmg_printf("\n total charge from %d wave = %f  with get_vel() = %f \n", st, charge_from_wave, get_vel());
 
         my_free(wave_temp);
 }

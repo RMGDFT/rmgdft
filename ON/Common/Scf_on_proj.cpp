@@ -221,7 +221,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
 
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
+        rmg_printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
 
 
     if(ct.charge_mixing_type == 0)

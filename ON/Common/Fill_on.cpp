@@ -160,7 +160,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
 
     if (fabs (fmid) > charge_tol)
     {
-        printf ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
         rmg_error_handler (__FILE__,__LINE__,"did not converge");
     }                           /* end if */
 

@@ -118,7 +118,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
             g_r0 *= tpiba;
             phase_r0 = exp(std::complex<double>(0.0, -g_r0));
 
-            //printf("\n  iggg %d %e %e %e %e %e", ig, fine_pwaves->g[ig].a[2],g_r0, g_r0/PI, phase_r0)
+            //rmg_printf("\n  iggg %d %e %e %e %e %e", ig, fine_pwaves->g[ig].a[2],g_r0, g_r0/PI, phase_r0)
 
             gx  = fine_pwaves->g[ig].a[2] * tpiba;
             crho[ig] = exp(-alpha * alpha * gsquare/4.0)/gsquare * gx *phase_r0;

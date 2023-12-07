@@ -14,6 +14,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
 
 
 
@@ -45,7 +46,7 @@ void read_orbitals_on(char *name, STATE *sts)
         idx = sts[state].size * sizeof(double);
         if (nbytes != idx)
         {
-            printf("\n read %d is different from %d for state %d", nbytes, idx, state);
+            rmg_printf("\n read %d is different from %d for state %d", nbytes, idx, state);
             rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
         }
 

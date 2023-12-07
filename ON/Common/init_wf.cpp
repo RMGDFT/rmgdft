@@ -14,6 +14,8 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
+
 
 static void init_wf_gamma(STATE * states);
 
@@ -39,11 +41,11 @@ static void init_wf_gamma(STATE * states)
 
 
     if (pct.gridpe == 0)
-        printf(" Begin init_wf ...\n");
+        rmg_printf(" Begin init_wf ...\n");
     MPI_Barrier(pct.img_comm);
 
     if (pct.gridpe == 0)
-        printf(" Initialize random functions\n");
+        rmg_printf(" Initialize random functions\n");
 	
         dprintf(" Initialize random functions\n");
 
@@ -102,7 +104,7 @@ static void init_wf_gamma(STATE * states)
 
 
     if (pct.gridpe == 0)
-        printf(" init_wf done  \n");
+        rmg_printf(" init_wf done  \n");
 
 #if     DEBUG
     print_state_sum(states);

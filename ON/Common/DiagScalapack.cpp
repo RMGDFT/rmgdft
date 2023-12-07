@@ -91,9 +91,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     /* If I'm in the process grid, execute the program */
     if (pct.scalapack_myrow < 0)
     {  
-        printf("\n nprow, npcol %d %d", pct.scalapack_nprow, pct.scalapack_npcol);
-        printf("\n we should use all proc for diag. somthing wrong");
-        printf("\n gridpe = %d", pct.gridpe);
+        rmg_printf("\n nprow, npcol %d %d", pct.scalapack_nprow, pct.scalapack_npcol);
+        rmg_printf("\n we should use all proc for diag. somthing wrong");
+        rmg_printf("\n gridpe = %d", pct.gridpe);
         exit(0);
     }
 
@@ -213,7 +213,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
             pdgetrf(&numst, &numst, (double *)Sij_dist, &ione, &ione, pct.desca, ipiv, &info);
             if(info !=0)
             { 
-                printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
+                rmg_printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
                 fflush(NULL);
                 exit(0);
             }
@@ -235,7 +235,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
             pzgetrf(&numst, &numst, (std::complex<double> *)Sk, &ione, &ione, pct.desca, ipiv, &info);
             if(info !=0)
             { 
-                printf("\n error in pzgetrf in mg_eig.c INFO = %d\n", info);
+                rmg_printf("\n error in pzgetrf in mg_eig.c INFO = %d\n", info);
                 fflush(NULL);
                 exit(0);
             }

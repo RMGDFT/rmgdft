@@ -16,6 +16,8 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 
 void init_rho_atom(double *rho)
@@ -56,7 +58,7 @@ void init_rho_atom(double *rho)
 
 
     if (pct.gridpe == 0)
-        printf(" initial rho from atom \n");
+        rmg_printf(" initial rho from atom \n");
     MPI_Barrier(pct.img_comm);
 
     ixdim = 0;
@@ -80,7 +82,7 @@ void init_rho_atom(double *rho)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                printf("\n unable to open file: %s \n", newname);
+                rmg_printf("\n unable to open file: %s \n", newname);
                 rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
             }
 
@@ -172,7 +174,7 @@ void init_rho_atom(double *rho)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                printf("\n unable to open file: %s \n", newname);
+                rmg_printf("\n unable to open file: %s \n", newname);
                 rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
             }
 
@@ -272,7 +274,7 @@ void init_rho_atom(double *rho)
     my_free(rho_out);
     my_free(map);
     if (pct.gridpe == 0)
-        printf(" initial rho  done  \n");
+        rmg_printf(" initial rho  done  \n");
 
     delete RT;
 

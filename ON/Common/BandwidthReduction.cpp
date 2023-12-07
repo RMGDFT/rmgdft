@@ -91,7 +91,7 @@ void BandwidthReduction(int num_ions, std::vector<ION> &ions, unsigned int *perm
             r = sqrt(x*x +y*y + z*z);
 
             if (r < radius * 2.0)
-                printf("\n  %d  %d  abababab", i, j);
+                rmg_printf("\n  %d  %d  abababab", i, j);
         }
     }
     #endif

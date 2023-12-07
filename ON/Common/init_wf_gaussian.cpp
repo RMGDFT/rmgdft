@@ -16,6 +16,8 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 
 #define s      0
@@ -62,7 +64,7 @@ void init_wf_gaussian(STATE * states)
 
 
     if (pct.gridpe == 0)
-        printf("\n initial orbitals with gaussian functions \n");
+        rmg_printf("\n initial orbitals with gaussian functions \n");
     MPI_Barrier(pct.img_comm);
 
 
@@ -280,7 +282,7 @@ void init_wf_gaussian(STATE * states)
                break;
 
             case dz2: 
-            printf("\n gaussian  aas %d  %d  %d\n", gaussian, ist, n_orbital_same_center);
+            rmg_printf("\n gaussian  aas %d  %d  %d\n", gaussian, ist, n_orbital_same_center);
 
                 for(ix = 0; ix < ixx; ix++ )
                 {
@@ -290,7 +292,7 @@ void init_wf_gaussian(STATE * states)
                         y = (iy + states[state].iymin) *hy - crds[1];
                         for(iz = 0; iz < izz; iz++ )
                         {
-        //        printf("\n %d %d %d ix \n", ix,iy,iz);
+        //        rmg_printf("\n %d %d %d ix \n", ix,iy,iz);
                             z = (iz + states[state].izmin) *hz - crds[2];
                             r2 = x*x + y*y + z*z;
                             idx = ix * iyy * izz + iy * izz + iz;
@@ -410,7 +412,7 @@ void init_wf_gaussian(STATE * states)
     ortho_norm_local(states);
 
     if (pct.gridpe == 0)
-        printf(" initial orbitals  done  \n");
+        rmg_printf(" initial orbitals  done  \n");
 
 
 }                               /* end init_wf_atom */

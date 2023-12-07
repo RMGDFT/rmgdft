@@ -10,6 +10,7 @@
 #include "main.h"
 #include "init_var.h"
 #include "prototypes_on.h"
+#include "transition.h"
 #include "LCR.h"
 
 #define 	MAX_ORBIT_ON_ION 	24
@@ -27,7 +28,7 @@ void ortho_norm_local (STATE *states)
     
 
     if (pct.gridpe == 0)
-        printf ("\n LOCAL ORTHONORMALIZATION  ");
+        rmg_printf ("\n LOCAL ORTHONORMALIZATION  ");
 
 
     for (i = ct.state_begin; i < ct.state_end; i++)

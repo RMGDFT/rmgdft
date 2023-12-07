@@ -75,7 +75,7 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
             f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
-            printf("pulay.c ---Could not allocate memory for x or f \n");
+            rmg_printf("pulay.c ---Could not allocate memory for x or f \n");
             fflush(NULL);
             exit(-1);
         }
@@ -144,10 +144,10 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
 
         if (pct.gridpe == 0)
         {
-            printf("\n");
+            rmg_printf("\n");
             for (i = 0; i < size; i++)
-                printf("   pulay_b[%d]: %f  ", i, b[i]);
-            printf("\n");
+                rmg_printf("   pulay_b[%d]: %f  ", i, b[i]);
+            rmg_printf("\n");
         }
 
 

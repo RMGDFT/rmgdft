@@ -126,7 +126,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
         {
             if (pct.gridpe == 0)
-                printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
+                rmg_printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
 
             step_time = my_crtc();
 
@@ -161,7 +161,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             if (CONVERGENCE && ct.scf_steps > ct.freeze_rho_steps)
             {
                 if (pct.gridpe == 0)
-                    printf ("\n\n Convergence has been achieved. stopping ...\n");
+                    rmg_printf ("\n\n Convergence has been achieved. stopping ...\n");
                 break;
             }
 
@@ -231,14 +231,14 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
             if(fabs(ct.exx_delta) < ct.exx_convergence_criterion)
             {
-                printf(" Finished EXX outer loop in %3d exx steps exx_delta = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX outer loop in %3d exx steps exx_delta = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, ct.exx_delta, 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                printf(" Finished EXX inner loop in %3d scf steps exx_delta = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX inner loop in %3d scf steps exx_delta = %8.2e, total energy = %.*f Ha\n",
                         ct.scf_steps, ct.exx_delta, 6, ct.TOTAL);
             }
 

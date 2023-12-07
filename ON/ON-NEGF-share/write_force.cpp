@@ -35,6 +35,8 @@
 #include <math.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 
 
@@ -54,9 +56,9 @@ void write_force(void)
     double maxf = 0.0, max_all_f = 0.0;
     double f2;
 
-    printf("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
+    rmg_printf("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
 
-    printf("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
+    rmg_printf("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -68,7 +70,7 @@ void write_force(void)
         fp = iptr->force[ct.fpt[0]];
         sp = &Species[iptr->species];
 
-        printf ( "@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %d %d %d\n",
+        rmg_printf ( "@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %d %d %d\n",
                  ion + 1,
                  sp->atomic_symbol,
                  iptr->species + 1,
@@ -126,45 +128,45 @@ void write_force(void)
     max_all_f = std::max( max_all_f, maxfz );
 
 
-    printf ("\n");
+    rmg_printf ("\n");
     progress_tag ();
-    printf (" mean FX      = %12.8f Ha/a0\n", avfx);
+    rmg_printf (" mean FX      = %12.8f Ha/a0\n", avfx);
     progress_tag ();
-    printf (" mean FY      = %12.8f Ha/a0\n", avfy);
+    rmg_printf (" mean FY      = %12.8f Ha/a0\n", avfy);
     progress_tag ();
-    printf (" mean FZ      = %12.8f Ha/a0\n", avfz);
+    rmg_printf (" mean FZ      = %12.8f Ha/a0\n", avfz);
 
-    printf ("\n");
+    rmg_printf ("\n");
     progress_tag ();
-    printf (" max FX       = %12.8f Ha/a0\n", maxfx);
+    rmg_printf (" max FX       = %12.8f Ha/a0\n", maxfx);
     progress_tag ();
-    printf (" max FY       = %12.8f Ha/a0\n", maxfy);
+    rmg_printf (" max FY       = %12.8f Ha/a0\n", maxfy);
     progress_tag ();
-    printf (" max FZ       = %12.8f Ha/a0\n", maxfz);
+    rmg_printf (" max FZ       = %12.8f Ha/a0\n", maxfz);
     progress_tag ();
-    printf (" max F        = %12.8f Ha/a0\n", max_all_f);
+    rmg_printf (" max F        = %12.8f Ha/a0\n", max_all_f);
     if ((ct.forceflag == MD_FASTRLX) )
     {
         progress_tag ();
-        printf (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);
+        rmg_printf (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);
     }
 
-    printf ("\n");
+    rmg_printf ("\n");
     progress_tag ();
-    printf (" sum FX       = %12.8f Ha/a0\n", sumx);
+    rmg_printf (" sum FX       = %12.8f Ha/a0\n", sumx);
     progress_tag ();
-    printf (" sum FY       = %12.8f Ha/a0\n", sumy);
+    rmg_printf (" sum FY       = %12.8f Ha/a0\n", sumy);
     progress_tag ();
-    printf (" sum FZ       = %12.8f Ha/a0\n", sumz);
+    rmg_printf (" sum FZ       = %12.8f Ha/a0\n", sumz);
     progress_tag ();
-    printf (" Average      = %12.8f Ha/a0\n", (fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0);
+    rmg_printf (" Average      = %12.8f Ha/a0\n", (fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0);
 
-    printf ("\n");
+    rmg_printf ("\n");
     progress_tag ();
-    printf (" sqrt < F^2 > = %12.8f Ha/a0\n", avf);
+    rmg_printf (" sqrt < F^2 > = %12.8f Ha/a0\n", avf);
     progress_tag ();
-    printf (" max | F |    = %12.8f Ha/a0\n", maxf);
-    printf ("\n");
+    rmg_printf (" max | F |    = %12.8f Ha/a0\n", maxf);
+    rmg_printf ("\n");
 
 }                               /* end write_force */
 

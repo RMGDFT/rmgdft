@@ -95,7 +95,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
     dipole_center[2] = idx * hzzgrid * zside;
 
 
-printf("\n %f %f %f", dipole_center[0], dipole_center[1], dipole_center[2]);
+    rmg_printf("\n %f %f %f", dipole_center[0], dipole_center[1], dipole_center[2]);
 
     VhcorrPeriodicPart(vh_x, vh_y, vh_z, alpha, dipole_center);
     for(i = 0; i < FPX0_GRID; i++)
@@ -146,7 +146,7 @@ printf("\n %f %f %f", dipole_center[0], dipole_center[1], dipole_center[2]);
 
         }
 
-        printf("\n %d %e %e aaaa", i, tem, tem1);
+        rmg_printf("\n %d %e %e aaaa", i, tem, tem1);
     }
 
 }
@@ -166,7 +166,7 @@ double gaussintegral(double r, int n)
 
     if(n < 0)
     {
-        printf("\n  n < 0 in gaussintegral \n");
+        rmg_printf("\n  n < 0 in gaussintegral \n");
         fflush(NULL);
         exit(0);
     }

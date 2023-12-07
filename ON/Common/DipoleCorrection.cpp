@@ -81,7 +81,7 @@ void DipoleCorrection(double *rho_tot, double *rhoc, double *vh_dipole, double *
     }
 
     
-    if(pct.gridpe == 0) printf("\n dipole %e %e %e", dipole_ele[0] - dipole_ion[0],dipole_ele[1] - dipole_ion[1],dipole_ele[2] - dipole_ion[2]);
+    if(pct.gridpe == 0) rmg_printf("\n dipole %e %e %e", dipole_ele[0] - dipole_ion[0],dipole_ele[1] - dipole_ion[1],dipole_ele[2] - dipole_ion[2]);
 
 
     for(idx = 0; idx < nfp0; idx++) 

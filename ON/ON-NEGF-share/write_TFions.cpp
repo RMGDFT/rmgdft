@@ -36,6 +36,8 @@
 #include <math.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 void write_tfions(void)
 {
@@ -43,25 +45,25 @@ void write_tfions(void)
     TF_ION *iptr;
 
 
-    printf("\n\n\n  Simplified water model:\n");
-    printf("\n\n\n  TF IONIC POSITIONS AND PARAMETERS:\n");
+    rmg_printf("\n\n\n  Simplified water model:\n");
+    rmg_printf("\n\n\n  TF IONIC POSITIONS AND PARAMETERS:\n");
 
 
-    printf("\n          X           Y           Z           q          alpha       q0        alpha0");
+    rmg_printf("\n          X           Y           Z           q          alpha       q0        alpha0");
 
     for (ion = 0; ion < ct.num_tfions; ion++)
     {
 
         iptr = &ct.tf_ions[ion];
 
-        printf("\n   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
+        rmg_printf("\n   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
                iptr->crds[0], iptr->crds[1], iptr->crds[2],
                iptr->q, iptr->alpha,
                iptr->q0, iptr->alpha0);
 
     }                           /* end for */
 
-    printf("\n");
+    rmg_printf("\n");
 
 }                               /* end write_pos */
 

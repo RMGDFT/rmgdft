@@ -367,14 +367,14 @@ template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global
     dgetrf(&num_tot, &num_tot, Cij_global, &num_tot, ipiv, &info);
     if (info != 0)
     {
-        printf ("error in dgetrf in Exx_on::Omega_rmg  with INFO = %d \n", info);
+        rmg_printf ("error in dgetrf in Exx_on::Omega_rmg  with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
     dgetri(&num_tot, Cij_global, &num_tot, ipiv, (double *)work, &lwork, &info);
     if (info != 0)
     {
-        printf ("error in dgetri in Exx_on::Omega_rmg  with INFO = %d \n", info);
+        rmg_printf ("error in dgetri in Exx_on::Omega_rmg  with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
