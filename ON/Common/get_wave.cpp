@@ -22,7 +22,7 @@ void get_wave(int st, STATE * states)
 {
 	int  idx;
 	double *wave_temp;
-	register double tcharge;
+	double tcharge;
         double charge_from_wave;
 	double one = 1.0, zero = 0.0;
 
