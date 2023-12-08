@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <complex>
 #include "GpuAlloc.h"
+#include "rmgtypedefs.h"
 
 
 #if CUDA_ENABLED
