@@ -17,7 +17,7 @@ void print_matrix(double *b, int n, int ldb)
     rows = n / MAX_COL;
     cols = n % MAX_COL;
 
-    printf("MATRIX \n");
+    printf("MATRIX at prid_pe %d world_pe%d\n", pct.gridpe, pct.worldrank);
     for (i = 0; i < n; i++)
     {
         for (idx = 0; idx < rows; idx++)
