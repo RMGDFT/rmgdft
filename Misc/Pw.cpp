@@ -31,7 +31,21 @@
     #include "vkFFT.h"
 #endif
 
+#if 0
+#if SYCL_ENABLED
+auto fft_sycl_exception_handler = [] (sycl::exception_list exceptions) {
+    for (std::exception_ptr const& e : exceptions) {
+      try {
+        std::rethrow_exception(e);
+      } catch(sycl::exception const& e) {
+        std::cout << "Caught asynchronous SYCL exception for fft Q.:\n"
+                  << e.what() << std::endl;
+      }
+    }
+  };
 
+#endif
+#endif
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
@@ -152,78 +166,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   // Now set up plans
   if(G.get_NPES() == 1)
   {
-      // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
-      // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
-      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
-      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
-
-      fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
-
-      fftw_r2c_backward_plan = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), (double *)out, FFTW_MEASURE);
-
-      fftw_r2c_forward_plan_inplace = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (double *)in, reinterpret_cast<fftw_complex*>(in), FFTW_MEASURE);
-
-      fftw_r2c_backward_plan_inplace = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), (double *)in, FFTW_MEASURE);
-
-      fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftw_backward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftw_forward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-
-      fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_PATIENT);
-
-      fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_PATIENT);
-
-      fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_PATIENT);
-
-      fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_PATIENT);
-
-
-      fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftwf_backward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftwf_forward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftwf_backward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftw_free(out);
-      fftw_free(in);
-      int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
-      host_bufs.resize(nthreads);
-      for (int i = 0; i < nthreads; i++)
-      {
-          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
-      }
-      
 
 #if CUDA_ENABLED || HIP_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
@@ -248,6 +190,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
 #endif
 
+#if 0
 #if SYCL_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
       num_streams = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
@@ -260,6 +203,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
       dev_bufs1.resize(num_streams);
+#endif
 #endif
 
 #if CUDA_ENABLED
@@ -457,14 +401,17 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 #endif
 
       }
-
+#if 0
 #elif SYCL_ENABLED
 
       std::vector<std::int64_t> dims {(int64_t)this->global_dimx, (int64_t)this->global_dimy, (int64_t)this->global_dimz};
+     // set the layout
+std::int64_t strides[4] = {0, (int64_t)(this->global_dimy*this->global_dimz), (int64_t)(this->global_dimy), 1};
 
       for (int i = 0; i < num_streams; i++)
       {
-          queues[i] = cl::sycl::queue(sycl::gpu_selector{},sycl::property::queue::in_order{});
+          //queues[i] = cl::sycl::queue(sycl::default_selector_v,sycl::property::queue::in_order{});
+	  queues[i] = cl::sycl::queue(sycl::gpu_selector_v, fft_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
           gpu_plans[i] = new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
                                             oneapi::mkl::dft::domain::COMPLEX>(dims);
           gpu_plans[i]->set_value(oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
@@ -492,8 +439,82 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
           gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
           gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
           gpuMalloc((void **)&dev_bufs1[i],  this->global_basis_alloc * sizeof(std::complex<double>));
-      }
 
+      }
+#endif
+#else
+      // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
+      // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+
+      fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)out, FFTW_MEASURE);
+
+      fftw_r2c_forward_plan_inplace = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(in), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan_inplace = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)in, FFTW_MEASURE);
+
+      fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftw_forward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+
+      fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_PATIENT);
+
+      fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_PATIENT);
+
+      fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_PATIENT);
+
+      fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_PATIENT);
+
+
+      fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftwf_forward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftw_free(out);
+      fftw_free(in);
+      int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
+      host_bufs.resize(nthreads);
+      for (int i = 0; i < nthreads; i++)
+      {
+          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+      }
+      
 #endif
 
   }
@@ -616,6 +637,7 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
           std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#if 0
 #elif SYCL_ENABLED
       double *tptr = (double *)host_bufs[tid];
       if(copy_to_dev)
@@ -635,6 +657,7 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
           for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       double *tptr = (double *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -713,6 +736,7 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#if 0
 #elif SYCL_ENABLED
       float *tptr = (float *)host_bufs[tid];
       if(copy_to_dev)
@@ -732,6 +756,7 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       float *tptr = (float *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -790,14 +815,7 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
   if(tid < 0) tid = 0;
   if(tid == 0) tid = omp_get_thread_num();
 
-  if(Grid->get_NPES() == 1 && !use_gpu)
-  {
-      if(in == out)
-          fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-      else
-          fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-  }
-  else if(Grid->get_NPES() == 1)
+  if(Grid->get_NPES() == 1)
   {
 #if CUDA_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
@@ -814,7 +832,9 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
           gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
 #elif SYCL_ENABLED
+try {      
       std::complex<double> *tptr = host_bufs[tid];
       if(copy_to_dev)
       {
@@ -828,6 +848,12 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       queues[tid].wait();
+}
+catch(sycl::exception const& e) {
+    std::cout << "Caught synchronous SYCL exception when trying to do FFT:\n"
+              << e.what() << std::endl;
+}
+#endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -908,6 +934,7 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
           gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
 #elif SYCL_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       if(copy_to_dev)
@@ -922,6 +949,7 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -1001,6 +1029,7 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           double *tptr1 = (double *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#if 0
 #elif SYCL_ENABLED
       std::complex<double> *tptr = (std::complex<double> *)host_bufs[tid];
       if(copy_to_dev)
@@ -1019,6 +1048,7 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
@@ -1088,6 +1118,7 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           float *tptr1 = (float *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#if 0
 #elif SYCL_ENABLED
       if(copy_to_dev)
       {
@@ -1106,6 +1137,7 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
@@ -1156,14 +1188,7 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
   if(tid < 0) tid = 0;
   if(tid == 0) tid = omp_get_thread_num();
 
-  if(Grid->get_NPES() == 1 && !use_gpu)
-  {
-      if(in == out)
-          fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-      else
-          fftw_execute_dft (fftw_backward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-  }
-  else if(Grid->get_NPES() == 1)
+  if(Grid->get_NPES() == 1)
   {
 #if CUDA_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
@@ -1180,6 +1205,7 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
 	  gpuStreamSynchronize(streams[tid]);
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
 #elif SYCL_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       if(copy_to_dev)
@@ -1194,6 +1220,7 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -1272,6 +1299,7 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
 	  gpuStreamSynchronize(streams[tid]);
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
 #elif SYCL_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       if(copy_to_dev)
@@ -1286,6 +1314,7 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);

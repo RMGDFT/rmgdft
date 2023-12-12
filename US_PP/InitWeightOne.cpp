@@ -97,7 +97,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     //    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
 
     RmgTimer *RT1 = new RmgTimer("weight fft_nldim");
-    sp->prj_pwave->FftInverse(weptr, gwptr, false, false, false);
+    sp->prj_pwave->FftInverse(weptr, gwptr);
     delete RT1;
 
     RmgTimer *RT2 = new RmgTimer("weight fold");
@@ -131,7 +131,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     delete RT2;
     RmgTimer *RT3 = new RmgTimer("weight fft_forward");
-    sp->prj_pwave->FftForward(weptr, (std::complex<double> *)rtptr, false, false, false);
+    sp->prj_pwave->FftForward(weptr, (std::complex<double> *)rtptr);
     delete RT3;
 
     // shift atom to the center instead of corner
