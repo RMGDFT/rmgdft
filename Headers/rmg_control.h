@@ -764,9 +764,9 @@ public:
 #endif
 
 #if SYCL_ENABLED
-    int sycl_dev;
-    int host_dev;
+    std::vector<cl::sycl::device> sycl_devs;
     cl::sycl::queue sycl_Q;
+    int host_dev;
 #endif
 
     /* RMG2BGW options */

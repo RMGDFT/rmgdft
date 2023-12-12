@@ -178,6 +178,7 @@ endif()
 
 # Modify this if you need some special compiler flags.
 set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
+#set(RMG_EXTRA_COMPILER_FLAGS "-march=sapphirerapids")
 
 
 # Generic Release or Debug
@@ -257,7 +258,7 @@ if(RMG_SYCL_ENABLED)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qopenmp -fopenmp-targets=spir64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qopenmp -fopenmp-targets=spir64 -fsycl-targets=spir64")
     set(CMAKE_EXE_LINKER_FLAGS "-qopenmp -qmkl=parallel -lsycl -lOpenCL")
 endif()
 
@@ -544,6 +545,7 @@ if(NOT CRAY_HOST)
         include_directories(${MKLROOT}/include)
         add_definitions(-DUSE_MKL)
         set(FFTW_INCLUDES "${MKLROOT}/include/fftw")
+        include_directories(${FFTW_INCLUDES})
         set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
         set(MKL_LIB64 "${MKLROOT}/lib/intel64")
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -575,7 +577,7 @@ endif()
 
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
-if(NOT ${FFTW_INCLUDES})
+if(NOT FFTW_INCLUDES)
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
