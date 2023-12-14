@@ -17,19 +17,19 @@
 #include "PBblas.h"
 
 #ifdef __STDC__
-void pdnrm2_( int * N, double * NORM2,
-              double * X, int * IX, int * JX, int * DESCX, int * INCX )
+void pdnrm2_( Int * N, double * NORM2,
+              double * X, Int * IX, Int * JX, Int * DESCX, Int * INCX )
 #else
 void pdnrm2_( N, NORM2, X, IX, JX, DESCX, INCX )
 /*
 *  .. Scalar Arguments ..
 */
-   int            * INCX, * IX, * JX, * N;
+   Int            * INCX, * IX, * JX, * N;
    double         * NORM2;
 /*
 *  .. Array Arguments ..
 */
-   int            * DESCX;
+   Int            * DESCX;
    double         * X;
 #endif
 {
@@ -173,13 +173,13 @@ void pdnrm2_( N, NORM2, X, IX, JX, DESCX, INCX )
 *  .. Local Scalars ..
 */
    char           top;
-   int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, dst, dist,
+   Int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, dst, dist,
                   info, k, mycol, mydist, myrow, npcol, nprow, src;
    double         scale, ssq, temp1, temp2;
 /*
 *  .. Local Arrays ..
 */
-   int            Xd[DLEN_];
+   Int            Xd[DLEN_];
    double         * Xptr = NULL, work[4];
 /* ..
 *  .. Executable Statements ..
@@ -224,7 +224,7 @@ void pdnrm2_( N, NORM2, X, IX, JX, DESCX, INCX )
 */
       if( ( ( myrow == Xrow ) || ( Xrow < 0 ) ) &&
           ( ( mycol == Xcol ) || ( Xcol < 0 ) ) )
-         *NORM2 = ABS( X[Xii+Xjj*Xd[LLD_]] );
+         *NORM2 = ABS( *Mptr(X,Xii,Xjj,Xd[LLD_],1) );
       return;
    }
    else if( *INCX == Xd[M_] )
@@ -246,7 +246,7 @@ void pdnrm2_( N, NORM2, X, IX, JX, DESCX, INCX )
          if( Xnq > 0 )
          {
             Xld  = Xd[LLD_];
-            Xptr = X+(Xii+Xjj*Xld);
+            Xptr = Mptr(X,Xii,Xjj,Xld,1);
 
             for( k = 0; k < Xnq; k++ )
             {
@@ -366,7 +366,7 @@ l_20:
          Xnp = PB_Cnumroc( *N, Xi, Xd[IMB_], Xd[MB_], myrow, Xd[RSRC_], nprow );
          if( Xnp > 0 )
          {
-            Xptr = X+(Xii+Xjj*Xd[LLD_]);
+            Xptr = Mptr(X,Xii,Xjj,Xd[LLD_],1);
 
             for( k = 0; k < Xnp; k++ )
             {

@@ -1,14 +1,6 @@
 #include "tools.h"
 
-char * getpbbuf( mess, length )
-/*
-*  .. Scalar Arguments ..
-*/
-   int         length;
-/*
-*  .. Array Arguments ..
-*/
-   char        * mess;
+char * getpbbuf( char *mess, Int length )
 {
 /*
 *  Purpose
@@ -22,7 +14,7 @@ char * getpbbuf( mess, length )
 *  .. Local Scalars ..
 */
    static char * pblasbuf = NULL;
-   static int  pbbuflen = 0, mone = -1;
+   static Int  pbbuflen = 0, mone = -1;
 /* ..
 *  .. External Functions ..
 */

@@ -16,7 +16,7 @@
 #include "../PBblacs.h"
 #include "../PBblas.h"
 
-PBTYP_T * PB_Cztypeset()
+PBTYP_T * PB_Cztypeset(void)
 {
 /*
 *  Purpose
@@ -34,7 +34,7 @@ PBTYP_T * PB_Cztypeset()
 /*
 *  .. Local Scalars ..
 */
-   static int     setup=0;
+   static Int     setup=0;
    static PBTYP_T TypeStruct;
    static cmplx16 zero, one, negone;
 /* ..

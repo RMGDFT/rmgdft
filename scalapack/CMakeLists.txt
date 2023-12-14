@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 project(SCALAPACK C Fortran)
 # Configure the warning and code coverage suppression file
-configure_file( 
+configure_file(
   "${SCALAPACK_SOURCE_DIR}/CMAKE/CTestCustom.cmake.in"
   "${SCALAPACK_BINARY_DIR}/CTestCustom.cmake"
   COPYONLY
@@ -11,8 +11,8 @@ configure_file(
 set(CMAKE_MODULE_PATH "${SCALAPACK_SOURCE_DIR}/CMAKE" ${CMAKE_MODULE_PATH})
 
 if (UNIX)
-   if ( "${CMAKE_Fortran_COMPILER}" MATCHES "ifort" )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
+   if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel")
+      set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
    endif ()
 endif ()
 
@@ -48,18 +48,18 @@ if (MPI_FOUND)
       PATH_SUFFIXES bin
       DOC "MPI Fortran compiler.")
    MARK_AS_ADVANCED(MPI_Fortran_COMPILER)
-   
-   
+
+
 
    if ("${MPI_Fortran_COMPILER}" STREQUAL "MPI_Fortran_COMPILER-NOTFOUND")
       message(ERROR "--> MPI Fortran Compiler NOT FOUND (please set MPI_BASE_DIR accordingly")
    else()
       message(STATUS "--> MPI Fortran Compiler : ${MPI_Fortran_COMPILER}")
       SET(Fortran_COMPILER "${CMAKE_Fortran_COMPILER}")
-      SET(CMAKE_Fortran_COMPILER "${MPI_Fortran_COMPILER}")
+      #SET(CMAKE_Fortran_COMPILER "${MPI_Fortran_COMPILER}")
       message(STATUS "--> Fortran Compiler : ${CMAKE_Fortran_COMPILER}")
    endif()
-   
+
 else()
    message(STATUS "Found MPI_LIBRARY : ${MPI_FOUND} ")
    set(MPI_BASE_DIR ${MPI_BASE_DIR} CACHE PATH "MPI Path")
@@ -76,8 +76,8 @@ endif()
 
 
 if (UNIX)
-   if ( "${CMAKE_Fortran_COMPILER}" MATCHES "ifort" )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
+   if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel")
+      set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
    endif ()
 endif ()
 
@@ -132,50 +132,50 @@ ADD_DEFINITIONS( "-D${CDEFS}")
 
 # --------------------------------------------------
 # ScaLAPACK needs BLAS and LAPACK
-#
-#option(USE_OPTIMIZED_LAPACK_BLAS "Whether or not to search for optimized LAPACK and BLAS libraries on your machine (if not found, Reference LAPACK and BLAS will be downloaded and installed)" ON)
-#
-#message(STATUS "CHECKING BLAS AND LAPACK LIBRARIES")
-#
-#IF(LAPACK_LIBRARIES)
-#  include(CheckFortranFunctionExists)
-#  message(STATUS "--> LAPACK supplied by user is ${LAPACK_LIBRARIES}.")
-#  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
-#  CHECK_FORTRAN_FUNCTION_EXISTS("dgesv" LAPACK_FOUND)
-#  unset( CMAKE_REQUIRED_LIBRARIES )
-#  message(STATUS "--> LAPACK routine dgesv is found: ${LAPACK_FOUND}.")
-#ENDIF()
-#
-#if(LAPACK_FOUND)
-#      message(STATUS "--> LAPACK supplied by user is WORKING, will use ${LAPACK_LIBRARIES}.")
-#else(LAPACK_FOUND)
-#   if(USE_OPTIMIZED_LAPACK_BLAS)
-#      message(STATUS "--> Searching for optimized LAPACK and BLAS libraries on your machine.")
-#      find_package(LAPACK)
-#   ENDIF(USE_OPTIMIZED_LAPACK_BLAS)
-#   if(NOT LAPACK_FOUND)
-#      message(STATUS "--> LAPACK and BLAS were not found. Reference LAPACK and BLAS will be downloaded and installed")
-#      include(ExternalProject)
-#      ExternalProject_Add(
-#		lapack
-#		URL http://www.netlib.org/lapack/lapack.tgz
-#		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${SCALAPACK_BINARY_DIR}
-#        PREFIX ${SCALAPACK_BINARY_DIR}/dependencies
-#      )
-#	  if (UNIX)
-#         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.a CACHE STRING "LAPACK library" FORCE)
-#         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.a CACHE STRING "BLAS library" FORCE)
-#	  else (UNIX) # On Windows
-#         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.lib CACHE STRING "LAPACK library" FORCE)
-#         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.lib CACHE STRING "BLAS library" FORCE)
-#      endif (UNIX)
-#   ENDIF()
-#ENDIF()
 
-#message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
-#message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
+option(USE_OPTIMIZED_LAPACK_BLAS "Whether or not to search for optimized LAPACK and BLAS libraries on your machine (if not found, Reference LAPACK and BLAS will be downloaded and installed)" ON)
 
-#MESSAGE(STATUS "=========")
+message(STATUS "CHECKING BLAS AND LAPACK LIBRARIES")
+
+IF(LAPACK_LIBRARIES)
+  include(CheckFortranFunctionExists)
+  message(STATUS "--> LAPACK supplied by user is ${LAPACK_LIBRARIES}.")
+  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
+  CHECK_FORTRAN_FUNCTION_EXISTS("dgesv" LAPACK_FOUND)
+  unset( CMAKE_REQUIRED_LIBRARIES )
+  message(STATUS "--> LAPACK routine dgesv is found: ${LAPACK_FOUND}.")
+ENDIF()
+
+if(LAPACK_FOUND)
+      message(STATUS "--> LAPACK supplied by user is WORKING, will use ${LAPACK_LIBRARIES}.")
+else(LAPACK_FOUND)
+   if(USE_OPTIMIZED_LAPACK_BLAS)
+      message(STATUS "--> Searching for optimized LAPACK and BLAS libraries on your machine.")
+      find_package(LAPACK)
+   ENDIF(USE_OPTIMIZED_LAPACK_BLAS)
+   if(NOT LAPACK_FOUND)
+      message(STATUS "--> LAPACK and BLAS were not found. Reference LAPACK and BLAS will be downloaded and installed")
+      include(ExternalProject)
+      ExternalProject_Add(
+		lapack
+		URL http://www.netlib.org/lapack/lapack.tgz
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${SCALAPACK_BINARY_DIR}
+        PREFIX ${SCALAPACK_BINARY_DIR}/dependencies
+      )
+	  if (UNIX)
+         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.a CACHE STRING "LAPACK library" FORCE)
+         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.a CACHE STRING "BLAS library" FORCE)
+	  else (UNIX) # On Windows
+         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.lib CACHE STRING "LAPACK library" FORCE)
+         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.lib CACHE STRING "BLAS library" FORCE)
+      endif (UNIX)
+   ENDIF()
+ENDIF()
+
+message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
+message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
+
+MESSAGE(STATUS "=========")
 
 # --------------------------------------------------
 # By default static library
@@ -184,7 +184,7 @@ OPTION(BUILD_STATIC_LIBS "Build static libraries" ON )
 
 # --------------------------------------------------
 # Subdirectories that need to be processed
-   
+
 macro(append_subdir_files variable dirname)
 get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
 foreach(depfile ${holder})
@@ -243,10 +243,14 @@ else (UNIX) # Need to separate Fortran and C Code
    scalapack_install_library(scalapack)
    scalapack_install_library(scalapack-F)
 endif (UNIX)
-add_subdirectory(TESTING)
+
+option(SCALAPACK_BUILD_TESTS "Build all tests of the ScaLAPACK library" ON)
+if(${SCALAPACK_BUILD_TESTS})
+  add_subdirectory(TESTING)
+endif()
 
 # --------------------------------------------------
-# CPACK Packaging 
+# CPACK Packaging
 
 SET(CPACK_PACKAGE_NAME "ScaLAPACK")
 SET(CPACK_PACKAGE_VENDOR "University of Tennessee, Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd")
@@ -308,4 +312,3 @@ install(FILES
 
 install(EXPORT scalapack-targets
   DESTINATION lib/cmake/scalapack-${SCALAPACK_VERSION})
-

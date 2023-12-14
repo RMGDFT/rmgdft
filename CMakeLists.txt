@@ -152,6 +152,9 @@ elseif(COMPILER_SUPPORTS_DASH_C99)
 else()
     message( WARNING "The detected compiler ${CMAKE_C_COMPILER} does not support the c99 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
+if(USE_INTERNAL_SCALAPACK)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration")
+endif()
 
 
 # Standard modules for platform checks

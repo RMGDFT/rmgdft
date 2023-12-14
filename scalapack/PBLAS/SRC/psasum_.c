@@ -17,19 +17,19 @@
 #include "PBblas.h"
 
 #ifdef __STDC__
-void psasum_( int * N, float * ASUM,
-              float * X, int * IX, int * JX, int * DESCX, int * INCX )
+void psasum_( Int * N, float * ASUM,
+              float * X, Int * IX, Int * JX, Int * DESCX, Int * INCX )
 #else
 void psasum_( N, ASUM, X, IX, JX, DESCX, INCX )
 /*
 *  .. Scalar Arguments ..
 */
-   int            * INCX, * IX, * JX, * N;
+   Int            * INCX, * IX, * JX, * N;
    float          * ASUM;
 /*
 *  .. Array Arguments ..
 */
-   int            * DESCX;
+   Int            * DESCX;
    float          * X;
 #endif
 {
@@ -175,12 +175,12 @@ void psasum_( N, ASUM, X, IX, JX, DESCX, INCX )
 *  .. Local Scalars ..
 */
    char           top;
-   int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, info,
+   Int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, info,
                   mycol, myrow, npcol, nprow;
 /*
 *  .. Local Arrays ..
 */
-   int            Xd[DLEN_];
+   Int            Xd[DLEN_];
 /* ..
 *  .. Executable Statements ..
 *
@@ -225,7 +225,7 @@ void psasum_( N, ASUM, X, IX, JX, DESCX, INCX )
       if( ( ( myrow == Xrow ) || ( Xrow < 0 ) ) &&
           ( ( mycol == Xcol ) || ( Xcol < 0 ) ) )
       {
-         *ASUM = ABS( X[Xii+Xjj*Xd[LLD_]] );
+         *ASUM = ABS( *Mptr(X,Xii,Xjj,Xd[LLD_],1) );
       }
       return;
    }
@@ -243,7 +243,7 @@ void psasum_( N, ASUM, X, IX, JX, DESCX, INCX )
          if( Xnq > 0 )
          {
             Xld = Xd[LLD_];
-            svasum_( &Xnq, ((char *) ASUM), ((char *)( X+(Xii+Xjj*Xld) )),
+            svasum_( &Xnq, ((char *) ASUM), ((char *)Mptr( X,Xii,Xjj,Xld,1) ),
                      &Xld );
          }
 /*
@@ -276,7 +276,7 @@ void psasum_( N, ASUM, X, IX, JX, DESCX, INCX )
          if( Xnp > 0 )
          {
             svasum_( &Xnp, ((char *) ASUM),
-                     ((char *)( X+(Xii+Xjj*Xd[LLD_]) )), INCX );
+                     ((char *)Mptr( X,Xii,Xjj,Xd[LLD_],1) ), INCX );
          }
 /*
 *  If Xnp <= 0, ASUM is zero (see initialization above)

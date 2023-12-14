@@ -10,23 +10,11 @@
 */
 #include "pblas.h"
 
-void pzrot_( n, X, ix, jx, desc_X, incx, Y, iy, jy, desc_Y, incy, c, s )
+void pzrot_( Int *n, complex16 X[], Int *ix, Int *jx, Int desc_X[], Int *incx, complex16 Y[], Int *iy, Int *jy, Int desc_Y[], Int *incy, double *c, complex16 *s )
 /*
 *  Mark Fahey
 *  June 22, 2000
 */
-/*
-*  .. Scalar Arguments ..
-*/
-   int         * incx, * incy, * ix, * iy, * jx, * jy, * n;
-   double      * c;
-   complex16   * s;
-/*
-*  ..
-*  .. Array Arguments ..
-*/
-   int         desc_X[], desc_Y[];
-   complex16   X[], Y[];
 {
 /*
 *  Purpose
@@ -182,7 +170,7 @@ void pzrot_( n, X, ix, jx, desc_X, incx, Y, iy, jy, desc_Y, incy, c, s )
 *
 *  .. Local Scalars ..
 */
-   int         ictxt, iix, iiy, info, ixcol, ixrow, iycol, iyrow, jjx,
+   Int         ictxt, iix, iiy, info, ixcol, ixrow, iycol, iyrow, jjx,
                jjy, lcm, lcmp, mycol, myrow, nn, np, np0,
                nprow, npcol, nq, nz, ione=1, tmp1, wksz;
    complex16   xwork[1], ywork[1], zero;

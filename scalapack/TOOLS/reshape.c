@@ -1,8 +1,11 @@
 #include <stdlib.h>
 
-void Creshape( context_in, major_in, context_out, major_out,
-                    first_proc, nprow_new, npcol_new )
-int context_in, *context_out, first_proc, major_in, major_out, nprow_new, npcol_new;
+#ifndef Int
+#define Int int
+#endif
+
+void Creshape( Int context_in, Int major_in, Int* context_out, Int major_out,
+                    Int first_proc, Int nprow_new, Int npcol_new )
 /* major in, major out represent whether processors go row major (1) or
 column major (2) in the input and output grids */
 {
@@ -10,17 +13,17 @@ column major (2) in the input and output grids */
    /** called subprograms **/
    void proc_inc();
    void Cblacs_gridinfo();
-   int Cblacs_pnum();
+   Int Cblacs_pnum();
    void Cblacs_get();
    void Cblacs_gridmap();
 
    /** variables **/
-   int i, j;
-   int nprow_in, npcol_in, myrow_in, mycol_in;
-   int nprocs_new;
-   int myrow_old, mycol_old, myrow_new, mycol_new;
-   int pnum;
-   int *grid_new;
+   Int i, j;
+   Int nprow_in, npcol_in, myrow_in, mycol_in;
+   Int nprocs_new;
+   Int myrow_old, mycol_old, myrow_new, mycol_new;
+   Int pnum;
+   Int *grid_new;
 
 /********** executable statements ************/
 
@@ -37,7 +40,7 @@ column major (2) in the input and output grids */
    }
 
    /* allocate space for new process mapping */
-   grid_new = (int *) malloc( nprocs_new * sizeof( int ) );
+   grid_new = (Int *) malloc( nprocs_new * sizeof( Int ) );
 
    /* set place in old grid to start grabbing processors for new grid */
    myrow_old = 0; mycol_old = 0;
@@ -74,32 +77,28 @@ column major (2) in the input and output grids */
 }
 
 /*************************************************************************/
-void reshape( context_in, major_in, context_out, major_out,
-                    first_proc, nprow_new, npcol_new )
-int *context_in, *context_out, *first_proc, *major_in, *major_out, *nprow_new, *npcol_new;
+void reshape( Int* context_in, Int* major_in, Int* context_out, Int* major_out,
+                    Int* first_proc, Int* nprow_new, Int* npcol_new )
 {
    Creshape( *context_in, *major_in, context_out, *major_out,
                     *first_proc, *nprow_new, *npcol_new );
 }
 /*************************************************************************/
-void RESHAPE( context_in, major_in, context_out, major_out,
-                    first_proc, nprow_new, npcol_new )
-int *context_in, *context_out, *first_proc, *major_in, *major_out, *nprow_new, *npcol_new;
+void RESHAPE( Int* context_in, Int* major_in, Int* context_out, Int* major_out,
+                    Int* first_proc, Int* nprow_new, Int* npcol_new )
 {
    Creshape( *context_in, *major_in, context_out, *major_out,
                     *first_proc, *nprow_new, *npcol_new );
 }
 /*************************************************************************/
-void reshape_( context_in, major_in, context_out, major_out,
-                    first_proc, nprow_new, npcol_new )
-int *context_in, *context_out, *first_proc, *major_in, *major_out, *nprow_new, *npcol_new;
+void reshape_( Int* context_in, Int* major_in, Int* context_out, Int* major_out,
+                    Int* first_proc, Int* nprow_new, Int* npcol_new )
 {
    Creshape( *context_in, *major_in, context_out, *major_out,
                     *first_proc, *nprow_new, *npcol_new );
 }
 /*************************************************************************/
-void proc_inc( myrow, mycol, nprow, npcol, major )
-int *myrow, *mycol, nprow, npcol, major;
+void proc_inc( Int* myrow, Int* mycol, Int nprow, Int npcol, Int major )
 {
    if( major == 1) /* row major */
    {
