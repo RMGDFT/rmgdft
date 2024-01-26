@@ -16,6 +16,8 @@
 #include "main.h"
 #include "init_var.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 
 void update_orbit_centers(STATE * states)
@@ -36,7 +38,7 @@ void update_orbit_centers(STATE * states)
 
 
     if (pct.gridpe == 0)
-        printf("\n Update the localization centers.. \n");
+        rmg_printf("\n Update the localization centers.. \n");
 
     size = ct.num_states * 3;
     my_malloc_init( new_centers, size, double );
@@ -66,7 +68,7 @@ void update_orbit_centers(STATE * states)
             shift_z = trunc((z - states[st].crds[2]) / (get_hzgrid() * get_zside()));
 
             if (pct.gridpe == 0)
-                printf
+                rmg_printf
                     ("\n State_%d: %f, %f, %f, ---->  %f, %f, %f, Shift: %d, %d, %d  ",
                      st, states[st].crds[0], states[st].crds[1],
                      states[st].crds[2], x, y, z, shift_x, shift_y, shift_z);
@@ -111,7 +113,7 @@ void update_orbit_centers(STATE * states)
                                         old_idx = i * size_y * size_z + j * size_z + k;
                                         temp[new_idx] = states[st].psiR[old_idx];
                                         /*
-                                           printf("\n idx %d, %d, %f, %f ", 
+                                           rmg_printf("\n idx %d, %d, %f, %f ", 
                                            new_idx, old_idx, temp[new_idx], states[st].psiR[ old_idx]);  
                                          */
                                     }

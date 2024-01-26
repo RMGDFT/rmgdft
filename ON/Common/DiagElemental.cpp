@@ -94,7 +94,7 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
 
 
     //    if(g.Rank() == 0) 
-    //        for(int i = 0; i < n; i++) printf("\n aaaxx %d  %d\n", i, perm[i]);
+    //        for(int i = 0; i < n; i++) rmg_printf("\n aaaxx %d  %d\n", i, perm[i]);
 
     for( Int jLoc=0; jLoc<localWidth; ++jLoc )
     {

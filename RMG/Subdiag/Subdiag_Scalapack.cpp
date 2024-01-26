@@ -123,7 +123,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     KpointType *psi = kptr->orbital_storage;
     KpointType *psi_dev;
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     if(ct.gpu_managed_memory == false)
     {
         gpuMalloc((void **)&psi_dev, nstates * pbasis_noncoll * sizeof(KpointType));
@@ -140,7 +140,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     HS_Scalapack (nstates, pbasis_noncoll, psi_dev, hpsi, kptr->ns, desca, distAij, distSij);
 
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     double *eigs;
     eigs = (double *)GpuMallocHost(2*nstates * sizeof(double));
 #else
@@ -208,7 +208,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType);
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         if(ct.gpu_managed_memory == false)
         {
             gpuMemcpy(psi_dev, kptr->vexx, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
@@ -229,7 +229,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
     delete RT1;
     // End rotation
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     GpuFreeHost(eigs);
     if(ct.gpu_managed_memory == false)
     {
@@ -334,7 +334,7 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
 
     float *Tij;
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     if(!global_matrix1) gpuMallocHost((void **)&global_matrix1, nstates * nstates * sizeof(KpointType));
     Tij = (float *)GpuMallocHost((nstates+2)*nstates*factor/2 * sizeof(float));
     double *eigs;
@@ -350,7 +350,7 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
 //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
 //  for HIP its a GPU buffer.
     KpointType *psi_d = kptr->orbital_storage;
-#if HIP_ENABLED
+#if HIP_ENABLED || SYCL_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
     // and use it repeatedly to compute the matrix elements. This is much faster but puts
     // more pressure on GPU memory. A blas implementation that overlapped communication and
@@ -556,14 +556,14 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
     delete RT1;
 // End rotation
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
 #if CUDA_ENABLED
     if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
     {
         gpuFree(psi_d);
     }
 #endif
-#if HIP_ENABLED
+#if HIP_ENABLED || SYCL_ENABLED
     gpuFree(psi_d);
 #endif
     GpuFreeHost(eigs);
@@ -575,7 +575,7 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
 #endif
 
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
 #endif

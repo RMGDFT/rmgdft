@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include "init_var.h"
 #include "blacs.h"
+#include "transition.h"
+
 
 
 extern int mpi_nprocs;
@@ -59,7 +61,7 @@ void init_pe_on(void)
             &ictxt, &numst, &info);
     if (info != 0)
     {
-        printf(" init_pe for 1xnpes: descinit, info=%d\n", info);
+        rmg_printf(" init_pe for 1xnpes: descinit, info=%d\n", info);
         fflush(NULL);
         exit(0);
     }
@@ -107,7 +109,9 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
     MPI_Comm_size (this_comm, &npes);
     if (nprow * npcol > npes)
     {
-        error_handler ("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
+        if(pct.gridpe==0) 
+            rmg_printf("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
 

@@ -12,17 +12,8 @@
 */
 #include "tools.h"
 
-void pbchkvect( n, npos0, ix, jx, desc_X, incx, dpos0, iix, jjx, ixrow,
-                ixcol, nprow, npcol, myrow, mycol, info )
-/*
-*  .. Scalar Arguments ..
-*/
-   int         dpos0, * iix, incx, * info, ix, * ixcol, * ixrow, * jjx,
-               jx, myrow, mycol, npcol, nprow, n, npos0;
-/*
-*  .. Array Arguments ..
-*/
-   int         desc_X[];
+void pbchkvect( Int n, Int npos0, Int ix, Int jx, Int desc_X[], Int incx, Int dpos0, Int *iix, Int *jjx, Int *ixrow,
+                Int *ixcol, Int nprow, Int npcol, Int myrow, Int mycol, Int *info )
 {
 /*
 *
@@ -114,7 +105,7 @@ void pbchkvect( n, npos0, ix, jx, desc_X, incx, dpos0, iix, jjx, ixrow,
 /* ..
 *  .. Local Scalars ..
 */
-   int         descpos, ExtraColBlock, ExtraRowBlock, icpos, ixpos,
+   Int         descpos, ExtraColBlock, ExtraRowBlock, icpos, ixpos,
                jxpos, MyColBlock, MyColDist, MyRowBlock, MyRowDist,
                NColBlock, np, npos, nq, NRowBlock;
 /* ..

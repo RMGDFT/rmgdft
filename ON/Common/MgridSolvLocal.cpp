@@ -72,7 +72,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
 //    if(level == 1) ib = 1;
 
     FiniteDiff *FD = new FiniteDiff(&Rmg_L);
-//printf("LLLLLLLLL %d  %d\n",level,max_levels);
+//rmg_printf("LLLLLLLLL %d  %d\n",level,max_levels);
     int ixoff = 0;
     int iyoff = 0;
     int izoff = 0;

@@ -168,7 +168,7 @@ public:
 
     // Pointers to weight and Bweight
     KpointType *nl_weight;
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     KpointType *nl_weight_gpu;
 #endif
     size_t nl_weight_size;

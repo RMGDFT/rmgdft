@@ -1,7 +1,7 @@
 # Description of run.
 description="atom_Pt_pp"
 
-test_energy="-45.09949676"
+test_energy="-45.09950032"
 test_steps = "9"
 test_steps_tolerance = "1"
 

@@ -87,7 +87,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     if(tid < 0) tid = 0;
 
 
-    if(ct.kohn_sham_ke_fft || Rmg_L.get_ibrav_type() == None)
+    if(ct.kohn_sham_ke_fft || Rmg_L.get_ibrav_type() == No_Lattice)
     {
         FftLaplacianCoarse(a, b);    
         if(!ct.is_gamma)

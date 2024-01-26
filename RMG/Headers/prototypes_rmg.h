@@ -86,6 +86,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 template <typename KpointType>
 void Read_nsocc (char *name, Kpoint<KpointType> * Kptr);
 template <typename KpointType>
+void Write_nsocc (char *name, Kpoint<KpointType> * Kptr);
+template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
@@ -114,8 +116,6 @@ template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order);
 template <typename KpointType>
 double FillTetra(Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 
 template <typename OrbitalType>
     void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,

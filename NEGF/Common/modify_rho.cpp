@@ -39,7 +39,7 @@ void modify_rho (double * rho, double * rho_old)
 
         item = get_FNX_GRID() / 3;
         if (item * 3 - get_FNX_GRID() != 0)
-            error_handler ("run flag=111");
+            rmg_error_handler (__FILE__, __LINE__, "run flag=111");
         distribute_to_X_soft (rho, array_global);
 
         for (i = 0; i < get_FNX_GRID(); i++)

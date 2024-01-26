@@ -148,6 +148,10 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     #define gpuHostRegisterDefault cudaHostRegisterDefault
     #define gpuHostRegisterPortable cudaHostRegisterPortable 
     #define gpuHostRegisterMapped cudaHostRegisterMapped
+#elif SYCL_ENABLED
+    #define gpuError_t int
+    #define gpuMemcpyHostToDevice 0
+    #define gpuMemcpyDeviceToHost 1
 #endif
 
 #endif

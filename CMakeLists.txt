@@ -27,6 +27,10 @@
 
 cmake_minimum_required (VERSION 3.17) 
 
+set(RMG_VERSION_MAJOR "5")
+set(RMG_VERSION_MINOR "4")
+set(RMG_VERSION_PATCH "0")
+set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
 # force an out-of-source build
 string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
@@ -49,27 +53,6 @@ else()
 endif()
 
 
-# Extract revision information to include in executables
-find_package(Git)
-if(Git_FOUND)
-    set(VERSION_COMMAND "git")
-    set(VERSION_ARGS "describe")
-    unset(git_version CACHE)
-    execute_process (COMMAND "${VERSION_COMMAND}" "${VERSION_ARGS}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_version)
-    if(git_version)
-        string(REPLACE "\n" ";" git_version1 ${git_version})
-        string(REPLACE "-" "_" git_version_clean ${git_version1})
-        add_definitions(-DRMG_REVISION="${git_version_clean}")
-    else()
-        add_definitions(-DRMG_REVISION="Unknown")
-        set(git_version_clean "Unknown")
-    endif()
-else()
-    add_definitions(-DRMG_REVISION="Unknown")
-    set(git_version_clean "Unknown")
-endif()
-
-
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
@@ -86,6 +69,7 @@ endif()
 # or command line
 set(RMG_CUDA_ENABLED OFF CACHE BOOL "Enable CUDA support.")
 set(RMG_HIP_ENABLED OFF CACHE BOOL "Enable HIP support.")
+set(RMG_SYCL_ENABLED OFF CACHE BOOL "Enable SYCL support.")
 set(RMG_MAGMA_ENABLED OFF CACHE BOOL "Enable MAGMA support.")
 set(RMG_VKFFT_ENABLED OFF CACHE BOOL "Enable VKFFT support.")
 set(QMCPACK_SUPPORT ON CACHE BOOL "Generates a QMCPACK restart file.")
@@ -104,6 +88,20 @@ endif()
 
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
     message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
+endif()
+
+# Set Version and extract revision information to include in executables
+find_package(Git)
+if(Git_FOUND)
+    set(VERSION_COMMAND "git")
+    unset(git_id CACHE)
+    execute_process (COMMAND ${VERSION_COMMAND} rev-parse --short HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_id OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process (COMMAND ${VERSION_COMMAND} rev-parse --abbrev-ref HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE git_result OUTPUT_VARIABLE git_branch OUTPUT_STRIP_TRAILING_WHITESPACE)
+    add_definitions(-DRMG_REVISION="${COMPLETE_VERSION}")
+    add_definitions(-DRMG_COMMIT="${git_id}")
+    add_definitions(-DRMG_BRANCH="${git_branch}")
+else()
+    add_definitions(-DRMG_REVISION="${COMPLETE_VERSION}")
 endif()
 
 
@@ -154,6 +152,9 @@ elseif(COMPILER_SUPPORTS_DASH_C99)
 else()
     message( WARNING "The detected compiler ${CMAKE_C_COMPILER} does not support the c99 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
+if(USE_INTERNAL_SCALAPACK)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration")
+endif()
 
 
 # Standard modules for platform checks
@@ -180,6 +181,7 @@ endif()
 
 # Modify this if you need some special compiler flags.
 set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
+#set(RMG_EXTRA_COMPILER_FLAGS "-march=sapphirerapids")
 
 
 # Generic Release or Debug
@@ -252,6 +254,15 @@ else()
         set(rmg "rmg-cpu")
         set(rmg-on "rmg-on-cpu")
     endif()
+endif()
+
+if(RMG_SYCL_ENABLED)
+    add_definitions(-DSYCL_ENABLED=1)
+    set(rmg-negf "rmg-negf-gpu")
+    set(rmg "rmg-gpu")
+    set(rmg-on "rmg-on-gpu")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qopenmp -fopenmp-targets=spir64 -fsycl-targets=spir64")
+    set(CMAKE_EXE_LINKER_FLAGS "-qopenmp -qmkl=parallel -lsycl -lOpenCL")
 endif()
 
 if(RMG_HIP_ENABLED)
@@ -537,6 +548,7 @@ if(NOT CRAY_HOST)
         include_directories(${MKLROOT}/include)
         add_definitions(-DUSE_MKL)
         set(FFTW_INCLUDES "${MKLROOT}/include/fftw")
+        include_directories(${FFTW_INCLUDES})
         set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
         set(MKL_LIB64 "${MKLROOT}/lib/intel64")
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -568,7 +580,7 @@ endif()
 
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
-if(NOT ${FFTW_INCLUDES})
+if(NOT FFTW_INCLUDES)
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
@@ -809,15 +821,15 @@ set(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_GENERATOR "DEB")
 
-set(CPACK_PACKAGE_VERSION_MAJOR "5")
-set(CPACK_PACKAGE_VERSION_MINOR "4")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION_MAJOR "${RMG_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${RMG_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${RMG_VERSION_PATCH}")
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Emil Briggs")
 set(CPACK_PACKAGE_VENDOR "North Carolina State University")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+
 
 include(CPack)
 

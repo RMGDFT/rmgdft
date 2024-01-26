@@ -1,0 +1,35 @@
+ &control
+    calculation='scf'
+    restart_mode='from_scratch',
+    prefix='LiH',
+    pseudo_dir = '../',
+    outdir='out'
+    wf_collect=.true.
+    disk_io='low'
+ /
+ &system
+    ibrav=8, nat=  5, ntyp= 1,
+    celldm(1) = 25.3223401622,
+    celldm(2) = 0.6995
+    celldm(3) = 0.6995
+    nspin=1,
+    degauss=0.001,
+    smearing='mp',
+    occupations='smearing',
+    ecutwfc = 100
+    ecutrho = 200
+ /
+ &electrons
+    conv_thr =  1.0d-10
+    mixing_beta = 0.7
+ /
+ATOMIC_SPECIES
+ Au  9.01  Au.UPF
+ATOMIC_POSITIONS {bohr}
+ Au     2.532234016218e+00    7.558907511097e+00    7.558907511097e+00   
+ Au     7.596702048653e+00    7.558907511097e+00    7.558907511097e+00   
+ Au     1.266117008109e+01    7.558907511097e+00    7.558907511097e+00   
+ Au     1.772563811352e+01    7.558907511097e+00    7.558907511097e+00   
+ Au     2.279010614596e+01    7.558907511097e+00    7.558907511097e+00   
+K_POINTS AUTOMATIC
+4 1 1 0 0 0

@@ -33,7 +33,7 @@ void assign_weight_on(SPECIES * sp, fftw_complex * weptr, double * rtptr)
                 if (fabs(std::imag(tweptr[idx])) > 1.0e-6)
                 {
                     printf("weptr[%d].im=%e\n", idx, std::imag(tweptr[idx]));
-                    error_handler("something wrong with the fourier transformation");
+                    rmg_error_handler(__FILE__, __LINE__, "something wrong with the fourier transformation");
                 }
 
                 idx++;

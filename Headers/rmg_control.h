@@ -14,6 +14,11 @@
     #include <rocsolver/rocsolver.h>
 #endif
 
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include <sycl/queue.hpp>
+#endif
+
 #include "Klist.h"
 
 /** @name CONTROL
@@ -279,9 +284,6 @@ public:
     bool write_qmcpack_restart;
     bool write_qmcpack_restart_localized;
     int qmc_nband;
-
-    /** If true compute direct energies */
-    bool compute_direct;
 
     /** Number of run states */
     int run_states;
@@ -697,7 +699,7 @@ public:
     // Flag to indicate whether or not to use gpu managed memory
     bool gpu_managed_memory;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
 
     // Total number of usable gpu devices present in the node
@@ -760,7 +762,13 @@ public:
     bool use_cublasxt;
 
 #endif
-    
+
+#if SYCL_ENABLED
+    std::vector<cl::sycl::device> sycl_devs;
+    cl::sycl::queue sycl_Q;
+    int host_dev;
+#endif
+
     /* RMG2BGW options */
     bool rmg2bgw;
     double ecutrho, ecutwfc;
@@ -972,6 +980,7 @@ public:
    int ldaU_mode;
    int num_ldaU_ions;
    int max_ldaU_l;  // max ldaU l value for any ion
+   int freeze_ldaU_steps;
 
 
    bool stress;
@@ -1004,6 +1013,7 @@ public:
    double test_bond_length_tolerance=1.0e-3;
    int test_steps=0;
    int test_steps_tolerance=0;
+   int kpoint_units = 0;
 
 };
 

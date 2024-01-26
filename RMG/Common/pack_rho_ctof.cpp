@@ -208,7 +208,7 @@ void pack_rho_ctof (double * rho, double * rho_f)
     }
 
     if (num != get_FP0_BASIS())
-        error_handler ("there is something wrong here");
+        rmg_error_handler (__FILE__, __LINE__, "there is something wrong here");
 
     for (i = 0; i < num; i++)
         sum_rhof += rho_f[i];

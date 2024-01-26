@@ -136,6 +136,10 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
 
     fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
     fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
+    fprintf(fhandle,"\nkpoint_distribution = \"%d\"", pct.pe_kpoint);
+    fprintf(fhandle,"\nFermiEnergy = \"%f\"", ct.efermi);
+
+
     //	fprintf(fhandle,"\n");
 
 

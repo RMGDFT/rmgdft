@@ -57,73 +57,44 @@
 #include "GlobalSums.h"
 
 
-static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
-    int num_st, double *weight, int occ_flag, int mp_order);
+static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
+        std::vector<double> &weight, int occ_flag, int mp_order);
 static inline double dist_func(double t1, int occ_flag, int mp_order);
 
 
-double Fill_on (STATE *states, double width, double nel, double mix, int num_st, int occ_flag, int mp_order)
+double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vector<double> &occ, 
+        double width, double nel, double mix, int occ_flag, int mp_order)
 {
 
     const int maxit = 100;
     const double charge_tol = 1.0e-10;
 
     int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
-    STATE *sp;
     double mu = 0.0, dmu, mu1, mu2, f, fmid;
 
-    double *occ;
-
-
-    double eigs[ct.num_states*ct.num_kpts_pe*nspin];
-    double weight[ct.num_kpts_pe];
-    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) 
-        weight[kpt] = ct.kp[kpt].kweight;
-
-
-
-    nks = ct.num_kpts_pe * ct.num_states;
-    int ntot_states = nspin * nks;
-
-    for(int idx = 0; idx < ntot_states; idx++) eigs[idx] = 0.0;
-
-    // Fill eigs
-    for(int ispin = 0; ispin<nspin; ispin++)
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
-            for(int st = 0;st < ct.num_states;st++) {
-                eigs[ispin * nks + kpt*ct.num_states + st] = ct.kp[kpt].kstate[st].eig[ispin];
-            }
-        }
-
-
-
+    nks = eigs.size();
 
     if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
     {
-        sp = &ct.kp[0].kstate[0];
-        sp->occupation[0] = 1.0;
-        mu = sp->eig[0];
+        occ[0] = 1.0;
+        mu = eigs[0];
         for (st1 = 1; st1 < ct.num_states; st1++)
         {
-            sp = &ct.kp[0].kstate[st1];
-            sp->occupation[0] = 0.0;
+            occ[st1] = 0.0;
         }
 
         return(mu);
     }
 
+    mu = -1.0e30;
     if(occ_flag == OCC_NONE ) 
     {
-        for (st1 = 0; st1 < ct.num_states; st1++)
+        for (int i = 0; i < nks; i++)
         {
-            sp = &ct.kp[0].kstate[st1];
-            if(sp->occupation[0] > 0.0) mu = sp->eig[0];
+            if(occ[i] > 0.0) mu = std::max(mu, eigs[i]);
         }
         return mu;
     }
-
-    occ = new double[nspin * nks];
-
 
     /* find the root by bisection: this algorithm was adapted
        from numerical recipes, 2nd edition */
@@ -135,7 +106,7 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
     mu1 = 1.0e30;
     mu2 = -mu1; 
 
-    for(idx = 0; idx < ntot_states; idx++)
+    for(idx = 0; idx < nks; idx++)
     {
         mu1 = std::min (eigs[idx], mu1);
         mu2 = std::max (eigs[idx], mu2); 
@@ -145,10 +116,12 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
     double mu2_tem = mu2;    
     MPI_Allreduce (&mu1_tem, &mu1, 1, MPI_DOUBLE, MPI_MIN, pct.kpsub_comm);
     MPI_Allreduce (&mu2_tem, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
+    MPI_Allreduce (&mu1_tem, &mu1, 1, MPI_DOUBLE, MPI_MIN, pct.spin_comm);
+    MPI_Allreduce (&mu2_tem, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.spin_comm);
 
 
-    fmid = occ_allstates (mu2, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order);
-    f = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order); 
+    fmid = occ_allstates (mu2, occ, eigs, width, nel, weight, occ_flag, mp_order);
+    f = occ_allstates (mu1, occ, eigs, width, nel, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
         rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
@@ -171,7 +144,7 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
 
         dmu *= 0.5;
         mu1 = mu + dmu;
-        fmid = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order);
+        fmid = occ_allstates (mu1, occ, eigs, width, nel, weight, occ_flag, mp_order);
 
         if (fmid <= 0.0)
         {
@@ -187,43 +160,9 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
 
     if (fabs (fmid) > charge_tol)
     {
-        printf ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
         rmg_error_handler (__FILE__,__LINE__,"did not converge");
     }                           /* end if */
-
-    /* mix occupations */
-
-    fmid = 0.0; 
-
-    for (idx = 0; idx < nspin; idx++)
-    {
-        st = -1;
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) 
-        {
-            for (st1 = 0; st1 < ct.num_states; st1++)
-            {
-                st = kpt * ct.num_states + st1;
-                sp = &ct.kp[kpt].kstate[st1];
-
-
-                sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
-                fmid += sp->occupation[idx] * ct.kp[kpt].kweight;
-            }
-        }                           /* st and kpt */
-    }
-
-    fmid = RmgSumAll(fmid, pct.kpsub_comm);
-
-    fmid -= nel;
-
-    if (fabs (fmid) > charge_tol * 10)
-    {
-        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg_printf ("error in mixing occupations fmid = %e", fmid);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
-    }                           /* end if */
-
-    delete [] occ;
 
     return (mu1);
 
@@ -231,8 +170,8 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
 
 
 
-static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
-        int num_st, double *weight, int occ_flag, int mp_order)
+static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
+        std::vector<double> &weight, int occ_flag, int mp_order)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double t1, sumf, eig, fac = (2.0 - ct.spin_flag);
@@ -244,25 +183,22 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
 
     sumf = 0.0; 
 
-    for (idx = 0; idx < nspin; idx++)
+    for (kpt = 0; kpt < ct.num_kpts_pe ; kpt++)
     {
-        st = -1;
-        for (kpt = 0; kpt < ct.num_kpts_pe ; kpt++)
+        for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            for (st1 = 0; st1 < ct.num_states; st1++)
-            {
-                st = kpt * ct.num_states + st1;
-                eig = eigs[st + idx * nks];
-                t1 = (eig - mu) / width;
-                
-                occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
-                sumf += occ[st + idx * nks] * weight[kpt];
-            }
-        }                           /* st1 and kpt */
+            st = kpt * ct.num_states + st1;
+            eig = eigs[st];
+            t1 = (eig - mu) / width;
 
-    }    
+            occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
+            sumf += occ[st] * weight[kpt];
+        }
+    }                           /* st1 and kpt */
+
 
     sumf = RmgSumAll(sumf, pct.kpsub_comm);
+    sumf = RmgSumAll(sumf, pct.spin_comm);
 
     return (sumf - nel);
 
@@ -336,7 +272,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
                 h0 = 2.0 * t1 * h1 - 2.0 * (2*n-1) * h0;    // h0 = H_2n(x)
                 h1 = 2.0* t1 * h0 - 2.0 * (2.0*n) * h1; // h1 = H_2n+1(x)
             }
-            
+
             return oc; 
             break;
 

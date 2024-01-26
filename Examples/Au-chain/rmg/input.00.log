@@ -1,0 +1,1194 @@
+RMG initialization ... 1 image(s) total, 1 per node. 16 MPI processes/image. Thread level 2.
+
+
+                     * * * * * * * * * *
+                     *    R   M   G    *
+                     * * * * * * * * * *
+
+     -- A Real Space Multigrid Electronic structure code --
+     --      More information at www.rmgdft.org          --
+
+Code Revision:     5.4.0-develop-78f09519
+Build Date:        Aug  1 2023  15:45:16
+Start time:        Thu Aug  3 09:23:20 2023
+
+NOTICE: RMG internal pseudopotentials have switched to
+ONCVP from Ultrasoft. You can revert to Ultrasoft by
+adding the input tag internal_pseudo_type="ultrasoft" to
+your input files.
+
+
+Files
+   Control input file:        input
+   Data output file:          Waves/wave.out
+
+Run Setup
+    Calculation type:         Quench electrons - Fixed ions SCF calculation
+    Description:              Au lead1
+    Orbital Initialization:   LCAO (30 LCAO and 0 random orbitals)
+    Exchange Correlation:     pz
+    Spin Polarization:        OFF
+    System charge:            Neutral
+
+Processor Topology
+   Total PEs:                 16
+   X direction:               4
+   Y direction:               2
+   Z direction:               2
+   MG Threads/PE:             1
+   OMP Threads/PE:            1
+
+Grid Points  (Linear Anisotropy: 1.049)
+    X:  Total: 96   Per PE: 24   Spacing:0.264 a0  
+    Y:  Total: 64   Per PE: 32   Spacing:0.277 a0  
+    Z:  Total: 64   Per PE: 32   Spacing:0.277 a0  
+
+    Equivalent energy cutoffs (psi,rho):   128.847    515.387 Ry
+
+    Charge density grid:         2 times finer
+
+Coordinate planes
+  Planar Anisotropy: 1.049
+  A0-A1 density:    13.698
+  A0-A2 density:    13.698
+  A1-A2 density:    13.055
+
+
+Lattice (Cell) Setup
+    Type:                       Orthorhombic_primitive
+    Volume (a0^3):               7944.93
+    Boundary conditions:        Periodic
+
+    X Basis Vector:      25.322       0.000       0.000 a0
+    Y Basis Vector:       0.000      17.713       0.000 a0
+    Z Basis Vector:       0.000       0.000      17.713 a0
+    X Reci Vector:       0.039      -0.000       0.000 a0
+    Y Reci Vector:       0.000       0.056       0.000 a0
+    Z Reci Vector:       0.000      -0.000       0.056 a0
+
+K-points
+    Brillouin Zone sampling with 2 K-points (orbitals are complex)
+
+         Kx      Ky        Kz     Weight in crystal unit
+      0.1250     0.0000     0.0000   0.500
+      0.3750     0.0000     0.0000   0.500
+
+         Kx      Ky        Kz     Weight in 2PI/a 
+      0.1250     0.0000     0.0000   0.500
+      0.3750     0.0000     0.0000   0.500
+
+Atoms and States
+    Number of ions:                          5
+    Number of species:                       1
+    Number of states:                        38
+
+Run Parameters
+    SCF Convergence criterion (potential):   1.00e-07
+    SCF Convergence criterion (energy):      1.00e-10
+    Max SCF steps:                           100
+
+SCF Cycle Settings
+    Charge density mixing:                   Pulay  (Order:5 Scale:0.10 Refresh:20)
+    Hartree Solver:                          PFFT
+    Interpolation type:                      FFT
+
+Finite Difference parameters
+    Kohn Sham FD Order:                      8   
+    Force Gradient Order:                    8   
+    Adaptive Finite Differencing:            On
+    Adaptive CFAC:                           0.000000000
+
+Subspace Diagonalization Options
+    Frequency:                               every 1 SCF step(s)
+    Driver:                                  Lapack
+    Initial diagonalization:                 ON
+    Folded spectrum:                         OFF
+
+Filtering Cutoff  Parameters
+    Wavefunction grid (cparm):               0.800
+    Charge density grid (rhocparm):          1.000
+    Filter factor:                           1.000
+
+Multigrid (MG) Parameters
+    Psi MG levels:                           3
+    Psi global step:                         0.660 
+    Psi pre:                                 2
+    Psi post:                                2
+
+Davidson Parameters
+    Davidson multiplier:                     4
+    Davidson max step:                       8
+    Davidson unocc tol factor:               1000.000
+
+Blas Libraries
+    CPU support with openblas-parallel.
+
+
+Atomic Species Information
+(PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)
+-------------------------------------------------------------------------
+|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|    PP    |
+|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Functional|
+-------------------------------------------------------------------------
+|    1|    Au|196.0|  11.00|  NC|    1.50|    1|  8.37|  5.93|       LDA|
+-------------------------------------------------------------------------
+
+Pseudopotential generation information:
+  Au pseudopotential file: ../Au.UPF
+      Generation info     : Generated using FHI98PP, converted with fhi2upf.x v.5.0.2
+      Author info         : unknown
+
+
+Memory usage (Mbytes):     Min        Max       Total
+    wave functions        119.54     119.54    1912.62
+    beta-functions         14.16      18.88     264.31
+
+
+
+Initial Ionic Positions And Displacements (Bohr)
+Species      X           Y           Z           dX          dY          dZ
+  Au       2.5322      7.5589      7.5589      0.0000      0.0000      0.0000
+  Au       7.5967      7.5589      7.5589      0.0000      0.0000      0.0000
+  Au      12.6612      7.5589      7.5589      0.0000      0.0000      0.0000
+  Au      17.7256      7.5589      7.5589      0.0000      0.0000      0.0000
+  Au      22.7901      7.5589      7.5589      0.0000      0.0000      0.0000
+
+
+Initial Ionic Positions And Displacements (Angstrom)
+Species      X           Y           Z           dX          dY          dZ
+  Au       1.3400      4.0000      4.0000      0.0000      0.0000      0.0000
+  Au       4.0200      4.0000      4.0000      0.0000      0.0000      0.0000
+  Au       6.7000      4.0000      4.0000      0.0000      0.0000      0.0000
+  Au       9.3800      4.0000      4.0000      0.0000      0.0000      0.0000
+  Au      12.0600      4.0000      4.0000      0.0000      0.0000      0.0000
+
+Diagonalization using lapack for step=0  count=1
+
+
+Diagonalization using lapack for step=0  count=2
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0  -1   0]   -12.9892 [2.000]   -12.2675 [2.000]   -11.7865 [2.000]    -9.5972 [2.000]    -8.7606 [2.000]
+[kpt   0  -1   1]    30.0691 [2.000]    35.4015 [2.000]    38.6008 [2.000]    39.1064 [2.000]    39.1065 [2.000]
+[kpt   0  -1   2]    39.5752 [2.000]    39.5753 [2.000]    40.7132 [2.000]    40.7694 [2.000]    40.7973 [2.000]
+[kpt   0  -1   3]    40.8623 [2.000]    40.8785 [2.000]    41.3688 [2.000]    41.4691 [2.000]    41.5051 [2.000]
+[kpt   0  -1   4]    41.6420 [2.000]    41.6547 [2.000]    41.8375 [2.000]    41.8379 [2.000]    42.5936 [2.000]
+[kpt   0  -1   5]    42.5939 [2.000]    43.9165 [1.063]    43.9167 [1.062]    50.0300 [0.000]    53.4379 [0.000]
+[kpt   0  -1   6]   381.4812 [0.000]   710.6419 [0.000]   811.5824 [0.000]   862.5511 [0.000]   874.0994 [0.000]
+[kpt   0  -1   7]   916.9110 [0.000]   924.8067 [0.000]   950.0017 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1  -1   0]   -12.8691 [2.000]   -12.6262 [2.000]   -11.1783 [2.000]   -10.4406 [2.000]    -8.1956 [2.000]
+[kpt   1  -1   1]    30.8647 [2.000]    32.7094 [2.000]    38.8037 [2.000]    38.8039 [2.000]    40.1227 [2.000]
+[kpt   1  -1   2]    40.1229 [2.000]    40.6595 [2.000]    40.6698 [2.000]    40.7733 [2.000]    40.8155 [2.000]
+[kpt   1  -1   3]    40.8652 [2.000]    40.9060 [2.000]    40.9060 [2.000]    41.3462 [2.000]    41.3656 [2.000]
+[kpt   1  -1   4]    41.4676 [2.000]    41.5849 [2.000]    41.6392 [2.000]    42.1775 [2.000]    43.1428 [1.999]
+[kpt   1  -1   5]    43.1428 [1.999]    43.5847 [1.938]    43.5849 [1.938]    46.1062 [0.000]    55.5342 [0.000]
+[kpt   1  -1   6]   374.7053 [0.000]   784.8439 [0.000]   816.1484 [0.000]   868.5771 [0.000]   898.5979 [0.000]
+[kpt   1  -1   7]   940.9246 [0.000]   987.5173 [0.000]   1004.8891 [0.000]
+
+
+Charge density mixing: Linear with a constant of 0.10 
+
+ charge density is NEGATIVE after interpolation, minimum is -2.145447e-06
+ minimum charge density with core charge added is -2.145447e-06
+
+Diagonalization using lapack for step=0  count=3
+
+
+Diagonalization using lapack for step=0  count=4
+
+
+FERMI ENERGY =    -10.70116667 eV
+@@ EIGENVALUE SUM     =      -25.964873 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       33.113395 Ha
+@@ VXC                =      -30.007484 Ha
+@@ EXC                =      -23.081723 Ha
+@@ TOTAL ENERGY       =     -146.744677 Ha
+@@ estimated error    =   ****************
+Charge density mixing: Linear with a constant of 0.10 
+
+ charge density is NEGATIVE after interpolation, minimum is -1.009975e-06
+ minimum charge density with core charge added is -1.009975e-06
+
+ write_data: Opening output file 'Waves/wave.out.restart' failed
+  Trying to create subdirectory in case it does not exist
+
+ Creating directory Waves successfully
+
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 10.2 Mb
+WriteData: writing took 0.1 seconds, writing speed 73.282 Mbps 
+WriteRestart: writing took 0.1 seconds 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0   0   0]   -17.3258 [2.000]   -15.9570 [2.000]   -15.1454 [2.000]   -13.7447 [2.000]   -13.7420 [2.000]
+[kpt   0   0   1]   -13.4954 [2.000]   -13.4326 [2.000]   -13.4299 [2.000]   -13.1591 [2.000]   -13.0190 [2.000]
+[kpt   0   0   2]   -12.8815 [2.000]   -12.7976 [2.000]   -12.6689 [2.000]   -12.6073 [2.000]   -12.5347 [2.000]
+[kpt   0   0   3]   -12.3226 [2.000]   -12.2734 [2.000]   -12.1060 [2.000]   -12.1032 [2.000]   -12.0522 [2.000]
+[kpt   0   0   4]   -11.9185 [2.000]   -11.8439 [2.000]   -11.6254 [2.000]   -11.5774 [2.000]   -11.5535 [2.000]
+[kpt   0   0   5]   -11.5510 [2.000]   -10.8914 [1.740]   -10.4869 [0.210]   -10.4842 [0.205]    -9.1346 [0.000]
+[kpt   0   0   6]     1.2533 [0.000]     7.4642 [0.000]    10.2196 [0.000]    16.2628 [0.000]    19.4758 [0.000]
+[kpt   0   0   7]    26.3133 [0.000]    29.9825 [0.000]    37.7188 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1   0   0]   -17.1378 [2.000]   -16.5768 [2.000]   -14.1716 [2.000]   -13.8656 [2.000]   -13.8638 [2.000]
+[kpt   1   0   1]   -13.4590 [2.000]   -13.2545 [2.000]   -13.1908 [2.000]   -13.0555 [2.000]   -13.0533 [2.000]
+[kpt   1   0   2]   -12.8569 [2.000]   -12.7549 [2.000]   -12.6664 [2.000]   -12.6629 [2.000]   -12.6495 [2.000]
+[kpt   1   0   3]   -12.6478 [2.000]   -12.4509 [2.000]   -12.3790 [2.000]   -12.2430 [2.000]   -12.1087 [2.000]
+[kpt   1   0   4]   -12.0296 [2.000]   -11.9790 [2.000]   -11.7626 [2.000]   -11.6865 [2.000]   -11.5483 [2.000]
+[kpt   1   0   5]   -11.0605 [1.946]   -11.0585 [1.945]   -10.6975 [0.982]   -10.6957 [0.973]    -7.8496 [0.000]
+[kpt   1   0   6]     1.3269 [0.000]    11.2324 [0.000]    11.8133 [0.000]    14.2196 [0.000]    16.9888 [0.000]
+[kpt   1   0   7]    21.1590 [0.000]    29.9054 [0.000]    34.1840 [0.000]
+
+
+
+Total charge in supercell =      55.00000000
+ quench: [md:   0/100  scf:   0/100  step time:   2.10  scf time:     2.28 secs  RMS[dV]: 4.47e-03 ]
+
+
+average potential <V> = 2.20e-16
+
+Diagonalization using lapack for step=1  count=5
+
+
+Diagonalization using lapack for step=1  count=6
+
+
+FERMI ENERGY =    -14.86375963 eV
+@@ EIGENVALUE SUM     =      -48.717317 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       32.851006 Ha
+@@ VXC                =      -29.746685 Ha
+@@ EXC                =      -22.859029 Ha
+@@ TOTAL ENERGY       =     -169.797614 Ha
+@@ estimated error    =        2.55e+00 Ha
+Charge density mixing: Linear with a constant of 0.10 
+ quench: [md:   0/100  scf:   1/100  step time:   2.12  scf time:     4.40 secs  RMS[dV]: 5.57e-02 ]
+
+
+average potential <V> = 3.26e-16
+
+Diagonalization using lapack for step=2  count=7
+
+
+Diagonalization using lapack for step=2  count=8
+
+
+FERMI ENERGY =    -14.39342400 eV
+@@ EIGENVALUE SUM     =      -55.453070 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       31.552055 Ha
+@@ VXC                =      -29.503889 Ha
+@@ EXC                =      -22.657918 Ha
+@@ TOTAL ENERGY       =     -177.874002 Ha
+@@ estimated error    =        1.15e+01 Ha
+Charge density mixing: Linear with a constant of 0.10 
+ quench: [md:   0/100  scf:   2/100  step time:   1.93  scf time:     6.32 secs  RMS[dV]: 1.33e-01 ]
+
+
+average potential <V> = 4.63e-18
+
+Diagonalization using lapack for step=3  count=9
+
+
+Diagonalization using lapack for step=3  count=10
+
+
+FERMI ENERGY =    -13.23340732 eV
+@@ EIGENVALUE SUM     =      -52.733695 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       29.365119 Ha
+@@ VXC                =      -29.443594 Ha
+@@ EXC                =      -22.599660 Ha
+@@ TOTAL ENERGY       =     -177.343601 Ha
+@@ estimated error    =        2.03e+01 Ha
+Charge density mixing: Linear with a constant of 0.10 
+ quench: [md:   0/100  scf:   3/100  step time:   1.92  scf time:     8.24 secs  RMS[dV]: 1.80e-01 ]
+
+
+average potential <V> = -8.38e-17
+Davidson converged in 3 steps
+Davidson converged in 3 steps
+
+FERMI ENERGY =    -11.94150133 eV
+@@ EIGENVALUE SUM     =      -47.315345 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       26.609746 Ha
+@@ VXC                =      -29.595143 Ha
+@@ EXC                =      -22.704466 Ha
+@@ TOTAL ENERGY       =     -174.633881 Ha
+@@ estimated error    =        2.25e+01 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/100  scf:   4/100  step time:   3.02  scf time:    11.26 secs  RMS[dV]: 1.90e-01 ]
+
+
+average potential <V> = -1.36e-17
+Davidson converged in 2 steps
+Davidson converged in 3 steps
+
+FERMI ENERGY =    -10.78372759 eV
+@@ EIGENVALUE SUM     =      -41.871550 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       23.620137 Ha
+@@ VXC                =      -29.899811 Ha
+@@ EXC                =      -22.926897 Ha
+@@ TOTAL ENERGY       =     -172.097458 Ha
+@@ estimated error    =        1.97e+01 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.420091e-03
+ minimum charge density with core charge added is -2.420091e-03
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.4 Mb
+WriteData: writing took 0.1 seconds, writing speed 60.259 Mbps 
+WriteRestart: writing took 0.1 seconds 
+ quench: [md:   0/100  scf:   5/100  step time:   2.99  scf time:    14.38 secs  RMS[dV]: 1.79e-01 ]
+
+
+average potential <V> = -3.23e-18
+Davidson converged in 4 steps
+Davidson converged in 5 steps
+
+FERMI ENERGY =     -2.60354052 eV
+@@ EIGENVALUE SUM     =       -8.679907 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       -4.529431 Ha
+@@ VXC                =      -34.912290 Ha
+@@ EXC                =      -26.672871 Ha
+@@ TOTAL ENERGY       =     -165.788878 Ha
+@@ estimated error    =        1.48e+01 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.348096e-03
+ minimum charge density with core charge added is -2.348096e-03
+ quench: [md:   0/100  scf:   6/100  step time:   4.28  scf time:    18.66 secs  RMS[dV]: 6.61e-02 ]
+
+
+average potential <V> = 7.01e-18
+Davidson converged in 2 steps
+Davidson converged in 3 steps
+
+FERMI ENERGY =     -2.84389168 eV
+@@ EIGENVALUE SUM     =       -9.100670 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       -3.992096 Ha
+@@ VXC                =      -34.799945 Ha
+@@ EXC                =      -26.588122 Ha
+@@ TOTAL ENERGY       =     -165.699902 Ha
+@@ estimated error    =        2.64e+00 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.421704e-03
+ minimum charge density with core charge added is -2.421704e-03
+ quench: [md:   0/100  scf:   7/100  step time:   2.54  scf time:    21.20 secs  RMS[dV]: 9.98e-02 ]
+
+
+average potential <V> = 1.71e-17
+Davidson converged in 1 steps
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -2.73117778 eV
+@@ EIGENVALUE SUM     =       -8.898470 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =       -4.245128 Ha
+@@ VXC                =      -34.852610 Ha
+@@ EXC                =      -26.628066 Ha
+@@ TOTAL ENERGY       =     -165.738013 Ha
+@@ estimated error    =        2.26e+00 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.156676e-05
+ minimum charge density with core charge added is -1.156676e-05
+ quench: [md:   0/100  scf:   8/100  step time:   2.35  scf time:    23.55 secs  RMS[dV]: 9.49e-02 ]
+
+
+average potential <V> = -8.67e-19
+Davidson converged in 4 steps
+Davidson converged in 4 steps
+
+FERMI ENERGY =     -6.61474242 eV
+@@ EIGENVALUE SUM     =      -16.610166 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        4.383247 Ha
+@@ VXC                =      -33.100741 Ha
+@@ EXC                =      -25.296427 Ha
+@@ TOTAL ENERGY       =     -165.241565 Ha
+@@ estimated error    =        2.40e+00 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -5.790281e-06
+ minimum charge density with core charge added is -5.790281e-06
+ quench: [md:   0/100  scf:   9/100  step time:   3.73  scf time:    27.28 secs  RMS[dV]: 6.77e-02 ]
+
+
+average potential <V> = 3.54e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.22201979 eV
+@@ EIGENVALUE SUM     =      -15.287408 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.015331 Ha
+@@ VXC                =      -33.384987 Ha
+@@ EXC                =      -25.510791 Ha
+@@ TOTAL ENERGY       =     -165.216840 Ha
+@@ estimated error    =        9.99e-02 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -5.868201e-06
+ minimum charge density with core charge added is -5.868201e-06
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.5 Mb
+WriteData: writing took 0.1 seconds, writing speed 58.628 Mbps 
+WriteRestart: writing took 0.2 seconds 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0  10   0]   -10.9568 [2.000]    -9.7842 [2.000]    -9.0481 [2.000]    -8.6922 [2.000]    -8.6758 [2.000]
+[kpt   0  10   1]    -8.5257 [2.000]    -8.5092 [2.000]    -7.6321 [2.000]    -7.6152 [2.000]    -7.3002 [2.000]
+[kpt   0  10   2]    -7.2976 [2.000]    -7.2621 [2.000]    -7.2450 [2.000]    -7.1790 [2.000]    -7.1761 [2.000]
+[kpt   0  10   3]    -7.1094 [2.000]    -7.1065 [2.000]    -7.0798 [2.000]    -6.9041 [1.998]    -6.9030 [1.998]
+[kpt   0  10   4]    -6.8593 [1.997]    -6.8567 [1.996]    -6.8524 [1.996]    -6.7470 [1.990]    -6.5627 [1.936]
+[kpt   0  10   5]    -6.5200 [1.903]    -6.4472 [1.810]    -6.4294 [1.777]    -4.8065 [0.000]    -3.5980 [0.000]
+[kpt   0  10   6]    -1.9943 [0.000]    -1.9902 [0.000]    -0.9706 [0.000]    -0.9669 [0.000]    -0.5568 [0.000]
+[kpt   0  10   7]    -0.4080 [0.000]    -0.2916 [0.000]     0.0623 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1  10   0]   -10.7568 [2.000]   -10.3620 [2.000]    -8.7772 [2.000]    -8.7608 [2.000]    -8.2849 [2.000]
+[kpt   1  10   1]    -8.2683 [2.000]    -8.2098 [2.000]    -7.9812 [2.000]    -7.9645 [2.000]    -7.4092 [2.000]
+[kpt   1  10   2]    -7.2784 [2.000]    -7.2757 [2.000]    -7.2367 [2.000]    -7.2339 [2.000]    -7.0363 [1.999]
+[kpt   1  10   3]    -7.0334 [1.999]    -7.0238 [1.999]    -6.9649 [1.999]    -6.9618 [1.999]    -6.9127 [1.998]
+[kpt   1  10   4]    -6.9070 [1.998]    -6.8896 [1.997]    -6.8356 [1.996]    -6.8329 [1.996]    -6.6156 [1.962]
+[kpt   1  10   5]    -6.5980 [1.954]    -6.4384 [1.794]    -6.2023 [0.902]    -5.6869 [0.009]    -2.3050 [0.000]
+[kpt   1  10   6]    -1.7993 [0.000]    -1.7944 [0.000]    -1.4425 [0.000]    -1.4381 [0.000]    -0.4542 [0.000]
+[kpt   1  10   7]    -0.2485 [0.000]    -0.2064 [0.000]     0.4071 [0.000]
+
+
+
+Total charge in supercell =      55.00000000
+ quench: [md:   0/100  scf:  10/100  step time:   2.86  scf time:    30.33 secs  RMS[dV]: 1.02e-02 ]
+
+
+average potential <V> = -7.37e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.04006279 eV
+@@ EIGENVALUE SUM     =      -14.861986 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        2.557877 Ha
+@@ VXC                =      -33.481757 Ha
+@@ EXC                =      -25.583002 Ha
+@@ TOTAL ENERGY       =     -165.224312 Ha
+@@ estimated error    =        2.56e-02 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.520171e-05
+ minimum charge density with core charge added is -1.520171e-05
+ quench: [md:   0/100  scf:  11/100  step time:   2.44  scf time:    32.77 secs  RMS[dV]: 7.86e-03 ]
+
+
+average potential <V> = 3.18e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.67760585 eV
+@@ EIGENVALUE SUM     =      -16.431207 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        4.207258 Ha
+@@ VXC                =      -33.139649 Ha
+@@ EXC                =      -25.323558 Ha
+@@ TOTAL ENERGY       =     -165.226816 Ha
+@@ estimated error    =        4.22e-02 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -4.359577e-06
+ minimum charge density with core charge added is -4.359577e-06
+ quench: [md:   0/100  scf:  12/100  step time:   2.90  scf time:    35.67 secs  RMS[dV]: 1.60e-02 ]
+
+
+average potential <V> = -1.84e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.53392964 eV
+@@ EIGENVALUE SUM     =      -15.962019 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.729801 Ha
+@@ VXC                =      -33.219684 Ha
+@@ EXC                =      -25.383672 Ha
+@@ TOTAL ENERGY       =     -165.215164 Ha
+@@ estimated error    =        3.02e-02 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.881885e-06
+ minimum charge density with core charge added is -1.881885e-06
+ quench: [md:   0/100  scf:  13/100  step time:   2.41  scf time:    38.08 secs  RMS[dV]: 1.65e-02 ]
+
+
+average potential <V> = -1.43e-17
+Davidson converged in 3 steps
+Davidson converged in 3 steps
+
+FERMI ENERGY =     -6.46086537 eV
+@@ EIGENVALUE SUM     =      -15.790741 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.549397 Ha
+@@ VXC                =      -33.257443 Ha
+@@ EXC                =      -25.412296 Ha
+@@ TOTAL ENERGY       =     -165.215157 Ha
+@@ estimated error    =        5.78e-04 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.085804e-06
+ minimum charge density with core charge added is -1.085804e-06
+ quench: [md:   0/100  scf:  14/100  step time:   3.07  scf time:    41.16 secs  RMS[dV]: 9.42e-03 ]
+
+
+average potential <V> = 2.02e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.60661084 eV
+@@ EIGENVALUE SUM     =      -16.129648 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.903860 Ha
+@@ VXC                =      -33.188540 Ha
+@@ EXC                =      -25.360068 Ha
+@@ TOTAL ENERGY       =     -165.216274 Ha
+@@ estimated error    =        1.84e-03 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -8.715098e-08
+ minimum charge density with core charge added is -8.715098e-08
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.3 Mb
+WriteData: writing took 0.1 seconds, writing speed 58.005 Mbps 
+WriteRestart: writing took 0.2 seconds 
+ quench: [md:   0/100  scf:  15/100  step time:   2.88  scf time:    44.19 secs  RMS[dV]: 7.17e-03 ]
+
+
+average potential <V> = -3.83e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.54483878 eV
+@@ EIGENVALUE SUM     =      -15.976033 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.742909 Ha
+@@ VXC                =      -33.222512 Ha
+@@ EXC                =      -25.385764 Ha
+@@ TOTAL ENERGY       =     -165.215336 Ha
+@@ estimated error    =        8.80e-04 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -6.055200e-07
+ minimum charge density with core charge added is -6.055200e-07
+ quench: [md:   0/100  scf:  16/100  step time:   2.82  scf time:    47.00 secs  RMS[dV]: 5.72e-03 ]
+
+
+average potential <V> = 4.34e-19
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.57354103 eV
+@@ EIGENVALUE SUM     =      -16.038053 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.806870 Ha
+@@ VXC                =      -33.213865 Ha
+@@ EXC                =      -25.379156 Ha
+@@ TOTAL ENERGY       =     -165.215432 Ha
+@@ estimated error    =        1.45e-04 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -7.641052e-07
+ minimum charge density with core charge added is -7.641052e-07
+ quench: [md:   0/100  scf:  17/100  step time:   2.44  scf time:    49.44 secs  RMS[dV]: 6.70e-03 ]
+
+
+average potential <V> = -3.11e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58304736 eV
+@@ EIGENVALUE SUM     =      -16.060321 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.830084 Ha
+@@ VXC                =      -33.209654 Ha
+@@ EXC                =      -25.375960 Ha
+@@ TOTAL ENERGY       =     -165.215502 Ha
+@@ estimated error    =        2.09e-05 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -6.983449e-07
+ minimum charge density with core charge added is -6.983449e-07
+ quench: [md:   0/100  scf:  18/100  step time:   2.71  scf time:    52.15 secs  RMS[dV]: 2.14e-03 ]
+
+
+average potential <V> = 1.20e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58388183 eV
+@@ EIGENVALUE SUM     =      -16.062005 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.831807 Ha
+@@ VXC                =      -33.209476 Ha
+@@ EXC                =      -25.375822 Ha
+@@ TOTAL ENERGY       =     -165.215503 Ha
+@@ estimated error    =        1.39e-06 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -5.179801e-07
+ minimum charge density with core charge added is -5.179801e-07
+ quench: [md:   0/100  scf:  19/100  step time:   2.47  scf time:    54.62 secs  RMS[dV]: 1.03e-03 ]
+
+
+average potential <V> = 3.98e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58577880 eV
+@@ EIGENVALUE SUM     =      -16.065892 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.835791 Ha
+@@ VXC                =      -33.209033 Ha
+@@ EXC                =      -25.375482 Ha
+@@ TOTAL ENERGY       =     -165.215509 Ha
+@@ estimated error    =        1.01e-06 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -4.172922e-07
+ minimum charge density with core charge added is -4.172922e-07
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.2 Mb
+WriteData: writing took 0.1 seconds, writing speed 57.360 Mbps 
+WriteRestart: writing took 0.1 seconds 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0  20   0]   -11.0564 [2.000]    -9.8956 [2.000]    -9.1726 [2.000]    -8.9982 [2.000]    -8.9981 [2.000]
+[kpt   0  20   1]    -8.8331 [2.000]    -8.8330 [2.000]    -7.9475 [2.000]    -7.9474 [2.000]    -7.8272 [2.000]
+[kpt   0  20   2]    -7.8243 [2.000]    -7.7095 [2.000]    -7.7066 [2.000]    -7.6428 [2.000]    -7.6399 [2.000]
+[kpt   0  20   3]    -7.5813 [2.000]    -7.5812 [2.000]    -7.4855 [2.000]    -7.4441 [2.000]    -7.4412 [2.000]
+[kpt   0  20   4]    -7.4008 [1.999]    -7.3979 [1.999]    -7.1719 [1.994]    -7.1513 [1.993]    -6.9262 [1.936]
+[kpt   0  20   5]    -6.9185 [1.931]    -6.7767 [1.742]    -6.7766 [1.742]    -5.0419 [0.000]    -3.8014 [0.000]
+[kpt   0  20   6]    -2.2813 [0.000]    -2.2810 [0.000]    -1.2564 [0.000]    -1.2561 [0.000]    -0.6939 [0.000]
+[kpt   0  20   7]    -0.6935 [0.000]    -0.0833 [0.000]     0.5242 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1  20   0]   -10.8581 [2.000]   -10.4668 [2.000]    -9.0825 [2.000]    -9.0823 [2.000]    -8.5943 [2.000]
+[kpt   1  20   1]    -8.5942 [2.000]    -8.3660 [2.000]    -8.2934 [2.000]    -8.2933 [2.000]    -7.8061 [2.000]
+[kpt   1  20   2]    -7.8032 [2.000]    -7.7657 [2.000]    -7.7628 [2.000]    -7.6393 [2.000]    -7.5717 [2.000]
+[kpt   1  20   3]    -7.5688 [2.000]    -7.5031 [2.000]    -7.5002 [2.000]    -7.4297 [2.000]    -7.3779 [1.999]
+[kpt   1  20   4]    -7.3749 [1.999]    -7.3186 [1.999]    -7.2302 [1.997]    -7.2301 [1.997]    -6.9427 [1.945]
+[kpt   1  20   5]    -6.9426 [1.945]    -6.8176 [1.821]    -6.5776 [0.959]    -5.9982 [0.006]    -2.5030 [0.000]
+[kpt   1  20   6]    -2.0856 [0.000]    -2.0853 [0.000]    -1.7300 [0.000]    -1.7297 [0.000]    -0.4215 [0.000]
+[kpt   1  20   7]    -0.0586 [0.000]     0.0178 [0.000]     0.2203 [0.000]
+
+
+
+Total charge in supercell =      55.00000000
+ quench: [md:   0/100  scf:  20/100  step time:   2.43  scf time:    57.19 secs  RMS[dV]: 2.00e-03 ]
+
+
+average potential <V> = -4.31e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58699085 eV
+@@ EIGENVALUE SUM     =      -16.068428 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.838388 Ha
+@@ VXC                =      -33.208751 Ha
+@@ EXC                =      -25.375265 Ha
+@@ TOTAL ENERGY       =     -165.215514 Ha
+@@ estimated error    =        5.14e-07 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -3.137777e-07
+ minimum charge density with core charge added is -3.137777e-07
+ quench: [md:   0/100  scf:  21/100  step time:   2.49  scf time:    59.68 secs  RMS[dV]: 1.27e-03 ]
+
+
+average potential <V> = -2.31e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58861606 eV
+@@ EIGENVALUE SUM     =      -16.071648 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.841632 Ha
+@@ VXC                =      -33.208625 Ha
+@@ EXC                =      -25.375165 Ha
+@@ TOTAL ENERGY       =     -165.215515 Ha
+@@ estimated error    =        3.07e-07 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.924835e-07
+ minimum charge density with core charge added is -2.924835e-07
+ quench: [md:   0/100  scf:  22/100  step time:   2.50  scf time:    62.18 secs  RMS[dV]: 2.00e-03 ]
+
+
+average potential <V> = 1.37e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58928562 eV
+@@ EIGENVALUE SUM     =      -16.073026 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.843023 Ha
+@@ VXC                =      -33.208557 Ha
+@@ EXC                =      -25.375111 Ha
+@@ TOTAL ENERGY       =     -165.215517 Ha
+@@ estimated error    =        8.02e-08 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.421207e-07
+ minimum charge density with core charge added is -2.421207e-07
+ quench: [md:   0/100  scf:  23/100  step time:   2.54  scf time:    64.72 secs  RMS[dV]: 9.63e-04 ]
+
+
+average potential <V> = 9.32e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58973270 eV
+@@ EIGENVALUE SUM     =      -16.074002 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.844018 Ha
+@@ VXC                =      -33.208463 Ha
+@@ EXC                =      -25.375040 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        4.31e-08 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.261813e-07
+ minimum charge density with core charge added is -2.261813e-07
+ quench: [md:   0/100  scf:  24/100  step time:   2.71  scf time:    67.43 secs  RMS[dV]: 7.79e-04 ]
+
+
+average potential <V> = 1.08e-17
+Davidson converged in 1 steps
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -6.58971769 eV
+@@ EIGENVALUE SUM     =      -16.073962 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.843975 Ha
+@@ VXC                =      -33.208478 Ha
+@@ EXC                =      -25.375051 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        1.79e-08 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.395064e-07
+ minimum charge density with core charge added is -1.395064e-07
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.1 Mb
+WriteData: writing took 0.1 seconds, writing speed 56.806 Mbps 
+WriteRestart: writing took 0.2 seconds 
+ quench: [md:   0/100  scf:  25/100  step time:   2.35  scf time:    69.93 secs  RMS[dV]: 1.93e-04 ]
+
+
+average potential <V> = 2.60e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58966561 eV
+@@ EIGENVALUE SUM     =      -16.073812 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.843810 Ha
+@@ VXC                =      -33.208546 Ha
+@@ EXC                =      -25.375103 Ha
+@@ TOTAL ENERGY       =     -165.215518 Ha
+@@ estimated error    =        1.40e-08 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.303398e-07
+ minimum charge density with core charge added is -1.303398e-07
+ quench: [md:   0/100  scf:  26/100  step time:   2.95  scf time:    72.88 secs  RMS[dV]: 9.84e-04 ]
+
+
+average potential <V> = -1.41e-17
+Davidson converged in 1 steps
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -6.58969126 eV
+@@ EIGENVALUE SUM     =      -16.073869 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.843868 Ha
+@@ VXC                =      -33.208540 Ha
+@@ EXC                =      -25.375098 Ha
+@@ TOTAL ENERGY       =     -165.215518 Ha
+@@ estimated error    =        4.38e-09 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -5.874787e-08
+ minimum charge density with core charge added is -5.874787e-08
+ quench: [md:   0/100  scf:  27/100  step time:   2.31  scf time:    75.19 secs  RMS[dV]: 1.47e-04 ]
+
+
+average potential <V> = -7.37e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58981787 eV
+@@ EIGENVALUE SUM     =      -16.074141 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.844144 Ha
+@@ VXC                =      -33.208520 Ha
+@@ EXC                =      -25.375083 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        3.46e-09 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -4.508135e-08
+ minimum charge density with core charge added is -4.508135e-08
+ quench: [md:   0/100  scf:  28/100  step time:   2.60  scf time:    77.79 secs  RMS[dV]: 1.02e-03 ]
+
+
+average potential <V> = 3.13e-17
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58984754 eV
+@@ EIGENVALUE SUM     =      -16.074205 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.844209 Ha
+@@ VXC                =      -33.208514 Ha
+@@ EXC                =      -25.375079 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        5.91e-10 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -3.261877e-08
+ minimum charge density with core charge added is -3.261877e-08
+ quench: [md:   0/100  scf:  29/100  step time:   2.92  scf time:    80.71 secs  RMS[dV]: 3.11e-04 ]
+
+
+average potential <V> = 3.11e-18
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58986358 eV
+@@ EIGENVALUE SUM     =      -16.074236 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.844241 Ha
+@@ VXC                =      -33.208514 Ha
+@@ EXC                =      -25.375078 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        3.49e-10 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -1.648264e-08
+ minimum charge density with core charge added is -1.648264e-08
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.1 Mb
+WriteData: writing took 0.1 seconds, writing speed 56.643 Mbps 
+WriteRestart: writing took 0.2 seconds 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0  30   0]   -11.0610 [2.000]    -9.9001 [2.000]    -9.1771 [2.000]    -9.0024 [2.000]    -9.0024 [2.000]
+[kpt   0  30   1]    -8.8373 [2.000]    -8.8373 [2.000]    -7.9517 [2.000]    -7.9517 [2.000]    -7.8312 [2.000]
+[kpt   0  30   2]    -7.8282 [2.000]    -7.7135 [2.000]    -7.7106 [2.000]    -7.6468 [2.000]    -7.6438 [2.000]
+[kpt   0  30   3]    -7.5855 [2.000]    -7.5855 [2.000]    -7.4894 [2.000]    -7.4481 [2.000]    -7.4451 [2.000]
+[kpt   0  30   4]    -7.4048 [1.999]    -7.4018 [1.999]    -7.1761 [1.994]    -7.1552 [1.993]    -6.9303 [1.936]
+[kpt   0  30   5]    -6.9224 [1.931]    -6.7808 [1.742]    -6.7808 [1.742]    -5.0460 [0.000]    -3.8057 [0.000]
+[kpt   0  30   6]    -2.2864 [0.000]    -2.2864 [0.000]    -1.2621 [0.000]    -1.2621 [0.000]    -0.6999 [0.000]
+[kpt   0  30   7]    -0.6999 [0.000]    -0.1753 [0.000]     0.4334 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1  30   0]   -10.8626 [2.000]   -10.4713 [2.000]    -9.0866 [2.000]    -9.0866 [2.000]    -8.5985 [2.000]
+[kpt   1  30   1]    -8.5985 [2.000]    -8.3705 [2.000]    -8.2975 [2.000]    -8.2975 [2.000]    -7.8100 [2.000]
+[kpt   1  30   2]    -7.8071 [2.000]    -7.7696 [2.000]    -7.7667 [2.000]    -7.6436 [2.000]    -7.5756 [2.000]
+[kpt   1  30   3]    -7.5727 [2.000]    -7.5071 [2.000]    -7.5042 [2.000]    -7.4336 [2.000]    -7.3819 [1.999]
+[kpt   1  30   4]    -7.3789 [1.999]    -7.3225 [1.999]    -7.2344 [1.997]    -7.2344 [1.997]    -6.9469 [1.945]
+[kpt   1  30   5]    -6.9469 [1.945]    -6.8217 [1.821]    -6.5815 [0.958]    -6.0022 [0.006]    -2.5072 [0.000]
+[kpt   1  30   6]    -2.0908 [0.000]    -2.0908 [0.000]    -1.7354 [0.000]    -1.7354 [0.000]    -0.4258 [0.000]
+[kpt   1  30   7]    -0.0739 [0.000]    -0.0651 [0.000]     0.1288 [0.000]
+
+
+
+Total charge in supercell =      55.00000000
+ quench: [md:   0/100  scf:  30/100  step time:   2.90  scf time:    83.76 secs  RMS[dV]: 3.13e-04 ]
+
+
+average potential <V> = 6.51e-19
+Davidson converged in 2 steps
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -6.58988913 eV
+@@ EIGENVALUE SUM     =      -16.074289 Ha
+@@ ION_ION            =     -160.818959 Ha
+@@ ELECTROSTATIC      =        3.844294 Ha
+@@ VXC                =      -33.208512 Ha
+@@ EXC                =      -25.375077 Ha
+@@ TOTAL ENERGY       =     -165.215519 Ha
+@@ estimated error    =        1.88e-10 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -6.704265e-09
+ minimum charge density with core charge added is -6.704265e-09
+ quench: [md:   0/100  scf:  31/100  step time:   2.96  scf time:    86.72 secs  RMS[dV]: 4.51e-04 ]
+
+
+
+ Convergence criterion reached: Energy variation (7.61e-11) is lower than threshold (1.00e-10)
+
+potential convergence has been achieved. stopping ...
+
+[   0  32   32       90 ] Quench.cpp: 
+final total energy from eig sum =    -165.21551906 Ha
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.125000      0.000000      0.000000
+
+[kpt   0  32   0]   -11.0610 [2.000]    -9.9001 [2.000]    -9.1772 [2.000]    -9.0024 [2.000]    -9.0024 [2.000]
+[kpt   0  32   1]    -8.8373 [2.000]    -8.8373 [2.000]    -7.9517 [2.000]    -7.9517 [2.000]    -7.8312 [2.000]
+[kpt   0  32   2]    -7.8283 [2.000]    -7.7135 [2.000]    -7.7106 [2.000]    -7.6468 [2.000]    -7.6439 [2.000]
+[kpt   0  32   3]    -7.5855 [2.000]    -7.5855 [2.000]    -7.4895 [2.000]    -7.4481 [2.000]    -7.4452 [2.000]
+[kpt   0  32   4]    -7.4048 [1.999]    -7.4019 [1.999]    -7.1762 [1.994]    -7.1553 [1.993]    -6.9303 [1.936]
+[kpt   0  32   5]    -6.9224 [1.931]    -6.7809 [1.742]    -6.7809 [1.742]    -5.0461 [0.000]    -3.8057 [0.000]
+[kpt   0  32   6]    -2.2864 [0.000]    -2.2864 [0.000]    -1.2621 [0.000]    -1.2621 [0.000]    -0.7000 [0.000]
+[kpt   0  32   7]    -0.6999 [0.000]    -0.1785 [0.000]     0.4302 [0.000]
+
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  1]:       0.375000      0.000000      0.000000
+
+[kpt   1  32   0]   -10.8626 [2.000]   -10.4713 [2.000]    -9.0867 [2.000]    -9.0867 [2.000]    -8.5985 [2.000]
+[kpt   1  32   1]    -8.5985 [2.000]    -8.3705 [2.000]    -8.2976 [2.000]    -8.2976 [2.000]    -7.8101 [2.000]
+[kpt   1  32   2]    -7.8071 [2.000]    -7.7696 [2.000]    -7.7667 [2.000]    -7.6437 [2.000]    -7.5757 [2.000]
+[kpt   1  32   3]    -7.5727 [2.000]    -7.5071 [2.000]    -7.5042 [2.000]    -7.4336 [2.000]    -7.3819 [1.999]
+[kpt   1  32   4]    -7.3789 [1.999]    -7.3225 [1.999]    -7.2344 [1.997]    -7.2344 [1.997]    -6.9469 [1.945]
+[kpt   1  32   5]    -6.9469 [1.945]    -6.8218 [1.821]    -6.5816 [0.958]    -6.0022 [0.006]    -2.5072 [0.000]
+[kpt   1  32   6]    -2.0909 [0.000]    -2.0909 [0.000]    -1.7355 [0.000]    -1.7355 [0.000]    -0.4258 [0.000]
+[kpt   1  32   7]    -0.0772 [0.000]    -0.0651 [0.000]     0.1256 [0.000]
+
+
+
+Total charge in supercell =      55.00000000
+ volume and energy per atom =       235.46339709       -899.14860290 eV
+
+ Vdd took 0.000668 seconds
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.1 Mb
+WriteData: writing took 0.1 seconds, writing speed 56.344 Mbps 
+WriteRestart: writing took 0.2 seconds 
+
+
+
+  IONIC POSITIONS [a0] AND FORCES [Ha/a0]
+  Charge analysis using: Voronoi Deformation Density
+
+@ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ      Movable
+@ION    1    Au      2.5322340   7.5589075   7.5589075    0.021   -0.0000027  -0.0000001  -0.0000001  1 1 1
+@ION    2    Au      7.5967020   7.5589075   7.5589075   -0.014   -0.0000007  -0.0000002  -0.0000002  1 1 1
+@ION    3    Au     12.6611701   7.5589075   7.5589075    0.022    0.0000000   0.0000004   0.0000004  1 1 1
+@ION    4    Au     17.7256381   7.5589075   7.5589075   -0.014    0.0000007  -0.0000002  -0.0000002  1 1 1
+@ION    5    Au     22.7901061   7.5589075   7.5589075   -0.014    0.0000027  -0.0000001  -0.0000001  1 1 1
+
+ mean FX      =   0.00000136 Ha/a0
+ mean FY      =   0.00000018 Ha/a0
+ mean FZ      =   0.00000018 Ha/a0
+
+ max FX       =   0.00000267 Ha/a0   (ion 1)
+ max FY       =   0.00000045 Ha/a0   (ion 3)
+ max FZ       =   0.00000045 Ha/a0   (ion 3)
+ max F[x,y,z] =   0.00000267 Ha/a0
+ max |F|      =   0.00000267 Ha/a0   (ion 1)
+
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 8.1 Mb
+WriteData: writing took 0.1 seconds, writing speed 56.401 Mbps 
+WriteRestart: writing took 0.2 seconds 
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                            90.85                2.84
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     3.46                0.11
+  1-TOTAL: run                                     87.39                2.73
+  ---------------------------------------------------------------------------
+    1-TOTAL: run: Force                             0.28                0.01
+    1-TOTAL: run: Scf steps                        85.60                2.68
+
+2-Force                                             0.28                0.01
+-----------------------------------------------------------------------------
+  2-Force: core correction                          0.00                0.00
+  2-Force: corrections                              0.04                0.00
+  2-Force: ion-ion                                  0.00                0.00
+  2-Force: local                                    0.06                0.00
+  2-Force: non-local                                0.18                0.01
+  2-Force: non-local-betaxpsi                       0.04                0.00
+  2-Force: non-local-get gamma                      0.00                0.00
+  2-Force: non-local-nlforce_par_Q                  0.00                0.00
+  2-Force: non-local-nlforce_par_gamma              0.00                0.00
+  2-Force: non-local-nlforce_par_omega              0.00                0.00
+  2-Force: non-local-partial gamma                  0.00                0.00
+  2-Force: non-local-veff grad                      0.00                0.00
+  2-Force: symmetrization                           0.00                0.00
+
+2-Init                                              3.46                0.11
+-----------------------------------------------------------------------------
+  2-Init: GetNewRho                                 0.75                0.02
+  2-Init: KpointClass                               0.56                0.02
+  2-Init: LcaoGetPsi                                0.14                0.00
+  2-Init: LcaoGetRho                                0.03                0.00
+  2-Init: ReinitIonicPotentials                     0.14                0.00
+  2-Init: betaxpsi                                  0.03                0.00
+  2-Init: exchange/correlation                      0.09                0.00
+  2-Init: hartree                                   0.14                0.00
+  2-Init: normalization                             0.03                0.00
+  2-Init: radial potentials                         1.06                0.03
+  2-Init: subdiag                                   0.29                0.01
+  2-Init: weights                                   0.07                0.00
+
+2-Scf steps                                        85.60                2.68
+-----------------------------------------------------------------------------
+  2-Scf steps: Davidson                            40.80                1.27
+  2-Scf steps: GetNewRho                           17.62                0.55
+  2-Scf steps: Hartree                             11.66                0.36
+  2-Scf steps: MgridSubspace                        4.94                0.15
+  2-Scf steps: MixRho                               3.19                0.10
+  2-Scf steps: exchange/correlation                 3.29                0.10
+
+3-MgridSubspace                                     4.94                0.15
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                           0.31                0.01
+  3-MgridSubspace: Beta x psi                       0.31                0.01
+  3-MgridSubspace: Diagonalization                  0.93                0.03
+  3-MgridSubspace: Mg_eig                           3.39                0.11
+
+3-ReinitIonicPotentials                             0.14                0.00
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.01                0.00
+  3-ReinitIonicPotentials: GetWeight                0.07                0.00
+  3-ReinitIonicPotentials: get_QI                   0.00                0.00
+  3-ReinitIonicPotentials: get_qqq                  0.00                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.06                0.00
+
+4-Diagonalization                                   1.22                0.04
+-----------------------------------------------------------------------------
+  4-Diagonalization: Eigensolver                    0.01                0.00
+  4-Diagonalization: Hpsi                           0.62                0.02
+  4-Diagonalization: Update orbitals                0.20                0.01
+  4-Diagonalization: dsygvx/zhegvx/folded           0.01                0.00
+  4-Diagonalization: lapack                         0.01                0.00
+  4-Diagonalization: matrix setup/reduce            0.39                0.01
+
+5-Functional                                        3.34                0.10
+-----------------------------------------------------------------------------
+  5-Functional: vxc                                 3.34                0.10
+  5-Functional: vxc grad                            0.00                0.00
+  5-Functional: vxc local                           0.43                0.01
+  5-Functional: vxc nonlocal                        0.00                0.00
+
+6-Davidson                                         40.80                1.27
+-----------------------------------------------------------------------------
+  6-Davidson: Betaxpsi                              1.91                0.06
+  6-Davidson: apply hamiltonian                     9.93                0.31
+  6-Davidson: diagonalization                       0.46                0.01
+  6-Davidson: generate residuals                    2.79                0.09
+  6-Davidson: matrix setup/reduce                   7.92                0.25
+  6-Davidson: normalization                         2.20                0.07
+  6-Davidson: precondition                         12.59                0.39
+  6-Davidson: refresh h_psi and s_psi               0.13                0.00
+  6-Davidson: reset hr,sr,vr                        0.00                0.00
+  6-Davidson: rotate orbitals                       1.84                0.06
+
+AppNls                                              3.07                0.10
+-----------------------------------------------------------------------------
+  AppNls: data_rearrange                            0.01                0.00
+  ---------------------------------------------------------------------------
+    AppNls: data_rearrange: alloc and zeros           0.00                0.00
+    AppNls: data_rearrange: dnm                     0.00                0.00
+    AppNls: data_rearrange: sint                    0.00                0.00
+  AppNls: nv                                        1.84                0.06
+  AppNls: nv_work                                   0.00                0.00
+
+App_gradient                                        0.15                0.00
+
+Compute Hpsi                                        0.62                0.02
+-----------------------------------------------------------------------------
+  Compute Hpsi: AppNls                              0.20                0.01
+  Compute Hpsi: Threaded Apply H                    0.42                0.01
+
+GlobalSums                                          2.07                0.06
+
+Init                                                2.89                0.09
+
+Init Voronoi                                        0.04                0.00
+
+Mix rho                                             3.22                0.10
+-----------------------------------------------------------------------------
+  Mix rho: Linear                                   0.16                0.00
+  Mix rho: Pulay                                    2.79                0.09
+
+Orbital                                             0.01                0.00
+-----------------------------------------------------------------------------
+  Orbital: phase and set                            0.01                0.00
+  Orbital: proj cal                                 0.01                0.00
+
+VhPfft                                              5.54                0.17
+
+Weight                                              0.05                0.00
+-----------------------------------------------------------------------------
+  Weight: bcast                                     0.03                0.00
+  Weight: phase and set                             0.01                0.00
+  Weight: proj cal                                  0.02                0.00
+
+radial beta                                         0.06                0.00
+
+weight fft_forward                                  0.00                0.00
+
+weight fft_nldim                                    0.00                0.00
+
+weight fold                                         0.00                0.00
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+GlobalSums                               0.97           0.97           0.97
+-----------------------------------------------------------------------------
+
+Mg_eig                                   3.38           3.38           3.38
+-----------------------------------------------------------------------------
+  Mg_eig: apply hamiltonian              2.32           2.32           2.32
+  Mg_eig: mgrid_solv                     0.61           0.61           0.61

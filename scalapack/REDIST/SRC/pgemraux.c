@@ -23,20 +23,20 @@
 #define Clacpy Cigelacpy
 void  Clacpy();
 typedef struct {
-  int   desctype;
-  int   ctxt;
-  int   m;
-  int   n;
-  int   nbrow;
-  int   nbcol;
-  int   sprow;
-  int   spcol;
-  int   lda;
+  Int   desctype;
+  Int   ctxt;
+  Int   m;
+  Int   n;
+  Int   nbrow;
+  Int   nbcol;
+  Int   sprow;
+  Int   spcol;
+  Int   lda;
 }     MDESC;
 #define BLOCK_CYCLIC_2D 1
 typedef struct {
-  int   lstart;
-  int   len;
+  Int   lstart;
+  Int   len;
 }     IDESC;
 #define SHIFT(row,sprow,nbrow) ((row)-(sprow)+ ((row) >= (sprow) ? 0 : (nbrow)))
 #define max(A,B) ((A)>(B)?(A):(B))
@@ -50,7 +50,7 @@ typedef struct {
 #endif
 /* Cblacs */
 extern void Cblacs_pcoord();
-extern int Cblacs_pnum();
+extern Int Cblacs_pnum();
 extern void Csetpvmtids();
 extern void Cblacs_get();
 extern void Cblacs_pinfo();
@@ -71,12 +71,12 @@ extern void Cigerv2d();
 /* lapack */
 void  ilacpy_();
 /* aux fonctions */
-extern int localindice();
+extern Int localindice();
 extern void *mr2d_malloc();
-extern int ppcm();
-extern int localsize();
-extern int memoryblocksize();
-extern int changeorigin();
+extern Int ppcm();
+extern Int localsize();
+extern Int memoryblocksize();
+extern Int changeorigin();
 extern void paramcheck();
 /* tools and others function */
 #define scanD0 igescanD0
@@ -88,7 +88,7 @@ extern void scanD0();
 extern void dispmat();
 extern void setmemory();
 extern void freememory();
-extern int scan_intervals();
+extern Int scan_intervals();
 extern void Cpigemr2do();
 extern void Cpigemr2d();
 /* some defines for Cpigemr2do */
@@ -105,8 +105,7 @@ extern void Cpigemr2d();
 #include <stdlib.h>
 #include <assert.h>
 void *
-mr2d_malloc(n)
-  int   n;
+mr2d_malloc(Int n)
 {
   void *ptr;
   assert(n > 0);
@@ -117,11 +116,10 @@ mr2d_malloc(n)
   }
   return ptr;
 }
-int 
-pgcd(a, b)
-  int   a, b;
+Int 
+pgcd(Int a, Int b)
 {
-  int   aux;
+  Int   aux;
   if (a < b)
     return pgcd(b, a);
   else {
@@ -132,11 +130,10 @@ pgcd(a, b)
       return pgcd(b, aux);
   }
 }
-int 
-ppcm(a, b)
-  int   a, b;
+Int 
+ppcm(Int a, Int b)
 {
-  int   pg;
+  Int   pg;
   pg = pgcd(a, b);
   return a * (b / pg);
 }
@@ -144,11 +141,10 @@ ppcm(a, b)
  * row number myprow, of a distributed matrix with m rows distributed of on a
  * grid of processors with p rows with blocksize nbrow : this procedure can
  * also be used to compute the number of cols by replacing rows by cols */
-int 
-localsize(myprow, p, nbrow, m)
-  int   myprow, p, nbrow, m;
+Int 
+localsize(Int myprow, Int p, Int nbrow, Int m)
 {
-  int   templateheight, blockheight;
+  Int   templateheight, blockheight;
   templateheight = p * nbrow;
   if (m % templateheight != 0) {	/* not an exact boundary */
     if ((m % templateheight) > (nbrow * myprow)) {	/* processor
@@ -173,11 +169,10 @@ localsize(myprow, p, nbrow, m)
 }
 /****************************************************************/
 /* Returns the exact memory block size corresponding to the parameters */
-int
-memoryblocksize(a)
-  MDESC *a;
+Int
+memoryblocksize(MDESC *a)
 {
-  int   myprow, mypcol, p, q;
+  Int   myprow, mypcol, p, q;
   /* Compute the (myprow,mypcol) indices of processor mypnum in P0xQ0 We
    * assume the row-major ordering of the BLACS */
   Cblacs_gridinfo(a->ctxt, &p, &q, &myprow, &mypcol);
@@ -188,30 +183,27 @@ memoryblocksize(a)
 	localsize(mypcol, q, a->nbcol, a->n);
 }
 void 
-checkequal(ctxt, a)
-  int   a, ctxt;
+checkequal(Int ctxt, Int a)
 {
-  int   np, dummy, nbrow, myp, b;
+  Int   np, dummy, nbrow, myp, b;
   Cblacs_gridinfo(ctxt, &nbrow, &np, &dummy, &myp);
   assert(nbrow == 1);
   if (np == 1)
     return;
   if (myp == 0) {
-    Cigesd2d(ctxt, 1, 1, &a, 1, 0, 1);
-    Cigerv2d(ctxt, 1, 1, &b, 1, 0, np - 1);
+    Cigesd2d(ctxt, (Int)1, (Int)1, &a, (Int)1, (Int)0, (Int)1);
+    Cigerv2d(ctxt, (Int)1, (Int)1, &b, (Int)1, (Int)0, np - 1);
     assert(a == b);
   } else {
-    Cigerv2d(ctxt, 1, 1, &b, 1, 0, myp - 1);
+    Cigerv2d(ctxt, (Int)1, (Int)1, &b, (Int)1, (Int)0, myp - 1);
     assert(a == b);
-    Cigesd2d(ctxt, 1, 1, &a, 1, 0, (myp + 1) % np);
+    Cigesd2d(ctxt, (Int)1, (Int)1, &a, (Int)1, (Int)0, (myp + 1) % np);
   }
 }
 void 
-paramcheck(a, i, j, m, n, p, q, gcontext)
-  MDESC *a;
-  int   i, j, m, n, p, q;
+paramcheck(MDESC *a, Int i, Int j, Int m, Int n, Int p, Int q, Int gcontext)
 {
-  int   p2, q2, myprow, mypcol;
+  Int   p2, q2, myprow, mypcol;
 #ifndef NDEBUG
   checkequal(gcontext, p);
   checkequal(gcontext, q);
@@ -254,12 +246,10 @@ nbrow=%d,lda=%d,sprow=%d\n",
 /* to change from the submatrix beginning at line i to one beginning at line
  * i' with i'< blocksize return the line number on the local process where
  * the new matrix begin, the new process number, and i' */
-int 
-changeorigin(myp, sp, p, bs, i, decal, newsp)
-  int   myp, sp, p, bs, i;
-  int  *decal, *newsp;
+Int 
+changeorigin(Int myp, Int sp, Int p, Int bs, Int i, Int *decal, Int *newsp)
 {
-  int   tempheight, firstblock, firsttemp;
+  Int   tempheight, firstblock, firsttemp;
   /* we begin by changing the parameters so that ia < templatewidth,... */
   tempheight = bs * p;
   firsttemp = i / tempheight;
@@ -273,14 +263,12 @@ changeorigin(myp, sp, p, bs, i, decal, newsp)
 }
 /******************************************************************/
 /* Return the indice in local memory of element of indice a in the matrix */
-int
-localindice(ig, jg, templateheight, templatewidth, a)
-  int   templateheight, templatewidth, ig, jg;
-  MDESC *a;
+Int
+localindice(Int ig, Int jg, Int templateheight, Int templatewidth, MDESC *a)
 /* Return the indice in local memory (scattered distribution) of the element
  * of indice a in global matrix */
 {
-  int   vtemp, htemp, vsubtemp, hsubtemp, il, jl;
+  Int   vtemp, htemp, vsubtemp, hsubtemp, il, jl;
   assert(ig >= 0 && ig < a->m && jg >= 0 && jg < a->n);
   /* coordinates in global matrix with the tests in intersect, ig MUST BE in
    * [0..m] and jg in [0..n] */
@@ -297,7 +285,7 @@ localindice(ig, jg, templateheight, templatewidth, a)
   assert(il < a->lda);
 #ifndef NDEBUG
   {
-    int   pr, pc, p, q, lp, lq;
+    Int   pr, pc, p, q, lp, lq;
     Cblacs_gridinfo(a->ctxt, &p, &q, &pr, &pc);
     p = templateheight / a->nbrow;
     q = templatewidth / a->nbcol;

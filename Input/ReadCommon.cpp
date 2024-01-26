@@ -325,6 +325,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "poisson solver. ", 
                      "poisson_solver must be multigrid or pfft. Resetting to pfft. ", POISSON_OPTIONS);
 
+    If.RegisterInputKey("kpoint_units", NULL, &lc.kpoint_units, "Reciprocal lattice",
+                     CHECK_AND_FIX, OPTIONAL, kpoint_units,
+                     "kpoint units for reading kpoint ", 
+                     "kpoint units When read kpoints or in bandstrcuture kpoints", CELL_OPTIONS);
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,
@@ -667,10 +671,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The number of band used in rmg-qmcpack interface. ", 
             "By default without this input, it will be set to number of states. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
+    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, -INT_MAX, INT_MAX, -1, 
             CHECK_AND_FIX, OPTIONAL, 
             "The number of unoccupied orbitals. A value that is 15-20% of the number of occupied orbitals generally works well.", 
-            "Unoccupied_states_per_kpoint must be greater than 0. Setting to default value of 10. ", OCCUPATION_OPTIONS);
+            "if Unoccupied_states_per_kpoint < 0, it will be set to 10% of the number of occupied states or 10 which is larger", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -737,10 +741,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Diagonalization period (per scf step). Mainly for debugging and should not be changed for production.", 
             "Diagonalization period must be greater than 0. Resetting to the default value of 1. ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
+    If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 100,
             CHECK_AND_FIX, OPTIONAL, 
             "Maximum number of self consistent steps to perform. Inner loop for hybrid functionals. ", 
             "max_scf_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("freeze_ldaU_steps", &lc.freeze_ldaU_steps, 1, INT_MAX, 500,
+            CHECK_AND_FIX, OPTIONAL, 
+            "freeze the ldaU occupations ns_occ after this step. ", 
+            "freeze_ldaU_steps must be greater than 1. Resetting to the default value of 20 ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("max_exx_steps", &lc.max_exx_steps, 1, INT_MAX, 100,
             CHECK_AND_FIX, OPTIONAL, 
@@ -1121,9 +1130,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("write_qmcpack_restart", &lc.write_qmcpack_restart, false,
             "If true then a QMCPACK restart file is written as well as a serial restart file.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("compute_direct", &lc.compute_direct, false,
-            "If true then direct energy values are computed for QMCPACK.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("write_qmcpack_restart_localized", &lc.write_qmcpack_restart_localized, false,
             "If true then a QMCPACK restart file for localized orbitals", CONTROL_OPTIONS);
@@ -1528,12 +1534,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     }
 
     // Check if a lattice vector was specified and if not 
-    if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
+    if(lattice_vector.vals == def_lattice_vector.vals && ibrav == No_Lattice)
         rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
 
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.
-    if(ibrav == None)
+    if(ibrav == No_Lattice)
     {
         double Lunit = 1.0;
         if (Verify ("lattice_units", "Angstrom", InputMap))

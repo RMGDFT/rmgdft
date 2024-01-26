@@ -17,19 +17,19 @@
 #include "PBblas.h"
 
 #ifdef __STDC__
-void pdscal_( int * N, double * ALPHA,
-              double * X, int * IX, int * JX, int * DESCX, int * INCX )
+void pdscal_( Int * N, double * ALPHA,
+              double * X, Int * IX, Int * JX, Int * DESCX, Int * INCX )
 #else
 void pdscal_( N, ALPHA, X, IX, JX, DESCX, INCX )
 /*
 *  .. Scalar Arguments ..
 */
-   int            * INCX, * IX, * JX, * N;
+   Int            * INCX, * IX, * JX, * N;
    double         * ALPHA;
 /*
 *  .. Array Arguments ..
 */
-   int            * DESCX;
+   Int            * DESCX;
    double         * X;
 #endif
 {
@@ -155,12 +155,12 @@ void pdscal_( N, ALPHA, X, IX, JX, DESCX, INCX )
 /*
 *  .. Local Scalars ..
 */
-   int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, info,
+   Int            Xcol, Xi, Xii, Xj, Xjj, Xld, Xnp, Xnq, Xrow, ctxt, info,
                   mycol, myrow, npcol, nprow;
 /*
 *  .. Local Arrays ..
 */
-   int            Xd[DLEN_];
+   Int            Xd[DLEN_];
 /* ..
 *  .. Executable Statements ..
 *
@@ -210,12 +210,12 @@ void pdscal_( N, ALPHA, X, IX, JX, DESCX, INCX )
             Xld = Xd[LLD_];
             if( ALPHA[REAL_PART] == ZERO )
             {
-               dset_( &Xnq, ((char *) ALPHA), ((char *)(X+(Xii+Xjj*Xld))),
+               dset_( &Xnq, ((char *) ALPHA), ((char *)Mptr(X,Xii,Xjj,Xld,1)),
                       &Xld );
             }
             else
             {
-               dscal_( &Xnq, ((char *) ALPHA), ((char *)(X+(Xii+Xjj*Xld))),
+               dscal_( &Xnq, ((char *) ALPHA), ((char *)Mptr(X,Xii,Xjj,Xld,1)),
                        &Xld );
             }
          }
@@ -239,12 +239,12 @@ void pdscal_( N, ALPHA, X, IX, JX, DESCX, INCX )
             if( ALPHA[REAL_PART] == ZERO )
             {
                dset_( &Xnp, ((char *) ALPHA),
-                      ((char *)( X+(Xii+Xjj*Xd[LLD_]) )), INCX );
+                      ((char *)Mptr( X,Xii,Xjj,Xd[LLD_],1) ), INCX );
             }
             else
             {
                dscal_( &Xnp, ((char *) ALPHA),
-                       ((char *)( X+(Xii+Xjj*Xd[LLD_]) )), INCX );
+                       ((char *)Mptr( X,Xii,Xjj,Xd[LLD_],1) ), INCX );
             }
          }
       }

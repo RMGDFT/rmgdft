@@ -15,6 +15,8 @@
 #include "common_prototypes1.h"
 #include "Scalapack.h"
 #include "prototypes_on.h"
+#include "transition.h"
+
 
 #include "blas.h"
 #include "blas_driver.h"
@@ -99,8 +101,8 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     }
 
 
-
-    if(pct.gridpe == 0) write_eigs(states);
+    double kpt_xtal[3]{0.0, 0.0, 0.0};
+    if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
     fflush(NULL);
     if(ct.spin_flag)
     {
@@ -108,7 +110,15 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     }
     /* Generate new density */
 
-    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
+    std::vector<double> eigs_all, kweight, occ;
+    eigs_all.resize(numst);
+    occ.resize(numst);
+    kweight.resize(1);
+    kweight[0] = 1.0;
+    for(int st = 0; st < numst; st++) eigs_all[st] = states[st].eig[0];
+    ct.efermi = Fill_on(eigs_all, kweight, occ, ct.occ_width, ct.nel, ct.occ_mix, ct.occ_flag, ct.mp_order);
+    for(int st = 0; st < numst; st++) states[st].occupation[0] = occ[st];
+
 
 
     int num_occ_states = 0;
@@ -151,7 +161,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     
     if(pct.gridpe == 0) 
     {
-        printf("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
+        rmg_printf("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
         print_matrix(mat_glob, 6, numst);
     }
     mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, CC_res_local);

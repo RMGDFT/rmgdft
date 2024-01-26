@@ -32,6 +32,7 @@
 #include <string.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 #include "init_var.h"
 
 
@@ -52,7 +53,7 @@ void get_cholesky_real(double *matS)
 #if DEBUG
     if (pct.gridpe == 0)
     {
-        printf("\n Compute Cholesky decomposition \n");
+        rmg_printf("\n Compute Cholesky decomposition \n");
     }
 #endif
 
@@ -73,7 +74,7 @@ void get_cholesky_real(double *matS)
         pdpotrf(char_fcd1, &numst, l_s, &ione, &ione, pct.desca, &info);
         if (info != 0)
         {
-            printf(" pdpotrf, output info=%d\n", info);
+            rmg_printf(" pdpotrf, output info=%d\n", info);
             fflush(NULL);
             exit(0);
         }
@@ -92,8 +93,8 @@ void get_cholesky_real(double *matS)
                 &anorm, &rcond, work, &lwork, iwork, &liwork, &info);
         if (info != 0)
         {
-	    printf("\n work space %f %d \n", work[0], lwork);
-            printf(" error in pdpocon, info = %d\n", info);
+	    rmg_printf("\n work space %f %d \n", work[0], lwork);
+            rmg_printf(" error in pdpocon, info = %d\n", info);
             fflush(NULL);
             exit(0);
         }
@@ -110,10 +111,10 @@ void get_cholesky_real(double *matS)
 
     if (pct.gridpe == 0)
     {
-        printf("\n Reciprocal of the condition number of the overlap matrix = %f\n", rcond);
+        rmg_printf("\n Reciprocal of the condition number of the overlap matrix = %f\n", rcond);
         if (rcond < 0.00001)
         {
-            printf(" Reciprocal of the condition number of the overlap matrix too small!!\n");
+            rmg_printf(" Reciprocal of the condition number of the overlap matrix too small!!\n");
             fflush(NULL);
             exit(0);
         }

@@ -271,14 +271,14 @@ void LoadXmlPseudo(SPECIES *sp)
 
         sp->beta.emplace_back(new double[sp->rg_points]);
 
-        for(int idx=0;idx < sp->rg_points;idx++) sp->beta[ip][idx] = sp->atomic_wave[ip][idx] * sp->dVl[vl][idx];
+        for(int idx=0;idx < sp->rg_points;idx++) sp->beta[nb][idx] = sp->atomic_wave[ip][idx] * sp->dVl[vl][idx];
         sp->llbeta.emplace_back(sp->atomic_wave_l[ip]);
         if(sp->llbeta[ip] > sp->max_l) sp->max_l = sp->llbeta[ip];
 
         // Evaluate the normalization constant
         double *work = new double[sp->rg_points]();
         for(int idx=0;idx<sp->rg_points;idx++) 
-            work[idx] = sp->beta[ip][idx]*sp->atomic_wave[ip][idx];
+            work[idx] = sp->beta[nb][idx]*sp->atomic_wave[ip][idx];
 
         double sum = FOUR * PI * radint1 (work, sp->r, sp->rab, sp->rg_points);
         ddd0[nb][nb] = FOUR * PI / sum;

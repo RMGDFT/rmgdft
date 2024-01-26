@@ -192,12 +192,12 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
             s1 = (double)sp->nldim / (double)Rmg_G->get_NZ_GRID(1);
             a2[0] = s1*Rmg_L.get_a2(0);a2[1] = s1*Rmg_L.get_a2(1);a2[2] = s1*Rmg_L.get_a2(2);
 
-            L->set_ibrav_type(None);
+            L->set_ibrav_type(No_Lattice);
             L->latgen(celldm, &omega, a0, a1, a2, true);
 
             delete sp->prj_pwave;
             sp->prj_pwave = new Pw(*OG, *L, 1, false);
-            delete L;
+        //    delete L;
         }
         else
         {
@@ -243,9 +243,10 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     FD.cfac[0] = 0.0;
     FD.cfac[1] = 0.0;
     for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    //for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        if(Kptr[kpt]->kp.kmag < 1.0e-8) GetFdFactor(kpt);
+        int kpt = 0;
+        GetFdFactor(kpt);
     }
     MPI_Bcast(&FD.cfac[0], 1, MPI_DOUBLE, 0, pct.grid_comm);
     MPI_Bcast(&FD.cfac[1], 1, MPI_DOUBLE, 0, pct.grid_comm);

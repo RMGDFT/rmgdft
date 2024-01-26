@@ -100,7 +100,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
             break;
         default:
             //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-            printf("\n ct.interp_flag = %d", ct.interp_flag);
+            rmg_printf("\n ct.interp_flag = %d", ct.interp_flag);
             rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
 
 

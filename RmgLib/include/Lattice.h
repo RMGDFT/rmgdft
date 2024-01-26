@@ -34,7 +34,7 @@
 
 
 /* Crystal lattice types */
-#define None                            0
+#define No_Lattice                      0
 #define CUBIC_PRIMITIVE                 1
 #define CUBIC_FC                        2
 #define CUBIC_BC                        3

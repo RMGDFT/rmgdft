@@ -40,7 +40,8 @@ void constrain (void)
 
     int ion;
     ION *iptr=NULL;
-    printf("Entering constrained forces for image %d", pct.thisimg+1);
+    if(pct.imgpe==0) fprintf(ct.logfile, "Entering constrained forces for image %d", pct.thisimg+1);
+
     double *Tau, *Img_L, *Img_R;
     Tau = new double[3*ct.num_ions];
     Img_L = new double[3*ct.num_ions];
@@ -143,7 +144,8 @@ void constrain (void)
 
                 /* check tau tangent vector size */
                 if ( Mag_T == 0 ) {
-                    error_handler("Image collision this(%d) image.", pct.thisimg);
+                    std::string errmsg = "Image collision this(" + std::to_string(pct.thisimg) + ") image.";
+                    rmg_error_handler(__FILE__, __LINE__, errmsg.c_str());
                 } else {
                     Mag_T = sqrt(Mag_T);
                 }
@@ -226,8 +228,24 @@ void constrain (void)
 
                 }
                 /*Calculate vector norms, protect against zeros */
-                Mag_L = Mag_L > 0.0 ? sqrt(Mag_L) : error_handler("Left image(%d) collision in NEB", pct.thisimg);
-                Mag_R = Mag_R > 0.0 ? sqrt(Mag_R) : error_handler("Right image(%d) collision in NEB", pct.thisimg);
+                if(Mag_L > 0.0)
+                {
+                    Mag_L = sqrt(Mag_L);
+                }
+                else
+                {
+                    if(pct.gridpe==0) printf("Left image(%d) collision in NEB", pct.thisimg);
+                    rmg_error_handler(__FILE__, __LINE__, "Terminating");
+                }
+                if(Mag_R > 0.0)
+                {
+                    Mag_R = sqrt(Mag_R);
+                }
+                else
+                {
+                    if(pct.gridpe==0) printf("Right image(%d) collision in NEB", pct.thisimg);
+                    rmg_error_handler(__FILE__, __LINE__, "Terminating");
+                }
 
                 if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
                         ( iptr->constraint.setA_weight <= ct.TOTAL && ct.TOTAL >= iptr->constraint.setB_weight) )
@@ -244,7 +262,14 @@ void constrain (void)
                             + Tau[3*ion+Z]*Tau[3*ion+Z];
                     }
 
-                    Mag_T = Mag_T > 0.0 ? sqrt(Mag_T) : error_handler("Left/Right image collision in NEB");
+                    if(Mag_T > 0.0)
+                    {
+                        Mag_T = sqrt(Mag_T);
+                    }
+                    else
+                    {
+                        rmg_error_handler(__FILE__, __LINE__, "Left/Right image collision in NEB");
+                    }
                 }
                 else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
                 {   /* this image energy is in a decreasing to the right section */
@@ -350,7 +375,7 @@ void constrain (void)
 
                 /* check tau tangent vector size */
                 if ( Mag_T == 0 ) {
-                    error_handler("Image collision in both left and right images.");
+                    rmg_error_handler(__FILE__, __LINE__, "Image collision in both left and right images.");
                 } else {
                     Mag_T = sqrt(Mag_T);
                 }
@@ -450,7 +475,7 @@ void constrain (void)
                 Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
 
                 /* Remove physical force along Tau, replace it with the restoring force */
-                printf("Applying NEB force constraints\n");
+                if(pct.imgpe==0) fprintf(ct.logfile, "Applying NEB force constraints\n");
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {

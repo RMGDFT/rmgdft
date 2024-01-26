@@ -1,6 +1,11 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+void MatrixKpoint (STATE *states, double *Hij, double *Sij, int *desca,
+        std::complex<double> *Hk, std::complex<double> *Sk, double kpt[3]);
+void MatrixKpointPhase (STATE *states, int *desca, std::vector<int> &min_index);
+
+
 void InitBlockTriDims();
 void WriteXyz(char *);
 void Preconditioner(double *, int);
@@ -234,7 +239,7 @@ void write_avgv (double * vh, double * vnuc);
 void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
-void write_eigs (STATE * states);
+void write_eigs (STATE * states, double *kpt);
 void write_timings (void);
 double rand0 (long *idum);
 
@@ -458,7 +463,6 @@ void write_avgv (double * vh, double * vnuc);
 void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
-void write_eigs (STATE * states);
 void write_occ (STATE * states);
 void write_timings (void);
 double rand0 (long *idum);

@@ -37,6 +37,8 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "State.h"
+#include "transition.h"
+
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
@@ -50,7 +52,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
     fhand = open(newname, O_RDWR);
     if (fhand < 0)
     {
-        printf("Unable to open file %s", newname);
+        rmg_printf("Unable to open file %s", newname);
         exit(0);
     }
 
@@ -58,7 +60,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
 
     if(nbytes != (size_t)(ct.num_ions * sizeof(unsigned int)))
     {
-        printf("read perminfo failed: read %zu != %zu", nbytes, ct.num_ions*sizeof(unsigned int));
+        rmg_printf("read perminfo failed: read %zu != %zu", nbytes, ct.num_ions*sizeof(unsigned int));
         exit(0);
     }
 

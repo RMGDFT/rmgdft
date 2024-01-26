@@ -382,7 +382,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     delete RT;
 
     if (cei.num_probe > 4)
-        error_handler ("probe > 4");
+        rmg_error_handler (__FILE__, __LINE__, "probe > 4");
 
 
 }

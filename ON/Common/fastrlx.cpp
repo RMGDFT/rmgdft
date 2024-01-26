@@ -74,7 +74,7 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
     {
         mfp = fopen("traj.rmv", "w");
         if (setvbuf(mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
-            printf("\n Warning: cant allocate movie io buffer size\n");
+            rmg_printf("\n Warning: cant allocate movie io buffer size\n");
 
         movie(mfp);
     }
@@ -101,7 +101,7 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
     {
 
         if (pct.gridpe == 0)
-            printf("\nfastrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps, ct.max_md_steps);
+            rmg_printf("\nfastrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps, ct.max_md_steps);
 
         /* quench the electrons and calculate forces */
         quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
@@ -238,13 +238,13 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
     if (ct.max_md_steps > 0 && pct.gridpe == 0)
     {
 
-        printf("\n");
+        rmg_printf("\n");
         progress_tag();
 
         if (CONV_FORCE)
-            printf("force convergence has been achieved. stopping ...\n");
+            rmg_printf("force convergence has been achieved. stopping ...\n");
         else
-            printf
+            rmg_printf
                 ("force convergence has NOT been achieved. stopping (max number of MD steps reached) ...\n");
 
     }

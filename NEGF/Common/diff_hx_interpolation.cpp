@@ -39,7 +39,7 @@ void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
         if (x1 < -2.0)
         {
             dprintf ("\n x1 =%d %f %f %f %f %f", st, x1, x0, x0_old, hx, hx_old);
-            error_handler ("grid ???");
+            rmg_error_handler (__FILE__, __LINE__, "grid ???");
         }
 
 

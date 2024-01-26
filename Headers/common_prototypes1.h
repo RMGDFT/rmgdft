@@ -26,6 +26,10 @@
  * SOURCE
  */
 
+#ifndef RMG_COMMON_PROTOTYPES1_H
+#define RMG_COMMON_PROTOTYPES1_H 1
+
+
 #include <stdbool.h>
 
 /* Function prototypes */
@@ -46,8 +50,8 @@ double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
 void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 void constrain( void );
 void cross_product (double *a, double *b, double *c);
-double Fill_on (STATE *states, double width, double nel, double mix,
-           int num_st, int occ_flag, int mp_order);
+double Fill_on (std::vector<double> &eig_all, std::vector<double> &kweight, std::vector<double> &occ, double width, double nel, double mix,
+           int occ_flag, int mp_order);
 
 void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
 void get_phase (ION *iptr, double *rtptr, int icount, int *dvec);
@@ -299,4 +303,12 @@ void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
 void set_pbc(double *position, int num_ions, int num_images);
+void inline progress_tag(void)
+{
+    if(pct.gridpe==0)
+        fprintf(ct.logfile, "[ %3d %3d %4d %8.0f ] %s: ",
+           ct.md_steps, ct.scf_steps, ct.total_scf_steps,
+           my_crtc() - ct.time0, (strrchr(__FILE__, '/')+1));
+}
 
+#endif

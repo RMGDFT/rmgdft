@@ -126,7 +126,7 @@ void *run_threads(void *v) {
                         numa_bitmask_clearall(thread_cpumask);
                         numa_bitmask_setbit(thread_cpumask, idx);
                         numa_sched_setaffinity(0, thread_cpumask);
-                        if(ct.verbose) printf("C1 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                        if(ct.verbose) rmg_printf("C1 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
                         break;
                     }
                     t_tid++;

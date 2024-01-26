@@ -69,6 +69,24 @@
     #endif
 #endif
 
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include "oneapi/mkl/blas.hpp"
+    #include "mkl.h"
+    #include <omp.h>
+auto main_sycl_exception_handler = [] (sycl::exception_list exceptions) {
+    for (std::exception_ptr const& e : exceptions) {
+      try {
+        std::rethrow_exception(e);
+      } catch(sycl::exception const& e) {
+        std::cout << "Caught asynchronous SYCL exception for main Q.:\n"
+                  << e.what() << std::endl;
+      }
+    }
+  };
+
+#endif
+
 #if LINUX
 void get_topology(void)
 {
@@ -604,6 +622,22 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #endif
 
+#endif
+
+#if SYCL_ENABLED
+//    ct.host_dev = omp_get_initial_device();
+    ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector_v, main_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
+    std::string dev_str = ct.sycl_Q.get_device().get_info<sycl::info::device::name>();
+    rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
+    for (const auto & p : sycl::platform::get_platforms())
+    {
+        for (const auto& d: p.get_devices())
+        {
+            ct.sycl_devs.emplace_back(d);
+            if(pct.gridpe == 0)
+                std::cout << "SYCL device name: " << d.get_info<sycl::info::device::name>() << std::endl;
+        }
+    }
 #endif
 
     // This is placed down here since the IO is not setup yet when provided is obtained above.

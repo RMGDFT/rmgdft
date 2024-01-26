@@ -219,28 +219,26 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     }
 
     /* Print contributions to total energies into output file */
-    printf ("\n\n");
-    printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-    printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-    printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-    printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
-    printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
+    rmg_printf ("\n\n");
+    rmg_printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
+    rmg_printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
+    rmg_printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
+    rmg_printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
+    rmg_printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
     if(ct.xc_is_hybrid && Functional::is_exx_active())
         rmg_printf ("@@ FOCK               = %16.9f Ha\n", ct.FOCK);
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
     {
-        printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
+        rmg_printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
     }
 
-    printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
+    rmg_printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
 
     if (ct.spin_flag)
     {
         /* Print the total magetization and absolute magnetization into output file */
-        progress_tag ();
-        printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-        progress_tag ();
-        printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
+        rmg_printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
+        rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 
 

@@ -17,19 +17,19 @@
 #include "PBblas.h"
 
 #ifdef __STDC__
-void pdamax_( int * N, double * AMAX, int * INDX,
-              double * X, int * IX, int * JX, int * DESCX, int * INCX )
+void pdamax_( Int * N, double * AMAX, Int * INDX,
+              double * X, Int * IX, Int * JX, Int * DESCX, Int * INCX )
 #else
 void pdamax_( N, AMAX, INDX, X, IX, JX, DESCX, INCX )
 /*
 *  .. Scalar Arguments ..
 */
-   int            * INCX, * INDX, * IX, * JX, * N;
+   Int            * INCX, * INDX, * IX, * JX, * N;
    double         * AMAX;
 /*
 *  .. Array Arguments ..
 */
-   int            * DESCX;
+   Int            * DESCX;
    double         * X;
 #endif
 {
@@ -181,13 +181,13 @@ void pdamax_( N, AMAX, INDX, X, IX, JX, DESCX, INCX )
 *  .. Local Scalars ..
 */
    char           cbtop, cctop, rbtop, rctop;
-   int            Xcol, Xgindx, Xi, Xii, Ximb, Xinb, Xj, Xjj, Xlindx, Xld, Xmb,
+   Int            Xcol, Xgindx, Xi, Xii, Ximb, Xinb, Xj, Xjj, Xlindx, Xld, Xmb,
                   Xnb, Xnp, Xnq, Xrow, Xsrc, ctxt, dist, dst, idumm, info, k,
                   maxpos, mycol, mydist, myrow, npcol, nprow, src;
 /*
 *  .. Local Arrays ..
 */
-   int            Xd[DLEN_];
+   Int            Xd[DLEN_];
    double         work[4];
 /* ..
 *  .. Executable Statements ..
@@ -233,7 +233,7 @@ void pdamax_( N, AMAX, INDX, X, IX, JX, DESCX, INCX )
       if( ( ( myrow == Xrow ) || ( Xrow < 0 ) ) &&
           ( ( mycol == Xcol ) || ( Xcol < 0 ) ) )
       {
-         *INDX = *JX; *AMAX = X[Xii+Xjj*Xd[LLD_]];
+         *INDX = *JX; *AMAX = *Mptr(X,Xii,Xjj,Xd[LLD_],1);
       }
       return;
    }
@@ -260,9 +260,9 @@ void pdamax_( N, AMAX, INDX, X, IX, JX, DESCX, INCX )
             {
                Xld = Xd[LLD_];
                Xlindx = Xjj - 1 +
-                        idamax_( &Xnq, ((char*)(X+(Xii+Xjj*Xld))), &Xld );
+                        idamax_( &Xnq, ((char*)Mptr(X,Xii,Xjj,Xld,1)), &Xld );
                Mindxl2g( Xgindx, Xlindx, Xinb, Xnb, mycol, Xsrc, npcol );
-               work[0] = X[Xii+Xlindx*Xld];
+               work[0] = *Mptr(X,Xii,Xlindx,Xld,1);
                work[1] = ((double)( Xgindx+1 ));
             }
             else
@@ -324,7 +324,7 @@ l_20:
 *  zero, then select a coherent INDX.
 */
             *AMAX = work[0];
-            *INDX = ( ( *AMAX == ZERO ) ? ( *JX ) : ( (int)(work[1]) ) );
+            *INDX = ( ( *AMAX == ZERO ) ? ( *JX ) : ( (Int)(work[1]) ) );
          }
          else
          {
@@ -343,8 +343,8 @@ l_20:
 */
                Xld = Xd[LLD_];
                Xlindx = Xjj - 1 +
-                        idamax_( &Xnq, ((char*)(X+(Xii+Xjj*Xld))), &Xld );
-               *AMAX = X[Xii+Xlindx*Xld];
+                        idamax_( &Xnq, ((char*)Mptr(X,Xii,Xjj,Xld,1)), &Xld );
+               *AMAX = *Mptr(X,Xii,Xlindx,Xld,1);
             }
             else
             {
@@ -419,9 +419,9 @@ l_20:
             {
                Xld     = Xd[LLD_];
                Xlindx  = Xii - 1 +
-                         idamax_( &Xnp, ((char*)(X+(Xii+Xjj*Xld))), INCX );
+                         idamax_( &Xnp, ((char*)Mptr(X,Xii,Xjj,Xld,1)), INCX );
                Mindxl2g( Xgindx, Xlindx, Ximb, Xmb, myrow, Xsrc, nprow );
-               work[0] = X[Xlindx+Xjj*Xld];
+               work[0] = *Mptr(X,Xlindx,Xjj,Xld,1);
                work[1] = ((double)( Xgindx+1 ));
             }
             else
@@ -483,7 +483,7 @@ l_40:
 *  zero, then select a coherent INDX.
 */
             *AMAX = work[0];
-            *INDX = ( ( *AMAX == ZERO ) ? ( *IX ) : ( (int)(work[1]) ) );
+            *INDX = ( ( *AMAX == ZERO ) ? ( *IX ) : ( (Int)(work[1]) ) );
          }
          else
          {
@@ -503,8 +503,8 @@ l_40:
 */
                Xld = Xd[LLD_];
                Xlindx = Xii - 1 +
-                        idamax_( &Xnp, ((char*)(X+(Xii+Xjj*Xld))), INCX );
-               *AMAX = X[Xlindx+Xjj*Xld];
+                        idamax_( &Xnp, ((char*)Mptr(X,Xii,Xjj,Xld,1)), INCX );
+               *AMAX = *Mptr(X,Xlindx,Xjj,Xld,1);
             }
             else
             {

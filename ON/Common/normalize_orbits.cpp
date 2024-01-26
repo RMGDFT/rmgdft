@@ -9,6 +9,7 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 
 
 void normalize_orbits(STATE * states)
@@ -19,7 +20,7 @@ void normalize_orbits(STATE * states)
     int ione = 1;
 
     if (pct.gridpe == 0)
-        printf("\n STATE  NORMALIZATION  ");
+        rmg_printf("\n STATE  NORMALIZATION  ");
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {

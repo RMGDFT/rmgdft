@@ -20,5 +20,11 @@ void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const
 void ProcessGpublasError(hipblasStatus_t hipstat);
 #endif
 
+#if SYCL_ENABLED
+#include "rmgtypedefs.h"
+void RmgGpuError(const char *file, int line, const gpuError_t gpuStatus, const char * errorMessage);
+//void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage);
+//void ProcessGpublasError(hipblasStatus_t hipstat);
+#endif
 #endif
 

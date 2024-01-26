@@ -217,9 +217,15 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }
 
     int ixoff, iyoff, izoff;
-    int mindim = Mgrid::toffsets[level-1];
-    int offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
-    bool check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
+    int mindim, offset;
+    bool check;
+    if(level)
+    {
+        mindim = Mgrid::toffsets[level-1];
+        offset = std::min(mindim, 4);  // offset now holds the max number we can process at once
+        check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
+    } 
+    if(!check) offset = 1;
 
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -416,7 +422,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
         case MONOCLINIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
         case TRICLINIC_PRIMITIVE:
-        case None:
+        case No_Lattice:
 
             scale = 1.0 / 64.0;
             for (ix = 1; ix <= dx2; ix++)
@@ -696,7 +702,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
         case TETRAGONAL_PRIMITIVE:
         case TETRAGONAL_BC:
         case TRICLINIC_PRIMITIVE:
-        case None:
+        case No_Lattice:
             /* transfer coarse grid points to fine grid along with the
              * high side image point
              */

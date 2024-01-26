@@ -1,18 +1,20 @@
 #include "Bdef.h"
 
 #if (INTFACE == C_CALL)
-void Cblacs_exit(int NotDone)
+void Cblacs_exit(Int NotDone)
 #else
-F_VOID_FUNC blacs_exit_(int *NotDone)
+F_VOID_FUNC blacs_exit_(Int *NotDone)
 #endif
 {
+   void Cblacs_gridexit(Int);
    void BI_UpdateBuffs(BLACBUFF *);
-   BLACBUFF *BI_GetBuff(int);
-   int BI_BuffIsFree(BLACBUFF *, int);
+   BLACBUFF *BI_GetBuff(Int);
+   Int BI_BuffIsFree(BLACBUFF *, Int);
    BLACBUFF *bp;
    extern BLACBUFF *BI_ReadyB, *BI_ActiveQ, BI_AuxBuff;
-   int i;
-   extern int BI_MaxNCtxt, BI_Np;
+   extern MPI_Status *BI_Stats;
+   Int i;
+   extern Int BI_MaxNCtxt, BI_Np;
    extern BLACSCONTEXT **BI_MyContxts;
 /*
  * Destroy all contexts
@@ -29,6 +31,7 @@ F_VOID_FUNC blacs_exit_(int *NotDone)
       free(bp);
    }
    free (BI_AuxBuff.Aops);
+   free (BI_Stats);
 
 /*
  * Reset parameters to initial values
@@ -38,7 +41,12 @@ F_VOID_FUNC blacs_exit_(int *NotDone)
    BI_Np = -1;
    if (!Mpval(NotDone))
    {
-      MPI_Finalize();
+     free(BI_COMM_WORLD);
+     BI_COMM_WORLD = NULL;
+     MPI_Finalize();
    }
    BI_ReadyB = NULL;
+   BI_ActiveQ = NULL;
+   BI_AuxBuff.Aops = NULL;
+   BI_Stats = NULL;
 }

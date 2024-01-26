@@ -65,6 +65,12 @@ void PulayMixing::Refresh(){ this->step = 0;}
 
 void PulayMixing::Mixing(double *xm, double *fm)
 {
+    if(this->Gspace) 
+    {
+        this->Mixing_rhoG(xm, fm);
+        return;
+    }
+
     double A[(this->max_order+1) * (this->max_order+1)];
     double b[this->max_order+1];
     int ipvt[this->max_order+1];

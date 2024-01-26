@@ -434,6 +434,7 @@ const char * GetAtomicSymbol(int number)
 }    
 
 void SetupAllElectonOrbitals(std::string symbol, 
+                             std::vector<int> &pqn, 
                              std::vector<int> &lvals, 
                              std::vector<double> &jvals,
                              std::vector<double> &occs,
@@ -451,7 +452,9 @@ void SetupAllElectonOrbitals(std::string symbol,
     for (auto &field: fields)
     {
         label.emplace_back(field);
-        double occ = stoi(field.substr(2));
+        int p1 = stoi(field.substr(0,1));
+        pqn.emplace_back(p1);
+        double occ = stod(field.substr(2));
         occs.emplace_back(occ);
         energy.emplace_back(0.0);
         aradius.emplace_back(12.0);

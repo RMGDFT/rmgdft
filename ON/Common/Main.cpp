@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 
 
         if (pct.gridpe == 0)
-            printf("\n  MXLLDA: %d ", MXLLDA);
+            rmg_printf("\n  MXLLDA: %d ", MXLLDA);
 
         /* allocate memory for matrixs  */
         allocate_matrix();
@@ -268,6 +268,7 @@ int main(int argc, char **argv)
         switch (ct.forceflag)
         {
             case MD_QUENCH:            /* Quench the electrons */
+            case BAND_STRUCTURE:
 
                 quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
@@ -318,7 +319,7 @@ int main(int argc, char **argv)
 
 
             default:
-                printf("\n undifined MD Method");
+                rmg_printf("\n undifined MD Method");
                 exit(0);
         }
 
@@ -339,7 +340,7 @@ int main(int argc, char **argv)
                 int num_orb = LocalOrbital->num_tot;
                 if(num_orb != LocalOrbital->num_thispe)
                 {
-                    printf("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
+                    rmg_printf("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
                     exit(0);
                 }
                 double *Cij_glob = new double[num_orb * num_orb];

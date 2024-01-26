@@ -48,7 +48,7 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
     *S = 0.0;
 
     if (orbit1->index < ct.state_begin || orbit1->index >= ct.state_end)
-        error_handler("orbit1 is not in this PE");
+        rmg_error_handler(__FILE__, __LINE__, "orbit1 is not in this PE");
 
     xlow1 = onepair->xlow1;
     xhigh1 = onepair->xhigh1;

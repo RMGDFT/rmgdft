@@ -13,6 +13,7 @@
 #include "ErrorFuncs.h"
 #include "RmgTimer.h"
 #include "transition.h"
+#include "rmg_error.h"
 
 
 #if CUDA_ENABLED
@@ -25,10 +26,17 @@
 #define         dgemm           RMG_FC_GLOBAL(dgemm, DGEMM)
 #define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
 
+
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include "oneapi/mkl/blas.hpp"
+    #include "mkl.h"
+#else
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
 }
+#endif
 
 
 /*
@@ -281,6 +289,48 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
 
     //hipDeviceSynchronize();
+#elif SYCL_ENABLED
+
+    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
+    oneapi::mkl::transpose sycl_transB = oneapi::mkl::transpose::nontrans;
+
+    if(!strcmp(transa, "t")) sycl_transA = oneapi::mkl::transpose::trans;
+    if(!strcmp(transa, "T")) sycl_transA = oneapi::mkl::transpose::trans;
+    if(!strcmp(transa, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
+    if(!strcmp(transa, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
+
+    if(!strcmp(transb, "t")) sycl_transB = oneapi::mkl::transpose::trans;
+    if(!strcmp(transb, "T")) sycl_transB = oneapi::mkl::transpose::trans;
+    if(!strcmp(transb, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    if(!strcmp(transb, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+
+    int ka = m;
+    if(!strcmp("n", transa)) ka = k;
+    if(!strcmp("N", transa)) ka = k;
+
+    int kb = k;
+    if(!strcmp("n", transb)) kb = n;
+    if(!strcmp("N", transb)) kb = n;
+
+    size_t a_size = (size_t)lda * (size_t)ka;
+    size_t b_size = (size_t)ldb * (size_t)kb;
+    size_t c_size = (size_t)ldc * (size_t)n;
+
+    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
+    bufA.set_final_data(nullptr);
+    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
+    bufB.set_final_data(nullptr);
+    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
+    try {
+        oneapi::mkl::blas::gemm(ct.sycl_Q, sycl_transA, sycl_transB, m, n, k, alpha, 
+                                bufA, lda, bufB, ldb, beta, bufC, ldc);
+    }
+    catch(cl::sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during GEMM:\n"
+        << e.what() << std::endl << std::endl;
+        rmg_error_handler (__FILE__, __LINE__, "Terminating");
+    }
+
 #else
 
     

@@ -31,7 +31,21 @@
     #include "vkFFT.h"
 #endif
 
+#if 0
+#if SYCL_ENABLED
+auto fft_sycl_exception_handler = [] (sycl::exception_list exceptions) {
+    for (std::exception_ptr const& e : exceptions) {
+      try {
+        std::rethrow_exception(e);
+      } catch(sycl::exception const& e) {
+        std::cout << "Caught asynchronous SYCL exception for fft Q.:\n"
+                  << e.what() << std::endl;
+      }
+    }
+  };
 
+#endif
+#endif
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
@@ -176,6 +190,21 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
 #endif
 
+#if 0
+#if SYCL_ENABLED
+      num_streams = ct.OMP_THREADS_PER_NODE;
+      num_streams = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
+      // Queues for SYCL are like streams for CUDA/HIP
+      queues.resize(num_streams);
+      gpu_plans.resize(num_streams);
+      gpu_plans_f.resize(num_streams);
+      gpu_plans_r2c.resize(num_streams);
+      gpu_plans_d2z.resize(num_streams);
+      host_bufs.resize(num_streams);
+      dev_bufs.resize(num_streams);
+      dev_bufs1.resize(num_streams);
+#endif
+#endif
 
 #if CUDA_ENABLED
       for (int i = 0; i < num_streams; i++)
@@ -372,7 +401,47 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 #endif
 
       }
+#if 0
+#elif SYCL_ENABLED
 
+      std::vector<std::int64_t> dims {(int64_t)this->global_dimx, (int64_t)this->global_dimy, (int64_t)this->global_dimz};
+     // set the layout
+std::int64_t strides[4] = {0, (int64_t)(this->global_dimy*this->global_dimz), (int64_t)(this->global_dimy), 1};
+
+      for (int i = 0; i < num_streams; i++)
+      {
+          //queues[i] = cl::sycl::queue(sycl::default_selector_v,sycl::property::queue::in_order{});
+	  queues[i] = cl::sycl::queue(sycl::gpu_selector_v, fft_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
+          gpu_plans[i] = new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                            oneapi::mkl::dft::domain::COMPLEX>(dims);
+          gpu_plans[i]->set_value(oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
+          gpu_plans[i]->set_value(oneapi::mkl::dft::config_param::COMPLEX_STORAGE, DFTI_COMPLEX_COMPLEX);
+          gpu_plans[i]->commit(queues[i]);
+
+          gpu_plans_f[i] = new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                            oneapi::mkl::dft::domain::COMPLEX>(dims);
+          gpu_plans_f[i]->set_value(oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
+          gpu_plans_f[i]->set_value(oneapi::mkl::dft::config_param::COMPLEX_STORAGE, DFTI_COMPLEX_COMPLEX);
+          gpu_plans_f[i]->commit(queues[i]);
+
+          gpu_plans_r2c[i] = new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                            oneapi::mkl::dft::domain::REAL>(dims);
+          gpu_plans_r2c[i]->set_value(oneapi::mkl::dft::config_param::PLACEMENT, DFTI_NOT_INPLACE);
+          gpu_plans_r2c[i]->set_value(oneapi::mkl::dft::config_param::COMPLEX_STORAGE, DFTI_COMPLEX_COMPLEX);
+          gpu_plans_r2c[i]->commit(queues[i]);
+
+          gpu_plans_d2z[i] = new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                            oneapi::mkl::dft::domain::REAL>(dims);
+          gpu_plans_d2z[i]->set_value(oneapi::mkl::dft::config_param::PLACEMENT, DFTI_NOT_INPLACE);
+          gpu_plans_d2z[i]->set_value(oneapi::mkl::dft::config_param::COMPLEX_STORAGE, DFTI_COMPLEX_COMPLEX);
+          gpu_plans_d2z[i]->commit(queues[i]);
+
+          gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+          gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+          gpuMalloc((void **)&dev_bufs1[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+
+      }
+#endif
 #else
       // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
       // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
@@ -568,6 +637,27 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
           std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      double *tptr = (double *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+          if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+          queues[tid].memcpy(dev_bufs1[tid], host_bufs[tid], global_basis_alloc*sizeof(double));
+      }
+      else
+      {
+          queues[tid].memcpy(dev_bufs1[tid], dev_bufs[tid], global_basis_alloc*sizeof(double));
+      }
+      oneapi::mkl::dft::compute_forward(*gpu_plans_d2z[tid], (double *)dev_bufs1[tid], (std::complex<double> *)dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+          queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>));
+          std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
+          for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       double *tptr = (double *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -646,6 +736,27 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      float *tptr = (float *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+	  queues[tid].memcpy(dev_bufs1[tid], host_bufs[tid], global_basis_alloc*sizeof(float));
+      }
+      else
+      {
+	  queues[tid].memcpy(dev_bufs1[tid], dev_bufs[tid], global_basis_alloc*sizeof(float));
+      }
+      oneapi::mkl::dft::compute_forward(*gpu_plans_r2c[tid], (float *)dev_bufs1[tid], (std::complex<float> *)dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+	  queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>));
+          std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
+	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       float *tptr = (float *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -721,6 +832,28 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
           gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
+#elif SYCL_ENABLED
+try {      
+      std::complex<double> *tptr = host_bufs[tid];
+      if(copy_to_dev)
+      {
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          queues[tid].memcpy( dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<double>));
+      }
+      oneapi::mkl::dft::compute_forward(*gpu_plans[tid], dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+          queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>));
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      queues[tid].wait();
+}
+catch(sycl::exception const& e) {
+    std::cout << "Caught synchronous SYCL exception when trying to do FFT:\n"
+              << e.what() << std::endl;
+}
+#endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -801,6 +934,22 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
           gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          queues[tid].memcpy(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>));
+      }
+      oneapi::mkl::dft::compute_forward(*gpu_plans_f[tid], (std::complex<float> *)dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+          queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>));
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -880,6 +1029,26 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           double *tptr1 = (double *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      std::complex<double> *tptr = (std::complex<double> *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          queues[tid].memcpy(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>));
+      }
+      oneapi::mkl::dft::compute_backward(*gpu_plans_d2z[tid],
+                      (std::complex<double> *)dev_bufs[tid],
+                      (double *)dev_bufs1[tid]);
+      queues[tid].memcpy(dev_bufs[tid], dev_bufs1[tid], pbasis*sizeof(std::complex<double>));
+      if(copy_from_dev)
+      {
+          queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(double));
+          double *tptr1 = (double *)host_bufs[tid];
+          if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
@@ -949,6 +1118,26 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           float *tptr1 = (float *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      if(copy_to_dev)
+      {
+          std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          queues[tid].memcpy(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>));
+      }
+      oneapi::mkl::dft::compute_backward(*gpu_plans_r2c[tid],
+                     (std::complex<float> *)dev_bufs[tid],
+                     (float *)dev_bufs1[tid]);
+      queues[tid].memcpy(dev_bufs[tid], dev_bufs1[tid], global_basis_alloc*sizeof(std::complex<float>));
+      if(copy_from_dev)
+      {
+          queues[tid].memcpy(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float));
+          float *tptr1 = (float *)host_bufs[tid];
+          if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
@@ -1016,6 +1205,22 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
 	  gpuStreamSynchronize(streams[tid]);
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      std::complex<double> *tptr = host_bufs[tid];
+      if(copy_to_dev)
+      {
+	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  queues[tid].memcpy(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>));
+      }
+      oneapi::mkl::dft::compute_backward(*gpu_plans[tid], dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+	  queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>));
+	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       hipStreamSynchronize(streams[tid]);
@@ -1094,6 +1299,22 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
 	  gpuStreamSynchronize(streams[tid]);
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#if 0
+#elif SYCL_ENABLED
+      std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  queues[tid].memcpy(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>));
+      }
+      oneapi::mkl::dft::compute_backward(*gpu_plans_f[tid], (std::complex<float> *)dev_bufs[tid]);
+      if(copy_from_dev)
+      {
+	  queues[tid].memcpy(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>));
+	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      queues[tid].wait();
+#endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       hipStreamSynchronize(streams[tid]);

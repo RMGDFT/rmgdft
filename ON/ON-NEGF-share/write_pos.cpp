@@ -36,6 +36,7 @@
 #include <math.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 
 void write_pos(void)
 {
@@ -43,17 +44,17 @@ void write_pos(void)
     ION *iptr;
 
 
-    printf("\n\n\n  IONIC POSITIONS AND DISPLACEMENTS:\n");
+    rmg_printf("\n\n\n  IONIC POSITIONS AND DISPLACEMENTS:\n");
 
 
-    printf("\nSpecies   X           Y           Z           dX          dY          dZ");
+    rmg_printf("\nSpecies   X           Y           Z           dX          dY          dZ");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
         iptr = &Atoms[ion];
 
-        printf("\n  %d   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
+        rmg_printf("\n  %d   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
                iptr->species + 1,
                iptr->crds[0], iptr->crds[1], iptr->crds[2],
                iptr->crds[0] - iptr->icrds[0],
@@ -61,7 +62,7 @@ void write_pos(void)
 
     }                           /* end for */
 
-    printf("\n");
+    rmg_printf("\n");
 
 }                               /* end write_pos */
 

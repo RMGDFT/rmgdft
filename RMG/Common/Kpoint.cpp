@@ -90,7 +90,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->grid_comm = newcomm;
     this->kidx = kindex;
     this->nl_weight = NULL;
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     this->nl_weight_gpu = NULL;
 #endif
     this->orbital_weight = NULL;
@@ -212,11 +212,26 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     else     /* in case no fixed occupations available, calculate number of states */
     {
         ct.nel = ct.ionic_charge + ct.background_charge;
+        if(ct.num_unocc_states < 0)
+        {
+            // num of unocc states set to 10 or 10% which is larger
+            ct.num_unocc_states = std::max(10, int(ct.nel * 0.5 * 0.1) );
+        }
+
+
+
         for (idx = 0; idx < nspin_occ; idx++) {
             num_states_spf[idx] = (int) ceil(0.5 * ct.nel * ct.noncoll_factor) + ct.num_unocc_states;
             if(idx == 0) ct.nel_up = 0.5*(ct.nel + 1.0);
             if(idx == 1) ct.nel_down = 0.5*(ct.nel - 1.0);
         }
+
+    }
+
+    if(nspin_occ == 1)
+    {
+        ct.nel_up = 0.5 * ct.nel;
+        ct.nel_down = 0.5 * ct.nel;
     }
 
     /* re-assign the number of states for global variables */
@@ -1099,7 +1114,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     int stress_factor = 1;
     if(ct.stress) stress_factor = 4;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuError_t custat;
     // Managed memory is faster when gpu memory is not constrained but 
     // pinned memory works better when it is constrained.
@@ -1111,16 +1126,21 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     else
     {
         this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
+#if CUDA_ENABLED
         int device = -1;
         gpuGetDevice(&device);
-#if CUDA_ENABLED
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        custat = cudaMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
 #elif HIP_ENABLED
+        int device = -1;
+        gpuGetDevice(&device);
         hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-        custat = hipMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
+#elif SYCL_ENABLED
+        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+
 #endif
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
@@ -1142,7 +1162,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->newsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->newsint_local = new KpointType[sint_alloc]();
@@ -1157,7 +1177,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
 {
 
     if (this->nl_weight != NULL) {
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
         if(ct.pin_nonlocal_weights)
         {
             gpuFreeHost(this->nl_weight);
@@ -1194,7 +1214,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
 {
 
     if (this->orbital_weight != NULL) {
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
         RmgFreeHost(this->orbital_weight);
         RmgFreeHost(this->orbitalsint_local);
 #else
@@ -1241,13 +1261,15 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * (size_t)ct.noncoll_factor;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
+#if CUDA_ENABLED
     int device = -1;
     gpuGetDevice(&device);
-#if CUDA_ENABLED
     cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
 #elif HIP_ENABLED
+    int device = -1;
+    gpuGetDevice(&device);
     hipMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
 #endif
 
@@ -1273,7 +1295,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->orbitalsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->orbitalsint_local = new KpointType[sint_alloc]();

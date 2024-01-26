@@ -139,6 +139,10 @@ static std::unordered_map<std::string, int> poisson_solver = {
         {"multigrid", MULTIGRID_SOLVER},
         {"pfft", POISSON_PFFT_SOLVER}};
 
+static std::unordered_map<std::string, int> kpoint_units = {
+        {"Reciprocal lattice", KPOINT_LATT_UNIT},
+        {"2pi/alat", KPOINT_2pi_alat}};
+ 
 static std::unordered_map<std::string, int> md_integration_order = {
         {"2nd Velocity Verlet", 0},
         {"3rd Beeman-Velocity Verlet", 1},

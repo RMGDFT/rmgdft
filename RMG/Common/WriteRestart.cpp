@@ -156,6 +156,8 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
         fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
         fprintf(fhandle,"\nkpoint_distribution = \"%d\"", pct.pe_kpoint);
+        fprintf(fhandle,"\nFermiEnergy = \"%f\"", ct.efermi);
+
         //	fprintf(fhandle,"\n");
 
 
@@ -192,27 +194,34 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     WriteData (fhand, vh, rho, vxc, Kptr);
     close (fhand);
+
+
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+	    Write_nsocc(ct.infile, Kptr[0]);
+    }
+
     fflush(NULL);
 
     if(ct.write_serial_restart || ct.write_qmcpack_restart)
     {
-        std::string serial_file(name);
-        WriteSerialData (serial_file, vh, rho, vxc, Kptr);
-        fflush(NULL);
+	    std::string serial_file(name);
+	    WriteSerialData (serial_file, vh, rho, vxc, Kptr);
+	    fflush(NULL);
     }
 
     if(ct.write_qmcpack_restart)
     {
 #if QMCPACK_SUPPORT
-        int rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        if(rank == 0)
-        {
-            std::string qmcpack_file(name);
-            WriteQmcpackRestart(qmcpack_file);
-        }
+	    int rank;
+	    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	    if(rank == 0)
+	    {
+		    std::string qmcpack_file(name);
+		    WriteQmcpackRestart(qmcpack_file);
+	    }
 #else
-        rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+	    rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
     }
 
@@ -226,35 +235,35 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     if (pct.imgpe == 0)
     {
-        std::string new_file(ct.cfile);
-        new_file = new_file + ".xyz";
+	    std::string new_file(ct.cfile);
+	    new_file = new_file + ".xyz";
 
-        FILE *fhandle = fopen (new_file.c_str(), "w");
-        if (!fhandle)
-        {
-            rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
-        }
+	    FILE *fhandle = fopen (new_file.c_str(), "w");
+	    if (!fhandle)
+	    {
+		    rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
+	    }
 
-        fprintf(fhandle,"%lu\n\n", Atoms.size());
+	    fprintf(fhandle,"%lu\n", Atoms.size());
+	    fprintf(fhandle, "Lattice=\"");
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g ", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g ", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
+	    fprintf(fhandle, " %#12.9g  %#12.9g  %#12.9g\"\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {   
-            ION &Atom = Atoms[ion];
-            SPECIES &AtomType = Species[Atom.species];
-            double xcry[3], xcrds[3];
-            Rmg_L.to_crystal(xcry, Atom.crds);
-            Rmg_L.to_cartesian(xcry, xcrds);
-            fprintf(fhandle,"%s %#15.12g %#15.12g %#15.12g\n", AtomType.atomic_symbol, 
-                    a0_A*xcrds[0], a0_A*xcrds[1], a0_A*xcrds[2]);
-        }
+	    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+	    {   
+		    ION &Atom = Atoms[ion];
+		    SPECIES &AtomType = Species[Atom.species];
+		    double xcry[3], xcrds[3];
+		    Rmg_L.to_crystal(xcry, Atom.crds);
+		    Rmg_L.to_cartesian(xcry, xcrds);
+		    fprintf(fhandle,"%s %#15.12g %#15.12g %#15.12g\n", AtomType.atomic_symbol, 
+				    a0_A*xcrds[0], a0_A*xcrds[1], a0_A*xcrds[2]);
+	    }
 
-        fprintf(fhandle, "lattice vectors\n");
-        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a0[0] * a0_A, Rmg_L.a0[1] * a0_A, Rmg_L.a0[2] * a0_A);
-        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a1[0] * a0_A, Rmg_L.a1[1] * a0_A, Rmg_L.a1[2] * a0_A);
-        fprintf(fhandle, " %#15.12g  %#15.12g  %#15.12g\n", Rmg_L.a2[0] * a0_A, Rmg_L.a2[1] * a0_A, Rmg_L.a2[2] * a0_A);
 
-        fclose (fhandle);
-        fflush(NULL);
+	    fclose (fhandle);
+	    fflush(NULL);
 
     }
 

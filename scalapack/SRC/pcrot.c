@@ -10,23 +10,11 @@
 */
 #include "pblas.h"
 
-void pcrot_( n, X, ix, jx, desc_X, incx, Y, iy, jy, desc_Y, incy, c, s )
+void pcrot_( Int *n, complex X[], Int *ix, Int *jx, Int desc_X[], Int *incx, complex Y[], Int *iy, Int *jy, Int desc_Y[], Int *incy, float *c, complex *s )
 /*
 *  Mark Fahey
 *  June 22, 2000
 */
-/*
-*  .. Scalar Arguments ..
-*/
-   int         * incx, * incy, * ix, * iy, * jx, * jy, * n;
-   float       * c;
-   complex     * s;
-/*
-*  ..
-*  .. Array Arguments ..
-*/
-   int         desc_X[], desc_Y[];
-   complex     X[], Y[];
 {
 /*
 *  Purpose
@@ -182,7 +170,7 @@ void pcrot_( n, X, ix, jx, desc_X, incx, Y, iy, jy, desc_Y, incy, c, s )
 *
 *  .. Local Scalars ..
 */
-   int         ictxt, iix, iiy, info, ixcol, ixrow, iycol, iyrow, jjx,
+   Int         ictxt, iix, iiy, info, ixcol, ixrow, iycol, iyrow, jjx,
                jjy, lcm, lcmp, mycol, myrow, nn, np, np0,
                nprow, npcol, nq, nz, ione=1, tmp1, wksz;
    complex     xwork[1], ywork[1], zero;

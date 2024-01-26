@@ -191,7 +191,7 @@ lcr[idx0].x_shift);
                     } 
                     else
                     {
-                        error_handler (" WARNING: Code may need to modify for num_probe > 4 ");
+                        rmg_error_handler (__FILE__, __LINE__, " WARNING: Code may need to modify for num_probe > 4 ");
                     }
 
 

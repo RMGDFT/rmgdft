@@ -70,7 +70,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
     KpointType *block_matrix;
 
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     block_matrix = (KpointType *)GpuMallocHost( nb * nstates * sizeof(KpointType));
 #else
     block_matrix = new KpointType[nstates * nb];
@@ -122,7 +122,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 
     }
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     GpuFreeHost(block_matrix);
 #else
     delete [] block_matrix;

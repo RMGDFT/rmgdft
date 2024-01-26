@@ -159,6 +159,12 @@ void CheckSetDefault(void)
     if(ct.write_qmcpack_restart)
     {
         ct.localize_localpp = false;
+        ct.exxdiv_treatment= EXX_DIV_NONE;
+        ct.gamma_extrapolation = false;
+        ct.exx_mode = EXX_LOCAL_FFT;
+
+        if(!ct.norm_conserving_pp)
+            rmg_error_handler (__FILE__, __LINE__, "qmcpack restart only worked with norm-conserving pseudopotentials.\n");
     }
 
     if(ct.AFM)
@@ -171,4 +177,8 @@ void CheckSetDefault(void)
         ct.potential_acceleration_constant_step = 0.0;
 
     }
+     if(ct.wannier90) {
+         ct.frac_symm = false;
+         ct.time_reversal = false;
+     }
 }

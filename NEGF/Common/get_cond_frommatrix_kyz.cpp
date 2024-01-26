@@ -91,7 +91,7 @@ void get_cond_frommatrix_kyz ()
 	ntot = nkp[0] * nkp[1] * nkp[2];
 	printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-	if (ntot == 0 ) error_handler ("wrong number of kpoints in cond.in");
+	if (ntot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
 
 	my_malloc( kvecx, ntot, double );
 	my_malloc( kvecy, ntot, double );
@@ -432,37 +432,34 @@ void get_cond_frommatrix_kyz ()
 
 
         /* calculating the current */
-
-        current = 0.0;
-        EF1 = lcr[iprobe1].bias;
-        EF2 = lcr[iprobe2].bias;
-
-	if (pct.gridpe == 0)
-	{
-	    printf("\n ********");
-
-	    file = fopen ("local_current.dat", "w");
-	    for (iene = 1; iene < E_POINTS; iene++)
-	    {
-		f1 = 1.0 / (1.0 + exp ((EF1 - ener1[iene]) / KT));
-		f2 = 1.0 / (1.0 + exp ((EF2 - ener1[iene]) / KT));
-		current += (f2 - f1) * cond[iene] * (ener1[iene] - ener1[iene - 1]);
-		fprintf(file, "\n  %f  %e", ener1[iene], (f2-f1) * cond[iene]);
-	    }
-
-	    fprintf(file, "\n  &");
-	    fclose(file);
-
-	}
-	current *= 2.0 * e_C * e_C / h_SI;
-
         if (pct.gridpe == 0)
         {
-            printf ("\n bias = %f eV    current = %e microA\n", EF1 - EF2, current * 1e6);
+            sprintf(newname, "%s%s%d%d%s", ct.basename,".current_", iprobe1, iprobe2, ".dat");
+            file = fopen (newname, "w");
+            fprintf(file, "& bias(V)    current (A)", EF1 - EF2, current);
+            for(int i = -E_POINTS/2; i < E_POINTS/2; i++)
+            {
+                EF1 = i *de;
+                EF2 = -i * de;
+
+
+                current = 0.0;
+
+                for (iene = 1; iene < tot_energy_point; iene++)
+                {
+                    f1 = 1.0 / (1.0 + exp ((EF1 - ener1[iene]) / KT));
+                    f2 = 1.0 / (1.0 + exp ((EF2 - ener1[iene]) / KT));
+                    current += (f2 - f1) * cond[iene] * (ener1[iene] - ener1[iene - 1]);
+                }
+
+                current *= 2.0 * e_C * e_C / h_SI;
+                fprintf(file, "\n  %f  %e", EF1 - EF2, current);
+
+            }
+
+            fclose(file);
+
         }
-
-
-
 
     } /* ends of icond (num_cond_curve) loop */
 

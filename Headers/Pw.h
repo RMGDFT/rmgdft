@@ -54,6 +54,12 @@
   #include "vkFFT.h"
 #endif
 
+#if SYCL_ENABLED
+    #include <CL/sycl.hpp>
+    #include <sycl/queue.hpp>
+    #include <oneapi/mkl/dfti.hpp>
+#endif
+
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
@@ -194,6 +200,21 @@ public:
     std::vector<std::complex<double> *> work_bufs;  // Needed for rocfft
     std::vector<rocfft_execution_info> roc_x_info;
 #endif    
+
+#if SYCL_ENABLED
+    int num_streams;
+    std::vector<cl::sycl::queue> queues;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                            oneapi::mkl::dft::domain::COMPLEX> *> gpu_plans;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                            oneapi::mkl::dft::domain::COMPLEX> *> gpu_plans_f;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                            oneapi::mkl::dft::domain::REAL> *> gpu_plans_r2c;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                            oneapi::mkl::dft::domain::REAL> *> gpu_plans_d2z;
+    std::vector<std::complex<double> *> dev_bufs;
+    std::vector<std::complex<double> *> dev_bufs1;
+#endif
 
 #if (VKFFT_BACKEND == 2)
     std::vector<VkFFTApplication> vk_plans;

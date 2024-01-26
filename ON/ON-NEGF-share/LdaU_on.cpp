@@ -88,6 +88,20 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
         }
     }
 
+    map_to_ldaU_ion.resize(Atoms.size());
+    int ion_tem = 0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        map_to_ldaU_ion[ion] = -1;
+        if(Species[ Atoms[ion].species ].num_ldaU_orbitals > 0)
+        {
+            map_to_ldaU_ion[ion] = ion_tem;
+            ion_tem++;
+            ldaU_ion_index.push_back(ion);
+        }
+    }
+
+    this->num_ldaU_ions = ldaU_ion_index.size();
     this->Ehub = 0.0;
     this->Ecorrect = 0.0;
 
@@ -161,22 +175,22 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     //{
     //    for(int i = 0; i < 5; i++)
     //    {
-    //        printf("\n");
+    //        rmg_printf("\n");
     //        for(int j = 0; j < 5; j++)
     //        {
-    //            printf(" %f ", this->ns_occ[i*nldaU + j]);
+    //            rmg_printf(" %f ", this->ns_occ[i*nldaU + j]);
     //        } 
 //
  //       }
   //  }
 
-    //      printf("\n");
+    //      rmg_printf("\n");
     //  for(int i = 0; i < norb; i++)
     //  {
-    //      printf("\n");
+    //      rmg_printf("\n");
     //      for(int j = 0; j < nldaU; j++)
     //      {
-    //          printf(" %f ", this->Upsi_mat[i*nldaU + j]);
+    //          rmg_printf(" %f ", this->Upsi_mat[i*nldaU + j]);
     //      } 
 
     //  }
@@ -256,4 +270,6 @@ void LdaU_on::write_ldaU(void)
         }
     }
 }
+
+
 

@@ -384,7 +384,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
             double t2 = ct.nel / ct.tcharge;
             if(pct.imgpe == 0 && std::abs(t2-1.0) > 1.0e-5 )
-                printf("\n initialize rho normalize constant %18.10e", t2);
+                rmg_printf("\n initialize rho normalize constant %18.10e", t2);
             int iii = get_FP0_BASIS();
             dscal(&iii, &t2, &rho[0], &ione);
 
@@ -430,6 +430,19 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 #endif
 
     /* some utilities, used in debuging */
+
+    for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
+
+    // Set up autotuning finite differencing
+    FiniteDiff FD(&Rmg_L);
+    FD.cfac[0] = 0.0;
+    FD.cfac[1] = 0.0;
+    //for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        // use gamma point atomic orbital now
+        int kpt = 0;
+        GetFdFactor(kpt);
+    }
 
 
 }

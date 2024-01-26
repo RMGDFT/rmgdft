@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 
 
 
@@ -39,15 +40,15 @@ int open_wave_file (char *filename)
         /*Make a copy of output filename, dirname overwrites it*/
         strcpy(tmpname, filename);
 
-        printf( "\n write_data: Opening output file '%s' failed\n" 
+        rmg_printf( "\n write_data: Opening output file '%s' failed\n" 
                 "  Trying to create subdirectory in case it does not exist\n", 
                 filename );
 
 
         if (!mkdir(dirname(tmpname),S_IRWXU))
-            printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
+            rmg_printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
         else
-            printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
+            rmg_printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
 
         fflush (NULL);
 

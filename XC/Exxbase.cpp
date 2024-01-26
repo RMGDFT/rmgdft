@@ -57,7 +57,11 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padde
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -74,7 +78,11 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, double *padd
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, double *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double *padded)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -91,7 +99,11 @@ template void Exxbase<double>::UnpadR2C(float *in, double *out);
 template void Exxbase<double>::UnpadR2C(float *in, float *out);
 template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -106,7 +118,11 @@ template void Exxbase<double>::UnpadR2C_Accumulate(double *in, double *psi_j, do
 template void Exxbase<double>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -120,7 +136,11 @@ template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j
 
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -136,7 +156,11 @@ template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
 template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
 template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -149,7 +173,11 @@ template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 
 template <class T> void Exxbase<T>::UnpadR2C(float *in, float *out)
 {
+#if SYCL_ENABLED
+    int ystride = pwave->global_dimz;
+#else
     int ystride = pwave->global_dimz + 2;
+#endif
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
@@ -218,7 +246,7 @@ vxrms.resize(nstates_in);
     gfac = (double *)RmgMallocHost((size_t)pwave->pbasis*sizeof(double));
     gfac_packed = (double *)RmgMallocHost((size_t)pwave->global_basis_packed*sizeof(double));
     std::fill(gfac_packed, gfac_packed + pwave->global_basis_packed, 0.0);
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
     gpuMalloc((void **)&gfac_dev_packed, pwave->global_basis_packed*sizeof(double));
 #endif
@@ -334,6 +362,14 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
+#elif SYCL_ENABLED
+        double *pp = (double *)pwave->host_bufs[tid];
+        PadR2C(psi_i, psi_j, pp);
+        pwave->FftForward(pp, (std::complex<double> *)p, true, false, true);
+        // Packed R2C and D2Z doesn't work yet for SYCL
+        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->queues[tid]);
+        pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
+        UnpadR2C(pp, p);
 #else
         double *pp = (double *)pwave->host_bufs[tid];
         std::complex<double> *ppp = (std::complex<double> *)pp;
@@ -357,6 +393,14 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         PadR2C((double *)psi_i, (double *)psi_j, pp);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
+        UnpadR2C(pp, workbuf);
+#elif SYCL_ENABLED
+        float *pp = (float *)pwave->host_bufs[tid];
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
+        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
+        // Packed R2C and D2Z doesn't work yet for SYCL
+        GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->queues[tid]);
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
 #else
@@ -510,7 +554,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         }
 
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  gpuMemcpyHostToDevice);
     gpuMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double), gpuMemcpyHostToDevice);
     DeviceSynchronize();
@@ -548,6 +592,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
         }
     }
+
 
     int my_rank = G.get_rank();
     int npes = G.get_NPES();
@@ -675,11 +720,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             }
             // Simple mixing/extrapolation
             double *vptr = &vexx[(size_t)(i-1) * (size_t)pbasis];
-            if(ct.exx_steps > 0 && ct.vexx_rms >=  1.0e-8 && cm != 0.0)
+            if( ct.exx_steps > 0 && ct.vexx_rms >=  1.0e-8 && cm != 0.0)
             {
                 for(int ii=0;ii < pbasis;ii++) vptr[ii] = (1.0+cm)*atbuf[ii] - cm*vptr[ii];
             }
-            else if(ct.exx_steps > 1 && ct.vexx_rms < 1.0e-8)
+            else if( ct.exx_steps > 1 && ct.vexx_rms < 1.0e-8)
             {
                 for(int ii=0;ii < pbasis;ii++) vptr[ii] = 0.7*atbuf[ii] + 0.3*vptr[ii];
             }
@@ -718,6 +763,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if SYCL_ENABLED
+        pwave->queues[tid].wait();
+#endif
         fftw_free(wvec[tid]);
         fftw_free(pvec[tid]);
     }
@@ -736,6 +784,7 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     energy = ct.exx_fraction*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+
 
     return energy;
 }
@@ -1212,7 +1261,17 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             //WriteForAFQMC(ct.qmc_nband, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
             WriteForAFQMC_gamma2complex(vfile, ct.qmc_nband, Nchol, ct.qmc_nband, ct.qmc_nband, eigs, ExxCholVecGlob, Hcore, Hcore_kin);
         }
+
+
     }
+
+    if(mode == EXX_LOCAL_FFT)
+    {
+        close(serial_fd);
+        size_t length = nstates * pwave->pbasis * sizeof(double);
+        munmap(psi_s, length);
+    }
+
 }
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_filename)
@@ -1300,7 +1359,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     hid_t wf_group = 0;
     hid_t kpf_group = 0;
     if(pct.worldrank == 0) {
-    
+
         hdf_filename += ".h5";
         remove(hdf_filename.c_str());
         h5file = H5Fcreate(hdf_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
@@ -1351,6 +1410,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     }
     double *residual = new double[nkpts * ij_tot]();
 
+    std::complex<double> *Exxinte = new std::complex<double>[ij_tot * ij_tot]();
     std::vector<int> Ncho;
     Ncho.resize(nkpts, 0);
     for(int iq = 0; iq < nkpts; iq++){
@@ -1376,22 +1436,22 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             for(int ij = 0; ij < ij_tot; ij++) printf("\n iq: %d  ij: %d <ij|ij> = %f ", iq, ij, residual[ij]);
 
         Ncho[iq] = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
-        if(my_rank == 0 && ct.verbose == 1) 
+        if(my_rank == 0 && ct.verbose) 
         {
             boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
-            boost::multi_array_ref<std::complex<double>, 2> Cholvec_2d{Cholvec, boost::extents[nkpts][ij_tot*Ncho[iq]]};
+            for (int i = 0; i < ct.qmc_nband; i++)
+                for (int j = 0; j < ct.qmc_nband; j++)
+                    for (int k = 0; k < ct.qmc_nband; k++)
+                        for (int l = 0; l < ct.qmc_nband; l++)
+                        {
+                            int ij = i * ct.qmc_nband + j;
+                            int kl = l * ct.qmc_nband + k;
+                            std::complex<double> tem = 0.0;
+                            for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][kl][iv]); 
 
-            std::complex<double> tem = 0.0;
-            double cou = 0.0;
-            for(int ij = 0; ij < ij_tot; ij++){
-                
-                tem = 0.0;
-                for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][ij][iv]); 
-                printf("\n iq: %d  ij: %d Chol<ij|ij>= %f %f", iq, ij, std::real(tem), std::imag(tem));
-                cou += std::real(tem);
-
-            }
-            printf("\n coulmb %f", cou);
+                            //    psi_i(r1) psi_j(r2) 1/|r1-r2| conj(psi_k(r1)) conj(psi_l(r2))
+                            printf("\n K_ijkl %d %d %d %d  %f %f", i, j, k, l, std::real(tem), std::imag(tem));
+                        }
         }
 
         if(pct.worldrank == 0) {
@@ -1416,6 +1476,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
 
     }
 
+    fflush(NULL);
     if(pct.worldrank == 0) {
         writeNumsToHDF("NCholPerKP", Ncho, hamil_group);
         std::vector<double> hcore;
@@ -1447,12 +1508,16 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
         }
         H5Fclose(h5file);
     }
+    fflush(NULL);
     delete [] Cholvec;
     delete [] Xaolj;
     delete [] Xaoik;
     delete [] phase_Gr;
     delete [] residual;
+    delete [] Exxinte;
 
+    fflush(NULL);
+    //printf("\n  ababad \n");
     fflush(NULL);
 
 
@@ -1706,7 +1771,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     std::complex<double> *xij_fft = (std::complex<double> *)RmgMallocHost(length);
 
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
-// normalized number of kpoint as in QE-QMCPACK interface. It will be consistent with afqmc
+    // normalized number of kpoint as in QE-QMCPACK interface. It will be consistent with afqmc
     double scale = 1.0 / (double)(pwave->global_basis * ct.klist.num_k_all);
     scale = scale * alpha;
     for(int st_k1 = 0; st_k1 < ct.qmc_nband; st_k1++){
@@ -1744,22 +1809,8 @@ template <class T> Exxbase<T>::~Exxbase(void)
 
     if(mode == EXX_DIST_FFT) return;
 
-    if(ct.ExxIntChol)
-    {
-        //close(exxint_fd);
-        //size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ * sizeof(T);
-        //munmap(ExxInt, length);
-        ExxInt.clear();
-        ExxCholVec.clear();
-    }
-    close(serial_fd);
-    size_t length = nstates * pwave->pbasis * sizeof(T);
-    munmap(psi_s, length);
-    //std::string filename= wavefile + "_spin"+ std::to_string(pct.spinpe);
-    //unlink(filename.c_str());
-
     RmgFreeHost(gfac);
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuFree(gfac_dev);
     gpuFree(gfac_dev_packed);
 #endif
@@ -2152,6 +2203,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     RmgFreeHost(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if SYCL_ENABLED
+        pwave->queues[tid].wait();
+#endif
         fftw_free(wvec[tid]);
         fftw_free(pvec[tid]);
     }
@@ -2326,7 +2380,7 @@ template <class T> void Exxbase<T>::SetHcore(T *Hij, T *Hij_kin, int lda)
             {
                 Hij_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j] = Hij[ik * lda * lda + i* lda + j];
                 Hij_kin_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j] = Hij_kin[ik * lda * lda + i* lda + j];
-        }
+            }
     }
 
 
@@ -2356,15 +2410,24 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     dims.resize(8, 0);
     dims[2] = ct.klist.num_k_all;
     dims[3] = ct.qmc_nband * dims[2];
-    dims[4] = ct.qmc_nband;
-    dims[5] = ct.qmc_nband;
+    int Nalpha = std::round(ct.nel_up);
+    int Nbeta = std::round(ct.nel_down);
+
+    if(Nalpha+ Nbeta != ct.nel)
+    {
+        std::cout << "Napha + Nbeta != nel" << Nalpha << "  " << Nbeta << "  " << ct.nel << std::endl;
+        throw RmgFatalException() << "spin up and down electron count iis wrong  \n";
+    }
+
+    dims[4] = Nalpha * dims[2];
+    dims[5] = Nbeta * dims[2];
     dims[7] = 0;
 
     writeNumsToHDF("dims", dims, h_group);
 
     std::vector<double> Energies;
 
-    Energies.push_back(ct.II);
+    Energies.push_back(ct.II * ct.klist.num_k_all);
     Energies.push_back(0.0);
     writeNumsToHDF("Energies", Energies, h_group);
 
@@ -2405,26 +2468,41 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     hid_t msd_group = makeHDFGroup("NOMSD", wf_group);
 
     int M = ct.qmc_nband;
-    int Nalpha = ct.qmc_nband;
-    int Nbeta = ct.qmc_nband;
-    int nnz = ct.qmc_nband;
+    int Nalpha = std::round(ct.nel_up);
+    int Nbeta = std::round(ct.nel_down);
+
+    if(Nalpha+ Nbeta != ct.nel) 
+    {
+        std::cout << "Napha + Nbeta != nel" << Nalpha << "  " << Nbeta << "  " << ct.nel << std::endl;
+        throw RmgFatalException() << "spin up and down electron count iis wrong  \n";
+    }
+
+    M = M * ct.klist.num_k_all;
+    Nalpha = Nalpha * ct.klist.num_k_all;
+    Nbeta = Nbeta * ct.klist.num_k_all;
+    int nnz = Nalpha;
     int Nd = 1;
     int walker_type = 1;
-    
+
     //for spin 0
     {
         std::vector<double> psi0_alpha;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nalpha; j++) {
-                if(i == j) {
-                    psi0_alpha.push_back(1.0);
-                    psi0_alpha.push_back(0.0);
-                }
-                else {
-                    psi0_alpha.push_back(0.0);
-                    psi0_alpha.push_back(0.0);
-                }
 
+        for(int k1 = 0; k1 < ct.klist.num_k_all; k1++){
+            for(int i = 0; i < ct.qmc_nband; i++)  {
+                for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+                    for(int j = 0; j < Nalpha/ct.klist.num_k_all; j++) {
+                        if(i == j && k1 == k2) {
+                            psi0_alpha.push_back(1.0);
+                            psi0_alpha.push_back(0.0);
+                        }
+                        else {
+                            psi0_alpha.push_back(0.0);
+                            psi0_alpha.push_back(0.0);
+                        }
+
+                    }
+                }
             }
         }
 
@@ -2441,14 +2519,20 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
         writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
 
         std::vector<int> dims_t;
-        dims_t.push_back(M);
         dims_t.push_back(Nalpha);
+        dims_t.push_back(M);
         dims_t.push_back(nnz);
         writeNumsToHDF("dims", dims_t, T0_group);
 
         std::vector<int> jdata, ptr_begin, ptr_end;
+
+        for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+            for(int j = 0; j < Nalpha/ct.klist.num_k_all; j++) {
+                jdata.push_back(k2 * ct.qmc_nband + j);
+            }
+        }
+
         for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
             ptr_begin.push_back(i);
             ptr_end.push_back(i+1);
         }
@@ -2476,20 +2560,24 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     if(ct.nspin == 2)
     {
         std::vector<double> psi0_beta;
-        for(int i = 0; i < M; i++)  {
-            for(int j = 0; j < Nbeta; j++) {
-                if(i == j) {
-                    psi0_beta.push_back(1.0);
-                    psi0_beta.push_back(0.0);
-                }
-                else {
-                    psi0_beta.push_back(0.0);
-                    psi0_beta.push_back(0.0);
+        for(int k1 = 0; k1 < ct.klist.num_k_all; k1++){
+            for(int i = 0; i < ct.qmc_nband; i++)  {
+                for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+                    for(int j = 0; j < Nbeta/ct.klist.num_k_all; j++) {
+                        if(i == j && k1 == k2) {
+                            psi0_beta.push_back(1.0);
+                            psi0_beta.push_back(0.0);
+                        }
+                        else {
+                            psi0_beta.push_back(0.0);
+                            psi0_beta.push_back(0.0);
+                        }
+
+                    }
                 }
 
             }
         }
-
         hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nbeta), 2};
         writeNumsToHDF("Psi0_beta", psi0_beta, msd_group, 3, dims);
 
@@ -2503,14 +2591,18 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
         writeNumsToHDF("data_", t1_data, T1_group, 2, dims_t1);
 
         std::vector<int> dims_t;
-        dims_t.push_back(M);
         dims_t.push_back(Nbeta);
+        dims_t.push_back(M);
         dims_t.push_back(nnz);
         writeNumsToHDF("dims", dims_t, T1_group);
 
         std::vector<int> jdata, ptr_begin, ptr_end;
+        for(int k2 = 0; k2 < ct.klist.num_k_all; k2++){
+            for(int j = 0; j < Nbeta/ct.klist.num_k_all; j++) {
+                jdata.push_back(k2 * ct.qmc_nband + j);
+            }
+        }
         for(int i = 0; i < nnz; i++) {
-            jdata.push_back(i);
             ptr_begin.push_back(i);
             ptr_end.push_back(i+1);
         }

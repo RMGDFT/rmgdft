@@ -54,7 +54,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 {
     
     double *vtot, *vtot_psi, *vxc_psi=NULL;
-    double max_res;
     int FP0_BASIS, P0_BASIS;
     
     int idx;
@@ -97,7 +96,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
 
     // Loop over k-points
-    double *res = new double[ct.num_states];
+    double *eig_old = new double[ct.num_states]();
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
 
@@ -122,16 +121,18 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         {
             Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
             Read_nsocc(ct.infile, Kptr[kpt]);
+            Kptr[kpt]->ldaU->calc_energy();
             Kptr[kpt]->GetDelocalizedOrbital ();
         }
 
         Kptr[kpt]->nstates = ct.num_states;
 
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) ) {
 
-            for (ct.scf_steps = 0, CONVERGED = false;
-                    ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
-            {
+        for (ct.scf_steps = 0, CONVERGED = false;
+                ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
+        {
+            if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) ) {
+
                 RmgTimer *RT = new RmgTimer("MgridSub in band");
 
                 //Kptr[kpt]->LcaoGetPsi(ct.num_states, ct.num_states);
@@ -139,31 +140,25 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
                 delete RT;
 
-                for(int istate = 0; istate < ct.num_states; istate++)
-                    res[istate] = Kptr[kpt]->Kstates[istate].res;
-                GlobalSums(res, ct.num_states, pct.grid_comm);
-
-
-                max_res = res[0];
-                for(int istate = 0; istate < ct.num_states; istate++)
-                    max_res = std::max(max_res, res[istate]);
-                //        for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
-                //         rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
-                if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
-
-                if (max_res <1.0e-3)
-                {
-                    rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
-                    CONVERGED = true;
-                }
-
             } // end loop scf
-        }
-        else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-            int notconv;
-            ct.scf_steps = 2;
-            //   ct.scf_accuracy = 1.0e-10;
-            Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
+            else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+                int notconv;
+                Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
+            }
+
+            double rms_eig = 0.0;
+            for(int st = 0; st < ct.num_states; st++)
+            {
+                rms_eig += std::abs(eig_old[st] - Kptr[kpt]->Kstates[st].eig[0]);
+                eig_old[st] = Kptr[kpt]->Kstates[st].eig[0];
+            }
+
+            rmg_printf("kpt= %d  scf = %d  rms_eig = %e\n", kpt+pct.kstart, ct.scf_steps, rms_eig);
+
+            if(rms_eig < 1.0e-5) 
+            {
+                CONVERGED = true;
+            }
         }
 
         //for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
@@ -195,7 +190,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     } // end loop over kpoints
 
 
-    delete [] res;
     delete [] vtot;
     delete [] vtot_psi;
     if(ct.noncoll) delete [] vxc_psi;
