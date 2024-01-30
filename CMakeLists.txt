@@ -278,7 +278,7 @@ if(RMG_HIP_ENABLED)
     find_path(
       HIP_MODULE_FILE_DIR FindHIP.cmake
       HINTS $ENV{ROCM_PATH} /opt/rocm
-      PATH_SUFFIXES hip/cmake)
+      PATH_SUFFIXES hip/cmake lib/cmake/hip)
     if(HIP_MODULE_FILE_DIR)
       message(STATUS "Found FindHIP.cmake file. ROCM_ROOT will be derived.")
     else()
@@ -304,6 +304,7 @@ if(RMG_HIP_ENABLED)
     if(HIP_FOUND)
         message(STATUS "Found HIP: " ${HIP_VERSION})
         add_definitions(-DHIP_ENABLED=1)
+        add_definitions(-D__HIP_PLATFORM_AMD__=1)
         include_directories(${HIP_INCLUDE_DIRECTORIES})
         if(DEFINED ENV{ROCM_PATH})
             set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")

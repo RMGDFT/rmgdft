@@ -126,13 +126,13 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #else
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) a_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) b_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) c_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #endif
 
     size_t a_size = (size_t)lda * (size_t)ka;
@@ -208,13 +208,13 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     cudaerr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
 
-    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) a_dev = true;
+    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
     cudaerr = hipPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) b_dev = true;
+    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
     cudaerr = hipPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(cudaerr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) c_dev = true;
+    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
 
     size_t a_size = (size_t)lda * (size_t)ka;
     size_t b_size = (size_t)ldb * (size_t)n;
