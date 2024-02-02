@@ -397,6 +397,9 @@ public:
     double mix;
     double drho_q0;
 
+    /** Minimum charge density after mixing */
+    double min_rho;
+
     bool charge_pulay_Gspace;
     bool drho_precond;
     /*Order of Pulay mixing for charge density*/
