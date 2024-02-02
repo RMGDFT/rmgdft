@@ -200,7 +200,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
+    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
 
 
 #if HAVE_ASYNC_ALLREDUCE
