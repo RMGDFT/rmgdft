@@ -504,6 +504,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("drho_precond", &lc.drho_precond, true, 
             "if set true, charge density residual is preconded with q^2/(q^2+q0^2) ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("drho_precond_type", NULL, &lc.drho_precond_type, "Resta",
+            CHECK_AND_TERMINATE, OPTIONAL, drho_precond_type,
+            "Density mixing preconditioner method. Resta or Kerker are supported. ",
+            "Method not supported. Terminating. ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("cube_rho", &lc.cube_rho, false, 
             "if set true, charge density is printed out in cube format ");
 
@@ -981,8 +986,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.25,
             CHECK_AND_FIX, OPTIONAL,
-            "preconding the charge density residual by q^2/(q^2+q0^2) ",
+            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) ",
             "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
+
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
             "Submatrix width to use as a fraction of the full spectrum. "
@@ -1729,7 +1735,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
-        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+//        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
     if(lc.potential_acceleration_constant_step > 0.0)

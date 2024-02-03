@@ -39,6 +39,10 @@ static std::unordered_map<std::string, int> energy_output_units = {
         {"Hartrees", 0},
         {"Rydbergs", 1}};
 
+static std::unordered_map<std::string, int> drho_precond_type = {
+        {"Resta", PRECOND_RESTA},
+        {"Kerker", PRECOND_KERKER}};
+
 static std::unordered_map<std::string, int> crds_units = {
         {"Bohr", 0},
         {"Angstrom", 1}};

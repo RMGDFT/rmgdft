@@ -276,6 +276,10 @@
 #define EXX_DIV_NONE 1
 #endif /* CONST_H_INCLUDED */
 
+// Precondition types
+#define PRECOND_RESTA 0
+#define PRECOND_KERKER 1
+
 // Internal pseudopotential types
 #define ULTRASOFT_GBRV  0
 #define NORM_CONSERVING_SG15  1
