@@ -208,6 +208,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 #pragma omp parallel 
     {
         double *sumobj_omp = new double[factor * FP0_BASIS](); 
+        double *lobject_omp = new double[alloc]();
 #pragma omp barrier
 #pragma omp for schedule(static, 1) nowait
         for (int ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
@@ -338,7 +339,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                     {
                                         sumobj_omp[idx] += t1;
                                     }
-                                    if(compute_lobject) lobject[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
+                                    if(compute_lobject) lobject_omp[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
 
                                 }                           /* end for */
 
@@ -350,9 +351,13 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
             }
         }
 
-#pragma omp critical
+#pragma omp critical(init_lo1)
         for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] += sumobj_omp[idx];
+
+#pragma omp critical(init_lo2)
+        if(compute_lobject) for(int idx = 0; idx < factor* FP0_BASIS; idx++) lobject[idx] += lobject_omp[idx];
         delete [] sumobj_omp;
+        delete [] lobject_omp;
 
     }
 
