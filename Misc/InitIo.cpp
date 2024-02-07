@@ -596,6 +596,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
+        hipsolverCreate(&ct.hipsolver_handle);
 #endif
     }
 

@@ -76,24 +76,6 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         exit (0);
     }
     
-    #if MAGMA_LIBS
-        d_ipiv = nn;
-
-
-        ipiv = (int *) malloc(d_ipiv * sizeof(int));
-        DeviceSynchronize();
-        magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, nn, ipiv, (magmaDoubleComplex *)B, nn, &info);
-
-        if (info != 0)
-        {
-            printf ("error in magma_zgesv with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-        free(ipiv);
-    #else
-
-
         DeviceSynchronize();
         cusolverStatus_t cu_status;
         int Lwork;
@@ -137,8 +119,31 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         gpuFree(devInfo);
         gpuFree(Workspace);
 
-    #endif
+#elif HIP_ENABLED
+        d_ipiv = nn;
+        ipiv = (int *) malloc(d_ipiv * sizeof(int));
 
+        double *A_cpu = new double[nn * nn * 2]; 
+        double *B_cpu = new double[nn * nhrs * 2]; 
+        size_t size1 = nn * nn * sizeof(double) * 2;
+        size_t size2 = nn * nhrs * sizeof(double) * 2;
+        MemcpyDeviceHost(size1, A, A_cpu);
+        MemcpyDeviceHost(size2, B, B_cpu);
+
+        zgesv(&nn, &nhrs, (double *)A_cpu, &nn, ipiv, (double *)B_cpu, &nn, &info );
+        MemcpyHostDevice(size2, B_cpu, B);
+        MemcpyHostDevice(size1, A_cpu, A);
+        if (info != 0)
+        {
+            printf ("error in zgesv with INFO = %d \n", info);
+            fflush (NULL);
+            exit (0);
+        }
+
+        delete [] A_cpu;
+        delete [] B_cpu;
+
+        free(ipiv);
     
 #else
     //  use scalapack if nprow * npcol > 1

@@ -19,6 +19,13 @@
     #endif
 #endif
 
+#if HIP_ENABLED
+    #include <hipblas/hipblas.h>
+    #include <rocsolver/rocsolver.h>
+    #include <hip/hip_runtime_api.h> // for hip functions
+    #include <hipsolver/hipsolver.h> // for all the hipsolver C interfaces and type declarations
+#endif
+
 
 #include <complex>
 
@@ -66,6 +73,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         fflush (NULL);
         exit (0);
     }
+
 #if CUDA_ENABLED
 
     if(nprow*npcol != 1)
@@ -75,41 +83,163 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         exit (0);
     }
     
-#if MAGMA_LIBS
-    d_ipiv = nn;
-    lwork = magma_get_zgetri_nb(nn);
-    lwork = lwork * nn;
-    //lwork = nn * nn;
-
-    cudaError_t cuerr;
-
-
-    ipiv = (int *) malloc(d_ipiv * sizeof(int));
+    std::complex<double> *gpu_temp, *Imatrix;
+    size_t size = nn*nn*sizeof(std::complex<double>);
+    Imatrix = (std::complex<double> *)RmgMallocHost(size);
+    pmo_unitary_matrix(Imatrix, desca);
+    gpuMalloc((void **)&gpu_temp, size);
+    MemcpyHostDevice(size, Imatrix, gpu_temp);
 
 
-    magma_zgetrf_gpu(nn, nn, (magmaDoubleComplex *)Hii, nn, ipiv, &info);
-    if (info != 0)
-    {
-        printf ("error in magma_zgetrf with INFO = %d \n", info);
-        fflush (NULL);
-        exit (0);
-    }
-    magma_zgetri_gpu(nn, (magmaDoubleComplex *)Hii, nn, ipiv, (magmaDoubleComplex *)ct.gpu_temp, lwork, &info);
-    if (info != 0)
-    {
-        printf ("error in magma_zgetri with INFO = %d \n", info);
-        fflush (NULL);
-        exit (0);
-    }
-    free(ipiv);
-#else
+    std::complex<double> *A = Hii;
+    std::complex<double> *B = gpu_temp;
     
-    std::complex<double> *gpu_temp = (std::complex<double> *)RmgMallocHost(nn*nn*sizeof(std::complex<double>));
-    pmo_unitary_matrix(gpu_temp, desca);
-    zgesv_driver (Hii, desca, gpu_temp, desca);
-    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
-    RmgFreeHost(gpu_temp);
+    DeviceSynchronize();
+    cusolverStatus_t cu_status;
+    int Lwork;
+    int *devIpiv, *devInfo;
+    cuDoubleComplex *Workspace;
+    cudaError_t cuerr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
+    cuerr = gpuMalloc((void **)&devInfo, sizeof(int) );
 
+    cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf_bufferSize failed.");
+    cuerr = gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
+    cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
+    info = 0;
+    if (info != 0)
+    {
+        printf ("error in cusolverDnZgetrf with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+
+
+    DeviceSynchronize();
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
+
+    cublasOperation_t trans =CUBLAS_OP_N;
+    cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nhrs, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo );
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
+
+
+    info = 0;
+    if (info != 0)
+    {
+        printf ("error in cusolverDnZgetrs with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
+    DeviceSynchronize();
+    gpuFree(devIpiv);
+    gpuFree(devInfo);
+    gpuFree(Workspace);
+
+    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    RmgFreeHost(Imatrix);
+    gpuFree(gpu_temp);
+
+#elif HIP_ENABLED
+
+    if(nprow*npcol != 1)
+    {
+        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+    {
+        d_ipiv = nn;
+        lwork = nn * nn;
+        ipiv = (int *) malloc(d_ipiv * sizeof(int));
+        work = (std::complex<double> *)malloc(lwork * sizeof(std::complex<double>));
+
+        size_t size = nn * nn * sizeof(std::complex<double>);
+        std::complex<double> *Hii_cpu = new std::complex<double>[nn*nn];
+        MemcpyDeviceHost(size, Hii, Hii_cpu);
+
+        zgetrf(&nn, &nn, (double *)Hii_cpu, &nn, ipiv, &info);
+        if (info != 0)
+        {
+            printf ("error in zgetrf with INFO = %d \n", info);
+            fflush (NULL);
+            exit (0);
+        }
+        zgetri(&nn, (double *)Hii_cpu, &nn, ipiv, (double *)work, &lwork, &info);
+        MemcpyHostDevice(size, Hii_cpu, Hii);
+        if (info != 0)
+        {
+            printf ("error in zgetri with INFO = %d \n", info);
+            fflush (NULL);
+            exit (0);
+        }
+
+        free(ipiv);
+        free(work);
+        delete [] Hii_cpu;
+    }
+
+
+#if 0    
+    std::complex<double> *gpu_temp, *Imatrix;
+    size_t size = nn*nn*sizeof(std::complex<double>);
+    Imatrix = (std::complex<double> *)RmgMallocHost(size);
+    pmo_unitary_matrix(Imatrix, desca);
+    gpuMalloc((void **)&gpu_temp, size);
+    MemcpyHostDevice(size, Imatrix, gpu_temp);
+
+
+    std::complex<double> *A = Hii;
+    std::complex<double> *B = gpu_temp;
+    
+    hipDeviceSynchronize();
+    hipsolverStatus_t hip_status;
+    int Lwork;
+    int *devIpiv, *devInfo;
+    hipDoubleComplex *Workspace;
+    hipError_t hiperr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
+    hiperr = gpuMalloc((void **)&devInfo, sizeof(int) );
+
+    hip_status = hipsolverZgetrf_bufferSize(ct.hipsolver_handle, nn, nn, (hipDoubleComplex *)A, nn, &Lwork);
+    //if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf_bufferSize failed.");
+    std::cout << nn<< " Lwork " << Lwork << std::endl;
+    hiperr = gpuMalloc((void **) &Workspace, sizeof(hipDoubleComplex) *Lwork);
+    hip_status = hipsolverZgetrf(ct.hipsolver_handle, nn, nn, (hipDoubleComplex *)A, nn, Workspace, Lwork, devIpiv, devInfo );
+    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf failed.");
+    info = 0;
+    if (info != 0)
+    {
+        printf ("error in hipsolverDnZgetrf with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+
+
+    hipDeviceSynchronize();
+    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf failed.");
+
+    hipblasOperation_t trans =HIPBLAS_OP_N;
+    hip_status = hipsolverZgetrs(ct.hipsolver_handle, trans, nn, nn, (hipDoubleComplex *)A, nn, devIpiv, (hipDoubleComplex *)B, nn, Workspace, Lwork, devInfo );
+    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrs failed.");
+
+
+    info = 0;
+    if (info != 0)
+    {
+        printf ("error in hipsolverDnZgetrs with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
+    hipDeviceSynchronize();
+    gpuFree(devIpiv);
+    gpuFree(devInfo);
+    gpuFree(Workspace);
+
+    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    RmgFreeHost(Imatrix);
+    gpuFree(gpu_temp);
 #endif
 
 #else

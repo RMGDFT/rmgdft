@@ -12,6 +12,8 @@
 #if HIP_ENABLED
     #include <hipblas/hipblas.h>
     #include <rocsolver/rocsolver.h>
+    #include <hip/hip_runtime_api.h> // for hip functions
+    #include <hipsolver/hipsolver.h> // for all the hipsolver C interfaces and type declarations
 #endif
 
 #if SYCL_ENABLED
@@ -763,6 +765,7 @@ public:
     hipblasHandle_t gpublas_handle;
     hipStream_t rocsolver_stream;
     rocsolver_handle roc_handle;
+    hipsolverHandle_t hipsolver_handle;
     bool use_cublasxt;
 
 #endif

@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <complex>
 
+#include "RmgGemm.h"
+
 
 #if CUDA_ENABLED
 #include <cuda.h>
@@ -37,8 +39,10 @@ void my_sync_device()
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasZcopy (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#if CUDA_ENABLED 
+    cublasZcopy (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#elif HIP_ENABLED
+    hipblasZcopy (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
 #else
     zcopy (&n, A, &ia, B, &ib);
 #endif
@@ -48,8 +52,10 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasZaxpy (ct.cublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#if CUDA_ENABLED 
+    cublasZaxpy (ct.gpublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#elif HIP_ENABLED
+    hipblasZaxpy (ct.gpublas_handle, n, (hipblasDoubleComplex *)&alpha, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
 #else
     zaxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
@@ -57,8 +63,10 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
-#if CUDA_ENABLED
-    cublasDzasum (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, sum);
+#if CUDA_ENABLED 
+    cublasDzasum (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, sum);
+#elif HIP_ENABLED
+    hipblasDzasum (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, sum);
 #else
     *sum = dzasum(&n, (double *)A, &ia);
 #endif
@@ -68,8 +76,8 @@ void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 void dcopy_driver (int n, double *A, int ia, double *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasDcopy (ct.cublas_handle, n, A, ia, B, ib);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDcopy (ct.gpublas_handle, n, A, ia, B, ib);
 #else
     dcopy (&n, A, &ia, B, &ib);
 #endif
@@ -79,8 +87,8 @@ void dcopy_driver (int n, double *A, int ia, double *B, int ib)
 void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasDaxpy (ct.cublas_handle, n, &alpha, A, ia, B, ib);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDaxpy (ct.gpublas_handle, n, &alpha, A, ia, B, ib);
 #else
     daxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
@@ -88,8 +96,8 @@ void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib)
 
 void dscal_driver(int n, double beta, double *A, int ione)
 {
-#if CUDA_ENABLED
-    cublasDscal (ct.cublas_handle, n, &beta, A, ione);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDscal (ct.gpublas_handle, n, &beta, A, ione);
 #else
     dscal(&n, &beta, A, &ione);
 #endif
@@ -114,7 +122,7 @@ double *C, int ic, int jc, int *descc)
         exit (0);
     }
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     if(nprow*npcol != 1)
     {
@@ -123,19 +131,8 @@ double *C, int ic, int jc, int *descc)
         exit (0);
     }
 
+#endif
 
-    cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
-
-    if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "T")) cu_transA = CUBLAS_OP_T;
-
-    if(!strcmp(transb, "t")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "T")) cu_transB = CUBLAS_OP_T;
-
-    cublasDgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
-            &alpha, A, lda, B, ldb, &beta, C, ldc );
-
-#else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
     {
@@ -144,10 +141,8 @@ double *C, int ic, int jc, int *descc)
     }
     else
     {
-
-        dgemm(transa, transb, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
-#endif
 
 
 }
@@ -171,7 +166,7 @@ std::complex<double> *C, int ic, int jc, int *descc)
         exit (0);
     }
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     if(nprow*npcol != 1)
     {
@@ -180,26 +175,8 @@ std::complex<double> *C, int ic, int jc, int *descc)
         exit (0);
     }
 
+#endif
 
-    cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
-
-    if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "T")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "c")) cu_transA = CUBLAS_OP_C;
-    if(!strcmp(transa, "C")) cu_transA = CUBLAS_OP_C;
-
-    if(!strcmp(transb, "t")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "T")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "c")) cu_transB = CUBLAS_OP_C;
-    if(!strcmp(transb, "C")) cu_transB = CUBLAS_OP_C;
-
-    cublasZgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
-            (cuDoubleComplex *)&alpha,
-            (cuDoubleComplex*)A, lda,
-            (cuDoubleComplex*)B, ldb,
-            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-
-#else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
     {
@@ -208,10 +185,8 @@ std::complex<double> *C, int ic, int jc, int *descc)
     }
     else
     {
-
-        zgemm(transa, transb, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
-#endif
 
 
 }
