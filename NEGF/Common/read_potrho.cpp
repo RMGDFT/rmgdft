@@ -79,7 +79,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
     hx_new = get_xside() * get_hxxgrid();
     hy_new = get_yside() * get_hyygrid();
-    if(pct.gridpe ==0) printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
+    if(pct.gridpe ==0) rmg_printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
 
 
 /* =========== Allocate memory & Reading ON2 data ================ */
@@ -147,23 +147,23 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
         x0 = lcr[subsystem].x0 * get_FG_RATIO();
         y0 = lcr[subsystem].y0 * get_FG_RATIO();
-        /*if(pct.gridpe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
+        /*if(pct.gridpe ==0) rmg_printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
 
 
         x1 = lcr[subsystem].x1 * get_FG_RATIO();
         y1 = lcr[subsystem].y1 * get_FG_RATIO();
         /*z1 = lcr[subsystem].z1 * get_FG_RATIO();
-          if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
+          if(pct.gridpe ==0) rmg_printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
 
 
         x2 = lcr[subsystem].x2 * get_FG_RATIO();
         y2 = lcr[subsystem].y2 * get_FG_RATIO();
-        /*if(pct.gridpe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
+        /*if(pct.gridpe ==0) rmg_printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
 
         x3 = x2 + x1 - x0;
         y3 = y2 + y1 - y0;
         /*z3 = z2 + z1 - z0;
-          if(pct.gridpe ==0) printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
+          if(pct.gridpe ==0) rmg_printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
 
 
         NYZ0 = NY0 * NZ0;
@@ -171,11 +171,11 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
         hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/get_FG_RATIO();
         x0_old = lcr[subsystem].x_shift + lcr[subsystem].x0 * get_FG_RATIO() * hx_old ;
-        /*if(pct.gridpe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
+        /*if(pct.gridpe ==0) rmg_printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
 
         hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/get_FG_RATIO();
         y0_old = lcr[subsystem].y_shift + lcr[subsystem].y0 * get_FG_RATIO() * hy_old;
-        /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
+        /*if(pct.gridpe ==0) rmg_printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
 
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
 
@@ -230,7 +230,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
     } /*  subsystem loop ends here */
 
 
-    /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
+    /*if(pct.gridpe ==0) rmg_printf (" Potential patching is done...  \n" );*/
 
     /* ====== Fillin the vaccuam space: put a ramp ============== */
 
@@ -510,7 +510,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
         }
     }
 
-    /*if(pct.gridpe ==0) printf (" x-interpolation is done \n" );*/
+    /*if(pct.gridpe ==0) rmg_printf (" x-interpolation is done \n" );*/
 
 
     my_free(xold);
@@ -558,7 +558,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
                 }
             }
         }
-        /*if(pct.gridpe ==0) printf (" y-interpolation is done \n" );*/
+        /*if(pct.gridpe ==0) rmg_printf (" y-interpolation is done \n" );*/
 
 
         my_free(yold);

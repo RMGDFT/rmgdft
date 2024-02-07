@@ -97,7 +97,7 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
 
         if(proc2 < 0) continue;
 
-      //  dprintf("\n loopaaa %d  proc1 %d  proc2 %d thispe %d", idx, proc1, proc2,
+      //  printf("\n loopaaa %d  proc1 %d  proc2 %d thispe %d", idx, proc1, proc2,
 //pct.gridpe);
 
 

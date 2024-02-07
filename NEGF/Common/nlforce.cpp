@@ -20,7 +20,7 @@
 
 void nlforce (double * veff)
 {
-    printf("\n need more work for force in NEGF");
+    rmg_printf("\n need more work for force in NEGF");
     return;
 #if 0
     int ion, i, isp, count;
@@ -64,13 +64,13 @@ void nlforce (double * veff)
         nlforce_par_Q(veff, rho_nm, ion, nh, &forces_tem[ion*3]);
 
            if(pct.gridpe == 0) {
-           printf("\nafter nlforce_par_Q \n");
+           rmg_printf("\nafter nlforce_par_Q \n");
            write_force();
            }
 
            nlforce_par_rho(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, ion, nh);
         if(pct.gridpe == 0) {
-        printf("after nlforce_par_rho \n");
+        rmg_printf("after nlforce_par_rho \n");
         write_force();
         }
 

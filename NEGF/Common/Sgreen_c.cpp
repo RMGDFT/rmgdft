@@ -50,7 +50,7 @@ void Sgreen_c (double * Htri, double * Stri, std::complex<double> * sigma1, std:
 
     if (ndim != nC)
     {
-        printf ("\n %d %d ndim  not equaol to nC in Sgreen_c.c", ndim, nC);
+        rmg_printf ("\n %d %d ndim  not equaol to nC in Sgreen_c.c", ndim, nC);
         exit (0);
     }
 

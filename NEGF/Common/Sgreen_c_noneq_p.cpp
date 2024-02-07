@@ -51,7 +51,7 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma,
 
     if (ndim != nC)
     {
-        printf ("\n %d %d ndim  not equaol to nC in Sgreen_c_noneq_p.c", ndim, nC);
+        rmg_printf ("\n %d %d ndim  not equaol to nC in Sgreen_c_noneq_p.c", ndim, nC);
         exit (0);
     }
 

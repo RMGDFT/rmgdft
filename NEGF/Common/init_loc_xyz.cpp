@@ -74,7 +74,7 @@ void init_loc_xyz ()
     if (pct.gridpe == 0)
     {
 
-        printf ("\n init_loc_xyz.c  done\n");
+        rmg_printf ("\n init_loc_xyz.c  done\n");
 
     } 
     MPI_Barrier(pct.img_comm);

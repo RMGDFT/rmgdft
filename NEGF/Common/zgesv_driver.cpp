@@ -64,7 +64,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
 
     if(nprow*npcol <1) 
     {
-        printf ("error in zgesv_driver nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("error in zgesv_driver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -72,7 +72,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
 
     if(nprow*npcol != 1)
     {
-        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -90,7 +90,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         pzgesv (&nn, &nhrs, A, &ione, &ione, desca, ipiv, B, &ione, &ione, descb, &info); 
         if (info != 0)
         {
-            printf ("error in pzgesv with INFO = %d \n", info);
+            rmg_printf ("error in pzgesv with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
@@ -107,7 +107,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         zgesv(&nn, &nhrs, (double *)A, &nn, ipiv, (double *)B, &nn, &info );
         if (info != 0)
         {
-            printf ("error in zgesv with INFO = %d \n", info);
+            rmg_printf ("error in zgesv with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }

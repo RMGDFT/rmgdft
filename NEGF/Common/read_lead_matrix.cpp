@@ -76,7 +76,7 @@ void read_lead_matrix ()
         nbytes = read(fhand, tem_S01, idx * sizeof(double));
         if(nbytes != (size_t)idx * sizeof(double) )
         {
-            printf("\n end of file in lead matrix probe = %d\n", iprobe);
+            rmg_printf("\n end of file in lead matrix probe = %d\n", iprobe);
             exit(0);
         }
         close(fhand);

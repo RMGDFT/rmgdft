@@ -130,7 +130,7 @@ void print_sum_square(int size, double *data, char *msg)
 
     for (idx = 0; idx < size; idx++)
         sum += data[idx] * data[idx];
-    dprintf("\n spin%d %d %s  ----  %22.16f", pct.spinpe, pct.gridpe, msg, sum);
+    printf("\n spin%d %d %s  ----  %22.16f", pct.spinpe, pct.gridpe, msg, sum);
 
 }
 

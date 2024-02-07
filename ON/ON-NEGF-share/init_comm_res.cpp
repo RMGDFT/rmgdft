@@ -102,12 +102,12 @@ proc1 = pct.gridpe;
         /*
          *if (pct.gridpe == 0)
          *{
-         *    printf("\n initial communication matrix ");
+         *    rmg_printf("\n initial communication matrix ");
          *    for (i = 0; i < pct.grid_npes; i++)
          *    {
-         *        printf("\n");
+         *        rmg_printf("\n");
          *        for (j = 0; j < pct.grid_npes; j++)
-         *            printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
+         *            rmg_printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
          *    }
          *}
          */
@@ -157,7 +157,7 @@ proc1 = pct.gridpe;
         }
 
 
-//dprintf("\n  num-sendrecv_loop1 %d", num_sendrecv_loop1);
+//printf("\n  num-sendrecv_loop1 %d", num_sendrecv_loop1);
         for (loop = 0; loop < num_sendrecv_loop1; loop++)
         {
             proc1 = pct.gridpe;
@@ -201,20 +201,20 @@ proc1 = pct.gridpe;
 
 
 #if 	DEBUG
-        printf("\n communication info in init_comm_res\n ");
+        rmg_printf("\n communication info in init_comm_res\n ");
         for (loop = 0; loop < num_sendrecv_loop1; loop++)
         {
 
-            printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
+            rmg_printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
                     pct.gridpe, send_to1[loop * state_per_proc + 1], send_to1[loop * state_per_proc]);
             for (st2 = 0; st2 < send_to1[loop * state_per_proc + 1]; st2++)
-                printf("  %d ", send_to1[loop * state_per_proc + 2 + st2]);
+                rmg_printf("  %d ", send_to1[loop * state_per_proc + 2 + st2]);
 
-            printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
+            rmg_printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
                     pct.gridpe, recv_from1[loop * state_per_proc + 1],
                     recv_from1[loop * state_per_proc]);
             for (st2 = 0; st2 < recv_from1[loop * state_per_proc + 1]; st2++)
-                printf("  %d ", recv_from1[loop * state_per_proc + 2 + st2]);
+                rmg_printf("  %d ", recv_from1[loop * state_per_proc + 2 + st2]);
 
         }
 #endif

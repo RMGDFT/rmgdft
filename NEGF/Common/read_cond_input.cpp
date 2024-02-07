@@ -31,14 +31,14 @@ void read_cond_input (double *emin, double *emax, int *E_POINTS, double *E_imag,
 
     if (NULL == (tptr = get_num (tbuf)))
     {
-        printf (" missing the lcr[1].num_states \n");
+        rmg_printf (" missing the lcr[1].num_states \n");
         exit (0);
     }
     lcr[1].num_states = atoi (tptr);
 
     if (NULL == (tptr = get_num (tptr)))
     {
-        printf (" missing the lcr[2].num_states \n");
+        rmg_printf (" missing the lcr[2].num_states \n");
         exit (0);
     }
     lcr[2].num_states = atoi (tptr);

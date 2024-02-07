@@ -142,7 +142,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
         {
 
-            if(ct.verbose && pct.imgpe == 0) printf("\n sym operation after considering real space grid # %d",nsym);
+            if(ct.verbose && pct.imgpe == 0) rmg_printf("\n sym operation after considering real space grid # %d",nsym);
             for(int i = 0; i < 3; i++)
                 for(int j = 0; j < 3; j++)
                 {
@@ -171,27 +171,27 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 for(int i = 0; i < 3; i++)
                 {
-                    printf("\n      %3d  %3d  %3d", sym_rotate[nsym * 9 + i *3 + 0],sym_rotate[nsym * 9 + i *3 + 1],sym_rotate[nsym * 9 + i *3 + 2]);
+                    rmg_printf("\n      %3d  %3d  %3d", sym_rotate[nsym * 9 + i *3 + 0],sym_rotate[nsym * 9 + i *3 + 1],sym_rotate[nsym * 9 + i *3 + 2]);
                 }
-                printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
-                printf("  with translation of (%f %f %f) grids ", translation[kpt*3+0],translation[kpt*3+1],translation[kpt*3+2]);
+                rmg_printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
+                rmg_printf("  with translation of (%f %f %f) grids ", translation[kpt*3+0],translation[kpt*3+1],translation[kpt*3+2]);
             }
             nsym++;
         }
         else if(ct.verbose && pct.imgpe == 0)
         {
-            printf("\n translation break a symmetry") ;
+            rmg_printf("\n translation break a symmetry") ;
             for(int i = 0; i < 3; i++)
             {
-                printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
+                rmg_printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
             }   
-            printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
+            rmg_printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
 
         }
     }   
 
-    if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
-    if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation  after considering real space grid: %d",nsym);
+    if(ct.verbose && pct.imgpe == 0) rmg_printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
+    if(ct.verbose && pct.imgpe == 0) rmg_printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
 
     sym_atom.resize(ct.num_ions* nsym);
@@ -251,7 +251,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             }
             if(!find_atom)
             {
-                printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
+                rmg_printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
                 rmg_error_handler(__FILE__, __LINE__, "Exiting.\n");
             }
         }
@@ -312,15 +312,15 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
         if(ct.verbose && pct.imgpe == 0)
         {
-            printf("\n sym operation after considering spin polarization# %d",(int) sym_rotate.size()/9);
+            rmg_printf("\n sym operation after considering spin polarization# %d",(int) sym_rotate.size()/9);
             for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
             {
-                printf("\n symmetry operation # %d:", isym);
+                rmg_printf("\n symmetry operation # %d:", isym);
                 for(int i = 0; i < 3; i++)
                 {
-                    printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+                    rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
                 }
-                printf("  with translation of (%d %d %d) grids %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], int(time_rev[isym]));
+                rmg_printf("  with translation of (%d %d %d) grids %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], int(time_rev[isym]));
             }
         }
 
@@ -377,15 +377,15 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
         if(ct.verbose && pct.imgpe == 0)
         {
-            printf("\n sym operation after considering noncollinear spin # %d",(int) sym_rotate.size()/9);
+            rmg_printf("\n sym operation after considering noncollinear spin # %d",(int) sym_rotate.size()/9);
             for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
             {
-                printf("\n symmetry operation # %d:", isym);
+                rmg_printf("\n symmetry operation # %d:", isym);
                 for(int i = 0; i < 3; i++)
                 {
-                    printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+                    rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
                 }
-                printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+                rmg_printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
             }
         }
 
@@ -436,15 +436,15 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     if(ct.verbose && pct.imgpe == 0)
     {
-        printf("\n sym operation after removing duplicating rotation symmetries with different translation # %d",(int) sym_rotate.size()/9);
+        rmg_printf("\n sym operation after removing duplicating rotation symmetries with different translation # %d",(int) sym_rotate.size()/9);
         for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
         {
-            printf("\n symmetry operation # %d:", isym);
+            rmg_printf("\n symmetry operation # %d:", isym);
             for(int i = 0; i < 3; i++)
             {
-                printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+                rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
             }
-            printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+            rmg_printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
         }
     }
     nsym = (int)sym_rotate.size()/9;
@@ -842,7 +842,7 @@ void Symmetry::rotate_ylm()
             for(int i = 0; i < 9; i++) work2[i] = sym_rotate[isym*9+i];
             dgemm("N", "N", &three, &three, &three, &one, b, &three, work2, &three, &zero, work1, &three);
             dgemm("N", "T", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
-            if(pct.imgpe == 0 && ct.verbose) printf("\n rotate ylm symm op %d l=%d", isym, l);
+            if(pct.imgpe == 0 && ct.verbose) rmg_printf("\n rotate ylm symm op %d l=%d", isym, l);
             for(int i = 0; i < 3; i++) 
             {
                 for(int j = 0; j < 3; j++) 
@@ -867,11 +867,11 @@ void Symmetry::rotate_ylm()
             dgemm("T", "T", &lm, &lm, &lm, &one, ylm_invert, &lm, ylm_array, &lm, &zero, rot_tem, &lm);
             for (int m1 = 0; m1 < 2*l+1; m1++)
             {
-                if(pct.imgpe == 0 && ct.verbose) printf("\n ");
+                if(pct.imgpe == 0 && ct.verbose) rmg_printf("\n ");
                 for (int m2 = 0; m2 < lm; m2++)
                 {
                     rot_ylm[isym][l][m1][m2] = rot_tem[m1 * lm + m2];
-                    if(pct.imgpe == 0 && ct.verbose) printf(" %7.4f ", rot_ylm[isym][l][m1][m2]);
+                    if(pct.imgpe == 0 && ct.verbose) rmg_printf(" %7.4f ", rot_ylm[isym][l][m1][m2]);
                 }
             }
 
@@ -932,9 +932,9 @@ void Symmetry::rotate_spin()
         }
         if(pct.imgpe == 0 && ct.verbose)
         {
-            printf("\n\n rotate spin for symm op %d %d %d %d", isym, type_symm(sr), (int)inv_type[isym], (int)time_rev[isym] );
-            for(int i = 0; i < 3; i++) printf("\n sym %5.2f  %5.2f  %5.2f", sr[i][0], sr[i][1],sr[i][2]);
-            printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+            rmg_printf("\n\n rotate spin for symm op %d %d %d %d", isym, type_symm(sr), (int)inv_type[isym], (int)time_rev[isym] );
+            for(int i = 0; i < 3; i++) rmg_printf("\n sym %5.2f  %5.2f  %5.2f", sr[i][0], sr[i][1],sr[i][2]);
+            rmg_printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
         }
 
         // improper rotation to proper rotation
@@ -992,7 +992,7 @@ void Symmetry::rotate_spin()
             sint = 0.5 * tem;
             if(tem < eps || sint > 1.0 +eps)
             {
-                printf("\n rotation matrix error: norm = %f \n", tem);
+                rmg_printf("\n rotation matrix error: norm = %f \n", tem);
                 fflush(NULL);
                 rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
             }
@@ -1017,7 +1017,7 @@ void Symmetry::rotate_spin()
         }
         else
         {
-            printf("\n rotation matrix error \n");
+            rmg_printf("\n rotation matrix error \n");
             fflush(NULL);
             rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
         }
@@ -1046,11 +1046,11 @@ void Symmetry::rotate_spin()
 
         if(pct.imgpe == 0 && ct.verbose)
         {
-            printf("\n angle: %7.4f  axis: %7.4f %7.4f  %7.4f", angle, axis[0], axis[1], axis[2]);
-            printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][0]), std::imag(rot_spin[isym][0][0])); 
-            printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][1]), std::imag(rot_spin[isym][0][1])); 
-            printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][0]), std::imag(rot_spin[isym][1][0])); 
-            printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][1]), std::imag(rot_spin[isym][1][1])); 
+            rmg_printf("\n angle: %7.4f  axis: %7.4f %7.4f  %7.4f", angle, axis[0], axis[1], axis[2]);
+            rmg_printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][0]), std::imag(rot_spin[isym][0][0])); 
+            rmg_printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][1]), std::imag(rot_spin[isym][0][1])); 
+            rmg_printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][0]), std::imag(rot_spin[isym][1][0])); 
+            rmg_printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][1]), std::imag(rot_spin[isym][1][1])); 
         }
 
     }
@@ -1108,7 +1108,7 @@ int Symmetry::type_symm(double sr[3][3])
     }
     else
     {
-        printf("\n determinant of the rotation matrix %f\n", det);
+        rmg_printf("\n determinant of the rotation matrix %f\n", det);
         fflush(NULL);
         rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
     }

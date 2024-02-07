@@ -36,7 +36,7 @@ double pmo_trace(std::complex<double> *matrix, int *desca)
 
     if(m !=n ) 
     {
-        printf("\n m n %d %d \n", m, n);
+        rmg_printf("\n m n %d %d \n", m, n);
         rmg_error_handler(__FILE__, __LINE__, "not a square matrix in pmo_trace m!=n");
     }
 

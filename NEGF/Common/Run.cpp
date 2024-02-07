@@ -237,7 +237,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         if (ct.runflag == 113) apply_potential_drop( vbias );
 
 
-        if(pct.imgpe == 0) printf (" apply_potential_drop is done :-) \n");
+        if(pct.imgpe == 0) rmg_printf (" apply_potential_drop is done :-) \n");
 
 
         /*--------------------------------*/
@@ -250,10 +250,10 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
             case MD_QUENCH:            /* Quench the electrons */
                 if (pct.imgpe == 0)
-                    printf ("\n quench start...\n");
+                    rmg_printf ("\n quench start...\n");
                 QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
                 if (pct.imgpe == 0)
-                    printf ("\n quench done...\n");
+                    rmg_printf ("\n quench done...\n");
 
                 break;
 
@@ -281,7 +281,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
         MPI_Barrier(pct.img_comm);
         if (pct.imgpe == 0)
-            printf ("\n Run done...\n");
+            rmg_printf ("\n Run done...\n");
         fflush (NULL);
 
         MPI_Barrier(pct.img_comm);

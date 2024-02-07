@@ -10,6 +10,8 @@
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
+#include "transition.h"
+
 
 void get_ddd_update (double * veff)
 {
@@ -24,7 +26,7 @@ void get_ddd_update (double * veff)
 
     if(ct.noncoll) 
     {
-        printf("\n need to change for noncollinear \n");
+        rmg_printf("\n need to change for noncollinear \n");
         fflush(NULL);
         exit(0);
     }

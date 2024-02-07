@@ -166,13 +166,13 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     ReadInterpolateOrbitals();
     delete(RT1);
 
-    if (pct.imgpe == 0) printf ("completed: read_orbital \n");
+    if (pct.imgpe == 0) rmg_printf ("completed: read_orbital \n");
     allocate_matrix_LCR();
-    if (pct.imgpe == 0) printf ("completed: allocate_matrix \n");
+    if (pct.imgpe == 0) rmg_printf ("completed: allocate_matrix \n");
     if (ct.runflag > 111)
     {
         read_lead_matrix();
-        if (pct.imgpe == 0) printf ("completed: read_lead_matrix \n");
+        if (pct.imgpe == 0) rmg_printf ("completed: read_lead_matrix \n");
     }
 
     /*exit(0); */ 
@@ -186,12 +186,12 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     if(ct.runflag <113)
     {
         read_potrho_LCR (vh, vxc, rho);
-        if (pct.imgpe == 0) printf ("completed: read_potrho_LCR \n");
+        if (pct.imgpe == 0) rmg_printf ("completed: read_potrho_LCR \n");
     }
     else
     {    
         read_rho_and_pot (ct.infile, vh, vxc, vh_old, vxc_old, rho);
-        if (pct.imgpe == 0) printf ("completed: read_rho_and_pot \n");
+        if (pct.imgpe == 0) rmg_printf ("completed: read_rho_and_pot \n");
     }
     delete(RT3);
 
@@ -335,7 +335,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     delete(RT5);
 
-    if (pct.imgpe == 0) printf ("completed: initnegf \n");
+    if (pct.imgpe == 0) rmg_printf ("completed: initnegf \n");
 
 
     for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);

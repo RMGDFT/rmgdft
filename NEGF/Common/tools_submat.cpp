@@ -254,7 +254,7 @@ void get_distributed_mat (double *bigmat, double *dismat)
         descinit (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
         if (info != 0)
         {
-            printf (" distribute_mat: descinit, info=%d\n", info);
+            rmg_printf (" distribute_mat: descinit, info=%d\n", info);
             fflush (NULL);
             globalexit (0);
         }

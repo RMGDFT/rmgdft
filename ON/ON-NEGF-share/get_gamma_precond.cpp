@@ -32,7 +32,7 @@ double get_gamma_precond(double *vtot, double small_eig)
     vmax = real_max_all(vmax);
 
     if (pct.gridpe == 0 && ct.verbose)
-        printf("\n sssss %f %f %f ", vmax, small_eig, diag);
+        rmg_printf("\n sssss %f %f %f ", vmax, small_eig, diag);
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
     /* diag * 4^{N_level+1} */
@@ -49,7 +49,7 @@ double get_gamma_precond(double *vtot, double small_eig)
 //gamma = ct.eig_parm.gl_step * t5;
 
     if (pct.gridpe == 0 && ct.verbose)
-        printf("\n get_gamma %22.16f\n ", gamma);
+        rmg_printf("\n get_gamma %22.16f\n ", gamma);
 
 
     return gamma;

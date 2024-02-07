@@ -115,7 +115,7 @@ void read_matrix_pp ()
         nbytes = read(fhand, tem_S01, idx * sizeof(double));
         if(nbytes != (size_t)idx * sizeof(double) )
         {
-            printf("\n end of file in lead matrix probe = %d\n", iprobe + 1);
+            rmg_printf("\n end of file in lead matrix probe = %d\n", iprobe + 1);
             exit(0);
         }
         close(fhand);
@@ -182,5 +182,5 @@ void read_matrix_pp ()
 
 
     if (pct.gridpe == 0)
-        printf ("\n THE MATRICES are read in ");
+        rmg_printf ("\n THE MATRICES are read in ");
 }

@@ -131,7 +131,7 @@ void split_matrix_lead (int iprobe)
         nstart_block += ct.block_dim[j];
         
 
-    printf("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
+    rmg_printf("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
 
     for(i = 0; i < 9; i++)
     {

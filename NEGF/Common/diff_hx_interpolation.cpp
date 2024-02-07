@@ -38,7 +38,7 @@ void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
 
         if (x1 < -2.0)
         {
-            dprintf ("\n x1 =%d %f %f %f %f %f", st, x1, x0, x0_old, hx, hx_old);
+            printf ("\n x1 =%d %f %f %f %f %f", st, x1, x0, x0_old, hx, hx_old);
             rmg_error_handler (__FILE__, __LINE__, "grid ???");
         }
 
@@ -77,7 +77,7 @@ void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
         cc3 = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
 
         xi[ix] = cc0 * xi_old[i0] + cc1 * xi_old[i1] + cc2 * xi_old[i2] + cc3 * xi_old[i3];
-/*	if(pct.gridpe ==0) printf("\n %d %f %f dddd", ix, xi[ix], xi_old[ix]); */
+/*	if(pct.gridpe ==0) rmg_printf("\n %d %f %f dddd", ix, xi[ix], xi_old[ix]); */
     }
 
 

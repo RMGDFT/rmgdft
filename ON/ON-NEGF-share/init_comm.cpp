@@ -101,12 +101,12 @@ void init_comm(STATE * states)
     /*
      *if (pct.gridpe == 0)
      *{
-     *    printf("\n initial communication matrix ");
+     *    rmg_printf("\n initial communication matrix ");
      *    for (i = 0; i < pct.grid_npes; i++)
      *    {
-     *        printf("\n");
+     *        rmg_printf("\n");
      *        for (j = 0; j < pct.grid_npes; j++)
-     *            printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
+     *            rmg_printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
      *    }
      *}
      */
@@ -205,15 +205,15 @@ void init_comm(STATE * states)
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {
 
-        printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
+        rmg_printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
                 pct.gridpe, send_to[loop * state_per_proc + 1], send_to[loop * state_per_proc]);
         for (st2 = 0; st2 < send_to[loop * state_per_proc + 1]; st2++)
-            printf("  %d ", send_to[loop * state_per_proc + 2 + st2]);
+            rmg_printf("  %d ", send_to[loop * state_per_proc + 2 + st2]);
 
-        printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
+        rmg_printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
                 pct.gridpe, recv_from[loop * state_per_proc + 1], recv_from[loop * state_per_proc]);
         for (st2 = 0; st2 < recv_from[loop * state_per_proc + 1]; st2++)
-            printf("  %d ", recv_from[loop * state_per_proc + 2 + st2]);
+            rmg_printf("  %d ", recv_from[loop * state_per_proc + 2 + st2]);
 
     }
 #endif

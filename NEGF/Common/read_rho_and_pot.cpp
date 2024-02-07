@@ -85,7 +85,7 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     MPI_Barrier(pct.img_comm);
     tem1 = my_crtc();
-    if(pct.gridpe == 0) printf("\n time for read vh, vxc, rho %f", tem2 - tem1);
+    if(pct.gridpe == 0) rmg_printf("\n time for read vh, vxc, rho %f", tem2 - tem1);
     fflush(NULL);
 
 }

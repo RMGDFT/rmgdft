@@ -36,7 +36,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
     my_malloc_init( sigma_sum1, nL * nL, std::complex<double> );
     if (nL != ct.block_dim[0])
     {
-        printf (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
+        rmg_printf (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
     }
 
     /*  allocate memory for sigma_sum2, only the last block. others's value is zero, don't need to save it*/
@@ -44,7 +44,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
     my_malloc_init( sigma_sum2, nL * nL, std::complex<double> );
     if (nL != ct.block_dim[ct.num_blocks - 1])
     {
-        printf (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
+        rmg_printf (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
     }
 
     /*  allocate memory for grenn_C_tri is tri-diagonal */

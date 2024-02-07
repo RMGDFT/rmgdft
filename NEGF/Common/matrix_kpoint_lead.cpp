@@ -143,7 +143,7 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
         nstart_block += ct.block_dim[j];
 
 
-    //    printf("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
+    //    rmg_printf("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
 
 
     for(li = 0; li < llda; li++)

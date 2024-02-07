@@ -66,7 +66,7 @@ void set_energy_weight_ne (std::complex<double> * ene, std::complex<double> * we
         b = EF2 + 25.0 * KT;
     }
     if (pct.gridpe == 0)
-        printf ("\n fff %f %f %d", a, b, nmax_gq2);
+        rmg_printf ("\n fff %f %f %d", a, b, nmax_gq2);
 
 /* then determine the Gauss-Legand parameters */
     gauleg (a, b, xc, wc, nmax_gq2);
@@ -94,10 +94,10 @@ void set_energy_weight_ne (std::complex<double> * ene, std::complex<double> * we
     my_free(wc);
     if (pct.gridpe == 0)
     {
-        printf ("\n set_energy_weigh_ne done %d", *nenergy);
-        printf ("\n eneR   eneI   weightR   weightI ");
+        rmg_printf ("\n set_energy_weigh_ne done %d", *nenergy);
+        rmg_printf ("\n eneR   eneI   weightR   weightI ");
         for (nen = 0; nen < *nenergy; nen++)
-            printf ("\n  %f %f %f %f ", std::real(ene[nen]), std::imag(ene[nen]),
+            rmg_printf ("\n  %f %f %f %f ", std::real(ene[nen]), std::imag(ene[nen]),
                     std::real(weight[nen]), std::imag(weight[nen]));
     }
 
