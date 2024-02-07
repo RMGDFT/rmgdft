@@ -19,7 +19,7 @@ void modify_rho (double * rho, double * rho_old)
 {
     int idx, ione = 1;
     double t2;
-    register double tcharge;
+    double tcharge;
     int i, j, k;
     double total_charge, tcharge_fixed, t_fixed;
     int xoff, yoff, zoff;

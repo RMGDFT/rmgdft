@@ -1322,7 +1322,7 @@ FUNCTION sumkt( et, nbnd, nks, nspin, ntetra, tetra, e, is, isk )
   !! see routine comments
   INTEGER, INTENT(IN) :: is
   !! spin component
-  INTEGER, INTENT(IN) :: isk
+  INTEGER, INTENT(IN) :: isk(nks)
   !! spin component for each k-point
   !
   ! ... local variables

@@ -74,6 +74,7 @@ GlobalSums.cpp
 GlobalSums_Cbindings.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
+ZgetrftrsDriver.cpp
 #BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp

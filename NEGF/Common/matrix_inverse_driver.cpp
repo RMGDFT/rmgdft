@@ -46,6 +46,7 @@
 #include "blas.h"
 #include "Scalapack.h"
 #include "GpuAlloc.h"
+#include "RmgMatrix.h"
 
 
 
@@ -149,39 +150,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         fflush (NULL);
         exit (0);
     }
-    {
-        d_ipiv = nn;
-        lwork = nn * nn;
-        ipiv = (int *) malloc(d_ipiv * sizeof(int));
-        work = (std::complex<double> *)malloc(lwork * sizeof(std::complex<double>));
 
-        size_t size = nn * nn * sizeof(std::complex<double>);
-        std::complex<double> *Hii_cpu = new std::complex<double>[nn*nn];
-        MemcpyDeviceHost(size, Hii, Hii_cpu);
-
-        zgetrf(&nn, &nn, (double *)Hii_cpu, &nn, ipiv, &info);
-        if (info != 0)
-        {
-            printf ("error in zgetrf with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-        zgetri(&nn, (double *)Hii_cpu, &nn, ipiv, (double *)work, &lwork, &info);
-        MemcpyHostDevice(size, Hii_cpu, Hii);
-        if (info != 0)
-        {
-            printf ("error in zgetri with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-
-        free(ipiv);
-        free(work);
-        delete [] Hii_cpu;
-    }
-
-
-#if 0    
     std::complex<double> *gpu_temp, *Imatrix;
     size_t size = nn*nn*sizeof(std::complex<double>);
     Imatrix = (std::complex<double> *)RmgMallocHost(size);
@@ -190,57 +159,11 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     MemcpyHostDevice(size, Imatrix, gpu_temp);
 
 
-    std::complex<double> *A = Hii;
-    std::complex<double> *B = gpu_temp;
-    
-    hipDeviceSynchronize();
-    hipsolverStatus_t hip_status;
-    int Lwork;
-    int *devIpiv, *devInfo;
-    hipDoubleComplex *Workspace;
-    hipError_t hiperr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
-    hiperr = gpuMalloc((void **)&devInfo, sizeof(int) );
-
-    hip_status = hipsolverZgetrf_bufferSize(ct.hipsolver_handle, nn, nn, (hipDoubleComplex *)A, nn, &Lwork);
-    //if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf_bufferSize failed.");
-    std::cout << nn<< " Lwork " << Lwork << std::endl;
-    hiperr = gpuMalloc((void **) &Workspace, sizeof(hipDoubleComplex) *Lwork);
-    hip_status = hipsolverZgetrf(ct.hipsolver_handle, nn, nn, (hipDoubleComplex *)A, nn, Workspace, Lwork, devIpiv, devInfo );
-    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf failed.");
-    info = 0;
-    if (info != 0)
-    {
-        printf ("error in hipsolverDnZgetrf with INFO = %d \n", info);
-        fflush (NULL);
-        exit (0);
-    }
-
-
-    hipDeviceSynchronize();
-    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrf failed.");
-
-    hipblasOperation_t trans =HIPBLAS_OP_N;
-    hip_status = hipsolverZgetrs(ct.hipsolver_handle, trans, nn, nn, (hipDoubleComplex *)A, nn, devIpiv, (hipDoubleComplex *)B, nn, Workspace, Lwork, devInfo );
-    if(hip_status != HIPSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"hipsolverZgetrs failed.");
-
-
-    info = 0;
-    if (info != 0)
-    {
-        printf ("error in hipsolverDnZgetrs with INFO = %d \n", info);
-        fflush (NULL);
-        exit (0);
-    }
-    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
-    hipDeviceSynchronize();
-    gpuFree(devIpiv);
-    gpuFree(devInfo);
-    gpuFree(Workspace);
+    ZgetrftrsDriver(nn, nn, Hii, gpu_temp);
 
     zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
     gpuFree(gpu_temp);
-#endif
 
 #else
     //  use scalapack if nprow * npcol > 1
