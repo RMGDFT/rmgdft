@@ -69,14 +69,15 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
     MPI_File_read(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
-    sprintf(newname, "%s%s", name, ".vxc");
+    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
+
     MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
     MPI_File_read(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
-    sprintf(newname, "%s%s", name, ".rho");
+    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
     MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);

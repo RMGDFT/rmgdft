@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+write_data_NEGF.cpp
 ReadInterpolateOrbitals.cpp
 InitNegf.cpp
 #SetEnergyWeight.cpp

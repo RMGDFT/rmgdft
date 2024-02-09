@@ -9,6 +9,9 @@
 #include "LCR.h"
 #include "blacs.h"
 
+void write_data_NEGF(char *name, double *vh, double *vxc,
+        double *rho, double *vh_corr);
+
 void ReadInterpolateOrbitals();
 void H01_to_HCL (double *H01_global, double *HCL_local, int iprobe);
 void Sgreen_c (double * Htri, double * Stri, std::complex<double> * sigma1, std::complex<double> * sigma2, std::complex<double> ene, std::complex<double> * Green_C, int nC);

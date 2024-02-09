@@ -342,6 +342,8 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     if (pct.imgpe == 0)
         rmg_printf ("\n Quench is done \n");
 
+    write_data_NEGF(ct.outfile, vh, vxc,rho);
+
     delete(RT);
 
 
