@@ -414,6 +414,9 @@ public:
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
 
+    /* Resta beta parameter. Should be conventional unit cell A0 */
+    double resta_beta;
+
     int ldau_mixing_type;
     int ldau_pulay_refresh;
     int ldau_pulay_order;

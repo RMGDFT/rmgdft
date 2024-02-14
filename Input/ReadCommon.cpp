@@ -989,6 +989,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) ",
             "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("resta_beta", &lc.resta_beta, 1.0, 20.0, 8.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Beta parameter for resta charge density preconditioning. A good estimate ",
+            "is the A0 lattice parameter in bohr for the traditional unit cell. ", MIXING_OPTIONS);
+
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
             "Submatrix width to use as a fraction of the full spectrum. "

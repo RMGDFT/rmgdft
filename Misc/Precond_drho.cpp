@@ -17,11 +17,7 @@ void Precond_drho(double *drho)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
 
-    double a0i = *Rmg_L.a0i;
-    double a1i = *Rmg_L.a1i;
-    double a2i = *Rmg_L.a2i;
-
-    double beta = sqrt(a0i*a0i + a1i*a1i + a2i*a2i);
+    double beta = ct.resta_beta;
     double ktf = std::pow(3.0 * PI * ct.nel / Rmg_L.get_omega(), 1.0/3.0);
     double kappa = sqrt(ktf / PI) / 2.0;
     double gamma = sinh(kappa*beta) / kappa / beta;
