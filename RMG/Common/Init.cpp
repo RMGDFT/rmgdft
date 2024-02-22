@@ -692,7 +692,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
 
         /*Now we can do subspace diagonalization */
-        double *new_rho=new double[FP0_BASIS *ct.nspin];
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
@@ -768,16 +767,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         /* Take care of occupation filling */
         ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
         OutputEigenvalues(Kptr, 0, -1);
-
-        // Get new density 
-        RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
-        GetNewRho(Kptr, new_rho);
-
-        MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
-        if (ct.nspin == 2) get_rho_oppo (rho,  rho_oppo);
-
-        delete RT2;
-        delete [] new_rho;
 
         /*Release vtot memory */
         delete [] vtot_psi;

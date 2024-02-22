@@ -622,7 +622,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of iterations for davidson diagonalization.", 
             "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20). ", KS_SOLVER_OPTIONS);
 
-    If.RegisterInputKey("davidson_premg", &lc.davidson_premg, 0, 8, 4, 
+    If.RegisterInputKey("davidson_premg", &lc.davidson_premg, 0, 8, 0, 
             CHECK_AND_FIX, OPTIONAL, 
             "If the davidson solver is selected this parameter controls the number of multigrid steps to use before enabling davidson.", 
             "davidson_premg must be in the range (0 <= davidson_premg <= 8). ", KS_SOLVER_OPTIONS);
