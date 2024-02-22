@@ -2,9 +2,9 @@
 description="atom_O_pp"
 
 # Expected test energy
-test_energy="-15.87873389"
+test_energy="-15.87872203"
 test_energy_tolerance = "1.00000000e-06"
-test_steps = "9"
+test_steps = "8"
 test_steps_tolerance = "1"
 
 
@@ -55,7 +55,7 @@ potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-#energy_convergence_criterion="1.0e-9"
+energy_convergence_criterion="1.0e-10"
 rms_convergence_criterion = "1.0e-10"
 
 atomic_coordinate_type="Absolute"
