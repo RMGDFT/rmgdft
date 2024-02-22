@@ -355,7 +355,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] += sumobj_omp[idx];
 
 #pragma omp critical(init_lo2)
-        if(compute_lobject) for(int idx = 0; idx < factor* FP0_BASIS; idx++) lobject[idx] += lobject_omp[idx];
+        if(compute_lobject) for(int idx = 0; idx < pct.num_loc_ions* FP0_BASIS; idx++) lobject[idx] += lobject_omp[idx];
         delete [] sumobj_omp;
         delete [] lobject_omp;
 
