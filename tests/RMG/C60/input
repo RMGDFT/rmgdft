@@ -39,7 +39,6 @@ charge_mixing_type = "Broyden"
 charge_density_mixing = "0.7"
 kohn_sham_mucycles = "3"
 max_scf_steps="20"
-potential_acceleration_constant_step="1.0"
 write_data_period="50"
 
 # Criterion used to judge SCF convergency 
