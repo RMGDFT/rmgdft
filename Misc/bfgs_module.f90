@@ -439,7 +439,7 @@ CONTAINS
       !
       conv_bfgs = conv_bfgs .OR. ( tr_min_hit > 1 )
       !
-      WRITE(stdout, '(5X,"Energy error",T30,"= ",1PE12.1," Ha")') energy_error/2.0_DP
+      WRITE(stdout, '(/,5X,"Energy error",T30,"= ",1PE12.1," Ha")') energy_error/2.0_DP
       WRITE(stdout, '(5X,"Gradient error",T30,"= ",1PE12.1," Ha/Bohr")') grad_error/2.0_DP
       IF( lmovecell ) WRITE(stdout, &
           '(5X,"Cell gradient error",T30,"= ",1PE12.1," kbar")') &

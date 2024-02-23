@@ -159,9 +159,9 @@ void simple_lbfgs (void)
     else if(ct.md_steps > 0)
         rmg_printf("bfgs: step not accepted\n");
 
-    printf ("    bfgs: energy error    = %12.6e\n", energy_error);
-    printf ("    bfgs: gradient error  = %12.6e\n", grad_error);
-    printf ("    bfgs: cell grad error = %13.6e\n", cell_error);
+    rmg_printf ("    bfgs: energy error    = %12.6e\n", energy_error);
+    rmg_printf ("    bfgs: gradient error  = %12.6e\n", grad_error);
+    rmg_printf ("    bfgs: cell grad error = %13.6e\n\n", cell_error);
 
     // Copy back
     for (int ion = 0; ion < ct.num_ions; ion++)

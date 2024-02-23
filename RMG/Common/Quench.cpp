@@ -443,13 +443,18 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
 
-        GetNewRho(Kptr, rho);
+        double *trho = new double[ct.nspin * FP0_BASIS]();
+        double *trho_oppo = trho + FP0_BASIS;
+        for(int idx=0;idx < ct.nspin * FP0_BASIS;idx++) trho[idx] = rho[idx];
+
+        GetNewRhoPost(Kptr, trho);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             Atoms[ion].RotateForces();
         }
-        Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        Force (trho, trho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        delete [] trho;
     }
 
 
