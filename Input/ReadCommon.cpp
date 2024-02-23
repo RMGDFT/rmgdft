@@ -409,7 +409,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Type of lda+u implementation. ", 
             "lda+u type not available. ", LDAU_OPTIONS);
 
-    If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "Fast Relax",
+    If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "LBFGS",
             CHECK_AND_TERMINATE, OPTIONAL, relax_method,
             "Type of relaxation method to use for structural optimizations. ", 
             "relax_method not supported. ", MD_OPTIONS);
