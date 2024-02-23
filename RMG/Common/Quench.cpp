@@ -443,7 +443,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
 
-        GetNewRhoPost(Kptr, rho);
+        GetNewRho(Kptr, rho);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
