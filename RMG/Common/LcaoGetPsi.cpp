@@ -268,38 +268,53 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
     /*Initialize any additional states to random start*/
     if ( nstates > state_count)
     {
-        int ix, iy, iz;
-        int xoff, yoff, zoff;
 
         int NX_GRID = get_NX_GRID();
         int NY_GRID = get_NY_GRID();
         int NZ_GRID = get_NZ_GRID();
-        double *xrand = new double[ct.noncoll_factor*NX_GRID];
-        double *yrand = new double[ct.noncoll_factor*NY_GRID];
-        double *zrand = new double[ct.noncoll_factor*NZ_GRID];
+        BaseGrid *LG = new BaseGrid(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        int rank = Rmg_G->get_rank();
+        MPI_Comm lcomm;
+        MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
+        LG->set_rank(0, lcomm);
+        Pw *pwave = new Pw(*LG, Rmg_L, 1, false);
+        double tpiba = 2.0*PI / Rmg_L.celldm[0];
+        double crds[3], xtal[3];
+        int half_size = pwave->pbasis;
+        std::vector<int> index_sort(half_size);
+        std::vector<int>gm(half_size);
 
-        pe2xyz (pct.gridpe, &ix, &iy, &iz);
+
+        for(int ix = 0; ix<NX_GRID; ix++){
+            for(int iy = 0; iy<NY_GRID; iy++){
+                for(int iz = 0; iz<NZ_GRID; iz++){
+                    int idx = ix * NZ_GRID * NY_GRID + iy * NZ_GRID + iz;
+                    gm[idx] = 0;
+                    if(iz >= NZ_GRID/2) gm[idx]  = 1;
+                    if(iz == 0 && iy > NY_GRID/2) gm[idx]  = 1;
+                    if(iz == 0 && iy == 0 && ix > NX_GRID/2) gm[idx]  = 1;
+
+                }
+            }
+        }
+
+
+        for(int idx = 0; idx < half_size; idx++) index_sort[idx] = idx;
+        std::stable_sort(index_sort.begin(), index_sort.end(), [&](int i1, int i2) { return pwave->gmags[i1] < pwave->gmags[i2]; } );   
+
+        int xoff, yoff, zoff;
+
+
         xoff = PX_OFFSET;
         yoff = PY_OFFSET;
         zoff = PZ_OFFSET;
-
-        /* Initialize the random number generator */
-        idum = 3356 + kidx;
-        rand0 (&idum);
 
 
         for (int st = state_count; st < nstates; st+=ct.noncoll_factor)
         {
 
-            /* Generate x, y, z random number sequences */
-            for (int idx = 0; idx < ct.noncoll_factor*NX_GRID; idx++)
-                xrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < ct.noncoll_factor*NY_GRID; idx++)
-                yrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < ct.noncoll_factor*NZ_GRID; idx++)
-                zrand[idx] = rand0 (&idum) - 0.5;
-
             int idx = 0;
+            int idx_pwave = index_sort[st - state_count/ct.noncoll_factor  ];
             for (int ix = 0; ix < PX0_GRID; ix++)
             {
 
@@ -308,9 +323,22 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
                     for (int iz = 0; iz < PZ0_GRID; iz++)
                     {
+                        xtal[0] = (xoff+ix)/(double)NX_GRID;
+                        xtal[1] = (yoff+iy)/(double)NY_GRID;
+                        xtal[2] = (zoff+iz)/(double)NZ_GRID;
+                        Rmg_L.to_cartesian(xtal, crds);
+                        double theta = crds[0] * (tpiba*pwave->g[idx_pwave].a[0] ) +
+                            crds[1] * (tpiba*pwave->g[idx_pwave].a[1] ) +
+                            crds[2] * (tpiba*pwave->g[idx_pwave].a[2] );
 
-                        states[st].psi[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];
-                        states[st].psi[idx] = states[st].psi[idx] * states[st].psi[idx];
+                        if(gm[idx_pwave] == 1)
+                        {
+                            states[st].psi[idx] = sin(theta);
+                        }
+                        else
+                        {
+                            states[st].psi[idx] = cos(theta);
+                        }
                         if(ct.noncoll)
                         {
                             states[st].psi[idx + pbasis] = 0.0;
@@ -323,14 +351,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                 }                   /* end for */
             }                       /* end for */
 
-
-
-
         }                           /* end for */
-
-        delete [] zrand;
-        delete [] yrand;
-        delete [] xrand;
 
     }
 
