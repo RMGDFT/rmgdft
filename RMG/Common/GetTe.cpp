@@ -86,6 +86,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double t1;
     double vel, cvel, ES_pa = 0.0;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
+    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
 
     FP0_BASIS = get_FP0_BASIS();

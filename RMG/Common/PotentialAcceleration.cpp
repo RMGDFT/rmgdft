@@ -106,8 +106,10 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
     int offset = (sp->istate / skip) * pbasis;
 
     double t1 = 2.0 * PI * ct.potential_acceleration_constant_step;
+    // We turn off potential acceleration for states at the top of the valence band.
+    double d1=0.8*ct.nel / (2.0 / (double)ct.nspin);
+    if(sp->istate > std::floor(d1)) t1 = 0.0;
     if(sp->occupation[0] < 0.5) t1 = 0.0;
-
     vtot_sync_mutex.lock();
     double scale = kptr->kp.kweight / (double)ct.noncoll_factor;
     for(int idx = 0;idx <pbasis;idx++) {
