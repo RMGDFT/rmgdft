@@ -228,8 +228,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     } // end switch
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     scalapack_groups = pct.grid_npes;
+    // all tddft propergating will use 1 gpu only, not sure the speed comparison with scalapack for a large system 
 #endif
     int last = 1;
     numst = ct.num_states; 
