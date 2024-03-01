@@ -107,7 +107,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
 
     double t1 = 2.0 * PI * ct.potential_acceleration_constant_step;
     // We turn off potential acceleration for states at the top of the valence band.
-    double d1=0.8*ct.nel / (2.0 / (double)ct.nspin);
+    double d1=0.9*ct.nel / 2.0;
     if(sp->istate > std::floor(d1)) t1 = 0.0;
     if(sp->occupation[0] < 0.5) t1 = 0.0;
     vtot_sync_mutex.lock();

@@ -268,7 +268,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     /* wavefunctions have changed, projectors have to be recalculated
      * but if we are using potential acceleration and not well converged yet
      * it is counterproductive to do so */
-    //if(!potential_acceleration || (potential_acceleration && (ct.rms <  1.0e-3)))
+    if(!potential_acceleration)
     {
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, weight);
