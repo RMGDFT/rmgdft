@@ -632,7 +632,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Max radius of atomic orbitals to be used in LDA+U projectors. ",
             "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0. ", LDAU_OPTIONS);
 
-    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
+    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 1.0, 
             CHECK_AND_FIX, OPTIONAL, 
             "When set to a non-zero value this parameter causes RMG to "
             "perform a band by band update of the self-consistent potential "
@@ -644,7 +644,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "with Linear mixing. Even when the davidson solver is chosen this parameter "
             "may be used since the first few steps with davidson usually uses the "
             "multigrid solver.",
-            "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
+            "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -1669,7 +1669,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
         lc.potential_acceleration_constant_step = 0.0;
-        std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
+        if(pct.worldrank == 0)
+            std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
+    }
+
+    // Potential acceleration is disabled for Pulay or Broyden mixing
+    if(Verify("charge_mixing_type","Pulay", InputMap) || Verify("charge_mixing_type","Broyden", InputMap)) {
+        lc.potential_acceleration_constant_step = 0.0;
+        if(pct.worldrank == 0)
+            std::cout << "You have selected Pulay or Broyden mixing so potential acceleration is disabled." << std::endl;
     }
 
     // Debug code
