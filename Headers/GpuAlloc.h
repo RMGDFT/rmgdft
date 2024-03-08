@@ -37,6 +37,7 @@ void FreeHostOrDevice(void *ptr);
 #define GPUBLAS_SIDE_LEFT HIPBLAS_SIDE_LEFT
 #define GPUBLAS_SIDE_RIGHT HIPBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N HIPBLAS_OP_N
+#define GPUBLAS_OP_T HIPBLAS_OP_T
 #define gpuCpuDeviceId hipCpuDeviceId
 #define gpuStream_t hipStream_t
 
@@ -72,6 +73,7 @@ hipError_t gpuGetDeviceCount(int *count);
 #define GPUBLAS_SIDE_LEFT CUBLAS_SIDE_LEFT
 #define GPUBLAS_SIDE_RIGHT CUBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N CUBLAS_OP_N
+#define GPUBLAS_OP_T CUBLAS_OP_T
 #define gpuCpuDeviceId cudaCpuDeviceId
 #define gpuStream_t hipStream_t
 
