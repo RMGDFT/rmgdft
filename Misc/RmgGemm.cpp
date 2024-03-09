@@ -118,6 +118,28 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
         return;
     }
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<float>)))
+    {
+        custat = cublasXtCgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+                            (cuComplex *)&alpha,
+                            (cuComplex*)A, lda,
+                            (cuComplex*)B, ldb,
+                            (cuComplex*)&beta, (cuComplex*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtCgemm");
+        return;
+    }
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(float)))
+    {
+        custat = cublasXtSgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+                            (float*)&alpha,
+                            (float*)A, lda,
+                            (float*)B, ldb,
+                            (float*)&beta, (float*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtSgemm");
+        return;
+    }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
         custat = cublasXtDgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
