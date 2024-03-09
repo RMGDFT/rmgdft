@@ -136,7 +136,7 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
     int     M     = *(p_M)    ;  //  [in]  :  total  size of matrix (2*Nbasis*Nbasis)
     double  thrs  = *(p_thrs) ;  //  [in]  :  convergence threshold
 
-    double  err   = abs(C[0]) ;  //  [out] :   error= abs of max element in the matrix
+    double  err               ;  //  [out] :   error= abs of max element in the matrix
     int    ierr   =   0       ;  //  [out] :   location of err in matrix/vector
     bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
 
@@ -144,11 +144,17 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
     my_sync_device();
 #if CUDA_ENABLED || HIP_ENABLED
     int idx;
+#if HIP_ENABLED
     hipblasIdamax(ct.gpublas_handle, M, C, 1, &idx);
-    err = abs(C[idx]);
+#endif
+#if CUDA_ENABLED
+    cublasIdamax(ct.gpublas_handle, M, C, 1, &idx);
+#endif
+    gpuMemcpy(&err, &C[idx], sizeof(double), gpuMemcpyDeviceToHost);
+    err = abs(err);
     ierr = idx;
 #else
-    //err = abs(C[0]); 
+    err = abs(C[0]); 
     for (int i=0; i <M ;i++) {
         double err_tmp = abs(C[i]) ; 
         if (err_tmp > err) {
@@ -210,7 +216,6 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
     /* ----  P1=P0 ,  dP=P0   ---- */
     dcopy_driver(Nsq2,  P0, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
     dcopy_driver(Nsq2,  P0, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-
     while ( iter  <= maxiter && tConv ==  false ) {
         double alpha     =  1.0e0 /iter ;
         double neg_alpha = -alpha       ;

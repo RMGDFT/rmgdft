@@ -48,19 +48,19 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
     Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
 
     /* query working space of getrf */
-    Cusolver_status(cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, A, n, &lwork));
+    Cusolver_status(cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, &lwork));
 
     Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork * 2));
 
     /*  LU factorization */
-    Cusolver_status(cusolverDnZgetrf(ct.cusolver_handle, n, n, A, n, d_work, d_Ipiv, d_info));
+    Cusolver_status(cusolverDnZgetrf(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, (cuDoubleComplex*)d_work, d_Ipiv, d_info));
 
 
     /*
      *  solve A*X = B
      */
-    Cusolver_status(cusolverDnDgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
-                                        A, n, d_Ipiv, B, n, d_info));
+    Cusolver_status(cusolverDnZgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
+                                        (cuDoubleComplex*)A, n, d_Ipiv, (cuDoubleComplex*)B, n, d_info));
 
     /* free resources */
     Cuda_error(cudaFree(d_Ipiv));
