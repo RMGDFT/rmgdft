@@ -25,6 +25,8 @@
 
 #define         dgemm           RMG_FC_GLOBAL(dgemm, DGEMM)
 #define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
+#define         cgemm           RMG_FC_GLOBAL(cgemm, CGEMM)
+#define         sgemm           RMG_FC_GLOBAL(sgemm, SGEMM)
 
 
 #if SYCL_ENABLED
@@ -34,7 +36,9 @@
 #else
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+void sgemm(const char *, const char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *);
 void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
+void cgemm(const char *, const char *, int *, int *, int *, std::complex<float> *, std::complex<float> *, int *, std::complex<float> *, int *, std::complex<float> *, std::complex<float> *, int *);
 }
 #endif
 
@@ -52,9 +56,16 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
                                   double, double *, int);
 
+template void RmgGemm<float>(char *, char *, int, int, int, float, float *, int, float *, int, 
+                                  float, float *, int);
+
 template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
                       std::complex<double> *, int, std::complex<double> *, int, 
                       std::complex<double>, std::complex<double> *, int);
+
+template void RmgGemm<std::complex<float> >(char *, char *, int, int, int, std::complex<float>, 
+                      std::complex<float> *, int, std::complex<float> *, int, 
+                      std::complex<float>, std::complex<float> *, int);
 
 
 template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
@@ -267,6 +278,46 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         ProcessGpublasError(hipstat);
         RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZgemm");
     }
+    else if(typeid(DataType) == typeid(std::complex<float>)) {
+        std::complex<float> *dA=(std::complex<float> *)A, *dB=(std::complex<float> *)B, *dC=(std::complex<float> *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<float>));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<float>));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<float>));
+        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<float>));
+        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<float>));
+        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<float>));
+        hipstat = hipblasCgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+                            (hipblasDoubleComplex *)&alpha,
+                            (hipblasDoubleComplex*)dA, lda,
+                            (hipblasDoubleComplex*)dB, ldb,
+                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<float>));
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
+        ProcessGpublasError(hipstat);
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasCgemm");
+    }
+    else if(typeid(DataType) == typeid(float)) {
+        float *dA=(float *)A, *dB=(float *)B, *dC=(float *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(float));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(float));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(float));
+        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(float));
+        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(float));
+        if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(float));
+        hipstat = hipblasSgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+                            (float*)&alpha,
+                            (float*)dA, lda,
+                            (float*)dB, ldb,
+                            (float*)&beta, (float*)dC, ldc );
+        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(float));
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
+        ProcessGpublasError(hipstat);
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasSgemm");
+    }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
@@ -285,7 +336,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
         ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasDgemm");
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hiplasDgemm");
     }
 
     //hipDeviceSynchronize();
@@ -343,6 +394,14 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         else
             zgemm(transa, transb, &m, &n, &k, (std::complex<double> *)&alpha, (std::complex<double> *)A, &lda,
             (std::complex<double> *)B, &ldb, (std::complex<double> *)&beta, (std::complex<double> *)C, &ldc);
+    }
+    else if(typeid(DataType) == typeid(std::complex<float>)) {
+            cgemm(transa, transb, &m, &n, &k, (std::complex<float> *)&alpha, (std::complex<float> *)A, &lda,
+             (std::complex<float> *)B, &ldb, (std::complex<float> *)(&beta), (std::complex<float> *)C, &ldc);
+    }
+    else if(typeid(DataType) == typeid(float)) {
+        sgemm(transa, transb, &m, &n, &k, (float *)&alpha, (float *)A, &lda, 
+        (float *)B, &ldb, (float *)&beta, (float *)C, &ldc);
     }
     else {
         dgemm(transa, transb, &m, &n, &k, (double *)&alpha, (double *)A, &lda, 
