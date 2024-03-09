@@ -327,10 +327,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<float>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<float>));
         hipstat = hipblasCgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda,
-                            (hipblasDoubleComplex*)dB, ldb,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+                            (hipblasComplex *)&alpha,
+                            (hipblasComplex*)dA, lda,
+                            (hipblasComplex*)dB, ldb,
+                            (hipblasComplex*)&beta, (hipblasComplex*)dC, ldc );
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<float>));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -365,7 +365,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        if(!c_dev && std:::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
+        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
         hipstat = hipblasDgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
