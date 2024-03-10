@@ -182,6 +182,7 @@ protected:
 #define		pcheev		RMG_FC_GLOBAL(pcheev, PCHEEV)
 #define		pspocon		RMG_FC_GLOBAL(pspocon, PSPOCON)
 #define		pdgemm		RMG_FC_GLOBAL(pdgemm, PDGEMM)
+#define		psgemm		RMG_FC_GLOBAL(psgemm, PSGEMM)
 #define		pdlaset		RMG_FC_GLOBAL(pdlaset, PDLASET)
 #define		pzgemm		RMG_FC_GLOBAL(pzgemm, PZGEMM)
 #define		pdgesv		RMG_FC_GLOBAL(pdgesv, PDGESV)
@@ -237,6 +238,9 @@ void pzgesv (int *, int *, std::complex<double> *, int * , int *, int *, int *, 
         int *, int *, int *, int *);
 void pdgemm (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
+             int *, int *, int *);
+void psgemm (char *, char *, int *, int *, int *, float *, float *, int *,
+             int *, int *, float *, int *, int *, int *, float *, float *,
              int *, int *, int *);
 void pzgemm (char *, char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *,
              int *, int *, std::complex<double> *, int *, int *, int *, std::complex<double> *, std::complex<double> *,
