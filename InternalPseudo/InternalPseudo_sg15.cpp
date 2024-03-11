@@ -111,7 +111,7 @@ std::unordered_map<std::string, unsigned int> SG15_FILES_LEN ({
 {"B" , 73975},
 {"CA" , 106057},
 {"CD" , 119989},
-{"CL" , 79974},
+{"CL" , 34598},
 {"CO" , 114174},
 {"CR" , 113468},
 {"C" , 74025},
