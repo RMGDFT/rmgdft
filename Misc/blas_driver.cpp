@@ -83,6 +83,15 @@ void dcopy_driver (int n, double *A, int ia, double *B, int ib)
 #endif
 }
 
+void scopy_driver (int n, float *A, int ia, float *B, int ib) 
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasScopy (ct.gpublas_handle, n, A, ia, B, ib);
+#else
+    scopy (&n, A, &ia, B, &ib);
+#endif
+}
 
 void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib) 
 {
@@ -91,6 +100,16 @@ void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib)
     gpublasDaxpy (ct.gpublas_handle, n, &alpha, A, ia, B, ib);
 #else
     daxpy (&n, &alpha, A, &ia, B, &ib);
+#endif
+}
+
+void saxpy_driver (int n, float alpha, float *A, int ia, float *B, int ib) 
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasSaxpy (ct.gpublas_handle, n, &alpha, A, ia, B, ib);
+#else
+    saxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
 }
 
@@ -117,7 +136,7 @@ double *C, int ic, int jc, int *descc)
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if(nprow*npcol <1) 
     {
-        printf ("error in zgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
+        printf ("error in dgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -126,7 +145,7 @@ double *C, int ic, int jc, int *descc)
 
     if(nprow*npcol != 1)
     {
-        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -137,6 +156,49 @@ double *C, int ic, int jc, int *descc)
     if(nprow*npcol > 1)  
     {
         pdgemm (transa, transb, &m, &n, &k, &alpha, A, &ia, &ja, desca,
+                B, &ib, &jb, descb, &beta, C, &ic, &jc, descc);
+    }
+    else
+    {
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+    }
+
+
+}
+
+void sgemm_driver (char *transa, char *transb, int m, int n, int k, 
+float alpha, float *A, int ia, int ja, int *desca,
+float *B, int ib, int jb, int *descb, float beta, 
+float *C, int ic, int jc, int *descc)
+{
+
+    int nprow, npcol, myrow, mycol;
+    int lda=desca[8], ldb=descb[8], ldc = descc[8];
+    int ictxt = desca[1];
+
+    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    if(nprow*npcol <1) 
+    {
+        printf ("error in sgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+
+#if CUDA_ENABLED || HIP_ENABLED
+
+    if(nprow*npcol != 1)
+    {
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+
+#endif
+
+    //  use scalapack if nprow * npcol > 1
+    if(nprow*npcol > 1)  
+    {
+        psgemm (transa, transb, &m, &n, &k, &alpha, A, &ia, &ja, desca,
                 B, &ib, &jb, descb, &beta, C, &ic, &jc, descc);
     }
     else

@@ -44,9 +44,11 @@
 
 #define		sger		RMG_FC_GLOBAL(sger, SGER)
 #define		dger		RMG_FC_GLOBAL(dger, DGER)
+#define		saxpy		RMG_FC_GLOBAL(saxpy, SAXPY)
 #define		daxpy		RMG_FC_GLOBAL(daxpy, DAXPY)
 #define		zaxpy		RMG_FC_GLOBAL(zaxpy, ZAXPY)
 #define		dzasum		RMG_FC_GLOBAL(dzasum, DZASUM)
+#define		scopy		RMG_FC_GLOBAL(scopy, SCOPY)
 #define		dcopy		RMG_FC_GLOBAL(dcopy, DCOPY)
 #define		zcopy		RMG_FC_GLOBAL(zcopy, ZCOPY)
 #define		ddot		RMG_FC_GLOBAL(ddot, DDOT)
@@ -143,8 +145,10 @@ void dtrtri(const char *UPLO, const char *DIAG, int *N, double *A, int *LDA, int
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
 double dlange(const char *norm, int *m, int *n, double *A, int *lda, double *work);
+void saxpy (int *n, float * alpha, float * x, int *incx, float * y, int *incy);
 void daxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
 void dscal (int *n, double * alpha, double * x, int *incx);
+void scopy (int *n, float * x, int *incx, float * y, int *incy);
 void dcopy (int *n, double * x, int *incx, double * y, int *incy);
 double ddot (int *n, double * x, int *incx, double * y, int *incy);
 double dnrm2 (int *n, double * x, int *incx);

@@ -6,7 +6,9 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) ;
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum);
 void dcopy_driver (int n, double *A, int ia, double *B, int ib) ;
+void scopy_driver (int n, float *A, int ia, float *B, int ib) ;
 void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib) ;
+void saxpy_driver (int n, float alpha, float *A, int ia, float *B, int ib) ;
 void dscal_driver(int n, double beta, double *A, int ione);
 void zgemm_driver (char *transa, char *transb, int m, int n, int k,
 std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,
@@ -16,6 +18,10 @@ void dgemm_driver (char *transa, char *transb, int m, int n, int k,
 double alpha, double *A, int ia, int ja, int *desca,
 double *B, int ib, int jb, int *descb, double beta,
 double *C, int ic, int jc, int *descc);
+void sgemm_driver (char *transa, char *transb, int m, int n, int k,
+float alpha, float *A, int ia, int ja, int *desca,
+float *B, int ib, int jb, int *descb, float beta,
+float *C, int ic, int jc, int *descc);
 void my_sync_device();
 
 #endif
