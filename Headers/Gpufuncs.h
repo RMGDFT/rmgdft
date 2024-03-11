@@ -115,12 +115,14 @@ int getThreadId(void);
 void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
+void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
                         int eig_start,
                         int eig_stop,
                         cublasHandle_t cublasH);
+void GpuEleMul(double *dx, double *dy, int n, cudaStream_t stream);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream);
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream);
 template <typename T>
@@ -139,7 +141,9 @@ cudaStream_t getGpuStream(void);
 #include <hip/hip_complex.h>
 void init_hip_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
+void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
+void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
 template <typename T>

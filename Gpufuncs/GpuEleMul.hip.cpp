@@ -29,6 +29,12 @@
 #include <hip/hip_ext.h>
 #include "Gpufuncs.h"
 
+__global__ void MulVec(double *dx, double *dy, size_t n)
+{
+    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (size_t i = idx; i < n; i += gridDim.x * blockDim.x) dy[i] = dy[i] * dx[i];
+}
+
 __global__ void MulVec(double *dx, hipDoubleComplex *dy, int n)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -39,6 +45,15 @@ __global__ void MulVec1(double *dx, hipFloatComplex *dy, int n)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (int i = idx; i < n; i += gridDim.x * blockDim.x) dy[i] = make_hipFloatComplex(hipCrealf(dy[i]) * dx[i], hipCimagf(dy[i]) * dx[i]);
+}
+
+void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream)
+{
+    hipStreamSynchronize(stream);
+    int blockSize = 128;
+    int numBlocks = (n + blockSize - 1) / n;
+    hipLaunchKernelGGL(MulVec, dim3(numBlocks), dim3(blockSize), 0, stream, dx, dy, n);
+    hipStreamSynchronize(stream);
 }
 
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream)

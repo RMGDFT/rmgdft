@@ -51,7 +51,7 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
-void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_matrix, int numst);
+void GetNewRho_rmgtddft (double *psi, double *psi_dev, double *xpsi, double *rho, double *rho_matrix, int numst);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);

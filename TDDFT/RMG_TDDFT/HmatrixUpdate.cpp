@@ -99,20 +99,17 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
     }
 
 #if CUDA_ENABLED || HIP_ENABLED
-    static KpointType *psi_dev;
+    KpointType *psi_dev = (KpointType *)kptr->psi_dev;
+    KpointType *work_dev = (KpointType *)kptr->work_dev;
     static double *v_dev;
-    static KpointType *work_dev;
     gpublasStatus_t gstat;
-    if(!psi_dev)
+    if(!v_dev)
     {
-        gpuMalloc((void **)&psi_dev, psi_alloc);
-        gpuMemcpy(psi_dev, kptr->orbital_storage, psi_alloc, gpuMemcpyDeviceToHost);
         gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
         RmgGpuError(__FILE__, __LINE__, gpuHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
     }
 
     gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
-    gpuMalloc((void **)&work_dev, psi_alloc);
     gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
                          (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
     RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
@@ -148,10 +145,6 @@ DeviceSynchronize();
 
     // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
-
-#if CUDA_ENABLED || HIP_ENABLED
-    gpuFree(work_dev);
-#endif
 
 }
 

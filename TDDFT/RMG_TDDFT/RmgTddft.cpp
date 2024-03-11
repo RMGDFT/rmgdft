@@ -333,12 +333,24 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     vtot_psi = new double[P0_BASIS];
     double time_step = ct.tddft_time_step;
 
+#if CUDA_ENABLED || HIP_ENABLED
+    // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
+    // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
+    int pbasis = Kptr[0]->pbasis;
+    size_t psi_alloc = (size_t)ct.max_states * (size_t)pbasis * sizeof(OrbitalType);
+    gpuMalloc((void **)&Kptr[0]->psi_dev, psi_alloc);
+    gpuMalloc((void **)&Kptr[0]->work_dev, psi_alloc);
+#endif
+
     if(ct.restart_tddft)
     {
 
         ReadData (ct.infile, vh, rho, vxc, Kptr);
         ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps, n2);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+#if CUDA_ENABLED || HIP_ENABLED
+        gpuMemcpy(Kptr[0]->psi_dev, Kptr[0]->orbital_storage, psi_alloc, gpuMemcpyHostToDevice);
+#endif
 
     }
     else
@@ -357,6 +369,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         {
             throw RmgFatalException() << " TDDFT mode not defined: "<< ct.tddft_mode<< __FILE__ << " at line " << __LINE__ << "\n";
         }
+
+#if CUDA_ENABLED || HIP_ENABLED
+        gpuMemcpy(Kptr[0]->psi_dev, Kptr[0]->orbital_storage, psi_alloc, gpuMemcpyHostToDevice);
+#endif
 
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);
         Sp->CopySquareMatrixToDistArray(matrix_glob, Akick, numst, desca);
@@ -509,8 +525,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
             my_sync_device();
-
-            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, matrix_glob, numst);
+#if CUDA_ENABLED || HIP_ENABLED
+            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, (double *)Kptr[0]->psi_dev, (double *)Kptr[0]->work_dev, rho, matrix_glob, numst);
+#else
+            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, (double *)Kptr[0]->psi_dev, xpsi, rho, matrix_glob, numst);
+#endif
             delete(RT2a);
 
             dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
@@ -593,6 +612,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     }
 
+#if CUDA_ENABLED || HIP_ENABLED
+    gpuFree(Kptr[0]->work_dev);
+    gpuFree(Kptr[0]->psi_dev);
+#endif
     if(pct.gridpe == 0) fclose(dfi);
 
 

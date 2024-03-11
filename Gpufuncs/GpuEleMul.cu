@@ -34,6 +34,12 @@
 #include <cuComplex.h>
 
 
+__global__ void MulVec(double *dx, double *dy, int n)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int i = idx; i < n; i += gridDim.x * blockDim.x) dy[i] = dy[i] * dx[i];
+}
+
 __global__ void MulVec(double *dx, cuDoubleComplex *dy, int n)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -44,6 +50,15 @@ __global__ void MulVec1(double *dx, cuFloatComplex *dy, int n)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (int i = idx; i < n; i += gridDim.x * blockDim.x) dy[i] = make_cuFloatComplex(cuCrealf(dy[i]) * dx[i], cuCimagf(dy[i]) * dx[i]);
+}
+
+void GpuEleMul(double *dx, double *dy, int n, cudaStream_t stream)
+{
+    cudaStreamSynchronize(stream);
+    int blockSize = 128;
+    int numBlocks = (n + blockSize - 1) / n;
+    MulVec<<<numBlocks, blockSize, 0, stream>>>(dx, dy, n);
+    cudaStreamSynchronize(stream);
 }
 
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream)

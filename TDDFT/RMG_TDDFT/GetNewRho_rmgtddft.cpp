@@ -20,6 +20,7 @@
 #include "transition.h"
 #include "prototypes_on.h"
 #include "Kbpsi.h"
+#include "Gpufuncs.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -31,34 +32,42 @@
 
 
 
-void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_matrix, int numst)
+void GetNewRho_rmgtddft (double *psi, double *psi_dev, double *xpsi, double *rho, double *rho_matrix, int numst)
 {
     int idx;
 
     /* for parallel libraries */
 
     int st1;
-    double *rho_temp;
 
     double one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();
-
-    rho_temp = new double[pbasis];
+    //static double *rho_temp, *rho_temp_dev;
+    //if(!rho_temp) rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
+    //if(!rho_temp_dev) gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
+double *rho_temp, *rho_temp_dev;
+rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
+gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
 
     for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
     if(numst > 0)
     {
-        
-
+#if CUDA_ENABLED || HIP_ENABLED 
+        // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
+        // the reduction over numst.
+        RmgGemm ("N", "N", pbasis, numst, numst, one, 
+                psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
+        GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
+        gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
+#else
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
-        my_sync_device();
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += psi[st1 * pbasis + idx] * xpsi[st1 * pbasis + idx];
-
+#endif
     }
 
 
@@ -107,7 +116,6 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
     rmg_printf ("normalization constant-1 for new charge is %f\n", t1-1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
-    delete [] rho_temp;
-
-
+    gpuFree(rho_temp_dev);
+    RmgFreeHost(rho_temp);
 }
