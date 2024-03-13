@@ -53,17 +53,6 @@
 #include "blas_driver.h"
 #include "GpuAlloc.h"
 
-#if HIP_ENABLED
-    #if USE_NCCL
-        #include <rccl/rccl.h>
-    #endif
-#endif
-#if CUDA_ENABLED
-    #if USE_NCCL
-        #include <nccl/nccl.h>
-    #endif
-#endif
-
 
 void  init_point_charge_pot(double *vtot_psi, int density);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int

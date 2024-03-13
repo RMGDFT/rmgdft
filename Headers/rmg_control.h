@@ -8,7 +8,7 @@
     #include <cublas_v2.h>
     #include <cublasXt.h>
     #if USE_NCCL
-        #include <nccl/rccl.h>
+        #include <nccl.h>
     #endif
 #endif
 

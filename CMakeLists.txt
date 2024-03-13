@@ -703,6 +703,13 @@ if(RMG_CUDA_ENABLED)
     # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
     add_definitions(-DCUDA_VERSION_MAJOR=${CUDAToolkit_VERSION_MAJOR})
     add_definitions(-DCUDA_VERSION_MINOR=${CUDAToolkit_VERSION_MINOR})
+    if(USE_NCCL_OR_RCCL)
+        find_package(NCCL REQUIRED)
+        if(NCCL_FOUND)
+            list(APPEND RMGLIBS ${NCCL_LIBRARIES})
+            include_directories(${NCCL_INCLUDES})
+        endif()
+    endif()
 endif()
 
 
