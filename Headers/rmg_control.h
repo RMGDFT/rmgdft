@@ -7,6 +7,9 @@
     #include <cusolverDn.h>
     #include <cublas_v2.h>
     #include <cublasXt.h>
+    #if USE_NCCL
+        #include <nccl/rccl.h>
+    #endif
 #endif
 
 #if HIP_ENABLED
@@ -14,6 +17,9 @@
     #include <rocsolver/rocsolver.h>
     #include <hip/hip_runtime_api.h> // for hip functions
     #include <hipsolver/hipsolver.h> // for all the hipsolver C interfaces and type declarations
+    #if USE_NCCL
+        #include <rccl/rccl.h>
+    #endif
 #endif
 
 #if SYCL_ENABLED
@@ -748,7 +754,11 @@ public:
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
     bool use_cublasxt;
-
+#if USE_NCCL
+    ncclUniqueId nccl_nd_id;  
+    ncclComm_t nccl_world_comm;
+    ncclComm_t nccl_local_comm;
+#endif
 #endif
 
 #if HIP_ENABLED
@@ -770,7 +780,11 @@ public:
     rocsolver_handle roc_handle;
     hipsolverHandle_t hipsolver_handle;
     bool use_cublasxt;
-
+#if USE_NCCL
+    ncclUniqueId nccl_nd_id;  
+    ncclComm_t nccl_world_comm;
+    ncclComm_t nccl_local_comm;
+#endif
 #endif
 
 #if SYCL_ENABLED
