@@ -77,6 +77,7 @@ set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentia
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
+set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
@@ -156,6 +157,9 @@ if(USE_INTERNAL_SCALAPACK)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration")
 endif()
 
+if(USE_NCCL_OR_RCCL)
+    add_definitions(-DUSE_NCCL=1)
+endif()
 
 # Standard modules for platform checks
 include (CheckFunctionExists)
@@ -350,6 +354,15 @@ if(RMG_HIP_ENABLED)
         message(STATUS "Found hipsolver: " ${hipsolver_VERSION})
         list(APPEND RMGLIBS ${hipsolver_LIBRARY})
         include_directories("${hipsolver_INCLUDE_DIR}")
+    endif()
+    if(USE_NCCL_OR_RCCL)
+        find_package(rccl REQUIRED)
+        if(rccl_FOUND)
+            message(STATUS "Found rccl: " ${rccl_VERSION})
+            list(APPEND RMGLIBS ${ROCM_PATH}/lib/librccl.so)
+            #list(APPEND RMGLIBS ${rccl_LIBRARY})
+            include_directories("${rccl_INCLUDE_DIR}")
+        endif()
     endif()
 
 #    find_package(hipsolver REQUIRED)

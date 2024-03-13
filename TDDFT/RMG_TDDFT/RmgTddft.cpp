@@ -53,6 +53,17 @@
 #include "blas_driver.h"
 #include "GpuAlloc.h"
 
+#if HIP_ENABLED
+    #if USE_NCCL
+        #include <rccl/rccl.h>
+    #endif
+#endif
+#if CUDA_ENABLED
+    #if USE_NCCL
+        #include <nccl/nccl.h>
+    #endif
+#endif
+
 
 void  init_point_charge_pot(double *vtot_psi, int density);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
@@ -189,6 +200,17 @@ template void RmgTddft<std::complex<double> > (double *, double *, double *,
 template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double * vnuc, 
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
+
+#if USE_NCCL
+    int nlocal_ranks;
+    MPI_Comm_size(pct.local_comm, &nlocal_ranks);
+    if(pct.local_rank == 0)
+    {
+        ncclGetUniqueId(&ct.nccl_nd_id);
+    }
+    MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.local_comm);
+    ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.local_rank);
+#endif  
 
     double *vtot, *vtot_psi, *vxc_psi=NULL;
 

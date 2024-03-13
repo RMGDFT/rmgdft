@@ -25,6 +25,7 @@
 #include <hip/hip_runtime.h>
 #endif
 
+#include "Gpufuncs.h"
 
 void my_sync_device()
 {
@@ -252,3 +253,97 @@ std::complex<double> *C, int ic, int jc, int *descc)
 
 
 }
+
+
+// Used for the special case when all MPI procs share a copy of the input matrices
+// and the gemm call is repeated by all procs using the GPUs.
+void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k, 
+double alpha, double *A, int ia, int ja, int *desca,
+double *B, int ib, int jb, int *descb, double beta, 
+double *C, int ic, int jc, int *descc)
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+
+    int nprow, npcol, myrow, mycol;
+    int lda=desca[8], ldb=descb[8], ldc = descc[8];
+    int ictxt = desca[1];
+    char *trans_t="t", *trans_n="n";
+
+    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    if(nprow*npcol <1) 
+    {
+        printf ("error in mgpu_dgemm_driver nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+    if(nprow*npcol != 1)
+    {
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+    
+    if(m != n || m != k)
+    {
+        printf ("mgpu_dgemm requires m=n=k! \n");
+        fflush (NULL);
+        exit (0);
+    }
+
+#if USE_NCCL
+    // gemm split over on node GPUs and recombined with nccl
+    // local_comm contains the number of procs on this node which is also the number of GPUs
+    int nprocs, my_rank;
+    MPI_Comm_size(pct.local_comm, &nprocs);
+    ncclCommUserRank(ct.nccl_local_comm, &my_rank);
+
+    std::vector<int> start, stop, counts;
+    start.resize(nprocs);
+    stop.resize(nprocs);
+    counts.resize(nprocs);
+
+    int my_start = 0;
+    int my_stop = 0;
+    int my_step = 0;
+    int incs = m / nprocs;
+    if(m % nprocs) incs++;
+    int ioffset = 0;
+    for(int idx = 0;idx < nprocs;idx++)
+    {
+        start[idx] = ioffset;
+        stop[idx] = start[idx] + incs;
+        if(idx == (nprocs-1)) stop[idx] = m;
+        counts[idx] = stop[idx] - start[idx];
+        if(my_rank == idx)
+        {
+            my_start = start[idx];
+            my_stop = stop[idx];
+            my_step = counts[idx];
+        }
+        ioffset += counts[idx];
+        start[idx] *= m;
+        stop[idx] *= m;
+        counts[idx] *= m;
+    }
+    RmgGemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
+    size_t sendcount = counts[0];
+    ncclAllGather(&C[my_rank*sendcount], C, sendcount, ncclDouble, ct.nccl_local_comm, 0);
+#else
+    // Full gemm no nccl
+    RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+#endif
+#else
+
+    dgemm_driver (transa, transb, m, n, k, 
+    alpha, A, ia, ja, desca,
+    B, ib, jb, descb, beta, 
+    C, ic, jc, descc);
+
+#endif
+
+
+
+}
+
+

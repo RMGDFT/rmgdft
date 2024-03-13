@@ -24,4 +24,11 @@ float *B, int ib, int jb, int *descb, float beta,
 float *C, int ic, int jc, int *descc);
 void my_sync_device();
 
+void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
+double alpha, double *A, int ia, int ja, int *desca,
+double *B, int ib, int jb, int *descb, double beta,
+double *C, int ic, int jc, int *descc);
+void my_sync_device();
+
+
 #endif
