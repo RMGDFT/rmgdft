@@ -42,18 +42,48 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
     starts[0] = FPX_OFFSET;
     starts[1] = FPY_OFFSET;
     starts[2] = FPZ_OFFSET;
+    int pex, pey, pez;
+    pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
     double *array_d = (double *)array_dist;
     // number of doubles in the last dimension
     // number of lines in the output
     // numbe of char for the last dimension
-    int num_d = subsizes[2] * sizeof(T)/sizeof(double);
-    int num_lines = (num_d + 5)/6;
-    int num_char = (6 * 12 +1) * num_lines +1;
+    int nval = sizeof(T)/sizeof(double);
+    int num_d = subsizes[2] * nval;
+    // each data has 12 char %12.3e format
+    int char_per_data = 12;
+    std::vector<int> num_char_pz(pct.pe_z, 0);
+    std::vector<int> num_start_pz(pct.pe_z, 0);
+    int num_char = num_d * char_per_data;
+
+    for(int iz = 0; iz < num_d; iz++)
+    {
+        int iz_glob = iz + FPZ_OFFSET * nval;
+        if(iz_glob % 6 == 5)  num_char++;
+    }
+
+    // new line for each set of z data
+    if(pez == pct.pe_z -1) num_char++;
+
+    num_char_pz[pez] = num_char;
+
+    MPI_Allreduce(MPI_IN_PLACE, num_char_pz.data(), pct.pe_z, MPI_INT, MPI_SUM, pct.grid_comm);
+
+
+    num_start_pz[0] = 0;
+    int tot_num_char;
+    tot_num_char = num_char_pz[0]/pct.pe_x/pct.pe_y;
+
+    for(int ipz = 1; ipz < pct.pe_z; ipz++)
+    {
+        num_start_pz[ipz] = num_start_pz[ipz-1] + num_char_pz[ipz-1]/pct.pe_x/pct.pe_y;
+        tot_num_char += num_char_pz[ipz]/pct.pe_x/pct.pe_y;
+    }
+
 
     char *array_print = new char[subsizes[0] * subsizes[1] * num_char];
 
-    int nval = sizeof(T)/sizeof(double);
     if(pct.gridpe == 0 )
     {
         FILE *fhand = fopen(filename.c_str(), "w");
@@ -92,8 +122,9 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
     for (int i=0; i<subsizes[0]; i++) {
         for (int j=0; j<subsizes[1]; j++) {
             for (int k=0; k<subsizes[2] * nval; k++) {
-                int idx = i * subsizes[1] * subsizes[2] + j * subsizes[2] + k;
-                if(k%6 == 5)
+                int idx = i * subsizes[1] * subsizes[2] *nval + j * subsizes[2] *nval + k;
+                int k_glob = k + FPZ_OFFSET * nval; 
+                if(k_glob%6 == 5)
                 {
                     sprintf(buffer,  "%12.3e\n", array_d[idx]);
                     buffer += 13;
@@ -104,33 +135,27 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
                     buffer += 12;
                 }
             }
-            sprintf(buffer,  "\n");
-            buffer +=1;
+            if(pez == pct.pe_z -1 )
+            {
+                sprintf(buffer,  "\n");
+                buffer +=1;
+            }
+
 
         }
     }
 
-    int order = MPI_ORDER_C;
-
-    int tot_num_char = num_char * pct.pe_z;
     subsizes[2] = num_char;
     sizes[2] = tot_num_char;
- 
-    int pex, pey, pez;
-    pe2xyz (pct.gridpe, &pex, &pey, &pez);
-    starts[2] = pez * num_char;
-    if(sizes[2]/subsizes[2] * subsizes[2] != sizes[2])
-    {
-       printf("\n WARNING: grid not divisible by PE_Z, cube file may not be correct\n");
+    starts[2] = num_start_pz[pez];
+    int order = MPI_ORDER_C;
 
-    }
 
     MPI_Info fileinfo;
     MPI_Datatype grid_char;
     MPI_Status status;
     MPI_Offset disp;
 
-    int amode = MPI_MODE_APPEND|MPI_MODE_WRONLY;
 
 
     MPI_Type_create_subarray(3, sizes, subsizes, starts, order, MPI_CHAR, &grid_char);
@@ -142,6 +167,7 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
 
     int pbasis_char = subsizes[0] * subsizes[1] * num_char;
     MPI_Barrier(pct.grid_comm);
+    int amode = MPI_MODE_APPEND|MPI_MODE_WRONLY;
     MPI_File_open(pct.grid_comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
     MPI_File_seek(mpi_fhand, 0, MPI_SEEK_END);
     MPI_File_get_position(mpi_fhand, &disp);
