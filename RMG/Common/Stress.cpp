@@ -163,18 +163,28 @@ template void Stress<double>::Kinetic_term(Kpoint<double> **Kpin, BaseGrid &BG, 
 template void Stress<std::complex<double>>::Kinetic_term(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
 template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
 {
-    int PX0_GRID = Rmg_G->get_PX0_GRID(1);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(1);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+    int ratio = Rmg_G->default_FG_RATIO;
+    int dimx = Rmg_G->get_PX0_GRID(ratio);
+    int dimy = Rmg_G->get_PY0_GRID(ratio);
+    int dimz = Rmg_G->get_PZ0_GRID(ratio);
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
 
-    int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
+
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    static Prolong P(ratio, 10, *Rmg_T);
+    int pbasis = FP0_BASIS;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
+
+    T *psi_f = (T *)RmgMallocHost(pbasis_noncol*sizeof(T));
     T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
     T *psi_x = grad_psi;
     T *psi_y = psi_x + pbasis_noncol;
     T *psi_z = psi_x + 2*pbasis_noncol;
 
-    double vel = L.get_omega() / ((double)(BG.get_NX_GRID(1) * BG.get_NY_GRID(1) * BG.get_NZ_GRID(1)));
+    double vel = L.get_omega() / ((double)(BG.get_NX_GRID(ratio) * BG.get_NY_GRID(ratio) * BG.get_NZ_GRID(ratio)));
     T alpha;
     T one(1.0);
     T stress_tensor_T[9];
@@ -189,15 +199,22 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
         for(int st = 0; st < kptr->nstates; st++)
         {
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
-            ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
+
+            T *psi = kptr->Kstates[st].psi;
+            P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+            ApplyGradient(psi_f, psi_x, psi_y, psi_z, ct.force_grad_order, "Fine");
             if(ct.noncoll)
-                ApplyGradient(kptr->Kstates[st].psi+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Coarse");
+            {
+                psi = kptr->Kstates[st].psi + pbasis;
+                P.prolong(psi_f+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+                ApplyGradient(psi_f+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Fine");
+            }
 
             if(!ct.is_gamma)
             {
                 std::complex<double> I_t(0.0, 1.0);
                 std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
-                psi_C = (std::complex<double> *) kptr->Kstates[st].psi;
+                psi_C = (std::complex<double> *) psi_f;
                 psi_xC = (std::complex<double> *) psi_x;
                 psi_yC = (std::complex<double> *) psi_y;
                 psi_zC = (std::complex<double> *) psi_z;
@@ -224,6 +241,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
     RmgFreeHost(grad_psi);
+    RmgFreeHost(psi_f);
 }
 
 template void Stress<double>::Hartree_term(double *rho, Pw &pwaves);
@@ -315,7 +333,7 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
 
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     // How do we filter here for the noncollinear case?
-    if(Rmg_G->default_FG_RATIO > 1)
+    if(Rmg_G->default_FG_RATIO > 1 && 0)
     {
         for(int is = 0; is < ct.nspin; is++)
             FftFilter(&F->vxc2[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
@@ -958,15 +976,15 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
                                 if(ct.noncoll)
                                 {
                                     sum[ion * num_q_max + idx + sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 2*sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 3*sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
                                     // switching the derivative from Q to veff introduce Q * Veff term 
                                     // cancelling out the original Q * Veff term
                                     if(id1 == id2 && 0 )  
-                                            sum[ion * num_q_max + idx] += Qr * veff[ivec[icount]];
+                                        sum[ion * num_q_max + idx] += Qr * veff[ivec[icount]];
                                 }
                             }
                         }               /*end if (ncount) */
