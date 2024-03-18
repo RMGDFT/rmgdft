@@ -140,7 +140,7 @@ void simple_lbfgs (void)
         }
         double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
         Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
-        printf("bfgs: New volume = %12.6f\n", Rmg_L.omega);
+        rmg_printf("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
         if(pct.imgpe == 0)
         {
             printf("\n lattice a0: ");
@@ -150,14 +150,16 @@ void simple_lbfgs (void)
             printf("\n lattice a2: ");
             for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a2[i]);
             printf("\n");
+            printf("\n New cell volume = %12.6f\n", Rmg_L.omega);
+            printf("\n");
         }
 
     }
 
     if(step_accepted)
-        rmg_printf("bfgs: step accepted\n");
+        rmg_printf("    bfgs: step accepted\n");
     else if(ct.md_steps > 0)
-        rmg_printf("bfgs: step not accepted\n");
+        rmg_printf("    bfgs: step not accepted\n");
 
     rmg_printf ("    bfgs: energy error    = %12.6e\n", energy_error);
     rmg_printf ("    bfgs: gradient error  = %12.6e\n", grad_error);
