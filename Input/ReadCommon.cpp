@@ -766,6 +766,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of tddft steps to perform. ", 
             "tddft steps must be greater than 0. Resetting to the default value of 2000 ", TDDFT_OPTIONS);
 
+    If.RegisterInputKey("tddft_start_state", &lc.tddft_start_state, 0, INT_MAX, 0,
+            CHECK_AND_FIX, OPTIONAL, 
+            "the starting state to use in tddft dynamics ", 
+            "those states not including in the TDDFT will have a fixed occupations and contribute to the charge density never changes during TDDFT", TDDFT_OPTIONS);
+
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Pulay mixing is used to update the charge density.",

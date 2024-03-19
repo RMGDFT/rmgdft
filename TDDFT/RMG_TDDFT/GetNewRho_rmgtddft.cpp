@@ -21,6 +21,7 @@
 #include "prototypes_on.h"
 #include "Kbpsi.h"
 #include "Gpufuncs.h"
+#include "Kpoint.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -30,9 +31,10 @@
 #include "RmgGemm.h"
 #include "blas_driver.h"
 
-
-
-void GetNewRho_rmgtddft (double *psi, double *psi_dev, double *xpsi, double *rho, double *rho_matrix, int numst)
+template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
+template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, double *rho_matrix, int numst, int tddft_start_state);
+template <typename KpointType>
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state)
 {
     int idx;
 
@@ -45,9 +47,43 @@ void GetNewRho_rmgtddft (double *psi, double *psi_dev, double *xpsi, double *rho
     //static double *rho_temp, *rho_temp_dev;
     //if(!rho_temp) rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
     //if(!rho_temp_dev) gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
-double *rho_temp, *rho_temp_dev;
-rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
-gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
+    
+    if(!ct.norm_conserving_pp) {
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
+    }
+    if(ct.num_kpts > 1)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for kpoint \n");
+    } 
+    if(ct.nspin > 1)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for spin-polarized \n");
+    }
+    if(ct.noncoll)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for noncoll \n");
+    }
+    static double *rho_downfold = NULL;
+    if(rho_downfold == NULL)
+    {
+        rho_downfold = new double[pbasis]();
+        for (int istate = 0; istate < tddft_start_state; istate++)
+        {
+
+            double scale = kptr->Kstates[istate].occupation[0];
+
+            KpointType *psi = kptr->Kstates[istate].psi;
+
+            for (int idx = 0; idx < pbasis; idx++)
+            {
+                rho_downfold[idx] += scale * std::norm(psi[idx]);
+            }
+        }
+    }
+
+    double *rho_temp, *rho_temp_dev;
+    rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
+    gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
 
     for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
@@ -56,11 +92,15 @@ gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
 #if CUDA_ENABLED || HIP_ENABLED 
         // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
         // the reduction over numst.
+        double *psi_dev = (double *)&kptr->psi_dev[tddft_start_state * pbasis];
+        double *xpsi = (double *)kptr->work_dev;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
         GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
         gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
 #else
+        double *psi = (double *)&kptr->orbital_storage[tddft_start_state * pbasis];
+        double *xpsi = (double *)kptr->work_cpu;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
@@ -70,6 +110,7 @@ gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
 #endif
     }
 
+    for(idx = 0; idx < pbasis; idx++)rho_temp[idx] += rho_downfold[idx];
 
     /* Interpolate onto fine grid, result will be stored in rho*/
     switch (ct.interp_flag)
@@ -82,8 +123,6 @@ gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
             break;
         case FFT_INTERPOLATION:
             FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
-     //       printf("\n Fftint not yet \n");
-     //       exit(0);
             break;
 
         default:
@@ -95,11 +134,6 @@ gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
     }
 
 
-    if(!ct.norm_conserving_pp) {
-
-        printf("\n tddft not programed for ultrasoft \n");
-        exit(0);
-    }
 
     /* Check total charge. */
     ct.tcharge = ZERO;
@@ -119,3 +153,4 @@ gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
     gpuFree(rho_temp_dev);
     RmgFreeHost(rho_temp);
 }
+

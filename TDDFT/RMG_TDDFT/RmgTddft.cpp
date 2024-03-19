@@ -228,7 +228,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             break;
         case SUBDIAG_SCALAPACK:
             scalapack_groups = 1;
-            if(ct.scalapack_block_factor >= ct.num_states)
+            if(ct.scalapack_block_factor >= ct.num_states - ct.tddft_start_state)
                 scalapack_groups = pct.grid_npes;
             break;
         case SUBDIAG_CUSOLVER:
@@ -244,7 +244,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     // all tddft propergating will use 1 gpu only, not sure the speed comparison with scalapack for a large system 
 #endif
     int last = 1;
-    numst = ct.num_states; 
+    numst = ct.num_states - ct.tddft_start_state; 
     Scalapack *Sp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
             ct.scalapack_block_factor, last, pct.grid_comm);
     int Mdim = Sp->GetDistMdim();
@@ -285,7 +285,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     //    double *vh_x = new double[FP0_BASIS];
     //    double *vh_y = new double[FP0_BASIS];
     //    double *vh_z = new double[FP0_BASIS];
-    double *xpsi =(double *)RmgMallocHost((size_t)numst * (size_t)P0_BASIS*sizeof(double));
 
     double dipole_ele[3];
 
@@ -344,13 +343,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     vtot_psi = new double[P0_BASIS];
     double time_step = ct.tddft_time_step;
 
+    int pbasis = Kptr[0]->pbasis;
+    size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis * sizeof(OrbitalType);
 #if CUDA_ENABLED || HIP_ENABLED
     // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
     // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
-    int pbasis = Kptr[0]->pbasis;
-    size_t psi_alloc = (size_t)ct.max_states * (size_t)pbasis * sizeof(OrbitalType);
     gpuMalloc((void **)&Kptr[0]->psi_dev, psi_alloc);
     gpuMalloc((void **)&Kptr[0]->work_dev, psi_alloc);
+#else
+    Kptr[0]->work_cpu = new OrbitalType[psi_alloc];
 #endif
 
     if(ct.restart_tddft)
@@ -385,7 +386,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         gpuMemcpy(Kptr[0]->psi_dev, Kptr[0]->orbital_storage, psi_alloc, gpuMemcpyHostToDevice);
 #endif
 
-        HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);
+        HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);
         Sp->CopySquareMatrixToDistArray(matrix_glob, Akick, numst, desca);
 
         /* save old vhxc + vnuc */
@@ -399,7 +400,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         /*Generate the Dnm_I */
         get_ddd (vtot, vxc, true);
 
-        HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, (OrbitalType *)Smatrix);
+        //HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, (OrbitalType *)Smatrix, ct.tddft_start_state);
+        for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
+        for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].eig[0];
+
         Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
 
         my_sync_device();
@@ -433,7 +437,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
 
         for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
-        for(i = 0; i < ct.nel/2; i++)  matrix_glob[i * numst + i] = 2.0;
+        for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].occupation[0];
         Sp->CopySquareMatrixToDistArray(matrix_glob, Pn0, numst, desca);
 
 
@@ -536,11 +540,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
             my_sync_device();
-#if CUDA_ENABLED || HIP_ENABLED
-            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, (double *)Kptr[0]->psi_dev, (double *)Kptr[0]->work_dev, rho, matrix_glob, numst);
-#else
-            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, (double *)Kptr[0]->psi_dev, xpsi, rho, matrix_glob, numst);
-#endif
+            GetNewRho_rmgtddft(Kptr[0], rho, matrix_glob, numst, ct.tddft_start_state);
             delete(RT2a);
 
             dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
@@ -565,7 +565,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             RT2a = new RmgTimer("2-TDDFT: Hupdate");
-            HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);                                     
+            HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);                                     
             if( scalapack_groups != pct.grid_npes)
             {
                 Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);

@@ -265,6 +265,7 @@ public:
 
     /** Number of states. May switch between init_states and run_states */
     int num_states;
+    int tddft_start_state;
 
     /** Number of initialization states */
     int init_states;
