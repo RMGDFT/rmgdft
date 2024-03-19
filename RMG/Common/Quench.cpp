@@ -153,7 +153,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
             // Save data to file for future restart at checkpoint interval if this is a quench run.
             // For Relaxation and molecular dynamics we save at the end of each ionic step.
-            if (ct.checkpoint && (ct.scf_steps % ct.checkpoint == 0) && (ct.forceflag == MD_QUENCH))
+            if (ct.checkpoint && (ct.scf_steps % ct.checkpoint == 0) )
                 WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
             /* output the eigenvalues with occupations */
