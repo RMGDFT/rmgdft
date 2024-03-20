@@ -55,17 +55,17 @@
 #endif
 
 
-template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *);
-template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *);
+template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state);
+template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state);
 
 template <typename KpointType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state)
 {
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
-    int num_states = kptr->nstates;
+    int num_states = kptr->nstates - tddft_start_state;
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
@@ -90,7 +90,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
     // First time through allocate pinned memory for global_matrix1
     if(!global_matrix1) {
 
-        int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        int retval1 = MPI_Alloc_mem(num_states * num_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
@@ -100,13 +100,14 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
 
 #if CUDA_ENABLED || HIP_ENABLED
     KpointType *psi_dev = (KpointType *)kptr->psi_dev;
+    psi_dev = psi_dev + tddft_start_state * pbasis;
     KpointType *work_dev = (KpointType *)kptr->work_dev;
     static double *v_dev;
     gpublasStatus_t gstat;
     if(!v_dev)
     {
         gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
-        RmgGpuError(__FILE__, __LINE__, gpuHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
+        RmgGpuError(__FILE__, __LINE__, gpuHostRegister( global_matrix1, num_states * num_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
     }
 
     gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
@@ -126,15 +127,19 @@ DeviceSynchronize();
     // V|psi> is in tmp_arrayT
     tmp_arrayT = new KpointType[psi_alloc];
     for (int st1 = 0; st1 < num_states; st1++)
+    {
+        int st2 = st1 + tddft_start_state;
         for(int idx = 0; idx <pbasis; idx++)
         {
-            tmp_arrayT[st1 * pbasis + idx] = kptr->Kstates[st1].psi[idx] * vtot_eig[idx];
+            tmp_arrayT[st1 * pbasis + idx] = kptr->Kstates[st2].psi[idx] * vtot_eig[idx];
         } 
+    }
 
     // Compute A matrix
     KpointType alpha(vel);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, 
+    KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, psi, pbasis, tmp_arrayT, 
             pbasis, beta, global_matrix1, num_states);
 
     delete [] tmp_arrayT;

@@ -43,7 +43,7 @@ template <typename OrbitalType>
 void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho_oppo,
      double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename KpointType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij);
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
@@ -51,7 +51,8 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
-void GetNewRho_rmgtddft (double *psi, double *psi_dev, double *xpsi, double *rho, double *rho_matrix, int numst);
+template <typename OrbitalType> 
+void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);
