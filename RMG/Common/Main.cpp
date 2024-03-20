@@ -384,7 +384,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
 
                     OutputBandPlot(eig_all);
-                    delete eig_all;
+                    delete [] eig_all;
                 }
 
                 break;

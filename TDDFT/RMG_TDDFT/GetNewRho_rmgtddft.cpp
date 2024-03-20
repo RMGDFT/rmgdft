@@ -44,9 +44,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 
     double one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();
-    //static double *rho_temp, *rho_temp_dev;
-    //if(!rho_temp) rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
-    //if(!rho_temp_dev) gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
     
     if(!ct.norm_conserving_pp) {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
@@ -81,11 +78,15 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
         }
     }
 
+#if CUDA_ENABLED || HIP_ENABLED 
     double *rho_temp, *rho_temp_dev;
-    rho_temp  = (double *)RmgMallocHost(pbasis * sizeof(double));
+    rho_temp = (double *)GpuMallocHost(pbasis * sizeof(double));
     gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
-
+#else
+    double *rho_temp = new double[pbasis];
     for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
+#endif
+
 
     if(numst > 0)
     {
@@ -150,7 +151,11 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
     rmg_printf ("normalization constant-1 for new charge is %f\n", t1-1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
+#if CUDA_ENABLED || HIP_ENABLED 
     gpuFree(rho_temp_dev);
-    RmgFreeHost(rho_temp);
+    GpuFreeHost(rho_temp);
+#else
+    delete [] rho_temp;
+#endif
 }
 

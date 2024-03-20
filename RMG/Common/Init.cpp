@@ -222,14 +222,24 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Blocks of pinned host memory
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
     {
-        InitGpuMallocHost((size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType)); 
+        size_t palloc = (size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType);
+        palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+        InitGpuMallocHost(palloc);
     }
     else
     {
         if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid && !ct.write_qmcpack_restart)
-            InitGpuMallocHost((size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType)); 
+        {
+            size_t palloc = (size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
         else
-            InitGpuMallocHost((size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)); 
+        {
+            size_t palloc = (size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
     }
 
     // Wavefunctions are actually stored here
