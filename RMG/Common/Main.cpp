@@ -209,9 +209,6 @@ int main (int argc, char **argv)
         exit(0);
     } 
 
-    // test conditions
-    check_tests();
-
     delete(RT);   // Destructor has to run before report
     report ();
 
