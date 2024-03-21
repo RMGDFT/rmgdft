@@ -146,7 +146,8 @@ DeviceSynchronize();
 #endif
 
 
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+//    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((double *)global_matrix1, (size_t)num_states * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
     // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
