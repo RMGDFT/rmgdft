@@ -367,7 +367,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("dipole_moment", &lc.dipole_moment, false, 
                         "Turns on calculation of dipole moment for the entire cell.");
 
-    If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
+    If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Fine",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
                      "Type of grid to use when computing vdw-df correlation. ", 
                      "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating. ", CONTROL_OPTIONS);
