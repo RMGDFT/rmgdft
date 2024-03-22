@@ -1385,6 +1385,41 @@ Pw::~Pw(void)
 
   if(Grid->get_NPES() == 1)
   {
+#if CUDA_ENABLED
+      for (int i = 0; i < num_streams; i++)
+      {
+         cufftDestroy(gpu_plans[i]);
+         cufftDestroy(gpu_plans_f[i]);
+         cufftDestroy(gpu_plans_r2c[i]);
+         cufftDestroy(gpu_plans_c2r[i]);
+         cufftDestroy(gpu_plans_d2z[i]);
+         cufftDestroy(gpu_plans_z2d[i]);
+         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+      }
+
+      // Gpu streams and plans
+      for (int i = 0; i < num_streams; i++)
+          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+
+#elif HIP_ENABLED
+      for (int i = 0; i < num_streams; i++)
+      {
+         rocfft_plan_destroy(gpu_plans[i]);
+         rocfft_plan_destroy(gpu_plans_f[i]);
+         rocfft_plan_destroy(gpu_plans_r2c[i]);
+         rocfft_plan_destroy(gpu_plans_c2r[i]);
+         rocfft_plan_destroy(gpu_plans_d2z[i]);
+         rocfft_plan_destroy(gpu_plans_z2d[i]);
+         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+      }
+
+      // Gpu streams and plans
+      for (int i = 0; i < num_streams; i++)
+          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+
+#else
       fftw_destroy_plan(fftw_r2c_backward_plan_inplace);
       fftw_destroy_plan(fftw_r2c_forward_plan_inplace);
       fftw_destroy_plan(fftw_r2c_backward_plan);
@@ -1404,31 +1439,12 @@ Pw::~Pw(void)
       fftwf_destroy_plan(fftwf_forward_plan_inplace);
       fftwf_destroy_plan(fftwf_backward_plan);
       fftwf_destroy_plan(fftwf_forward_plan);
-#if CUDA_ENABLED
-      for (int i = 0; i < num_streams; i++)
-      {
-         cufftDestroy(gpu_plans[i]);
-         cufftDestroy(gpu_plans_f[i]);
-         cufftDestroy(gpu_plans_r2c[i]);
-         cufftDestroy(gpu_plans_c2r[i]);
-         cufftDestroy(gpu_plans_d2z[i]);
-         cufftDestroy(gpu_plans_z2d[i]);
-         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
-         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
-      }
-
-      // Gpu streams and plans
-      for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
-
-
-#endif
-
       int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
       for (int i = 0; i < nthreads; i++)
       {
           fftw_free(host_bufs[i]);
       }
+#endif
   }
 }
 
