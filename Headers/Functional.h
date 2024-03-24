@@ -95,6 +95,8 @@ public:
     static void set_screening_parameter_rmg(double p);
 
     static std::string saved_dft_name;
+    void stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma);
+
 };
 
 #endif

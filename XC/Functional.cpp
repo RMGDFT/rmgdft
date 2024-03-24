@@ -789,6 +789,27 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     delete [] grho_up;
 }
 
+void Functional::stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma)
+{
+   int inlc = get_inlc();
+        
+    // No non-local correction just return
+    if(inlc == 0) return;
+    
+    // inlc == 1 corresponds to vdW-DF1 and is the only one programmed currently
+    if(inlc == 1) {
+        double etxc, vtxc;
+        double *v = new double[this->pbasis];
+        Vdw *vdw = new Vdw (*this->Grid, *this->L, *this->T, 1, rho, rho_core, etxc, vtxc, v, this->gammaflag);
+        vdw->stress_vdW_DF(rho, rho_core, nspin, sigma);
+        delete vdw;
+    }
+    else { 
+        throw RmgFatalException() << "Non-local correlation correction type not programmed" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+    
+    }
+
+}
 
 extern "C" const char *c_get_dft_name(void)
 {

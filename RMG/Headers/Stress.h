@@ -53,6 +53,8 @@ public:
     void Exc_term(double Exc, double *vxc, double *rho);
     void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
     void Exc_Nlcc(double *vxc, double *rhocore);
+    void vdW_DF_term (double *rho, double *rhocore, int nspin);
+
     ~Stress(void);
 
 };

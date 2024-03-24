@@ -76,10 +76,10 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
 {
 
     int inlc = get_inlc();
-    if(inlc !=0) 
-    {
-        throw RmgFatalException() << "stress does not work for vdw now" << __FILE__ << " at line " << __LINE__ << "\n";
-    }
+//    if(inlc !=0) 
+//    {
+//        throw RmgFatalException() << "stress does not work for vdw now" << __FILE__ << " at line " << __LINE__ << "\n";
+//    }
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
@@ -125,6 +125,13 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         vdw_d2_stress(L, atoms, stress_d2);
         for(int i = 0; i < 9; i++) stress_tensor[i] += stress_d2[i];
 
+        delete RT2;
+    }
+
+    if(0)
+    {
+        RT2 = new RmgTimer("2-Stress: vdW_DF correction");
+        vdW_DF_term (rho, rhocore, ct.nspin);
         delete RT2;
     }
 
@@ -302,6 +309,31 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
     if(ct.verbose) print_stress("XC term", stress_tensor_x);
+}
+
+template void Stress<double>::vdW_DF_term (double *rho, double *rhocore, int nspin);
+template void Stress<std::complex<double>>::vdW_DF_term (double *rho, double *rhocore, int nspin);
+template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, int nspin)
+{   
+    double stress_tensor_vdW_DF[9];
+    for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] = 0.0;
+
+    int grid_ratio = Rmg_G->default_FG_RATIO;
+    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
+                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
+
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(!F->dft_is_nonlocc_rmg() ) return;
+    F->stress_vdW_DF (rho, rhocore, nspin, stress_tensor_vdW_DF);
+
+    for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] *= vel /Rmg_L.omega;
+    //  sum over grid communicator and spin communicator  but no kpoint communicator
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_vdW_DF, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_vdW_DF, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_vdW_DF[i];
+
+    if(ct.verbose) print_stress("XC vdW_DF_term", stress_tensor_vdW_DF);
+    delete F;
 }
 
 template void Stress<double>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
