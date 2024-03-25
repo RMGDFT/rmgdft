@@ -75,12 +75,6 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
 {
 
-    int inlc = get_inlc();
-//    if(inlc !=0) 
-//    {
-//        throw RmgFatalException() << "stress does not work for vdw now" << __FILE__ << " at line " << __LINE__ << "\n";
-//    }
-
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
     for(int i = 0; i < 9; i++) stress_tensor[i] = 0.0;
@@ -128,7 +122,8 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         delete RT2;
     }
 
-    if(0)
+    int inlc = get_inlc();
+    if(inlc)
     {
         RT2 = new RmgTimer("2-Stress: vdW_DF correction");
         vdW_DF_term (rho, rhocore, ct.nspin);
