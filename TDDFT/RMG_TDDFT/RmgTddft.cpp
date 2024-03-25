@@ -52,6 +52,7 @@
 #include "RmgException.h"
 #include "blas_driver.h"
 #include "GpuAlloc.h"
+#include "RmgSumAll.h"
 
 
 void  init_point_charge_pot(double *vtot_psi, int density);
@@ -201,14 +202,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.local_rank);
 #endif  
 
-    double *vtot, *vtot_psi, *vxc_psi=NULL;
+    double *vtot, *vtot_psi;
 
     int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int FP0_BASIS = dimx * dimy * dimz;
 
-    FILE *dfi = NULL;
+    FILE *dfi = NULL, *efi = NULL;
+    double vel = get_vel_f();
     std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
     int tot_steps = 0, pre_steps, tddft_steps;
@@ -288,6 +290,44 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     double dipole_ele[3];
 
+    double *Hcore_tddft = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
+    double ES = 0.0, E_downfold = 0.0, EkinPseudo = 0.0, totalE;
+    double ES_0 = 0.0, EkinPseudo_0 = 0.0, totalE_0;
+    double vtxc, etxc, etxc_0;
+    double efactor = ct.energy_output_conversion[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
+    {
+        double *v_psi, *vxc_psi;
+        int pbasis = Kptr[0]->pbasis;
+        v_psi = new double[pbasis];
+        vxc_psi = new double[pbasis]();
+        int nstates = Kptr[0]->nstates;
+        OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+
+
+        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], NULL, NULL);
+
+            for (int st = 0; st < ct.tddft_start_state; st++)
+            {
+                double occ = Kptr[kpt]->Kstates[st].occupation[0] * Kptr[kpt]->kp.kweight;
+                E_downfold += std::real(Hcore[kpt * nstates * nstates + st * nstates + st]) * occ;
+            }
+
+        }
+
+        for(int st1 = 0; st1 < numst; st1++) {
+            for(int st2 = 0; st2 < numst; st2++) {
+                Hcore_tddft[st1 * numst + st2] = std::real(Hcore[(st1+ct.tddft_start_state) * nstates + st2 + ct.tddft_start_state]);
+            }
+        }
+
+        delete [] v_psi;
+        delete [] vxc_psi;
+        RmgFreeHost(Hcore);
+
+    }
 
     if(0)
     {
@@ -330,6 +370,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         dfi = fopen(filename.c_str(), "w");
 
         fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+        filename = std::string(pct.image_path[pct.thisimg]) +"totalE_"+ std::string(ct.basename);
+        efi = fopen(filename.c_str(), "w");
+        fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  %s", eunits);
+        fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f", totalE_0, EkinPseudo_0, ES_0, etxc_0);
+        fprintf(efi, "\n&&time  EkinPseudo_diff, Vh_diff, Exc_diff  totalE_diff%s", eunits);
 
     }
 
@@ -548,7 +593,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             dcopy(&FP0_BASIS, vxc, &ione, vxc_old, &ione);
 
             //get_vxc(rho, rho_oppo, rhocore, vxc);
-            double vtxc, etxc;
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
             Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
             F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
@@ -563,6 +607,26 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                     -vxc_old[idx] -vh_old[idx];
             }
 
+            ES = 0.0;
+            for (int idx = 0; idx < FP0_BASIS; idx++) 
+            {
+                ES += (rho[idx] - rhoc[idx]) * vh[idx];
+            }
+
+            ES = 0.5 * vel * RmgSumAll(ES, pct.grid_comm);
+            int ntot2 = numst *numst;
+            int ione = 1;
+            EkinPseudo = ddot(&ntot2, matrix_glob, &ione, Hcore_tddft, &ione);
+            totalE = E_downfold + EkinPseudo + ES + etxc + ct.II;
+
+
+            if(tot_steps == 0) 
+            {
+                totalE_0 = totalE;
+                EkinPseudo_0 = EkinPseudo;
+                ES_0 = ES;
+                etxc_0 = etxc;
+            }
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             RT2a = new RmgTimer("2-TDDFT: Hupdate");
             HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);                                     
@@ -577,7 +641,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             delete(RT2a);
 
-                my_sync_device();
+            my_sync_device();
             double one = 1.0;
             daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
             dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
@@ -607,6 +671,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
 
+        if(pct.gridpe == 0)fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
+                tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
 
@@ -618,6 +684,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                     Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);
             delete RT2a;
             if(pct.gridpe == 0)fflush(dfi);
+            if(pct.gridpe == 0)fflush(efi);
         }
 
 
@@ -627,8 +694,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     gpuFree(Kptr[0]->work_dev);
     gpuFree(Kptr[0]->psi_dev);
 #endif
-    if(pct.gridpe == 0) fclose(dfi);
-
+    if(pct.gridpe == 0) 
+    {
+        fclose(dfi);
+        fclose(efi);
+    }
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
     my_sync_device();
@@ -637,6 +707,5 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     delete RT2a;
     delete RT0;
 }
-
 
 

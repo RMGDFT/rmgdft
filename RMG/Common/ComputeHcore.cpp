@@ -194,6 +194,11 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     BlockAllreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    if(Hij_kin == NULL && Hij_localpp == NULL)
+    {
+        ct.xc_is_hybrid = is_xc_hybrid;
+        return;
+    }
 
 
     int density = 1;
@@ -251,26 +256,26 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     if(pct.gridpe ==0 && ct.verbose)
     {
-        printf("\n Hcore");
+        rmg_printf("\n Hcore");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            printf("\n");
+            rmg_printf("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
+                rmg_printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
         }
-        printf("\n Hkin");
+        rmg_printf("\n Hkin");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            printf("\n");
+            rmg_printf("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                printf(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
+                rmg_printf(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
         }
-        printf("\n H_localpp");
+        rmg_printf("\n H_localpp");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            printf("\n");
+            rmg_printf("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                printf(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
+                rmg_printf(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
         }
 
     }
