@@ -372,9 +372,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
         filename = std::string(pct.image_path[pct.thisimg]) +"totalE_"+ std::string(ct.basename);
         efi = fopen(filename.c_str(), "w");
-        fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  %s", eunits);
-        fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f", totalE_0, EkinPseudo_0, ES_0, etxc_0);
-        fprintf(efi, "\n&&time  EkinPseudo_diff, Vh_diff, Exc_diff  totalE_diff%s", eunits);
 
     }
 
@@ -671,8 +668,17 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
 
-        if(pct.gridpe == 0)fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
-                tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
+        if(pct.gridpe == 0)
+        {
+            if(tot_steps == 0) 
+            {
+                fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  %s", eunits);
+                fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f", totalE_0, EkinPseudo_0, ES_0, etxc_0);
+                fprintf(efi, "\n&&time  EkinPseudo_diff, Vh_diff, Exc_diff  totalE_diff%s", eunits);
+            }
+            fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
+                    tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
+        }
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
 
