@@ -148,7 +148,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     double t1 = ct.nel / ct.tcharge;
-    rmg_printf ("normalization constant-1 for new charge is %f\n", t1-1);
+    if(std::abs(t1-1) > 1.0e-6) rmg_printf ("normalization constant-1 for new charge is %e\n", t1-1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
 #if CUDA_ENABLED || HIP_ENABLED 

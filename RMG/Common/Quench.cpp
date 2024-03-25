@@ -458,6 +458,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             Atoms[ion].RotateForces();
         }
         Force (trho, trho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        double *vtot = new double[FP0_BASIS];
+        for(int idx = 0; idx < FP0_BASIS; idx++)
+        {
+            vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+        }
+
+        get_ddd (vtot, vxc, true);
+
+        delete [] vtot;
         delete [] trho;
     }
 
