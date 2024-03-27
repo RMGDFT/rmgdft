@@ -423,7 +423,7 @@ CONTAINS
   CALL MPI_Barrier( intra_image_comm, ierr )
   DO proc_i = 0, nproc-1
 
-!     IF ( proc_i >= Ntotal ) EXIT
+     IF ( proc_i >= Ntotal ) EXIT
 
 !     CALL mp_get ( phi      , phi      , mpime, 0, proc_i, 0, intra_image_comm )
 !     CALL mp_get ( phi_deriv, phi_deriv, mpime, 0, proc_i, 0, intra_image_comm )
