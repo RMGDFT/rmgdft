@@ -32,17 +32,18 @@
 #include "rmgtypedefs.h"
 #include "rmg_mangling.h"
 
-#define VDW_NQPOINTS  20
-#define VDW_NRPOINTS  1024
+#include "vdW_params.h"
 
 // Needed to deal with some issues when calling f90 module function from C++
-#define     spline_interpolation                RMG_FC_MODULE(vdw_splines,spline_interpolation,mod_VDW_SPINES, SPLINE_INTERPOLATION) 
-#define     initialize_spline_interpolation     RMG_FC_MODULE(vdw_splines,initialize_spline_interpolation, mod_VDW_SPINES, INITIALIZE_SPLINE_INTERPOLATION)
+#define     spline_interpolation                RMG_FC_MODULE(vdw_splines,spline_interpolation,mod_VDW_SPLINES, SPLINE_INTERPOLATION) 
+#define     initialize_spline_interpolation     RMG_FC_MODULE(vdw_splines,initialize_spline_interpolation, mod_VDW_SPLINES, INITIALIZE_SPLINE_INTERPOLATION)
+
+#define     generate_vdw_kernel       RMG_FC_MODULE(vdw_kernel, generate_vdw_kernel, mod_VDW_KERNEL, GENERATE_VDW_KERNEL)
 
 extern "C" {void spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
 extern "C" {void initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
-
-
+extern "C" {void generate_vdw_kernel(double *kernel, double *d2phi_dk2,
+            double *q_mesh, MPI_Fint *intra_image_comm, int *mpime, int *nproc);}
 
 class Vdw {
 

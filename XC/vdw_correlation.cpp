@@ -213,51 +213,80 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // If not initialized we must read in the kernel table
   if(!this->initialized) {
 
-      std::ifstream kernel_file;
-      kernel_file.open(ct.vdW_kernel_file, std::ios_base::in);
-      if (!kernel_file)  { 
-          throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-      }
+//      std::ifstream kernel_file;
+//      kernel_file.open(ct.vdW_kernel_file, std::ios_base::in);
+//      if (!kernel_file)  { 
+//          throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+//      }
      
       // Read in Nqs and Nrpoints from header and make sure it matches
       // these are the number of q points and the number of r points used for this kernel file, 
-      std::string line;
-      std::getline(kernel_file, line);
-      std::istringstream is0(line);
-      is0 >> Nqs >> Nrpoints;
+//      std::string line;
+//      std::getline(kernel_file, line);
+//      std::istringstream is0(line);
+//      is0 >> Nqs >> Nrpoints;
+
+      Vdw::Nqs = VDW_NQS;
+      Vdw::Nrpoints = VDW_NRPOINTS;
 
       // Any checks needed here?
 //      if((Nqs != VDW_NQPOINTS) || (Nrpoints != VDW_NRPOINTS)) {
 //          throw RmgFatalException() << "Mismatch for Nqs or Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 //      }
 
+      Vdw::r_max     = VDW_RMAX;
+      // The value of the maximum radius to use for the real-space kernel
+      // functions for each pair of q values. The larger this value is the
+      // smaller the smallest k value will be since the smallest k point value
+      // is 2*pi/r_max. Be careful though, since this will also decrease the
+      // maximum k point value and the vdW_DF code will crash if it encounters
+      // a g-vector with a magnitude greater than 2*pi/r_max *Nr_points.
+
+      double dr = r_max/VDW_NRPOINTS;
+      Vdw::dk = 2.0*PI/r_max;
+      // Real space and k-space spacing of grid points.
+
+      double q_min = 1.0e-5, q_cut = 5.0;
+      // The maximum and minimum values of q. During a vdW run, values of q0
+      // found larger than q_cut will be saturated (SOLER equation 5) to q_cut.
+
+
+      int vdW_DF_analysis = false;
+      // vdW-DF analysis tool as described in PRB 97, 085115 (2018)
+      int Nintegration_points = VDW_INTEGRATION_POINTS;
+      // Number of integration points for real-space kernel generation (see
+      // DION equation 14). This is how many a's and b's there will be.
+
+      //REAL(DP), PARAMETER      :: a_min = 0.0D0, a_max = 64.0D0
+      //! Min/max values for the a and b integration in DION equation 14.
+
       this->kernel.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
       this->d2phi_dk2.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
 
       // Read in r_max the maximum allowed value of an r point
-      std::getline(kernel_file, line);
-      std::istringstream is1(line);
-      is1 >> Vdw::r_max;
+      //std::getline(kernel_file, line);
+      //std::istringstream is1(line);
+      //is1 >> Vdw::r_max;
       Vdw::dk = 2.0 * PI / Vdw::r_max;
       
       // Read in the values of the q points used to generate this kernel.
       int idx = 0;
-      for(int meshlines = 0;meshlines < 5;meshlines++) {
-          std::getline(kernel_file, line);
-          std::istringstream is2(line);
+      //for(int meshlines = 0;meshlines < 5;meshlines++) {
+      //    std::getline(kernel_file, line);
+      //    std::istringstream is2(line);
        
-          while(is2 >> q_mesh[idx]) {
-              idx++;
-              if(idx == Nqs) break;
-          }
-      }
+      //    while(is2 >> q_mesh[idx]) {
+      //        idx++;
+      //        if(idx == Nqs) break;
+      //    }
+      //}
 
       // For each pair of q values, read in the function phi_q1_q2(k).
       // That is, the fourier transformed kernel function assuming q1 and
       // q2 for all the values of r used.
       int tlines = (Nrpoints + 1) / 4;   // 4 per line
       if((Nrpoints + 1) % 4) tlines++;
-      
+#if 0      
       for(int q1_i = 0;q1_i < Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
@@ -304,7 +333,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       }
 
       kernel_file.close();
-
+#endif
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
       this->d2y_dx2 = new double[Nqs*Nqs]();
       double *y = new double[Nqs];
@@ -336,6 +365,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
           }
 
       }
+
+      int my_rank, nprocs;
+      MPI_Comm_rank(pct.grid_comm, &my_rank);
+      MPI_Comm_size (pct.grid_comm, &nprocs);
+      MPI_Fint f_grid_comm = MPI_Comm_c2f(pct.grid_comm);
+      generate_vdw_kernel(kernel.data(), d2phi_dk2.data(),
+                    q_mesh, &f_grid_comm, &my_rank, &nprocs);
 
       delete [] temp_array;
       delete [] y;
