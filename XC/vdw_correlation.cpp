@@ -367,11 +367,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       }
 
       int my_rank, nprocs;
-      MPI_Comm_rank(pct.grid_comm, &my_rank);
-      MPI_Comm_size (pct.grid_comm, &nprocs);
-      MPI_Fint f_grid_comm = MPI_Comm_c2f(pct.grid_comm);
+      MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+      MPI_Comm_size (MPI_COMM_WORLD, &nprocs);
+      MPI_Fint f_grid_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
+      RmgTimer *RT1 = new RmgTimer("2-Init: Vdw-DF kernel gen");
       generate_vdw_kernel(kernel.data(), d2phi_dk2.data(),
                     q_mesh, &f_grid_comm, &my_rank, &nprocs);
+      delete RT1;
 
       delete [] temp_array;
       delete [] y;
