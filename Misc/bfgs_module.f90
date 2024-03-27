@@ -180,7 +180,7 @@ CONTAINS
      INQUIRE(FILE = bfgs_file, EXIST = exst)
      IF (exst .and. runflag /= 1) THEN
         !
-        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD', form="unformatted")
         CLOSE(UNIT = iunit, STATUS = 'DELETE')
         !
         !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
@@ -830,19 +830,19 @@ CONTAINS
          ! ... bfgs is restarted from file
          !
          OPEN( NEWUNIT = iunbfgs, FILE = bfgs_file, &
-               STATUS = 'UNKNOWN', ACTION = 'READ' )
+               STATUS = 'UNKNOWN', ACTION = 'READ' , form="unformatted")
          !
-         READ( iunbfgs, * ) pos_p
-         READ( iunbfgs, * ) grad_p
-         READ( iunbfgs, * ) scf_iter
-         READ( iunbfgs, * ) bfgs_iter
-         READ( iunbfgs, * ) gdiis_iter
-         READ( iunbfgs, * ) energy_p
-         READ( iunbfgs, * ) pos_old
-         READ( iunbfgs, * ) grad_old
-         READ( iunbfgs, * ) inv_hess
-         READ( iunbfgs, * ) tr_min_hit
-         READ( iunbfgs, * ) nr_step_length
+         READ( iunbfgs ) pos_p
+         READ( iunbfgs ) grad_p
+         READ( iunbfgs ) scf_iter
+         READ( iunbfgs ) bfgs_iter
+         READ( iunbfgs ) gdiis_iter
+         READ( iunbfgs ) energy_p
+         READ( iunbfgs ) pos_old
+         READ( iunbfgs ) grad_old
+         READ( iunbfgs ) inv_hess
+         READ( iunbfgs ) tr_min_hit
+         READ( iunbfgs ) nr_step_length
          !
          CLOSE( UNIT = iunbfgs )
          !
@@ -901,19 +901,19 @@ CONTAINS
       !
       INTEGER :: iunbfgs
       !
-      OPEN( NEWUNIT = iunbfgs, FILE = bfgs_file, STATUS = 'UNKNOWN', ACTION = 'WRITE' )
+      OPEN( NEWUNIT = iunbfgs, FILE = bfgs_file, STATUS = 'UNKNOWN', ACTION = 'WRITE' , form="unformatted")
       !
-      WRITE( iunbfgs, * ) pos
-      WRITE( iunbfgs, * ) grad
-      WRITE( iunbfgs, * ) scf_iter
-      WRITE( iunbfgs, * ) bfgs_iter
-      WRITE( iunbfgs, * ) gdiis_iter
-      WRITE( iunbfgs, * ) energy
-      WRITE( iunbfgs, * ) pos_old
-      WRITE( iunbfgs, * ) grad_old
-      WRITE( iunbfgs, * ) inv_hess
-      WRITE( iunbfgs, * ) tr_min_hit
-      WRITE( iunbfgs, * ) nr_step_length
+      WRITE( iunbfgs ) pos
+      WRITE( iunbfgs ) grad
+      WRITE( iunbfgs ) scf_iter
+      WRITE( iunbfgs ) bfgs_iter
+      WRITE( iunbfgs ) gdiis_iter
+      WRITE( iunbfgs ) energy
+      WRITE( iunbfgs ) pos_old
+      WRITE( iunbfgs ) grad_old
+      WRITE( iunbfgs ) inv_hess
+      WRITE( iunbfgs ) tr_min_hit
+      WRITE( iunbfgs ) nr_step_length
       !
       CLOSE( UNIT = iunbfgs )
       !
@@ -1173,7 +1173,7 @@ CONTAINS
       INQUIRE(FILE = bfgs_file, EXIST = exst)
       IF (exst) THEN
         !
-        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+        OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD', form="unformatted")
         CLOSE(UNIT = iunit, STATUS = 'DELETE')
         !
         !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
@@ -1209,7 +1209,7 @@ CONTAINS
          !
          IF (exst) THEN
            !
-           OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD')
+           OPEN(NEWUNIT = iunit, FILE = bfgs_file, STATUS = 'OLD', form="unformatted")
            CLOSE(UNIT = iunit, STATUS = 'DELETE')
            !
            !WRITE(UNIT = stdout, FMT = '(/,5X,"File ", A, " deleted, as requested")') TRIM(bfgs_file)
