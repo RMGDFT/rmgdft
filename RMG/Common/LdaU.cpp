@@ -138,6 +138,9 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     }
 
 
+    // when calcuation ns_occ for each spin, the occupation for a band should be 0 to 1.0, not 2.0 for spin degeneracy in rho calculation
+    double occ_weight = 1.0;
+    if(ct.nspin == 1) occ_weight = 0.5;
     for (size_t ion = 0, i_end = this->num_ldaU_ions; ion < i_end; ++ion)
     {
         for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
@@ -154,7 +157,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
                         {
                             occ = occ + K.Kstates[st].occupation[0] * nsint[st][is1][ion][i] * std::conj(nsint[st][is2][ion][j]);
                         }
-                        ns_occ[is1 * ct.noncoll_factor + is2][ion][i][j] = occ * K.kp.kweight;
+                        ns_occ[is1 * ct.noncoll_factor + is2][ion][i][j] = occ * K.kp.kweight * occ_weight;
                     }
                 }
             }
@@ -510,6 +513,8 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     }
 
     std::complex<double> sum_x, sum_y, sum_z;
+    double occ_weight = 1.0;
+    if(ct.nspin == 1) occ_weight = 2.0;
     for (int ion = 0; ion < num_owned_ions; ion++)
     {
         int gion = owned_ions_list[ion];
@@ -534,9 +539,9 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
         SPECIES &AtomType = Species[Atoms[gion_idx].species];
         double Ueff = AtomType.Hubbard_U / 2.0; 
 
-        force_ldau[gion_idx * 3 + 0] = -Ueff * std::real(sum_x);
-        force_ldau[gion_idx * 3 + 1] = -Ueff * std::real(sum_y);
-        force_ldau[gion_idx * 3 + 2] = -Ueff * std::real(sum_z);
+        force_ldau[gion_idx * 3 + 0] = -Ueff * std::real(sum_x) * occ_weight;
+        force_ldau[gion_idx * 3 + 1] = -Ueff * std::real(sum_y) * occ_weight;
+        force_ldau[gion_idx * 3 + 2] = -Ueff * std::real(sum_z) * occ_weight;
 
         if(ct.verbose && pct.gridpe == 0)
         {
@@ -797,6 +802,12 @@ template <class KpointType> void LdaU<KpointType>::calc_energy()
         }
     }
 
+    // for non spin-polarized case, Ehub only count for one spin
+    if(ct.nspin == 1)
+    {
+        this->Ehub *= 2.0; 
+        this->Ecorrect *= 2.0; 
+    }
     this->Ehub += eth_noflip + eth_flip - eth_dc;
     // Ecorrect is the contribution from sum of band eigenvalues.
     //    if(pct.gridpe == 0)
