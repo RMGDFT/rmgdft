@@ -212,7 +212,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 xtal[i] = sym_rotate[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
                     + sym_rotate[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
-                    + sym_rotate[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
+                    + sym_rotate[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] + (double)ftau[isym *3 + i]/ (double)ndim[i];
 
                 if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
                 if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
