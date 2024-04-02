@@ -38,7 +38,7 @@
 
 int init_kpoints (int *kmesh, int *kshift)
 {
-#if 1
+#if 0
     {
         int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
         int nks;
