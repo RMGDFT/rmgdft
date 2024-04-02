@@ -16,6 +16,7 @@ SUBROUTINE irreducible_BZ( nrot, s, nsym, minus_q, magnetic_sym, at, bg, &
   !! point group of the Bravais lattice.
   !
   USE kinds,   ONLY: DP
+  USE iso_c_binding
   !
   IMPLICIT NONE
   !
@@ -400,3 +401,151 @@ SUBROUTINE irrek_nc( at, bg, nrot, invs, nsym, irg, npk, &
   RETURN
   !
 END SUBROUTINE irrek_nc
+
+
+!
+! Copyright (C) 2001-2010 Quantum ESPRESSO group
+! This file is distributed under the terms of the
+! GNU General Public License. See the file `License'
+! in the root directory of the present distribution,
+! or http://www.gnu.org/copyleft/gpl.txt .
+!
+!
+!-----------------------------------------------------------------------
+SUBROUTINE multable( nsym, s, table )
+  !-----------------------------------------------------------------------
+  !! Checks that {S} is a group and calculates multiplication table
+  !
+  IMPLICIT NONE
+  !
+  INTEGER, INTENT(IN) :: nsym
+  !! the number of symmetry operations
+  INTEGER, INTENT(IN) :: s(3,3,nsym)
+  !! rotation matrix (in crystal axis, represented by integers)
+  INTEGER, INTENT(OUT) :: table(48,48)
+  ! multiplication table:  S(n)*S(m) = S( table(n,m) )
+  !
+  ! ... local variables
+  !
+  INTEGER :: isym, jsym, ksym, ss(3,3)
+  LOGICAL :: found, smn
+  !
+  !
+  DO isym = 1, nsym
+     DO jsym = 1, nsym
+        ! 
+        ss = MATMUL( s(:,:,jsym), s(:,:,isym) )
+        !
+        ! ... here we check that the input matrices really form a group
+        !     and we set the multiplication table
+        !
+        found = .FALSE.
+        DO ksym = 1, nsym
+           smn =  ALL( s(:,:,ksym) == ss(:,:) )
+           IF (smn) THEN
+              IF (found) CALL errore( 'multable', 'Not a group', 1 )
+              found = .TRUE.
+              table (jsym,isym) = ksym
+           ENDIF
+        ENDDO
+        IF ( .NOT. found) CALL errore( 'multable', ' Not a group', 2 )
+        !
+     ENDDO
+  ENDDO
+  !
+  !
+  RETURN
+  !
+END SUBROUTINE multable
+
+
+!
+! Copyright (C) 2001 PWSCF group
+! This file is distributed under the terms of the
+! GNU General Public License. See the file `License'
+! in the root directory of the present distribution,
+! or http://www.gnu.org/copyleft/gpl.txt .
+!
+!
+!-----------------------------------------------------------------------
+SUBROUTINE coset( nrot, table, sym, nsym, irg )
+  !-----------------------------------------------------------------------
+  !!  Divides the elements of a given group into left cosets of one
+  !!  of its subgroups.
+  !
+  !!  The input is the array sym which is true only for the
+  !!  operations of the subgroup, the output is nsym, and the array irg,
+  !!  which contains as its first elements the indices of the subgroup,
+  !!  and then its right cosets.
+  !
+  !!  Revised layout 1 may 1995 by A. Dal Corso
+  !
+  USE kinds
+  !
+  IMPLICIT NONE
+  !
+  INTEGER :: nrot
+  !! input: order of the group
+  INTEGER :: table(48, 48)
+  !! input: multiplication table of the group
+  INTEGER :: nsym
+  !! output: order of the subgroup
+  INTEGER :: irg(48)
+  !! output: gives the correspondence of symme
+  !! operations forming a n-th coset
+  LOGICAL :: sym(48)
+  !! input: flag indicating if an operation
+  !! belongs to the subgroup
+  !
+  ! ... local variables
+  !
+  LOGICAL :: done(48)
+  ! if true the operation has been already ch
+  !
+  INTEGER :: irot, ncos, isym, nc, nelm
+  ! counter on rotations
+  ! number of cosets (=nrot/nsym)
+  ! counter on symmetries
+  ! counter on cosets
+  ! counter on the number of elements
+  !
+  !    here we count the elements of the subgroup and set the first part o
+  !    irg which contain the subgroup
+  !
+  nsym = 0
+  DO irot = 1, nrot
+     done (irot) = sym (irot)
+     IF ( sym (irot) ) THEN
+        nsym = nsym + 1
+        irg (nsym) = irot
+     ENDIF
+  ENDDO
+  !
+  ! ... we check that the order of the subgroup is a divisor of the order
+  ! total group. ncos is the number of cosets
+  !
+  IF ( nsym == 0 ) CALL errore( 'coset', 'nsym == 0', 1 ) 
+  !
+  ncos = nrot / nsym
+  IF ( ncos * nsym /= nrot ) CALL errore( 'coset', &
+   'The order'//' of the group is not a multiple of that of the subgroup', 1 )
+  !
+  ! ... here we set the other elements of irg, by using the multiplication
+  !
+  nelm = nsym
+  DO nc = 2, ncos
+     DO irot = 1, nrot
+        IF ( .NOT.done(irot) ) THEN
+           DO isym = 1, nsym
+              nelm = nelm + 1
+              irg (nelm) = table (irot, irg (isym) )
+              done (irg (nelm) ) = .TRUE.
+           ENDDO
+        ENDIF
+     ENDDO
+     !
+  ENDDO
+  !
+  RETURN
+  !
+END SUBROUTINE coset

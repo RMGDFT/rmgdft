@@ -38,7 +38,7 @@
 
 int init_kpoints (int *kmesh, int *kshift)
 {
-#if 0
+#if 1
     {
         int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
         int nks;
@@ -60,9 +60,30 @@ printf("NKS = %d\n", nks);
         {
             for(int ik = 0;ik < nks;ik++)
             {
-                printf("kpoint = %f  %f  %f  %f\n", xk[ik*3], xk[ik*3 + 1], xk[ik*3 + 2], wk[ik]);
+                printf("kpoint0 = %f  %f  %f  %f\n", xk[ik*3], xk[ik*3 + 1], xk[ik*3 + 2], wk[ik]);
             }
         }
+
+        int nrot = 24;
+        int minus_q = false;
+        int magnetic_sym = false;
+        irreducible_bz( &nrot, Rmg_Symm->sym_rotate.data(), &Rmg_Symm->nsym,
+                               &minus_q,
+                               &magnetic_sym,
+                               Rmg_L.at,         // Use Rmg_L.at
+                               Rmg_L.bg,         // Use Rmg_L.bg
+                               &max_kpts,        // Max number of k-points
+                               &nks,           // Number of k-points
+                               xk.data(),         // K-points stored as triplets
+                               wk.data(),         // Their weights
+                               Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+            if(pct.gridpe == 0)
+            {
+                for(int ik = 0;ik < nks;ik++)
+                {
+                    printf("kpoint1 = %f  %f  %f  %f\n", xk[ik*3], xk[ik*3 + 1], xk[ik*3 + 2], wk[ik]);
+                }
+            }
     }
 #endif
     //double *tau;

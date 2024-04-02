@@ -5,7 +5,7 @@
 #include "rmg_mangling.h"
 
 #define kpoint_grid  RMG_FC_GLOBAL(kpoint_grid, KPOINT_GRID)
-#define irreducible_BZ  RMG_FC_GLOBAL(irreducible_BZ, IRREDUCIBLE_BZ)
+#define irreducible_bz  RMG_FC_GLOBAL(irreducible_bz, IRREDUCIBLE_BZ)
 
 
 extern "C" void kpoint_grid( int *nrot, int *time_reversal, int *skip_equivalence,
@@ -13,8 +13,8 @@ extern "C" void kpoint_grid( int *nrot, int *time_reversal, int *skip_equivalenc
                   int *k1, int *k2, int *k3, int *nk1,int *nk2,int *nk3,
                   int *nks, double *xk, double *wk );
 
-extern "C" void irreducible_BZ( int *nrot,
-                           double *s,
+extern "C" void irreducible_bz( int *nrot,
+                           int *s,
                            int *nsym,
                            int *minus_q,
                            int *magnetic_sym,
