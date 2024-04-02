@@ -33,11 +33,38 @@
 #include <stdio.h>
 #include "main.h"
 #include "transition.h"
-
+#include "rmg_mangling.h"
+#include "qk_compat.h"
 
 int init_kpoints (int *kmesh, int *kshift)
 {
+#if 0
+    {
+        int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
+        int nks;
+        std::vector<double> wk;
+        wk.resize(max_kpts);
+        std::vector<double> xk;
+        xk.resize(3*max_kpts);
+        std::vector<int> s;
+        s.resize(48*3);
 
+        int skip_equivalence = !ct.is_use_symmetry;
+        int time_reversal = Rmg_Symm->time_reversal;
+        kpoint_grid( &Rmg_Symm->nsym, &time_reversal, &skip_equivalence, 
+                  Rmg_Symm->sym_rotate.data(), Rmg_Symm->time_rev.data(), Rmg_L.bg, &max_kpts,
+                  &kshift[0], &kshift[1], &kshift[2], &kmesh[0], &kmesh[1], &kmesh[2],
+                  &nks, xk.data(), wk.data() );
+printf("NKS = %d\n", nks);
+        if(pct.gridpe == 0)
+        {
+            for(int ik = 0;ik < nks;ik++)
+            {
+                printf("kpoint = %f  %f  %f  %f\n", xk[ik*3], xk[ik*3 + 1], xk[ik*3 + 2], wk[ik]);
+            }
+        }
+    }
+#endif
     //double *tau;
     int num_kpts=1;
 

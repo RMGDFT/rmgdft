@@ -1,6 +1,8 @@
 add_library (Misc
 OutputBandPlot.cpp
 kind.f90
+kpoint_grid.f90
+irrek.f90
 tetra.f90
 Tetrahedron.cpp
 CheckSetDefault.cpp
