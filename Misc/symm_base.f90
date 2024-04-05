@@ -176,7 +176,7 @@ CONTAINS
      ALLOCATE(s(3,3,48))
      s_fortran_ptr = C_LOC(s)
      ALLOCATE(ft(3,48))
-     ft_fortran_ptr = C_LOC(s)
+     ft_fortran_ptr = C_LOC(ft)
      DATA s0/ 1.d0,  0.d0,  0.d0,  0.d0,  1.d0,  0.d0,  0.d0,  0.d0,  1.d0, &
              -1.d0,  0.d0,  0.d0,  0.d0, -1.d0,  0.d0,  0.d0,  0.d0,  1.d0, &
              -1.d0,  0.d0,  0.d0,  0.d0,  1.d0,  0.d0,  0.d0,  0.d0, -1.d0, &
