@@ -156,9 +156,9 @@ printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
 
     for(int nt = 0;nt < nsym_atom;nt++)
     {
-        translation[nt*3 + 0] = ft_fortran_ptr[nt*3 + 0];
-        translation[nt*3 + 1] = ft_fortran_ptr[nt*3 + 1];
-        translation[nt*3 + 2] = ft_fortran_ptr[nt*3 + 2];
+        translation[nt*3 + 0] = -ft_fortran_ptr[nt*3 + 0];
+        translation[nt*3 + 1] = -ft_fortran_ptr[nt*3 + 1];
+        translation[nt*3 + 2] = -ft_fortran_ptr[nt*3 + 2];
     }
 printf("nsym_atom = %d\n",nsym_atom);fflush(NULL);
     if(!ct.time_reversal) time_reversal = false;
