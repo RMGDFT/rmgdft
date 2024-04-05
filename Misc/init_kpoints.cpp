@@ -272,15 +272,18 @@ int init_kpoints (int *kmesh, int *kshift)
             ct.kp[ik].kweight = wk[ik];
         double v1, v2, v3;
 
-        v1 = xk1[ik*3 + 0] *Rmg_L.a0[0]
-            + xk1[ik*3 + 1] *Rmg_L.a1[0]
-            + xk1[ik*3 + 2] *Rmg_L.a2[0];
-        v2 = xk1[ik*3 + 0] *Rmg_L.a0[1]
-            + xk1[ik*3 + 1] *Rmg_L.a1[1]
-            + xk1[ik*3 + 2] *Rmg_L.a2[1];
-        v3 = xk1[ik*3 + 0] *Rmg_L.a0[2]
-            + xk1[ik*3 + 1] *Rmg_L.a1[2]
-            + xk1[ik*3 + 2] *Rmg_L.a2[2];
+        v1 =  Rmg_L.a0[0] * xk1[ik*3+0] 
+            + Rmg_L.a0[1] * xk1[ik*3+1] 
+            + Rmg_L.a0[2] * xk1[ik*3+2];
+        v2 =  Rmg_L.a1[0] * xk1[ik*3+0] 
+            + Rmg_L.a1[1] * xk1[ik*3+1] 
+            + Rmg_L.a1[2] * xk1[ik*3+2];
+        v3 =  Rmg_L.a2[0] * xk1[ik*3+0] 
+            + Rmg_L.a2[1] * xk1[ik*3+1] 
+            + Rmg_L.a2[2] * xk1[ik*3+2];
+        ct.kp[ik].kpt[0] = v1/Rmg_L.celldm[0];
+        ct.kp[ik].kpt[1] = v2/Rmg_L.celldm[0];
+        ct.kp[ik].kpt[2] = v3/Rmg_L.celldm[0];
 printf("JJJJ0  %f  %f  %f\n", xk1[ik*3 + 0], xk1[ik*3 + 1], xk1[ik*3 + 2]);
 printf("JJJJ1  %f  %f  %f\n", v1/Rmg_L.celldm[0], v2/Rmg_L.celldm[0], v3/Rmg_L.celldm[0]);
         }
