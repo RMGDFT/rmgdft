@@ -33,7 +33,7 @@
 #include "qk_compat.h"
 
 extern "C" int *s_fortran_ptr;
-extern "C" int *ft_fortran_ptr;
+extern "C" double *ft_fortran_ptr;
 
 
 Symmetry *Rmg_Symm;
@@ -108,10 +108,17 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     }
 
     int nsym_atom=1;
-    nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
-    this->nsym_full = nsym_atom;
+//    nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
+//    this->nsym_full = nsym_atom;
+
+    int nrot = 1;
+    set_sym_bl (Rmg_L.at, Rmg_L.bg, &nrot );
+    nsym_atom = nrot;
+    this->nsym_full = nrot;
+
+
     int *sa = new int[9 * nsym_atom]();
-    std::vector<double> translation(3 * nsym_atom);
+    std::vector<double> translation(2 * 3 * nsym_atom);
     ftau.resize(3 * nsym_atom);
     ftau_wave.resize(3 * nsym_atom);
     inv_type.resize(nsym_atom);
@@ -120,9 +127,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     sym_trans.resize(3 * nsym_atom);
     sym_rotate.resize(9 * nsym_atom);
 
-    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
-    int nrot = 1;
-    set_sym_bl (Rmg_L.at, Rmg_L.bg, &nrot );
         int magnetic_sym = 0;
         int no_z_inv = 0;
         std::vector<double> m_loc;
@@ -130,7 +134,9 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         std::fill(m_loc.begin(), m_loc.end(), 0.0);
 
         find_sym ( &ct.num_ions, tau, ityp, &magnetic_sym, m_loc.data(), &no_z_inv);
-//printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
+printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
+
+//    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
     full_sym_rotate.resize(9 * nsym_atom);
     for(int ns = 0;ns < nsym_atom;ns++)
@@ -140,15 +146,16 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             for(int j = 0;j < 3;j++)
             {
                 full_sym_rotate[ns*9 + i + j*3] = s_fortran_ptr[ns*9 + i + j*3];
-                sym_rotate[ns*9 + i + j*3] = s_fortran_ptr[ns*9 + i + j*3];
+                //sym_rotate[ns*9 + i + j*3] = s_fortran_ptr[ns*9 + i + j*3];
+                sa[ns*9 + i + j*3] = s_fortran_ptr[ns*9 + i + j*3];
             }
         }
     }
     for(int nt = 0;nt < nsym_atom;nt++)
     {
-        sym_trans[nt*3 + 0] = ft_fortran_ptr[nt*3 + 0];
-        sym_trans[nt*3 + 1] = ft_fortran_ptr[nt*3 + 1];
-        sym_trans[nt*3 + 2] = ft_fortran_ptr[nt*3 + 2];
+        translation[nt*3 + 0] = ft_fortran_ptr[nt*3 + 0];
+        translation[nt*3 + 1] = ft_fortran_ptr[nt*3 + 1];
+        translation[nt*3 + 2] = ft_fortran_ptr[nt*3 + 2];
     }
 printf("nsym_atom = %d\n",nsym_atom);fflush(NULL);
     if(!ct.time_reversal) time_reversal = false;
