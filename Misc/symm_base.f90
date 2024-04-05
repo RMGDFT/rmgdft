@@ -138,7 +138,7 @@ CONTAINS
    !
    !
    !-----------------------------------------------------------------------
-   SUBROUTINE set_sym_bl(at, bg, nrot_out)
+   SUBROUTINE set_sym_bl(at_in, bg_in, nrot_out)
      !---------------------------------------------------------------------
      !! Provides symmetry operations for all bravais lattices.  
      !! Tests the 24 proper rotations for the cubic lattice first, then
@@ -154,8 +154,8 @@ CONTAINS
      !
      ! sin3 = sin(pi/3), cos3 = cos(pi/3), msin3 = -sin(pi/3), mcos3 = -cos(pi/3)
      !
-     REAL(DP), INTENT(IN) :: at(3,3)
-     REAL(DP), INTENT(IN) :: bg(3,3)
+     REAL(DP), INTENT(IN) :: at_in(3,3)
+     REAL(DP), INTENT(IN) :: bg_in(3,3)
      INTEGER,  INTENT(OUT) :: nrot_out
 
      REAL(DP), PARAMETER :: sin3 = 0.866025403784438597d0,  cos3 =  0.5d0, &
@@ -282,7 +282,8 @@ CONTAINS
 !write(6,*)'BG ',bg(1,1),'  ',bg(2,1),'  ',bg(3,1)
 !write(6,*)'BG ',bg(1,2),'  ',bg(2,2),'  ',bg(3,2)
 !write(6,*)'BG ',bg(1,3),'  ',bg(2,3),'  ',bg(3,3)
-
+     at = at_in
+     bg = bg_in
      DO jpol = 1, 3
         DO kpol = 1, 3
            rot(kpol,jpol) = at(1,kpol)*at(1,jpol) + &
@@ -382,7 +383,7 @@ CONTAINS
    !
    !
    !-----------------------------------------------------------------------
-   SUBROUTINE find_sym( nat, tau, ityp, magnetic_sym_in, m_loc, no_z_inv_in )
+   SUBROUTINE find_sym( nat, tau, ityp, magnetic_sym_in, m_loc, no_z_inv_in, nsym_out )
      !-----------------------------------------------------------------------
      !! This routine finds the point group of the crystal, by eliminating
      !! the symmetries of the Bravais lattice which are not allowed
@@ -404,10 +405,11 @@ CONTAINS
      INTEGER, INTENT(IN) :: no_z_inv_in
      !! if .TRUE., disable symmetries sending z into -z.  
      !! Some calculations (e.g. gate fields) require this.
+     INTEGER, INTENT(OUT) :: nsym_out
      !
      ! ... local variables
      !
-     INTEGER :: i
+     INTEGER :: i, j
      LOGICAL :: sym(48)
      LOGICAL :: magnetic_sym = .FALSE.
      LOGICAL :: no_z_inv = .FALSE.
@@ -445,7 +447,16 @@ CONTAINS
        !
        ! ... Here we re-order all rotations in such a way that true sym.ops
        ! are the first nsym; rotations that are not sym.ops. follow
+!write(6,*)'NROT0 in copy_sym = ',nrot,'   ',nsym
+!DO j=1,48
+!  write(6,*)'SYMARRAY = ', sym(j)
+!END DO
+!DO j=1,nat
+!  write(6,*)'TAU = ', tau(j,1), tau(j,2), tau(j,3)
+!END DO
+!write(6,*)'LOGICALS ',magnetic_sym,'  ',no_z_inv
        nsym = copy_sym( nrot, sym )
+!write(6,*)'NROT1 in copy_sym = ',nrot,'   ',nsym
        !
        IF ( .NOT. is_group( nsym ) ) THEN
           IF (i == 1) write(6,*)'find_sym', &
@@ -471,7 +482,8 @@ CONTAINS
      !
      CALL s_axis_to_cart()
      !
-write(6,*)'NSYM = ', nsym
+     nsym_out = nsym
+     write(6,*)'NSYM = ', nsym
      RETURN
      !
    END SUBROUTINE find_sym
@@ -523,6 +535,7 @@ write(6,*)'NSYM = ', nsym
      ! the direct lattice vectors
      DO na = 1, nat
         xau(:,na) = bg(1,:)*tau(1,na) + bg(2,:)*tau(2,na) + bg(3,:)*tau(3,na)
+write(6,*)xau(:,na)
      ENDDO
      !
      ! ... check if the identity has fractional translations (this means
@@ -628,7 +641,7 @@ write(6,*)'NSYM = ', nsym
      ENDDO
      !
      ! ... disable all symmetries z -> -z
-     IF ( PRESENT(no_z_inv) ) THEN
+     IF ( PRESENT(no_z_inv)) THEN
         IF ( no_z_inv ) THEN
            DO irot = 1, nrot
               IF (s(3,3,irot) == -1) sym(irot) = .FALSE.
@@ -781,7 +794,7 @@ write(6,*)'NSYM = ', nsym
      CALL set_sym_bl(at, bg, dumrot)
      no_z_inv_in = 0
 ! QE had this as an optional
-     CALL find_sym( nat, tau, ityp, time_reversal_in, m_loc, no_z_inv_in )
+     CALL find_sym( nat, tau, ityp, time_reversal_in, m_loc, no_z_inv_in, dumrot )
      !
      RETURN
      !

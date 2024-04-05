@@ -103,7 +103,10 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     /* Set up atomic positions and species for external routines */
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        L.to_crystal (&tau[ion * 3], Atoms[ion].crds);
+        //L.to_crystal (&tau[ion * 3], Atoms[ion].crds);
+        tau[ion*3 + 0] = Atoms[ion].crds[0]/Rmg_L.celldm[0];
+        tau[ion*3 + 1] = Atoms[ion].crds[1]/Rmg_L.celldm[0];
+        tau[ion*3 + 2] = Atoms[ion].crds[2]/Rmg_L.celldm[0];
         ityp[ion] = Atoms[ion].species;
     }
 
@@ -113,33 +116,32 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     int nrot = 1;
     set_sym_bl (Rmg_L.at, Rmg_L.bg, &nrot );
-    nsym_atom = nrot;
     this->nsym_full = nrot;
 
 
-    int *sa = new int[9 * nsym_atom]();
-    std::vector<double> translation(2 * 3 * nsym_atom);
-    ftau.resize(3 * nsym_atom);
-    ftau_wave.resize(3 * nsym_atom);
-    inv_type.resize(nsym_atom);
-    time_rev.resize(nsym_atom);
+    int *sa = new int[9 * nrot]();
+    std::vector<double> translation(3 * nrot);
+    ftau.resize(3 * nrot);
+    ftau_wave.resize(3 * nrot);
+    inv_type.resize(nrot);
+    time_rev.resize(nrot);
 
-    sym_trans.resize(3 * nsym_atom);
-    sym_rotate.resize(9 * nsym_atom);
+    sym_trans.resize(3 * nrot);
+    sym_rotate.resize(9 * nrot);
 
-        int magnetic_sym = 0;
-        int no_z_inv = 0;
-        std::vector<double> m_loc;
-        m_loc.resize(3*ct.num_ions);
-        std::fill(m_loc.begin(), m_loc.end(), 0.0);
+    int magnetic_sym = 0;
+    int no_z_inv = 0;
+    std::vector<double> m_loc;
+    m_loc.resize(3*ct.num_ions);
+    std::fill(m_loc.begin(), m_loc.end(), 0.0);
 
-        find_sym ( &ct.num_ions, tau, ityp, &magnetic_sym, m_loc.data(), &no_z_inv);
+    find_sym ( &ct.num_ions, tau, ityp, &magnetic_sym, m_loc.data(), &no_z_inv, &nsym_atom);
 printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
 
 //    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
-    full_sym_rotate.resize(9 * nsym_atom);
-    for(int ns = 0;ns < nsym_atom;ns++)
+    full_sym_rotate.resize(9 * nrot);
+    for(int ns = 0;ns < nrot;ns++)
     {
         for(int i = 0;i < 3;i++)
         {
@@ -151,6 +153,7 @@ printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
             }
         }
     }
+
     for(int nt = 0;nt < nsym_atom;nt++)
     {
         translation[nt*3 + 0] = ft_fortran_ptr[nt*3 + 0];

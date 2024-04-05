@@ -21,7 +21,7 @@
 
 extern "C" void set_sym_bl(double *at, double *bg, int *nrot_out);
 
-extern "C" void find_sym( int *nat, double *tau, int *ityp, int *magnetic_sym, double *m_loc, int *no_z_inv );
+extern "C" void find_sym( int *nat, double *tau, int *ityp, int *magnetic_sym, double *m_loc, int *no_z_inv,int *nsym_out );
 
 extern "C" void kpoint_grid( int *nrot, int *time_reversal, int *skip_equivalence,
                   int *s, int *t_rev, double *, int *npk,
