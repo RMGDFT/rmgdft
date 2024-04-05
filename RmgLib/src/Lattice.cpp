@@ -232,15 +232,15 @@ void Lattice::recips (void)
     Lattice::bg[7] = Lattice::b2[1]*celldm[0];
     Lattice::bg[8] = Lattice::b2[2]*celldm[0];
 
-    Lattice::at[0] = Lattice::a0[0];
-    Lattice::at[1] = Lattice::a0[1];
-    Lattice::at[2] = Lattice::a0[2];
-    Lattice::at[3] = Lattice::a1[0];
-    Lattice::at[4] = Lattice::a1[1];
-    Lattice::at[5] = Lattice::a1[2];
-    Lattice::at[6] = Lattice::a2[0];
-    Lattice::at[7] = Lattice::a2[1];
-    Lattice::at[8] = Lattice::a2[2];
+    Lattice::at[0] = Lattice::a0[0]/celldm[0];
+    Lattice::at[1] = Lattice::a0[1]/celldm[0];
+    Lattice::at[2] = Lattice::a0[2]/celldm[0];
+    Lattice::at[3] = Lattice::a1[0]/celldm[0];
+    Lattice::at[4] = Lattice::a1[1]/celldm[0];
+    Lattice::at[5] = Lattice::a1[2]/celldm[0];
+    Lattice::at[6] = Lattice::a2[0]/celldm[0];
+    Lattice::at[7] = Lattice::a2[1]/celldm[0];
+    Lattice::at[8] = Lattice::a2[2]/celldm[0];
 
 }                               /* end recips */
 

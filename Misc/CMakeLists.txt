@@ -4,6 +4,8 @@ kind.f90
 kpoint_grid.f90
 irrek.f90
 tetra.f90
+symm_base.f90
+eqvect.f90
 Tetrahedron.cpp
 CheckSetDefault.cpp
 DistributeToGlobal.cpp    

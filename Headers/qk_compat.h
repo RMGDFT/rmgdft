@@ -4,9 +4,24 @@
 
 #include "rmg_mangling.h"
 
-#define kpoint_grid  RMG_FC_GLOBAL(kpoint_grid, KPOINT_GRID)
+
+#define inverse_s	RMG_FC_MODULE(symm_base,inverse_s,mod_SYMM_BASE,INVERSE_S)
+#define set_sym_bl	RMG_FC_MODULE(symm_base,set_sym_bl,mod_SYMM_BASE,SET_SYM_BL)
+#define find_sym	RMG_FC_MODULE(symm_base,find_sym,mod_SYMM_BASE,FIND_SYM)
+#define sgam_at	        RMG_FC_MODULE(symm_base,sgam_at,mod_SYMM_BASE,SGAM_AT)
+#define sgam_at_mag	RMG_FC_MODULE(symm_base,sgam_at_mag,mod_SYMM_BASE,SGAM_AT_MAG)
+#define set_sym	        RMG_FC_MODULE(symm_base,set_sym,mod_SYMM_BASE,SET_SYM)
+#define checkallsym	RMG_FC_MODULE(symm_base,checkallsym,mod_SYMM_BASE,CHECKALLSYM)
+#define s_axis_to_cart	RMG_FC_MODULE(symm_base,s_axis_to_cart,mod_SYMM_BASE,S_AXIS_TO_CART)
+#define find_sym_ifc	RMG_FC_MODULE(symm_base,find_sym_ifc,mod_SYMM_BASE,FIND_SYM_IFC)
+#define sgam_at_ifc	RMG_FC_MODULE(symm_base,sgam_at_ifc,mod_SYMM_BASE,SGAM_AT_IFC)
+#define remove_sym	RMG_FC_MODULE(symm_base,remove_sym,mod_SYMM_BASE,REMOVE_SYM)
+#define kpoint_grid     RMG_FC_GLOBAL(kpoint_grid, KPOINT_GRID)
 #define irreducible_bz  RMG_FC_GLOBAL(irreducible_bz, IRREDUCIBLE_BZ)
 
+extern "C" void set_sym_bl(double *at, double *bg, int *nrot_out);
+
+extern "C" void find_sym( int *nat, double *tau, int *ityp, int *magnetic_sym, double *m_loc, int *no_z_inv );
 
 extern "C" void kpoint_grid( int *nrot, int *time_reversal, int *skip_equivalence,
                   int *s, int *t_rev, double *, int *npk,

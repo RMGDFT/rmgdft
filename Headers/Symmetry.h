@@ -88,6 +88,7 @@ class Symmetry
 
     public:
         int nsym;
+        int nsym_full;
         int n_time_rev;
         bool time_reversal=false;
         std::vector<bool> inv_type;
@@ -102,6 +103,7 @@ class Symmetry
         ~Symmetry(void);
 
         std::vector<int> sym_rotate;
+        std::vector<int> full_sym_rotate;
         std::vector<double> sym_trans;
 
         void symmetrize_grid_object(double *object);
