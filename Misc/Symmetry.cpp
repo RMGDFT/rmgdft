@@ -34,6 +34,7 @@
 
 extern "C" int *s_fortran_ptr;
 extern "C" double *ft_fortran_ptr;
+extern "C" int *irt_fortran_ptr;
 
 
 Symmetry *Rmg_Symm;
@@ -137,7 +138,13 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     find_sym ( &ct.num_ions, tau, ityp, &magnetic_sym, m_loc.data(), &no_z_inv, &nsym_atom);
 printf("NSYM_ATOM = %d  NROT = %d\n", nsym_atom, nrot);fflush(NULL);
-
+for(int ion=0;ion < ct.num_ions;ion++)
+{
+    for(int is=0;is < nsym_atom;is++)
+    {
+        if(pct.gridpe==0)printf("IRT: atom %d sym %d  irt  %d\n", ion, is, irt_fortran_ptr[ion*48 + is]); 
+    }
+}
 //    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
     full_sym_rotate.resize(9 * nrot);

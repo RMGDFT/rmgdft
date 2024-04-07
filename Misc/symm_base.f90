@@ -36,6 +36,7 @@ MODULE symm_base
   REAL(DP), ALLOCATABLE, TARGET :: ft(:,:)
   TYPE(C_PTR), BIND(C, NAME='s_fortran_ptr') :: s_fortran_ptr
   TYPE(C_PTR), BIND(C, NAME='ft_fortran_ptr') :: ft_fortran_ptr
+  TYPE(C_PTR), BIND(C, NAME='irt_fortran_ptr') :: irt_fortran_ptr
 
   !! symmetry matrices, in crystal axis
   INTEGER :: invs(48)
@@ -73,7 +74,8 @@ MODULE symm_base
   !! name of the symmetries
   INTEGER :: t_rev(48) = 0 
   !! time reversal flag, for noncolinear magnetism
-  INTEGER, ALLOCATABLE :: irt(:,:)
+  !!INTEGER, ALLOCATABLE :: irt(:,:)
+  INTEGER, ALLOCATABLE, TARGET :: irt(:,:)
   !! symmetric atom for each atom and sym.op.
   LOGICAL :: time_reversal = .TRUE.
   !! if .TRUE. the system has time reversal symmetry
@@ -425,6 +427,7 @@ CONTAINS
      ! if true the corresponding operation is a symmetry operation
      !
      IF ( .NOT. ALLOCATED(irt) ) ALLOCATE( irt(48,nat) )
+     irt_fortran_ptr = C_LOC(irt)
      irt(:,:) = 0
      !
      !    Here we find the true symmetries of the crystal
