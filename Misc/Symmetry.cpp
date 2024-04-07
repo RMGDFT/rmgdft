@@ -735,12 +735,7 @@ void Symmetry::symforce (void)
 
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        for (int ir = 0; ir < 3; ir++)
-        {
-            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * L.b0[ir] +
-                Atoms[ion].force[ct.fpt[0]][1] * L.b1[ir] +
-                Atoms[ion].force[ct.fpt[0]][2] * L.b2[ir];
-        }                       /* end for ir */
+        Rmg_L.to_crystal_vector( &force[ion *3 ], Atoms[ion].force[ct.fpt[0]]);
 
         Atoms[ion].force[ct.fpt[0]][0] = 0.0;
         Atoms[ion].force[ct.fpt[0]][1] = 0.0;
@@ -759,12 +754,7 @@ void Symmetry::symforce (void)
     }
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        for (int ir = 0; ir < 3; ir++)
-        {
-            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * L.a0[ir] +
-                Atoms[ion].force[ct.fpt[0]][1] * L.a1[ir] +
-                Atoms[ion].force[ct.fpt[0]][2] * L.a2[ir];
-        }                       /* end for ir */
+        Rmg_L.to_cartesian( Atoms[ion].force[ct.fpt[0]], &force[ion *3 ]);
     }
 
     for (int ion = 0; ion < ct.num_ions; ion++)
