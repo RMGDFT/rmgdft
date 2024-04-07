@@ -326,5 +326,12 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
         }
     }
 
+    if(ct.is_use_symmetry)
+    {
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+        if(ct.noncoll && Rmg_Symm)
+            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+    }
+
     delete [] work;
 }
