@@ -486,7 +486,7 @@ CONTAINS
      CALL s_axis_to_cart()
      !
      nsym_out = nsym
-     write(6,*)'NSYM = ', nsym
+     !write(6,*)'NSYM = ', nsym
      RETURN
      !
    END SUBROUTINE find_sym
@@ -538,7 +538,7 @@ CONTAINS
      ! the direct lattice vectors
      DO na = 1, nat
         xau(:,na) = bg(1,:)*tau(1,na) + bg(2,:)*tau(2,na) + bg(3,:)*tau(3,na)
-write(6,*)xau(:,na)
+!write(6,*)xau(:,na)
      ENDDO
      !
      ! ... check if the identity has fractional translations (this means

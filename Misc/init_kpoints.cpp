@@ -250,43 +250,45 @@ int init_kpoints (int *kmesh, int *kshift)
         wk[ioff] = it->kweight;
         ioff++;
     }
-    printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
-// irreducible_bz is cartesian
-            irreducible_bz( &Rmg_Symm->nsym_full, Rmg_Symm->full_sym_rotate.data(), &Rmg_Symm->nsym,
-                                   &minus_q,
-                                   &magnetic_sym,
-                                   Rmg_L.at,         // Use Rmg_L.at
-                                   Rmg_L.bg,         // Use Rmg_L.bg
-                                   &max_kpts,        // Max number of k-points
-                                   &nks,             // Number of k-points
-                                   xk1.data(),         // K-points stored as triplets
-                                   wk.data(),         // Their weights
-                                   Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
-        ct.kp.clear();
-        ct.kp.resize(nks);
-        for(int ik=0;ik < nks;ik++)
-        {
-            ct.kp[ik].kvec[0] = xk1[ik*3 + 0];
-            ct.kp[ik].kvec[1] = xk1[ik*3 + 1];
-            ct.kp[ik].kvec[2] = xk1[ik*3 + 2];
-            ct.kp[ik].kweight = wk[ik];
-        double v1, v2, v3;
+    if(ct.verbose && pct.gridpe == 0) 
+       printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
 
-        v1 =  Rmg_L.a0[0] * xk1[ik*3+0] 
-            + Rmg_L.a0[1] * xk1[ik*3+1] 
-            + Rmg_L.a0[2] * xk1[ik*3+2];
-        v2 =  Rmg_L.a1[0] * xk1[ik*3+0] 
-            + Rmg_L.a1[1] * xk1[ik*3+1] 
-            + Rmg_L.a1[2] * xk1[ik*3+2];
-        v3 =  Rmg_L.a2[0] * xk1[ik*3+0] 
-            + Rmg_L.a2[1] * xk1[ik*3+1] 
-            + Rmg_L.a2[2] * xk1[ik*3+2];
+    // irreducible_bz is cartesian
+    irreducible_bz( &Rmg_Symm->nsym_full, Rmg_Symm->full_sym_rotate.data(), &Rmg_Symm->nsym,
+                           &minus_q,
+                           &magnetic_sym,
+                           Rmg_L.at,         // Use Rmg_L.at
+                           Rmg_L.bg,         // Use Rmg_L.bg
+                           &max_kpts,        // Max number of k-points
+                           &nks,             // Number of k-points
+                           xk1.data(),         // K-points stored as triplets
+                           wk.data(),         // Their weights
+                           Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+    ct.kp.clear();
+    ct.kp.resize(nks);
+    for(int ik=0;ik < nks;ik++)
+    {
+        ct.kp[ik].kvec[0] = xk1[ik*3 + 0];
+        ct.kp[ik].kvec[1] = xk1[ik*3 + 1];
+        ct.kp[ik].kvec[2] = xk1[ik*3 + 2];
+        ct.kp[ik].kweight = wk[ik];
+    double v1, v2, v3;
+
+    v1 =  Rmg_L.a0[0] * xk1[ik*3+0] 
+        + Rmg_L.a0[1] * xk1[ik*3+1] 
+        + Rmg_L.a0[2] * xk1[ik*3+2];
+    v2 =  Rmg_L.a1[0] * xk1[ik*3+0] 
+        + Rmg_L.a1[1] * xk1[ik*3+1] 
+        + Rmg_L.a1[2] * xk1[ik*3+2];
+    v3 =  Rmg_L.a2[0] * xk1[ik*3+0] 
+        + Rmg_L.a2[1] * xk1[ik*3+1] 
+        + Rmg_L.a2[2] * xk1[ik*3+2];
         ct.kp[ik].kpt[0] = v1/Rmg_L.celldm[0];
         ct.kp[ik].kpt[1] = v2/Rmg_L.celldm[0];
         ct.kp[ik].kpt[2] = v3/Rmg_L.celldm[0];
-printf("JJJJ0  %f  %f  %f\n", xk1[ik*3 + 0], xk1[ik*3 + 1], xk1[ik*3 + 2]);
-printf("JJJJ1  %f  %f  %f\n", v1/Rmg_L.celldm[0], v2/Rmg_L.celldm[0], v3/Rmg_L.celldm[0]);
-        }
+//printf("JJJJ0  %f  %f  %f\n", xk1[ik*3 + 0], xk1[ik*3 + 1], xk1[ik*3 + 2]);
+//printf("JJJJ1  %f  %f  %f\n", v1/Rmg_L.celldm[0], v2/Rmg_L.celldm[0], v3/Rmg_L.celldm[0]);
+    }
 
 ///////////////////////////////////////
 

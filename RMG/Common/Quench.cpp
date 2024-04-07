@@ -223,7 +223,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
             if (pct.imgpe == 0 && pct.images == 1)
-                fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", ct.rms, ct.thr_rms);
+                fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
         }
         else if(fabs(ct.scf_accuracy) < ct.thr_energy)
         {
