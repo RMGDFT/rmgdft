@@ -41,7 +41,6 @@ extern "C" int *s_fortran_ptr;
 int init_kpoints (int *kmesh, int *kshift)
 {
     int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
-    int minus_q = true;
     int magnetic_sym = 0;
     int no_z_inv = 0;
 
@@ -253,18 +252,22 @@ int init_kpoints (int *kmesh, int *kshift)
        printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
 
     // irreducible_bz is cartesian
-    irreducible_bz( &Rmg_Symm->nsym_full, Rmg_Symm->full_sym_rotate.data(), &Rmg_Symm->nsym,
-                           &minus_q,
-                           &magnetic_sym,
-                           Rmg_L.at,         // Use Rmg_L.at
-                           Rmg_L.bg,         // Use Rmg_L.bg
-                           &max_kpts,        // Max number of k-points
-                           &nks,             // Number of k-points
-                           xk1.data(),         // K-points stored as triplets
-                           wk.data(),         // Their weights
-                           Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+    irreducible_bz( &Rmg_Symm->nsym_full,
+                    Rmg_Symm->full_sym_rotate.data(),
+                    &Rmg_Symm->nsym,
+                    &ct.time_reversal,
+                    &magnetic_sym,
+                    Rmg_L.at,         // Use Rmg_L.at
+                    Rmg_L.bg,         // Use Rmg_L.bg
+                    &max_kpts,        // Max number of k-points
+                    &nks,             // Number of k-points
+                    xk1.data(),         // K-points stored as triplets
+                    wk.data(),         // Their weights
+                    Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+
 //printf("irreducible_bz  NROT = %d  NSYM = %d  NKS = %d  MAGSYM = %d  MINUS_Q = %d\n",
 //Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks, magnetic_sym, minus_q);
+
     ct.kp.clear();
     ct.kp.resize(nks);
     for(int ik=0;ik < nks;ik++)
