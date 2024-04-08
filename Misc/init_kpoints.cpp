@@ -42,6 +42,8 @@ int init_kpoints (int *kmesh, int *kshift)
 {
     int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
     int magnetic_sym = 0;
+    int time_reversal = true;
+    if(!ct.time_reversal) time_reversal = false;
     int no_z_inv = 0;
 
 
@@ -250,12 +252,12 @@ int init_kpoints (int *kmesh, int *kshift)
     }
     if(ct.verbose && pct.gridpe == 0) 
        printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
-
+magnetic_sym = 1;
     // irreducible_bz is cartesian
     irreducible_bz( &Rmg_Symm->nsym_full,
                     Rmg_Symm->full_sym_rotate.data(),
                     &Rmg_Symm->nsym,
-                    &ct.time_reversal,
+                    &time_reversal,
                     &magnetic_sym,
                     Rmg_L.at,         // Use Rmg_L.at
                     Rmg_L.bg,         // Use Rmg_L.bg
