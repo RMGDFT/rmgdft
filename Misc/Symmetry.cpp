@@ -135,7 +135,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     delta += std::abs(sa[isym * 9 + i *3 + j] - sa[jsym * 9 + i *3 + j]);
                 }
             }
-            if (delta < symprec && time_rev[isym] == time_rev[jsym]) 
+            if (delta < symprec)
             {
                 already_in = true;
                 break;
