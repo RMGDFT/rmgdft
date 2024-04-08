@@ -227,7 +227,6 @@ int init_kpoints (int *kmesh, int *kshift)
     wk.resize(max_kpts);
     //printf("nnnnnsym = %d  npk = %d  nkstot = %d  nrot = %d\n",Rmg_Symm->nsym, max_kpts, nks, Rmg_Symm->nsym_full);
     // irreducible_bz uses these units
-    double scale = Rmg_L.celldm[0];
     xk1.clear();
     xk1.resize(3*max_kpts);
     int ioff = 0;
@@ -264,6 +263,8 @@ int init_kpoints (int *kmesh, int *kshift)
                            xk1.data(),         // K-points stored as triplets
                            wk.data(),         // Their weights
                            Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+//printf("irreducible_bz  NROT = %d  NSYM = %d  NKS = %d  MAGSYM = %d  MINUS_Q = %d\n",
+//Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks, magnetic_sym, minus_q);
     ct.kp.clear();
     ct.kp.resize(nks);
     for(int ik=0;ik < nks;ik++)

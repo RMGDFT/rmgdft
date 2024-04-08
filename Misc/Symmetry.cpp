@@ -85,17 +85,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     ny_grid = NY * density;
     nz_grid = NZ * density;
 
-    double lattice[9];
-    lattice[0*3+0] = L.get_a0(0);
-    lattice[1*3+0] = L.get_a0(1);
-    lattice[2*3+0] = L.get_a0(2);
-    lattice[0*3+1] = L.get_a1(0);
-    lattice[1*3+1] = L.get_a1(1);
-    lattice[2*3+1] = L.get_a1(2);
-    lattice[0*3+2] = L.get_a2(0);
-    lattice[1*3+2] = L.get_a2(1);
-    lattice[2*3+2] = L.get_a2(2);
-
     double sr[3][3];
 
     double *tau = new double[4*3 * ct.num_ions];
@@ -108,7 +97,9 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         tau[ion*3 + 0] = Atoms[ion].crds[0]/Rmg_L.celldm[0];
         tau[ion*3 + 1] = Atoms[ion].crds[1]/Rmg_L.celldm[0];
         tau[ion*3 + 2] = Atoms[ion].crds[2]/Rmg_L.celldm[0];
-        ityp[ion] = Atoms[ion].species;
+        // We need to account for spin when defining atom type
+        double t = 10000.0*(Atoms[ion].init_spin_rho + 1.0);
+        ityp[ion] = (int)t + Atoms[ion].species;
     }
 
     int nsym_atom=1;
@@ -170,7 +161,9 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         translation[nt*3 + 1] = -ft_fortran_ptr[nt*3 + 1];
         translation[nt*3 + 2] = -ft_fortran_ptr[nt*3 + 2];
     }
-    if(ct.verbose && pct.gridpe==0) printf("nsym_atom = %d\n",nsym_atom);fflush(NULL);
+
+    if(ct.verbose && pct.gridpe==0) printf("nsym_atom = %d\n",nsym_atom);
+
     if(!ct.time_reversal) time_reversal = false;
 
     nsym = 0;
