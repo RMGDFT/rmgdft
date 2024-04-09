@@ -251,7 +251,7 @@ int init_kpoints (int *kmesh, int *kshift)
         ioff++;
     }
     if(ct.verbose && pct.gridpe == 0) 
-       printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
+       rmg_printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
 
     // irreducible_bz is cartesian
     irreducible_bz( &Rmg_Symm->nsym_full,
@@ -265,7 +265,7 @@ int init_kpoints (int *kmesh, int *kshift)
                     &nks,             // Number of k-points
                     xk1.data(),         // K-points stored as triplets
                     wk.data(),         // Their weights
-                    Rmg_Symm->time_rev.data());       // Use Rmg_Symm.time_rev.data()
+                    Rmg_Symm->full_time_rev.data());       // Use Rmg_Symm.time_rev.data()
 
 //printf("irreducible_bz  NROT = %d  NSYM = %d  NKS = %d  MAGSYM = %d  MINUS_Q = %d\n",
 //Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks, magnetic_sym, minus_q);
@@ -353,11 +353,11 @@ int init_kpoints (int *kmesh, int *kshift)
 
     if (ct.verbose)
     {
-        printf("\n num_k %d", ct.num_kpts);
+        rmg_printf("\n num_k %d", ct.num_kpts);
         for(kpt = 0; kpt < ct.num_kpts; kpt++)
-            printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+            rmg_printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
         for(kpt = 0; kpt < ct.klist.num_k_all; kpt++)
-            printf("\n kall %d %f %f %f %d %d %d", kpt,
+            rmg_printf("\n kall %d %f %f %f %d %d %d", kpt,
                     ct.klist.k_all_cart[kpt][0],ct.klist.k_all_cart[kpt][1],ct.klist.k_all_cart[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
                     (int)Rmg_Symm->time_rev[std::abs(ct.klist.k_map_symm[kpt])-1 ]);
     }

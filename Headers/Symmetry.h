@@ -93,6 +93,7 @@ class Symmetry
         bool time_reversal=false;
         std::vector<bool> inv_type;
         std::vector<int> time_rev;
+        std::vector<int> full_time_rev;
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
         std::vector<int> sym_atom;

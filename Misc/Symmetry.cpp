@@ -119,58 +119,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
-    full_sym_rotate.resize(9 * nsym_atom);
-    nrot = 0;
-    std::vector<int> sym_to_be_removed;
-    for (int isym = 0; isym < nsym_atom; isym++)
-    {
-        bool already_in = false;
-        for (int jsym = 0; jsym < isym; jsym++)
-        {
-            double delta = 0.0;
-            for(int i = 0; i < 3; i++)
-            {
-                for(int j = 0; j < 3; j++)
-                {
-                    delta += std::abs(sa[isym * 9 + i *3 + j] - sa[jsym * 9 + i *3 + j]);
-                }
-            }
-            if (delta < symprec)
-            {
-                already_in = true;
-                break;
-            }
-        }
-
-        if(already_in)
-        {
-            sym_to_be_removed.push_back(isym);
-        }
-        else
-        {
-            for(int i = 0;i < 3;i++)
-            {
-                for(int j = 0;j < 3;j++)
-                {
-                    full_sym_rotate[nrot*9 + i + j*3] = sa[isym*9 + i + j*3];
-                }
-            }
-
-            nrot++;
-        }
-    }
-
-    full_sym_rotate.erase(full_sym_rotate.begin() + nrot *9, full_sym_rotate.end() ); 
-    this->nsym_full = nrot;
-    //  now nrot is the total number of symmetry before considering real space grid
-    if (sym_to_be_removed.size() > 0)
-    {
-        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
-        {
-            int isym = *it;
-            translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
-        }
-    }
+    nrot = nsym_atom;
 
     ftau.resize(3 * nrot);
     ftau_wave.resize(3 * nrot);
@@ -181,86 +130,51 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     sym_rotate.resize(9 * nrot);
 
 
-    if(ct.verbose && pct.gridpe==0) printf("nsym_atom = %d\n",nrot);
+    if(ct.verbose && pct.gridpe==0) rmg_printf("nsym_atom = %d\n",nrot);
 
     if(!ct.time_reversal) time_reversal = false;
 
-    nsym = 0;
-    for(int kpt = 0; kpt < nrot; kpt++)
+    for(int isym = 0; isym < nrot; isym++)
     {
 
         for(int i = 0; i < 3; i++)
         {
-            while(std::abs(translation[kpt*3+i] - 1.0) < symprec ) translation[kpt*3+i] -=1.0;
-            while(std::abs(translation[kpt*3+i] + 1.0) < symprec ) translation[kpt*3+i] +=1.0;
+            while(std::abs(translation[isym*3+i] - 1.0) < symprec ) translation[isym*3+i] -=1.0;
+            while(std::abs(translation[isym*3+i] + 1.0) < symprec ) translation[isym*3+i] +=1.0;
         }
 
-        double intpart;
 
-        double frac_sum = std::abs(translation[kpt*3+0]) + std::abs(translation[kpt*3+1]) + std::abs(translation[kpt*3+2]);
-        if(!ct.frac_symm  && frac_sum > symprec) continue;
-        double frac1 = modf(translation[kpt*3 + 0] * nx_grid, &intpart);
-        double frac2 = modf(translation[kpt*3 + 1] * ny_grid, &intpart);
-        double frac3 = modf(translation[kpt*3 + 2] * nz_grid, &intpart);
-        if(frac1 > 0.5) frac1 = 1.0-frac1;
-        if(frac2 > 0.5) frac2 = 1.0-frac2;
-        if(frac3 > 0.5) frac3 = 1.0-frac3;
-        if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
+
+        for(int i = 0; i < 3; i++)
         {
-
-            if(ct.verbose && pct.imgpe == 0) rmg_printf("\n sym operation after considering real space grid # %d",nsym);
-            for(int i = 0; i < 3; i++)
-                for(int j = 0; j < 3; j++)
-                {
-                    sym_rotate[nsym * 9 + i *3 + j] = full_sym_rotate[kpt * 9 + i *3 + j];
-                    sr[i][j] = full_sym_rotate[kpt * 9 + i *3 + j];
-                }
-
-
-            ftau[nsym*3 + 0] = std::round(translation[kpt*3 + 0] * nx_grid);
-            ftau[nsym*3 + 1] = std::round(translation[kpt*3 + 1] * ny_grid);
-            ftau[nsym*3 + 2] = std::round(translation[kpt*3 + 2] * nz_grid);
-            ftau_wave[nsym*3 + 0] = std::round(translation[kpt*3 + 0] * nx_grid_c);
-            ftau_wave[nsym*3 + 1] = std::round(translation[kpt*3 + 1] * ny_grid_c);
-            ftau_wave[nsym*3 + 2] = std::round(translation[kpt*3 + 2] * nz_grid_c);
-
-            sym_trans[nsym*3+0] = translation[kpt*3+0];
-            sym_trans[nsym*3+1] = translation[kpt*3+1];
-            sym_trans[nsym*3+2] = translation[kpt*3+2];
-            inv_type[nsym] = false;
-            if(type_symm(sr) == 2 || type_symm(sr) == 5 || type_symm(sr) == 6)
-                inv_type[nsym] = true;
-
-            time_rev[nsym] = false;
-
-            if(ct.verbose && pct.imgpe == 0)
+            for(int j = 0; j < 3; j++)
             {
-                for(int i = 0; i < 3; i++)
-                {
-                    rmg_printf("\n      %3d  %3d  %3d", sym_rotate[nsym * 9 + i *3 + 0],sym_rotate[nsym * 9 + i *3 + 1],sym_rotate[nsym * 9 + i *3 + 2]);
-                }
-                rmg_printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
-                rmg_printf("  with translation of (%f %f %f) grids ", translation[kpt*3+0],translation[kpt*3+1],translation[kpt*3+2]);
+                sym_rotate[isym * 9 + i *3 + j] = sa[isym * 9 + i *3 + j];
+                sr[i][j] = sa[isym * 9 + i *3 + j];
             }
-            nsym++;
         }
-        else if(ct.verbose && pct.imgpe == 0)
-        {
-            rmg_printf("\n translation break a symmetry") ;
-            for(int i = 0; i < 3; i++)
-            {
-                rmg_printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
-            }   
-            rmg_printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
 
-        }
+
+        ftau[isym*3 + 0] = std::round(translation[isym*3 + 0] * nx_grid);
+        ftau[isym*3 + 1] = std::round(translation[isym*3 + 1] * ny_grid);
+        ftau[isym*3 + 2] = std::round(translation[isym*3 + 2] * nz_grid);
+        ftau_wave[isym*3 + 0] = std::round(translation[isym*3 + 0] * nx_grid_c);
+        ftau_wave[isym*3 + 1] = std::round(translation[isym*3 + 1] * ny_grid_c);
+        ftau_wave[isym*3 + 2] = std::round(translation[isym*3 + 2] * nz_grid_c);
+
+        sym_trans[isym*3+0] = translation[isym*3+0];
+        sym_trans[isym*3+1] = translation[isym*3+1];
+        sym_trans[isym*3+2] = translation[isym*3+2];
+        inv_type[isym] = false;
+        if(type_symm(sr) == 2 || type_symm(sr) == 5 || type_symm(sr) == 6)
+            inv_type[isym] = true;
+
+        time_rev[isym] = false;
+
     }   
 
-    if(ct.verbose && pct.imgpe == 0) rmg_printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
-    if(ct.verbose && pct.imgpe == 0) rmg_printf("\n number of sym operation  after considering real space grid: %d",nsym);
-    assert(nsym >0);
 
-    sym_atom.resize(ct.num_ions* nsym);
+    sym_atom.resize(ct.num_ions* nsym_atom);
 
     //  determine equivenlent ions after symmetry operation
     double xtal[3];
@@ -268,7 +182,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     ndim[0] = (double)nx_grid;
     ndim[1] = (double)ny_grid;
     ndim[2] = (double)nz_grid;
-    for(int isym = 0; isym < nsym; isym++)
+    for(int isym = 0; isym < nsym_atom; isym++)
     {
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
@@ -278,7 +192,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 xtal[i] = sym_rotate[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
                     + sym_rotate[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
-                    + sym_rotate[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] + (double)ftau[isym *3 + i]/ (double)ndim[i];
+                    + sym_rotate[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] + translation[isym *3 + i];
 
                 if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
                 if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
@@ -323,20 +237,13 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
 
-    ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
-    ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
-    sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());
-    sym_rotate.erase(sym_rotate.begin() + nsym *9, sym_rotate.end());
-    sym_atom.erase(sym_atom.begin() + nsym * ct.num_ions, sym_atom.end());
-    inv_type.erase(inv_type.begin()+ nsym, inv_type.end());
-    time_rev.erase(time_rev.begin()+ nsym, time_rev.end());
 
     //remove the symmetry operaion which break the symmetry by spin polarization
     if(ct.nspin == 2)
     {
 
         bool sym_break, mag_same, mag_oppo;
-        for(int isym = nsym-1; isym > 0; isym--)
+        for(int isym = nsym_atom-1; isym > 0; isym--)
         {
             sym_break=false;
             mag_same = true;
@@ -373,6 +280,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
                 inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
                 time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+                translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
             }
         }
 
@@ -399,7 +307,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
         double vec1[3], vec2[3];
         bool sym_break, mag_same, mag_oppo;
-        for(int isym = nsym-1; isym > 0; isym--)
+        for(int isym = nsym_atom-1; isym > 0; isym--)
         {
             sym_break=false;
             mag_same = true;
@@ -438,6 +346,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
                 inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
                 time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+                translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
             }
         }
 
@@ -457,6 +366,50 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     }
 
+    nsym = sym_rotate.size()/9;
+    std::vector<int> sym_to_be_removed;
+    for (int isym = 0; isym < nsym; isym++)
+    {
+        bool already_in = false;
+        for (int jsym = 0; jsym < isym; jsym++)
+        {
+            double delta = 0.0;
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = 0; j < 3; j++)
+                {
+                    delta += std::abs(sym_rotate[isym * 9 + i *3 + j] - sym_rotate[jsym * 9 + i *3 + j]);
+                }
+            }
+
+            if (delta < symprec && time_rev[isym] == time_rev[jsym])
+            {
+                already_in = true;
+                break;
+            }
+        }
+
+        if(already_in)
+        {
+            sym_to_be_removed.push_back(isym);
+        }
+    }
+
+    if (sym_to_be_removed.size() > 0)
+    {
+        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+        {
+            int isym = *it;
+            ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+            ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+            sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+            sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+            sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+            time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
+        }
+    }
 
     if(ct.verbose && pct.imgpe == 0)
     {
@@ -468,7 +421,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
             }
-            rmg_printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+            rmg_printf("  with translation of (%d %d %d) grids, time_rev %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], time_rev[isym]);
         }
     }
     nsym = (int)sym_rotate.size()/9;
@@ -511,11 +464,106 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
                 inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
                 time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+                translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
             }
         }
     }
 
+    nsym_full = (int)sym_rotate.size()/9;
+    if(nsym > 48)
+    {
+        std::cout << " too many rotation symmetries nsym = "<< nsym << std::endl;
+        rmg_error_handler(__FILE__, __LINE__, "too many  symmetry .\n");
+    }
+
+    full_sym_rotate.resize(9 * nsym_full);
+    full_time_rev.resize(nsym_full);
+
+    full_sym_rotate = sym_rotate;
+    full_time_rev = time_rev;
+
+    sym_to_be_removed.clear();
+    std::vector<int> sym_keep;
+    for(int kpt = 0; kpt < nsym_full; kpt++)
+    {
+
+        double intpart;
+
+        double frac_sum = std::abs(translation[kpt*3+0]) + std::abs(translation[kpt*3+1]) + std::abs(translation[kpt*3+2]);
+        if(!ct.frac_symm  && frac_sum > symprec) 
+        {
+            sym_to_be_removed.push_back(kpt);
+            continue;
+        }
+        double frac1 = modf(translation[kpt*3 + 0] * nx_grid, &intpart);
+        double frac2 = modf(translation[kpt*3 + 1] * ny_grid, &intpart);
+        double frac3 = modf(translation[kpt*3 + 2] * nz_grid, &intpart);
+        if(frac1 > 0.5) frac1 = 1.0-frac1;
+        if(frac2 > 0.5) frac2 = 1.0-frac2;
+        if(frac3 > 0.5) frac3 = 1.0-frac3;
+        if(frac1 > symprec || frac2 > symprec ||frac3 > symprec)
+        {
+            sym_to_be_removed.push_back(kpt);
+            continue;
+        }
+        sym_keep.push_back(kpt);
+    }
+
+
+
+    for(size_t isym = 0; isym < sym_keep.size(); isym++)
+    {
+        int jsym = sym_keep[isym];
+        for(int i = 0; i < 9; i++)
+        {
+            full_sym_rotate[isym*9+i] = sym_rotate[jsym*9+i];
+        }
+        full_time_rev[isym] = time_rev[jsym];
+    }
+    for(size_t isym = 0; isym < sym_to_be_removed.size(); isym++)
+    {
+        int jsym = sym_to_be_removed[isym];
+        int iisym = isym + sym_keep.size();
+        for(int i = 0; i < 9; i++)
+        {
+            full_sym_rotate[iisym*9+i] = sym_rotate[jsym*9+i];
+        }
+        full_time_rev[iisym] = time_rev[jsym];
+    }
+
+    if (sym_to_be_removed.size() > 0)
+    {
+        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+        {
+            int isym = *it;
+            ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+            ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+            sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+            sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+            sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+            time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
+        }
+    }
+
     nsym = (int)sym_rotate.size()/9;
+
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        rmg_printf("\n sym operation after real space grid  # %d",(int) sym_rotate.size()/9);
+        for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+        {
+            rmg_printf("\n symmetry operation # %d:", isym);
+            for(int i = 0; i < 3; i++)
+            {
+                rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+            }
+            rmg_printf("  with translation of (%d %d %d) grids, time_rev %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], time_rev[isym]);
+        }
+    }
+
+
     n_time_rev = 0;
     for (auto t_r = time_rev.begin(); t_r != time_rev.end(); ++t_r)
     {
@@ -530,41 +578,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     rotate_ylm();
     rotate_spin(); 
 
-
-    // put the sym_rotate into first positions in full_sym_rotate
-    // insert the sym_rotate into full_sym_rotate, then erase the duplicates
-    std::vector<int> reorder_sym;
-    reorder_sym = sym_rotate;
-    reorder_sym.insert(reorder_sym.end(), full_sym_rotate.begin(), full_sym_rotate.end()); 
-    int ntem = 0;
-    for(int isym = 0; isym < nsym + nsym_full; isym++)
-    {
-        bool already_in = false;
-        for(int jsym = 0; jsym < isym; jsym++)
-        {
-            double delta = 0.0;
-            for(int i = 0; i < 3; i++)
-            {
-                for(int j = 0; j < 3; j++)
-                {
-                    delta += std::abs(reorder_sym[isym * 9 + i *3 + j] - reorder_sym[jsym * 9 + i *3 + j]);
-                }
-            }
-            if (delta < symprec)
-            {
-                already_in = true;
-            }
-        }
-
-        if(!already_in)
-        {
-            for(int i = 0; i < 9; i++)
-            {
-                full_sym_rotate[ntem * 9+i] = reorder_sym[isym*9 + i];
-            }
-            ntem++;
-        }
-    }
 
     delete [] sa;
     delete [] tau;
