@@ -252,7 +252,7 @@ int init_kpoints (int *kmesh, int *kshift)
     }
     if(ct.verbose && pct.gridpe == 0) 
        printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
-magnetic_sym = 1;
+
     // irreducible_bz is cartesian
     irreducible_bz( &Rmg_Symm->nsym_full,
                     Rmg_Symm->full_sym_rotate.data(),
