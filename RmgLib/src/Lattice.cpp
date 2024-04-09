@@ -1205,3 +1205,32 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
     }
     celldm[0] = celldm[0] * alat;
 }
+
+void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double *a2, double *nalat)
+{
+  
+  double e0[3], e1[3], e2[3], celldm_internal[6], omegai;
+  if(ibrav == 0)
+  {
+      printf("Warning: remake_cell should not be used when ibrav=0\n");
+      return;
+  }
+  lat2celldm (ibrav, alat, a0, a1, a2);
+
+  e0[0] = a0[0];
+  e0[1] = a0[1];
+  e0[2] = a0[2];
+  e1[0] = a1[0];
+  e1[1] = a1[1];
+  e1[2] = a1[2];
+  e2[0] = a2[0];
+  e2[1] = a2[1];
+  e2[2] = a2[2];
+  latgen (celldm, &omegai, a0, a1, a2, false);
+  for(int i=0;i < 3;i++) a0[i] /= alat;
+  for(int i=0;i < 3;i++) a1[i] /= alat;
+  for(int i=0;i < 3;i++) a2[i] /= alat;
+  alat = celldm[0];
+  *nalat = alat;
+}
+

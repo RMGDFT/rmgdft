@@ -139,7 +139,9 @@ void simple_lbfgs (void)
             if(cell_movable[2*3+i]) Rmg_L.a2[i] = h[2*3+i];
         }
         double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
-        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
+//        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
+        double nalat;
+        Rmg_L.remake_cell(Rmg_L.get_ibrav_type(), 1.0, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, &nalat);
         rmg_printf("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
         if(pct.imgpe == 0)
         {
