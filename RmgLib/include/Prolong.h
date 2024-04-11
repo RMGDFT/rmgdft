@@ -39,10 +39,13 @@
 class Prolong {
 
 public:
-    Prolong(int ratio, int order, TradeImages &TI);
+    Prolong(int ratio, int order, TradeImages &TI, int ibrav);
     ~Prolong(void);
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+
+    template<typename T>
+    void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
 private:
     void cgen_prolong (double *coef, double fraction);
@@ -50,6 +53,7 @@ private:
     int ratio;
     int order;
     TradeImages &TR;
+    int ibrav;
     double a[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
     float af[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
 };

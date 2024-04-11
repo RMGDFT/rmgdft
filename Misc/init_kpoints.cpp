@@ -40,7 +40,6 @@ extern "C" int *s_fortran_ptr;
 
 int init_kpoints (int *kmesh, int *kshift)
 {
-    int max_kpts = kmesh[0] * kmesh[1] * kmesh[2];
     int magnetic_sym = 0;
     int time_reversal = true;
     if(!ct.time_reversal) time_reversal = false;
@@ -223,6 +222,7 @@ int init_kpoints (int *kmesh, int *kshift)
 ///////////////////////////////////////
     int nks = ct.kp.size();
     std::vector<double> xk1;
+    int max_kpts = nks * Rmg_Symm->nsym_full;
     xk1.resize(3*max_kpts);
     std::vector<double> wk;
     wk.resize(max_kpts);

@@ -33,8 +33,14 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
                        int half_dimy, int half_dimz);
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2 (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2 (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2 (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
 
-Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in) : ratio(ratio_in), order(order_in), TR(TR_in)
+Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in, int ibrav_in) : ratio(ratio_in), order(order_in), TR(TR_in), ibrav(ibrav_in)
 {
     /*Order has to be even number */
     if (order % 2)
@@ -113,6 +119,12 @@ void Prolong::cgen_prolong (double *coef, double fraction)
 template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz)
 {
+
+    if(ibrav == 4)
+    {
+        prolong_hex2 (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        return;
+    }
 
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
 
@@ -270,6 +282,79 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
     delete [] fulla;
     delete [] fullb;
+    delete [] sg_half;
+
+}
+
+
+
+
+template <typename T> void Prolong::prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz)
+{
+
+    if(ratio != 2)
+        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+
+    T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
+
+    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
+
+    int incy = dimz / ratio + order;
+    int incx = (dimz / ratio + order) * (dimy / ratio + order);
+
+
+    int incx2 = (dimz / ratio + order) * dimy;
+    int incy2 = dimz / ratio + order;
+
+    // Optimized most common case
+
+    T* fulla = new T[dimx * dimy * (dimz / ratio + order)];
+
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio + order; iz++)
+            {
+                T sum = 0.0;
+                fulla[(ratio * ix) * incx2 + ratio * iy * incy2 + iz] = sg_half[(ix+order/2) * incx + (iy+order/2) * incy + iz];
+
+                sum = 0.0;
+                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+order/2) * incy + iz];
+                fulla[((ratio * ix) + 1) * incx2 + ratio * iy * incy2 + iz] = sum;
+
+                sum = 0.0;
+                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+order/2)*incx + (iy+k+1) * incy + iz];
+                fulla[(ratio * ix) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
+
+                sum = 0.0;
+                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+k+1) * incy + iz];
+                fulla[((ratio * ix)+1) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
+            }
+        }
+    }
+
+
+    for (int i = 0; i < ratio; i++)
+    {
+        for (int ix = 0; ix < dimx; ix++)
+        {
+            for (int iy = 0; iy < dimy; iy++)
+            {
+                for (int iz = 0; iz < dimz / ratio; iz++)
+                {
+                    T sum = 0.0;
+                    T *full_tmp = &fulla[ix * incx2 + iy * incy + iz + 1];
+                    for(int k = 0;k < order;k++) sum+= a[i][k] * full_tmp[k];
+                    full[ix * dimy * dimz + iy * dimz + ratio * iz + i] = sum;
+                }
+            }
+        }
+    }
+
+
+    delete [] fulla;
     delete [] sg_half;
 
 }
