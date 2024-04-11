@@ -34,7 +34,7 @@
 #include "TradeImages.h"
 #include "rmg_error.h"
 
-#define MAX_PROLONG_ORDER 10
+#define MAX_PROLONG_ORDER 12
 
 class Prolong {
 
