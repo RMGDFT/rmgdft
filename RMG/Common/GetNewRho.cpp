@@ -119,7 +119,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    static Prolong P(ratio, 10, *Rmg_T,  Rmg_L.get_ibrav_type());
+    static Prolong P(ratio, ct.prolong_order, *Rmg_T,  Rmg_L.get_ibrav_type());
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[FP0_BASIS * factor]();

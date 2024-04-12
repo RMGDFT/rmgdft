@@ -379,6 +379,9 @@ public:
     int force_grad_order;
     bool kohn_sham_ke_fft;
 
+    /* Prolong operator default order */
+    int prolong_order = 10;
+
     // Flag indicating whether or not to use gpu finite differencing for the hamiltonian
     bool use_gpu_fd;
 
