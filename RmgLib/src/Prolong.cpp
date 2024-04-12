@@ -120,7 +120,7 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
                        int half_dimy, int half_dimz)
 {
 
-    if(ibrav == 4)
+    if(ibrav == 4 && ratio == 2)
     {
         prolong_hex2 (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
         return;
