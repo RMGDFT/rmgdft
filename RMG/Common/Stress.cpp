@@ -74,6 +74,15 @@ template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpi
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
 {
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    double *rho_tot = new double[FP0_BASIS];
+
+    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] = rho[i];
+    if(ct.spin_flag) {
+        // opposite spin array is stored sequentially
+        for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] += rho[i + FP0_BASIS];
+    }
+
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
@@ -82,7 +91,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     Kinetic_term(Kpin, BG, L);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Loc");
-    Local_term(atoms, species, rho, pwaves);
+    Local_term(atoms, species, rho_tot, pwaves);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Non-loc");
     NonLocal_term(Kpin, atoms, species);
@@ -95,7 +104,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
 
     }
     RT2 = new RmgTimer("2-Stress: Hartree");
-    Hartree_term(rho, pwaves);
+    Hartree_term(rho_tot, pwaves);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: XC Local");
     Exc_term(Exc, vxc, rho);
@@ -159,6 +168,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     double alpha = Rmg_L.omega;
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
 
+    delete [] rho_tot;
 }
 
 template void Stress<double>::Kinetic_term(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
