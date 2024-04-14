@@ -146,6 +146,8 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     delete RT1;
     print_stress("total ", stress_tensor);
 
+    MPI_Bcast(stress_tensor, 9, MPI_DOUBLE, 0, pct.img_comm);
+
     for(int i = 0; i < 9; i++) Rmg_L.stress_tensor[i] = stress_tensor[i];
     double zero(0.0);
     int ithree = 3;
