@@ -266,6 +266,10 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
 
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho[i], 0.0);
+    if(ct.nspin == 0)
+    {
+        for(int i = 0;i < pbasis;i++) crho[i] += std::complex<double>(rho[i+pbasis], 0.0);
+    }
     pwaves.FftForward(crho, crho);
     for(int i = 0;i < pbasis;i++) crho[i] /=(double)pwaves.global_basis;
 
@@ -309,7 +313,8 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
 {
     double stress_tensor_x[9];
     for(int i = 0; i < 9; i++) stress_tensor_x[i] = 0.0;
-    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
+    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.xcstate)/Rmg_L.omega;
+//    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
@@ -398,12 +403,15 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
         ApplyGradient(&rho[pbasis], rho_gx1, rho_gy1, rho_gz1, ct.force_grad_order, "Fine");
         daxpy (&pbasis, &malpha, rhocore, &ione, &rho[pbasis], &ione);
 
-
         for(int i = 0; i < 3; i++)
             for(int j = 0; j < 3; j++)
             {
                 for(int idx = 0; idx < pbasis; idx++)
-                    stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[(3 + j) *pbasis + idx] * F->vxc2[idx]; 
+                {
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[(3+i)*pbasis + idx] * rho_grad[(3+j)*pbasis + idx] * F->vxc2[pbasis+idx]; 
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[(3 + j) *pbasis + idx] * F->v2cud[idx]; 
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[(3+i)*pbasis + idx] * rho_grad[ j *pbasis + idx] * F->v2cud[idx]; 
+                }
             }
 
     }
@@ -412,7 +420,6 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] *= vel /Rmg_L.omega;
     //  sum over grid communicator and spin communicator  but no kpoint communicator
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_xcgrad[i];
 
     if(ct.verbose) print_stress("XC gradcorr", stress_tensor_xcgrad);
@@ -431,6 +438,10 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     std::complex<double> *crho = new std::complex<double>[pbasis];
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho[i], 0.0);
+    if(ct.nspin == 0)
+    {
+        for(int i = 0;i < pbasis;i++) crho[i] += std::complex<double>(rho[i+pbasis], 0.0);
+    }
     pwaves.FftForward(crho, crho);
     for(int i = 0;i < pbasis;i++) crho[i] /=(double)pwaves.global_basis;
 

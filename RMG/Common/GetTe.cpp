@@ -249,6 +249,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     // AFM case requires counting FOCK energy twice
     if(ct.xc_is_hybrid && Functional::is_exx_active() && ct.AFM) ct.TOTAL -= ct.FOCK;
 
+    ct.xcstate = xcstate;
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();

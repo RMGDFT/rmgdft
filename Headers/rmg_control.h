@@ -600,6 +600,7 @@ public:
     double NUC;
     double KE;
     double XC;
+    double xcstate;
     double vtxc;
     double NL;
     double II;
