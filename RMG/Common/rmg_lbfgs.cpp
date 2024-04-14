@@ -116,7 +116,7 @@ void simple_lbfgs (void)
 
     }
 
-    if(pct.gridpe==0)
+    if(pct.imgpe==0)
     {
         int lmovecell = ct.cell_relax;
         bfgs( &ct.num_ions, position, h, &nelec, &energy,
@@ -128,10 +128,10 @@ void simple_lbfgs (void)
     }
     // Send updated positions to other nodes. May need to update for images
     // and symmetry considerations for non-gamma.
-    MPI_Bcast(position, 3*ct.num_ions, MPI_DOUBLE, 0, pct.grid_comm);
+    MPI_Bcast(position, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm);
     if(ct.cell_relax)
     {
-        MPI_Bcast(h, 9, MPI_DOUBLE, 0, pct.grid_comm);
+        MPI_Bcast(h, 9, MPI_DOUBLE, 0, pct.img_comm);
         for (int i = 0; i < 3; i++)
         {
             if(cell_movable[0*3+i]) Rmg_L.a0[i] = h[0*3+i];

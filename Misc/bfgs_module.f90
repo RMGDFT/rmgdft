@@ -172,10 +172,8 @@ CONTAINS
      w_2               = w_2_
      bfgs_initialized  = .true.
      ! Clean up old files
-     write(tstr1, '(i2.2)') spin_idx
      write(tstr2, '(i8.8)') img_idx
-     write(tstr3, '(i4.4)') kp_idx
-     bfgs_file = 'rmg.bfgs' // tstr1 // tstr2 // tstr3
+     bfgs_file = 'rmg.bfgs' // tstr2 
      !write(6,*)bfgs_file
      INQUIRE(FILE = bfgs_file, EXIST = exst)
      IF (exst .and. runflag /= 1) THEN
