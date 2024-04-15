@@ -417,6 +417,8 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
             }
 
     }
+
+    delete [] rho_grad;
     delete F;
 
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] *= vel /Rmg_L.omega;
