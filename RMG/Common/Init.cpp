@@ -817,8 +817,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     int kpsub_rank;
     MPI_Comm_rank (pct.kpsub_comm, &kpsub_rank);
 
-    init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
+    if(pct.imgpe == 0)
+    {
+        init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
                 &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
+    }
 
 }                               /* end init */
 

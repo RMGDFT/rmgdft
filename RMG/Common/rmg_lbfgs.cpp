@@ -116,18 +116,23 @@ void simple_lbfgs (void)
 
     }
 
-    int lmovecell = ct.cell_relax;
-    bfgs( &ct.num_ions, position, h, &nelec, &energy,
-           force, fcell, cell_movable, &felec,
-           &energy_thr, &grad_thr, &cell_thr, &fcp_thr,
-           &energy_error, &grad_error, &cell_error, &fcp_error,
-           &lmovecell, &lfcp, &fcp_cap, &fcp_hess, &step_accepted,
-           &stop_bfgs, &failed, &istep );
- 
+    if(pct.imgpe == 0)
+    {
+        int lmovecell = ct.cell_relax;
+        bfgs( &ct.num_ions, position, h, &nelec, &energy,
+                force, fcell, cell_movable, &felec,
+                &energy_thr, &grad_thr, &cell_thr, &fcp_thr,
+                &energy_error, &grad_error, &cell_error, &fcp_error,
+                &lmovecell, &lfcp, &fcp_cap, &fcp_hess, &step_accepted,
+                &stop_bfgs, &failed, &istep );
+    }
+
+    MPI_Bcast(position, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm);
     // Send updated positions to other nodes. May need to update for images
     // and symmetry considerations for non-gamma.
     if(ct.cell_relax)
     {
+        MPI_Bcast(h, 9, MPI_DOUBLE, 0, pct.img_comm);
         for (int i = 0; i < 3; i++)
         {
             if(cell_movable[0*3+i]) Rmg_L.a0[i] = h[0*3+i];
@@ -135,7 +140,7 @@ void simple_lbfgs (void)
             if(cell_movable[2*3+i]) Rmg_L.a2[i] = h[2*3+i];
         }
         double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
-//        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
+        //        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
         double nalat;
         Rmg_L.remake_cell(Rmg_L.get_ibrav_type(), 1.0, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, &nalat);
         rmg_printf("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
