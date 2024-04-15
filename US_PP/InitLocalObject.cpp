@@ -314,7 +314,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                     }
 
-                                    if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                    if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) )
                                     { 
                                         if (pct.spinpe == 0)
                                             sumobj_omp[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
@@ -322,7 +322,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                             sumobj_omp[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
 
                                     }
-                                    else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                    else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) )
                                     { 
                                         sumobj_omp[idx] += t1;
                                         sumobj_omp[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
