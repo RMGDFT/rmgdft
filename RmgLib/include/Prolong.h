@@ -46,6 +46,8 @@ public:
 
     template<typename T>
     void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
 private:
     void cgen_prolong (double *coef, double fraction);
