@@ -126,6 +126,12 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
         return;
     }
 
+    if( 0 && ibrav == CUBIC_BC && ratio == 2)
+    {
+        prolong_bcc (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        return;
+    }
+
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
 
     TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
@@ -438,6 +444,89 @@ template <typename T> void Prolong::prolong_hex2a (T *full, T *half, int dimx, i
 
 
     delete [] fulla;
+    delete [] sg_half;
+
+}
+
+
+template void Prolong::prolong_bcc (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template void Prolong::prolong_bcc (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template void Prolong::prolong_bcc (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz)
+{
+
+    if(ratio != 2)
+        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+
+    // need to have one more points each side, order 10, each side need 6 points
+    T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
+
+    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
+
+    int incy = dimz / ratio + order ;
+    int incx = (dimz / ratio + order ) * (dimy / ratio + order);
+
+    int order1 = order/2 ;
+
+    int incx2 = dimz * dimy;
+    int incy2 = dimz;
+
+    // Optimized most common case
+
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio; iz++)
+            {
+                // original grid
+                T sum = 0.0;
+                int idx_full = ratio *(ix * incx2 +iy *incy2 + iz);
+                int idx_half =(ix+order1) * incx + (iy+order1) *incy + iz + order1;
+                full[idx_full] = sg_half[idx_half];
+                // +1 grid in lattice a direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*incx];
+                full[idx_full + incx2] = sum;
+
+                // +1 grid in lattice b direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*incy];
+                full[idx_full + incy2] = sum;
+
+                // +1 grid in lattice c direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k];
+                full[idx_full + 1] = sum;
+
+                // +1 grid in lattice a and b directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k * (incx + incy)];
+                full[idx_full + incx2 + incy2] = sum ;
+
+                // +1 grid in lattice a and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k * (incx + 1) ];
+                full[idx_full + incx2 + 1] = sum;
+
+                // +1 grid in lattice b and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k * (incy + 1) ];
+                full[idx_full + incy2 + 1] = sum;
+
+                // +1 grid in lattice a,  b and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*(incx + incy + 1)];
+                full[idx_full + incx2 + incy2 + 1] = sum;
+            }
+        }
+    }
+
+
     delete [] sg_half;
 
 }
