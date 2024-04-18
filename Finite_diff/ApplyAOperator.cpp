@@ -124,10 +124,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         }
 
         FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-        DataType *ptr = NULL;
-        // When ptr=NULL this does not do the finite differencing but just
-        // returns the value of the diagonal element.
-        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        double fd_diag = FD.fd_coeff0(ct.kohn_sham_fd_order, gridhx);
         return 2.0*fd_diag;
     }
 
