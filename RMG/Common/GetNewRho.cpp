@@ -203,7 +203,10 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     std::complex<double> psiud;
     OrbitalType *psi_f = new OrbitalType[ct.noncoll_factor * FP0_BASIS]();
 
-    P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    if(ct.prolong_order == 0)
+        FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
+    else
+        P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);

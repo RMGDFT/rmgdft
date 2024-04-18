@@ -298,12 +298,18 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid 
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
 
             T *psi = kptr->Kstates[st].psi;
-            P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+            if(ct.prolong_order == 0)
+                FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
+            else
+                P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
             ApplyGradient(psi_f, psi_x, psi_y, psi_z, ct.force_grad_order, "Fine");
             if(ct.noncoll)
             {
                 psi = kptr->Kstates[st].psi + pbasis;
-                P.prolong(psi_f+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+                if(ct.prolong_order == 0)
+                    FftInterpolation(*Rmg_G, psi, psi_f+pbasis, ratio, false);
+                else
+                    P.prolong(psi_f+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
                 ApplyGradient(psi_f+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Fine");
             }
 

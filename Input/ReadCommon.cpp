@@ -861,6 +861,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "the cost of some additional computational expense.",
             "kohn_sham_fd_order must lie in the range (6,12). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
+    If.RegisterInputKey("prolong_order", &lc.prolong_order, 0, 12, 10,
+            CHECK_AND_FIX, OPTIONAL,
+            "Debug option that controls interpolation order used to form the "
+            "charge density and to compute the kinetic component of stress. "
+            "If a value of 0 is selected then an FFT will be used. ",
+            "prolong_order must lie in the range (0,12). Resetting to the default value of 10. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("use_gpu_fd", &lc.use_gpu_fd, false, 
             "Use gpus for kohn-sham orbital finite differencing. Depending on the "
             "balance of hardware characteristics this can provide a significant "
