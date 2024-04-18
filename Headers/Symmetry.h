@@ -97,6 +97,7 @@ class Symmetry
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
         std::vector<int> sym_atom;
+        std::vector<int> full_sym_atom;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
         boost::multi_array<std::complex<double>, 3> rot_spin_wave;

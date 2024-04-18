@@ -477,9 +477,11 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     }
 
     full_sym_rotate.resize(9 * nsym_full);
+    full_sym_atom.resize(ct.num_ions * nsym_full);
     full_time_rev.resize(nsym_full);
 
     full_sym_rotate = sym_rotate;
+    full_sym_atom = sym_atom;
     full_time_rev = time_rev;
 
     sym_to_be_removed.clear();
@@ -519,6 +521,11 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             full_sym_rotate[isym*9+i] = sym_rotate[jsym*9+i];
         }
         full_time_rev[isym] = time_rev[jsym];
+
+        for(int i = 0; i < ct.num_ions; i++)
+        {
+            full_sym_atom[isym*ct.num_ions+i] = sym_atom[jsym*ct.num_ions+i];
+        }
     }
     for(size_t isym = 0; isym < sym_to_be_removed.size(); isym++)
     {
@@ -529,6 +536,11 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             full_sym_rotate[iisym*9+i] = sym_rotate[jsym*9+i];
         }
         full_time_rev[iisym] = time_rev[jsym];
+
+        for(int i = 0; i < ct.num_ions; i++)
+        {
+            full_sym_atom[iisym*ct.num_ions+i] = sym_atom[jsym*ct.num_ions+i];
+        }
     }
 
     if (sym_to_be_removed.size() > 0)
@@ -766,12 +778,12 @@ void Symmetry::symforce (void)
     }
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        for(int isy = 0; isy < nsym; isy++)
+        for(int isy = 0; isy < nsym_full; isy++)
         {
-            int ion1 = sym_atom[isy * ct.num_ions + ion];
+            int ion1 = full_sym_atom[isy * ct.num_ions + ion];
             for(int i = 0; i < 3; i++)
                 for(int j = 0; j < 3; j++)
-                    Atoms[ion1].force[ct.fpt[0]][i] += sym_rotate[isy *9 + i* 3 + j] * force[ion*3 + j];
+                    Atoms[ion1].force[ct.fpt[0]][i] += full_sym_rotate[isy *9 + i* 3 + j] * force[ion*3 + j];
         }
 
     }
@@ -782,7 +794,7 @@ void Symmetry::symforce (void)
 
     for (int ion = 0; ion < ct.num_ions; ion++)
         for(int i = 0; i < 3; i++)
-            Atoms[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym;
+            Atoms[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym_full;
 
     delete [] force;
 }                               /* end symforce */
@@ -813,7 +825,7 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
                 }
 
     for(int i = 0; i < 9; i++) mat_tensor[i] = 0.0;
-    for(int isy = 0; isy < nsym; isy++)
+    for(int isy = 0; isy < nsym_full; isy++)
     {
 
         for(int i = 0; i < 3; i++)
@@ -821,7 +833,7 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
                 for(int k = 0; k < 3; k++)
                     for(int l = 0; l < 3; l++)
                     {
-                        mat_tensor[i*3+j] += sym_rotate[isy * 9 + i * 3 + k] * work[k * 3 + l] * sym_rotate[isy*9 + j*3 +l];
+                        mat_tensor[i*3+j] += full_sym_rotate[isy * 9 + i * 3 + k] * work[k * 3 + l] * full_sym_rotate[isy*9 + j*3 +l];
                     }
     }
 
@@ -835,7 +847,7 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
                     work[i*3 + j] += mat_tensor[k * 3 +l] *a[k*3 + i] * a[l*3 + j];
                 }
 
-    for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
+    for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym_full;
 }
 
 void Symmetry::rotate_ylm()
