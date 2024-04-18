@@ -24,6 +24,7 @@
 #include "blas.h"
 #include <complex>
 #include <cmath>
+//#include "transition.h"
 
 // This is a high order interpolation/prolongation operators used when constructing the
 // charge density on the high density grid.
@@ -34,13 +35,14 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
 
-Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in, int ibrav_in) : ratio(ratio_in), order(order_in), TR(TR_in), ibrav(ibrav_in)
+Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in, Lattice &L_in, BaseGrid &BG_in) : ratio(ratio_in), order(order_in), TR(TR_in), L(L_in), BG(BG_in)
 {
     /*Order has to be even number */
     if (order % 2)
         rmg_error_handler (__FILE__, __LINE__, "This function works only for even orders.");
 
 
+    ibrav = L.get_ibrav_type();
 
     for (int ix = 0; ix < MAX_PROLONG_ORDER; ix++)
     {
@@ -61,9 +63,38 @@ Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in, int ibrav_in) :
         for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
             a[i][iy] = c[iy];
+ //           rmg_printf("\n acac %d %f", iy, c[iy]);
             if(fabs(c[iy]) > 1.0e-20) af[i][iy] = (float)c[iy];
         }
     }
+
+    c000.resize(1);
+    c000[0].coeff = 1.0;
+    c000[0].ix = 0;
+    c000[0].iy = 0;
+    c000[0].iz = 0;
+    std::vector<double> fraction{0.0, 0.0, 0.0};
+
+    fraction = {0.5,0.0,0.0};
+    cgen_dist_inverse(c100, fraction);
+
+    fraction = {0.0,0.5,0.0};
+    cgen_dist_inverse(c010, fraction);
+
+    fraction = {0.0,0.0,0.5};
+    cgen_dist_inverse(c001, fraction);
+
+    fraction = {0.5,0.5,0.0};
+    cgen_dist_inverse(c110, fraction);
+
+    fraction = {0.5,0.0,0.5};
+    cgen_dist_inverse(c101, fraction);
+
+    fraction = {0.0,0.5,0.5};
+    cgen_dist_inverse(c011, fraction);
+
+    fraction = {0.5,0.5,0.5};
+    cgen_dist_inverse(c111, fraction);
 }
 
 Prolong::~Prolong(void)
@@ -71,6 +102,83 @@ Prolong::~Prolong(void)
 
 }
 
+void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<double> &fraction)
+{
+    int num_shells = order;
+    double power_weight = 3.0;
+    double xcry[3];
+    double hx =  BG.get_hxgrid(1);
+    double hy =  BG.get_hygrid(1);
+    double hz =  BG.get_hzgrid(1);
+    coef_idx one_item;
+    coeff_indx.clear();
+    std::vector<double> dist_list;
+    for(int ix = -num_shells; ix <= num_shells; ix++)
+    {
+        for(int iy = -num_shells; iy <= num_shells; iy++)
+        {
+            for(int iz = -num_shells; iz <= num_shells; iz++)
+            {
+                xcry[0] = (ix - fraction[0]) * hx;
+                xcry[1] = (iy - fraction[1]) * hy;
+                xcry[2] = (iz - fraction[2]) * hz;
+                double dist = L.metric(xcry);
+                dist_list.push_back(dist);
+            }
+        }
+    }
+    std::sort(dist_list.begin(), dist_list.end() );
+    double max_dist = 0.0;
+    int count_shells = 0;
+    for(auto it = dist_list.begin(); it != dist_list.end(); ++it)
+    {
+ //       rmg_printf("\n dist %f", *it);
+        if(*it > max_dist + 1.0e-5)
+        {
+            count_shells++;
+            max_dist = *it;
+  //          rmg_printf("\n maxdist %d %f",count_shells, max_dist);
+        }
+        if(count_shells == num_shells)
+        {
+            break;
+        }
+    }
+
+    double tot_weight = 0.0;
+    for(int ix = -num_shells; ix <= num_shells; ix++)
+    {
+        for(int iy = -num_shells; iy <= num_shells; iy++)
+        {
+            for(int iz = -num_shells; iz <= num_shells; iz++)
+            {
+                xcry[0] = (ix - fraction[0]) * hx;
+                xcry[1] = (iy - fraction[1]) * hy;
+                xcry[2] = (iz - fraction[2]) * hz;
+                double dist = L.metric(xcry);
+                if( dist - max_dist <1.0e-5)
+                {
+ //                   rmg_printf("\n dist %f index %d %d %d", dist, ix, iy, iz);
+                    double weight = std::pow(dist, -power_weight);
+                    tot_weight += weight;
+                    one_item.coeff = weight;
+                    one_item.ix = ix;
+                    one_item.iy = iy;
+                    one_item.iz = iz;
+                    coeff_indx.push_back(one_item);
+                }
+            }
+        }
+    }
+
+
+    //rmg_printf("\n size of coef %d", coeff_indx.size());
+    for(auto it = coeff_indx.begin(); it != coeff_indx.end(); ++it)
+    {
+        it->coeff /= tot_weight;
+  //      rmg_printf("\n aaa %f %d %d %d", it->coeff, it->ix, it->iy, it->iz);
+    }
+}
 
 void Prolong::cgen_prolong (double *coef, double fraction)
 {
@@ -83,7 +191,7 @@ void Prolong::cgen_prolong (double *coef, double fraction)
     int ione = 1;
 
     /*filling A , b and d (d is distance from different coarse grids to the interpolated pt, 
-       coarse grid spacing is normalized to be ONE) */
+      coarse grid spacing is normalized to be ONE) */
     b[0] = 1.0;
 
     for (int iy = 0; iy < order; iy++)
@@ -111,9 +219,14 @@ void Prolong::cgen_prolong (double *coef, double fraction)
 
 
 template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz)
+        int half_dimy, int half_dimz)
 {
 
+    if(0)
+    {
+        prolong_any (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        return;
+    }
     if(ibrav == HEXAGONAL && ratio == 2)
     {
         prolong_hex2 (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
@@ -296,13 +409,13 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
 
 template void Prolong::prolong_hex2 (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_hex2 (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_hex2 (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template <typename T> void Prolong::prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz)
+        int half_dimy, int half_dimz)
 {
 
     if(ratio != 2)
@@ -373,13 +486,13 @@ template <typename T> void Prolong::prolong_hex2 (T *full, T *half, int dimx, in
 
 
 template void Prolong::prolong_hex2a (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_hex2a (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_hex2a (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template <typename T> void Prolong::prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz)
+        int half_dimy, int half_dimz)
 {
 
     if(ratio != 2)
@@ -448,15 +561,14 @@ template <typename T> void Prolong::prolong_hex2a (T *full, T *half, int dimx, i
 
 }
 
-
 template void Prolong::prolong_bcc (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_bcc (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template void Prolong::prolong_bcc (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz);
+        int half_dimy, int half_dimz);
 template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-                       int half_dimy, int half_dimz)
+        int half_dimy, int half_dimz)
 {
 
     if(ratio != 2)
@@ -521,6 +633,110 @@ template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int
                 // +1 grid in lattice a,  b and c directions
                 sum = 0.0;
                 for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*(incx + incy + 1)];
+                full[idx_full + incx2 + incy2 + 1] = sum;
+            }
+        }
+    }
+
+
+    delete [] sg_half;
+
+}
+
+
+template void Prolong::prolong_any (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template void Prolong::prolong_any (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template void Prolong::prolong_any (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template <typename T> void Prolong::prolong_any (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz)
+{
+
+    if(ratio != 2)
+        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+
+    // need to have one more points each side, order 10, each side need 6 points
+    T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
+
+    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
+
+    int incy = dimz / ratio + order ;
+    int incx = (dimz / ratio + order ) * (dimy / ratio + order);
+
+    int order1 = order/2 ;
+
+    int incx2 = dimz * dimy;
+    int incy2 = dimz;
+
+    // Optimized most common case
+
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio; iz++)
+            {
+                // original grid
+                T sum = 0.0;
+                int idx_full = ratio *(ix * incx2 +iy *incy2 + iz);
+                int idx_half =(ix+order1) * incx + (iy+order1) *incy + iz + order1;
+                full[idx_full] = sg_half[idx_half];
+                // +1 grid in lattice a direction
+                sum = 0.0;
+                for(auto it = c100.begin(); it != c100.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + incx2] = sum;
+
+                // +1 grid in lattice b direction
+                sum = 0.0;
+                for(auto it = c010.begin(); it != c010.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + incy2] = sum;
+
+                // +1 grid in lattice c direction
+                sum = 0.0;
+                for(auto it = c001.begin(); it != c001.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + 1] = sum;
+
+                // +1 grid in lattice a and b directions
+                sum = 0.0;
+                for(auto it = c110.begin(); it != c110.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + incx2 + incy2] = sum ;
+
+                // +1 grid in lattice a and c directions
+                sum = 0.0;
+                for(auto it = c101.begin(); it != c101.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + incx2 + 1] = sum;
+
+                // +1 grid in lattice b and c directions
+                sum = 0.0;
+                for(auto it = c011.begin(); it != c011.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
+                full[idx_full + incy2 + 1] = sum;
+
+                // +1 grid in lattice a,  b and c directions
+                sum = 0.0;
+                for(auto it = c111.begin(); it != c111.end(); ++it)
+                {
+                    sum+=  it->coeff * sg_half[idx_half + it->ix*incx + it->iy * incy + it->iz];
+                }
                 full[idx_full + incx2 + incy2 + 1] = sum;
             }
         }

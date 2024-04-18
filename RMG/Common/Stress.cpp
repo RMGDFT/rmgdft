@@ -188,7 +188,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    static Prolong P(ratio, ct.prolong_order, *Rmg_T,  L.get_ibrav_type());
+    static Prolong P(ratio, ct.prolong_order, *Rmg_T,  L, BG);
     int pbasis = FP0_BASIS;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 
