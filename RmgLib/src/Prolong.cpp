@@ -183,6 +183,7 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
 void Prolong::cgen_prolong (double *coef, double fraction)
 {
 
+    if(order == 0 ) return;
     double *A = new double[order * order]();
     double *b = new double[order]();
     double *d = new double[order]();
@@ -208,7 +209,9 @@ void Prolong::cgen_prolong (double *coef, double fraction)
     /*  solving Ac=b for c using  b = A^(-1) * b  */
     dgesv (&order, &ione, A, &order, ipvt, b, &order, &info);
 
+    if(order == 2) cmix = 0.0;
     for (int ix = 0; ix < order; ix++) coef[ix] = (1+cmix) * b[ix];
+    if(order == 2) return;
 
     int order2 = order-2;
 
@@ -729,10 +732,11 @@ template <typename T> void Prolong::prolong_bcc_other (T *full, T *half, int dim
         }
     }
 
-    TR.trade_imagesx (full, sg_half, dimx, dimy, dimz, order, CENTRAL_TRADE);
+    TR.trade_imagesx (full, sg_half, dimx, dimy, dimz, order, FULL_TRADE);
 
     incy = dimz + 2*order ;
     incx = (dimz + 2*order ) * (dimy  + 2*order);
+    int incz = 1;
     for (int ix = 0; ix < dimx / ratio; ix++)
     {
         for (int iy = 0; iy < dimy / ratio; iy++)
@@ -740,28 +744,33 @@ template <typename T> void Prolong::prolong_bcc_other (T *full, T *half, int dim
             for (int iz = 0; iz < dimz / ratio; iz++)
             {
                 int idx_full = ratio *(ix * incx2 +iy *incy2 + iz);
-                int idx_full_s = ratio *(ix * incx +iy *incy + iz) + order *(incx + incy + 1);
+                int idx_full_s110 = ratio *(ix * incx +iy *incy + iz) + order *(incx + incy + incz) + incx + incy;
+                int idx_full_s101 = ratio *(ix * incx +iy *incy + iz) + order *(incx + incy + incz) + incx + incz;
+                int idx_full_s011 = ratio *(ix * incx +iy *incy + iz) + order *(incx + incy + incz) + incy + incz;
 
                 // +1 grid in lattice a and b directions
                 T sum = 0.0;
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + 2*k*incy];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incx + incy];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + incy + 2*k-1];
-                full[idx_full + incx2 + incy2] = sum/3.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s110 + (2*k-1)*incx];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s110 + (2*k-1)*incy];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s110 + (2*k-1)*incz];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s110 + (2*k-1)*(incx + incy +incz)];
+                full[idx_full + incx2 + incy2] = sum/4.0;
 
                 // +1 grid in lattice a and c directions
                 sum = 0.0;
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + 2*k];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incx + 1];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + (2*k-1)*incy + 1];
-                full[idx_full + incx2 + 1] = sum/3.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s101 + (2*k-1)*incx];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s101 + (2*k-1)*incy];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s101 + (2*k-1)*incz];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s101 + (2*k-1)*(incx + incy +incz)];
+                full[idx_full + incx2 + 1] = sum/4.0;
 
                 // +1 grid in lattice b and c directions
                 sum = 0.0;
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incy + 2*k];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incy + 1];
-                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + (2*k-1)*incx + incy + 1];
-                full[idx_full + incy2 + 1] = sum/3.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s011 + (2*k-1)*incx];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s011 + (2*k-1)*incy];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s011 + (2*k-1)*incz];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s011 + (2*k-1)*(incx + incy +incz)];
+                full[idx_full + incy2 + 1] = sum/4.0;
             }
         }
     }
