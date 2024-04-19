@@ -189,6 +189,8 @@ void Prolong::cgen_prolong (double *coef, double fraction)
     int *ipvt = new int[order]();
     int info;
     int ione = 1;
+    // mixing coefficients from order and order-2
+    double cmix = 1.0;
 
     /*filling A , b and d (d is distance from different coarse grids to the interpolated pt, 
       coarse grid spacing is normalized to be ONE) */
@@ -206,7 +208,27 @@ void Prolong::cgen_prolong (double *coef, double fraction)
     /*  solving Ac=b for c using  b = A^(-1) * b  */
     dgesv (&order, &ione, A, &order, ipvt, b, &order, &info);
 
-    for (int ix = 0; ix < order; ix++) coef[ix] = b[ix];
+    for (int ix = 0; ix < order; ix++) coef[ix] = (1+cmix) * b[ix];
+
+    int order2 = order-2;
+
+    for(int i = 0; i < order2; i++) b[i] = 0.0;
+    b[0] = 1.0;
+
+    for (int iy = 0; iy < order2; iy++)
+    {
+        d[iy] = iy + 1.0 - fraction - (double) order2 / 2;
+        for (int ix = 0; ix < order2; ix++)
+        {
+            A[iy * order2 + ix] = pow (d[iy], ix);
+        }                       /* end for */
+    }                           /* end for */
+
+    /*  solving Ac=b for c using  b = A^(-1) * b  */
+    dgesv (&order2, &ione, A, &order2, ipvt, b, &order2, &info);
+
+    for (int ix = 0; ix < order2; ix++) coef[ix+1] =  coef[ix+1] - cmix * b[ix];
+
 
     delete [] A;
     delete [] ipvt;
@@ -239,9 +261,10 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
         return;
     }
 
-    if( 0 && ibrav == CUBIC_BC && ratio == 2)
+    if( ibrav == CUBIC_BC && ratio == 2)
     {
-        prolong_bcc (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        //prolong_bcc (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        prolong_bcc_other (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
         return;
     }
 
@@ -638,6 +661,110 @@ template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int
         }
     }
 
+
+    delete [] sg_half;
+
+}
+
+template void Prolong::prolong_bcc_other (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template void Prolong::prolong_bcc_other (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template void Prolong::prolong_bcc_other (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz);
+template <typename T> void Prolong::prolong_bcc_other (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
+        int half_dimy, int half_dimz)
+{
+
+    if(ratio != 2)
+        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+
+    // need to have one more points each side, order 10, each side need 6 points
+    T *sg_half = new T[(dimx + 2*order) * (dimy + 2*order) * (dimz + 2*order)];
+
+    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
+
+    int incy = dimz / ratio + order ;
+    int incx = (dimz / ratio + order ) * (dimy / ratio + order);
+
+    int order1 = order/2 ;
+
+    int incx2 = dimz * dimy;
+    int incy2 = dimz;
+
+    // Optimized most common case
+
+    for(int i = 0; i < dimx*dimy*dimz; i++) full[i] = 0.0;
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio; iz++)
+            {
+                // original grid
+                T sum = 0.0;
+                int idx_full = ratio *(ix * incx2 +iy *incy2 + iz);
+                int idx_half =(ix+order1) * incx + (iy+order1) *incy + iz + order1;
+                full[idx_full] = sg_half[idx_half];
+                // +1 grid in lattice a direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*incx];
+                full[idx_full + incx2] = sum;
+
+                // +1 grid in lattice b direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*incy];
+                full[idx_full + incy2] = sum;
+
+                // +1 grid in lattice c direction
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k];
+                full[idx_full + 1] = sum;
+
+                // +1 grid in lattice a,  b and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_half + k*(incx + incy + 1)];
+                full[idx_full + incx2 + incy2 + 1] = sum;
+            }
+        }
+    }
+
+    TR.trade_imagesx (full, sg_half, dimx, dimy, dimz, order, CENTRAL_TRADE);
+
+    incy = dimz + 2*order ;
+    incx = (dimz + 2*order ) * (dimy  + 2*order);
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio; iz++)
+            {
+                int idx_full = ratio *(ix * incx2 +iy *incy2 + iz);
+                int idx_full_s = ratio *(ix * incx +iy *incy + iz) + order *(incx + incy + 1);
+
+                // +1 grid in lattice a and b directions
+                T sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + 2*k*incy];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incx + incy];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + incy + 2*k-1];
+                full[idx_full + incx2 + incy2] = sum/3.0;
+
+                // +1 grid in lattice a and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + 2*k];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incx + 1];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incx + (2*k-1)*incy + 1];
+                full[idx_full + incx2 + 1] = sum/3.0;
+
+                // +1 grid in lattice b and c directions
+                sum = 0.0;
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + incy + 2*k];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + 2*k*incy + 1];
+                for(int k = -order/2+1;k < order/2+1;k++) sum+= a[1][k+order/2-1] * sg_half[idx_full_s + (2*k-1)*incx + incy + 1];
+                full[idx_full + incy2 + 1] = sum/3.0;
+            }
+        }
+    }
 
     delete [] sg_half;
 
