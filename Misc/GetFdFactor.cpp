@@ -64,7 +64,7 @@ void GetFdFactor(int kpt)
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
-    std::vector<double> cvals, diffs;
+    std::vector<double> cvals, diffs, pdiffs;
     std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
@@ -91,6 +91,9 @@ void GetFdFactor(int kpt)
         sp.fd_slopes.clear();
         sp.fd_xint.clear();
         sp.fd_yint.clear();
+        sp.pd_slopes.clear();
+        sp.pd_xint.clear();
+        sp.pd_yint.clear();
         sp.pd_mins.clear();
 
         // Set up an occupation weight array
@@ -135,9 +138,14 @@ void GetFdFactor(int kpt)
             FftLaplacianCoarse(orbital, work);
             double fft_ke = ComputeKineticEnergy(orbital, work, pbasis);
 
+            FftInterpolation(*Rmg_G, orbital, pwork1, ratio, false);
+            FftLaplacianFine(pwork1, pwork3);
+            double pfft_ke = ComputeKineticEnergy(pwork1, pwork3, fpbasis);
+
             double c2 = 0.0;
             cvals.clear();
             diffs.clear();
+            pdiffs.clear();
             // Linear fit with 2 points
             for(int j=0;j < 2;j++)
             {
@@ -149,6 +157,13 @@ void GetFdFactor(int kpt)
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
 
+                Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
+                P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
+                              pxdim, pydim, pzdim);
+
+                FftLaplacianFine(pwork2, pwork3);
+                double pfd_ke = ComputeKineticEnergy(pwork2, pwork3, fpbasis);
+                pdiffs.push_back(pfft_ke - pfd_ke);
 
                 c2 += 1.0; 
             }
@@ -157,40 +172,18 @@ void GetFdFactor(int kpt)
             double x_int = - diffs[0] / m;
             sp.fd_slopes.push_back(m);
             sp.fd_yint.push_back(diffs[0]);
-
-            if(ct.verbose && pct.gridpe==0)fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
             x_int = std::max(x_int, 0.0);
             sp.fd_xint.push_back(x_int);
+            if(ct.verbose && pct.gridpe==0)
+                fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
 
-            sp.fd_factor1.push_back(x_int);
-            sp.fd_fke1.push_back(fft_ke);
+            m = (pdiffs[1] - pdiffs[0])/(cvals[1] - cvals[0]);
+            x_int = - pdiffs[0] / m;
+            sp.pd_slopes.push_back(m);
+            sp.pd_yint.push_back(diffs[0]);
+            x_int = std::max(x_int, 0.0);
+            sp.pd_xint.push_back(x_int);
 
-            // Now we do adaptive interpolation
-            // Get the FFT Prolong as our gold standard */
-            if(ct.prolong_order > 2)
-            {
-                FftInterpolation(*Rmg_G, orbital, pwork1, ratio, false);
-                // Do 10 and find minimum
-                c2 = 0.0;
-                double lastval = 0.0;
-                for(int j=0;j <= 40;j++)
-                {
-                    Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
-                    P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
-                              pxdim, pydim, pzdim);
-
-                    double rg_p = ComputeRhoGoodness(pwork1, pwork2, fpbasis);
-                    if(j > 0 && rg_p >= lastval)
-                    {
-                        sp.pd_mins.push_back(c2);
-                        break; 
-                    }
-                    lastval = rg_p;
-                    if(ct.verbose && pct.gridpe == 0) 
-                        fprintf(ct.logfile, "RHOG = %e  %e\n", c2, rg_p);
-                    c2 += 0.05;
-                }
-            } 
         }
     }
 
@@ -207,30 +200,21 @@ void GetFdFactor(int kpt)
                      (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
                 fweight += Atom.Type->fd_slopes[i] * occ_weight[i];
             }
+            if(fabs(Atom.Type->pd_slopes[i]) > 1.0e-8)
+            {
+                p += Atom.Type->pd_slopes[i] * occ_weight[i] * 
+                     (Atom.Type->pd_xint[i] - Atom.Type->pd_yint[i]);
+                pweight += Atom.Type->pd_slopes[i] * occ_weight[i];
+            }
         }
     }
 
     ct.cmix = 1.0;
-    if(0 && ct.prolong_order > 2)
+    if(ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
     {
-        for(auto& Atom : Atoms)
-        {
-            for(size_t i=0;i < Atom.Type->pd_mins.size();i++)
-            {
-                if(fabs(Atom.Type->pd_mins[i]) > 0.0 && fabs(Atom.Type->pd_mins[i]) < 2.0)
-                {
-                    p += Atom.Type->pd_mins[i] * occ_weight[i];
-                    pweight += occ_weight[i];
-                }
-            }
-        }
-        if(pweight > 0)
-        {
-            if(ct.verbose && pct.gridpe == 0) 
-                printf("cmix = %f\n", p/pweight);
-
-            ct.cmix = p/pweight;
-        }
+        if(ct.verbose && pct.gridpe == 0) 
+            printf("cmix = %f\n", p/pweight);
+        ct.cmix = p/pweight;
     }
 
     // If extrememly well converged then nothing to do here
