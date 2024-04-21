@@ -47,7 +47,7 @@ public:
 class Prolong {
 
 public:
-    Prolong(int ratio, int order, TradeImages &TI, Lattice &L, BaseGrid &BG);
+    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
     ~Prolong(void);
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
@@ -71,6 +71,7 @@ private:
 
     int ratio;
     int order;
+    double cmix;
     TradeImages &TR;
     Lattice &L;
     BaseGrid &BG;

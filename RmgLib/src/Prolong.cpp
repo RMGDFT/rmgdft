@@ -35,12 +35,11 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
 
-Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in, Lattice &L_in, BaseGrid &BG_in) : ratio(ratio_in), order(order_in), TR(TR_in), L(L_in), BG(BG_in)
+Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in, Lattice &L_in, BaseGrid &BG_in) : ratio(ratio_in), order(order_in), cmix(cmix_in), TR(TR_in), L(L_in), BG(BG_in)
 {
     /*Order has to be even number */
     if (order % 2)
         rmg_error_handler (__FILE__, __LINE__, "This function works only for even orders.");
-
 
     ibrav = L.get_ibrav_type();
 
@@ -190,8 +189,8 @@ void Prolong::cgen_prolong (double *coef, double fraction)
     int *ipvt = new int[order]();
     int info;
     int ione = 1;
-    // mixing coefficients from order and order-2
-    double cmix = 1.0;
+
+    // cmix is the mixing coefficient from order and order-2
 
     /*filling A , b and d (d is distance from different coarse grids to the interpolated pt, 
       coarse grid spacing is normalized to be ONE) */
