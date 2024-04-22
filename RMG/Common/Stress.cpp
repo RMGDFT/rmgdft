@@ -149,7 +149,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     if(ct.vdw_corr == DFT_D3)
         for(int i = 0; i < 9; i++) stress_tensor[i] += ct.stress_vdw[i];
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor);
     delete RT1;
     print_stress("total ", stress_tensor);
 
@@ -249,7 +249,7 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGri
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
@@ -339,7 +339,7 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid 
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
@@ -837,7 +837,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
 
@@ -864,7 +864,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
     //  erfc(4.06) = 9.37e-9 so we set the largest r/(sqrt(2)*sigma) = 4.06
 
 
-    double rcutoff = 4.06;
+    double rcutoff = 5.06;
     int num_cell_x = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_xside()) + 1;
     int num_cell_y = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_yside()) + 1;
     int num_cell_z = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_zside()) + 1;
@@ -965,8 +965,8 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
     for(i=0; i < 9; i++) stress_tensor_gs[i] /= -Rmg_L.omega;
 
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_gs);
     for(i=0; i < 9; i++) stress_tensor[i] += stress_tensor_gs[i];
-
     if(ct.verbose) print_stress("Ewald term", stress_tensor_gs);
 }
 
@@ -1225,7 +1225,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nlq[i];
     if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
     delete [] sum;
