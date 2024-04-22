@@ -1210,6 +1210,16 @@ void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double
 {
   
   double e0[3], e1[3], e2[3], celldm_internal[6], omegai;
+  bool dorotate = (ibrav == CUBIC_FC) ||
+      (ibrav == CUBIC_BC) ||
+      (ibrav == -CUBIC_BC) ||
+      (ibrav == ORTHORHOMBIC_PRIMITIVE) ||
+      (ibrav == CUBIC_PRIMITIVE) ||
+      (ibrav == TETRAGONAL_PRIMITIVE) ||
+      (ibrav == TETRAGONAL_BC) ||
+      (ibrav == HEXAGONAL) ||
+      (ibrav == HEXAGONAL2);
+
   if(ibrav == 0)
   {
       printf("Warning: remake_cell should not be used when ibrav=0\n");
@@ -1226,7 +1236,7 @@ void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double
   e2[0] = a2[0];
   e2[1] = a2[1];
   e2[2] = a2[2];
-  latgen (celldm, &omegai, a0, a1, a2, false);
+  latgen (celldm, &omegai, a0, a1, a2, !dorotate);
   for(int i=0;i < 3;i++) a0[i] /= alat;
   for(int i=0;i < 3;i++) a1[i] /= alat;
   for(int i=0;i < 3;i++) a2[i] /= alat;

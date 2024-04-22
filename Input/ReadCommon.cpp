@@ -1594,6 +1594,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
+    // Set up the lattice vectors
+        Rmg_L.set_ibrav_type(ibrav);
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
+        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
     }
     else
@@ -1607,6 +1611,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         }
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
+        // Set up the lattice vectors
+        Rmg_L.set_ibrav_type(ibrav);
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
+        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
     }
 
     if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
@@ -1623,10 +1631,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     celldm[5] = 0.0;
 #endif
 
-    // Set up the lattice vectors
-    Rmg_L.set_ibrav_type(ibrav);
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-    Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
 
     //printf("CELLDM1 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
 
@@ -1720,14 +1724,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             pos = stcount.find("-");
             if(pos > stcount.length() )
             {
-                
+
                 ct.cube_states_list.push_back(std::stoi(stcount));
             }
             else
             {
                 int st_start = std::stoi(stcount.substr(0,pos));
                 int st_end = std::stoi(stcount.substr(pos+1));
-                
+
                 for(int st = st_start; st <= st_end; st++)
                     ct.cube_states_list.push_back(st);
             }
@@ -1760,7 +1764,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
-//        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+        //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose
