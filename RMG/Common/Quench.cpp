@@ -451,7 +451,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         double *trho_oppo = trho + FP0_BASIS;
         for(int idx=0;idx < ct.nspin * FP0_BASIS;idx++) trho[idx] = rho[idx];
 
-        GetNewRhoPost(Kptr, trho);
+        GetNewRho(Kptr, trho);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
