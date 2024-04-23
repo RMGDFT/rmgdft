@@ -111,7 +111,7 @@ void simple_lbfgs (void)
           }
       }
       for(int i=0;i < 9;i++) fcell[i] *= -2.0 * Rmg_L.omega;
- //     for(int i=0;i < 9;i++) printf("\n aaa %d %f %f %f", i, fcell[i], 2*Rmg_L.cell_force[i], h[i]);
+      //if(pct.imgpe==0)for(int i=0;i < 9;i++) printf("\n aaa %d %f %f %f\n", i, fcell[i], 2*Rmg_L.cell_force[i], h[i]);
  //     for(int i=0;i < 9;i++) fcell[i] = 2.0 * Rmg_L.cell_force[i];
 
     }
@@ -146,15 +146,15 @@ void simple_lbfgs (void)
         rmg_printf("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
         if(pct.imgpe == 0)
         {
-            printf("\n lattice a0: ");
-            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a0[i]);
-            printf("\n lattice a1: ");
-            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a1[i]);
-            printf("\n lattice a2: ");
-            for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a2[i]);
-            printf("\n");
-            printf("\n New cell volume = %12.6f\n", Rmg_L.omega);
-            printf("\n");
+            rmg_printf("\n lattice a0: ");
+            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a0[i]);
+            rmg_printf("\n lattice a1: ");
+            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a1[i]);
+            rmg_printf("\n lattice a2: ");
+            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a2[i]);
+            rmg_printf("\n");
+            rmg_printf("\n New cell volume = %12.6f\n", Rmg_L.omega);
+            rmg_printf("\n");
         }
 
     }
