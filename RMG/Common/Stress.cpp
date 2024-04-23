@@ -897,7 +897,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
                         if(r < 1.0e-5) continue;
 
-                        double hprime = 2.0/sqrt(PI) * std::exp(-sigma * r * r) - boost::math::erfc(t1*r)/(t1*r); 
+                        double hprime = -2.0/sqrt(PI) * std::exp(-sigma * r * r) - boost::math::erfc(t1*r)/(t1*r); 
                         double tem = 0.5 * t1 * Zi * Zj * hprime /(r*r);
 
                         for(int id1 = 0; id1 < 3; id1++)
