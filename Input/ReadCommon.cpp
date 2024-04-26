@@ -1584,6 +1584,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Next detect ibrav and also generate a,b,c,cosab,cosac,cosbc
         ibrav = Rmg_L.lat2ibrav (a0, a1, a2);
+        Rmg_L.set_ibrav_type(ibrav);
         if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibrav);
 
         // Next generate the celldm using alat=1.0
@@ -1595,7 +1596,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
     // Set up the lattice vectors
-        Rmg_L.set_ibrav_type(ibrav);
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
         Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);

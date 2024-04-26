@@ -1039,7 +1039,7 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
             break;
         case -CUBIC_BC:
         case CUBIC_BC:
-            term = SQRT3 * m[0] / 2.0;
+            term = m[0]/SQRT3 ;
             for (int ir = 0; ir < 3; ir++)
             {
                 a0[ir] = term;
