@@ -265,8 +265,8 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
     if( ibrav == CUBIC_BC && ratio == 2)
     {
-        //prolong_bcc (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-        prolong_bcc_other (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        prolong_bcc (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        //prolong_bcc_other (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
         return;
     }
     if( ibrav == CUBIC_FC && ratio == 2)

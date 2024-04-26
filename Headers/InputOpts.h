@@ -33,6 +33,7 @@ static std::unordered_map<std::string, int> internal_pseudo_type = {
         {"ultrasoft", ULTRASOFT_GBRV},
         {"sg15", NORM_CONSERVING_SG15},
         {"nc_accuracy", NORM_CONSERVING_ACCURACY},
+        {"nc_standard", NORM_CONSERVING_STANDARD},
         {"all_electron", ALL_ELECTRON}};
 
 static std::unordered_map<std::string, int> energy_output_units = {
