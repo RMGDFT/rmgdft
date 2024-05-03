@@ -138,7 +138,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
             coarse_pwaves->gcut = ct.ecutwfc / tpiba2;
+            //coarse_pwaves->remask();
             fine_pwaves->gcut = coarse_pwaves->gcut * Rmg_G->default_FG_RATIO * Rmg_G->default_FG_RATIO;
+            //fine_pwaves->remask();
         }
     }
     //int fgcount = coarse_pwaves->count_filtered_gvectors(ct.filter_factor);

@@ -1448,6 +1448,26 @@ Pw::~Pw(void)
   }
 }
 
+void Pw::remask(void)
+{
+  
+    this->ng = this->pbasis;
+    for(size_t idx=0;idx < this->pbasis;idx++)
+    {
+        this->gmask[idx] = true;
+        if(this->gmags[idx] > this->gcut)
+        {
+            this->gmask[idx] = false;
+            this->ng--;
+        }
+        else
+        {
+            this->gmax = std::max(this->gmags[idx], this->gmax);
+        }
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &this->ng, 1, MPI_INT, MPI_SUM, comm);
+}
+
 double Pw::InscribedSphere (Lattice *Lt, int nx, int ny, int nz)
 {
     //  reciprocal lattice b1*nx, b2 * ny, b3*nz and origin(0,0,0) as vertexes

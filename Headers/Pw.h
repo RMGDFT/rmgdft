@@ -113,6 +113,7 @@ public:
     Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
     void index_to_gvector(int *index, double *gvector);
     size_t count_filtered_gvectors(double filter_factor);
+    void remask(void);
     void FftForward (double * in, std::complex<double> * out);
     void FftForward (std::complex<double> * in, std::complex<double> * out);
     void FftInverse (std::complex<double> * in, std::complex<double> * out);
