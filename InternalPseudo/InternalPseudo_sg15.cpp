@@ -201,7 +201,7 @@ std::string GetInternalPseudo_sg15(const char *symbol)
     // UPF parsing. Fix later in pp generation.
 //    decompressed.erase(decompressed.length() - 9);
 
-    std::string pp_file = lsym + std::string("_sg15_rmg_internal.upf");
+    std::string pp_file = std::string(symbol) + std::string("_sg15_rmg_internal.upf");
     if(pct.worldrank == 0)
     {
         int fhand;

@@ -201,7 +201,7 @@ std::string GetInternalPseudo_ncpp_standard(const char *symbol)
     os.flush();
     io::close(os);
  
-    std::string pp_file = lsym + std::string("_standard_rmg_internal.upf");
+    std::string pp_file = std::string(symbol) + std::string("_standard_rmg_internal.upf");
     if(pct.worldrank == 0)
     {
         int fhand;
