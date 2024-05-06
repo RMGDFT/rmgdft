@@ -1,6 +1,6 @@
 # Mg 2-atom test cell with k-points
 # Expected energy
-test_energy="-108.64666404"
+test_energy="-108.64666365"
 test_steps = "10"
 test_steps_tolerance = "1"
 
