@@ -74,21 +74,31 @@ template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpi
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
 {
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    double *rho_tot = new double[FP0_BASIS];
 
-    int inlc = get_inlc();
-    if(inlc !=0) 
-    {
-        throw RmgFatalException() << "stress does not work for vdw now" << __FILE__ << " at line " << __LINE__ << "\n";
+    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] = rho[i];
+    if(ct.spin_flag) {
+        // opposite spin array is stored sequentially
+        for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] += rho[i + FP0_BASIS];
     }
+
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
     for(int i = 0; i < 9; i++) stress_tensor[i] = 0.0;
     RT2 = new RmgTimer("2-Stress: kinetic");
-    Kinetic_term(Kpin, BG, L);
+    if(ct.fast_density)
+    {
+        Kinetic_term_coarse(Kpin, BG, L);
+    }
+    else
+    {
+        Kinetic_term_fine(Kpin, BG, L);
+    }
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Loc");
-    Local_term(atoms, species, rho, pwaves);
+    Local_term(atoms, species, rho_tot, pwaves);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Non-loc");
     NonLocal_term(Kpin, atoms, species);
@@ -101,7 +111,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
 
     }
     RT2 = new RmgTimer("2-Stress: Hartree");
-    Hartree_term(rho, pwaves);
+    Hartree_term(rho_tot, pwaves);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: XC Local");
     Exc_term(Exc, vxc, rho);
@@ -128,12 +138,22 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         delete RT2;
     }
 
+    int inlc = get_inlc();
+    if(inlc)
+    {
+        RT2 = new RmgTimer("2-Stress: vdW_DF correction");
+        vdW_DF_term (rho, rhocore, ct.nspin);
+        delete RT2;
+    }
+
     if(ct.vdw_corr == DFT_D3)
         for(int i = 0; i < 9; i++) stress_tensor[i] += ct.stress_vdw[i];
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor);
     delete RT1;
     print_stress("total ", stress_tensor);
+
+    MPI_Bcast(stress_tensor, 9, MPI_DOUBLE, 0, pct.img_comm);
 
     for(int i = 0; i < 9; i++) Rmg_L.stress_tensor[i] = stress_tensor[i];
     double zero(0.0);
@@ -141,9 +161,9 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     double  a[9]; // b is the reciprocal vector without 2PI, a^-1
     for (int i = 0; i < 3; i++)
     {
-       //  b[0 * 3 + i] = Rmg_L.b0[i];
-       //  b[1 * 3 + i] = Rmg_L.b1[i];
-       //  b[2 * 3 + i] = Rmg_L.b2[i];
+        //  b[0 * 3 + i] = Rmg_L.b0[i];
+        //  b[1 * 3 + i] = Rmg_L.b1[i];
+        //  b[2 * 3 + i] = Rmg_L.b2[i];
 
         double a_length = Rmg_L.celldm[0];
         double b_length = Rmg_L.celldm[1] * Rmg_L.celldm[0];
@@ -157,18 +177,23 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     double alpha = Rmg_L.omega;
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
 
+    delete [] rho_tot;
 }
 
-template void Stress<double>::Kinetic_term(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
-template void Stress<std::complex<double>>::Kinetic_term(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
-template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+template void Stress<double>::Kinetic_term_coarse(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_coarse(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
 {
-    int PX0_GRID = Rmg_G->get_PX0_GRID(1);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(1);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+    int ratio = Rmg_G->default_FG_RATIO;
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
 
-    int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
+
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int pbasis = P0_BASIS;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
+
     T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
     T *psi_x = grad_psi;
     T *psi_y = psi_x + pbasis_noncol;
@@ -189,15 +214,20 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
         for(int st = 0; st < kptr->nstates; st++)
         {
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
-            ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
+
+            T *psi = kptr->Kstates[st].psi;
+            ApplyGradient(psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
             if(ct.noncoll)
-                ApplyGradient(kptr->Kstates[st].psi+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Coarse");
+            {
+                psi = kptr->Kstates[st].psi + pbasis;
+                ApplyGradient(psi+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Coarse");
+            }
 
             if(!ct.is_gamma)
             {
                 std::complex<double> I_t(0.0, 1.0);
                 std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
-                psi_C = (std::complex<double> *) kptr->Kstates[st].psi;
+                psi_C = (std::complex<double> *) psi;
                 psi_xC = (std::complex<double> *) psi_x;
                 psi_yC = (std::complex<double> *) psi_y;
                 psi_zC = (std::complex<double> *) psi_z;
@@ -219,11 +249,102 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
     RmgFreeHost(grad_psi);
+}
+
+template void Stress<double>::Kinetic_term_fine(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_fine(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+{
+    int ratio = Rmg_G->default_FG_RATIO;
+    int dimx = Rmg_G->get_PX0_GRID(ratio);
+    int dimy = Rmg_G->get_PY0_GRID(ratio);
+    int dimz = Rmg_G->get_PZ0_GRID(ratio);
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
+
+
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  L, BG);
+    int pbasis = FP0_BASIS;
+    int pbasis_noncol = pbasis * ct.noncoll_factor;
+
+    T *psi_f = (T *)RmgMallocHost(pbasis_noncol*sizeof(T));
+    T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
+    T *psi_x = grad_psi;
+    T *psi_y = psi_x + pbasis_noncol;
+    T *psi_z = psi_x + 2*pbasis_noncol;
+
+    double vel = L.get_omega() / ((double)(BG.get_NX_GRID(ratio) * BG.get_NY_GRID(ratio) * BG.get_NZ_GRID(ratio)));
+    T alpha;
+    T one(1.0);
+    T stress_tensor_T[9];
+    double stress_tensor_R[9];
+
+
+    for(int i = 0; i < 9; i++) stress_tensor_T[i] = 0.0;
+
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    {
+        Kpoint<T> *kptr = Kpin[kpt];
+        for(int st = 0; st < kptr->nstates; st++)
+        {
+            if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
+
+            T *psi = kptr->Kstates[st].psi;
+            if(ct.prolong_order == 0)
+                FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
+            else
+                P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+            ApplyGradient(psi_f, psi_x, psi_y, psi_z, ct.force_grad_order, "Fine");
+            if(ct.noncoll)
+            {
+                psi = kptr->Kstates[st].psi + pbasis;
+                if(ct.prolong_order == 0)
+                    FftInterpolation(*Rmg_G, psi, psi_f+pbasis, ratio, false);
+                else
+                    P.prolong(psi_f+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+                ApplyGradient(psi_f+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Fine");
+            }
+
+            if(!ct.is_gamma)
+            {
+                std::complex<double> I_t(0.0, 1.0);
+                std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+                psi_C = (std::complex<double> *) psi_f;
+                psi_xC = (std::complex<double> *) psi_x;
+                psi_yC = (std::complex<double> *) psi_y;
+                psi_zC = (std::complex<double> *) psi_z;
+                for(int i = 0; i < pbasis_noncol; i++)
+                {
+                    psi_xC[i] += I_t *  kptr->kp.kvec[0] * psi_C[i];
+                    psi_yC[i] += I_t *  kptr->kp.kvec[1] * psi_C[i];
+                    psi_zC[i] += I_t *  kptr->kp.kvec[2] * psi_C[i];
+                }
+            }
+
+
+            alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
+            RmgGemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
+                    grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
+
+        }
+    }
+
+    for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
+
+    if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
+    RmgFreeHost(grad_psi);
+    RmgFreeHost(psi_f);
 }
 
 template void Stress<double>::Hartree_term(double *rho, Pw &pwaves);
@@ -236,6 +357,10 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
 
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho[i], 0.0);
+    if(ct.nspin == 0)
+    {
+        for(int i = 0;i < pbasis;i++) crho[i] += std::complex<double>(rho[i+pbasis], 0.0);
+    }
     pwaves.FftForward(crho, crho);
     for(int i = 0;i < pbasis;i++) crho[i] /=(double)pwaves.global_basis;
 
@@ -279,11 +404,37 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
 {
     double stress_tensor_x[9];
     for(int i = 0; i < 9; i++) stress_tensor_x[i] = 0.0;
-    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
+    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.xcstate)/Rmg_L.omega;
+    //    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
     if(ct.verbose) print_stress("XC term", stress_tensor_x);
+}
+
+template void Stress<double>::vdW_DF_term (double *rho, double *rhocore, int nspin);
+template void Stress<std::complex<double>>::vdW_DF_term (double *rho, double *rhocore, int nspin);
+template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, int nspin)
+{   
+    double stress_tensor_vdW_DF[9];
+    for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] = 0.0;
+
+    int grid_ratio = Rmg_G->default_FG_RATIO;
+    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
+                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
+
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(!F->dft_is_nonlocc_rmg() ) return;
+    F->stress_vdW_DF (rho, rhocore, nspin, stress_tensor_vdW_DF);
+
+    for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] *= vel /Rmg_L.omega;
+    //  sum over grid communicator and spin communicator  but no kpoint communicator
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_vdW_DF, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_vdW_DF, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_vdW_DF[i];
+
+    if(ct.verbose) print_stress("XC vdW_DF_term", stress_tensor_vdW_DF);
+    delete F;
 }
 
 template void Stress<double>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
@@ -315,7 +466,7 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
 
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     // How do we filter here for the noncollinear case?
-    if(Rmg_G->default_FG_RATIO > 1)
+    if(Rmg_G->default_FG_RATIO > 1 && 0)
     {
         for(int is = 0; is < ct.nspin; is++)
             FftFilter(&F->vxc2[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
@@ -343,21 +494,25 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
         ApplyGradient(&rho[pbasis], rho_gx1, rho_gy1, rho_gz1, ct.force_grad_order, "Fine");
         daxpy (&pbasis, &malpha, rhocore, &ione, &rho[pbasis], &ione);
 
-
         for(int i = 0; i < 3; i++)
             for(int j = 0; j < 3; j++)
             {
                 for(int idx = 0; idx < pbasis; idx++)
-                    stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[(3 + j) *pbasis + idx] * F->vxc2[idx]; 
+                {
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[(3+i)*pbasis + idx] * rho_grad[(3+j)*pbasis + idx] * F->vxc2[pbasis+idx]; 
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[(3 + j) *pbasis + idx] * F->v2cud[idx]; 
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[(3+i)*pbasis + idx] * rho_grad[ j *pbasis + idx] * F->v2cud[idx]; 
+                }
             }
 
     }
+
+    delete [] rho_grad;
     delete F;
 
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] *= vel /Rmg_L.omega;
     //  sum over grid communicator and spin communicator  but no kpoint communicator
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_xcgrad[i];
 
     if(ct.verbose) print_stress("XC gradcorr", stress_tensor_xcgrad);
@@ -376,6 +531,10 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     std::complex<double> *crho = new std::complex<double>[pbasis];
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho[i], 0.0);
+    if(ct.nspin == 0)
+    {
+        for(int i = 0;i < pbasis;i++) crho[i] += std::complex<double>(rho[i+pbasis], 0.0);
+    }
     pwaves.FftForward(crho, crho);
     for(int i = 0;i < pbasis;i++) crho[i] /=(double)pwaves.global_basis;
 
@@ -678,7 +837,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
 
@@ -705,7 +864,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
     //  erfc(4.06) = 9.37e-9 so we set the largest r/(sqrt(2)*sigma) = 4.06
 
 
-    double rcutoff = 4.06;
+    double rcutoff = 5.06;
     int num_cell_x = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_xside()) + 1;
     int num_cell_y = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_yside()) + 1;
     int num_cell_z = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_zside()) + 1;
@@ -738,7 +897,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
                         if(r < 1.0e-5) continue;
 
-                        double hprime = 2.0/sqrt(PI) * std::exp(-sigma * r * r) - boost::math::erfc(t1*r)/(t1*r); 
+                        double hprime = -2.0/sqrt(PI) * std::exp(-sigma * r * r) - boost::math::erfc(t1*r)/(t1*r); 
                         double tem = 0.5 * t1 * Zi * Zj * hprime /(r*r);
 
                         for(int id1 = 0; id1 < 3; id1++)
@@ -806,8 +965,8 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
     for(i=0; i < 9; i++) stress_tensor_gs[i] /= -Rmg_L.omega;
 
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_gs);
     for(i=0; i < 9; i++) stress_tensor[i] += stress_tensor_gs[i];
-
     if(ct.verbose) print_stress("Ewald term", stress_tensor_gs);
 }
 
@@ -958,15 +1117,15 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
                                 if(ct.noncoll)
                                 {
                                     sum[ion * num_q_max + idx + sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 2*sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 3*sum_dim] += 
-                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
+                                        Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
                                     // switching the derivative from Q to veff introduce Q * Veff term 
                                     // cancelling out the original Q * Veff term
                                     if(id1 == id2 && 0 )  
-                                            sum[ion * num_q_max + idx] += Qr * veff[ivec[icount]];
+                                        sum[ion * num_q_max + idx] += Qr * veff[ivec[icount]];
                                 }
                             }
                         }               /*end if (ncount) */
@@ -1066,7 +1225,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
-    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nlq[i];
     if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
     delete [] sum;

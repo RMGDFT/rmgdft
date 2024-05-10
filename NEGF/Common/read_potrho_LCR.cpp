@@ -46,7 +46,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     read_potrho (vh,  1, "vh");
-        if(pct.gridpe ==0) printf (" vh calc is done \n"); 
+        if(pct.gridpe ==0) rmg_printf (" vh calc is done \n"); 
 
 
 /* ===================== writing pot ======================= */
@@ -120,9 +120,9 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     read_potrho (vxc, 0, "vxc");
-    if(pct.gridpe ==0) printf (" vxc calc is done \n"); 
+    if(pct.gridpe ==0) rmg_printf (" vxc calc is done \n"); 
     read_potrho (rho, 0, "rho");
-    if(pct.gridpe ==0) printf (" rho calc is done \n"); 
+    if(pct.gridpe ==0) rmg_printf (" rho calc is done \n"); 
 
 
 

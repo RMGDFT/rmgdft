@@ -199,6 +199,8 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
     }
 
+    if(ct.cell_relax)
+        rmg_printf("        Final volume      = %12.6f\n", Rmg_L.omega);
 }                               /* end fastrlx */
 
 

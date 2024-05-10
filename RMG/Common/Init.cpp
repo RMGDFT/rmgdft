@@ -138,7 +138,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
             coarse_pwaves->gcut = ct.ecutwfc / tpiba2;
+            //coarse_pwaves->remask();
             fine_pwaves->gcut = coarse_pwaves->gcut * Rmg_G->default_FG_RATIO * Rmg_G->default_FG_RATIO;
+            //fine_pwaves->remask();
         }
     }
     //int fgcount = coarse_pwaves->count_filtered_gvectors(ct.filter_factor);
@@ -222,14 +224,24 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Blocks of pinned host memory
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
     {
-        InitGpuMallocHost((size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType)); 
+        size_t palloc = (size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType);
+        palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+        InitGpuMallocHost(palloc);
     }
     else
     {
         if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid && !ct.write_qmcpack_restart)
-            InitGpuMallocHost((size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType)); 
+        {
+            size_t palloc = (size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
         else
-            InitGpuMallocHost((size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType)); 
+        {
+            size_t palloc = (size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
     }
 
     // Wavefunctions are actually stored here
@@ -692,7 +704,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
 
         /*Now we can do subspace diagonalization */
-        double *new_rho=new double[FP0_BASIS *ct.nspin];
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
@@ -769,16 +780,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
         OutputEigenvalues(Kptr, 0, -1);
 
-        // Get new density 
-        RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
-        GetNewRho(Kptr, new_rho);
-
-        MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
-        if (ct.nspin == 2) get_rho_oppo (rho,  rho_oppo);
-
-        delete RT2;
-        delete [] new_rho;
-
         /*Release vtot memory */
         delete [] vtot_psi;
         delete [] vtot;
@@ -817,7 +818,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     int fnum = fileno(ct.logfile);
     int kpsub_rank;
     MPI_Comm_rank (pct.kpsub_comm, &kpsub_rank);
-    if(pct.gridpe == 0)
+
+    if(pct.imgpe == 0)
     {
         init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
                 &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );

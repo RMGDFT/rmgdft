@@ -7,5 +7,6 @@ std::string GetInternalPseudo(const char *symbol);
 std::string GetInternalPseudo_sg15(const char *symbol);
 std::string GetInternalPseudo_uspp(const char *symbol);
 std::string GetInternalPseudo_ncpp_stringent(const char *symbol);
+std::string GetInternalPseudo_ncpp_standard(const char *symbol);
 
 #endif

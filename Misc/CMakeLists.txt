@@ -1,7 +1,11 @@
 add_library (Misc
 OutputBandPlot.cpp
 kind.f90
+kpoint_grid.f90
+irrek.f90
 tetra.f90
+symm_base.f90
+eqvect.f90
 Tetrahedron.cpp
 CheckSetDefault.cpp
 DistributeToGlobal.cpp    
@@ -74,6 +78,7 @@ GlobalSums.cpp
 GlobalSums_Cbindings.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
+ZgetrftrsDriver.cpp
 #BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp

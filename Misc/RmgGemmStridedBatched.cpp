@@ -103,13 +103,13 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #else
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) a_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) b_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) c_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #endif
 
     size_t a_size = (size_t)lda * (size_t)ka * (size_t)batchCount;
@@ -165,13 +165,13 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) a_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
     hiperr = hipPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) b_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
     hiperr = hipPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) c_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
     hipblasStatus_t hipstat;
     hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transB = HIPBLAS_OP_N;
 

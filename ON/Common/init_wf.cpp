@@ -47,7 +47,7 @@ static void init_wf_gamma(STATE * states)
     if (pct.gridpe == 0)
         rmg_printf(" Initialize random functions\n");
 	
-        dprintf(" Initialize random functions\n");
+        printf(" Initialize random functions\n");
 
     /* Initialize the random number generator */
 

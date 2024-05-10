@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <complex>
 
+#include "RmgGemm.h"
+
 
 #if CUDA_ENABLED
 #include <cuda.h>
@@ -23,6 +25,7 @@
 #include <hip/hip_runtime.h>
 #endif
 
+#include "Gpufuncs.h"
 
 void my_sync_device()
 {
@@ -37,8 +40,10 @@ void my_sync_device()
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasZcopy (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#if CUDA_ENABLED 
+    cublasZcopy (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#elif HIP_ENABLED
+    hipblasZcopy (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
 #else
     zcopy (&n, A, &ia, B, &ib);
 #endif
@@ -48,8 +53,10 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasZaxpy (ct.cublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#if CUDA_ENABLED 
+    cublasZaxpy (ct.gpublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
+#elif HIP_ENABLED
+    hipblasZaxpy (ct.gpublas_handle, n, (hipblasDoubleComplex *)&alpha, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
 #else
     zaxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
@@ -57,8 +64,10 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
-#if CUDA_ENABLED
-    cublasDzasum (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, sum);
+#if CUDA_ENABLED 
+    cublasDzasum (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, sum);
+#elif HIP_ENABLED
+    hipblasDzasum (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, sum);
 #else
     *sum = dzasum(&n, (double *)A, &ia);
 #endif
@@ -68,28 +77,47 @@ void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 void dcopy_driver (int n, double *A, int ia, double *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasDcopy (ct.cublas_handle, n, A, ia, B, ib);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDcopy (ct.gpublas_handle, n, A, ia, B, ib);
 #else
     dcopy (&n, A, &ia, B, &ib);
 #endif
 }
 
+void scopy_driver (int n, float *A, int ia, float *B, int ib) 
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasScopy (ct.gpublas_handle, n, A, ia, B, ib);
+#else
+    scopy (&n, A, &ia, B, &ib);
+#endif
+}
 
 void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib) 
 {
 
-#if CUDA_ENABLED
-    cublasDaxpy (ct.cublas_handle, n, &alpha, A, ia, B, ib);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDaxpy (ct.gpublas_handle, n, &alpha, A, ia, B, ib);
 #else
     daxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
 }
 
+void saxpy_driver (int n, float alpha, float *A, int ia, float *B, int ib) 
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasSaxpy (ct.gpublas_handle, n, &alpha, A, ia, B, ib);
+#else
+    saxpy (&n, &alpha, A, &ia, B, &ib);
+#endif
+}
+
 void dscal_driver(int n, double beta, double *A, int ione)
 {
-#if CUDA_ENABLED
-    cublasDscal (ct.cublas_handle, n, &beta, A, ione);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpublasDscal (ct.gpublas_handle, n, &beta, A, ione);
 #else
     dscal(&n, &beta, A, &ione);
 #endif
@@ -109,33 +137,22 @@ double *C, int ic, int jc, int *descc)
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if(nprow*npcol <1) 
     {
-        printf ("error in zgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
+        printf ("error in dgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     if(nprow*npcol != 1)
     {
-        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
 
+#endif
 
-    cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
-
-    if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "T")) cu_transA = CUBLAS_OP_T;
-
-    if(!strcmp(transb, "t")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "T")) cu_transB = CUBLAS_OP_T;
-
-    cublasDgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
-            &alpha, A, lda, B, ldb, &beta, C, ldc );
-
-#else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
     {
@@ -144,10 +161,51 @@ double *C, int ic, int jc, int *descc)
     }
     else
     {
-
-        dgemm(transa, transb, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
+
+
+}
+
+void sgemm_driver (char *transa, char *transb, int m, int n, int k, 
+float alpha, float *A, int ia, int ja, int *desca,
+float *B, int ib, int jb, int *descb, float beta, 
+float *C, int ic, int jc, int *descc)
+{
+
+    int nprow, npcol, myrow, mycol;
+    int lda=desca[8], ldb=descb[8], ldc = descc[8];
+    int ictxt = desca[1];
+
+    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    if(nprow*npcol <1) 
+    {
+        printf ("error in sgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+
+#if CUDA_ENABLED || HIP_ENABLED
+
+    if(nprow*npcol != 1)
+    {
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+
 #endif
+
+    //  use scalapack if nprow * npcol > 1
+    if(nprow*npcol > 1)  
+    {
+        psgemm (transa, transb, &m, &n, &k, &alpha, A, &ia, &ja, desca,
+                B, &ib, &jb, descb, &beta, C, &ic, &jc, descc);
+    }
+    else
+    {
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+    }
 
 
 }
@@ -171,7 +229,7 @@ std::complex<double> *C, int ic, int jc, int *descc)
         exit (0);
     }
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     if(nprow*npcol != 1)
     {
@@ -180,26 +238,8 @@ std::complex<double> *C, int ic, int jc, int *descc)
         exit (0);
     }
 
+#endif
 
-    cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
-
-    if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "T")) cu_transA = CUBLAS_OP_T;
-    if(!strcmp(transa, "c")) cu_transA = CUBLAS_OP_C;
-    if(!strcmp(transa, "C")) cu_transA = CUBLAS_OP_C;
-
-    if(!strcmp(transb, "t")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "T")) cu_transB = CUBLAS_OP_T;
-    if(!strcmp(transb, "c")) cu_transB = CUBLAS_OP_C;
-    if(!strcmp(transb, "C")) cu_transB = CUBLAS_OP_C;
-
-    cublasZgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
-            (cuDoubleComplex *)&alpha,
-            (cuDoubleComplex*)A, lda,
-            (cuDoubleComplex*)B, ldb,
-            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-
-#else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
     {
@@ -208,10 +248,102 @@ std::complex<double> *C, int ic, int jc, int *descc)
     }
     else
     {
-
-        zgemm(transa, transb, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
-#endif
 
 
 }
+
+
+// Used for the special case when all MPI procs share a copy of the input matrices
+// and the gemm call is repeated by all procs using the GPUs.
+void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k, 
+double alpha, double *A, int ia, int ja, int *desca,
+double *B, int ib, int jb, int *descb, double beta, 
+double *C, int ic, int jc, int *descc)
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+
+    int nprow, npcol, myrow, mycol;
+    int lda=desca[8], ldb=descb[8], ldc = descc[8];
+    int ictxt = desca[1];
+    char *trans_t="t", *trans_n="n";
+
+    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    if(nprow*npcol <1) 
+    {
+        printf ("error in mgpu_dgemm_driver nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+    if(nprow*npcol != 1)
+    {
+        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        fflush (NULL);
+        exit (0);
+    }
+    
+    if(m != n || m != k)
+    {
+        printf ("mgpu_dgemm requires m=n=k! \n");
+        fflush (NULL);
+        exit (0);
+    }
+
+#if USE_NCCL
+    // gemm split over on node GPUs and recombined with nccl
+    // local_comm contains the number of procs on this node which is also the number of GPUs
+    int nprocs, my_rank;
+    MPI_Comm_size(pct.local_comm, &nprocs);
+    ncclCommUserRank(ct.nccl_local_comm, &my_rank);
+
+    std::vector<int> start, stop, counts;
+    start.resize(nprocs);
+    stop.resize(nprocs);
+    counts.resize(nprocs);
+
+    int my_start = 0;
+    int my_stop = 0;
+    int my_step = 0;
+    int incs = m / nprocs;
+    if(m % nprocs) incs++;
+    int ioffset = 0;
+    for(int idx = 0;idx < nprocs;idx++)
+    {
+        start[idx] = ioffset;
+        stop[idx] = start[idx] + incs;
+        if(idx == (nprocs-1)) stop[idx] = m;
+        counts[idx] = stop[idx] - start[idx];
+        if(my_rank == idx)
+        {
+            my_start = start[idx];
+            my_stop = stop[idx];
+            my_step = counts[idx];
+        }
+        ioffset += counts[idx];
+        start[idx] *= m;
+        stop[idx] *= m;
+        counts[idx] *= m;
+    }
+    RmgGemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
+    size_t sendcount = counts[0];
+    ncclAllGather(&C[my_rank*sendcount], C, sendcount, ncclDouble, ct.nccl_local_comm, 0);
+#else
+    // Full gemm no nccl
+    RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+#endif
+#else
+
+    dgemm_driver (transa, transb, m, n, k, 
+    alpha, A, ia, ja, desca,
+    B, ib, jb, descb, beta, 
+    C, ic, jc, descc);
+
+#endif
+
+
+
+}
+
+

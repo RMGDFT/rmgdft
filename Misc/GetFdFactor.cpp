@@ -25,6 +25,19 @@ double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
     return ke;
 }
 
+double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
+{
+    double rg = 0.0;
+    for(int idx=0;idx<pbasis;idx++)
+    {
+        rg += (x1[idx] - x2[idx])*(x1[idx] - x2[idx]);
+    }
+    rg *= get_vel_f();
+    MPI_Allreduce(MPI_IN_PLACE, &rg, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    rg = sqrt(rg);
+    return rg;
+}
+
 
 void GetFdFactor(int kpt)
 {
@@ -43,14 +56,22 @@ void GetFdFactor(int kpt)
     int nlydim = get_NY_GRID();
     int nlzdim = get_NZ_GRID();
     int pbasis = Rmg_G->get_P0_BASIS(1);
+    int ratio = Rmg_G->default_FG_RATIO;
+    int fpbasis = Rmg_G->get_P0_BASIS(ratio);
+    int pxdim = get_PX0_GRID();
+    int pydim = get_PY0_GRID();
+    int pzdim = get_PZ0_GRID();
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
-    std::vector<double> cvals, diffs;
+    std::vector<double> cvals, diffs, pdiffs;
     std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     double *work = new double[pbasis];
+    double *pwork1 = new double[fpbasis];
+    double *pwork2 = new double[fpbasis];
+    double *pwork3 = new double[fpbasis];
     double vect[3], nlcrds[3], kvec[3];
 
     /* Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -70,6 +91,10 @@ void GetFdFactor(int kpt)
         sp.fd_slopes.clear();
         sp.fd_xint.clear();
         sp.fd_yint.clear();
+        sp.pd_slopes.clear();
+        sp.pd_xint.clear();
+        sp.pd_yint.clear();
+        sp.pd_mins.clear();
 
         // Set up an occupation weight array
         for (int ip = 0; ip < sp.num_atomic_waves; ip++)
@@ -112,9 +137,15 @@ void GetFdFactor(int kpt)
             // Get the FFT laplacian and compute the kinetic energy as our gold standard
             FftLaplacianCoarse(orbital, work);
             double fft_ke = ComputeKineticEnergy(orbital, work, pbasis);
+
+            FftInterpolation(*Rmg_G, orbital, pwork1, ratio, false);
+            FftLaplacianFine(pwork1, pwork3);
+            double pfft_ke = ComputeKineticEnergy(pwork1, pwork3, fpbasis);
+
             double c2 = 0.0;
             cvals.clear();
             diffs.clear();
+            pdiffs.clear();
             // Linear fit with 2 points
             for(int j=0;j < 2;j++)
             {
@@ -125,24 +156,40 @@ void GetFdFactor(int kpt)
                     fprintf(ct.logfile, "FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
+
+                Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
+                P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
+                              pxdim, pydim, pzdim);
+
+                FftLaplacianFine(pwork2, pwork3);
+                double pfd_ke = ComputeKineticEnergy(pwork2, pwork3, fpbasis);
+                pdiffs.push_back(pfft_ke - pfd_ke);
+
                 c2 += 1.0; 
             }
+            // Setup data for adaptive finite differencing
             double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
             double x_int = - diffs[0] / m;
             sp.fd_slopes.push_back(m);
             sp.fd_yint.push_back(diffs[0]);
-
-            if(ct.verbose && pct.gridpe==0)fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
             x_int = std::max(x_int, 0.0);
             sp.fd_xint.push_back(x_int);
+            if(ct.verbose && pct.gridpe==0)
+                fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
 
-            sp.fd_factor1.push_back(x_int);
-            sp.fd_fke1.push_back(fft_ke);
+            m = (pdiffs[1] - pdiffs[0])/(cvals[1] - cvals[0]);
+            x_int = - pdiffs[0] / m;
+            sp.pd_slopes.push_back(m);
+            sp.pd_yint.push_back(diffs[0]);
+            x_int = std::max(x_int, 0.0);
+            sp.pd_xint.push_back(x_int);
+
         }
     }
 
     // Loop over ions
     double fweight=0.0, a=0.0;
+    double pweight=0.0, p=0.0;
     for(auto& Atom : Atoms)
     {
         for(size_t i=0;i < Atom.Type->fd_slopes.size();i++)
@@ -153,7 +200,21 @@ void GetFdFactor(int kpt)
                      (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
                 fweight += Atom.Type->fd_slopes[i] * occ_weight[i];
             }
+            if(fabs(Atom.Type->pd_slopes[i]) > 1.0e-8)
+            {
+                p += Atom.Type->pd_slopes[i] * occ_weight[i] * 
+                     (Atom.Type->pd_xint[i] - Atom.Type->pd_yint[i]);
+                pweight += Atom.Type->pd_slopes[i] * occ_weight[i];
+            }
         }
+    }
+
+    ct.cmix = 1.0;
+    if(ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
+    {
+        if(ct.verbose && pct.gridpe == 0) 
+            printf("cmix = %f\n", p/pweight);
+        ct.cmix = p/pweight;
     }
 
     // If extrememly well converged then nothing to do here
@@ -176,6 +237,9 @@ void GetFdFactor(int kpt)
             "CFAC < 0.0. This probably indicates an error in the cell setup:\n");
     }
 
+    delete [] pwork3;
+    delete [] pwork2;
+    delete [] pwork1;
     delete [] work;
     fftw_free (gbptr);
     fftw_free (beptr);

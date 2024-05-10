@@ -35,7 +35,7 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 
     if( OrbitalPairs.size() == 0) return;
 
-//    printf("\n %d num pairs ", (int)OrbitalPairs.size());
+//    rmg_printf("\n %d num pairs ", (int)OrbitalPairs.size());
 
     if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
 

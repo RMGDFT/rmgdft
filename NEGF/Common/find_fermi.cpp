@@ -20,6 +20,8 @@
 #include "LCR.h"
 #include "method.h"
 #include "pmo.h"
+#include "transition.h"
+
 
 
 
@@ -48,7 +50,7 @@ void find_fermi (std::complex<double> * sigma_all)
          comm_sums(&ct.tcharge, &ione, COMM_EN2);
 
         if (pct.gridpe == 0)
-            printf ("\n total charge, %18.12f %18.12f  Fermi energy %16.10f %16.10f",
+            rmg_printf ("\n total charge, %18.12f %18.12f  Fermi energy %16.10f %16.10f",
                     ct.nel, ct.tcharge, bias1, density);
 
 
@@ -69,7 +71,7 @@ void find_fermi (std::complex<double> * sigma_all)
     }
 
     if (pct.gridpe == 0)
-        printf("\nFERMI ENERGY = %15.8f\n", bias1);
+        rmg_printf("\nFERMI ENERGY = %15.8f\n", bias1);
 
     set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
 

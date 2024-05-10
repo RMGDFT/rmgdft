@@ -133,7 +133,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                dprintf("\n  unable to open file %s", newname);
+                printf("\n  unable to open file %s", newname);
                 exit(0);
             }
 

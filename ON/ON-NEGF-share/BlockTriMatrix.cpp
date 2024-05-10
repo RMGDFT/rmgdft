@@ -153,7 +153,7 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
     RT= new RmgTimer("BlockTrReduc");
 
     int tot_size = size_diag + size_up_offdiag + size_dn_offdiag;
-    //printf("\n tot_sie %d", tot_size);
+    //rmg_printf("\n tot_sie %d", tot_size);
     //MPI_Allreduce(MPI_IN_PLACE, (double *)storage, tot_size, MPI_DOUBLE, MPI_SUM, A.comm);
     //   GlobalSums(storage_up_offdiag, size_up_offdiag, A.comm);
     MPI_Barrier(MPI_COMM_WORLD);

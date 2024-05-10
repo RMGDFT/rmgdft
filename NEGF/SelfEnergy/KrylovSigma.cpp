@@ -105,7 +105,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     zgesv(&n, &n2, (double *)A, &n, ipiv, (double *)VR, &n, &info );
     if (info != 0)
     {
-        printf ("error in zgesv in Krylov with INFO = %d \n", info);
+        rmg_printf ("error in zgesv in Krylov with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -129,7 +129,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
     if (info != 0)
     {
-        printf ("error in zgeev in Krylov with INFO = %d \n", info);
+        rmg_printf ("error in zgeev in Krylov with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -168,7 +168,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     }
 
 //for (i = 0; i < n2; i++) 
-//        printf("\n  %32.16f  lamda   %f  %f ", abs(W[i]), W[i]);
+//        rmg_printf("\n  %32.16f  lamda   %f  %f ", abs(W[i]), W[i]);
     //  now A store eigenvector n * num_modes  u(+) from literatures.
     //  find the dual vector u~ 
     // VR store overlap matrix S(num_modes, num_modes) 
@@ -183,7 +183,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     zgesv(&num_modes, &n, (double *)VR, &num_modes, ipiv, (double *)&A[num_modes*n], &num_modes, &info );
     if (info != 0)
     {
-        printf ("error in zgesv in dual vector with INFO = %d \n", info);
+        rmg_printf ("error in zgesv in dual vector with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }

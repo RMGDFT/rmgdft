@@ -200,7 +200,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
+        ReadData_rmgtddft_on(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
                 Cmatrix, Hmatrix_m1, Hmatrix_0, &pre_steps, n2);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         
@@ -463,7 +463,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         {
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: WriteData");
             my_sync_device();
-            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
+            WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
                     Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps, n2);
             delete RT1;
             fflush(NULL);
@@ -476,7 +476,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
     my_sync_device();
     dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
-    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
+    WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
             Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);
     delete RT0;
 }

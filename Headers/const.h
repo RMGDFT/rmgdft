@@ -276,11 +276,16 @@
 #define EXX_DIV_NONE 1
 #endif /* CONST_H_INCLUDED */
 
+// Precondition types
+#define PRECOND_RESTA 0
+#define PRECOND_KERKER 1
+
 // Internal pseudopotential types
 #define ULTRASOFT_GBRV  0
 #define NORM_CONSERVING_SG15  1
 #define NORM_CONSERVING_ACCURACY  2
-#define ALL_ELECTRON 3
+#define NORM_CONSERVING_STANDARD  3
+#define ALL_ELECTRON 4
 
 #define KPOINT_LATT_UNIT 0
 #define KPOINT_2pi_alat 1

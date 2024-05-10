@@ -34,7 +34,7 @@
 #include <cublas_v2.h>
 
 #elif defined(TILED_MM_ROCM)
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #else
 #error Either TILED_MM_CUDA or TILED_MM_ROCM must be defined!

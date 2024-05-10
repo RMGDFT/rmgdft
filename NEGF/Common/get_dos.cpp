@@ -84,7 +84,7 @@ void get_dos (STATE * states)
     }
     if (ndim != ct.num_states)
     {
-        printf (" %d %d ndim not equal to nC in get_cond_frommatrix\n", ndim, ct.num_states);
+        rmg_printf (" %d %d ndim not equal to nC in get_cond_frommatrix\n", ndim, ct.num_states);
         exit (0);
     }
 
@@ -216,7 +216,7 @@ void get_dos (STATE * states)
             for (st1 = 0; st1 < ntot; st1++)
             {
                 Green_store[idx_e + st1] += -std::imag(green_C[st1]) * kweight[kp];
-                /*printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
+                /*rmg_printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
             }
 
         }

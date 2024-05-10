@@ -217,15 +217,15 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
         residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
 
 
-        //printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
+        //rmg_printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
 
 
         its ++;
     }                           /* end for */
 
-    printf ("\n");
+    rmg_printf ("\n");
     progress_tag ();
-    printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
+    rmg_printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions

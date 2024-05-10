@@ -1,6 +1,7 @@
 //#include "typedefs.h"
 #include "twoParts.h"
 
+void write_data_NEGF(char *name, double *vh, double *vxc, double *rho);
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
 void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,

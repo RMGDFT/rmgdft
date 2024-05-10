@@ -117,7 +117,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE );
     if (fhand < 0)
     {
-        printf ("\n %s, st1 = %d", newname, st1);
+        rmg_printf ("\n %s, st1 = %d", newname, st1);
         rmg_error_handler (__FILE__, __LINE__, " Unable to open file ");
     }
 
@@ -126,7 +126,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     int nbytes = read (fhand, psi, idx);
     if (nbytes != idx)
     {
-        printf ("\n read %d is different from %d for state %d", nbytes, idx, st1);
+        rmg_printf ("\n read %d is different from %d for state %d", nbytes, idx, st1);
         rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
     }
 
@@ -136,7 +136,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     nbytes = read (fhand, iymax, sizeof (int));
     if (nbytes != sizeof (int))
     {
-        printf ("\n read %d is different from %d for state %d", (int) nbytes,
+        rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                 (int) sizeof (int), st1);
         rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
     }
@@ -170,10 +170,10 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
     psi_1d_new = new double[max_orbit_nx_ny];
 
 #if 	LDEBUG
-    printf ("\n PE: %d  xyside %f  %f   ", pct.gridpe, lcr[ipart].xside, lcr[ipart].yside);
-    printf ("\n PE: %d  xy_shift %f  %f %f  ", pct.gridpe, lcr[ipart].x_shift, lcr[ipart].y_shift);
-    printf ("\n PE: %d  get_NX_GRID() %d  %d ", pct.gridpe, lcr[ipart].NX_GRID, lcr[ipart].NY_GRID);
-    printf ("\n PE: %d  num_states %d   ", pct.gridpe, lcr[ipart].num_states);
+    rmg_printf ("\n PE: %d  xyside %f  %f   ", pct.gridpe, lcr[ipart].xside, lcr[ipart].yside);
+    rmg_printf ("\n PE: %d  xy_shift %f  %f %f  ", pct.gridpe, lcr[ipart].x_shift, lcr[ipart].y_shift);
+    rmg_printf ("\n PE: %d  get_NX_GRID() %d  %d ", pct.gridpe, lcr[ipart].NX_GRID, lcr[ipart].NY_GRID);
+    rmg_printf ("\n PE: %d  num_states %d   ", pct.gridpe, lcr[ipart].num_states);
 #endif
 
     NX = states[st].orbit_nx;
@@ -185,7 +185,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
     ixmin_new = states[st].ixmin;
     iymin_new = states[st].iymin;
 
-    /* printf ("\n %d %d %d st ixmn\n", st, ixmin, ixmin_old);*/
+    /* rmg_printf ("\n %d %d %d st ixmn\n", st, ixmin, ixmin_old);*/
     x1_new = ixmin_new * hx_new;
     y1_new = iymin_new * hy_new;
 
@@ -196,7 +196,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
         x1_old = lcr[ipart].x_shift + ixmin_old  * hx_old;
         int item = (x1_new - x1_old)/hx_old;
         if(item < -2)
-            printf("\n inpterpolation_orb alon x error: ixmin_new old, shift %d %d %f", 
+            rmg_printf("\n inpterpolation_orb alon x error: ixmin_new old, shift %d %d %f", 
                     states[st].ixmin, ixmin_old, lcr[ipart].x_shift);
 
         /* ==== Interpolation along x-direction ==== */
@@ -254,7 +254,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
          */
         /*
            if(idx0 == 0 || idx0 == 3 || idx0 == 4)
-           printf (" old_urgent %d %d %f %f %d %f %d %f\n", st, idx0, 
+           rmg_printf (" old_urgent %d %d %f %f %d %f %d %f\n", st, idx0, 
            hy_old, hy_new, iymin_old, y1_old, iymin_new, y1_new);
          */
 
@@ -271,7 +271,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
                 }
                 /*
                    if(pct.gridpe ==0) 
-                   printf (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
+                   rmg_printf (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
                  */
                 diff_hx_interpolation (st, psi_1d_new, psi_1d_old, NY, hy_new, hy_old, y1_new, y1_old); 
 
@@ -281,7 +281,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
                     psi_new[idx1] = psi_1d_new[iy];
                     /*
                        if(pct.gridpe ==0) 
-                       printf (" urgent %f %f \n", psi_old[iy], psi_new[iy]);
+                       rmg_printf (" urgent %f %f \n", psi_old[iy], psi_new[iy]);
                      */
                 }
             }
@@ -298,7 +298,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
     delete []psi_1d_new;
 
 #if 	LDEBUG
-    printf ("\n %d %f %f state x x  %d ixmin_old %d  hx_old %f", st, x1, x1_old, ixmin,
+    rmg_printf ("\n %d %f %f state x x  %d ixmin_old %d  hx_old %f", st, x1, x1_old, ixmin,
             ixmin_old, hx_old);
     fflush (NULL);
 #endif

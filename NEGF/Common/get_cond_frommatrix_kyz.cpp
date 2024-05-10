@@ -20,6 +20,8 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "GpuAlloc.h"
+#include "transition.h"
+
 
 double pmo_trace(std::complex<double>*, int*);
 
@@ -89,7 +91,7 @@ void get_cond_frommatrix_kyz ()
 
 //    if(cei.num_probe > 2 ) nkp[1] = 1;
 	ntot = nkp[0] * nkp[1] * nkp[2];
-	printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
+	rmg_printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
 	if (ntot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
 
@@ -102,32 +104,32 @@ void get_cond_frommatrix_kyz ()
 
 	if (pct.gridpe == 0)
 	{
-		printf ("\n transmission calculations from known matrix \n");
+		rmg_printf ("\n transmission calculations from known matrix \n");
 		for (idx = 0; idx < ct.num_cond_curve; idx++)
 		{
-			printf ("Calculating transmission from probe %d to %d \n", 
+			rmg_printf ("Calculating transmission from probe %d to %d \n", 
 					ct.cond_probe1[idx], ct.cond_probe2[idx]);
 		}	
-		printf ("ct.num_states     = %d \n", ct.num_states);
+		rmg_printf ("ct.num_states     = %d \n", ct.num_states);
 		for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
 		{
-			printf ("lcr[iprobe].num_states = %d \n", lcr[iprobe].num_states);
+			rmg_printf ("lcr[iprobe].num_states = %d \n", lcr[iprobe].num_states);
 		}	
-		printf ("num of blocks     = %d \n", ct.num_blocks);
-		printf ("blocks dim        =   ");
+		rmg_printf ("num of blocks     = %d \n", ct.num_blocks);
+		rmg_printf ("blocks dim        =   ");
 		for (idx = 0; idx < ct.num_blocks; idx++)
-			printf (" %d ", ct.block_dim[idx]);
-		printf ("\n");
+			rmg_printf (" %d ", ct.block_dim[idx]);
+		rmg_printf ("\n");
 
-		printf ("enengy from %f to %f with %d points\n", emin, emax, E_POINTS);
-		printf ("small imaginary part = %f \n", E_imag);
-		printf ("KT = %f eV\n", KT);
-		printf ("kpoint in x,y,z = %d %d %d\n", nkp[0], nkp[1], nkp[2]);
-		printf (" total number of kpoints = %d", nkp_tot);
-		printf (" kx       ky      kz      kweight" );
+		rmg_printf ("enengy from %f to %f with %d points\n", emin, emax, E_POINTS);
+		rmg_printf ("small imaginary part = %f \n", E_imag);
+		rmg_printf ("KT = %f eV\n", KT);
+		rmg_printf ("kpoint in x,y,z = %d %d %d\n", nkp[0], nkp[1], nkp[2]);
+		rmg_printf (" total number of kpoints = %d", nkp_tot);
+		rmg_printf (" kx       ky      kz      kweight" );
 		for ( i = 0; i < nkp_tot; i++)
 		{
-			printf("\n %f, %f,  %f, %f  ", kvecx[i], kvecy[i], kvecz[i], kweight[i]);
+			rmg_printf("\n %f, %f,  %f, %f  ", kvecx[i], kvecy[i], kvecz[i], kweight[i]);
 		}
 	}
 
@@ -341,7 +343,7 @@ void get_cond_frommatrix_kyz ()
                     /* desca= &pmo.desc_lead[0]; */
                     cond_temp[iene] += pmo_trace(temp_matrix1, descb) * kweight[kp];
 
-                    /* printf (" condcond eneR, G= %f %f \n ", eneR, cond[iene]); */
+                    /* rmg_printf (" condcond eneR, G= %f %f \n ", eneR, cond[iene]); */
 
                 }                     
             } /*  end for iene */
@@ -362,7 +364,7 @@ void get_cond_frommatrix_kyz ()
             simpson_loop++;
             if(simpson_loop > simpson_depth) 
             {
-                printf("\n with Simpson depth of %d, tol = %e ", simpson_depth, max_tol);
+                rmg_printf("\n with Simpson depth of %d, tol = %e ", simpson_depth, max_tol);
                 break;
             }
 
@@ -380,7 +382,7 @@ void get_cond_frommatrix_kyz ()
                             energy_insert_index, ener1_temp);
                     break;
             }
-            dprintf("\n cei.energ  %d", EP);
+            printf("\n cei.energ  %d", EP);
 
             if(EP == 0) break;
 
@@ -421,13 +423,13 @@ void get_cond_frommatrix_kyz ()
            peaks[1]=-0.5;
            peaks[2]=0.5;
            peakNum=3;
-           if (pct.gridpe == 0)   printf ("\n no peak in conductance, add 3 energy points: 0, 0.5, -0.5\n");
+           if (pct.gridpe == 0)   rmg_printf ("\n no peak in conductance, add 3 energy points: 0, 0.5, -0.5\n");
         }
         if (pct.gridpe == 0)
         {
-            printf ("\n number of peaks: %d\n", peakNum);
+            rmg_printf ("\n number of peaks: %d\n", peakNum);
             for(peaki=0;peaki<peakNum;peaki++)
-            printf ("\n peaks[%d]: %f\n",peaki,peaks[peaki]);
+            rmg_printf ("\n peaks[%d]: %f\n",peaki,peaks[peaki]);
         }
 
 

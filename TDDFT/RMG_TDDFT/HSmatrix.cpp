@@ -184,10 +184,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     KpointType alpha(vel);
     KpointType beta(0.0);
 
-    if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
-    else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
+    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -196,21 +193,17 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     if(ct.use_async_allreduce)
        MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
     else
-       MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+       //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+       BlockAllreduce((double *)Aij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    BlockAllreduce((double *)Aij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
+
 #endif
 
     // Compute S matrix
     KpointType alpha1(vel);
-    if(ct.norm_conserving_pp)
-    {
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
-    }
-    else
-    {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
-    }
+    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
 
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -218,9 +211,11 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        BlockAllreduce((double *)Sij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    BlockAllreduce((double *)Sij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
 #endif
 
 

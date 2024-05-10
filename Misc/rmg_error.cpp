@@ -8,6 +8,7 @@
 #include "rmg_mangling.h"
 #include "params.h"
 #include "pe_control.h"
+#include "transition.h"
 
 #define         errore          RMG_FC_GLOBAL(errore, ERRORE)
 
@@ -35,7 +36,9 @@ extern "C" void errore(char *where, char *message, int ierr, int where_len, int 
   memset(tbuf, 0, sizeof(tbuf));
 
   if(((where_len + message_len) > (int)sizeof(tbuf)) || (where_len < 0) || (message_len < 0)) {
-     printf("Unknown issue printing error message from fortran routines\n"); 
+     std::cout << "Unknown issue printing error message from fortran routines" << std::endl;
+     printf("Unknown issue printing error message from fortran routines\n");fflush(NULL);
+     rmg_printf("Unknown issue printing error message from fortran routines\n");fflush(NULL);
      raise(SIGTERM);
   }
 
@@ -49,6 +52,7 @@ extern "C" void errore(char *where, char *message, int ierr, int where_len, int 
   if(iz >= (int)sizeof(tbuf)) iz = sizeof(tbuf) - 1;
   tbuf[iz] = 0;
   printf("%s\n", tbuf);
+  rmg_printf("%s\n", tbuf);
 
 
   fflush (NULL);

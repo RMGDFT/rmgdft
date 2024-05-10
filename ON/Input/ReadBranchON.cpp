@@ -119,7 +119,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     if( (!RMGfile.length() ) && lc.ON_read_from_RMG ) 
     {
-        printf(" \nNeed a file name and path from RMG run, so we can read potentials and charge density as initial ones\n");
+        rmg_printf(" \nNeed a file name and path from RMG run, so we can read potentials and charge density as initial ones\n");
         fflush(NULL);
         exit(0);
     }

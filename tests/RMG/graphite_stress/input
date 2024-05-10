@@ -2,14 +2,10 @@
 description="graphite"
 localize_projectors="false"
 localize_localpp="false"
-wavefunction_grid="24 24 64"
-potential_grid_refinement="2"
-
-
-
-#kohn_sham_ke_fft = "true"
-
-test_energy="-24.09538354"
+wavefunction_grid="24 24 80"
+exchange_correlation_type = "vdw-df"
+#verbose = "true"
+test_energy="-22.95605110"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
@@ -34,15 +30,11 @@ bravais_lattice_type="Hexagonal Primitive"
 # Lattice constants 
 a_length="4.64117"
 b_length="4.64117"
-c_length="12.653685887999998"
+c_length="12.76"
 
 kpoint_is_shift = "1 1 1 "
 kpoint_mesh = "4 4 2 "
 kpoint_distribution = "1"
-
-
-#force_grad_order = "0"
-potential_grid_refinement = "3"
 
 
 stress="true"
@@ -52,19 +44,13 @@ start_mode="LCAO Start"
 relax_method = "LBFGS"
 #start_mode="Random Start"
 #start_mode="Restart From File"
-
 #calculation_mode="Quench Electrons"
 calculation_mode="Relax Structure"
 
 kohn_sham_solver="davidson"
 subdiag_driver="lapack"
-#charge_mixing_type = "Broyden"
-charge_mixing_type = "Pulay"
-charge_density_mixing = "0.1"
-kohn_sham_mucycles = "3"
 max_scf_steps="20"
 max_md_steps = "20"
-potential_acceleration_constant_step="1.0"
 write_data_period="50"
 
 # Criterion used to judge SCF convergency 
@@ -74,8 +60,8 @@ energy_convergence_criterion="1.0e-10"
 #atomic_coordinate_type="Absolute"
 atomic_coordinate_type="Cell Relative"
 #internal_pseudo_type = "ultrasoft"
-internal_pseudo_type = "nc_accuracy"
-#internal_pseudo_type = "sg15"
+#internal_pseudo_type = "nc_accuracy"
+internal_pseudo_type = "sg15"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
@@ -85,9 +71,4 @@ atoms = "
  C     0.166666666667     0.166666666667      0.75
  C     0.833333333333     0.5                 0.7500000
 "
-#pseudo_dir = "/home/luw/ONCVPSP/abinit"
-#pseudopotential="
-#C  C_ONCV_PBE_sr.upf"
 
-#exchange_correlation_type = "LDA"
-#exchange_correlation_type = "vdw-df"

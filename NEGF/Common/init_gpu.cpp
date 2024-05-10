@@ -56,7 +56,7 @@ void rmg_printout_devices( )
 		cuDeviceTotalMem( &totalMem, dev );
 		cuDeviceGetAttribute( &clock,
 				CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
-		if(idevice < 10) printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
+		if(idevice < 10) rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
 				idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
 	}
 }
@@ -74,7 +74,7 @@ void init_gpu (void)
 
 
 	alloc = pmo.ntot_low * sizeof(std::complex<double>);
-    printf("\n alloc size for gpu_Htri %zu \n", alloc);
+    rmg_printf("\n alloc size for gpu_Htri %zu \n", alloc);
 	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Htri , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
 		exit(-1);

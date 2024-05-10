@@ -1165,10 +1165,10 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, w);
     src_is_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) src_is_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) src_is_dev = true;
     hiperr = hipPointerGetAttributes(&attr, f);
     dst_is_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) dst_is_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) dst_is_dev = true;
 #endif
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);

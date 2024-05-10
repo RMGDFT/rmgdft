@@ -45,7 +45,7 @@ void plane_average_rho (double *rho)
 
     if(ct.plane[0] + ct.plane[1] + ct.plane[2] >1)
     {
-        printf("\n plane is not defined right %d %d %d \n", ct.plane[0], ct.plane[1],ct.plane[2]);
+        rmg_printf("\n plane is not defined right %d %d %d \n", ct.plane[0], ct.plane[1],ct.plane[2]);
     }
 
     

@@ -127,12 +127,12 @@ void init_nonlocal_comm(void)
 
     //   if (pct.gridpe == 0)
     //   {
-    //       printf("\n initial communication matrix ");
+    //       rmg_printf("\n initial communication matrix ");
     //       for (i = 0; i < pct.grid_npes; i++)
     //       {
-    //           printf("\n");
+    //           rmg_printf("\n");
     //           for (j = 0; j < pct.grid_npes; j++)
-    //               printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
+    //               rmg_printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
     //       }
     //   }
 
@@ -168,13 +168,13 @@ void init_nonlocal_comm(void)
 
 
 //      if(pct.gridpe==0)
-//              printf("\n  matrix_pairs");
+//              rmg_printf("\n  matrix_pairs");
 //      if(pct.gridpe==0)
 //          for(proc1=0; proc1<pct.grid_npes; proc1++)
 //          {
-//              printf("\n");
+//              rmg_printf("\n");
 //              for(proc2=0; proc2<pct.grid_npes; proc2++)
-//                  printf("%d", matrix_pairs[proc1 * pct.grid_npes + proc2]);
+//                  rmg_printf("%d", matrix_pairs[proc1 * pct.grid_npes + proc2]);
 //          }
 
 //      fflush(NULL);
@@ -185,14 +185,14 @@ void init_nonlocal_comm(void)
 
     kbpsi_num_loop = loop;
 
-    //dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
+    //printf("\n kbpsi_num_loop %d", kbpsi_num_loop);
     //    for (loop = 0; loop < pct.grid_npes; loop++)
-    //      dprintf("\n\n %d  %d  %d  %d   loooop\n\n", pct.gridpe, loop,
+    //      printf("\n\n %d  %d  %d  %d   loooop\n\n", pct.gridpe, loop,
     //kbpsi_comm_send[loop], kbpsi_comm_recv[loop]);
 
     //    for (loop = 0; loop < num_loop_kbpsi; loop++)
     //    {
-    //        dprintf("\nLoop: %d  PE:%d send %d  ", loop, pct.gridpe, comm_pair[loop]);
+    //        printf("\nLoop: %d  PE:%d send %d  ", loop, pct.gridpe, comm_pair[loop]);
     //
     //    }
 

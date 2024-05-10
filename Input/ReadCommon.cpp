@@ -367,7 +367,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("dipole_moment", &lc.dipole_moment, false, 
                         "Turns on calculation of dipole moment for the entire cell.");
 
-    If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
+    If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Fine",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
                      "Type of grid to use when computing vdw-df correlation. ", 
                      "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating. ", CONTROL_OPTIONS);
@@ -409,7 +409,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Type of lda+u implementation. ", 
             "lda+u type not available. ", LDAU_OPTIONS);
 
-    If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "Fast Relax",
+    If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "LBFGS",
             CHECK_AND_TERMINATE, OPTIONAL, relax_method,
             "Type of relaxation method to use for structural optimizations. ", 
             "relax_method not supported. ", MD_OPTIONS);
@@ -503,6 +503,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("drho_precond", &lc.drho_precond, true, 
             "if set true, charge density residual is preconded with q^2/(q^2+q0^2) ", MIXING_OPTIONS);
+
+    If.RegisterInputKey("drho_precond_type", NULL, &lc.drho_precond_type, "Resta",
+            CHECK_AND_TERMINATE, OPTIONAL, drho_precond_type,
+            "Density mixing preconditioner method. Resta or Kerker are supported. ",
+            "Method not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("cube_rho", &lc.cube_rho, false, 
             "if set true, charge density is printed out in cube format ");
@@ -617,7 +622,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of iterations for davidson diagonalization.", 
             "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20). ", KS_SOLVER_OPTIONS);
 
-    If.RegisterInputKey("davidson_premg", &lc.davidson_premg, 0, 8, 4, 
+    If.RegisterInputKey("davidson_premg", &lc.davidson_premg, 0, 8, 0, 
             CHECK_AND_FIX, OPTIONAL, 
             "If the davidson solver is selected this parameter controls the number of multigrid steps to use before enabling davidson.", 
             "davidson_premg must be in the range (0 <= davidson_premg <= 8). ", KS_SOLVER_OPTIONS);
@@ -627,7 +632,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Max radius of atomic orbitals to be used in LDA+U projectors. ",
             "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0. ", LDAU_OPTIONS);
 
-    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
+    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 1.0, 
             CHECK_AND_FIX, OPTIONAL, 
             "When set to a non-zero value this parameter causes RMG to "
             "perform a band by band update of the self-consistent potential "
@@ -639,7 +644,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "with Linear mixing. Even when the davidson solver is chosen this parameter "
             "may be used since the first few steps with davidson usually uses the "
             "multigrid solver.",
-            "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
+            "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -761,6 +766,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of tddft steps to perform. ", 
             "tddft steps must be greater than 0. Resetting to the default value of 2000 ", TDDFT_OPTIONS);
 
+    If.RegisterInputKey("tddft_start_state", &lc.tddft_start_state, 0, INT_MAX, 0,
+            CHECK_AND_FIX, OPTIONAL, 
+            "the starting state to use in tddft dynamics ", 
+            "those states not including in the TDDFT will have a fixed occupations and contribute to the charge density never changes during TDDFT", TDDFT_OPTIONS);
+
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Pulay mixing is used to update the charge density.",
@@ -850,6 +860,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "purposes but higher accuracy is obtainable with 10th or 12th order at "
             "the cost of some additional computational expense.",
             "kohn_sham_fd_order must lie in the range (6,12). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+
+    If.RegisterInputKey("prolong_order", &lc.prolong_order, 0, 12, 10,
+            CHECK_AND_FIX, OPTIONAL,
+            "Debug option that controls interpolation order used to form the "
+            "charge density and to compute the kinetic component of stress. "
+            "If a value of 0 is selected then an FFT will be used. ",
+            "prolong_order must lie in the range (0,12). Resetting to the default value of 10. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("use_gpu_fd", &lc.use_gpu_fd, false, 
             "Use gpus for kohn-sham orbital finite differencing. Depending on the "
@@ -981,8 +998,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.25,
             CHECK_AND_FIX, OPTIONAL,
-            "preconding the charge density residual by q^2/(q^2+q0^2) ",
+            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) ",
             "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
+
+    If.RegisterInputKey("resta_beta", &lc.resta_beta, 1.0, 20.0, 8.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Beta parameter for resta charge density preconditioning. A good estimate ",
+            "is the A0 lattice parameter in bohr for the traditional unit cell. ", MIXING_OPTIONS);
+
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
             "Submatrix width to use as a fraction of the full spectrum. "
@@ -1561,6 +1584,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Next detect ibrav and also generate a,b,c,cosab,cosac,cosbc
         ibrav = Rmg_L.lat2ibrav (a0, a1, a2);
+        Rmg_L.set_ibrav_type(ibrav);
         if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibrav);
 
         // Next generate the celldm using alat=1.0
@@ -1571,6 +1595,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
+    // Set up the lattice vectors
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
+        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
     }
     else
@@ -1584,6 +1611,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         }
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
+        // Set up the lattice vectors
+        Rmg_L.set_ibrav_type(ibrav);
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
+        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
     }
 
     if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
@@ -1600,10 +1631,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     celldm[5] = 0.0;
 #endif
 
-    // Set up the lattice vectors
-    Rmg_L.set_ibrav_type(ibrav);
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-    Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
 
     //printf("CELLDM1 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
 
@@ -1658,7 +1685,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
         lc.potential_acceleration_constant_step = 0.0;
-        std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
+        if(pct.worldrank == 0)
+            std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
+    }
+
+    // Potential acceleration is disabled for Pulay or Broyden mixing
+    if(Verify("charge_mixing_type","Pulay", InputMap) || Verify("charge_mixing_type","Broyden", InputMap)) {
+        lc.potential_acceleration_constant_step = 0.0;
+        if(pct.worldrank == 0)
+            std::cout << "You have selected Pulay or Broyden mixing so potential acceleration is disabled." << std::endl;
     }
 
     // Debug code
@@ -1689,14 +1724,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             pos = stcount.find("-");
             if(pos > stcount.length() )
             {
-                
+
                 ct.cube_states_list.push_back(std::stoi(stcount));
             }
             else
             {
                 int st_start = std::stoi(stcount.substr(0,pos));
                 int st_end = std::stoi(stcount.substr(pos+1));
-                
+
                 for(int st = st_start; st <= st_end; st++)
                     ct.cube_states_list.push_back(st);
             }
@@ -1729,12 +1764,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
-        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
-    }
-
-    if(lc.potential_acceleration_constant_step > 0.0)
-    {
-        lc.drho_precond = false;
+        //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose

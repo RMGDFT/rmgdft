@@ -33,11 +33,16 @@ static std::unordered_map<std::string, int> internal_pseudo_type = {
         {"ultrasoft", ULTRASOFT_GBRV},
         {"sg15", NORM_CONSERVING_SG15},
         {"nc_accuracy", NORM_CONSERVING_ACCURACY},
+        {"nc_standard", NORM_CONSERVING_STANDARD},
         {"all_electron", ALL_ELECTRON}};
 
 static std::unordered_map<std::string, int> energy_output_units = {
         {"Hartrees", 0},
         {"Rydbergs", 1}};
+
+static std::unordered_map<std::string, int> drho_precond_type = {
+        {"Resta", PRECOND_RESTA},
+        {"Kerker", PRECOND_KERKER}};
 
 static std::unordered_map<std::string, int> crds_units = {
         {"Bohr", 0},

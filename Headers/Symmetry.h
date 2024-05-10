@@ -88,13 +88,16 @@ class Symmetry
 
     public:
         int nsym;
+        int nsym_full;
         int n_time_rev;
         bool time_reversal=false;
         std::vector<bool> inv_type;
-        std::vector<bool> time_rev;
+        std::vector<int> time_rev;
+        std::vector<int> full_time_rev;
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
         std::vector<int> sym_atom;
+        std::vector<int> full_sym_atom;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
         boost::multi_array<std::complex<double>, 3> rot_spin_wave;
@@ -102,6 +105,7 @@ class Symmetry
         ~Symmetry(void);
 
         std::vector<int> sym_rotate;
+        std::vector<int> full_sym_rotate;
         std::vector<double> sym_trans;
 
         void symmetrize_grid_object(double *object);

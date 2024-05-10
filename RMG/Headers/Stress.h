@@ -44,7 +44,8 @@ public:
             std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *vtot);
 
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
-    void Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
+    void Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
+    void Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Local_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, double *rho, Pw &pwaves);
     void Local_term1(double *rho, double *vnuc);
     void Hartree_term(double *rho, Pw &pwaves);
@@ -53,6 +54,8 @@ public:
     void Exc_term(double Exc, double *vxc, double *rho);
     void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
     void Exc_Nlcc(double *vxc, double *rhocore);
+    void vdW_DF_term (double *rho, double *rhocore, int nspin);
+
     ~Stress(void);
 
 };

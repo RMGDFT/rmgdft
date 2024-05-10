@@ -27,8 +27,8 @@
 
 cmake_minimum_required (VERSION 3.17) 
 
-set(RMG_VERSION_MAJOR "5")
-set(RMG_VERSION_MINOR "5")
+set(RMG_VERSION_MAJOR "6")
+set(RMG_VERSION_MINOR "0")
 set(RMG_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
@@ -77,6 +77,7 @@ set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentia
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
+set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
@@ -156,6 +157,9 @@ if(USE_INTERNAL_SCALAPACK)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration")
 endif()
 
+if(USE_NCCL_OR_RCCL)
+    add_definitions(-DUSE_NCCL=1)
+endif()
 
 # Standard modules for platform checks
 include (CheckFunctionExists)
@@ -205,6 +209,7 @@ else()
 endif()
 set(RMGLIBS "${MPI_CXX_LIBRARIES}")
 list(APPEND RMGLIBS ${MPI_C_LIBRARIES})
+list(APPEND RMGLIBS ${MPI_Fortran_LIBRARIES})
 
 
 if(MPI_CXX_FOUND)
@@ -278,7 +283,7 @@ if(RMG_HIP_ENABLED)
     find_path(
       HIP_MODULE_FILE_DIR FindHIP.cmake
       HINTS $ENV{ROCM_PATH} /opt/rocm
-      PATH_SUFFIXES hip/cmake)
+      PATH_SUFFIXES hip/cmake lib/cmake/hip)
     if(HIP_MODULE_FILE_DIR)
       message(STATUS "Found FindHIP.cmake file. ROCM_ROOT will be derived.")
     else()
@@ -304,6 +309,7 @@ if(RMG_HIP_ENABLED)
     if(HIP_FOUND)
         message(STATUS "Found HIP: " ${HIP_VERSION})
         add_definitions(-DHIP_ENABLED=1)
+        add_definitions(-D__HIP_PLATFORM_AMD__=1)
         include_directories(${HIP_INCLUDE_DIRECTORIES})
         if(DEFINED ENV{ROCM_PATH})
             set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
@@ -343,6 +349,21 @@ if(RMG_HIP_ENABLED)
         message(STATUS "Found rocsolver: " ${rocsolver_VERSION})
         list(APPEND RMGLIBS ${rocsolver_LIBRARY})
         include_directories("${rocsolver_INCLUDE_DIR}")
+    endif()
+    find_package(hipsolver REQUIRED)
+    if(hipsolver_FOUND)
+        message(STATUS "Found hipsolver: " ${hipsolver_VERSION})
+        list(APPEND RMGLIBS ${hipsolver_LIBRARY})
+        include_directories("${hipsolver_INCLUDE_DIR}")
+    endif()
+    if(USE_NCCL_OR_RCCL)
+        find_package(rccl REQUIRED)
+        if(rccl_FOUND)
+            message(STATUS "Found rccl: " ${rccl_VERSION})
+            list(APPEND RMGLIBS ${ROCM_PATH}/lib/librccl.so)
+            #list(APPEND RMGLIBS ${rccl_LIBRARY})
+            include_directories("${rccl_INCLUDE_DIR}")
+        endif()
     endif()
 
 #    find_package(hipsolver REQUIRED)
@@ -683,6 +704,13 @@ if(RMG_CUDA_ENABLED)
     # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
     add_definitions(-DCUDA_VERSION_MAJOR=${CUDAToolkit_VERSION_MAJOR})
     add_definitions(-DCUDA_VERSION_MINOR=${CUDAToolkit_VERSION_MINOR})
+    if(USE_NCCL_OR_RCCL)
+        find_package(NCCL REQUIRED)
+        if(NCCL_FOUND)
+            list(APPEND RMGLIBS ${NCCL_LIBRARIES})
+            include_directories(${NCCL_INCLUDES})
+        endif()
+    endif()
 endif()
 
 

@@ -127,10 +127,10 @@ void set_energy_weight (std::complex<double> * ene, std::complex<double> * weigh
 
     if (pct.gridpe == 0)
     {
-        printf ("\n set_energy_weight done %d", *nenergy);
-        printf ("\n    eneR   eneI   weightR   weightI");
+        rmg_printf ("\n set_energy_weight done %d", *nenergy);
+        rmg_printf ("\n    eneR   eneI   weightR   weightI");
         for (i = 0; i < nen; i++)
-            printf ("\n     %f  %f %f  %f", std::real(ene[i]), std::imag(ene[i]), 
+            rmg_printf ("\n     %f  %f %f  %f", std::real(ene[i]), std::imag(ene[i]), 
                     std::real(weight[i]), std::imag(weight[i]));
     }
 

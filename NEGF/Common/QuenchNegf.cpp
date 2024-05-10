@@ -133,7 +133,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         delete(RT1);
     }
     MPI_Barrier(pct.img_comm);
-    if(pct.imgpe==0) printf("\n sigma_all done");
+    if(pct.imgpe==0) rmg_printf("\n sigma_all done");
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -340,7 +340,9 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgFreeHost(rho_matrix_local);
 
     if (pct.imgpe == 0)
-        printf ("\n Quench is done \n");
+        rmg_printf ("\n Quench is done \n");
+
+    write_data_NEGF(ct.outfile, vh, vxc,rho);
 
     delete(RT);
 

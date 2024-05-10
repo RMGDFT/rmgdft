@@ -24,7 +24,11 @@
 #include <initializer_list>
 #include "InternalPseudo.h"
 #include "pseudo_list_uspp.h"
-
+#include "rmg_error.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "main.h"
 
 
 std::unordered_map<std::string, compressed_pp> USPP_FILES ({
@@ -175,7 +179,23 @@ std::string GetInternalPseudo_uspp(const char *symbol)
     os.push(io::bzip2_decompressor());
     os.push(io::back_inserter(decompressed));
 
+    os.flush();
     io::write(os, pptr, (std::streamsize)pp_file_v.size());
+    os.flush();
+    io::close(os);
+
+    std::string pp_file = std::string(symbol) + std::string("_uspp_rmg_internal.upf");
+    if(pct.worldrank == 0)
+    {
+        int fhand;
+        // If we can't write this what should we do?
+        fhand = open(pp_file.c_str(), O_RDWR|O_CREAT|O_TRUNC, S_IREAD | S_IWRITE);
+        if(fhand < 0)
+            rmg_error_handler (__FILE__, __LINE__, " Error saving pseudopotential file. Terminating.");
+
+        write(fhand, decompressed.c_str(), decompressed.length());
+        close(fhand);
+    }
     return decompressed;
 
     

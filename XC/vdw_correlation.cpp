@@ -213,51 +213,80 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // If not initialized we must read in the kernel table
   if(!this->initialized) {
 
-      std::ifstream kernel_file;
-      kernel_file.open(ct.vdW_kernel_file, std::ios_base::in);
-      if (!kernel_file)  { 
-          throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-      }
+//      std::ifstream kernel_file;
+//      kernel_file.open(ct.vdW_kernel_file, std::ios_base::in);
+//      if (!kernel_file)  { 
+//          throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+//      }
      
       // Read in Nqs and Nrpoints from header and make sure it matches
       // these are the number of q points and the number of r points used for this kernel file, 
-      std::string line;
-      std::getline(kernel_file, line);
-      std::istringstream is0(line);
-      is0 >> Nqs >> Nrpoints;
+//      std::string line;
+//      std::getline(kernel_file, line);
+//      std::istringstream is0(line);
+//      is0 >> Nqs >> Nrpoints;
+
+      Vdw::Nqs = VDW_NQS;
+      Vdw::Nrpoints = VDW_NRPOINTS;
 
       // Any checks needed here?
 //      if((Nqs != VDW_NQPOINTS) || (Nrpoints != VDW_NRPOINTS)) {
 //          throw RmgFatalException() << "Mismatch for Nqs or Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 //      }
 
+      Vdw::r_max     = VDW_RMAX;
+      // The value of the maximum radius to use for the real-space kernel
+      // functions for each pair of q values. The larger this value is the
+      // smaller the smallest k value will be since the smallest k point value
+      // is 2*pi/r_max. Be careful though, since this will also decrease the
+      // maximum k point value and the vdW_DF code will crash if it encounters
+      // a g-vector with a magnitude greater than 2*pi/r_max *Nr_points.
+
+      double dr = r_max/VDW_NRPOINTS;
+      Vdw::dk = 2.0*PI/r_max;
+      // Real space and k-space spacing of grid points.
+
+      double q_min = 1.0e-5, q_cut = 5.0;
+      // The maximum and minimum values of q. During a vdW run, values of q0
+      // found larger than q_cut will be saturated (SOLER equation 5) to q_cut.
+
+
+      int vdW_DF_analysis = false;
+      // vdW-DF analysis tool as described in PRB 97, 085115 (2018)
+      int Nintegration_points = VDW_INTEGRATION_POINTS;
+      // Number of integration points for real-space kernel generation (see
+      // DION equation 14). This is how many a's and b's there will be.
+
+      //REAL(DP), PARAMETER      :: a_min = 0.0D0, a_max = 64.0D0
+      //! Min/max values for the a and b integration in DION equation 14.
+
       this->kernel.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
       this->d2phi_dk2.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
 
       // Read in r_max the maximum allowed value of an r point
-      std::getline(kernel_file, line);
-      std::istringstream is1(line);
-      is1 >> Vdw::r_max;
+      //std::getline(kernel_file, line);
+      //std::istringstream is1(line);
+      //is1 >> Vdw::r_max;
       Vdw::dk = 2.0 * PI / Vdw::r_max;
       
       // Read in the values of the q points used to generate this kernel.
       int idx = 0;
-      for(int meshlines = 0;meshlines < 5;meshlines++) {
-          std::getline(kernel_file, line);
-          std::istringstream is2(line);
+      //for(int meshlines = 0;meshlines < 5;meshlines++) {
+      //    std::getline(kernel_file, line);
+      //    std::istringstream is2(line);
        
-          while(is2 >> q_mesh[idx]) {
-              idx++;
-              if(idx == Nqs) break;
-          }
-      }
+      //    while(is2 >> q_mesh[idx]) {
+      //        idx++;
+      //        if(idx == Nqs) break;
+      //    }
+      //}
 
       // For each pair of q values, read in the function phi_q1_q2(k).
       // That is, the fourier transformed kernel function assuming q1 and
       // q2 for all the values of r used.
       int tlines = (Nrpoints + 1) / 4;   // 4 per line
       if((Nrpoints + 1) % 4) tlines++;
-      
+#if 0      
       for(int q1_i = 0;q1_i < Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
@@ -304,7 +333,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       }
 
       kernel_file.close();
-
+#endif
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
       this->d2y_dx2 = new double[Nqs*Nqs]();
       double *y = new double[Nqs];
@@ -337,6 +366,15 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       }
 
+      int my_rank, nprocs;
+      MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+      MPI_Comm_size (MPI_COMM_WORLD, &nprocs);
+      MPI_Fint f_grid_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
+      RmgTimer *RT1 = new RmgTimer("2-Init: Vdw-DF kernel gen");
+      generate_vdw_kernel(kernel.data(), d2phi_dk2.data(),
+                    q_mesh, &f_grid_comm, &my_rank, &nprocs);
+      delete RT1;
+
       delete [] temp_array;
       delete [] y;
 
@@ -350,10 +388,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   int ibrav = Rmg_L.get_ibrav_type();
-  if(ibrav == HEXAGONAL)
-      CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT, ct.alt_laplacian);
-  else
-      CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN, ct.alt_laplacian);
+  ApplyGradient (total_rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
   if(use_coarsegrid) {
@@ -972,11 +1007,165 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 
 void Vdw::stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, double *sigma)
 {
+    if(nspin != 1)
+        throw RmgFatalException() << "Error terminating: Vdw stress calculations not implemented yet. " << "\n";
+
+    double tpiba = 2.0 * PI / this->L->celldm[0];
+    double sigma_grad[9];
+    double sigma_ker[9];
+    std::fill(sigma_grad, sigma_grad+9, 0.0);
+    std::fill(sigma_ker, sigma_ker+9, 0.0);
+
+    double *total_rho = new double[this->pbasis];
+    double *gx = new double[3*this->pbasis];
+    double *gy = gx + this->pbasis;
+    double *gz = gy + this->pbasis;
+    double *q0 = new double[this->pbasis]();
+    double *dq0_drho = new double[this->pbasis]();
+    double *dq0_dgradrho = new double[this->pbasis]();
+    std::complex<double> *thetas = new std::complex<double> [this->pbasis*Nqs]();
+
+    for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
+    ApplyGradient (total_rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+
+    this->get_q0_on_grid (total_rho, q0, dq0_drho, dq0_dgradrho, thetas, pbasis, gx, gy, gz);
+
+    stress_vdW_DF_gradient (total_rho, gx, q0, dq0_drho, dq0_dgradrho, thetas, sigma_grad);
+    stress_vdW_DF_kernel   (total_rho, q0, thetas, sigma_ker);
+
+    for(int i = 0;i < 9;i++) sigma[i] = - (sigma_grad[i] + sigma_ker[i]);
+
+    for(int l = 0;l < 3;l++)
+    {
+        for(int m = 0;m <= l-1;m++)
+        {
+            sigma[m + 3*l] = sigma[l + 3*m];
+        }
+    }
+//     do l = 1, 3
+//        do m = 1, l - 1
+//           sigma (m, l) = sigma (l, m)
+//        enddo
+//     enddo
+
+
+    delete [] thetas;
+    delete [] dq0_dgradrho;
+    delete [] dq0_drho;
+    delete [] q0;
+    delete [] gx;
+    delete [] total_rho;
 }
 
 void Vdw::stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q0, double *dq0_drho,
                                      double *dq0_dgradrho, std::complex<double> *thetas, double *sigma)
 {
+    double tpiba = 2.0 * PI / this->L->celldm[0];
+    double G_multiplier = 1.0;
+    if(is_gamma) G_multiplier = 2.0;
+    double *gx = grad_rho;
+    double *gy = grad_rho + this->pbasis;
+    double *gz = grad_rho + 2*this->pbasis;
+
+    std::fill(sigma, sigma + 9, 0.0);
+    std::complex<double> *u_vdW = new std::complex<double> [this->pbasis*Nqs]();
+    std::complex<double> *theta = new std::complex<double> [Nqs]();
+    double *kernel_of_k = new double[Nqs*Nqs]();
+
+    //thetas_to_uk(thetas, u_vdW);
+    for(int ig=0;ig < this->pbasis;ig++) {
+
+        if(pwaves->gmask[ig]){
+
+            double g = sqrt(pwaves->gmags[ig]) * tpiba;
+
+            this->interpolate_kernel(g, kernel_of_k);
+            for(int idx=0;idx < Nqs;idx++) {
+               theta[idx] = thetas[ig + idx*this->pbasis];
+            }
+
+            for(int q2_i=0;q2_i < Nqs;q2_i++) {
+
+                for(int q1_i=0;q1_i < Nqs;q1_i++) {
+
+                    u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Nqs + q2_i] * theta[q1_i];
+
+                }
+
+            }
+            // Special case for |g|=0 which is always the first g-vector on the
+            // first node
+            //if((ig == 0) && (pct.gridpe == 0)) vdW_xc_energy /= G_multiplier;
+        }
+    }
+
+    // Get u in real space.
+    for(int iq = 0;iq < Nqs;iq++) {
+        pwaves->FftInverse(&u_vdW[iq*this->pbasis], &u_vdW[iq*this->pbasis]);
+    } 
+
+    // Do the real space integration to get the stress componenets
+    for(int i = 0;i < this->pbasis;i++)
+    {
+        if ( total_rho[i] < epsr ) continue;
+
+        double grad2 = sqrt( gx[i]*gx[i] + gy[i]*gy[i] + gz[i]*gz[i]);
+        if(grad2 == 0.0) continue;
+        int q_low = 0;
+        int q_hi  = Nqs - 1;
+        while ( (q_hi - q_low) > 1)
+        {
+            int q = (q_hi + q_low)/2;
+        
+            if (q_mesh[q] > q0[i])
+            {
+                q_hi = q;
+            }
+            else
+            {
+                q_low = q;
+            }
+        }
+
+        if (q_hi == q_low)
+        {
+            throw RmgFatalException() << "error in Vdw::stress_vdW_DF_gradient qhi==qlow " << "\n";
+        } 
+
+        double dq = q_mesh[q_hi] - q_mesh[q_low];
+
+        double a = (q_mesh[q_hi] - q0[i])/dq;
+        double b = (q0[i] - q_mesh[q_low])/dq;
+        double c = (a*a*a - a)*dq*dq/6.0;
+        double d = (b*b*b - b)*dq*dq/6.0;
+        double e = (3.0*a*a - 1.0)*dq/6.0;
+        double f = (3.0*b*b - 1.0)*dq/6.0;
+
+        double *y = new double[Nqs+1];
+        for(int q_i = 0;q_i < Nqs;q_i++)
+        {
+            std::fill(y, y + Nqs, 0.0);
+            y[q_i] = 1.0;
+            double dP_dq0 = (y[q_hi] - y[q_low])/dq - e*d2y_dx2[q_i + q_low*Nqs] + f*d2y_dx2[q_i + q_hi*Nqs];
+            double prefactor = std::real(u_vdW[i + q_i*this->pbasis] * dP_dq0 * dq0_dgradrho[i] / grad2);
+
+            for(int l = 0;l < 3;l++)
+            {
+                for(int m = 0;m <= l;m++)
+                {
+                    sigma[l + 3*m] = sigma[l + 3*m] - prefactor * 
+                                   (grad_rho[i + l*this->pbasis] * grad_rho[i + m*this->pbasis]);
+                }
+            }
+        }
+
+    }
+
+    double scale = 1.0 / (double)this->N;
+    for(int i = 0;i < 9;i++) sigma[i] *= scale;
+    delete [] kernel_of_k;
+    delete [] theta;
+    delete [] u_vdW;
 }
 
 void Vdw::stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma)
@@ -992,26 +1181,34 @@ void Vdw::stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<doub
     for(size_t ig=0;ig < pwaves->pbasis;ig++)
     {
         double gval = sqrt(pwaves->gmags[ig] * tpiba2);
-        this->interpolate_Dkernel_Dk(gval, dkernel_of_dk);  // Gets the derivatives.
-
-        for(int q2_i=0;q2_i < Nqs;q2_i++)
+        if(pwaves->gmask[ig] && gval > 0.0)
         {
-            for(int q1_i=0;q1_i < Nqs;q1_i++)
+            this->interpolate_Dkernel_Dk(gval, dkernel_of_dk);  // Gets the derivatives.
+
+            for(int q2_i=0;q2_i < Nqs;q2_i++)
             {
-                for(int l=0;l < 3;l++)
+                for(int q1_i=0;q1_i < Nqs;q1_i++)
                 {
-                    for(int m=0;m < 3;m++)
+                    for(int l=0;l < 3;l++)
                     {
-                        sigma [l*3 + m] = sigma[l*3 + m] - 
-                                       std::real(G_multiplier * 0.5 * thetas[ig + q1_i * pwaves->pbasis] *
-                                       dkernel_of_dk[q1_i*Nqs + q2_i] *
-                                       std::conj(thetas[ig + q2_i*pwaves->pbasis]) *
-                                       (pwaves->g[ig].a[l] * pwaves->g[ig].a[m] * tpiba2) / gval);
+                        for(int m=0;m <= l;m++)
+                        {
+                            sigma [l + 3*m] = sigma[l + 3*m] -
+                                           std::real(G_multiplier * 0.5 * 
+                                           thetas[ig + q1_i * this->pbasis] *
+                                           dkernel_of_dk[q1_i + q2_i*Nqs] *
+                                           std::conj(thetas[ig + q2_i*this->pbasis]) *
+                                           (pwaves->g[ig].a[l] * pwaves->g[ig].a[m] *
+                                           tpiba2) / gval);
+                        }
                     }
                 }
             }
         }
     }
+
+    double scale = 1.0 / (double)this->N;
+    for(int i = 0;i < 9;i++) sigma[i] *= scale;
 
 // Sum needed here or will it be done in upper level routines?
     delete [] dkernel_of_dk;
@@ -1020,12 +1217,13 @@ void Vdw::stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<doub
 void Vdw::interpolate_Dkernel_Dk (double k, double *dkernel_of_dk)
 {
     std::fill(dkernel_of_dk, dkernel_of_dk + Nqs*Nqs, 0.0);
-    int k_i = (int)(k/dk);
-    double A = (dk*(k_i+1.0) - k)/dk;
-    double B = (k - dk*k_i)/dk;
+    int k_i = (int)(k/Vdw::dk);
 
-    double  dAdk = -1.0/dk;
-    double  dBdk = 1.0/dk;
+    double A = (Vdw::dk*((double)k_i+1.0) - k)/Vdw::dk;
+    double B = (k - Vdw::dk*(double)k_i)/Vdw::dk;
+
+    double  dAdk = -1.0/Vdw::dk;
+    double  dBdk = 1.0/Vdw::dk;
     double  dCdk = -((3.0*A*A -1.0)/6.0)*dk;
     double  dDdk = ((3.0*B*B -1.0)/6.0)*dk;
 
@@ -1038,7 +1236,7 @@ void Vdw::interpolate_Dkernel_Dk (double k, double *dkernel_of_dk)
                                              dCdk*d2phi_dk2[k_i][q1_i][q2_i] + 
                                              dDdk*d2phi_dk2[k_i+1][q1_i][q2_i];
 
-            dkernel_of_dk[q2_i + q1_i*Nqs] = dkernel_of_dk[q1_i*Nqs + q2_i];
+            dkernel_of_dk[q2_i + q1_i*Nqs] = dkernel_of_dk[q1_i + q2_i*Nqs];
         }
     }
 

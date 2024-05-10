@@ -65,7 +65,7 @@ void get_state_to_proc(STATE * states)
     ct.state_end = state_end[pct.gridpe];
     if(ct.state_end > ct.num_states)
     {
-        dprintf("\n something wroth in get_state_to_proc  %d %d", ct.state_end, pct.gridpe);
+        printf("\n something wroth in get_state_to_proc  %d %d", ct.state_end, pct.gridpe);
         exit(0);
     }
 

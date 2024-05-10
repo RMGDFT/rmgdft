@@ -74,6 +74,7 @@ public:
     double a0[3];
     double a1[3];
     double a2[3];
+    double at[9];  // For passing to Fortran routines
 
     // original input lattice vectors
     double a0i[3];
@@ -84,6 +85,7 @@ public:
     double b0[3];
     double b1[3];
     double b2[3];
+    double bg[9];  // For passing to Fortran routines
 
     // cell force dE/da = -omega sum (a^-1) sigma
     // sigma: the stress tensor
@@ -130,6 +132,7 @@ public:
     int lat2ibrav (double *a0, double *a1, double *a2);
     void rotate_vectors(double *a0, double *a1, double *a2);
     void save_vectors(double *a0, double *a1, double *a2);
+    void remake_cell(int ibrav, double alat, double *a1, double *a2, double *a3, double *nalat);
 };
 
 #endif

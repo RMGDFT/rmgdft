@@ -34,9 +34,26 @@ void FreeHostOrDevice(void *ptr);
 #define gpublasDgeam hipblasDgeam
 #define gpublasDscal hipblasDscal
 #define gpublasDaxpy hipblasDaxpy
+#define gpublasScopy hipblasScopy
+#define gpublasSdgmm hipblasSdgmm
+#define gpublasSgeam hipblasSgeam
+#define gpublasSscal hipblasSscal
+#define gpublasSaxpy hipblasSaxpy
+#define gpublasCcopy hipblasCcopy
+#define gpublasCdgmm hipblasCdgmm
+#define gpublasCgeam hipblasCgeam
+#define gpublasCscal hipblasCscal
+#define gpublasCaxpy hipblasCaxpy
+#define gpublasZcopy hipblasZcopy
+#define gpublasZdgmm hipblasZdgmm
+#define gpublasZgeam hipblasZgeam
+#define gpublasZscal hipblasZscal
+#define gpublasZaxpy hipblasZaxpy
+
 #define GPUBLAS_SIDE_LEFT HIPBLAS_SIDE_LEFT
 #define GPUBLAS_SIDE_RIGHT HIPBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N HIPBLAS_OP_N
+#define GPUBLAS_OP_T HIPBLAS_OP_T
 #define gpuCpuDeviceId hipCpuDeviceId
 #define gpuStream_t hipStream_t
 
@@ -69,9 +86,26 @@ hipError_t gpuGetDeviceCount(int *count);
 #define gpublasDgeam cublasDgeam
 #define gpublasDscal cublasDscal
 #define gpublasDaxpy cublasDaxpy
+#define gpublasScopy cublasScopy
+#define gpublasSdgmm cublasSdgmm
+#define gpublasSgeam cublasSgeam
+#define gpublasSscal cublasSscal
+#define gpublasSaxpy cublasSaxpy
+#define gpublasCcopy cublasCcopy
+#define gpublasCdgmm cublasCdgmm
+#define gpublasCgeam cublasCgeam
+#define gpublasCscal cublasCscal
+#define gpublasCaxpy cublasCaxpy
+#define gpublasZcopy cublasZcopy
+#define gpublasZdgmm cublasZdgmm
+#define gpublasZgeam cublasZgeam
+#define gpublasZscal cublasZscal
+#define gpublasZaxpy cublasZaxpy
+
 #define GPUBLAS_SIDE_LEFT CUBLAS_SIDE_LEFT
 #define GPUBLAS_SIDE_RIGHT CUBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N CUBLAS_OP_N
+#define GPUBLAS_OP_T CUBLAS_OP_T
 #define gpuCpuDeviceId cudaCpuDeviceId
 #define gpuStream_t hipStream_t
 

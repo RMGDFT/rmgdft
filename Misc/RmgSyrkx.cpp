@@ -113,13 +113,13 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #else
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) a_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) b_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) c_dev = true;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #endif
 
     DeviceSynchronize();
@@ -187,13 +187,13 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) a_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
     hiperr = hipPointerGetAttributes(&attr, B);
     bool b_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) b_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
     hiperr = hipPointerGetAttributes(&attr, C);
     bool c_dev = false;
-    if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) c_dev = true;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;

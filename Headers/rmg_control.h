@@ -7,11 +7,19 @@
     #include <cusolverDn.h>
     #include <cublas_v2.h>
     #include <cublasXt.h>
+    #if USE_NCCL
+        #include <nccl.h>
+    #endif
 #endif
 
 #if HIP_ENABLED
     #include <hipblas/hipblas.h>
     #include <rocsolver/rocsolver.h>
+    #include <hip/hip_runtime_api.h> // for hip functions
+    #include <hipsolver/hipsolver.h> // for all the hipsolver C interfaces and type declarations
+    #if USE_NCCL
+        #include <rccl/rccl.h>
+    #endif
 #endif
 
 #if SYCL_ENABLED
@@ -257,6 +265,7 @@ public:
 
     /** Number of states. May switch between init_states and run_states */
     int num_states;
+    int tddft_start_state;
 
     /** Number of initialization states */
     int init_states;
@@ -370,6 +379,11 @@ public:
     int force_grad_order;
     bool kohn_sham_ke_fft;
 
+    /* Prolong operator default order */
+    int prolong_order;
+    /* Prolong operator mixing parameter */
+    double cmix = 1.0;
+
     // Flag indicating whether or not to use gpu finite differencing for the hamiltonian
     bool use_gpu_fd;
 
@@ -396,6 +410,10 @@ public:
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
     double mix;
     double drho_q0;
+    int drho_precond_type;
+
+    /** Minimum charge density after mixing */
+    double min_rho;
 
     bool charge_pulay_Gspace;
     bool drho_precond;
@@ -407,6 +425,9 @@ public:
 
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
+
+    /* Resta beta parameter. Should be conventional unit cell A0 */
+    double resta_beta;
 
     int ldau_mixing_type;
     int ldau_pulay_refresh;
@@ -581,6 +602,7 @@ public:
     double NUC;
     double KE;
     double XC;
+    double xcstate;
     double vtxc;
     double NL;
     double II;
@@ -739,7 +761,11 @@ public:
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
     bool use_cublasxt;
-
+#if USE_NCCL
+    ncclUniqueId nccl_nd_id;  
+    ncclComm_t nccl_world_comm;
+    ncclComm_t nccl_local_comm;
+#endif
 #endif
 
 #if HIP_ENABLED
@@ -759,8 +785,13 @@ public:
     hipblasHandle_t gpublas_handle;
     hipStream_t rocsolver_stream;
     rocsolver_handle roc_handle;
+    hipsolverHandle_t hipsolver_handle;
     bool use_cublasxt;
-
+#if USE_NCCL
+    ncclUniqueId nccl_nd_id;  
+    ncclComm_t nccl_world_comm;
+    ncclComm_t nccl_local_comm;
+#endif
 #endif
 
 #if SYCL_ENABLED

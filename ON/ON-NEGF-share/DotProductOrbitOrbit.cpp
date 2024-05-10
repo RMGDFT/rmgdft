@@ -106,8 +106,8 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
     }
     else
     {
-        printf("\n zlength1= %d  zlength2=%d\n", zlength1, zlength2);
-        printf("orbit1 %d  orbit2 %d has no overlap\n", orbit1->index, orbit2->index);
+        rmg_printf("\n zlength1= %d  zlength2=%d\n", zlength1, zlength2);
+        rmg_printf("orbit1 %d  orbit2 %d has no overlap\n", orbit1->index, orbit2->index);
         exit(0);
     }
 

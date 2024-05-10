@@ -47,13 +47,13 @@ void write_rho_y(double * rho, char *ab)
 
     if (pct.gridpe == 0)
     {
-        printf("\n\n Planar average of the electrostatic density\n");
+        rmg_printf("\n\n Planar average of the electrostatic density\n");
         for (ix = 0; ix < get_FNY_GRID(); ix++)
         {
             t1 = ix * get_hxxgrid();
-            printf(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
+            rmg_printf(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
         }
-        printf(" & %s\n", ab);
+        rmg_printf(" & %s\n", ab);
         fflush(NULL);
     }
 

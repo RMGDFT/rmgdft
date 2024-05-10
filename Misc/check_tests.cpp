@@ -82,9 +82,9 @@ void check_tests(void)
             {
                 if(ct.test_steps)
                 {
-                    fprintf(elog, "reference steps to converge: %6d Ha\n", ct.test_steps);
-                    fprintf(elog, "current   steps to converge: %6d Ha\n", ct.scf_steps);
-                    fprintf(elog, "tolerance                  : %6d Ha\n", ct.test_steps_tolerance);
+                    fprintf(elog, "reference steps to converge: %6d\n", ct.test_steps);
+                    fprintf(elog, "current   steps to converge: %6d\n", ct.scf_steps);
+                    fprintf(elog, "tolerance                  : %6d\n", ct.test_steps_tolerance);
                     if(ct.scf_steps > (ct.test_steps + ct.test_steps_tolerance))
                         fprintf(elog, "test status: fail\n");
                     else

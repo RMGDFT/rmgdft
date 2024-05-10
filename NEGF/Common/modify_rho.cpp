@@ -19,7 +19,7 @@ void modify_rho (double * rho, double * rho_old)
 {
     int idx, ione = 1;
     double t2;
-    register double tcharge;
+    double tcharge;
     int i, j, k;
     double total_charge, tcharge_fixed, t_fixed;
     int xoff, yoff, zoff;
@@ -88,7 +88,7 @@ void modify_rho (double * rho, double * rho_old)
             tcharge += rho[idx];
         ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * get_vel_f();
         if (pct.gridpe == 0)
-            printf ("total charge %10.4f = %10.4f + %10.4f\n",
+            rmg_printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
 
         t2 = ct.nel / ct.tcharge;
@@ -141,7 +141,7 @@ void modify_rho (double * rho, double * rho_old)
         t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * get_vel_f();
 
         if (pct.gridpe == 0)
-            printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
+            rmg_printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
 
         /*

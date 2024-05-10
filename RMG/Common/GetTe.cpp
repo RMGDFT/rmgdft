@@ -77,17 +77,20 @@ double  vdw_d2_energy(Lattice &, std::vector<ION> &);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
 
-//extern double *rhovxc;
+extern double *vnuc;
 
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
-    int state, kpt, idx, FP0_BASIS;
+    int state, kpt, idx, FP0_BASIS, P0_BASIS;
     double t1;
-    double vel;
+    double vel, cvel, ES_pa = 0.0;
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
+    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
 
     FP0_BASIS = get_FP0_BASIS();
+    P0_BASIS = get_P0_BASIS();
 
     double *vh = new double[FP0_BASIS];
     double *vxc = new double[ct.nspin * FP0_BASIS];
@@ -98,6 +101,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     for(int i=0;i < ct.nspin*FP0_BASIS;i++)vxc[i] = vxc_in[i];
 
     vel = get_vel_f();
+    cvel = get_vel();
 
     /* Loop over states and get sum of the eigenvalues and any LDA+U corrections */
     double eigsum = 0.0;
@@ -149,6 +153,42 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
     ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
 
+    if(potential_acceleration)
+    {
+        double *vf_tmp = new double[FP0_BASIS]();
+        double *vc_tmp = new double[P0_BASIS]();
+
+        for(int ix = 0;ix < FP0_BASIS;ix++) vf_tmp[ix] = vxc[ix] + vnuc[ix] + vh[ix];
+        GetVtotPsi (vc_tmp, vf_tmp, Rmg_G->default_FG_RATIO);
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            kptr = Kptr[kpt];
+            int my_pe_x, my_pe_y, my_pe_z;
+            kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+            int my_pe_offset = my_pe_x % pct.coalesce_factor;
+
+            for (int is = 0; is < ct.num_states; is++)
+            {
+                int offset = (is / kptr->dvh_skip) * kptr->pbasis;
+                double *veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*kptr->pbasis];
+                KpointType *psi = kptr->Kstates[is].psi;
+                for(int ix = 0;ix < kptr->pbasis;ix++)
+                {
+                    ES_pa += std::real(psi[ix] * std::conj(psi[ix])) * kptr->kp.kweight *
+                             kptr->Kstates[is].occupation[0] * (veff[ix] - vc_tmp[ix]);
+                }
+            }
+
+        }
+        delete [] vc_tmp;
+        delete [] vf_tmp;
+        ES_pa = 0.5 * cvel * RmgSumAll(ES_pa, pct.grid_comm);
+        ES_pa = RmgSumAll(ES_pa, pct.spin_comm);
+        ES_pa = RmgSumAll(ES_pa, pct.kpsub_comm);
+
+    }
+
+    ct.ES += ES_pa;
 
     double mag = 0.0;    
     double absmag = 0.0;
@@ -209,6 +249,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     // AFM case requires counting FOCK energy twice
     if(ct.xc_is_hybrid && Functional::is_exx_active() && ct.AFM) ct.TOTAL -= ct.FOCK;
 
+    ct.xcstate = xcstate;
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();

@@ -177,13 +177,18 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         static std::string AbsoluteCoords("Absolute");
         Ik->Readstr = AbsoluteCoords;
         ct.crd_flag = 1;
+        for (int i = 0; i < ct.num_ions; i++)
+        {
+            ION *iptr = &Atoms[i];
+            Rmg_L.to_crystal_vector(iptr->xtal, iptr->crds);
+        }
     }
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
+        /* Get the crystal or cartesian coordinates of the ions */
+        init_pos ();
     }
 
-    /* Get the crystal or cartesian coordinates of the ions */
-    init_pos ();
 
     ReadPseudo(ct.num_species, ct, ControlMap);
 
@@ -596,6 +601,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
+        hipsolverCreate(&ct.hipsolver_handle);
 #endif
     }
 
@@ -625,7 +631,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 
 #if SYCL_ENABLED
-//    ct.host_dev = omp_get_initial_device();
+    //    ct.host_dev = omp_get_initial_device();
     ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector_v, main_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
     std::string dev_str = ct.sycl_Q.get_device().get_info<sycl::info::device::name>();
     rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
@@ -673,7 +679,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.mpi_queue_mode = false;
     }
 
-    int max_images = std::max(6, ct.kohn_sham_fd_order / 2);
+    int max_images = std::max(6, ct.kohn_sham_fd_order );
     max_images = std::max(max_images, ct.force_grad_order / 2);
     Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q, pct.coalesce_factor, max_images);
     if(ct.verbose) Rmg_T->set_timer_mode(true);
@@ -806,7 +812,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(ct.is_gamma) factor = 1;
     int images = ct.kohn_sham_fd_order / 2;
     size_t bufsize = factor * pct.coalesce_factor *
-                     (Rmg_G->get_PX0_GRID(1) + 2*images) * (Rmg_G->get_PY0_GRID(1) + 2*images) * (Rmg_G->get_PZ0_GRID(1) + 2*images)*sizeof(double);
+        (Rmg_G->get_PX0_GRID(1) + 2*images) * (Rmg_G->get_PY0_GRID(1) + 2*images) * (Rmg_G->get_PZ0_GRID(1) + 2*images)*sizeof(double);
 #if HIP_ENABLED
     init_hip_fd(ct.MG_THREADS_PER_NODE, bufsize);
 #endif

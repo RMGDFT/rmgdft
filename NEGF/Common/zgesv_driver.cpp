@@ -41,6 +41,7 @@
 
 
 #include "transition.h"
+#include "RmgMatrix.h"
 
 
 
@@ -63,83 +64,21 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
 
     if(nprow*npcol <1) 
     {
-        printf ("error in zgesv_driver nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("error in zgesv_driver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     if(nprow*npcol != 1)
     {
-        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
     
-    #if MAGMA_LIBS
-        d_ipiv = nn;
+    ZgetrftrsDriver(nn, nhrs, A, B);
 
-
-        ipiv = (int *) malloc(d_ipiv * sizeof(int));
-        DeviceSynchronize();
-        magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, nn, ipiv, (magmaDoubleComplex *)B, nn, &info);
-
-        if (info != 0)
-        {
-            printf ("error in magma_zgesv with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-        free(ipiv);
-    #else
-
-
-        DeviceSynchronize();
-        cusolverStatus_t cu_status;
-        int Lwork;
-        int *devIpiv, *devInfo;
-        cuDoubleComplex *Workspace; 
-        cudaError_t cuerr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
-        cuerr = gpuMalloc((void **)&devInfo, sizeof(int) );
-
-        cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf_bufferSize failed.");
-        cuerr = gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
-        cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
-        info = 0;
-        if (info != 0)
-        {
-            printf ("error in cusolverDnZgetrf with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-
-
-        DeviceSynchronize();
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
-        
-        cublasOperation_t trans =CUBLAS_OP_N;
-        cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nhrs, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo ); 
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
-
-
-        info = 0;
-        if (info != 0)
-        {
-            printf ("error in cusolverDnZgetrs with INFO = %d \n", info);
-            fflush (NULL);
-            exit (0);
-        }
-        //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
-        DeviceSynchronize();
-        gpuFree(devIpiv);
-        gpuFree(devInfo);
-        gpuFree(Workspace);
-
-    #endif
-
-    
 #else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
@@ -151,7 +90,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         pzgesv (&nn, &nhrs, A, &ione, &ione, desca, ipiv, B, &ione, &ione, descb, &info); 
         if (info != 0)
         {
-            printf ("error in pzgesv with INFO = %d \n", info);
+            rmg_printf ("error in pzgesv with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
@@ -168,7 +107,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         zgesv(&nn, &nhrs, (double *)A, &nn, ipiv, (double *)B, &nn, &info );
         if (info != 0)
         {
-            printf ("error in zgesv with INFO = %d \n", info);
+            rmg_printf ("error in zgesv with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }

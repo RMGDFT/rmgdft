@@ -137,6 +137,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     MPI_Allreduce (MPI_IN_PLACE, &min, 1, MPI_DOUBLE, MPI_MIN, pct.img_comm);
     MPI_Allreduce (MPI_IN_PLACE, &min2, 1, MPI_DOUBLE, MPI_MIN, pct.img_comm);
 
+    ct.min_rho = min;
+
     if (min < ZERO)
     {
         rmg_printf ("\n charge density is NEGATIVE after interpolation, minimum is %e\n", min);

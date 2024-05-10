@@ -35,7 +35,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
     if (pct.gridpe == 0)
     {
 
-        printf(" Begin init_ext ...\n");
+        rmg_printf(" Begin init_ext ...\n");
 
     }                           /* end if */
 
@@ -51,8 +51,8 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
 
     x_proc = get_FPX_OFFSET();
 
-    printf("\n gate_bias = %f \n", gate_bias);   
-    printf("\n gbias_begin = %f and gbias_end = %f  BT = %f \n", gbias_begin, gbias_end, BT);   
+    rmg_printf("\n gate_bias = %f \n", gate_bias);   
+    rmg_printf("\n gbias_begin = %f and gbias_end = %f  BT = %f \n", gbias_begin, gbias_end, BT);   
 
     for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
@@ -75,7 +75,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
             }                       /* end for */
 
 
-//            printf("x_locate = %5f      vext  = %10.7f \n ", x_locate, v_external );
+//            rmg_printf("x_locate = %5f      vext  = %10.7f \n ", x_locate, v_external );
 
     }                           /* end for */
 
@@ -84,7 +84,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
     if (pct.gridpe == 0)
     {
 
-        printf(" init_ext done\n");
+        rmg_printf(" init_ext done\n");
 
     }                           /* end if */
 

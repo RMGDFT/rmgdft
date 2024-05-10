@@ -153,7 +153,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
             // Save data to file for future restart at checkpoint interval if this is a quench run.
             // For Relaxation and molecular dynamics we save at the end of each ionic step.
-            if (ct.checkpoint && (ct.scf_steps % ct.checkpoint == 0) && (ct.forceflag == MD_QUENCH))
+            if (ct.checkpoint && (ct.scf_steps % ct.checkpoint == 0) )
                 WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
             /* output the eigenvalues with occupations */
@@ -223,7 +223,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
             if (pct.imgpe == 0 && pct.images == 1)
-                fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", ct.rms, ct.thr_rms);
+                fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
         }
         else if(fabs(ct.scf_accuracy) < ct.thr_energy)
         {
@@ -281,6 +281,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
     rmg_printf ("\nfinal total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
+
+    // test conditions
+    check_tests();
+
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
@@ -443,13 +447,27 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
 
-        GetNewRhoPost(Kptr, rho);
+        double *trho = new double[ct.nspin * FP0_BASIS]();
+        double *trho_oppo = trho + FP0_BASIS;
+        for(int idx=0;idx < ct.nspin * FP0_BASIS;idx++) trho[idx] = rho[idx];
+
+        GetNewRho(Kptr, trho);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             Atoms[ion].RotateForces();
         }
-        Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        Force (trho, trho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        double *vtot = new double[FP0_BASIS];
+        for(int idx = 0; idx < FP0_BASIS; idx++)
+        {
+            vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+        }
+
+        get_ddd (vtot, vxc, true);
+
+        delete [] vtot;
+        delete [] trho;
     }
 
 

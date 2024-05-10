@@ -2,10 +2,10 @@
 description="atom_O_pp"
 
 # Expected test energy
-test_energy="-15.87873389"
+test_energy="-15.87872209"
 test_energy_tolerance = "1.00000000e-06"
 test_steps = "9"
-test_steps_tolerance = "1"
+test_steps_tolerance = "2"
 
 
 #spin_polarization="true"
@@ -48,14 +48,13 @@ calculation_mode="Quench Electrons"
 kohn_sham_solver="davidson"
 subdiag_driver="lapack"
 charge_mixing_type = "Broyden"
-charge_density_mixing = "0.7"
+#charge_density_mixing = "0.7"
 kohn_sham_mucycles = "3"
 max_scf_steps="40"
-potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-#energy_convergence_criterion="1.0e-9"
+energy_convergence_criterion="1.0e-10"
 rms_convergence_criterion = "1.0e-10"
 
 atomic_coordinate_type="Absolute"

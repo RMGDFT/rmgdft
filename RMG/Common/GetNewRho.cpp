@@ -119,7 +119,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    static Prolong P(ratio, 10, *Rmg_T);
+    static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[FP0_BASIS * factor]();
@@ -203,7 +203,11 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     std::complex<double> psiud;
     OrbitalType *psi_f = new OrbitalType[ct.noncoll_factor * FP0_BASIS]();
 
-    P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    if(ct.prolong_order == 0)
+        FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
+    else
+        P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
@@ -324,6 +328,13 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
 
 
         }
+    }
+
+    if(ct.is_use_symmetry)
+    {
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+        if(ct.noncoll && Rmg_Symm)
+            Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
     }
 
     delete [] work;

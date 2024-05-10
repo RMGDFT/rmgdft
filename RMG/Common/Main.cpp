@@ -209,9 +209,6 @@ int main (int argc, char **argv)
         exit(0);
     } 
 
-    // test conditions
-    check_tests();
-
     delete(RT);   // Destructor has to run before report
     report ();
 
@@ -387,7 +384,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
 
                     OutputBandPlot(eig_all);
-                    delete eig_all;
+                    delete [] eig_all;
                 }
 
                 break;

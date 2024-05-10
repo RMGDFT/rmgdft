@@ -66,7 +66,7 @@ void init_pe_on(void)
         exit(0);
     }
 
-    if(myrow ==-1) dprintf("\n WARNNING:  no orbital on processor %d \n", pct.gridpe);
+    if(myrow ==-1) printf("\n WARNNING:  no orbital on processor %d \n", pct.gridpe);
 }                               /* end init_pe */
 
 

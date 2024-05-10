@@ -76,7 +76,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the get_NY_GRID()\n", iprobe);
+            rmg_printf ("\n probe %d missing the get_NY_GRID()\n", iprobe);
             rmg_error_handler (__FILE__,__LINE__, "need get_NY_GRID()");
         }
         else
@@ -84,7 +84,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the get_NZ_GRID()\n", iprobe);
+            rmg_printf ("\n probe %d missing the get_NZ_GRID()\n", iprobe);
             rmg_error_handler (__FILE__,__LINE__, "need get_NZ_GRID()");
         }
         else
@@ -95,7 +95,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the y0\n", iprobe);
+            rmg_printf ("\n probe %d missing the y0\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need y0");
         }
         else
@@ -103,7 +103,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the z0\n", iprobe);
+            rmg_printf ("\n probe %d missing the z0\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need z0 ");
         }
         else
@@ -113,7 +113,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the y1\n", iprobe);
+            rmg_printf ("\n probe %d missing the y1\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need y1 ");
         }
         else
@@ -121,7 +121,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the z1\n", iprobe);
+            rmg_printf ("\n probe %d missing the z1\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need z1 ");
         }
         else
@@ -132,7 +132,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the y2\n", iprobe);
+            rmg_printf ("\n probe %d missing the y2\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need y2 ");
         }
         else
@@ -140,7 +140,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the z2\n", iprobe);
+            rmg_printf ("\n probe %d missing the z2\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need z2 ");
         }
         else
@@ -155,7 +155,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the state_middle\n", iprobe);
+            rmg_printf ("\n probe %d missing the state_middle\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need state_middle ");
         }
         else
@@ -163,7 +163,7 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the state_end\n", iprobe);
+            rmg_printf ("\n probe %d missing the state_end\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need state_end ");
         }
         else
@@ -178,14 +178,14 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the  EF_old\n", iprobe);
+            rmg_printf ("\n probe %d missing the  EF_old\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need state_end ");
         }
         else
             lcr[iprobe].EF_old = atof (tptr);
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the  bias\n", iprobe);
+            rmg_printf ("\n probe %d missing the  bias\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need state_end ");
         }
         else
@@ -194,7 +194,7 @@ void read_LCR ()
         lcr[iprobe].xside = atof (get_line (tbuf, fhand));
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the  x_shift\n", iprobe);
+            rmg_printf ("\n probe %d missing the  x_shift\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need x_shift ");
         }
         else
@@ -205,7 +205,7 @@ void read_LCR ()
         lcr[iprobe].yside = atof (get_line (tbuf, fhand));
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the  y_shift\n", iprobe);
+            rmg_printf ("\n probe %d missing the  y_shift\n", iprobe);
             rmg_error_handler (__FILE__, __LINE__, "need y_shift ");
         }
         else

@@ -29,6 +29,8 @@ R: right lead
 #include "LCR.h"
 
 #include "pmo.h"
+#include "transition.h"
+
 
 
 
@@ -59,7 +61,7 @@ void allocate_matrix_LCR ()
 
     if (ndim != ct.num_states)
     {
-        printf ("\n %d %d ndim not equaol to nC in read_data_part.c", ndim, ct.num_states);
+        rmg_printf ("\n %d %d ndim not equaol to nC in read_data_part.c", ndim, ct.num_states);
         exit (0);
     }
 

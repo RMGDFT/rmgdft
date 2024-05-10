@@ -1,6 +1,7 @@
 # Description of run.
 description="Si bulk"
 test_energy = "-31.58008457"
+test_energy_tolerance = "5.0e-7"
 
 #spin_polarization="true"
 

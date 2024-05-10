@@ -99,7 +99,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
             FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
             break;
         default:
-            //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
+            //Drmg_printf ("charge interpolation is set to %d", ct.interp_flag);
             rmg_printf("\n ct.interp_flag = %d", ct.interp_flag);
             rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
 

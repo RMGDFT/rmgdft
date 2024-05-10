@@ -32,26 +32,54 @@
 
 #include <vector>
 #include "TradeImages.h"
+#include "Lattice.h"
+#include "BaseGrid.h"
 #include "rmg_error.h"
 
-#define MAX_PROLONG_ORDER 10
+#define MAX_PROLONG_ORDER 12
+class coef_idx {
+
+public:
+    double coeff;
+    int ix, iy, iz;
+};
 
 class Prolong {
 
 public:
-    Prolong(int ratio, int order, TradeImages &TI);
+    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
     ~Prolong(void);
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
+    template<typename T>
+    void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_fcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_bcc_other (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_any (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+
 private:
     void cgen_prolong (double *coef, double fraction);
+    void cgen_dist_inverse(std::vector<coef_idx> &coef_index, std::vector<double> &fraction);
 
     int ratio;
     int order;
+    double cmix;
     TradeImages &TR;
+    Lattice &L;
+    BaseGrid &BG;
+    int ibrav;
     double a[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
     float af[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
+    std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
+
 };
 
 #endif

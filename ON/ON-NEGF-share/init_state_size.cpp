@@ -46,11 +46,11 @@ void init_state_size(STATE * states)
     max_nz = 0;
 
     if (pct.gridpe == 0)
-        printf("\n  States orbital size: x.y.z   \n");
+        rmg_printf("\n  States orbital size: x.y.z   \n");
 
     item = 1<<(ct.eig_parm.levels+1);
     item = 2;
-        printf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_hxgrid(), get_xside(), item);
+        rmg_printf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_hxgrid(), get_xside(), item);
 
     for (state = 0; state < ct.num_states; state++)
     {
@@ -78,11 +78,11 @@ void init_state_size(STATE * states)
         max_ny = rmg_max(max_ny, states[state].orbit_ny);
         max_nz = rmg_max(max_nz, states[state].orbit_nz);
 /*		if(pct.gridpe == 0) 
-*			printf(" %d: %d.%d.%d ", 
+*			rmg_printf(" %d: %d.%d.%d ", 
 *					state, states[state].orbit_nx, states[state].orbit_ny, 
 *					states[state].orbit_nz); 
 *		if( pct.gridpe == 0 && (state-state/5*5)==0 )
-*			printf("\n"); 
+*			rmg_printf("\n"); 
 */
     }
 
@@ -102,6 +102,6 @@ void init_state_size(STATE * states)
     }
 
     if (pct.gridpe == 0)
-        printf("\n init_state_size Done! ");
+        rmg_printf("\n init_state_size Done! ");
 
 }

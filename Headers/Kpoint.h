@@ -200,6 +200,9 @@ public:
     // can be shared between kpoints.
     static std::vector<boost::pool<rmg_user_allocator> *> kalloc;
 
+    // For CUDA or HIP the TDDFT code leaves a copy of the wavefunctions on the GPUs so
+    // we store a pointer to that here.
+    KpointType *psi_dev, *work_dev, *work_cpu;
 
 private:
 

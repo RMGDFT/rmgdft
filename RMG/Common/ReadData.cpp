@@ -240,10 +240,10 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
                 }
 
-                std::cout << "is = " << is << "  " << ik << std::endl;
+                if(ct.verbose) std::cout << "is = " << is << "  " << ik << std::endl;
             }
 
-            std::cout << "ik = " <<  ik << std::endl;
+            if(ct.verbose) std::cout << "ik = " <<  ik << std::endl;
             // for band structure calculation, just read wave functions for first kpoints
             if(ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) break;
         }

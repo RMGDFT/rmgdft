@@ -65,7 +65,7 @@ void AllocatePsi(STATE * states, STATE * states1)
     rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
-        printf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
+        rmg_printf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
         exit(0);
     }
 
@@ -83,7 +83,7 @@ void AllocatePsi(STATE * states, STATE * states1)
     }
 
     if (pct.gridpe == 0)
-        printf("\n allocate_psi Done! ");
+        rmg_printf("\n allocate_psi Done! ");
 
     
      if(ct.LocalizedOrbitalLayout == LO_projection)
@@ -157,11 +157,11 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     if(NULL == rptr3) 
     {
-        printf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
+        rmg_printf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
         exit(0);
     }
 
-    //dprintf("\n tot_recv  %d", tot_recv);
+    //printf("\n tot_recv  %d", tot_recv);
 
 
     // only assign memory for orbitals on other procs.

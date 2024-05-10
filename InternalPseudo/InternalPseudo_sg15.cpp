@@ -24,6 +24,12 @@
 #include <initializer_list>
 #include "InternalPseudo.h"
 #include "pseudo_list_sg15.h"
+#include "rmg_error.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "main.h"
+
 
 std::unordered_map<std::string, compressed_pp> SG15_FILES ({
 {"AG" ,	Ag_sg15_upf_bz2},
@@ -111,7 +117,7 @@ std::unordered_map<std::string, unsigned int> SG15_FILES_LEN ({
 {"B" , 73975},
 {"CA" , 106057},
 {"CD" , 119989},
-{"CL" , 79974},
+{"CL" , 34787},
 {"CO" , 114174},
 {"CR" , 113468},
 {"C" , 74025},
@@ -194,6 +200,19 @@ std::string GetInternalPseudo_sg15(const char *symbol)
     // Little bit of a hack to remove some extraneous chars that were messing up the
     // UPF parsing. Fix later in pp generation.
 //    decompressed.erase(decompressed.length() - 9);
+
+    std::string pp_file = std::string(symbol) + std::string("_sg15_rmg_internal.upf");
+    if(pct.worldrank == 0)
+    {
+        int fhand;
+        // If we can't write this what should we do?
+        fhand = open(pp_file.c_str(), O_RDWR|O_CREAT|O_TRUNC, S_IREAD | S_IWRITE);
+        if(fhand < 0)
+            rmg_error_handler (__FILE__, __LINE__, " Error saving pseudopotential file. Terminating.");
+
+        write(fhand, decompressed.c_str(), decompressed.length());
+        close(fhand);
+    }
     return decompressed;
 
     

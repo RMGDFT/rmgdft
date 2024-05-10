@@ -37,8 +37,8 @@ void pmo_init ()
 
     if(pmo.npe_energy * pmo.nrow * pmo.ncol != pct.grid_npes)
     {
-        printf("\n parallel matrix grid no good");
-        printf("\n pmo.nrow, ncol, pct.grid_npes %d %d %d \n", pmo.nrow, pmo.ncol, pct.grid_npes);
+        rmg_printf("\n parallel matrix grid no good");
+        rmg_printf("\n pmo.nrow, ncol, pct.grid_npes %d %d %d \n", pmo.nrow, pmo.ncol, pct.grid_npes);
         exit(0);
     }
     pmo.mblock = ct.scalapack_block_factor;
@@ -76,8 +76,8 @@ void pmo_init ()
 
     if( dims[1] * dims[0] != pct.grid_npes) 
     {
-        printf("\n processor array not right in pmo_init.c");
-        printf("\n npe_energy %d nrow %d, rcol %d\n", pmo.npe_energy, pmo.nrow, pmo.ncol);
+        rmg_printf("\n processor array not right in pmo_init.c");
+        rmg_printf("\n npe_energy %d nrow %d, rcol %d\n", pmo.npe_energy, pmo.nrow, pmo.ncol);
         exit(0);
     }
 
@@ -180,7 +180,7 @@ void pmo_init ()
         descinit (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &pmo.ictxt[pmo.myblacs], &mxllda, &info);
         if (info != 0)
         {
-            printf (" pmo_init: descinit, info=%d\n", info);
+            rmg_printf (" pmo_init: descinit, info=%d\n", info);
             fflush (NULL);
             exit (0);
         } 
@@ -208,7 +208,7 @@ void pmo_init ()
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: descinit, info=%d\n", info);
+                rmg_printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             } 
@@ -236,7 +236,7 @@ void pmo_init ()
         pmo.offdiag_begin[i] = pmo.diag_begin[i] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
         pmo.diag_begin[i+1] = pmo.offdiag_begin[i] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i+1];
 
-        if(pct.gridpe == 0) printf (" diag/offdiag begin: %d %d %d \n",
+        if(pct.gridpe == 0) rmg_printf (" diag/offdiag begin: %d %d %d \n",
                     i, pmo.offdiag_begin[i], pmo.diag_begin[i+1]); 
 
     }
@@ -273,7 +273,7 @@ void pmo_init ()
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: descinit, info=%d\n", info);
+                rmg_printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             }
@@ -288,7 +288,7 @@ void pmo_init ()
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: descinit, info=%d\n", info);
+                rmg_printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             }
