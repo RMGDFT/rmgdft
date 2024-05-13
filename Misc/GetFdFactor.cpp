@@ -209,12 +209,15 @@ void GetFdFactor(int kpt)
         }
     }
 
-    ct.cmix = 1.0;
-    if(ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
+    // Default value of 0.0 means use adaptive. If not 0.0 then use input value.
+    if(ct.cmix == 0.0)
     {
-        if(ct.verbose && pct.gridpe == 0) 
-            printf("cmix = %f\n", p/pweight);
-        ct.cmix = p/pweight;
+        if(ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
+        {
+            if(ct.verbose && pct.gridpe == 0) 
+                printf("cmix = %f\n", p/pweight);
+            ct.cmix = p/pweight;
+        }
     }
 
     // If extrememly well converged then nothing to do here

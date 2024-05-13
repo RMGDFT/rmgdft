@@ -729,7 +729,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("afd_cfac", &lc.afd_cfac, 0.0, 10.0, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "Manual setting for the adaptive finite differencing parameter. ",
-            "afd_cfac must lie in the range (0.0,3.0). Resetting to auto. ", CONTROL_OPTIONS);
+            "afd_cfac must lie in the range (0.0,10.0). Resetting to auto. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("adaptive_cmix", &lc.cmix, 0.0, 10.0, 0.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Manual setting for the adaptive interpolation parameter. ",
+            "adaptive_cmix must lie in the range (0.0,10.0). Resetting to auto. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
             CHECK_AND_FIX, OPTIONAL,
