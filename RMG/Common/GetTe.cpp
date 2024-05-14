@@ -83,7 +83,7 @@ template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, FP0_BASIS, P0_BASIS;
-    double t1;
+    double t1, t2, t3;
     double vel, cvel, ES_pa = 0.0;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
@@ -108,6 +108,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double ldaU_E = 0.0;
     double ldaU_H = 0.0;
 
+    double vnuc_correction = 0.0;
+    double vxc_correction = 0.0;
     int nspin = 1;
     if(ct.nspin == 2 && !ct.AFM) nspin = 2;
     for (idx = 0; idx < nspin; idx++)
@@ -117,18 +119,29 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
             kptr = Kptr[kpt];
             t1 = 0.0;
+            t2 = 0.0;
+            t3 = 0.0;
             for (state = 0; state < ct.num_states; state++)
             {
 
                 t1 += (kptr->Kstates[state].occupation[idx] *
                         kptr->Kstates[state].eig[idx]);
+                t2 += (kptr->Kstates[state].occupation[idx] *
+                        kptr->Kstates[state].vnuc_correction);
+                t3 += (kptr->Kstates[state].occupation[idx] *
+                        kptr->Kstates[state].vxc_correction);
 
             }
             eigsum += t1 * kptr->kp.kweight;
+            vnuc_correction += t2 * kptr->kp.kweight;
+            vxc_correction += t3 * kptr->kp.kweight;
         }
     }
 
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
+    vnuc_correction = RmgSumAll(vnuc_correction, pct.kpsub_comm);
+    vxc_correction = RmgSumAll(vxc_correction, pct.kpsub_comm);
+
     if(ct.AFM) eigsum *= 2.0;
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
@@ -245,6 +258,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /* Sum them all up */
     ct.ldaU_E = ldaU_E;
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
+//    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw +
+//               vnuc_correction + vxc_correction;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
     // AFM case requires counting FOCK energy twice
     if(ct.xc_is_hybrid && Functional::is_exx_active() && ct.AFM) ct.TOTAL -= ct.FOCK;

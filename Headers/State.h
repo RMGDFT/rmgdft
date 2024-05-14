@@ -54,12 +54,22 @@ public:
  
     /** Nuclear potential */
     double *vnuc;
+    double *vnuc_f;   // Ephemeral object that only exists in GetNewRho
+    double *vnuc_c;   // Ephemeral object that only exists in GetNewRho
+
+    /** Nuclear potential energy correction term */
+    double vnuc_correction;
+
+    /** EXC energy correction term */
+    double vxc_correction;
 
     /** Hartree potential */
     double *vh;
 
     /** Exchange correlation potential */
     double *vxc;
+    double *vxc_f;   // Ephemeral object that only exists in GetNewRho
+    double *vxc_c;   // Ephemeral object that only exists in GetNewRho
 
     /** Total potential */
     double *vtot;

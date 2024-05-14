@@ -192,9 +192,9 @@ void *run_threads(void *v) {
         switch(ss.job) {
             case HYBRID_GET_RHO:
                 if(ct.is_gamma)
-                    GetNewRhoOne((double *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
+                    GetNewRhoOne((State<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
                 else
-                    GetNewRhoOne((std::complex<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
+                    GetNewRhoOne((State<std::complex<double>> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
                 break;
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
                 if(ct.is_gamma) {
