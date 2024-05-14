@@ -126,19 +126,24 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     double *work = new double[FP0_BASIS * factor]();
 
     // Get filtered vnuc on fine grid
-    std::vector<double> vnuc_f, vxc_f;
+    std::vector<double> vnuc_f, vxc_f, vh_f;
     vnuc_f.resize(FP0_BASIS);
     vxc_f.resize(FP0_BASIS);
+    vh_f.resize(FP0_BASIS);
     for(int idx=0;idx<FP0_BASIS;idx++)vnuc_f[idx] = Kpts[0]->Kstates[0].vnuc[idx];
     FftFilter(vnuc_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
     for(int idx=0;idx<FP0_BASIS;idx++)vxc_f[idx] = Kpts[0]->Kstates[0].vxc[idx];
     FftFilter(vxc_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
+    for(int idx=0;idx<FP0_BASIS;idx++)vh_f[idx] = 0.5*Kpts[0]->Kstates[0].vh[idx];
+    FftFilter(vh_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
-    std::vector<double> vnuc_c, vxc_c;
+    std::vector<double> vnuc_c, vxc_c, vh_c;
     vnuc_c.resize(P0_BASIS);
     vxc_c.resize(P0_BASIS);
+    vh_c.resize(P0_BASIS);
     GetVtotPsi (vnuc_c.data(), vnuc_f.data(), Rmg_G->default_FG_RATIO);
     GetVtotPsi (vxc_c.data(), vxc_f.data(), Rmg_G->default_FG_RATIO);
+    GetVtotPsi (vh_c.data(), vh_f.data(), Rmg_G->default_FG_RATIO);
 
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -163,6 +168,8 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
                 Kpts[kpt]->Kstates[st1+ist].vnuc_c = vnuc_c.data();
                 Kpts[kpt]->Kstates[st1+ist].vxc_f = vxc_f.data();
                 Kpts[kpt]->Kstates[st1+ist].vxc_c = vxc_c.data();
+                Kpts[kpt]->Kstates[st1+ist].vh_f = vh_f.data();
+                Kpts[kpt]->Kstates[st1+ist].vh_c = vh_c.data();
                 double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
                 thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
                 thread_control.p2 = (void *)&P;
@@ -183,6 +190,8 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
             Kpts[kpt]->Kstates[st1].vnuc_c = vnuc_c.data();
             Kpts[kpt]->Kstates[st1].vxc_f = vxc_f.data();
             Kpts[kpt]->Kstates[st1].vxc_c = vxc_c.data();
+            Kpts[kpt]->Kstates[st1].vh_f = vh_f.data();
+            Kpts[kpt]->Kstates[st1].vh_c = vh_c.data();
             double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
             GetNewRhoOne(&Kpts[kpt]->Kstates[st1], &P, work, scale);
         }
@@ -254,6 +263,17 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     sumf *= get_vel_f();
     sumc *= get_vel();
     sp->vxc_correction = sumf - sumc;
+
+    sumf = 0.0;
+    for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vh_f[idx]);
+    sumc = 0.0;
+    for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vh_c[idx]);
+    GlobalSums(&sumf, 1, pct.grid_comm);
+    GlobalSums(&sumc, 1, pct.grid_comm);
+    sumf *= get_vel_f();
+    sumc *= get_vel();
+    sp->vh_correction = sumf - sumc;
+
 
     double sum1 = 1.0;
     if(ct.norm_conserving_pp)

@@ -63,8 +63,13 @@ public:
     /** EXC energy correction term */
     double vxc_correction;
 
+    /** ES energy correction term */
+    double vh_correction;
+
     /** Hartree potential */
     double *vh;
+    double *vh_f;   // Ephemeral object that only exists in GetNewRho
+    double *vh_c;   // Ephemeral object that only exists in GetNewRho
 
     /** Exchange correlation potential */
     double *vxc;
