@@ -87,6 +87,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // The distributed solvers are handled in a different routine now
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
+exit(0);
         Subdiag_Scalapack(this, h_psi);
         return;
     }
@@ -217,7 +218,12 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Reduce diagonal elements in double precision
     MPI_Allreduce(MPI_IN_PLACE, (double *)D, 2 * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-    for(int i=0;i < nstates;i++) Hij[i*nstates + i] = D[i];
+    for(int i=0;i < nstates;i++)
+    {
+        State<KpointType> *sp = &Kstates[i];
+//        Hij[i*nstates + i] = D[i] + sp->vnuc_correction + sp->vxc_correction + sp->vh_correction;
+        Hij[i*nstates + i] = D[i];
+    }
     for(int i=0;i < nstates;i++) Sij[i*nstates + i] = D[i+nstates];
 
     // Fill in upper triangle of S
