@@ -87,7 +87,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // The distributed solvers are handled in a different routine now
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
-exit(0);
         Subdiag_Scalapack(this, h_psi);
         return;
     }
