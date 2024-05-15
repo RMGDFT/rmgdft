@@ -166,6 +166,15 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     }
 
+    for (auto& sp : Species)
+    {
+        sp.num_atoms = 0;
+    }
+    for(auto& Atom : Atoms)
+    {
+        Atom.Type->num_atoms +=1;
+    }
+
 }
 
 

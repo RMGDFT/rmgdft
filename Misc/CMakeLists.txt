@@ -1,4 +1,5 @@
 add_library (Misc
+WritePoscar.cpp
 OutputBandPlot.cpp
 kind.f90
 kpoint_grid.f90
