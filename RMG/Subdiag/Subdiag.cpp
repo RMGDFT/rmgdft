@@ -221,8 +221,9 @@ exit(0);
     for(int i=0;i < nstates;i++)
     {
         State<KpointType> *sp = &Kstates[i];
-//        Hij[i*nstates + i] = D[i] + sp->vnuc_correction + sp->vxc_correction + sp->vh_correction;
         Hij[i*nstates + i] = D[i];
+        //if( ct.scf_steps == (ct.max_scf_steps-1))
+        //    Hij[i*nstates + i] = D[i] + sp->vnuc_correction + sp->vxc_correction + sp->vh_correction;
     }
     for(int i=0;i < nstates;i++) Sij[i*nstates + i] = D[i+nstates];
 
