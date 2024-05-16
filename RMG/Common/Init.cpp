@@ -339,6 +339,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].vxc = vxc;
             Kptr[kpt]->Kstates[st1].vh = vh;
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
+            Kptr[kpt]->Kstates[st1].vxc_correction = 0.0;
+            Kptr[kpt]->Kstates[st1].vh_correction = 0.0;
+            Kptr[kpt]->Kstates[st1].vnuc_correction = 0.0;
             Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
             rptr_k +=P0_BASIS * ct.noncoll_factor;
