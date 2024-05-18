@@ -131,10 +131,10 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     vxc_f.resize(FP0_BASIS);
     vh_f.resize(FP0_BASIS);
     for(int idx=0;idx<FP0_BASIS;idx++)vnuc_f[idx] = Kpts[0]->Kstates[0].vnuc[idx];
-    FftFilter(vnuc_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
     for(int idx=0;idx<FP0_BASIS;idx++)vxc_f[idx] = Kpts[0]->Kstates[0].vxc[idx];
-    FftFilter(vxc_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
     for(int idx=0;idx<FP0_BASIS;idx++)vh_f[idx] = 0.5*Kpts[0]->Kstates[0].vh[idx];
+    // vnuc and vxc are already filtered to the coarse grid but need to do vh to be consistent
+    // with term contained in eigenvalue sum.
     FftFilter(vh_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
     std::vector<double> vnuc_c, vxc_c, vh_c;
