@@ -205,6 +205,9 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
             sp->prj_pwave = new Pw(*Rmg_G, Rmg_L, 1, false);
         }
 
+        // In case ecutwfc is set below what the grid supports
+        sp->prj_pwave->gcut = coarse_pwaves->gcut;
+        sp->prj_pwave->remask();
     }
 
 
