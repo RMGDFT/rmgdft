@@ -138,11 +138,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
             coarse_pwaves->gcut = ct.ecutwfc / tpiba2;
-            int t1 = (int)sqrt(coarse_pwaves->gcut);
-            coarse_pwaves->gcut = (double)(t1*t1);
-            coarse_pwaves->remask();
+            //coarse_pwaves->remask();
             fine_pwaves->gcut = coarse_pwaves->gcut * Rmg_G->default_FG_RATIO * Rmg_G->default_FG_RATIO;
-            fine_pwaves->remask();
+            //fine_pwaves->remask();
 
         }
     }

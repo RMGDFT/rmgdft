@@ -262,9 +262,14 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     /* Sum them all up */
     ct.ldaU_E = ldaU_E;
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
-//    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw +
-//              vnuc_correction + vxc_correction + vh_correction;
+//    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw +
+              vnuc_correction + vxc_correction + vh_correction;
+    if(ct.verbose && pct.gridpe==0)
+    {
+        printf("\nENERGY CORRECTIONS  %14.10f  %14.10f  %14.10f  %14.10f\n",
+        vnuc_correction + vxc_correction + vh_correction,vnuc_correction, vxc_correction, vh_correction);
+    }
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
     // AFM case requires counting FOCK energy twice
     if(ct.xc_is_hybrid && Functional::is_exx_active() && ct.AFM) ct.TOTAL -= ct.FOCK;

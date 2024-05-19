@@ -388,6 +388,11 @@ void LoadUpfPseudo(SPECIES *sp)
 
             // UPF stores atomic wavefunctions * r so divide through
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
+            for(int ix = 0;ix < sp->rg_points;ix++)
+            {
+               if(sp->r[ix] > 8.0) sp->atomic_wave[iwf][ix] *= exp(-(sp->r[ix] - 8.0)*(sp->r[ix] - 8.0));
+            }
+
         }
         ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
         sp->num_orbitals = sp->num_atomic_waves_m;
