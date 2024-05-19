@@ -244,44 +244,48 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
-    // Fix any normalization change from interpolation
-    double snorm = 0.0;
-    for(int idx=0;idx < FP0_BASIS;idx++) snorm += std::real(psi_f[idx] * std::conj(psi_f[idx]));
-    GlobalSums(&snorm, 1, pct.grid_comm);
-    snorm *= get_vel_f();
-    snorm = 1.0 / sqrt(snorm);
-    for(int idx=0;idx < FP0_BASIS;idx++) psi_f[idx] *= snorm; 
 
-    double sumf = 0.0;
-    for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vnuc_f[idx]);
-    double sumc = 0.0;
-    for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vnuc_c[idx]);
-    GlobalSums(&sumf, 1, pct.grid_comm);
-    GlobalSums(&sumc, 1, pct.grid_comm);
-    sumf *= get_vel_f();
-    sumc *= get_vel();
-    sp->vnuc_correction = sumf - sumc;
+    // Energy correction terms evaluated in this block
+    if(ct.norm_conserving_pp)
+    {
+        // Fix any normalization change from interpolation
+        double snorm = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) snorm += std::real(psi_f[idx] * std::conj(psi_f[idx]));
+        GlobalSums(&snorm, 1, pct.grid_comm);
+        snorm *= get_vel_f();
+        snorm = 1.0 / sqrt(snorm);
+        for(int idx=0;idx < FP0_BASIS;idx++) psi_f[idx] *= snorm; 
 
-    sumf = 0.0;
-    for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vxc_f[idx]);
-    sumc = 0.0;
-    for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vxc_c[idx]);
-    GlobalSums(&sumf, 1, pct.grid_comm);
-    GlobalSums(&sumc, 1, pct.grid_comm);
-    sumf *= get_vel_f();
-    sumc *= get_vel();
-    sp->vxc_correction = sumf - sumc;
+        double sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vnuc_f[idx]);
+        double sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vnuc_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vnuc_correction = sumf - sumc;
 
-    sumf = 0.0;
-    for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vh_f[idx]);
-    sumc = 0.0;
-    for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vh_c[idx]);
-    GlobalSums(&sumf, 1, pct.grid_comm);
-    GlobalSums(&sumc, 1, pct.grid_comm);
-    sumf *= get_vel_f();
-    sumc *= get_vel();
-    sp->vh_correction = sumf - sumc;
+        sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vxc_f[idx]);
+        sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vxc_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vxc_correction = sumf - sumc;
 
+        sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vh_f[idx]);
+        sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vh_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vh_correction = sumf - sumc;
+    }
 
     double sum1 = 1.0;
     if(ct.norm_conserving_pp)

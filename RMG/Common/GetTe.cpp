@@ -262,9 +262,16 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     /* Sum them all up */
     ct.ldaU_E = ldaU_E;
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
-//    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw +
-//              vnuc_correction + vxc_correction + vh_correction;
+    if(ct.noncoll || !ct.norm_conserving_pp)
+    {
+        ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
+    }
+    else
+    {
+        ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw +
+                  vnuc_correction + vxc_correction + vh_correction;
+    }
+
     if(ct.verbose && pct.gridpe==0)
     {
         printf("\nENERGY CORRECTIONS  %14.10f  %14.10f  %14.10f  %14.10f\n",
