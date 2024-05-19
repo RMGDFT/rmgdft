@@ -244,6 +244,14 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
+    // Fix any normalization change from interpolation
+    double snorm = 0.0;
+    for(int idx=0;idx < FP0_BASIS;idx++) snorm += std::real(psi_f[idx] * std::conj(psi_f[idx]));
+    GlobalSums(&snorm, 1, pct.grid_comm);
+    snorm *= get_vel_f();
+    snorm = 1.0 / sqrt(snorm);
+    for(int idx=0;idx < FP0_BASIS;idx++) psi_f[idx] *= snorm; 
+
     double sumf = 0.0;
     for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vnuc_f[idx]);
     double sumc = 0.0;
