@@ -163,13 +163,17 @@ void GetFdFactor(int kpt)
                 P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
                               pxdim, pydim, pzdim);
 
+#if 0
+// If the pseudopotential radial grid does not extend out far enough to ensure good
+// normalization for extended states this can fail badly so leaving it blocked out
+// for now.
                 double snorm = 0.0;
                 for(int idx=0;idx < fpbasis;idx++) snorm += std::real(pwork2[idx] * std::conj(pwork2[idx]));
                 GlobalSums(&snorm, 1, pct.grid_comm);
                 snorm *= get_vel_f();
                 snorm = 1.0 / sqrt(snorm);
                 for(int idx=0;idx < fpbasis;idx++) pwork2[idx] *= snorm;
-
+#endif
 
                 FftLaplacianFine(pwork2, pwork3);
                 double pfd_ke = ComputeKineticEnergy(pwork2, pwork3, fpbasis);
