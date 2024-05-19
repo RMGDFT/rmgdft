@@ -6,6 +6,8 @@
 #include "Pw.h"
 #include "Lattice.h"
 #include "transition.h"
+#include "GlobalSums.h"
+
 
 
 void SetCfacs(double *cf, double val)
@@ -160,6 +162,14 @@ void GetFdFactor(int kpt)
                 Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
                 P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
                               pxdim, pydim, pzdim);
+
+                double snorm = 0.0;
+                for(int idx=0;idx < fpbasis;idx++) snorm += std::real(pwork2[idx] * std::conj(pwork2[idx]));
+                GlobalSums(&snorm, 1, pct.grid_comm);
+                snorm *= get_vel_f();
+                snorm = 1.0 / sqrt(snorm);
+                for(int idx=0;idx < fpbasis;idx++) pwork2[idx] *= snorm;
+
 
                 FftLaplacianFine(pwork2, pwork3);
                 double pfd_ke = ComputeKineticEnergy(pwork2, pwork3, fpbasis);
