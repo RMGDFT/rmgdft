@@ -262,7 +262,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     /* Sum them all up */
     ct.ldaU_E = ldaU_E;
-    if(ct.noncoll || !ct.norm_conserving_pp)
+    //if(ct.noncoll || !ct.norm_conserving_pp)
+    if(1)
     {
         ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.ldaU_E + ct.scf_correction + ct.Evdw;
     }

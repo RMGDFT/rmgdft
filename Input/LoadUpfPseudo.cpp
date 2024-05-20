@@ -390,7 +390,7 @@ void LoadUpfPseudo(SPECIES *sp)
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
             for(int ix = 0;ix < sp->rg_points;ix++)
             {
-               if(sp->r[ix] > 8.0) sp->atomic_wave[iwf][ix] *= exp(-(sp->r[ix] - 8.0)*(sp->r[ix] - 8.0));
+//               if(sp->r[ix] > 8.0) sp->atomic_wave[iwf][ix] *= exp(-(sp->r[ix] - 8.0)*(sp->r[ix] - 8.0));
             }
 
         }
