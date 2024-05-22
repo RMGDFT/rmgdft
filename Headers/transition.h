@@ -202,6 +202,7 @@ void Precond_drho(double *);
 template <typename T> void Write_Wfs_forWannier(int kpt_global, Kpoint<T> *kptr, std::vector<bool> exclude_bands, std::string wavefule);
 double GetPlanarAnisotropy(double *density);
 void GetFdFactor(int kidx);
+void SimplePolyFit(const double *x, double *y, const size_t n, const size_t k, double *beta);
 
 #endif
 #endif
