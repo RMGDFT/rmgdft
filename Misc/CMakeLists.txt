@@ -1,4 +1,5 @@
 add_library (Misc
+PolyFit.cpp
 WritePoscar.cpp
 OutputBandPlot.cpp
 kind.f90
