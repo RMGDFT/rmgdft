@@ -1233,6 +1233,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Some AMD and Nvidia GPUs support managed gou memory which is "
             "useful when GPU memory limits are exceeded. ", CONTROL_OPTIONS|EXPERT_OPTION);
 
+    If.RegisterInputKey("use_energy_correction", &lc.use_energy_correction, false, 
+            "Experimental energy correction term ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
             "Numa stands for Non Uniform Memory Access and means that the main "
             "memory of a computer is organized into seperate distinct banks. "

@@ -721,6 +721,9 @@ public:
     // Flag to indicate whether or not to use gpu managed memory
     bool gpu_managed_memory;
 
+    // Flag to use new energy correction terms
+    bool use_energy_correction;
+
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
 

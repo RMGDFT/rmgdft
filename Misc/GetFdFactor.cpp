@@ -1,12 +1,15 @@
 
 #include <float.h>
 #include <math.h>
+#include <boost/math/tools/minima.hpp>
 #include "main.h"
 #include "Atomic.h"
 #include "Pw.h"
 #include "Lattice.h"
 #include "transition.h"
 #include "GlobalSums.h"
+
+using boost::math::tools::brent_find_minima;
 
 
 
@@ -32,11 +35,13 @@ double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
     double rg = 0.0;
     for(int idx=0;idx<pbasis;idx++)
     {
-        rg += (x1[idx] - x2[idx])*(x1[idx] - x2[idx]);
+        double t1 = x1[idx] - x2[idx];
+        rg += t1*t1;
     }
     rg *= get_vel_f();
     MPI_Allreduce(MPI_IN_PLACE, &rg, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    rg = sqrt(rg);
+    rg = std::pow(rg, 1.0/3.0);
+
     return rg;
 }
 
@@ -66,7 +71,7 @@ void GetFdFactor(int kpt)
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
-    std::vector<double> cvals, diffs, pdiffs;
+    std::vector<double> cvals, diffs;
     std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
@@ -88,14 +93,9 @@ void GetFdFactor(int kpt)
     // Loop over species
     for (auto& sp : Species)
     {
-        sp.fd_factor1.clear();
-        sp.fd_fke1.clear();
         sp.fd_slopes.clear();
         sp.fd_xint.clear();
         sp.fd_yint.clear();
-        sp.pd_slopes.clear();
-        sp.pd_xint.clear();
-        sp.pd_yint.clear();
         sp.pd_mins.clear();
 
         // Set up an occupation weight array
@@ -149,17 +149,20 @@ void GetFdFactor(int kpt)
                 snorm = 1.0 / sqrt(snorm);
 if(pct.gridpe==0)printf("SNORM %d  %d  %14.8f\n",sp.num_orbitals,ip,snorm);
 #endif
+
+            // Now do the FFT Interpolation to the fine grid to use as
+            // a reference standard for optimizing the prolongation operator.
             FftInterpolation(*Rmg_G, orbital, pwork1, ratio, false);
-            FftLaplacianFine(pwork1, pwork3);
-            double pfft_ke = ComputeKineticEnergy(pwork1, pwork3, fpbasis);
 
             double c2 = 0.0;
             cvals.clear();
             diffs.clear();
-            pdiffs.clear();
-            // Linear fit with 2 points
-            for(int j=0;j < 2;j++)
+            std::vector<double> yarr1, yarr2;
+            int N = 10;
+            double dx = 4.0 / (double)N;
+            for(int j=0;j < N;j++)
             {
+
                 SetCfacs(FD.cfac, c2);
                 ApplyAOperator (orbital, work, kvec);
                 double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
@@ -167,16 +170,27 @@ if(pct.gridpe==0)printf("SNORM %d  %d  %14.8f\n",sp.num_orbitals,ip,snorm);
                     fprintf(ct.logfile, "FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 diffs.push_back(fft_ke - fd_ke);
+                yarr1.push_back(fft_ke - fd_ke);
 
                 Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
                 P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
                               pxdim, pydim, pzdim);
 
-                FftLaplacianFine(pwork2, pwork3);
-                double pfd_ke = ComputeKineticEnergy(pwork2, pwork3, fpbasis);
-                pdiffs.push_back(pfft_ke - pfd_ke);
+#if 1
+                // Fix any normalization change from interpolation
+                double snorm_f = 0.0;
+                for(int idx=0;idx < fpbasis;idx++) snorm_f += std::real(pwork2[idx] * std::conj(pwork2[idx]));
+                GlobalSums(&snorm_f, 1, pct.grid_comm);
+                snorm_f *= get_vel_f();
+                snorm_f = 1.0 / sqrt(snorm_f);
+                for(int idx=0;idx < fpbasis;idx++) pwork2[idx] *= snorm_f;
+#endif
 
-                c2 += 1.0; 
+                FftLaplacianFine(pwork2, pwork3);
+                double rhogood = ComputeRhoGoodness(pwork1, pwork2, fpbasis);
+                if(ct.verbose && pct.gridpe==0)printf("rhogood  %14.8f   %14.8e\n",c2, rhogood);
+                yarr2.push_back(rhogood);
+                c2 += dx; 
             }
             // Setup data for adaptive finite differencing
             double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
@@ -188,13 +202,37 @@ if(pct.gridpe==0)printf("SNORM %d  %d  %14.8f\n",sp.num_orbitals,ip,snorm);
             if(ct.verbose && pct.gridpe==0)
                 fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
 
-            m = (pdiffs[1] - pdiffs[0])/(cvals[1] - cvals[0]);
-            x_int = - pdiffs[0] / m;
-            sp.pd_slopes.push_back(m);
-            sp.pd_yint.push_back(diffs[0]);
-            x_int = std::max(x_int, 0.0);
-            sp.pd_xint.push_back(x_int);
+            // Linear fit for KE
+            static int korder = 1;
+            static double coeffs[10];  // Fitted polynomial coefficients
 
+            SimplePolyFit(cvals.data(), yarr1.data(), N, korder, coeffs);
+            const int double_bits = std::numeric_limits<double>::digits;
+            if(ct.verbose && pct.gridpe==0)printf("ke params  %14.8f  %14.8f\n",coeffs[0], coeffs[1]);
+            double fd_xint = -coeffs[0]/coeffs[1];  // Want y-intercept
+            sp.fd_mins.push_back(fd_xint);
+
+            // Cubic fit for rho
+            korder = 4;
+            SimplePolyFit(cvals.data(), yarr2.data(), N, korder, coeffs);
+
+            // Find minimum using brent algorithm from boost
+            struct func_rho
+            {
+              double operator()(double const& x)
+              {
+                double fv = 0.0;
+                for(int ik = korder;ik > 0;ik--)
+                {
+                    fv = x*(fv + coeffs[ik]);
+                }
+                fv += coeffs[0]; 
+                return fv;
+              }
+            };
+            std::pair<double, double> rhomin = brent_find_minima(func_rho(), 0.0, 4.0, double_bits);
+            if(ct.verbose && pct.gridpe==0)printf("rho params  %14.8f  %14.8f\n",rhomin.first, rhomin.second);
+            sp.pd_mins.push_back(rhomin.first);
         }
     }
 
@@ -210,13 +248,11 @@ if(pct.gridpe==0)printf("SNORM %d  %d  %14.8f\n",sp.num_orbitals,ip,snorm);
                 a += Atom.Type->fd_slopes[i] * occ_weight[i] * 
                      (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
                 fweight += Atom.Type->fd_slopes[i] * occ_weight[i];
+//                a += Atom.Type->fd_mins[i] * occ_weight[i];
+//                fweight += occ_weight[i];
             }
-            if(fabs(Atom.Type->pd_slopes[i]) > 1.0e-8)
-            {
-                p += Atom.Type->pd_slopes[i] * occ_weight[i] * 
-                     (Atom.Type->pd_xint[i] - Atom.Type->pd_yint[i]);
-                pweight += Atom.Type->pd_slopes[i] * occ_weight[i];
-            }
+            p += Atom.Type->pd_mins[i] * occ_weight[i];
+            pweight += occ_weight[i];
         }
     }
 

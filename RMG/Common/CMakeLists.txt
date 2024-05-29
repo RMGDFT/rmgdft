@@ -1,5 +1,5 @@
 add_library (RMG_Common
-GetFdFactor.cpp
+#GetFdFactor.cpp
 STM_calc.cpp
 ComputeHcore.cpp
 ComputeHpsi.cpp
