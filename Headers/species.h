@@ -170,6 +170,7 @@ public:
     std::vector<double> fd_yint;
     std::vector<double> fd_mins;
     std::vector<double> pd_mins;
+    std::vector<double> pd_vals;
     
     std::vector<std::string> atomic_wave_label;
 

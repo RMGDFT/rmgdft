@@ -382,7 +382,10 @@ public:
     /* Prolong operator default order */
     int prolong_order;
     /* Prolong operator mixing parameter */
-    double cmix = 1.0;
+    double cmix = 0.0;
+    /* Flag indicating whether or not to use cmix */
+    bool use_cmix = true;
+
 
     // Flag indicating whether or not to use gpu finite differencing for the hamiltonian
     bool use_gpu_fd;

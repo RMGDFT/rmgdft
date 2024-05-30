@@ -736,6 +736,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Manual setting for the adaptive interpolation parameter. ",
             "adaptive_cmix must lie in the range (0.0,10.0). Resetting to auto. ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("use_cmix", &lc.use_cmix, true, 
+            "Use adaptive interpolation "
+            "can improve energies/forces for some but not all systems. ", MISC_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("semilocal_projectors", &lc.semilocal_projectors, 6, 40, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Controls the number of semilocal projectors.",

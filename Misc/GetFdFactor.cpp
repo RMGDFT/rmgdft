@@ -256,8 +256,7 @@ if(pct.gridpe==0)printf("SNORM %d  %d  %14.8f\n",sp.num_orbitals,ip,snorm);
         }
     }
 
-    // Default value of 0.0 means use adaptive. If not 0.0 then use input value.
-    if(ct.cmix == 0.0)
+    if(ct.use_cmix && ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
     {
         if(ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
         {
