@@ -207,6 +207,11 @@ if(CRAY_HOST)
 else()
     find_package(MPI REQUIRED)
 endif()
+
+if(${MPI_CXX_VERSION_MAJOR} LESS 3)
+    message(FATAL_ERROR "RMG requires MPI CXX version 3.0 or greater.")
+endif()
+
 set(RMGLIBS "${MPI_CXX_LIBRARIES}")
 list(APPEND RMGLIBS ${MPI_C_LIBRARIES})
 list(APPEND RMGLIBS ${MPI_Fortran_LIBRARIES})
