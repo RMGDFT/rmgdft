@@ -2,6 +2,7 @@
 #include <float.h>
 #include <math.h>
 #include <boost/math/tools/minima.hpp>
+#include <functional>
 #include "main.h"
 #include "Atomic.h"
 #include "Pw.h"
@@ -9,9 +10,65 @@
 #include "transition.h"
 #include "GlobalSums.h"
 
+/*
+   This routine is used to compute adaptive factors for the
+   kinetic energy and the charge density. The procedure used
+   for the kinetic energy is based on the method described in
+
+   Adaptive finite differencing in high accuracy electronic structure calculations
+   E. L. Briggs, Wenchang Lu & J. Bernholc 
+   npj Computational Materials volume 10, Article number: 17 (2024) 
+
+   but is modified to use the brent algorithm to find the value of M
+   which minimizes the error in the kinetic energy. 
+
+
+*/
+
 using boost::math::tools::brent_find_minima;
+using namespace std::placeholders;
 
 
+// Evaluates a polynomial of order up to 8 using coefficients in coeffs
+double eval_poly(double x, int order, std::array<double, 8> &coeffs)
+{
+    double fv = 0.0;
+    for(int ik = order;ik > 0;ik--)
+    {   
+        fv = x*(fv + coeffs[ik]);
+    }
+    fv += coeffs[0];
+    return fv;
+}
+
+// Evaluates the total kinetic energy error for use in the brent find minima routine
+double eval_ke_error(double x)
+{
+    double kerr = 0.0;
+    for(auto& Atom : Atoms)
+    {
+        for(size_t i=0;i < Atom.Type->fd_coeffs.size();i++)
+        {
+            kerr += Atom.Type->occ_weight[i] * eval_poly(x, 2, Atom.Type->fd_coeffs[i]);
+        }
+    }
+    return kerr;
+}
+
+
+// Evaluates the total rho error for use in the brent find minima routine
+double eval_rho_error(double x)
+{
+    double err = 0.0;
+    for(auto& Atom : Atoms)
+    {
+        for(size_t i=0;i < Atom.Type->fd_coeffs.size();i++)
+        {
+            err += Atom.Type->occ_weight[i] * eval_poly(x, 4, Atom.Type->pd_coeffs[i]);
+        }
+    }
+    return err;
+}
 
 void SetCfacs(double *cf, double val)
 {
@@ -30,6 +87,12 @@ double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
     return ke;
 }
 
+// Computes a measure of the effect on the charge density from
+// interpolation errors. 
+//
+// x1 = FFT interpolated orbital on fine grid
+// x2 = Prolong interpolated orbital on fine grid
+//
 double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
 {
     double rg1 = 0.0;
@@ -43,18 +106,41 @@ double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
     return rg1;
 }
 
+// Computes a measure of how strongly dependent the interpolated orbital
+// is dependent on cmix.
+//
+// min     = location of min for a specific orbital
+// minval  = the value at that minima
+// coeffs  = coefficients of the polynomial fit
+// order   = order of fitted polynomial
+//
+double ComputeRhoRate(double min, double minval, std::array<double, 8> &coeffs, int order)
+{
+    double fv1 = 0.0;
+    for(int ik = order;ik > 0;ik--)
+    {
+        fv1 = (min - 1.0)*(fv1 + coeffs[ik]);
+    }
+    fv1 += coeffs[0];
 
+    fv1 = eval_poly(min - 1.0, order, coeffs);
+    double t1 = fv1 - minval;
+    return t1*t1;
+}
+
+
+// Main routine which is only for gamma right now but may be extended
+// to compute a different value for different k-points at some time
+// in the future.
 void GetFdFactor(int kpt)
 {
+    // For the boost brent algorithm
+    const int double_bits = std::numeric_limits<double>::digits;
     FiniteDiff FD(&Rmg_L);
-    int is_core_correction = false;
 
-    if(ct.afd_cfac > 0.0)
-    {
-        FD.cfac[0] = ct.afd_cfac;
-        FD.cfac[1] = ct.afd_cfac;
-        return;
-    }
+    // cmix optimization for rho is currently not enabled for pseudopotentials
+    // with core corrections so we check later and disable it in that case.
+    int is_core_correction = false;
 
     std::complex<double> I_t(0.0, 1.0);
 
@@ -70,7 +156,7 @@ void GetFdFactor(int kpt)
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
-    std::vector<double> cvals, diffs;
+    std::vector<double> cvals;
     std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
@@ -93,10 +179,10 @@ void GetFdFactor(int kpt)
     for (auto& sp : Species)
     {
         if(sp.nlccflag) is_core_correction = true;
-        sp.fd_slopes.clear();
-        sp.fd_xint.clear();
-        sp.fd_yint.clear();
         sp.pd_mins.clear();
+        sp.occ_weight.clear();
+        sp.fd_coeffs.clear();
+        sp.pd_coeffs.clear();
 
         // Set up an occupation weight array
         for (int ip = 0; ip < sp.num_atomic_waves; ip++)
@@ -108,6 +194,7 @@ void GetFdFactor(int kpt)
                 for(int m = 0; m < 2*sp.atomic_wave_l[ip]+1; m++)
                 {
                     occ_weight.push_back(sp.atomic_wave_oc[ip] / (2*sp.atomic_wave_l[ip]+1));
+                    sp.occ_weight.push_back(sp.atomic_wave_oc[ip] / (2*sp.atomic_wave_l[ip]+1));
                 }
              }
         }
@@ -157,7 +244,6 @@ void GetFdFactor(int kpt)
 
             double c2 = 0.0;
             cvals.clear();
-            diffs.clear();
             std::vector<double> yarr1, yarr2;
             int N = 10;
             double dx = 4.0 / (double)N;
@@ -170,8 +256,7 @@ void GetFdFactor(int kpt)
                 if(ct.verbose && pct.gridpe == 0) 
                     fprintf(ct.logfile, "FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
                 cvals.push_back(c2);
-                diffs.push_back(fft_ke - fd_ke);
-                yarr1.push_back(fft_ke - fd_ke);
+                yarr1.push_back((fft_ke - fd_ke)*(fft_ke - fd_ke));
 
                 Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
                 P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
@@ -192,105 +277,73 @@ void GetFdFactor(int kpt)
             }
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)printf("rhogood  &&\n");
 
-            // Setup data for adaptive finite differencing
-            double m = (diffs[1] - diffs[0])/(cvals[1] - cvals[0]);
-            double x_int = - diffs[0] / m;
-            sp.fd_slopes.push_back(m);
-            sp.fd_yint.push_back(diffs[0]);
-            x_int = std::max(x_int, 0.0);
-            sp.fd_xint.push_back(x_int);
-            if(ct.verbose && pct.gridpe==0)
-                fprintf(ct.logfile,"IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
-
-            // Linear fit for KE
+            // Quadratic fit for KE
+            int order = 2;
             MPI_Barrier(MPI_COMM_WORLD);
-            static int korder = 1;
-            static double coeffs[10];  // Fitted polynomial coefficients
+            std::array<double, 8> coeffs;
 
-            SimplePolyFit(cvals.data(), yarr1.data(), N, korder, coeffs);
-            const int double_bits = std::numeric_limits<double>::digits;
+            SimplePolyFit(cvals.data(), yarr1.data(), N, order, coeffs.data());
+            std::pair<double, double> kmin;
+            kmin = brent_find_minima(std::bind(eval_poly, _1, order, coeffs), 0.0, 4.0, double_bits);
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)
-                printf("ke params  %14.8f  %14.8f\n",coeffs[0], coeffs[1]);
-            double fd_xint = -coeffs[0]/coeffs[1];  // Want y-intercept
-            sp.fd_mins.push_back(fd_xint);
+                printf("ke params  %14.8e  %14.8e\n", kmin.first, kmin.second);
+            sp.fd_mins.push_back(kmin.first);
+            sp.fd_coeffs.push_back(coeffs);
 
-            // Quadratic fit for rho
+            // Quartic fit for rho
             MPI_Barrier(MPI_COMM_WORLD);
-            korder = 4;
-            SimplePolyFit(cvals.data(), yarr2.data(), N, korder, coeffs);
+            order = 4;
+            SimplePolyFit(cvals.data(), yarr2.data(), N, order, coeffs.data());
+            sp.pd_coeffs.push_back(coeffs);
 
-            // Find minimum using brent algorithm from boost
-            struct func_rho
-            {
-              double operator()(double const& x)
-              {
-                double fv = 0.0;
-                for(int ik = korder;ik > 0;ik--)
-                {
-                    fv = x*(fv + coeffs[ik]);
-                }
-                fv += coeffs[0]; 
-                return fv;
-              }
-            };
-            std::pair<double, double> rhomin = brent_find_minima(func_rho(), 0.0, 4.0, double_bits);
+            std::pair<double, double> rhomin;
+            rhomin = brent_find_minima(std::bind(eval_poly, _1, order, coeffs), 0.0, 4.0, double_bits);
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)
                 printf("rho params  %14.8e  %14.8e\n",rhomin.first, rhomin.second);
             sp.pd_mins.push_back(rhomin.first);
         }
     }
 
-    // Loop over ions
-    double fweight=0.0, a=0.0;
-    double pweight=0.0, p=0.0;
-    for(auto& Atom : Atoms)
+    // Now we compute the M value that minimizes the total error in the KE.
+    // or if the user entered a non-zero value in the input file we use that
+    if(ct.afd_cfac > 0.0)
     {
-        for(size_t i=0;i < Atom.Type->fd_slopes.size();i++)
-        {
-            if(fabs(Atom.Type->fd_slopes[i]) > 1.0e-8)
-            {
-                a += Atom.Type->fd_slopes[i] * occ_weight[i] * 
-                     (Atom.Type->fd_xint[i] - Atom.Type->fd_yint[i]);
-                fweight += Atom.Type->fd_slopes[i] * occ_weight[i];
-//                a += Atom.Type->fd_mins[i] * occ_weight[i];
-//                fweight += occ_weight[i];
-            }
-            p += Atom.Type->pd_mins[i] * occ_weight[i];
-            pweight += occ_weight[i];
-        }
+        FD.cfac[0] = ct.afd_cfac;
+        FD.cfac[1] = ct.afd_cfac;
+    }
+    else
+    {
+        std::pair<double, double> mmin;
+        mmin = brent_find_minima(eval_ke_error, 0.0, 4.0, double_bits);
+        FD.cfac[0] = mmin.first;
+        FD.cfac[1] = mmin.first;
     }
 
-    if(ct.use_cmix && ct.prolong_order > 2 && std::abs(pweight) > 1.0e-8)
+    if(ct.verbose && pct.gridpe == 0 && pct.spinpe == 0 && kpt == 0)
+    {
+        fprintf(ct.logfile,"NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
+    }
+
+    if(FD.cfac[0] < 0.0)
+    {
+        rmg_error_handler (__FILE__, __LINE__, 
+            "CFAC < 0.0. This probably indicates an error in the cell setup:\n");
+    }
+
+    std::pair<double, double> cmin;
+    cmin = brent_find_minima(eval_rho_error, 0.0, 4.0, double_bits);
+
+    if(ct.use_cmix && ct.prolong_order)
     {
         if(is_core_correction == false && ct.norm_conserving_pp)
         {
-            ct.cmix = p/pweight;
+            ct.cmix = cmin.first;
         }
         else
         {
             if(pct.gridpe==0 && pct.spinpe==0 && kpt==0)
                 printf("Notice: Adaptive interpolation is disabled for USPP and NLCC pseudopotentials.\n");
         }
-    }
-
-    // If extrememly well converged then nothing to do here
-    if(fweight == 0.0)
-    {
-        FD.cfac[0] = 0.0;
-        FD.cfac[1] = 0.0;
-    }
-    else
-    {
-        FD.cfac[0] = a / fweight;
-        FD.cfac[1] = a / fweight;
-    }
-
-    if(ct.verbose && pct.gridpe == 0) fprintf(ct.logfile,"NEWCFAC = %f  %f\n",FD.cfac[0], FD.cfac[1]);
-
-    if(FD.cfac[0] < 0.0)
-    {
-        rmg_error_handler (__FILE__, __LINE__, 
-            "CFAC < 0.0. This probably indicates an error in the cell setup:\n");
     }
 
     delete [] pwork3;
