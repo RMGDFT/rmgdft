@@ -99,7 +99,7 @@ double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
     for(int idx=0;idx<pbasis;idx++)
     {
         double t1 = (x1[idx] - x2[idx]);
-        rg1 += sqrt(t1*t1);
+        rg1 += std::pow(t1*t1, 1.0/3.0);
     }
     rg1 *= get_vel_f();
     MPI_Allreduce(MPI_IN_PLACE, &rg1, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -247,6 +247,7 @@ void GetFdFactor(int kpt)
             std::vector<double> yarr1, yarr2;
             int N = 10;
             double dx = 4.0 / (double)N;
+            // In this loop we generate data for the polynomial fits to use
             for(int j=0;j < N;j++)
             {
 
@@ -277,7 +278,7 @@ void GetFdFactor(int kpt)
             }
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)printf("rhogood  &&\n");
 
-            // Quadratic fit for KE
+            // Quadratic fit for KE.
             int order = 2;
             MPI_Barrier(MPI_COMM_WORLD);
             std::array<double, 8> coeffs;
