@@ -168,8 +168,6 @@ public:
     std::vector<double> occ_weight;
     std::vector<double> fd_mins;
     std::vector<double> pd_mins;
-    std::vector<double> fd_rates;
-    std::vector<double> pd_rates;
     std::vector<std::array<double, 8> > fd_coeffs;
     std::vector<std::array<double, 8> > pd_coeffs;
     

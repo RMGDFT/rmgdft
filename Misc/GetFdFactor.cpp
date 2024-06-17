@@ -42,6 +42,9 @@ double eval_poly(double x, int order, std::array<double, 8> &coeffs)
 }
 
 // Evaluates the total kinetic energy error for use in the brent find minima routine
+//
+// x is the mixing M from the NPJ paper.
+//
 double eval_ke_error(double x)
 {
     double kerr = 0.0;
@@ -57,6 +60,9 @@ double eval_ke_error(double x)
 
 
 // Evaluates the total rho error for use in the brent find minima routine
+//
+// x is the mixing parameter for the higher and lower order operators
+//
 double eval_rho_error(double x)
 {
     double err = 0.0;
@@ -75,6 +81,7 @@ void SetCfacs(double *cf, double val)
     for(int i=0;i < 13;i++) cf[i] = val;
 }
 
+// Computes the kinetic energy of an orbital on the wavefunction grid
 double ComputeKineticEnergy(double *x, double *lapx, int pbasis)
 {
     double ke = 0.0;
@@ -104,28 +111,6 @@ double ComputeRhoGoodness(double *x1, double *x2, int pbasis)
     rg1 *= get_vel_f();
     MPI_Allreduce(MPI_IN_PLACE, &rg1, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     return rg1;
-}
-
-// Computes a measure of how strongly dependent the interpolated orbital
-// is dependent on cmix.
-//
-// min     = location of min for a specific orbital
-// minval  = the value at that minima
-// coeffs  = coefficients of the polynomial fit
-// order   = order of fitted polynomial
-//
-double ComputeRhoRate(double min, double minval, std::array<double, 8> &coeffs, int order)
-{
-    double fv1 = 0.0;
-    for(int ik = order;ik > 0;ik--)
-    {
-        fv1 = (min - 1.0)*(fv1 + coeffs[ik]);
-    }
-    fv1 += coeffs[0];
-
-    fv1 = eval_poly(min - 1.0, order, coeffs);
-    double t1 = fv1 - minval;
-    return t1*t1;
 }
 
 
@@ -165,7 +150,6 @@ void GetFdFactor(int kpt)
     double *work = new double[pbasis];
     double *pwork1 = new double[fpbasis];
     double *pwork2 = new double[fpbasis];
-    double *pwork3 = new double[fpbasis];
     double vect[3], nlcrds[3], kvec[3];
 
     /* Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -349,7 +333,6 @@ void GetFdFactor(int kpt)
         }
     }
 
-    delete [] pwork3;
     delete [] pwork2;
     delete [] pwork1;
     delete [] work;
