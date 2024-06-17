@@ -144,7 +144,6 @@ void GetFdFactor(int kpt)
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
     std::vector<double> cvals;
-    std::vector<double> occ_weight;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     double *work = new double[pbasis];
@@ -179,7 +178,6 @@ void GetFdFactor(int kpt)
              {
                 for(int m = 0; m < 2*sp.atomic_wave_l[ip]+1; m++)
                 {
-                    occ_weight.push_back(sp.atomic_wave_oc[ip] / (2*sp.atomic_wave_l[ip]+1));
                     sp.occ_weight.push_back(sp.atomic_wave_oc[ip] / (2*sp.atomic_wave_l[ip]+1));
                 }
              }
