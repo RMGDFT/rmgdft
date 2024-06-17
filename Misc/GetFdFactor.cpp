@@ -125,10 +125,6 @@ void GetFdFactor(int kpt)
     const int double_bits = std::numeric_limits<double>::digits;
     FiniteDiff FD(&Rmg_L);
 
-    // cmix optimization for rho is currently not enabled for pseudopotentials
-    // with core corrections so we check later and disable it in that case.
-    int is_core_correction = false;
-
     std::complex<double> I_t(0.0, 1.0);
 
     int nlxdim = get_NX_GRID();
@@ -163,7 +159,6 @@ void GetFdFactor(int kpt)
     // Loop over species
     for (auto& sp : Species)
     {
-        if(sp.nlccflag) is_core_correction = true;
         sp.pd_mins.clear();
         sp.occ_weight.clear();
         sp.fd_coeffs.clear();
@@ -320,7 +315,7 @@ void GetFdFactor(int kpt)
 
     if(ct.use_cmix && ct.prolong_order)
     {
-        if(is_core_correction == false && ct.norm_conserving_pp)
+        if(ct.norm_conserving_pp)
         {
             ct.cmix = cmin.first;
         }
