@@ -3,6 +3,7 @@
 #include <math.h>
 #include <boost/math/tools/minima.hpp>
 #include <functional>
+#include <boost/bind/bind.hpp> 
 #include "main.h"
 #include "Atomic.h"
 #include "Pw.h"
@@ -26,7 +27,6 @@
 */
 
 using boost::math::tools::brent_find_minima;
-using namespace std::placeholders;
 
 
 // Evaluates a polynomial of order up to 8 using coefficients in coeffs
@@ -134,6 +134,8 @@ double ComputeRhoRate(double min, double minval, std::array<double, 8> &coeffs, 
 // in the future.
 void GetFdFactor(int kpt)
 {
+    namespace ph = std::placeholders;
+
     // For the boost brent algorithm
     const int double_bits = std::numeric_limits<double>::digits;
     FiniteDiff FD(&Rmg_L);
@@ -285,7 +287,7 @@ void GetFdFactor(int kpt)
 
             SimplePolyFit(cvals.data(), yarr1.data(), N, order, coeffs.data());
             std::pair<double, double> kmin;
-            kmin = brent_find_minima(std::bind(eval_poly, _1, order, coeffs), 0.0, 4.0, double_bits);
+            kmin = brent_find_minima(std::bind(eval_poly, ph::_1, order, coeffs), 0.0, 4.0, double_bits);
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)
                 printf("ke params  %14.8e  %14.8e\n", kmin.first, kmin.second);
             sp.fd_mins.push_back(kmin.first);
@@ -298,7 +300,7 @@ void GetFdFactor(int kpt)
             sp.pd_coeffs.push_back(coeffs);
 
             std::pair<double, double> rhomin;
-            rhomin = brent_find_minima(std::bind(eval_poly, _1, order, coeffs), 0.0, 4.0, double_bits);
+            rhomin = brent_find_minima(std::bind(eval_poly, ph::_1, order, coeffs), 0.0, 4.0, double_bits);
             if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)
                 printf("rho params  %14.8e  %14.8e\n",rhomin.first, rhomin.second);
             sp.pd_mins.push_back(rhomin.first);
