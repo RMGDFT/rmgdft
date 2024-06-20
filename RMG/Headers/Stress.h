@@ -46,6 +46,7 @@ public:
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
     void Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
+    void Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Local_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, double *rho, Pw &pwaves);
     void Local_term1(double *rho, double *vnuc);
     void Hartree_term(double *rho, Pw &pwaves);

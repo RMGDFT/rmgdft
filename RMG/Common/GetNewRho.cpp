@@ -56,8 +56,8 @@ template void GetNewRhoPre<std::complex<double> >(Kpoint<std::complex<double>> *
 template void GetNewRhoPost<double>(Kpoint<double> **, double *);
 template void GetNewRhoPost<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
 
-template void GetNewRhoOne<double>(double *, Prolong *, double *, double);
-template void GetNewRhoOne<std::complex<double>>(std::complex<double> *, Prolong *, double *, double);
+template void GetNewRhoOne<double>(State<double> *, Prolong *, double *, double);
+template void GetNewRhoOne<std::complex<double>>(State<std::complex<double>> *, Prolong *, double *, double);
 
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho)
@@ -119,10 +119,31 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[FP0_BASIS * factor]();
+
+    // Get filtered vnuc on fine grid
+    std::vector<double> vnuc_f, vxc_f, vh_f;
+    vnuc_f.resize(FP0_BASIS);
+    vxc_f.resize(FP0_BASIS);
+    vh_f.resize(FP0_BASIS);
+    for(int idx=0;idx<FP0_BASIS;idx++)vnuc_f[idx] = Kpts[0]->Kstates[0].vnuc[idx];
+    for(int idx=0;idx<FP0_BASIS;idx++)vxc_f[idx] = Kpts[0]->Kstates[0].vxc[idx];
+    for(int idx=0;idx<FP0_BASIS;idx++)vh_f[idx] = 0.5*Kpts[0]->Kstates[0].vh[idx];
+    // vnuc and vxc are already filtered to the coarse grid but need to do vh to be consistent
+    // with term contained in eigenvalue sum.
+    FftFilter(vh_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
+
+    std::vector<double> vnuc_c, vxc_c, vh_c;
+    vnuc_c.resize(P0_BASIS);
+    vxc_c.resize(P0_BASIS);
+    vh_c.resize(P0_BASIS);
+    GetVtotPsi (vnuc_c.data(), vnuc_f.data(), Rmg_G->default_FG_RATIO);
+    GetVtotPsi (vxc_c.data(), vxc_f.data(), Rmg_G->default_FG_RATIO);
+    GetVtotPsi (vh_c.data(), vh_f.data(), Rmg_G->default_FG_RATIO);
 
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -143,9 +164,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = HYBRID_GET_RHO;
+                Kpts[kpt]->Kstates[st1+ist].vnuc_f = vnuc_f.data();
+                Kpts[kpt]->Kstates[st1+ist].vnuc_c = vnuc_c.data();
+                Kpts[kpt]->Kstates[st1+ist].vxc_f = vxc_f.data();
+                Kpts[kpt]->Kstates[st1+ist].vxc_c = vxc_c.data();
+                Kpts[kpt]->Kstates[st1+ist].vh_f = vh_f.data();
+                Kpts[kpt]->Kstates[st1+ist].vh_c = vh_c.data();
                 double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
-                OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
-                thread_control.p1 = (void *)psi;
+                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
                 thread_control.p2 = (void *)&P;
                 thread_control.p3 = (void *)work;
                 thread_control.fd_diag = scale;
@@ -160,9 +186,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
         for(int st1=istop;st1 < nstates;st1++)
         {
-            OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
+            Kpts[kpt]->Kstates[st1].vnuc_f = vnuc_f.data();
+            Kpts[kpt]->Kstates[st1].vnuc_c = vnuc_c.data();
+            Kpts[kpt]->Kstates[st1].vxc_f = vxc_f.data();
+            Kpts[kpt]->Kstates[st1].vxc_c = vxc_c.data();
+            Kpts[kpt]->Kstates[st1].vh_f = vh_f.data();
+            Kpts[kpt]->Kstates[st1].vh_c = vh_c.data();
             double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
-            GetNewRhoOne(psi, &P, work, scale);
+            GetNewRhoOne(&Kpts[kpt]->Kstates[st1], &P, work, scale);
         }
         MPI_Barrier(pct.grid_comm);
     }                           /*end for kpt */
@@ -186,13 +217,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
 std::mutex rhomutex;
 
-template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, double *work, double scale)
+template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolong *P, double *work, double scale)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
 
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int dimx = Rmg_G->get_PX0_GRID(ratio);
     int dimy = Rmg_G->get_PY0_GRID(ratio);
     int dimz = Rmg_G->get_PZ0_GRID(ratio);
@@ -200,6 +232,7 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
 
+    OrbitalType *psi = sp->psi;
     std::complex<double> psiud;
     OrbitalType *psi_f = new OrbitalType[ct.noncoll_factor * FP0_BASIS]();
 
@@ -210,6 +243,49 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
 
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
+
+    // Energy correction terms evaluated in this block
+    if(ct.norm_conserving_pp)
+    {
+        // Fix any normalization change from interpolation
+        double snorm = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) snorm += std::real(psi_f[idx] * std::conj(psi_f[idx]));
+        GlobalSums(&snorm, 1, pct.grid_comm);
+        snorm *= get_vel_f();
+        snorm = 1.0 / sqrt(snorm);
+        for(int idx=0;idx < FP0_BASIS;idx++) psi_f[idx] *= snorm; 
+
+        double sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vnuc_f[idx]);
+        double sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vnuc_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vnuc_correction = sumf - sumc;
+
+        sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vxc_f[idx]);
+        sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vxc_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vxc_correction = sumf - sumc;
+
+        sumf = 0.0;
+        for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vh_f[idx]);
+        sumc = 0.0;
+        for(int idx=0;idx < P0_BASIS;idx++) sumc += std::real(psi[idx] * std::conj(psi[idx]) * sp->vh_c[idx]);
+        GlobalSums(&sumf, 1, pct.grid_comm);
+        GlobalSums(&sumc, 1, pct.grid_comm);
+        sumf *= get_vel_f();
+        sumc *= get_vel();
+        sp->vh_correction = sumf - sumc;
+    }
 
     double sum1 = 1.0;
     if(ct.norm_conserving_pp)

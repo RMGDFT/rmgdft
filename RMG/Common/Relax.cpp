@@ -64,7 +64,14 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
     }
 
+    FILE *XDATCAR_fh = NULL;
+    if(pct.imgpe == 0) 
+    {
+        std::string filename = std::string(pct.image_path[pct.thisimg]) + std::string(ct.basename) + ".XDATCAR5";
 
+        XDATCAR_fh = fopen(filename.c_str(), "w");
+        WritePoscar(XDATCAR_fh, rlx_steps);
+    }
     /* ---------- begin relax loop --------- */
     DONE = (ct.max_md_steps < 1 || steps < 1);
 
@@ -149,6 +156,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         /* quench the electrons and calculate forces */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
 
+        if(pct.imgpe == 0) WritePoscar(XDATCAR_fh, rlx_steps);
 
         /* save data to file for future restart */
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
@@ -184,6 +192,8 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         DONE = (CONV_FORCE || MAX_STEPS);
 
     }
+    if(pct.imgpe == 0) fclose(XDATCAR_fh);
+
     /* ---------- end relax loop --------- */
 
     if (ct.max_md_steps > 0 && steps > 0)

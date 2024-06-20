@@ -93,9 +93,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
   // zero out g-vector array
   for(size_t ix=0;ix < this->pbasis;ix++) {
-      this->g->a[0] = 0.0;
-      this->g->a[1] = 0.0;
-      this->g->a[2] = 0.0;
+      this->g[ix].a[0] = 0.0;
+      this->g[ix].a[1] = 0.0;
+      this->g[ix].a[2] = 0.0;
   }
 
   // Get G^2 cutoff.
@@ -1458,6 +1458,9 @@ void Pw::remask(void)
         if(this->gmags[idx] > this->gcut)
         {
             this->gmask[idx] = false;
+            this->g[idx].a[0] = 0.0;
+            this->g[idx].a[1] = 0.0;
+            this->g[idx].a[2] = 0.0;
             this->ng--;
         }
         else

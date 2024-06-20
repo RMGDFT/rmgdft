@@ -88,6 +88,8 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RmgTimer *RT2;
     for(int i = 0; i < 9; i++) stress_tensor[i] = 0.0;
     RT2 = new RmgTimer("2-Stress: kinetic");
+    Kinetic_term_FFT(Kpin, BG, L);
+#if 0
     if(ct.fast_density)
     {
         Kinetic_term_coarse(Kpin, BG, L);
@@ -96,6 +98,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     {
         Kinetic_term_fine(Kpin, BG, L);
     }
+#endif
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Loc");
     Local_term(atoms, species, rho_tot, pwaves);
@@ -180,15 +183,94 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     delete [] rho_tot;
 }
 
+template void Stress<double>::Kinetic_term_FFT(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_FFT(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+{
+
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int pbasis = P0_BASIS;
+    int pbasis_noncol = pbasis * ct.noncoll_factor;
+    double scale = sqrt(1.0 / (double)coarse_pwaves->global_basis);
+
+
+    std::complex<double> *grad_psi = (std::complex<double> *)RmgMallocHost(4*pbasis_noncol*sizeof(std::complex<double>));
+    std::complex<double> *psi_x = grad_psi;
+    std::complex<double> *psi_y = psi_x + pbasis_noncol;
+    std::complex<double> *psi_z = psi_x + 2*pbasis_noncol;
+    std::complex<double> *psi_fft = psi_x + 3*pbasis_noncol;
+
+    double vel = L.get_omega() / ((double)(BG.get_NX_GRID(1) * BG.get_NY_GRID(1) * BG.get_NZ_GRID(1)));
+    std::complex<double> alpha;
+    std::complex<double> one(1.0);
+    std::complex<double> I_t(0.0, 1.0);
+    std::complex<double> stress_tensor_T[9];
+    double stress_tensor_R[9];
+
+
+    for(int i = 0; i < 9; i++) stress_tensor_T[i] = 0.0;
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    {
+        Kpoint<T> *kptr = Kpin[kpt];
+        for(int st = 0; st < kptr->nstates; st++)
+        {
+            if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
+
+            T *psi = kptr->Kstates[st].psi;
+            for(int i = 0; i < pbasis_noncol; i++)
+            {
+                psi_fft[i] = psi[i];
+            }
+            coarse_pwaves->FftForward(psi_fft, psi_fft);
+
+            if(ct.noncoll)
+            {
+                coarse_pwaves->FftForward(psi_fft+pbasis, psi_fft+pbasis);
+            }
+
+            for(int i = 0;i < pbasis_noncol;i++) 
+            {
+                if(coarse_pwaves->gmags[i] < coarse_pwaves->gcut)
+                {
+                    double gx = kptr->kp.kvec[0] + tpiba * coarse_pwaves->g[i].a[0];
+                    double gy = kptr->kp.kvec[1] + tpiba * coarse_pwaves->g[i].a[1];
+                    double gz = kptr->kp.kvec[2] + tpiba * coarse_pwaves->g[i].a[2];
+                    psi_x[i] = I_t * psi_fft[i] * gx * scale;
+                    psi_y[i] = I_t * psi_fft[i] * gy * scale;
+                    psi_z[i] = I_t * psi_fft[i] * gz * scale;
+                }
+                else
+                {
+                    psi_x[i] = 0.0;
+                    psi_y[i] = 0.0;
+                    psi_z[i] = 0.0;
+                }
+
+            }
+
+
+            alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
+            RmgGemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
+                    grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
+
+        }
+    }
+
+    for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
+
+    if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
+    RmgFreeHost(grad_psi);
+}
+
 template void Stress<double>::Kinetic_term_coarse(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
 template void Stress<std::complex<double>>::Kinetic_term_coarse(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
 template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
 {
-    int ratio = Rmg_G->default_FG_RATIO;
-    int half_dimx = Rmg_G->get_PX0_GRID(1);
-    int half_dimy = Rmg_G->get_PY0_GRID(1);
-    int half_dimz = Rmg_G->get_PZ0_GRID(1);
-
 
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int pbasis = P0_BASIS;
@@ -269,7 +351,6 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid 
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
 
 
-    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  L, BG);
     int pbasis = FP0_BASIS;

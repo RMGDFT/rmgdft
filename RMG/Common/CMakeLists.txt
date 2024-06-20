@@ -1,5 +1,5 @@
 add_library (RMG_Common
-GetFdFactor.cpp
+#GetFdFactor.cpp
 STM_calc.cpp
 ComputeHcore.cpp
 ComputeHpsi.cpp
@@ -83,6 +83,7 @@ set_pbc.cpp
 PartialGamma.cpp
 fire.cpp
 Write_Wfs_forWannier.cpp
+WellPotential.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

@@ -152,6 +152,9 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         this->prj_pwave = new Pw(*G, L, 1, false);
     }
 
+    // In case ecutwfc is set below what the grid supports
+    this->prj_pwave->gcut = coarse_pwaves->gcut;
+    this->prj_pwave->remask();
 
     this->ldim = Radius2grid (this->lradius, ct.hmingrid / (double)G->default_FG_RATIO, L.get_ibrav_type(), ct.localize_localpp);
     this->ldim = this->ldim/2 * 2 +1;

@@ -420,6 +420,17 @@ void WriteHeader (void)
             if(pct.imgpe==0) fprintf(ct.logfile, "Cubic\n");
     }
 
+    if(pct.imgpe==0) fprintf(ct.logfile, "\n");
+    if(pct.imgpe==0) fprintf(ct.logfile, "Adaptive Interpolation\n");
+    if(ct.cmix != 0.0)
+    {
+        if(pct.imgpe==0) fprintf(ct.logfile, "    On: cmix                                %12.9f\n", ct.cmix);
+    }
+    else
+    {
+        if(pct.imgpe==0) fprintf(ct.logfile, "    Off\n");
+    }
+
     FiniteDiff FD(&Rmg_L);
 
     if(pct.imgpe==0) fprintf(ct.logfile, "\n");

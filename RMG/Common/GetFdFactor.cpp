@@ -7,6 +7,11 @@
 #include "Lattice.h"
 #include "transition.h"
 
+/*
+  Not being used right now but in case we extend adaptive finite differencing to use
+  a per k-point value.
+*/
+
 void SetCfacs(double *cf, double val);
 
 //void SetCfacs(double *cf, double val)
@@ -63,8 +68,6 @@ template <class KpointType> void Kpoint<KpointType>::GetFdFactor (void)
     // Loop over species
     for (auto& sp : Species)
     {
-        sp.fd_factor1.clear();
-        sp.fd_fke1.clear();
         sp.fd_slopes.clear();
         sp.fd_xint.clear();
         sp.fd_yint.clear();
@@ -132,8 +135,6 @@ template <class KpointType> void Kpoint<KpointType>::GetFdFactor (void)
             sp.fd_yint.push_back(diffs[0]);
 
             if(ct.verbose && pct.gridpe==0)printf("IP=%d M = %e  %e  %e\n",ip,m,x_int,diffs[0]);
-            sp.fd_factor1.push_back(x_int);
-            sp.fd_fke1.push_back(fft_ke);
         }
     }
 

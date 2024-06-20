@@ -19,6 +19,8 @@
 
 template <typename T> T MyConj(T val);
 
+void WritePoscar(FILE *FH, int md_step);
+
 /* Blas wrappers */
 void QMD_daxpy (int n, double alpha, double *x, int incx, double *y, int incy);
 void QMD_dscal (int n, double alpha, double *x, int incx);

@@ -223,7 +223,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     }
 
-    Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
+    if((ct.is_use_symmetry == 1) || (ct.is_use_symmetry == 2 && !ct.is_gamma))
+        Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
 
 
     if(ct.forceflag == BAND_STRUCTURE)

@@ -9,7 +9,7 @@ localize_projectors = "false"
 compressed_infile = "false"
 compressed_outfile = "false"
 
-test_energy = "-11.38936482"
+test_energy = "-11.38934618"
 test_steps = "8"
 test_steps_tolerance = "2"
 
