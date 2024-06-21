@@ -145,22 +145,22 @@ std::tuple<int, int, int> get_num_tiles(tiled_matrix<Scalar>& a, tiled_matrix<Sc
     return {n_tiles_m, n_tiles_n, n_tiles_k};
 }
 
-
 template<typename Scalar>
 std::tuple<int, int, int> get_tile_sizes(tiled_matrix<Scalar>& a,
         tiled_matrix<Scalar>& b, tiled_matrix<Scalar>& c,
         int m_tile_id, int n_tile_id, int k_tile_id,
 	char trans_a, char trans_b) {
     int tile_size_m, tile_size_n, tile_size_k;
-    auto tile_c = c.tile_dimensions();
+    auto tile_c = c.tile_dimensions({m_tile_id, n_tile_id});
     tile_size_m = tile_c.rows();
     tile_size_n = tile_c.cols();
 
-    auto a_tile = a.tile_dimensions();
+    auto a_tile = a.tile_dimensions({m_tile_id, k_tile_id});
     int temp_m = a_tile.rows();
     int temp_k = a_tile.cols();
 
     tile_size_k = trans_a == 'N' ? temp_k : temp_m;
+
     return {tile_size_m, tile_size_n, tile_size_k};
 }
 
@@ -332,7 +332,8 @@ void round_robin(tiled_matrix<Scalar>& a_host, tiled_matrix<Scalar>& b_host, til
                         // perform dgemm
                         // cublasSetStream(get_blas_handle(stream_id), streams[stream_id].stream());
                         // std::cout << "performing dgemm" << std::endl;
-                        if (k_tile_id == 0) {
+                        //if (k_tile_id == 0 && std::abs(beta) > 0) {
+if (k_tile_id == 0) {
                             current_stream.wait_on_event(c_copied_to_host[stream_id]);
                         }
 

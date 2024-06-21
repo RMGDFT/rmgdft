@@ -1,17 +1,27 @@
+include(CMakeFindDependencyMacro)
+
 if(NOT TARGET Tiled-MM::Tiled-MM)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
-    include(CMakeFindDependencyMacro)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+  include(CMakeFindDependencyMacro)
 
-    set(TILEDMM_GPU_BACKEND "@TILEDMM_GPU_BACKEND@")
+  set(TILEDMM_GPU_BACKEND "@TILEDMM_GPU_BACKEND@")
 
-    if(TILEDMM_GPU_BACKEND STREQUAL "CUDA")
-        find_package(CUDAToolkit REQUIRED)
+  if(TILEDMM_GPU_BACKEND STREQUAL "CUDA")
+    find_dependency(CUDAToolkit)
+    if (NOT TARGET tiledmm::cuda)
+      add_library(tiledmm::cuda INTERFACE IMPORTED)
+      target_link_libraries(tiledmm::cuda INTERFACE CUDA::cublas CUDA::cudart)
     endif()
 
-    if(TILEDMM_GPU_BACKEND STREQUAL "ROCM")
-        find_package(HIPLIBS REQUIRED)
-        find_package(ROCBLAS REQUIRED)
-    endif()
+  endif()
 
-    include("${CMAKE_CURRENT_LIST_DIR}/Tiled-MMTargets.cmake")
+  if(TILEDMM_GPU_BACKEND STREQUAL "ROCM")
+    find_dependency(rocblas REQUIRED)
+    if (NOT TARGET tiledmm::rocm)
+      add_library(tiledmm::rocm INTERFACE IMPORTED)
+      target_link_libraries(tiledmm::rocm INTERFACE roc::rocblas)
+    endif()
+  endif()
+
+  include("${CMAKE_CURRENT_LIST_DIR}/Tiled-MMTargets.cmake")
 endif()

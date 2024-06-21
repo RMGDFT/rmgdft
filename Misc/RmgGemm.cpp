@@ -267,10 +267,21 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(ct.use_cublasxt)
     {
        static std::unique_ptr<gpu::mm_handle<DataType>> ctx;
+
+       char trans_a = 'N', trans_b = 'N';
+       if(!strcmp(transa, "n")) trans_a = 'N';
+       if(!strcmp(transb, "n")) trans_b = 'N';
+       if(!strcmp(transa, "t")) trans_a = 'T';
+       if(!strcmp(transb, "t")) trans_b = 'T';
+       if(!strcmp(transa, "c")) trans_a = 'C';
+       if(!strcmp(transb, "c")) trans_b = 'C';
+       if(!strcmp(transa, "C")) trans_a = 'C';
+       if(!strcmp(transb, "C")) trans_b = 'C';
+
        // can probably tune these
-       if(!ctx) ctx = gpu::make_context<DataType>(2, 5000, 5000, 2000);
+       if(!ctx) ctx = gpu::make_context<DataType>(2, 5000, 5000, 5000);
        gpu::gemm<DataType>(*ctx,
-          *transa, *transb,
+          trans_a, trans_b,
           m, n, k,
           alpha,
           A, lda, 

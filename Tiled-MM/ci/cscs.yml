@@ -1,0 +1,58 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - baseimage
+  - build
+  - test
+
+build base image:
+  extends: .container-builder-dynamic-name
+  stage: baseimage
+  timeout: 2h
+  variables:
+    DOCKERFILE: ci/baseimage.cuda.Dockerfile
+    WATCH_FILECHANGES: ci/baseimage.cuda.Dockerfile
+    PERSIST_IMAGE_NAME: $CSCS_REGISTRY_PATH/base/tiledmm-ci
+
+build tiled-mm:
+  extends: .container-builder
+  needs: ["build base image"]
+  stage: build
+  variables:
+    DOCKERFILE: ci/build.Dockerfile
+    PERSIST_IMAGE_NAME: $CSCS_REGISTRY_PATH/tiledmm/tiledmm-ci:$CI_COMMIT_SHA
+    ENVPATH: "/tiledmm-env-cuda"
+    DOCKER_BUILD_ARGS: '["BASE_IMAGE=${BASE_IMAGE}", "ENVPATH=$ENVPATH"]'
+
+.run_tests:
+  extends: .container-runner-daint-gpu
+  needs: ["build tiled-mm"]
+  stage: test
+  image: $CSCS_REGISTRY_PATH/tiledmm/tiledmm-ci:$CI_COMMIT_SHA
+  variables:
+    GIT_STRATEGY: none
+    MPICH_MAX_THREAD_SAFETY: multiple
+    CSCS_REGISTRY_LOGIN: 'YES'
+    PULL_IMAGE: 'YES'
+    SLURM_HINT: nomultithread
+    SLURM_UNBUFFEREDIO: ''
+    SLURM_WAIT: 0
+
+test1:
+  extends: .run_tests
+  stage: test
+  script: /src/spack-build/tests/test-multiply -m 50 -n 200 -k 21 --tile_m 4 --tile_n 4 --tile_k 4 --beta 0 --n_streams 2
+  variables:
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    USE_MPI: 'YES'
+
+test2:
+  extends: .run_tests
+  stage: test
+  script: /src/spack-build/tests/test-multiply -m 5 -n 2 -k 2 --tile_m 4 --tile_n 4 --tile_k 4 --beta 0 --n_streams 2
+  variables:
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    USE_MPI: 'YES'

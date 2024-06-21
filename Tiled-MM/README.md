@@ -1,6 +1,3 @@
-
-
-
 ## Table of Contents
 - [Overview](#overview)
 - [Performance](#performance)
@@ -40,7 +37,7 @@ In the benchmark, we used `double precision`, `square matrices` given in `column
 Assuming that you want to use the `gcc 8` compiler, you can build the project as follows:
 ```bash
 # clone the repo
-git clone --recursive https://github.com/eth-cscs/Tiled-MM
+git clone https://github.com/eth-cscs/Tiled-MM
 cd Tiled-MM
 mkdir build
 cd build
@@ -51,6 +48,8 @@ CC=gcc-8 CXX=g++-8 cmake -DTILEDMM_GPU_BACKEND=CUDA ..
 # compile
 make -j 4
 ```
+
+When building the examples [cxxopts](https://github.com/jarro2783/cxxopts) is required. It is available in most package manager, `apt-get install libcxxopts-dev` (ubuntu) or `brew install cxxopts` (macos).
 
 The option `-DTILEDMM_GPU_BACKEND` can have the following values:
 - `CUDA`: for NVIDIA GPUs
@@ -201,7 +200,7 @@ The miniapp consists of the executable `./build/tests/test-multiply` **supports 
 ./build/tests/test-multiply -m 1000 -n 1000 -k 1000 --transpose=TN
 ```
 which should produce the following output:
-```bash 
+```bash
 ==================================================
                 Benchmarking Tiled-MM
 ==================================================

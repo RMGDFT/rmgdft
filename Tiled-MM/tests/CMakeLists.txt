@@ -3,7 +3,7 @@
 ################
 
 add_executable(test-multiply "test-multiply.cpp")
-target_link_libraries(test-multiply Tiled-MM cxxopts)
+target_link_libraries(test-multiply PRIVATE Tiled-MM cxxopts::cxxopts)
 
 ################
 #  unit gtests #
