@@ -370,7 +370,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
     gpuFree(dP_dev);
     gpuFree(C1_dev);
     gpuFree(C0_dev);
-    gpuFree(C_dev);
+    //gpuFree(C_dev);
     gpuFree(W_dev);
     gpuFree(P1_dev);
     gpuFree(P0_dev);
