@@ -145,7 +145,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
     vnuc_correction = RmgSumAll(vnuc_correction, pct.kpsub_comm);
     vxc_correction = RmgSumAll(vxc_correction, pct.kpsub_comm);
-    vh_correction = RmgSumAll(vh_correction, pct.kpsub_comm);
+    vh_correction = 0.5*RmgSumAll(vh_correction, pct.kpsub_comm);
 
     if(ct.AFM) eigsum *= 2.0;
 
