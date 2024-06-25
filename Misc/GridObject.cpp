@@ -36,125 +36,9 @@
 
 */
 
-
-/* This class implements GridObjects for RMG. A GridObject encapsulates something stored on
-   a real space domain such as wavefunctions, charge density etc. The object knows it's size
-   and topology so working with it will be simpler and cleaner than working with the lower
-   level data. The class includes operator overloads that make it easier to perform standard
-   operations.
-
-
-   Constructor examples:
-     GridObject<T> V(density);
-     Creates a grid object V on the grid specified by density
-     (1= wavefunction grid, >1 = charge density grid). Storage
-     for the object is allocated internally and destroyed when
-     the object is deleted or goes out of scope.
-
-
-     GridObject<T> V(density, T *data);
-     Same as above except existing storage at *data is used. 
-
-*/
-
-#ifndef RMG_GridObject_H
-#define RMG_GridObject_H 1
-
-
-template <typename T> class GridObject {
-
-  friend GridObject operator+(GridObject a, const GridObject& b) {
-    a += b;
-    return std::move(a);
-  }
-  friend GridObject& operator+=(GridObject& a, const GridObject& b) {
-    a.increment(b);
-    return a;
-  }
-  friend GridObject operator-(GridObject a, const GridObject& b) {
-    a -= b;
-    return std::move(a);
-  }
-  friend GridObject& operator-=(GridObject& a, const GridObject& b) {
-    a.decrement(b);
-    return a;
-  }
-  friend GridObject operator*(const T &b, GridObject a) {
-    a.multiply(b);
-    return std::move(a);
-  }
-  friend GridObject operator*(GridObject a, const T &b) {
-    a.multiply(b);
-    return std::move(a);
-  }
-  friend GridObject& operator*=(GridObject& a, const T &b) {
-    a.multiply(b);
-    return a;
-  }
-
-public:
-    GridObject(int density);
-    GridObject(int density, T *p);
-    ~GridObject(void);
-    int dimx() const { return dimx_; }
-    int dimy() const { return dimy_; }
-    int dimz() const { return dimz_; }
-    T* data() { return data_; }
-
-    T& operator [](int idx) {
-        return data_[idx];
-    }
-
-    T operator [](int idx) const {
-        return data_[idx];
-    }
-
-private:
-   int dimx_;
-   int dimy_;
-   int dimz_;
-   int pbasis;
-   T *data_;
-   bool owns_allocation = true;
-
-protected:
-  void increment( const GridObject& c );
-  void decrement( const GridObject& c );
-  void multiply( const T& b );
-
-};
-
-
-template <typename T> class FineGridObject : public GridObject<T>
-{
-public:
-    FineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
-    {
-    }
-    FineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO, data_ptr)
-    {
-    }
-    ~FineGridObject(void)
-    {
-    }
-};
-
-template <typename T> class CoarseGridObject : public GridObject<T>
-{
-public:
-    CoarseGridObject(void) : GridObject<T>(1)
-    {
-    }
-    CoarseGridObject(T *data_ptr) : GridObject<T>(1, data_ptr)
-    {
-    }
-    ~CoarseGridObject(void);
-};
-
-#if 0
-////////////////////////////////////////////////
-
-
+#include <complex>
+#include "transition.h"
+#include "GridObject.h"
 
 template<typename T>
 GridObject<T>::GridObject(int density)
@@ -217,6 +101,11 @@ template GridObject<float>::GridObject(int);
 template GridObject<double>::GridObject(int);
 template GridObject<std::complex<float>>::GridObject(int);
 template GridObject<std::complex<double>>::GridObject(int);
+template GridObject<float>::~GridObject(void);
+template GridObject<double>::~GridObject(void);
+template GridObject<std::complex<float>>::~GridObject(void);
+template GridObject<std::complex<double>>::~GridObject(void);
+
 template FineGridObject<float>::FineGridObject(void);
 template FineGridObject<double>::FineGridObject(void);
 template FineGridObject<std::complex<float>>::FineGridObject(void);
@@ -225,5 +114,4 @@ template FineGridObject<float>::~FineGridObject(void);
 template FineGridObject<double>::~FineGridObject(void);
 template FineGridObject<std::complex<float>>::~FineGridObject(void);
 template FineGridObject<std::complex<double>>::~FineGridObject(void);
-#endif
-#endif
+

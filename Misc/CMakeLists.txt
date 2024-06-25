@@ -1,4 +1,5 @@
 add_library (Misc
+GridObject.cpp
 PolyFit.cpp
 WritePoscar.cpp
 OutputBandPlot.cpp
