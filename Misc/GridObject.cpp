@@ -36,8 +36,6 @@
 
 */
 
-#include <complex>
-#include "transition.h"
 #include "GridObject.h"
 
 template<typename T>

@@ -55,10 +55,18 @@
      GridObject<T> V(density, T *data);
      Same as above except existing storage at *data is used. 
 
+     One can also create GridObjects specific to the fine or the coarse Grid.
+     FineGridObject() V;
+     FineGridObject() V(ptr);
+     CoarseGridObject() V;
+     CoarseGridObject() V(ptr);
 */
 
 #ifndef RMG_GridObject_H
 #define RMG_GridObject_H 1
+
+#include <complex>
+#include "transition.h"
 
 
 template <typename T> class GridObject {
@@ -151,79 +159,4 @@ public:
     ~CoarseGridObject(void);
 };
 
-#if 0
-////////////////////////////////////////////////
-
-
-
-template<typename T>
-GridObject<T>::GridObject(int density)
-{
-    dimx_ = Rmg_G->get_PX0_GRID(density);
-    dimy_ = Rmg_G->get_PY0_GRID(density);
-    dimz_ = Rmg_G->get_PZ0_GRID(density);
-    pbasis = dimx_ * dimy_ * dimz_;
-    data_ = new T[pbasis]();
-}
-
-template<typename T>
-GridObject<T>::GridObject(int density, T *data_ptr)
-{
-    dimx_ = Rmg_G->get_PX0_GRID(density);
-    dimy_ = Rmg_G->get_PY0_GRID(density);
-    dimz_ = Rmg_G->get_PZ0_GRID(density);
-    pbasis = dimx_ * dimy_ * dimz_;
-    data_ = data_ptr;
-    owns_allocation = false;
-}
-
-template<typename T>
-GridObject<T>::~GridObject(void)
-{
-    if(owns_allocation) delete [] data_;
-}
-
-template<typename T>
-void GridObject<T>::increment(const GridObject<T>& c) {
-  if(this->pbasis == c.pbasis) {
-    for (int i = 0; i < this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::decrement(const GridObject<T>& c) {
-  if(this->pbasis == c.pbasis) {
-    for (int i = 0; i < this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::multiply(const T& b) {
-    for (int i = 0; i < this->pbasis; i++) {
-        data_[i] *= b;
-    }
-}
-
-// Instantiate all versions
-template GridObject<float>::GridObject(int);
-template GridObject<double>::GridObject(int);
-template GridObject<std::complex<float>>::GridObject(int);
-template GridObject<std::complex<double>>::GridObject(int);
-template FineGridObject<float>::FineGridObject(void);
-template FineGridObject<double>::FineGridObject(void);
-template FineGridObject<std::complex<float>>::FineGridObject(void);
-template FineGridObject<std::complex<double>>::FineGridObject(void);
-template FineGridObject<float>::~FineGridObject(void);
-template FineGridObject<double>::~FineGridObject(void);
-template FineGridObject<std::complex<float>>::~FineGridObject(void);
-template FineGridObject<std::complex<double>>::~FineGridObject(void);
-#endif
 #endif
