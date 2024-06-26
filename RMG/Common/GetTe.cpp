@@ -77,8 +77,6 @@ double  vdw_d2_energy(Lattice &, std::vector<ION> &);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
 
-extern double *vnuc;
-
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
@@ -87,7 +85,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
-
+ 
     FP0_BASIS = get_FP0_BASIS();
     P0_BASIS = get_P0_BASIS();
 
@@ -173,6 +171,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     if(potential_acceleration)
     {
+        double *vnuc = Kptr[0]->Kstates[0].vnuc;
         double *vf_tmp = new double[FP0_BASIS]();
         double *vc_tmp = new double[P0_BASIS]();
 

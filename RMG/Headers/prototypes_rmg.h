@@ -28,6 +28,8 @@
 #include "PulayMixing.h"
 #include "LaplacianCoeff.h"
 #include "Prolong.h"
+#include "transition.h"
+#include "GridObject.h"
 
 
 extern PulayMixing *Pulay_rho;
@@ -36,6 +38,7 @@ extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
+
 
 template <typename KpointType>
 void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
@@ -50,8 +53,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Reinit (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
+
+template <typename OrbitalType> void Relax (
+                   int steps,
+                   SpinFineGridObject<double> &vxc,
+                   FineGridObject<double> &vh,
+                   FineGridObject<double> &vnuc,
+                   SpinFineGridObject<double> &rho,
+                   FineGridObject<double> &rhocore,
+                   FineGridObject<double> &rhoc,
+                   Kpoint<OrbitalType> **Kptr);
+
 template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,

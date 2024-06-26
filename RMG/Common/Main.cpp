@@ -53,12 +53,20 @@
 #include "Neb.h"
 #include "Wannier.h"
 #include "GlobalSums.h"
+#include "GridObject.h"
 
 
 
-void initialize (int argc, char **argv);
 
-template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void run (
+            Kpoint<OrbitalType> **Kptr,
+            SpinFineGridObject<double> &rho,
+            SpinFineGridObject<double> &vxc,
+            FineGridObject<double> &vh,
+            FineGridObject<double> &vnuc,
+            FineGridObject<double> &rhoc,
+            FineGridObject<double> &rhocore);
+            
 template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho);
 
 void report (void);
@@ -68,30 +76,6 @@ void finish (void);
 std::vector<ION> Atoms;
 std::vector<SPECIES> Species;
 
-
-/* Electronic charge density or charge density of own spin in polarized case */
-double *rho;
-
-/*  Electronic charge density of pposite spin density*/
-double *rho_oppo;  
-
-
-/* Core Charge density */
-double *rhocore;
-
-
-/* Compensating charge density */
-double *rhoc;
-
-
-/* Hartree potential */
-double *vh;
-
-/* Nuclear local potential */
-double *vnuc;
-
-/* Exchange-correlation potential */
-double *vxc;
 
 // Pointer to Kpoint class arrays for gamma and non-gamma
 Kpoint<double> **Kptr_g;
@@ -174,17 +158,110 @@ int main (int argc, char **argv)
     try {
 
         RmgTimer *RT1 =  new RmgTimer("1-TOTAL: Init");
-        initialize (argc, argv);
-        delete(RT1);
+        int FP0_BASIS;
 
+        /* start the benchmark clock */
+        ct.time0 = my_crtc ();
+        RmgTimer *RT0 = new RmgTimer("2-Init");
+        RmgTimer *RT = new RmgTimer("2-Init: KpointClass");
+
+        /* Initialize all I/O including MPI group comms */
+        /* Also reads control and pseudopotential files*/
+        InitIo (argc, argv, ControlMap);
+
+        FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+
+        SpinFineGridObject<double> rho, vxc;
+        FineGridObject<double> rhocore, rhoc, vh, vnuc;
+        if (ct.xctype == MGGA_TB09) 
+            tau = new double[FP0_BASIS];
+
+        /* Initialize some k-point stuff */
+        Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
+        Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
+
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+
+            int kpt1 = kpt + pct.kstart;
+            if(ct.is_gamma) {
+
+                // Gamma point
+                Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+
+            }
+            else {
+
+                // General case
+                Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+
+            }
+            ct.kp[kpt].kidx = kpt;
+        }
+
+
+        MPI_Barrier (pct.img_comm);
+
+        /* Record the time it took from the start of run until we hit init */
+        delete(RT);
+
+        /* Perform any necessary initializations */
+        if(ct.is_gamma) {
+            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_g);
+        }
+        else {
+            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_c);
+        }
+
+        /* Flush the results immediately */
+        fflush (NULL);
+
+
+        /* Wait until everybody gets here */
+        /* MPI_Barrier(MPI_COMM_WORLD); */
+        MPI_Barrier(pct.img_comm);
+
+        delete(RT0);
+        delete(RT1);
 
 
         RmgTimer *RT2 = new RmgTimer("1-TOTAL: run");
         if(ct.is_gamma)
-            run<double> ((Kpoint<double> **)Kptr_g);
+        {
+            run<double> (
+                (Kpoint<double> **)Kptr_g,
+                rho,
+                vxc,
+                vh,
+                vnuc,
+                rhoc,
+                rhocore);
+        }
         else
-            run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr_c);
+        {
+            run<std::complex<double> >(
+                (Kpoint<std::complex<double>> **)Kptr_c,
+                rho,
+                vxc,
+                vh,
+                vnuc,
+                rhoc,
+                rhocore);
+        }
         delete(RT2);
+
+        /* write planar averages of quantities */
+        if (ct.zaverage == 1)
+        {
+            /* output the average potential */
+            write_avgv (vh.data(), vnuc.data());
+            write_avgd (rho.data());
+        }
+        else if (ct.zaverage == 2)
+        {
+            //write_zstates (states);
+            ;
+        }
 
     }
 
@@ -220,85 +297,14 @@ int main (int argc, char **argv)
 }
 
 
-void initialize(int argc, char **argv) 
-{
-
-    int FP0_BASIS;
-
-    /* start the benchmark clock */
-    ct.time0 = my_crtc ();
-    RmgTimer *RT0 = new RmgTimer("2-Init");
-    RmgTimer *RT = new RmgTimer("2-Init: KpointClass");
-
-    /* Initialize all I/O including MPI group comms */
-    /* Also reads control and pseudopotential files*/
-    InitIo (argc, argv, ControlMap);
-
-    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-
-
-    rho = new double[ct.nspin * FP0_BASIS]();
-    rhocore = new double[FP0_BASIS];
-    rhoc = new double[FP0_BASIS];
-    vh = new double[FP0_BASIS];
-    vnuc = new double[FP0_BASIS];
-    vxc = new double[ct.nspin* FP0_BASIS];
-    if (ct.xctype == MGGA_TB09) 
-    	tau = new double[FP0_BASIS];
-
-    /* for spin polarized calculation set pointer to memory for density of the opposite spin */
-    rho_oppo = rho + FP0_BASIS;
-
-    /* Initialize some k-point stuff */
-    Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
-    Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
-
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-    {
-
-        int kpt1 = kpt + pct.kstart;
-        if(ct.is_gamma) {
-
-            // Gamma point
-            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
-
-        }
-        else {
-
-            // General case
-            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
-
-        }
-        ct.kp[kpt].kidx = kpt;
-    }
-
-
-    MPI_Barrier (pct.img_comm);
-
-    /* Record the time it took from the start of run until we hit init */
-    delete(RT);
-
-    /* Perform any necessary initializations */
-    if(ct.is_gamma) {
-        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr_g);
-    }
-    else {
-        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr_c);
-    }
-
-    /* Flush the results immediately */
-    fflush (NULL);
-
-
-    /* Wait until everybody gets here */
-    /* MPI_Barrier(MPI_COMM_WORLD); */
-    MPI_Barrier(pct.img_comm);
-
-    delete(RT0);
-
-}
-
-template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
+template <typename OrbitalType> void run (
+            Kpoint<OrbitalType> **Kptr,
+            SpinFineGridObject<double> &rho,
+            SpinFineGridObject<double> &vxc,
+            FineGridObject<double> &vh,
+            FineGridObject<double> &vnuc,
+            FineGridObject<double> &rhoc,
+            FineGridObject<double> &rhocore)
 {
 
 
@@ -318,18 +324,18 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
                             n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
                 }
-                Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
                 break;
             }
 
         case MD_FASTRLX:           /* Fast relax */
-            Relax (ct.max_md_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            Relax<OrbitalType> (ct.max_md_steps, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             break;
 
         case NEB_RELAX:           /* nudged elastic band relax */
             {
                 Neb<OrbitalType> NEB (*Rmg_G, pct.images,ct.max_neb_steps, ct.input_initial, ct.input_final, ct.totale_initial, ct.totale_final); 
-                NEB.relax(vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                NEB.relax(vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr);
             }
             break;
 
@@ -340,7 +346,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
             ct.fpt[3] = 3;
-            MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
+            MolecularDynamics (Kptr, vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhoc.data(), rhocore.data());
             break;
 
         case BAND_STRUCTURE:
@@ -353,13 +359,13 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     int n_wannier = ct.num_wanniers;
                     Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
                             n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
-                    BandStructure (Kptr, vh, vxc, vnuc, Wan.exclude_bands);
+                    BandStructure (Kptr, vh.data(), vxc.data(), vnuc.data(), Wan.exclude_bands);
                     Wan.AmnMmn("WfsForWannier90/wfs");
                 }
                 else {
                     std::vector<bool> exclude_bands;
-                    BandStructure (Kptr, vh, vxc, vnuc, exclude_bands);
-                    if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
+                    BandStructure (Kptr, vh.data(), vxc.data(), vnuc.data(), exclude_bands);
+                    if(ct.rmg2bgw) WriteBGW_Rhog(rho.data(), rho.dw.data());
                     double *eig_all;
                     int nspin = 1;
                     if(ct.nspin == 2) nspin = 2;
@@ -391,18 +397,18 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             }
         case STM:
             {
-                STM_calc(Kptr, rho, ct.stm_bias_list, ct.stm_height_list);
+                STM_calc(Kptr, rho.data(), ct.stm_bias_list, ct.stm_height_list);
                 break;
             }
 
         case TDDFT:
             if(!ct.restart_tddft) 
             {   
-                Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-                outcubes(Kptr, vh, rho);
+                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                outcubes(Kptr, vh.data(), rho.data());
             }
             ct.cube_rho = false;
-            RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            RmgTddft (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr);
             break;
 
         case Exx_only:
@@ -426,8 +432,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
 
     if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
-        Output_rho_xsf(rho, pct.grid_comm);
-    outcubes(Kptr, vh, rho);
+        Output_rho_xsf(rho.data(), pct.grid_comm);
+    outcubes(Kptr, vh.data(), rho.data());
 }                               /* end run */
 
 template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho)
@@ -488,26 +494,8 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
 
 
 
-void report ()
+void report (void)
 {
-
-    /* write planar averages of quantities */
-    if (ct.zaverage == 1)
-    {
-        /* output the average potential */
-        write_avgv (vh, vnuc);
-        write_avgd (rho);
-    }
-    else if (ct.zaverage == 2)
-    {
-        //write_zstates (states);
-        ;
-    }
-
-
-    /* If milliken population info is requested then compute and output it */
-    /*if (ct.domilliken)
-      mulliken (states);*/
 
 
     if (ct.xctype == MGGA_TB09) 

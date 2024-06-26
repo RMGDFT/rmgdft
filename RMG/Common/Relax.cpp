@@ -39,18 +39,30 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "bfgs.h"
+#include "GridObject.h"
 
 
 // Instantiate gamma and non-gamma versions
-template void Relax<double>(int , double *, double *, double *,
-              double *, double *, double *, double *, Kpoint<double> **Kptr);
-template void Relax<std::complex<double> >(int , double *, double *, double *,
-              double *, double *, double *, double *, Kpoint<std::complex<double> >**Kptr);
+template void Relax<double>(int , 
+              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              Kpoint<double> **Kptr);
+template void Relax<std::complex<double> >(int ,
+              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              Kpoint<std::complex<double>> **Kptr);
 
 
 
-template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
+template <typename OrbitalType> void Relax (
+                   int steps, 
+                   SpinFineGridObject<double> &vxc, 
+                   FineGridObject<double> &vh, 
+                   FineGridObject<double> &vnuc,
+                   SpinFineGridObject<double> &rho,
+                   FineGridObject<double> &rhocore, 
+                   FineGridObject<double> &rhoc, 
+                   Kpoint<OrbitalType> **Kptr)
 {
 
     int CONV_FORCE=false, MAX_STEPS;
@@ -60,8 +72,8 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
     /* quench the electrons and calculate forces */
 //    if((ct.runflag != RESTART) || (ct.forceflag == MD_QUENCH))
     {
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        Quench (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr, true);
+        WriteRestart (ct.outfile, vh.data(), rho.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
     FILE *XDATCAR_fh = NULL;
@@ -134,13 +146,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
         if(ct.cell_relax)
         {
-
-            Reinit (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr);
+            Reinit (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr);
         }
         // Get atomic rho for new configuration and add back to rho
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
-        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
         delete RT0;
 
         LcaoGetAtomicRho(arho);
@@ -154,12 +165,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ct.md_steps++;
 
         /* quench the electrons and calculate forces */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        Quench (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr, true);
 
         if(pct.imgpe == 0) WritePoscar(XDATCAR_fh, rlx_steps);
 
         /* save data to file for future restart */
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        WriteRestart (ct.outfile, vh.data(), rho.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);

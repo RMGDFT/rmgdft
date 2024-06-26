@@ -58,15 +58,24 @@
      One can also create GridObjects specific to the fine or the coarse Grid.
      FineGridObject() V;
      FineGridObject() V(ptr);
-     CoarseGridObject() V;
-     CoarseGridObject() V(ptr);
+     WfGridObject() V;
+     WfGridObject() V(ptr);
+
+     For spin orbit (ct.noncoll_factor=2) there are two components to a WfGridObject
+     referenced as up or dw.
+     WfGridObject() X;
+     x.up[] or X.dw[]
+
+     There is also a SpinFineGridObject which is identical to FineGridObject for
+     non spin polarized calculations but has two components when ct.nspin = 2.
+
 */
 
 #ifndef RMG_GridObject_H
 #define RMG_GridObject_H 1
 
 #include <complex>
-#include "transition.h"
+#include <span>
 
 
 template <typename T> class GridObject {
@@ -102,12 +111,15 @@ template <typename T> class GridObject {
 
 public:
     GridObject(int density);
-    GridObject(int density, T *p);
+    GridObject(int density, T *data_ptr);
     ~GridObject(void);
     int dimx() const { return dimx_; }
     int dimy() const { return dimy_; }
     int dimz() const { return dimz_; }
+    const int size() const { return pbasis; }
     T* data() { return data_; }
+    std::span<T> up;
+    std::span<T> dw;
 
     T& operator [](int idx) {
         return data_[idx];
@@ -126,9 +138,26 @@ private:
    bool owns_allocation = true;
 
 protected:
-  void increment( const GridObject& c );
-  void decrement( const GridObject& c );
-  void multiply( const T& b );
+   void allocate(int components)
+   {
+       factor = components;
+       data_ = new T[factor*pbasis]();
+       up = std::span(data_, pbasis);
+       dw = std::span(data_ + (factor-1)*pbasis, pbasis);
+   }
+   void allocate(int components, T *ptr)
+   {
+       factor = components;
+       data_ = ptr;
+       up = std::span(data_, pbasis);
+       dw = std::span(data_ + (factor-1)*pbasis, pbasis);
+       owns_allocation = false;
+   }
+
+   int factor = 1;
+   void increment( const GridObject& c );
+   void decrement( const GridObject& c );
+   void multiply( const T& b );
 
 };
 
@@ -136,27 +165,62 @@ protected:
 template <typename T> class FineGridObject : public GridObject<T>
 {
 public:
+    FineGridObject(void);
+    FineGridObject(T *data_ptr);
+    ~FineGridObject(void);
+#if 0
     FineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
     {
+        this->allocate(1);
     }
     FineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO, data_ptr)
     {
+        this->allocate(1, data_ptr);
     }
     ~FineGridObject(void)
     {
     }
+#endif
 };
 
-template <typename T> class CoarseGridObject : public GridObject<T>
+template <typename T> class SpinFineGridObject : public GridObject<T>
 {
 public:
-    CoarseGridObject(void) : GridObject<T>(1)
+    SpinFineGridObject(void);
+    SpinFineGridObject(T *data_ptr);
+    ~SpinFineGridObject(void);
+#if 0
+    SpinFineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
+    {
+        this->allocate(ct.nspin);
+    }
+    SpinFineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO, data_ptr)
+    {
+        this->allocate(ct.nspin, data_ptr);
+    }
+    ~SpinFineGridObject(void)
     {
     }
-    CoarseGridObject(T *data_ptr) : GridObject<T>(1, data_ptr)
-    {
-    }
-    ~CoarseGridObject(void);
+#endif
 };
+
+// For spin-orbit there are two components for each wavefunction
+// references as up or dw.
+template <typename T> class WfGridObject : public GridObject<T>
+{
+public:
+    WfGridObject(void) : GridObject<T>(1)
+    {
+        this->allocate(ct.noncoll_factor);
+    }
+    WfGridObject(T *data_ptr) : GridObject<T>(1, data_ptr)
+    {
+        this->allocate(ct.noncoll_factor, data_ptr);
+    }
+    ~WfGridObject(void)
+    {
+    }
+};
+
 
 #endif

@@ -132,7 +132,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     vh_f.resize(FP0_BASIS);
     for(int idx=0;idx<FP0_BASIS;idx++)vnuc_f[idx] = Kpts[0]->Kstates[0].vnuc[idx];
     for(int idx=0;idx<FP0_BASIS;idx++)vxc_f[idx] = Kpts[0]->Kstates[0].vxc[idx];
-    for(int idx=0;idx<FP0_BASIS;idx++)vh_f[idx] = 0.5*Kpts[0]->Kstates[0].vh[idx];
+    for(int idx=0;idx<FP0_BASIS;idx++)vh_f[idx] = Kpts[0]->Kstates[0].vh[idx];
     // vnuc and vxc are already filtered to the coarse grid but need to do vh to be consistent
     // with term contained in eigenvalue sum.
     FftFilter(vh_f.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
@@ -265,7 +265,6 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
         sumf *= get_vel_f();
         sumc *= get_vel();
         sp->vnuc_correction = sumf - sumc;
-
         sumf = 0.0;
         for(int idx=0;idx < FP0_BASIS;idx++) sumf += std::real(psi_f[idx] * std::conj(psi_f[idx]) * sp->vxc_f[idx]);
         sumc = 0.0;
