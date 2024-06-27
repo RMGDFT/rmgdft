@@ -160,6 +160,12 @@ spinobj<T>::~spinobj(void)
 {
 }
 
+template<typename T>
+void spinobj<T>::get_oppo(void)
+{
+    if(this->factor != 2) return;
+    get_rho_oppo(this->up.data(), this->dw.data());
+}
 
 // Instantiate all versions
 template GridObject<float>::GridObject(int);
@@ -179,6 +185,10 @@ template fgobj<float>::fgobj(void);
 template fgobj<double>::fgobj(void);
 template fgobj<std::complex<float>>::fgobj(void);
 template fgobj<std::complex<double>>::fgobj(void);
+template fgobj<float>::fgobj(float *);
+template fgobj<double>::fgobj(double *);
+template fgobj<std::complex<float>>::fgobj(std::complex<float> *);
+template fgobj<std::complex<double>>::fgobj(std::complex<double> *);
 template fgobj<float>::~fgobj(void);
 template fgobj<double>::~fgobj(void);
 template fgobj<std::complex<float>>::~fgobj(void);
@@ -188,6 +198,10 @@ template wfobj<float>::wfobj(void);
 template wfobj<double>::wfobj(void);
 template wfobj<std::complex<float>>::wfobj(void);
 template wfobj<std::complex<double>>::wfobj(void);
+template wfobj<float>::wfobj(float *);
+template wfobj<double>::wfobj(double *);
+template wfobj<std::complex<float>>::wfobj(std::complex<float> *);
+template wfobj<std::complex<double>>::wfobj(std::complex<double> *);
 template wfobj<float>::~wfobj(void);
 template wfobj<double>::~wfobj(void);
 template wfobj<std::complex<float>>::~wfobj(void);
@@ -205,3 +219,8 @@ template spinobj<float>::~spinobj(void);
 template spinobj<double>::~spinobj(void);
 template spinobj<std::complex<float>>::~spinobj(void);
 template spinobj<std::complex<double>>::~spinobj(void);
+
+template void spinobj<double>::get_oppo(void);
+//template void spinobj<std::complex<float>>::get_oppo(void);
+//template void spinobj<std::complex<double>>::get_oppo(void);
+//template void spinobj<float>::get_oppo(void);

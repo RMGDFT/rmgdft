@@ -165,6 +165,15 @@ protected:
    void decrement( const GridObject& c );
    void multiply( const T& b );
 
+   GridObject& operator=(GridObject const &rhs)
+   {
+       if (this != &rhs)
+       {
+           std::copy(rhs.data_, rhs.data_ + this->factor*this->pbasis, this->data_);
+       }
+       return *this;
+    };
+
 };
 
 
@@ -182,6 +191,7 @@ public:
     spinobj(void);
     spinobj(T *data_ptr);
     ~spinobj(void);
+    void get_oppo(void);
     std::span<T> up;
     std::span<T> dw;
     std::span<T> c0;

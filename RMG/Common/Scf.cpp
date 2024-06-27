@@ -143,10 +143,8 @@ template <typename OrbitalType> bool Scf (
         }
     }
 
-
     // Save input hartree potential
-    for (int idx = 0; idx < FP0_BASIS; idx++) vh_in[idx] = vh[idx];
-    //vh_in = vh;
+    vh_in = vh;
 
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
@@ -328,8 +326,7 @@ template <typename OrbitalType> bool Scf (
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
     GetNewRho(Kptr, new_rho.data());
-    if (ct.nspin == 2 )
-        get_rho_oppo (new_rho.up.data(),  new_rho.dw.data());
+    new_rho.get_oppo();
     delete(RT1);
 
     // Get Hartree potential for the output density
@@ -352,9 +349,9 @@ template <typename OrbitalType> bool Scf (
 
     }
 
-    double *vh_out = new double[FP0_BASIS];
+    fgobj<double> vh_out;
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    VhDriver(new_rho.data(), rhoc.data(), vh_out, vh_ext, rms_target);
+    VhDriver(new_rho.data(), rhoc.data(), vh_out.data(), vh_ext, rms_target);
     delete RT1;
 
     /*Simplified solvent model, experimental */
@@ -386,7 +383,7 @@ template <typename OrbitalType> bool Scf (
     ct.scf_accuracy = sum;
 
     // Compute variational energy correction term if any
-    sum = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out);
+    sum = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
     ct.scf_correction = sum;
 
     // Check if this convergence threshold has been reached
@@ -484,8 +481,7 @@ template <typename OrbitalType> bool Scf (
         // Evaluate XC energy and potential from the output density
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
-        //vxc_in = vxc;
-        for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
+        vxc_in = vxc;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
         delete F;
@@ -496,12 +492,10 @@ template <typename OrbitalType> bool Scf (
 
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("2-Scf steps: MixRho");
-    MixRho(new_rho.data(), rho.data(), rhocore.data(), vh.data(), vh_out, rhoc.data(), Kptr[0]->ControlMap, false);
+    MixRho(new_rho.data(), rho.data(), rhocore.data(), vh.data(), vh_out.data(), rhoc.data(), Kptr[0]->ControlMap, false);
     delete RT1;
 
-    if (ct.nspin == 2)
-        get_rho_oppo (rho.data(),  rho.dw.data());
-
+    rho.get_oppo();
 
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
@@ -532,8 +526,7 @@ template <typename OrbitalType> bool Scf (
 
     }
 
-    for(int i = 0;i < FP0_BASIS;i++) vh[i] = vh_out[i];
-    delete [] vh_out; 
+    vh = vh_out;
     return CONVERGED;
 }                               /* end scf */
 
