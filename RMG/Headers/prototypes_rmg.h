@@ -68,9 +68,10 @@ template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double 
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
-template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
-          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
+template <typename OrbitalType> bool Scf (SpinFineGridObject<double> &vxc_in, FineGridObject<double> &vh_in,
+                    double *vh_ext, int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr,
+                    std::vector<double>& RMSdV);
+
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states);
 template <typename KpointType> void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,

@@ -188,12 +188,24 @@ int main (int argc, char **argv)
 
                 // Gamma point
                 Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+                Kptr_g[kpt]->rho     = &rho;
+                Kptr_g[kpt]->rhoc    = &rhoc;
+                Kptr_g[kpt]->rhocore = &rhocore;
+                Kptr_g[kpt]->vh      = &vh;
+                Kptr_g[kpt]->vxc     = &vxc;
+                Kptr_g[kpt]->vnuc    = &vnuc;
 
             }
             else {
 
                 // General case
                 Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+                Kptr_g[kpt]->rho     = &rho;
+                Kptr_g[kpt]->rhoc    = &rhoc;
+                Kptr_g[kpt]->rhocore = &rhocore;
+                Kptr_g[kpt]->vh      = &vh;
+                Kptr_g[kpt]->vxc     = &vxc;
+                Kptr_g[kpt]->vnuc    = &vnuc;
 
             }
             ct.kp[kpt].kidx = kpt;

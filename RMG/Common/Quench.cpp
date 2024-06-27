@@ -75,8 +75,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave = std::string(ct.outfile) + "_serial";
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
-    double *vh_in = new double[FP0_BASIS];
-    double *vxc_in = new double[FP0_BASIS * ct.nspin];
+    FineGridObject<double> vh_in;
+    SpinFineGridObject<double> vxc_in;
 
 
     /* ---------- begin scf loop ---------- */
@@ -141,13 +141,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             step_time = my_crtc ();
             if(ct.forceflag == NSCF)
             {
-                CONVERGED = Nscf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
+                CONVERGED = Nscf (vxc, vxc_in.data(), vh, vh_in.data(), ct.vh_ext, vnuc, rho, rho_oppo,
                         rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             else
             {
-                CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
-                        rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+                CONVERGED = Scf (vxc_in, vh_in, ct.vh_ext, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             step_time = my_crtc () - step_time;
 
@@ -390,7 +389,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     }
 
 
-
     RmgFreeHost(Hcore);
     RmgFreeHost(Hcore_kin);
     RmgFreeHost(Hcore_localpp);
@@ -438,6 +436,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         delete [] vtot;
     }
 
+
     /*When running MD, force pointers need to be rotated before calculating new forces */
     if(compute_forces)
     {
@@ -457,7 +456,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             Atoms[ion].RotateForces();
         }
-        Force (trho, trho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
+        Force (trho, trho_oppo, rhoc, vh, vh_in.data(), vxc, vxc_in.data(), vnuc, Kptr);
         double *vtot = new double[FP0_BASIS];
         for(int idx = 0; idx < FP0_BASIS; idx++)
         {
@@ -579,10 +578,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     if (pct.imgpe == 0)
         write_force ();
 
-    delete [] vxc_in;
-    delete [] vh_in;
-    return CONVERGED;
 
+    return CONVERGED;
 
 }                               /* end quench */
 

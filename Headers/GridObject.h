@@ -53,7 +53,9 @@
 
 
      GridObject<T> V(density, T *data);
-     Same as above except existing storage at *data is used. 
+     Same as above except existing storage at *data is used and is not deallocated
+     when the object goes out of scope. Responsibility for that is left with the
+     upper level routines.
 
      One can also create GridObjects specific to the fine or the coarse Grid.
      FineGridObject() V;
@@ -189,19 +191,7 @@ public:
     SpinFineGridObject(void);
     SpinFineGridObject(T *data_ptr);
     ~SpinFineGridObject(void);
-#if 0
-    SpinFineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
-    {
-        this->allocate(ct.nspin);
-    }
-    SpinFineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO, data_ptr)
-    {
-        this->allocate(ct.nspin, data_ptr);
-    }
-    ~SpinFineGridObject(void)
-    {
-    }
-#endif
+
 };
 
 // For spin-orbit there are two components for each wavefunction

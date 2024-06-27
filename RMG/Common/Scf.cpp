@@ -50,17 +50,23 @@
 
 
 
-template bool Scf<double> (double *, double *, double *, double *,
-          double *, double *, double *, double *, double *, double *, int ,
-          int , Kpoint<double> **, std::vector<double> &);
-template bool Scf<std::complex<double> > (double *, double *, double *, double *,
-          double *, double *, double *, double *, double *, double *, int ,
-          int , Kpoint<std::complex<double>> **, std::vector<double> &);
+template bool Scf<double> (SpinFineGridObject<double> &, FineGridObject<double> &, double *,
+                           int, int, Kpoint<double> **, std::vector<double> &);
+template bool Scf<std::complex<double> > (SpinFineGridObject<double> &, FineGridObject<double> &, double *,
+                           int, int, Kpoint<std::complex<double>> **, std::vector<double> &);
 
-template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double * vh, double *vh_in, double *vh_ext,
-          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
+template <typename OrbitalType> bool Scf (
+          SpinFineGridObject<double> &vxc_in, FineGridObject<double> &vh_in, double *vh_ext,
+          int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
+
+    SpinFineGridObject<double> &rho = *(Kptr[0]->rho);
+    SpinFineGridObject<double> &vxc = *(Kptr[0]->vxc);
+    FineGridObject<double> &rhoc = *(Kptr[0]->rhoc);
+    FineGridObject<double> &rhocore = *(Kptr[0]->rhocore);
+    FineGridObject<double> &vnuc = *(Kptr[0]->vnuc);
+    FineGridObject<double> &vh = *(Kptr[0]->vh);
+    //FineGridObject<double> &vh_ext = *(Kptr[0]->vh_ext);
 
     RmgTimer RT0("2-Scf steps"), *RT1;
     RmgTimer RTt("1-TOTAL: run: Scf steps");
@@ -91,7 +97,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /* Evaluate XC energy and potential */
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+    F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
     delete F;
     delete RT1;
@@ -125,7 +131,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
+    double hartree_residual = VhDriver(rho.data(), rhoc.data(), vh.data(), vh_ext, rms_target);
     delete(RT1);
 
     /*Simplified solvent model, experimental */
@@ -140,6 +146,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Save input hartree potential
     for (int idx = 0; idx < FP0_BASIS; idx++) vh_in[idx] = vh[idx];
+    //vh_in = vh;
 
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
@@ -193,11 +200,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     if(ct.noncoll)
         for(int is = 0; is < ct.nspin; is++)
         {
-            GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+            double *vptr = vxc.data();
+            GetVtotPsi (&vxc_psi[is*P0_BASIS], &vptr[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
         }
 
     /*Generate the Dnm_I */
-    get_ddd (vtot.data(), vxc, true);
+    get_ddd (vtot.data(), vxc.data(), true);
 
 
     // Loop over k-points
@@ -315,7 +323,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
-    GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+    GetTe (rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vh.data(), vxc.data(), Kptr, !ct.scf_steps);
 
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
@@ -346,7 +354,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     double *vh_out = new double[FP0_BASIS];
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    VhDriver(new_rho.data(), rhoc, vh_out, vh_ext, rms_target);
+    VhDriver(new_rho.data(), rhoc.data(), vh_out, vh_ext, rms_target);
     delete RT1;
 
     /*Simplified solvent model, experimental */
@@ -378,7 +386,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     ct.scf_accuracy = sum;
 
     // Compute variational energy correction term if any
-    sum = EnergyCorrection(Kptr, rho, new_rho.data(), vh, vh_out);
+    sum = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out);
     ct.scf_correction = sum;
 
     // Check if this convergence threshold has been reached
@@ -403,7 +411,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             GetVtotPsi (vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
             /*Generate the Dnm_I */
-            get_ddd (vtot.data(), vxc, true);
+            get_ddd (vtot.data(), vxc.data(), true);
 
             // We save ct.potential_acceleration_constant_step and set it to zero
             // when we do the diagonalization since otherwise the energy is not variational
@@ -469,16 +477,17 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
-            GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+            GetTe (rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vh.data(), vxc.data(), Kptr, !ct.scf_steps);
             ct.potential_acceleration_constant_step = potential_acceleration_step;
         }
 
         // Evaluate XC energy and potential from the output density
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
+        //vxc_in = vxc;
         for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(new_rho.data(), rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+        F->v_xc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
         delete F;
         delete RT1;
 
@@ -487,11 +496,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("2-Scf steps: MixRho");
-    MixRho(new_rho.data(), rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap, false);
+    MixRho(new_rho.data(), rho.data(), rhocore.data(), vh.data(), vh_out, rhoc.data(), Kptr[0]->ControlMap, false);
     delete RT1;
 
     if (ct.nspin == 2)
-        get_rho_oppo (rho,  rho_oppo);
+        get_rho_oppo (rho.data(),  rho.dw.data());
 
 
 
