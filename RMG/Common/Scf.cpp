@@ -50,23 +50,23 @@
 
 
 
-template bool Scf<double> (SpinFineGridObject<double> &, FineGridObject<double> &, double *,
+template bool Scf<double> (spinobj<double> &, fgobj<double> &, double *,
                            int, int, Kpoint<double> **, std::vector<double> &);
-template bool Scf<std::complex<double> > (SpinFineGridObject<double> &, FineGridObject<double> &, double *,
+template bool Scf<std::complex<double> > (spinobj<double> &, fgobj<double> &, double *,
                            int, int, Kpoint<std::complex<double>> **, std::vector<double> &);
 
 template <typename OrbitalType> bool Scf (
-          SpinFineGridObject<double> &vxc_in, FineGridObject<double> &vh_in, double *vh_ext,
+          spinobj<double> &vxc_in, fgobj<double> &vh_in, double *vh_ext,
           int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
 
-    SpinFineGridObject<double> &rho = *(Kptr[0]->rho);
-    SpinFineGridObject<double> &vxc = *(Kptr[0]->vxc);
-    FineGridObject<double> &rhoc = *(Kptr[0]->rhoc);
-    FineGridObject<double> &rhocore = *(Kptr[0]->rhocore);
-    FineGridObject<double> &vnuc = *(Kptr[0]->vnuc);
-    FineGridObject<double> &vh = *(Kptr[0]->vh);
-    //FineGridObject<double> &vh_ext = *(Kptr[0]->vh_ext);
+    spinobj<double> &rho = *(Kptr[0]->rho);
+    spinobj<double> &vxc = *(Kptr[0]->vxc);
+    fgobj<double> &rhoc = *(Kptr[0]->rhoc);
+    fgobj<double> &rhocore = *(Kptr[0]->rhocore);
+    fgobj<double> &vnuc = *(Kptr[0]->vnuc);
+    fgobj<double> &vh = *(Kptr[0]->vh);
+    //fgobj<double> &vh_ext = *(Kptr[0]->vh_ext);
 
     RmgTimer RT0("2-Scf steps"), *RT1;
     RmgTimer RTt("1-TOTAL: run: Scf steps");
@@ -81,9 +81,9 @@ template <typename OrbitalType> bool Scf (
     double *rho_save = NULL; 
     
     /* allocate memory for eigenvalue send array and receive array */
-    SpinFineGridObject<double> new_rho;
-    FineGridObject<double> vtot;
-    WfGridObject<double> vtot_psi;
+    spinobj<double> new_rho;
+    fgobj<double> vtot;
+    wfobj<double> vtot_psi;
     int FP0_BASIS = vtot.size();
     int P0_BASIS = vtot_psi.size();
 

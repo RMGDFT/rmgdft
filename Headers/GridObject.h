@@ -51,26 +51,36 @@
      for the object is allocated internally and destroyed when
      the object is deleted or goes out of scope.
 
-
      GridObject<T> V(density, T *data);
      Same as above except existing storage at *data is used and is not deallocated
      when the object goes out of scope. Responsibility for that is left with the
      upper level routines.
 
-     One can also create GridObjects specific to the fine or the coarse Grid.
-     FineGridObject() V;
-     FineGridObject() V(ptr);
-     WfGridObject() V;
-     WfGridObject() V(ptr);
+     GridObject should never be created directly though. Instead use the derived
+     classes which set the size and other characteristics correctly for the
+     type of object in question.
 
-     For spin orbit (ct.noncoll_factor=2) there are two components to a WfGridObject
-     referenced as up or dw.
-     WfGridObject() X;
-     x.up[] or X.dw[]
+     For potentials like vh, vnuc on the fine grid
+         fgobj() V;
+         fgobj() V(ptr);
 
-     There is also a SpinFineGridObject which is identical to FineGridObject for
-     non spin polarized calculations but has two components when ct.nspin = 2.
+     For spin dependent objects on the fine grid. The number of components for these
+     varies depending on the type of calculation
+     1 for non spin
+     2 for spin
+     4 for spin orbit
+         spinobj() rho;
+         spinobj() rho(ptr);
+         spinobj() vxc;
+         spinobj() vxc(ptr);
 
+     Wavefunctions are defined on the coarse grid with 1 or 2 components.
+     1 for non-spin and spin polarized
+     2 for spin orbit
+         wfobj() x;
+         x.up[] or X.dw[]
+
+     
 */
 
 #ifndef RMG_GridObject_H
@@ -120,8 +130,6 @@ public:
     int dimz() const { return dimz_; }
     const int size() const { return pbasis; }
     T* data() { return data_; }
-    std::span<T> up;
-    std::span<T> dw;
 
     T& operator [](int idx) {
         return data_[idx];
@@ -132,31 +140,27 @@ public:
     }
 
 private:
+   bool owns_allocation = true;
+
+protected:
    int dimx_;
    int dimy_;
    int dimz_;
    int pbasis;
+   int factor = 1;
    T *data_;
-   bool owns_allocation = true;
 
-protected:
    void allocate(int components)
    {
        factor = components;
        data_ = new T[factor*pbasis]();
-       up = std::span(data_, pbasis);
-       dw = std::span(data_ + (factor-1)*pbasis, pbasis);
    }
    void allocate(int components, T *ptr)
    {
        factor = components;
        data_ = ptr;
-       up = std::span(data_, pbasis);
-       dw = std::span(data_ + (factor-1)*pbasis, pbasis);
        owns_allocation = false;
    }
-
-   int factor = 1;
    void increment( const GridObject& c );
    void decrement( const GridObject& c );
    void multiply( const T& b );
@@ -164,52 +168,39 @@ protected:
 };
 
 
-template <typename T> class FineGridObject : public GridObject<T>
+template <typename T> class fgobj : public GridObject<T>
 {
 public:
-    FineGridObject(void);
-    FineGridObject(T *data_ptr);
-    ~FineGridObject(void);
-#if 0
-    FineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
-    {
-        this->allocate(1);
-    }
-    FineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO, data_ptr)
-    {
-        this->allocate(1, data_ptr);
-    }
-    ~FineGridObject(void)
-    {
-    }
-#endif
+    fgobj(void);
+    fgobj(T *data_ptr);
+    ~fgobj(void);
 };
 
-template <typename T> class SpinFineGridObject : public GridObject<T>
+template <typename T> class spinobj : public GridObject<T>
 {
 public:
-    SpinFineGridObject(void);
-    SpinFineGridObject(T *data_ptr);
-    ~SpinFineGridObject(void);
+    spinobj(void);
+    spinobj(T *data_ptr);
+    ~spinobj(void);
+    std::span<T> up;
+    std::span<T> dw;
+    std::span<T> c0;
+    std::span<T> cx;
+    std::span<T> cy;
+    std::span<T> cz;
 
 };
 
 // For spin-orbit there are two components for each wavefunction
 // references as up or dw.
-template <typename T> class WfGridObject : public GridObject<T>
+template <typename T> class wfobj : public GridObject<T>
 {
 public:
-    WfGridObject(void) : GridObject<T>(1)
-    {
-        this->allocate(ct.noncoll_factor);
-    }
-    WfGridObject(T *data_ptr) : GridObject<T>(1, data_ptr)
-    {
-        this->allocate(ct.noncoll_factor, data_ptr);
-    }
-    ~WfGridObject(void)
-    {
-    }
+    wfobj(void);
+    wfobj(T *data_ptr);
+    ~wfobj(void);
+    std::span<T> up;
+    std::span<T> dw;
 };
 
 

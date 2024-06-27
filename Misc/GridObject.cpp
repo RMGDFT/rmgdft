@@ -46,7 +46,6 @@ GridObject<T>::GridObject(int density)
     dimy_ = Rmg_G->get_PY0_GRID(density);
     dimz_ = Rmg_G->get_PZ0_GRID(density);
     pbasis = dimx_ * dimy_ * dimz_;
-    this->allocate(1);
 }
 
 template<typename T>
@@ -56,7 +55,6 @@ GridObject<T>::GridObject(int density, T *data_ptr)
     dimy_ = Rmg_G->get_PY0_GRID(density);
     dimz_ = Rmg_G->get_PZ0_GRID(density);
     pbasis = dimx_ * dimy_ * dimz_;
-    this->allocate(1, data_ptr);
 }
 
 template<typename T>
@@ -94,36 +92,71 @@ void GridObject<T>::multiply(const T& b) {
     }
 }
 
+template<typename T>
+wfobj<T>::wfobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
+{   
+    // For wfobj factor is 1 or 2 so for 1 up=dw
+    this->allocate(ct.noncoll_factor);
+    this->up = std::span(this->data_, this->pbasis);
+    this->dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+}
 
 template<typename T>
-FineGridObject<T>::FineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
+wfobj<T>::wfobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
+{   
+    // For wfobj factor is 1 or 2 so for 1 up=dw
+    this->allocate(ct.noncoll_factor, data_ptr);
+    this->up = std::span(this->data_, this->pbasis);
+    this->dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+}
+
+template<typename T>
+wfobj<T>::~wfobj(void)
+{
+}
+
+template<typename T>
+fgobj<T>::fgobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {   
     this->allocate(1);
 }
 
 template<typename T>
-FineGridObject<T>::FineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
+fgobj<T>::fgobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {   
     this->allocate(1, data_ptr);
 }
 
 template<typename T>
-FineGridObject<T>::~FineGridObject(void)
+fgobj<T>::~fgobj(void)
 {
 }
 
 template<typename T>
-SpinFineGridObject<T>::SpinFineGridObject(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
+spinobj<T>::spinobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin);
+    up = std::span(this->data_, this->pbasis);
+    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+    // We don't define the 4 component names for the spin polarized case. This
+    // will cause an error if someone tries to use them like this which is fine.
+    if(this->factor == 4)
+    {
+        c0 = std::span(this->data_, this->pbasis);
+        cx = std::span(this->data_ + this->pbasis, this->pbasis);
+        cy = std::span(this->data_ + 2*this->pbasis, this->pbasis);
+        cz = std::span(this->data_ + 3*this->pbasis, this->pbasis);
+    }
 }
 template<typename T>
-SpinFineGridObject<T>::SpinFineGridObject(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
+spinobj<T>::spinobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin, data_ptr);
+    up = std::span(this->data_, this->pbasis);
+    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
 }
 template<typename T>
-SpinFineGridObject<T>::~SpinFineGridObject(void)
+spinobj<T>::~spinobj(void)
 {
 }
 
@@ -142,33 +175,33 @@ template GridObject<double>::~GridObject(void);
 template GridObject<std::complex<float>>::~GridObject(void);
 template GridObject<std::complex<double>>::~GridObject(void);
 
-template FineGridObject<float>::FineGridObject(void);
-template FineGridObject<double>::FineGridObject(void);
-template FineGridObject<std::complex<float>>::FineGridObject(void);
-template FineGridObject<std::complex<double>>::FineGridObject(void);
-template FineGridObject<float>::~FineGridObject(void);
-template FineGridObject<double>::~FineGridObject(void);
-template FineGridObject<std::complex<float>>::~FineGridObject(void);
-template FineGridObject<std::complex<double>>::~FineGridObject(void);
+template fgobj<float>::fgobj(void);
+template fgobj<double>::fgobj(void);
+template fgobj<std::complex<float>>::fgobj(void);
+template fgobj<std::complex<double>>::fgobj(void);
+template fgobj<float>::~fgobj(void);
+template fgobj<double>::~fgobj(void);
+template fgobj<std::complex<float>>::~fgobj(void);
+template fgobj<std::complex<double>>::~fgobj(void);
 
-template WfGridObject<float>::WfGridObject(void);
-template WfGridObject<double>::WfGridObject(void);
-template WfGridObject<std::complex<float>>::WfGridObject(void);
-template WfGridObject<std::complex<double>>::WfGridObject(void);
-template WfGridObject<float>::~WfGridObject(void);
-template WfGridObject<double>::~WfGridObject(void);
-template WfGridObject<std::complex<float>>::~WfGridObject(void);
-template WfGridObject<std::complex<double>>::~WfGridObject(void);
+template wfobj<float>::wfobj(void);
+template wfobj<double>::wfobj(void);
+template wfobj<std::complex<float>>::wfobj(void);
+template wfobj<std::complex<double>>::wfobj(void);
+template wfobj<float>::~wfobj(void);
+template wfobj<double>::~wfobj(void);
+template wfobj<std::complex<float>>::~wfobj(void);
+template wfobj<std::complex<double>>::~wfobj(void);
 
-template SpinFineGridObject<float>::SpinFineGridObject(void);
-template SpinFineGridObject<double>::SpinFineGridObject(void);
-template SpinFineGridObject<float>::SpinFineGridObject(float *);
-template SpinFineGridObject<double>::SpinFineGridObject(double *);
-template SpinFineGridObject<std::complex<float>>::SpinFineGridObject(void);
-template SpinFineGridObject<std::complex<double>>::SpinFineGridObject(void);
-template SpinFineGridObject<std::complex<float>>::SpinFineGridObject(std::complex<float> *);
-template SpinFineGridObject<std::complex<double>>::SpinFineGridObject(std::complex<double> *);
-template SpinFineGridObject<float>::~SpinFineGridObject(void);
-template SpinFineGridObject<double>::~SpinFineGridObject(void);
-template SpinFineGridObject<std::complex<float>>::~SpinFineGridObject(void);
-template SpinFineGridObject<std::complex<double>>::~SpinFineGridObject(void);
+template spinobj<float>::spinobj(void);
+template spinobj<double>::spinobj(void);
+template spinobj<float>::spinobj(float *);
+template spinobj<double>::spinobj(double *);
+template spinobj<std::complex<float>>::spinobj(void);
+template spinobj<std::complex<double>>::spinobj(void);
+template spinobj<std::complex<float>>::spinobj(std::complex<float> *);
+template spinobj<std::complex<double>>::spinobj(std::complex<double> *);
+template spinobj<float>::~spinobj(void);
+template spinobj<double>::~spinobj(void);
+template spinobj<std::complex<float>>::~spinobj(void);
+template spinobj<std::complex<double>>::~spinobj(void);

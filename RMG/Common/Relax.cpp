@@ -44,24 +44,24 @@
 
 // Instantiate gamma and non-gamma versions
 template void Relax<double>(int , 
-              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
-              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
               Kpoint<double> **Kptr);
 template void Relax<std::complex<double> >(int ,
-              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
-              SpinFineGridObject<double> &, FineGridObject<double> &, FineGridObject<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
               Kpoint<std::complex<double>> **Kptr);
 
 
 
 template <typename OrbitalType> void Relax (
                    int steps, 
-                   SpinFineGridObject<double> &vxc, 
-                   FineGridObject<double> &vh, 
-                   FineGridObject<double> &vnuc,
-                   SpinFineGridObject<double> &rho,
-                   FineGridObject<double> &rhocore, 
-                   FineGridObject<double> &rhoc, 
+                   spinobj<double> &vxc, 
+                   fgobj<double> &vh, 
+                   fgobj<double> &vnuc,
+                   spinobj<double> &rho,
+                   fgobj<double> &rhocore, 
+                   fgobj<double> &rhoc, 
                    Kpoint<OrbitalType> **Kptr)
 {
 

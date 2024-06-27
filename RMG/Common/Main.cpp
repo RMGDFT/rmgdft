@@ -60,12 +60,12 @@
 
 template <typename OrbitalType> void run (
             Kpoint<OrbitalType> **Kptr,
-            SpinFineGridObject<double> &rho,
-            SpinFineGridObject<double> &vxc,
-            FineGridObject<double> &vh,
-            FineGridObject<double> &vnuc,
-            FineGridObject<double> &rhoc,
-            FineGridObject<double> &rhocore);
+            spinobj<double> &rho,
+            spinobj<double> &vxc,
+            fgobj<double> &vh,
+            fgobj<double> &vnuc,
+            fgobj<double> &rhoc,
+            fgobj<double> &rhocore);
             
 template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho);
 
@@ -171,8 +171,8 @@ int main (int argc, char **argv)
 
         FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-        SpinFineGridObject<double> rho, vxc;
-        FineGridObject<double> rhocore, rhoc, vh, vnuc;
+        spinobj<double> rho, vxc;
+        fgobj<double> rhocore, rhoc, vh, vnuc;
         if (ct.xctype == MGGA_TB09) 
             tau = new double[FP0_BASIS];
 
@@ -311,12 +311,12 @@ int main (int argc, char **argv)
 
 template <typename OrbitalType> void run (
             Kpoint<OrbitalType> **Kptr,
-            SpinFineGridObject<double> &rho,
-            SpinFineGridObject<double> &vxc,
-            FineGridObject<double> &vh,
-            FineGridObject<double> &vnuc,
-            FineGridObject<double> &rhoc,
-            FineGridObject<double> &rhocore)
+            spinobj<double> &rho,
+            spinobj<double> &vxc,
+            fgobj<double> &vh,
+            fgobj<double> &vnuc,
+            fgobj<double> &rhoc,
+            fgobj<double> &rhocore)
 {
 
 

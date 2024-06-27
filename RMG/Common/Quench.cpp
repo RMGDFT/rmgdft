@@ -75,8 +75,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave = std::string(ct.outfile) + "_serial";
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
-    FineGridObject<double> vh_in;
-    SpinFineGridObject<double> vxc_in;
+    fgobj<double> vh_in;
+    spinobj<double> vxc_in;
 
 
     /* ---------- begin scf loop ---------- */

@@ -206,13 +206,13 @@ public:
     KpointType *psi_dev, *work_dev, *work_cpu;
 
     // Grid objects
-    FineGridObject<double> *vh;
-    FineGridObject<double> *vh_ext;
-    FineGridObject<double> *vnuc;
-    FineGridObject<double> *rhoc;
-    FineGridObject<double> *rhocore;
-    SpinFineGridObject<double> *rho;
-    SpinFineGridObject<double> *vxc;
+    fgobj<double> *vh;
+    fgobj<double> *vh_ext;
+    fgobj<double> *vnuc;
+    fgobj<double> *rhoc;
+    fgobj<double> *rhocore;
+    spinobj<double> *rho;
+    spinobj<double> *vxc;
 
 private:
 
