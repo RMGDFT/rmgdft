@@ -18,6 +18,11 @@ void Precond_drho(double *drho)
     double tpiba2 = tpiba * tpiba;
 
     double beta = ct.resta_beta;
+    if(beta == 0.0)
+    {
+        beta = Rmg_L.celldm[0] * std::max(Rmg_L.celldm[1], Rmg_L.celldm[2]);
+    }
+
     double ktf = std::pow(3.0 * PI * ct.nel / Rmg_L.get_omega(), 1.0/3.0);
     double kappa = sqrt(ktf / PI) / 2.0;
     double gamma = sinh(kappa*beta) / kappa / beta;

@@ -809,7 +809,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "ldau pulay mixing reset steps",
             "", MIXING_OPTIONS);
 
-    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
+    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Broyden mixing is used to update the charge density.",
             "", MIXING_OPTIONS);
@@ -1007,13 +1007,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.25,
             CHECK_AND_FIX, OPTIONAL,
-            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) ",
-            "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
+            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) "
+            "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ",
+            "drho_precond_q0 must lie between (0.0,10.0). Resetting to the default value of 0.25. ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("resta_beta", &lc.resta_beta, 1.0, 20.0, 8.0,
+    If.RegisterInputKey("resta_beta", &lc.resta_beta, 0.0, 1000.0, 0.0,
             CHECK_AND_FIX, OPTIONAL,
-            "Beta parameter for resta charge density preconditioning. A good estimate ",
-            "is the A0 lattice parameter in bohr for the traditional unit cell. ", MIXING_OPTIONS);
+            "Beta parameter for resta charge density preconditioning. The default value "
+            "of 0.0 means the value should be autmatically determined. ",
+            "resta_beta must lie between (0.0, 1000.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
