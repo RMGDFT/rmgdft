@@ -31,12 +31,15 @@
 #define RMG_Prolong_H 1
 
 #include <vector>
+#include <stdint.h>
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "BaseGrid.h"
 #include "rmg_error.h"
 
+#define MAX_PROLONG_RATIO 4
 #define MAX_PROLONG_ORDER 12
+
 class coef_idx {
 
 public:
@@ -65,6 +68,9 @@ public:
     template<typename T>
     void prolong_any (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
+    template <typename T, int ord>
+    void prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
 private:
     void cgen_prolong (double *coef, double fraction);
     void cgen_dist_inverse(std::vector<coef_idx> &coef_index, std::vector<double> &fraction);
@@ -76,8 +82,8 @@ private:
     Lattice &L;
     BaseGrid &BG;
     int ibrav;
-    double a[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
-    float af[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
+    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+    float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
     std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
 
 };

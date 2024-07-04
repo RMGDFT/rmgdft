@@ -35,6 +35,19 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
 
+template void Prolong::prolong<double, 8> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<double, 10> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<double, 12> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+
+template void Prolong::prolong<std::complex<double>, 8>
+  (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<std::complex<double>, 10>
+  (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<std::complex<double>, 12>
+  (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
+
+
+
 Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in, Lattice &L_in, BaseGrid &BG_in) : ratio(ratio_in), order(order_in), cmix(cmix_in), TR(TR_in), L(L_in), BG(BG_in)
 {
     /*Order has to be even number */
@@ -43,7 +56,7 @@ Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in,
 
     ibrav = L.get_ibrav_type();
 
-    for (int ix = 0; ix < MAX_PROLONG_ORDER; ix++)
+    for (int ix = 0; ix < MAX_PROLONG_RATIO; ix++)
     {
         for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
@@ -275,6 +288,23 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
         return;
     }
 
+    if(ratio == 2)
+    {
+        if (order == 8)
+        {
+           prolong<T, 8>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 10)
+        {
+           prolong<T, 10>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 12)
+        {
+           prolong<T, 12>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        return;
+    }
+
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
 
     TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
@@ -287,91 +317,8 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
     int incx3 = (dimz / ratio + order) * dimy;
 
-    // Optimized most common case
-    if(order == 10 && ratio == 2)
-    {
-        T* fulla0 = new T[(dimy / ratio + order) * (dimz / ratio + order)];
-        T* fulla1 = new T[(dimy / ratio + order) * (dimz / ratio + order)];
-        T* fullb0 = new T[dimy * (dimz / ratio + order)];
-        T* fullb1 = new T[dimy * (dimz / ratio + order)];
 
-        for (int ix = 0; ix < dimx / 2; ix++)
-        {
-            for (int iy = 0; iy < dimy / 2 + 10; iy++)
-            {
-                for (int iz = 0; iz < dimz / 2 + 10; iz++)
-                {
-                    T sum = 0.0;
-                    T *halfptr = &sg_half[(ix + 1) * incx + iy * incy + iz];
-                    for(int k = 0;k < 10;k++) sum+= a[0][k] * halfptr[k*incx];
-                    fulla0[iy * incy + iz] = sum;
-                    sum = 0.0;
-                    for(int k = 0;k < 10;k++) sum+= a[1][k] * halfptr[k*incx];
-                    fulla1[iy * incy + iz] = sum;
-                }
-            }
-
-            for (int iy = 0; iy < dimy / 2; iy++)
-            {
-                for (int iz = 0; iz < dimz / 2 + 10; iz++)
-                {
-                    T sum = 0.0;
-                    T *full_tmp = &fulla0[(iy + 1) * incy + iz];
-
-                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k*incy];
-                    fullb0[(2 * iy + 0) * incy + iz] = sum;
-
-                    sum = 0.0;
-                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k*incy];
-                    fullb0[(2 * iy + 1) * incy + iz] = sum;
-
-                    sum = 0.0;
-                    full_tmp = &fulla1[(iy + 1) * incy + iz];
-                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k*incy];
-                    fullb1[(2 * iy + 0) * incy + iz] = sum;
-
-                    sum = 0.0;
-                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k*incy];
-                    fullb1[(2 * iy + 1) * incy + iz] = sum;
-
-                }
-            }
-
-            for (int iy = 0; iy < dimy; iy++)
-            {
-                for (int iz = 0; iz < dimz / 2; iz++)
-                {
-                    T sum = 0.0;
-                    T *full_tmp = &fullb0[iy * incy + iz + 1];
-                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k];
-                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = sum;
-
-                    sum = 0.0;
-                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k];
-                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = sum;
-
-                    sum = 0.0;
-                    full_tmp = &fullb1[iy * incy + iz + 1];
-                    for(int k = 0;k < 10;k++) sum+= a[0][k] * full_tmp[k];
-                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = sum;
-
-                    sum = 0.0;
-                    for(int k = 0;k < 10;k++) sum+= a[1][k] * full_tmp[k];
-                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = sum;
-
-                }
-            }
-        }
-
-
-        delete [] fullb1;
-        delete [] fullb0;
-        delete [] fulla1;
-        delete [] fulla0;
-        delete [] sg_half;
-        return;
-    }
-
+    // Fall through for ratio != 2
     T* fulla = new T[dimx * (dimy / ratio + order) * (dimz / ratio + order)];
     T* fullb = new T[ dimx * dimy * (dimz / ratio + order)];
 
@@ -968,4 +915,89 @@ template <typename T> void Prolong::prolong_fcc (T *full, T *half, int dimx, int
 
     delete [] sg_half;
 
+}
+
+
+template <typename T, int ord>
+void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
+{
+    size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
+
+    std::vector<T> sg_half(sg_hbasis);
+    TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+
+    int ic = ord/2 - 1;
+    int dimx = 2 * half_dimx;
+    int dimy = 2 * half_dimy;
+    int dimz = 2 * half_dimz;
+
+    int incy = half_dimz + ord;
+    int incx = (half_dimy + ord) * incy;
+
+    int incy2 = dimz;
+    int incx2 = dimz * dimy;
+
+    std::vector<T> fulla0((dimy / 2 + ord) * (dimz / 2 + ord));
+    std::vector<T> fulla1((dimy / 2 + ord) * (dimz / 2 + ord));
+    std::vector<T> fullb0(dimy * (dimz / 2 + ord));
+    std::vector<T> fullb1(dimy * (dimz / 2 + ord));
+
+    T *baseptr = sg_half.data();
+    for (int ix = 0; ix < dimx / 2; ix++)
+    {
+        for (int iy = 0; iy < dimy / 2 + ord; iy++)
+        {
+            
+            T *halfptr = &baseptr[(ix + 1) * incx + iy * incy];
+            for (int iz = 0; iz < dimz / 2 + ord; iz++)
+            {
+                fulla0[iy * incy + iz] = a[0][ic] * halfptr[ic*incx + iz];
+                T sum(0.0);
+                for(int k = 0;k < ord;k++) sum = sum + a[1][k] * halfptr[k*incx + iz];
+                fulla1[iy * incy + iz] = sum;
+            }
+        }
+
+        for (int iy = 0; iy < dimy / 2; iy++)
+        {
+            for (int iz = 0; iz < dimz / 2 + ord; iz++)
+            {
+                T *full_tmp = &fulla0[(iy + 1) * incy + iz];
+                fullb0[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+
+                T sum1(0.0);
+                for(int k = 0;k < ord;k++) sum1 = sum1 + a[1][k] * full_tmp[k*incy];
+                fullb0[(2 * iy + 1) * incy + iz] = sum1;
+
+                full_tmp = &fulla1[(iy + 1) * incy + iz];
+                fullb1[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+
+                T sum2(0.0);
+                for(int k = 0;k < ord;k++) sum2 = sum2 + a[1][k] * full_tmp[k*incy];
+                fullb1[(2 * iy + 1) * incy + iz] = sum2;
+
+            }
+        }
+
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            for (int iz = 0; iz < dimz / 2; iz++)
+            {
+                T *full_tmp = &fullb0[iy * incy + iz + 1];
+                full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+
+                T sum1(0.0);
+                for(int k = 0;k < ord;k++) sum1 += a[1][k] * full_tmp[k];
+                full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = sum1;
+
+                full_tmp = &fullb1[iy * incy + iz + 1];
+                full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+
+                T sum2(0.0);
+                for(int k = 0;k < ord;k++) sum2 += a[1][k] * full_tmp[k];
+                full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = sum2;
+
+            }
+        }
+    }
 }
