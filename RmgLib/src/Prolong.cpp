@@ -35,10 +35,18 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
 
+template void Prolong::prolong<float, 6> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<float, 8> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<float, 10> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong<float, 12> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+
+template void Prolong::prolong<double, 6> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<double, 8> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<double, 10> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<double, 12> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 
+template void Prolong::prolong<std::complex<double>, 6>
+  (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<std::complex<double>, 8>
   (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<std::complex<double>, 10>
@@ -290,6 +298,10 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
     if(ratio == 2)
     {
+        if (order == 6)
+        {
+           prolong<T, 6>(full, half, half_dimx, half_dimy, half_dimz);
+        }
         if (order == 8)
         {
            prolong<T, 8>(full, half, half_dimx, half_dimy, half_dimz);
@@ -942,6 +954,13 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
     std::vector<T> fullb0(dimy * (dimz / 2 + ord));
     std::vector<T> fullb1(dimy * (dimz / 2 + ord));
 
+    // lambda to clean up code
+    auto stencil = [&](const T *ptr, const int stride) {
+        T sum(0.0);
+        for(int k = 0;k < ord;k++) sum = sum + a[1][k] * ptr[k*stride];
+        return sum;
+    };
+
     T *baseptr = sg_half.data();
     for (int ix = 0; ix < dimx / 2; ix++)
     {
@@ -952,9 +971,7 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             for (int iz = 0; iz < dimz / 2 + ord; iz++)
             {
                 fulla0[iy * incy + iz] = a[0][ic] * halfptr[ic*incx + iz];
-                T sum(0.0);
-                for(int k = 0;k < ord;k++) sum = sum + a[1][k] * halfptr[k*incx + iz];
-                fulla1[iy * incy + iz] = sum;
+                fulla1[iy * incy + iz] = stencil(halfptr + iz, incx);
             }
         }
 
@@ -964,18 +981,11 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             {
                 T *full_tmp = &fulla0[(iy + 1) * incy + iz];
                 fullb0[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
-
-                T sum1(0.0);
-                for(int k = 0;k < ord;k++) sum1 = sum1 + a[1][k] * full_tmp[k*incy];
-                fullb0[(2 * iy + 1) * incy + iz] = sum1;
+                fullb0[(2 * iy + 1) * incy + iz] = stencil(full_tmp, incy);
 
                 full_tmp = &fulla1[(iy + 1) * incy + iz];
                 fullb1[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
-
-                T sum2(0.0);
-                for(int k = 0;k < ord;k++) sum2 = sum2 + a[1][k] * full_tmp[k*incy];
-                fullb1[(2 * iy + 1) * incy + iz] = sum2;
-
+                fullb1[(2 * iy + 1) * incy + iz] = stencil(full_tmp, incy);
             }
         }
 
@@ -985,18 +995,11 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             {
                 T *full_tmp = &fullb0[iy * incy + iz + 1];
                 full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
-
-                T sum1(0.0);
-                for(int k = 0;k < ord;k++) sum1 += a[1][k] * full_tmp[k];
-                full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = sum1;
+                full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = stencil(full_tmp, 1);
 
                 full_tmp = &fullb1[iy * incy + iz + 1];
                 full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
-
-                T sum2(0.0);
-                for(int k = 0;k < ord;k++) sum2 += a[1][k] * full_tmp[k];
-                full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = sum2;
-
+                full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = stencil(full_tmp, 1);
             }
         }
     }
