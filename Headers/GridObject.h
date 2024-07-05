@@ -125,9 +125,18 @@ public:
     GridObject(int density);
     GridObject(int density, T *data_ptr);
     ~GridObject(void);
-    int dimx() const { return dimx_; }
-    int dimy() const { return dimy_; }
-    int dimz() const { return dimz_; }
+
+    // Dimensions and offsets on each MPI task
+    // These are public and read only external to the
+    // class but reference the internally writeable data
+    const int& dimx = dimx_;
+    const int& dimy = dimy_;
+    const int& dimz = dimz_;
+    const int& offsetx = offsetx_;
+    const int& offsety = offsety_;
+    const int& offsetz = offsetz_;
+    const int& pbasis = pbasis_;
+
     const int size() const { return pbasis; }
     T* data() { return data_; }
 
@@ -146,14 +155,17 @@ protected:
    int dimx_;
    int dimy_;
    int dimz_;
-   int pbasis;
+   int offsetx_;
+   int offsety_;
+   int offsetz_;
+   int pbasis_;
    int factor = 1;
    T *data_;
 
    void allocate(int components)
    {
        factor = components;
-       data_ = new T[factor*pbasis]();
+       data_ = new T[factor*pbasis_]();
    }
    void allocate(int components, T *ptr)
    {
@@ -169,7 +181,7 @@ protected:
    {
        if (this != &rhs)
        {
-           std::copy(rhs.data_, rhs.data_ + this->factor*this->pbasis, this->data_);
+           std::copy(rhs.data_, rhs.data_ + this->factor*this->pbasis_, this->data_);
        }
        return *this;
     };
