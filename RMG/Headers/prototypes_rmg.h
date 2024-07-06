@@ -66,8 +66,7 @@ template <typename OrbitalType> void Relax (
 
 template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
+template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool compute_forces);
 template <typename OrbitalType> bool Scf (spinobj<double> &vxc_in, fgobj<double> &vh_in,
                     double *vh_ext, int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr,
                     std::vector<double>& RMSdV);
@@ -110,7 +109,7 @@ template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec);
 void LcaoGetRho (double * arho_f);
 template <typename KpointType>
-void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
+void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, fgobj<double> &vh, spinobj<double> &vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>

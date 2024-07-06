@@ -297,7 +297,6 @@ public:
     std::span<T> cx;
     std::span<T> cy;
     std::span<T> cz;
-
 };
 
 // For spin-orbit there are two components for each wavefunction

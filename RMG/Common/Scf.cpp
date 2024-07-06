@@ -27,25 +27,10 @@
 #include <stdio.h>
 #include <limits.h>
 #include "transition.h"
-#include "const.h"
-#include "State.h"
-#include "Kpoint.h"
-#include "TradeImages.h"
-#include "RmgTimer.h"
-#include "RmgThread.h"
-#include "GlobalSums.h"
-#include "rmgthreads.h"
 #include "vhartree.h"
-#include "packfuncs.h"
-#include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-#include "rmg_error.h"
-#include "Kpoint.h"
-#include "Subdiag.h"
 #include "Functional.h"
-#include "Solvers.h"
-#include "RmgParallelFft.h"
 #include "GridObject.h"
 
 
@@ -77,10 +62,6 @@ template <typename OrbitalType> bool Scf (
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
-    double *rho_tf = NULL;
-    double *rho_save = NULL; 
-    
-    /* allocate memory for eigenvalue send array and receive array */
     spinobj<double> new_rho;
     fgobj<double> vtot;
     wfobj<double> vtot_psi;
@@ -104,44 +85,9 @@ template <typename OrbitalType> bool Scf (
 
     double rms_target = std::min(std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12), 1.0e-6);
 
-    /*Simplified solvent model, experimental */
-    if (ct.num_tfions > 0)
-    {
-
-        rho_tf = new double[FP0_BASIS];
-        rho_save = new double[FP0_BASIS];
-
-        //get_dipole (rho);
-        rmg_printf("\nCalling get_tf_rho\n");
-        get_tf_rho(rho_tf);
-        rmg_printf("get_tf_rho Done\n");
-
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-        {
-            /*Save original rho, copy it into rho_save*/
-            rho_save[idx] = rho[idx];
-
-            /*Add rho_tf to rho*/
-            rho[idx] += rho_tf[idx];
-
-            /*Check that rho_tf chargeis indeed 0, can be removed if it works well*/
-            t[0] += rho_tf[idx];
-        }                           /* idx */
-    }
-
-
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     double hartree_residual = VhDriver(rho.data(), rhoc.data(), vh.data(), vh_ext, rms_target);
     delete(RT1);
-
-    /*Simplified solvent model, experimental */
-    if (ct.num_tfions > 0)
-    {
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-        { 
-            rho[idx] = rho_save[idx];
-        }
-    }
 
     // Save input hartree potential
     vh_in = vh;
@@ -321,7 +267,7 @@ template <typename OrbitalType> bool Scf (
 
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
-    GetTe (rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vh.data(), vxc.data(), Kptr, !ct.scf_steps);
+    GetTe (rho, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
@@ -333,47 +279,17 @@ template <typename OrbitalType> bool Scf (
     int ratio = Rmg_G->default_FG_RATIO;
     double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
 
-    /*Simplified solvent model, experimental */
-    if (ct.num_tfions > 0)
-    {
-
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-        {
-            /*Save original rho, copy it into rho_save*/
-            rho_save[idx] = new_rho[idx];
-
-            /*Add rho_tf to rho*/
-            new_rho[idx] += rho_tf[idx];
-
-        }                           /* idx */
-
-    }
-
     fgobj<double> vh_out;
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     VhDriver(new_rho.data(), rhoc.data(), vh_out.data(), vh_ext, rms_target);
     delete RT1;
 
-    /*Simplified solvent model, experimental */
-    if (ct.num_tfions > 0)
-    {
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-        { 
-            new_rho[idx] = rho_save[idx];
-        }
-
-        /*GlobalSums (t, 1, pct.img_comm);
-          t[0] *= get_vel_f();
-          rmg_printf("\n vh_out sum (using new_rho) is %.8e\n", t[0]);*/
-    }
-
-
     // Compute convergence measure (2nd order variational term) and average by nspin
     double sum = 0.0;
-    for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho.up[i] - rho[i]);
+    for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
     if(ct.AFM) 
     {
-        for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho[i+FP0_BASIS]);
+        for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
     }
     sum = 0.5 * vel * sum;
 
@@ -474,7 +390,7 @@ template <typename OrbitalType> bool Scf (
 
 
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
-            GetTe (rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vh.data(), vxc.data(), Kptr, !ct.scf_steps);
+            GetTe (rho, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
             ct.potential_acceleration_constant_step = potential_acceleration_step;
         }
 
@@ -507,13 +423,6 @@ template <typename OrbitalType> bool Scf (
     /* release memory */
     if(ct.noncoll) delete [] vxc_psi;
 
-    if (ct.num_tfions > 0)
-    {
-        delete [] rho_tf;
-        delete [] rho_save;
-    }
-
-
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
         if(ct.scf_steps && (max_unocc_res < ct.gw_threshold)) {
@@ -530,5 +439,3 @@ template <typename OrbitalType> bool Scf (
     return CONVERGED;
 }                               /* end scf */
 
-
-/******/

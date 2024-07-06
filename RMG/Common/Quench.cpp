@@ -60,12 +60,17 @@ void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& Co
 
 
 // Instantiate gamma and non-gamma versions
-template bool Quench<double> (double *, double *, double *, double *, double *, double *, double *, Kpoint<double> **Kptr, bool);
-template bool Quench<std::complex<double> > (double *, double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double>> **Kptr, bool);
+template bool Quench<double> (Kpoint<double> **Kptr, bool);
+template bool Quench<std::complex<double> > (Kpoint<std::complex<double>> **Kptr, bool);
 
-template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces)
+template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool compute_forces)
 {
+    spinobj<double> &rho = *(Kptr[0]->rho);
+    spinobj<double> &vxc = *(Kptr[0]->vxc);
+    fgobj<double> &rhoc = *(Kptr[0]->rhoc);
+    fgobj<double> &rhocore = *(Kptr[0]->rhocore);
+    fgobj<double> &vnuc = *(Kptr[0]->vnuc);
+    fgobj<double> &vh = *(Kptr[0]->vh);
 
     bool CONVERGED = false;
     ct.adaptive_thr_energy = ct.thr_energy;
@@ -141,8 +146,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             step_time = my_crtc ();
             if(ct.forceflag == NSCF)
             {
-                CONVERGED = Nscf (vxc, vxc_in.data(), vh, vh_in.data(), ct.vh_ext, vnuc, rho, rho_oppo,
-                        rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+                CONVERGED = Nscf (vxc.data(), vxc_in.data(), vh.data(), vh_in.data(), ct.vh_ext, vnuc.data(), rho.up.data(), rho.dw.data(), rhocore.data(), rhoc.data(), ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             else
             {
@@ -153,7 +157,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             // Save data to file for future restart at checkpoint interval if this is a quench run.
             // For Relaxation and molecular dynamics we save at the end of each ionic step.
             if (ct.checkpoint && (ct.scf_steps % ct.checkpoint == 0) )
-                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+                WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
             /* output the eigenvalues with occupations */
             if (ct.write_eigvals_period && (ct.scf_steps % ct.write_eigvals_period == 0))
@@ -163,7 +167,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             }
 
             /*Perform charge analysis if requested*/
-            ChargeAnalysis(rho, Kptr[0]->ControlMap, *Voronoi_charge);
+            ChargeAnalysis(rho.data(), Kptr[0]->ControlMap, *Voronoi_charge);
 
 #if PLPLOT_LIBS
             // Generate convergence plots
@@ -288,18 +292,16 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+        F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
 
-        GetNewRho(Kptr, rho);
-    
-        if (ct.nspin == 2 )
-            get_rho_oppo (rho,  rho_oppo);
+        GetNewRho(Kptr, rho.data());
+        rho.get_oppo();
 
-        VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0e-12);
+        VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0e-12);
 
-        GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, true);
+        GetTe (rho, rhocore, rhoc, vh, vxc, Kptr, true);
 
-        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
+        GetVtotPsi (v_psi, vnuc.data(), Rmg_G->default_FG_RATIO);
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates], &Hcore_localpp[kpt * nstates * nstates]);
 
@@ -429,11 +431,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     if(ct.stress)
     {
-        double *vtot = new double[FP0_BASIS];
+        fgobj<double> vtot;
         for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
         Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
-                ct.XC, vxc, rho, rhocore, vtot);
-        delete [] vtot;
+                ct.XC, vxc.data(), rho.data(), rhocore.data(), vtot.data());
     }
 
 
@@ -446,27 +447,23 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
 
-        double *trho = new double[ct.nspin * FP0_BASIS]();
-        double *trho_oppo = trho + FP0_BASIS;
-        for(int idx=0;idx < ct.nspin * FP0_BASIS;idx++) trho[idx] = rho[idx];
-
-        GetNewRho(Kptr, trho);
+        spinobj<double> trho;
+        trho = rho;
+        GetNewRho(Kptr, trho.data());
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             Atoms[ion].RotateForces();
         }
-        Force (trho, trho_oppo, rhoc, vh, vh_in.data(), vxc, vxc_in.data(), vnuc, Kptr);
-        double *vtot = new double[FP0_BASIS];
-        for(int idx = 0; idx < FP0_BASIS; idx++)
+        Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh_in.data(), vxc.data(), vxc_in.data(), vnuc.data(), Kptr);
+        fgobj<double> vtot;
+        for(int idx = 0; idx < vtot.pbasis; idx++)
         {
             vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
         }
 
-        get_ddd (vtot, vxc, true);
+        get_ddd (vtot.data(), vxc.data(), true);
 
-        delete [] vtot;
-        delete [] trho;
     }
 
 
@@ -478,7 +475,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         double *localrho = new double[Atoms.size()];
         if(ct.nspin == 1)
         {
-            Voronoi_charge->LocalCharge(rho, localrho);
+            Voronoi_charge->LocalCharge(rho.data(), localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
                 Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
         }
@@ -487,8 +484,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             double *localrho_up = new double[Atoms.size()];
             double *localrho_dn = new double[Atoms.size()];
-            Voronoi_charge->LocalCharge(rho, localrho_up);
-            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_dn);
+            Voronoi_charge->LocalCharge(rho.up.data(), localrho_up);
+            Voronoi_charge->LocalCharge(rho.dw.data(), localrho_dn);
 
             rmg_printf("\n@ION  Ion  Species      Magnetization(Voronoi)\n");
 
@@ -508,16 +505,16 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         if(ct.noncoll)
         {
-            Voronoi_charge->LocalCharge(rho, localrho);
+            Voronoi_charge->LocalCharge(rho.data(), localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
                 Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
             double *localrho_x = new double[Atoms.size()];
             double *localrho_y = new double[Atoms.size()];
             double *localrho_z = new double[Atoms.size()];
 
-            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho_x);
-            Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho_y);
-            Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho_z);
+            Voronoi_charge->LocalCharge(rho.cx.data(), localrho_x);
+            Voronoi_charge->LocalCharge(rho.cy.data(), localrho_y);
+            Voronoi_charge->LocalCharge(rho.cz.data(), localrho_z);
             rmg_printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
@@ -541,7 +538,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     if (ct.dipole_moment)
     {
         double dipole[3];
-        get_dipole(rho, dipole);
+        get_dipole(rho.data(), dipole);
 
         double DEBYE_CONVERSION = 2.54174618772314;
 
@@ -556,7 +553,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
 
-    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+    WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     if(ct.wannier90)
     {
         int scdm = ct.wannier90_scdm;

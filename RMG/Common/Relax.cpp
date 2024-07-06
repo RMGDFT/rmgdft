@@ -72,8 +72,8 @@ template <typename OrbitalType> void Relax (
     /* quench the electrons and calculate forces */
 //    if((ct.runflag != RESTART) || (ct.forceflag == MD_QUENCH))
     {
-        Quench (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr, true);
-        WriteRestart (ct.outfile, vh.data(), rho.data(), rho.dw.data(), vxc.data(), Kptr);
+        Quench (Kptr, true);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
     FILE *XDATCAR_fh = NULL;
@@ -165,12 +165,12 @@ template <typename OrbitalType> void Relax (
         ct.md_steps++;
 
         /* quench the electrons and calculate forces */
-        Quench (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr, true);
+        Quench (Kptr, true);
 
         if(pct.imgpe == 0) WritePoscar(XDATCAR_fh, rlx_steps);
 
         /* save data to file for future restart */
-        WriteRestart (ct.outfile, vh.data(), rho.data(), rho.dw.data(), vxc.data(), Kptr);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);

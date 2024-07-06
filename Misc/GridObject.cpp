@@ -45,6 +45,9 @@ GridObject<T>::GridObject(int density)
     dimx_ = Rmg_G->get_PX0_GRID(density);
     dimy_ = Rmg_G->get_PY0_GRID(density);
     dimz_ = Rmg_G->get_PZ0_GRID(density);
+    offsetx_ = Rmg_G->get_PX_OFFSET(density);
+    offsety_ = Rmg_G->get_PY_OFFSET(density);
+    offsetz_ = Rmg_G->get_PZ_OFFSET(density);
     incz_ = 1;
     incy_ = dimz_;
     incx_ = dimy_*dimz_;

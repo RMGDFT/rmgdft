@@ -74,29 +74,31 @@
 
 
 double  vdw_d2_energy(Lattice &, std::vector<ION> &);
-template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
-template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
+template void GetTe (spinobj<double> &, fgobj<double> &, fgobj<double> &, fgobj<double> &, spinobj<double> &, Kpoint<double> ** Kptr , int);
+template void GetTe (spinobj<double> &, fgobj<double> &, fgobj<double> &, fgobj<double> &, spinobj<double> &, Kpoint<std::complex<double>> ** Kptr , int);
+
 
 template <typename KpointType>
-void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
+void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, fgobj<double> &vh_in, spinobj<double> &vxc_in, Kpoint<KpointType> ** Kptr , int ii_flag)
+
 {
-    int state, kpt, idx, FP0_BASIS, P0_BASIS;
+    int state, kpt, idx, P0_BASIS;
     double vel, cvel, ES_pa = 0.0;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
  
-    FP0_BASIS = get_FP0_BASIS();
+    int fpbasis = rho.pbasis;
     P0_BASIS = get_P0_BASIS();
 
-    double *vh = new double[FP0_BASIS];
-    double *vxc = new double[ct.nspin * FP0_BASIS];
-    double *vxc_up = vxc;
-    double *vxc_down = vxc + FP0_BASIS;
-
-    for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
-    for(int i=0;i < ct.nspin*FP0_BASIS;i++)vxc[i] = vxc_in[i];
-
+    //fgobj<double> vh(vh_in);
+    //spinobj<double> vxc(vxc_in);
+    fgobj<double> vh;
+    spinobj<double> vxc;
+printf("PPP1  %p\n",vh.data());
+    vh = vh_in;
+printf("PPP2  %p\n",vh.data());
+    vxc = vxc_in;
     vel = get_vel_f();
     cvel = get_vel();
 
@@ -158,24 +160,24 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     if (ct.nspin==2)
     {
         /* Add the compensating charge to total charge to calculation electrostatic energy */    
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            ct.ES += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
+        for (idx = 0; idx < fpbasis; idx++)
+            ct.ES += (rho.up[idx] + rho.dw[idx] + rhoc[idx]) * vh[idx];
 
     }
     else 
     {
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < fpbasis; idx++)
             ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
     }
     ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
 
     if(potential_acceleration)
     {
-        double *vnuc = Kptr[0]->Kstates[0].vnuc;
-        double *vf_tmp = new double[FP0_BASIS]();
+        fgobj<double> &vnuc = *(Kptr[0]->vnuc);
+        double *vf_tmp = new double[fpbasis]();
         double *vc_tmp = new double[P0_BASIS]();
 
-        for(int ix = 0;ix < FP0_BASIS;ix++) vf_tmp[ix] = vxc[ix] + vnuc[ix] + vh[ix];
+        for(int ix = 0;ix < fpbasis;ix++) vf_tmp[ix] = vxc[ix] + vnuc[ix] + vh[ix];
         GetVtotPsi (vc_tmp, vf_tmp, Rmg_G->default_FG_RATIO);
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
@@ -213,11 +215,11 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     if (ct.nspin == 2)
     {
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < fpbasis; idx++)
         {
-            xcstate += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
-            mag += ( rho[idx] - rho_oppo[idx] );       /* calculate the magnetization */
-            absmag += fabs(rho[idx] - rho_oppo[idx]);
+            xcstate += rho.up[idx]*vxc.up[idx] + rho.dw[idx]*vxc.dw[idx];
+            mag += ( rho.up[idx] - rho.dw[idx] );       /* calculate the magnetization */
+            absmag += fabs(rho.up[idx] - rho.dw[idx]);
         }
         mag = vel * RmgSumAll(mag, pct.grid_comm);
         absmag = vel * RmgSumAll(absmag, pct.grid_comm);
@@ -225,14 +227,14 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     else if(ct.nspin == 4)
     {
         for(int is = 0; is < 4; is++)
-            for (idx = 0; idx < FP0_BASIS; idx++)
-                xcstate += rho[idx + is* FP0_BASIS] * vxc_in[idx + is*FP0_BASIS];
+            for (idx = 0; idx < fpbasis; idx++)
+                xcstate += rho[idx + is* fpbasis] * vxc_in[idx + is*fpbasis];
     }
     else
     {
-        //for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc_in[idx];
-        for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc[idx];
-        //for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rhovxc[idx] * vxc[idx];
+        //for (idx = 0; idx < fpbasis; idx++) xcstate += rho[idx] * vxc_in[idx];
+        for (idx = 0; idx < fpbasis; idx++) xcstate += rho[idx] * vxc[idx];
+        //for (idx = 0; idx < fpbasis; idx++) xcstate += rhovxc[idx] * vxc[idx];
     }
 
     /*XC potential energy */
@@ -311,10 +313,4 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
 
     //rmg_printf("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
-
-
-    /* Release our memory */
-    delete [] vxc;
-    delete [] vh;
-
 }                               /* end get_te */

@@ -71,7 +71,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     // Prime the pump for extrapolations if this is an initial run.
     if(ct.runflag != RESTART)
     {
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+        Quench (Kptr, false);
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
     }
 
@@ -240,7 +240,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
 
         /* converge to the ground state at the final positions */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        Quench (Kptr, true);
 
 
         /* zero out the non-moving atoms */
@@ -329,7 +329,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     // Final quench at these ionic positions without computing forces so the
     // final wavefunctions are converged. Write the restart file then compute
-    Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+    Quench (Kptr, false);
     WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
 
