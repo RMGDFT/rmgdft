@@ -327,6 +327,8 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[pbasis * factor];
+    // This is for a specific kpoint and spin channel
+    double tcharge = 0.0;
 
     for(int idx = 0;idx < pbasis * factor;idx++)
         work[idx] = 0.0;
@@ -336,6 +338,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
 #pragma omp parallel
         {
             double *tarr = new double[pbasis * factor]();
+            double tcharge1 = 0.0;
             std::complex<double> psiud;
 #pragma omp barrier
 
@@ -345,6 +348,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
             {
 
                 double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
+                tcharge1 += scale;
 
                 OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
 
@@ -363,6 +367,8 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
             }                       /*end for istate */
 #pragma omp critical
             for(int idx = 0; idx < pbasis * factor; idx++) work[idx] += tarr[idx];
+#pragma omp critical
+            tcharge += tcharge1;
             delete [] tarr;
         }
     }                           /*end for kpt */
@@ -380,7 +386,9 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
         }
     }
 
-
+wfobj<double> dd;
+fgobj<double> dd1;
+Prolong P(2, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     /* Interpolate onto fine grid, result will be stored in rho*/
     for(int is = 0; is < factor; is++)
@@ -391,7 +399,9 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
                 pack_rho_ctof (&work[is*pbasis], &rho[is*FP0_BASIS]);
                 break;
             case PROLONG_INTERPOLATION:
-                mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
+        P.prolong(&rho[is*FP0_BASIS], &work[is*pbasis], dd1.dimx, dd1.dimy, dd1.dimz, dd.dimx, dd.dimy, dd.dimz);
+
+//                mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 4);
                 break;
             case FFT_INTERPOLATION:
                 FftInterpolation (*Kpts[0]->G, &work[is*pbasis], &rho[is*FP0_BASIS], Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
@@ -405,6 +415,86 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
         }
     }
 
+
+    if(ct.scf_steps > 1)
+    {
+        fgobj<double> work, mask, newrho, oldrho;
+        int incy = mask.dimz;
+        int incx = mask.dimy*mask.dimz;
+        for(int ix=0;ix < mask.dimx;ix++)
+        {
+            for(int iy=0;iy < mask.dimy;iy++)
+            {
+                for(int iz=0;iz < mask.dimz;iz++)
+                {
+                    //mask[ix*incx + iy*incy + iz] = 1.0;
+                    mask(ix,iy,iz) = 1.0;
+                    if((ix % 2) ||(iy % 2) || (iz %2)) mask[ix*incx + iy*incy + iz] = 0.0;
+                }
+            }
+        }
+
+        newrho = rho;
+        oldrho = rho;
+        double oldrhoke = DBL_MAX;
+        double oldrhoke1 = DBL_MAX;
+        double snorm = 1.0;
+
+        for(int its=0;its < 500;its++)
+        {
+            double diag = ApplyLaplacian (newrho.data(), work.data(), ct.kohn_sham_fd_order, "Fine");
+            double step = -1.0 / diag;
+step /= 1000;
+            double rhoke = 0.0, rhoke1 = 0.0;
+            // Compute kinetic energy like term < -rho | lap(rho) >
+            for(int idx=0;idx<work.size();idx++)
+            {
+               rhoke += newrho[idx]*work[idx];
+               rhoke1 += work[idx]*work[idx];
+            }
+            // Have to figure out kpoint and spin parrelization here.
+            rhoke *= -get_vel_f();
+            rhoke1 *= get_vel_f();
+            GlobalSums(&rhoke, 1, pct.grid_comm);
+            GlobalSums(&rhoke1, 1, pct.grid_comm);
+ MPI_Allreduce(MPI_IN_PLACE, &rhoke, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+ MPI_Allreduce(MPI_IN_PLACE, &rhoke1, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+            if(pct.gridpe==0)printf("\nRHOKE =  %d  %14.8f   %14.8f\n",its,rhoke,rhoke1);
+            // Check for convergence
+            //if(its > 0 && (rhoke + rhoke1) > (oldrhoke + oldrhoke1 -1.0e-10)) break;
+            if(its > 20 && rhoke1 > oldrhoke1) break;
+
+            oldrho = newrho;
+
+            for(int idx=0;idx<work.size();idx++)
+            {
+                //newrho[idx] = newrho[idx] + step*mask[idx]*work[idx];
+                newrho[idx] = newrho[idx] + step*mask[idx]*(work[idx] - 0.000000001);
+            }
+            oldrhoke = rhoke;
+            oldrhoke1 = rhoke1;
+
+            // Renormalize 
+            snorm = 0.0;
+            for(int idx=0;idx<newrho.size();idx++)
+            {
+                snorm += newrho[idx];
+            }
+            GlobalSums(&snorm, 1, pct.grid_comm);
+            snorm *= get_vel_f();
+            snorm /= tcharge;
+            snorm = 1.0 / sqrt(snorm);
+            rhoke *= snorm;
+            rhoke1 *= snorm;
+            if(pct.gridpe==0 && pct.spinpe==0)printf("\nSNORM = %14.8e\n",snorm);
+            for(int idx=0;idx<newrho.size();idx++)
+            {
+//                newrho[idx] = snorm * newrho[idx];
+            }
+            
+        }
+        for(int idx=0;idx<newrho.pbasis;idx++)rho[idx] = oldrho[idx];
+    }
     if(ct.is_use_symmetry)
     {
         if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);

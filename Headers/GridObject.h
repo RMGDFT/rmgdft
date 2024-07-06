@@ -127,6 +127,23 @@ template <typename T> class GridObject {
 public:
     GridObject(int density);
     GridObject(int density, T *data_ptr);
+    GridObject(GridObject& t) // copy constructor
+    {
+        this->dimx_  = t.dimx;
+        this->dimy_  = t.dimy;
+        this->dimz_  = t.dimz;
+        this->incx_  = t.incx;
+        this->incy_  = t.incy;
+        this->incz_  = t.incz;
+        this->offsetx_  = t.offsetx;
+        this->offsety_  = t.offsety;
+        this->offsetz_  = t.offsetz;
+        this->pbasis_   = t.pbasis;
+        this->factor    = t.factor;
+        this->allocate(this->factor);
+        this->owns_allocation = true;
+        std::copy(t.data_, t.data_ + this->factor*this->pbasis_, this->data_);
+    }
     ~GridObject(void);
 
     // Dimensions and offsets on each MPI task

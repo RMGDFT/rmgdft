@@ -91,14 +91,9 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     int fpbasis = rho.pbasis;
     P0_BASIS = get_P0_BASIS();
 
-    //fgobj<double> vh(vh_in);
-    //spinobj<double> vxc(vxc_in);
-    fgobj<double> vh;
-    spinobj<double> vxc;
-printf("PPP1  %p\n",vh.data());
-    vh = vh_in;
-printf("PPP2  %p\n",vh.data());
-    vxc = vxc_in;
+    fgobj<double> vh = vh_in;
+    spinobj<double> vxc = vxc_in;
+
     vel = get_vel_f();
     cvel = get_vel();
 
