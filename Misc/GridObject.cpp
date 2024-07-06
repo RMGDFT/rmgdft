@@ -95,6 +95,28 @@ void GridObject<T>::increment(const fgobj<T>& c) {
 }
 
 template<typename T>
+void GridObject<T>::increment(const wfobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
+void GridObject<T>::increment(const spinobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
 void GridObject<T>::decrement(const GridObject<T>& c) {
   if(this->pbasis == c.pbasis && this->factor == c.factor) {
     for (int i = 0; i < factor*this->pbasis; i++) {
@@ -107,6 +129,28 @@ void GridObject<T>::decrement(const GridObject<T>& c) {
 
 template<typename T>
 void GridObject<T>::decrement(const fgobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
+void GridObject<T>::decrement(const wfobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
+void GridObject<T>::decrement(const spinobj<T>& c) {
   if(this->pbasis == c.pbasis && this->factor == c.factor) {
     for (int i = 0; i < factor*this->pbasis; i++) {
       data_[i] -= c.data_[i];

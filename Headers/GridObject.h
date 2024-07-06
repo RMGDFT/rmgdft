@@ -90,6 +90,8 @@
 #include <span>
 
 template <typename T> class fgobj;
+template <typename T> class wfobj;
+template <typename T> class spinobj;
 
 template <typename T> class GridObject {
 
@@ -191,8 +193,12 @@ protected:
    }
    void increment( const GridObject& c );
    void increment( const fgobj<T>& c );
+   void increment( const wfobj<T>& c );
+   void increment( const spinobj<T>& c );
    void decrement( const GridObject& c );
    void decrement( const fgobj<T>& c );
+   void decrement( const wfobj<T>& c );
+   void decrement( const spinobj<T>& c );
    void multiply( const T& b );
 
    GridObject& operator=(GridObject const &rhs)
@@ -252,6 +258,34 @@ protected:
 
 template <typename T> class spinobj : public GridObject<T>
 {
+  friend spinobj operator+(spinobj a, const spinobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend spinobj& operator+=(spinobj& a, const spinobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend spinobj operator-(spinobj a, const spinobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend spinobj& operator-=(spinobj& a, const spinobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend spinobj operator*(const T &b, spinobj a) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend spinobj operator*(spinobj a, const T &b) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend spinobj& operator*=(spinobj& a, const T &b) {
+    a.multiply(b);
+    return a;
+  }
 public:
     spinobj(void);
     spinobj(T *data_ptr);
@@ -270,6 +304,34 @@ public:
 // references as up or dw.
 template <typename T> class wfobj : public GridObject<T>
 {
+  friend wfobj operator+(wfobj a, const wfobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend wfobj& operator+=(wfobj& a, const wfobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend wfobj operator-(wfobj a, const wfobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend wfobj& operator-=(wfobj& a, const wfobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend wfobj operator*(const T &b, wfobj a) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend wfobj operator*(wfobj a, const T &b) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend wfobj& operator*=(wfobj& a, const T &b) {
+    a.multiply(b);
+    return a;
+  }
 public:
     wfobj(void);
     wfobj(T *data_ptr);
