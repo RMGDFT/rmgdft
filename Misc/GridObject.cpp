@@ -45,6 +45,9 @@ GridObject<T>::GridObject(int density)
     dimx_ = Rmg_G->get_PX0_GRID(density);
     dimy_ = Rmg_G->get_PY0_GRID(density);
     dimz_ = Rmg_G->get_PZ0_GRID(density);
+    incz_ = 1;
+    incy_ = dimz_;
+    incx_ = dimy_*dimz_;
     pbasis_ = dimx_ * dimy_ * dimz_;
 }
 
@@ -54,6 +57,9 @@ GridObject<T>::GridObject(int density, T *data_ptr)
     dimx_ = Rmg_G->get_PX0_GRID(density);
     dimy_ = Rmg_G->get_PY0_GRID(density);
     dimz_ = Rmg_G->get_PZ0_GRID(density);
+    incz_ = 1;
+    incy_ = dimz_;
+    incx_ = dimy_*dimz_;
     offsetx_ = Rmg_G->get_PX_OFFSET(density);
     offsety_ = Rmg_G->get_PY_OFFSET(density);
     offsetz_ = Rmg_G->get_PZ_OFFSET(density);
@@ -78,7 +84,29 @@ void GridObject<T>::increment(const GridObject<T>& c) {
 }
 
 template<typename T>
+void GridObject<T>::increment(const fgobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
 void GridObject<T>::decrement(const GridObject<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+template<typename T>
+void GridObject<T>::decrement(const fgobj<T>& c) {
   if(this->pbasis == c.pbasis && this->factor == c.factor) {
     for (int i = 0; i < factor*this->pbasis; i++) {
       data_[i] -= c.data_[i];
@@ -96,7 +124,7 @@ void GridObject<T>::multiply(const T& b) {
 }
 
 template<typename T>
-wfobj<T>::wfobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
+wfobj<T>::wfobj(void) : GridObject<T>(1)
 {   
     // For wfobj factor is 1 or 2 so for 1 up=dw
     this->allocate(ct.noncoll_factor);
@@ -105,7 +133,7 @@ wfobj<T>::wfobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
 }
 
 template<typename T>
-wfobj<T>::wfobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
+wfobj<T>::wfobj(T *data_ptr) : GridObject<T>(1)
 {   
     // For wfobj factor is 1 or 2 so for 1 up=dw
     this->allocate(ct.noncoll_factor, data_ptr);
@@ -183,6 +211,19 @@ template GridObject<float>::~GridObject(void);
 template GridObject<double>::~GridObject(void);
 template GridObject<std::complex<float>>::~GridObject(void);
 template GridObject<std::complex<double>>::~GridObject(void);
+template void GridObject<float>::increment(const fgobj<float>&);
+template void GridObject<double>::increment(const fgobj<double>&);
+template void GridObject<std::complex<float>>::increment(const fgobj<std::complex<float>>&);
+template void GridObject<std::complex<double>>::increment(const fgobj<std::complex<double>>&);
+template void GridObject<float>::decrement(const fgobj<float>&);
+template void GridObject<double>::decrement(const fgobj<double>&);
+template void GridObject<std::complex<float>>::decrement(const fgobj<std::complex<float>>&);
+template void GridObject<std::complex<double>>::decrement(const fgobj<std::complex<double>>&);
+
+template void GridObject<float>::multiply(const float&);
+template void GridObject<double>::multiply(const double&);
+template void GridObject<std::complex<float>>::multiply(const std::complex<float>&);
+template void GridObject<std::complex<double>>::multiply(const std::complex<double>&);
 
 template fgobj<float>::fgobj(void);
 template fgobj<double>::fgobj(void);

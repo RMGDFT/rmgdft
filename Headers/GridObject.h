@@ -89,6 +89,7 @@
 #include <complex>
 #include <span>
 
+template <typename T> class fgobj;
 
 template <typename T> class GridObject {
 
@@ -132,6 +133,9 @@ public:
     const int& dimx = dimx_;
     const int& dimy = dimy_;
     const int& dimz = dimz_;
+    const int& incx = incx_;
+    const int& incy = incy_;
+    const int& incz = incz_;
     const int& offsetx = offsetx_;
     const int& offsety = offsety_;
     const int& offsetz = offsetz_;
@@ -148,6 +152,15 @@ public:
         return data_[idx];
     }
 
+    T& operator ()(int i, int j, int k) {
+        return data_[i*incx_ + j*incy_ + k];
+    }
+
+    T operator ()(int i, int j, int k) const {
+        return data_[i*incx_ + j*incy_ + k];
+    }
+
+
 private:
    bool owns_allocation = true;
 
@@ -155,6 +168,9 @@ protected:
    int dimx_;
    int dimy_;
    int dimz_;
+   int incx_;
+   int incy_;
+   int incz_;
    int offsetx_;
    int offsety_;
    int offsetz_;
@@ -174,7 +190,9 @@ protected:
        owns_allocation = false;
    }
    void increment( const GridObject& c );
+   void increment( const fgobj<T>& c );
    void decrement( const GridObject& c );
+   void decrement( const fgobj<T>& c );
    void multiply( const T& b );
 
    GridObject& operator=(GridObject const &rhs)
@@ -191,10 +209,45 @@ protected:
 
 template <typename T> class fgobj : public GridObject<T>
 {
+
+  friend fgobj operator+(fgobj a, const fgobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend fgobj& operator+=(fgobj& a, const fgobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend fgobj operator-(fgobj a, const fgobj& b) {
+    a += b;
+    return std::move(a);
+  }
+  friend fgobj& operator-=(fgobj& a, const fgobj& b) {
+    a.increment(b);
+    return a;
+  }
+  friend fgobj operator*(const T &b, fgobj a) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend fgobj operator*(fgobj a, const T &b) {
+    a.multiply(b);
+    return std::move(a);
+  }
+  friend fgobj& operator*=(fgobj& a, const T &b) {
+    a.multiply(b);
+    return a;
+  }
+
 public:
     fgobj(void);
     fgobj(T *data_ptr);
     ~fgobj(void);
+
+protected:
+//   void increment( const fgobj& c );
+//   void decrement( const fgobj& c );
+
 };
 
 template <typename T> class spinobj : public GridObject<T>
