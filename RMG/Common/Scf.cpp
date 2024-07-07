@@ -108,7 +108,7 @@ template <typename OrbitalType> bool Scf (
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
-    t[0] *= get_vel_f();
+    t[0] *= rho.vel;
 
     /* get the averaged value over each spin and each fine grid */
     if(ct.AFM)
@@ -276,9 +276,6 @@ template <typename OrbitalType> bool Scf (
     delete(RT1);
 
     // Get Hartree potential for the output density
-    int ratio = Rmg_G->default_FG_RATIO;
-    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
-
     fgobj<double> vh_out;
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     VhDriver(new_rho.data(), rhoc.data(), vh_out.data(), vh_ext, rms_target);
@@ -291,7 +288,7 @@ template <typename OrbitalType> bool Scf (
     {
         for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
     }
-    sum = 0.5 * vel * sum;
+    sum = 0.5 * rho.vel * sum;
 
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);

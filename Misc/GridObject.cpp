@@ -52,6 +52,8 @@ GridObject<T>::GridObject(int density)
     incy_ = dimz_;
     incx_ = dimy_*dimz_;
     pbasis_ = dimx_ * dimy_ * dimz_;
+    vel_ = Rmg_L.get_omega() /
+    ((double)(Rmg_G->get_NX_GRID(density) * Rmg_G->get_NY_GRID(density) * Rmg_G->get_NZ_GRID(density)));
 }
 
 template<typename T>
@@ -67,6 +69,8 @@ GridObject<T>::GridObject(int density, T *data_ptr)
     offsety_ = Rmg_G->get_PY_OFFSET(density);
     offsetz_ = Rmg_G->get_PZ_OFFSET(density);
     pbasis_ = dimx_ * dimy_ * dimz_;
+    vel_ = Rmg_L.get_omega() /
+    ((double)(Rmg_G->get_NX_GRID(density) * Rmg_G->get_NY_GRID(density) * Rmg_G->get_NZ_GRID(density)));
 }
 
 template<typename T>
@@ -258,6 +262,7 @@ template GridObject<float>::~GridObject(void);
 template GridObject<double>::~GridObject(void);
 template GridObject<std::complex<float>>::~GridObject(void);
 template GridObject<std::complex<double>>::~GridObject(void);
+
 template void GridObject<float>::increment(const fgobj<float>&);
 template void GridObject<double>::increment(const fgobj<double>&);
 template void GridObject<std::complex<float>>::increment(const fgobj<std::complex<float>>&);
@@ -266,6 +271,15 @@ template void GridObject<float>::decrement(const fgobj<float>&);
 template void GridObject<double>::decrement(const fgobj<double>&);
 template void GridObject<std::complex<float>>::decrement(const fgobj<std::complex<float>>&);
 template void GridObject<std::complex<double>>::decrement(const fgobj<std::complex<double>>&);
+
+template void GridObject<float>::increment(const spinobj<float>&);
+template void GridObject<double>::increment(const spinobj<double>&);
+template void GridObject<std::complex<float>>::increment(const spinobj<std::complex<float>>&);
+template void GridObject<std::complex<double>>::increment(const spinobj<std::complex<double>>&);
+template void GridObject<float>::decrement(const spinobj<float>&);
+template void GridObject<double>::decrement(const spinobj<double>&);
+template void GridObject<std::complex<float>>::decrement(const spinobj<std::complex<float>>&);
+template void GridObject<std::complex<double>>::decrement(const spinobj<std::complex<double>>&);
 
 template void GridObject<float>::multiply(const float&);
 template void GridObject<double>::multiply(const double&);
