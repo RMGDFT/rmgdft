@@ -113,11 +113,11 @@ template <typename T> class GridObject {
   }
   friend GridObject operator*(const T &b, GridObject a) {
     a.multiply(b);
-    return std::move(a);
+    return a;
   }
   friend GridObject operator*(GridObject a, const T &b) {
-    a.multiply(b);
-    return std::move(a);
+    a *= b;
+    return a;
   }
   friend GridObject& operator*=(GridObject& a, const T &b) {
     a.multiply(b);
@@ -253,11 +253,11 @@ template <typename T> class fgobj : public GridObject<T>
   }
   friend fgobj operator*(const T &b, fgobj a) {
     a.multiply(b);
-    return std::move(a);
+    return a;
   }
   friend fgobj operator*(fgobj a, const T &b) {
-    a.multiply(b);
-    return std::move(a);
+    a *= b;
+    return a;
   }
   friend fgobj& operator*=(fgobj& a, const T &b) {
     a.multiply(b);
@@ -279,7 +279,7 @@ template <typename T> class spinobj : public GridObject<T>
 {
   friend spinobj operator+(spinobj a, const spinobj& b) {
     a += b;
-    return std::move(a);
+    return a;
   }
   friend spinobj& operator+=(spinobj& a, const spinobj& b) {
     a.increment(b);
@@ -287,7 +287,7 @@ template <typename T> class spinobj : public GridObject<T>
   }
   friend spinobj operator-(spinobj a, const spinobj& b) {
     a -= b;
-    return std::move(a);
+    return a;
   }
   friend spinobj& operator-=(spinobj& a, const spinobj& b) {
     a.decrement(b);
@@ -295,11 +295,11 @@ template <typename T> class spinobj : public GridObject<T>
   }
   friend spinobj operator*(const T &b, spinobj a) {
     a.multiply(b);
-    return std::move(a);
+    return a;
   }
   friend spinobj operator*(spinobj a, const T &b) {
-    a.multiply(b);
-    return std::move(a);
+    a *= b;
+    return a;
   }
   friend spinobj& operator*=(spinobj& a, const T &b) {
     a.multiply(b);
@@ -340,11 +340,11 @@ template <typename T> class wfobj : public GridObject<T>
   }
   friend wfobj operator*(const T &b, wfobj a) {
     a.multiply(b);
-    return std::move(a);
+    return a;
   }
   friend wfobj operator*(wfobj a, const T &b) {
-    a.multiply(b);
-    return std::move(a);
+    a *= b;
+    return a;
   }
   friend wfobj& operator*=(wfobj& a, const T &b) {
     a.multiply(b);

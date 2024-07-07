@@ -67,7 +67,7 @@ template <typename OrbitalType> void Relax (
 
     int CONV_FORCE=false, MAX_STEPS;
     int DONE, rlx_steps = 0;
-    static double *rhodiff;
+    static int once;
 
     /* quench the electrons and calculate forces */
 //    if((ct.runflag != RESTART) || (ct.forceflag == MD_QUENCH))
@@ -96,27 +96,19 @@ template <typename OrbitalType> void Relax (
             rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
         // Get atomic rho for this ionic configuration and subtract from current rho
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-        int factor = ct.noncoll_factor * ct.noncoll_factor;
-        double *arho = new double[FP0_BASIS * factor];
-        LcaoGetAtomicRho(arho);
+        spinobj<double> arho;
 
-        // If first step allocate rhodiff
-        for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] -= arho[idx];
+        LcaoGetAtomicRho(arho.data());
 
-        if(rhodiff == NULL)
+        rho -= arho;
+        static spinobj<double> rhodiff = rho;
+        if(once > 0)
         {
-            rhodiff = new double[FP0_BASIS * factor];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = rho[idx];
+            spinobj<double> trho = rho;
+            rho = 2.0*rho - rhodiff;
+            rhodiff = trho;
         }
-        else
-        {
-            double *trho = new double[FP0_BASIS * factor];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) trho[idx] = rho[idx];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = trho[idx];
-            delete [] trho;
-        }
+        once = 1; 
 
         /* not done yet ? => move atoms */
 		/* move the ions */
@@ -154,9 +146,8 @@ template <typename OrbitalType> void Relax (
         ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
         delete RT0;
 
-        LcaoGetAtomicRho(arho);
-         for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] += arho[idx];
-        delete [] arho;
+        LcaoGetAtomicRho(arho.data());
+        rho += arho;
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
