@@ -159,6 +159,7 @@ public:
     const int& offsety = offsety_;
     const int& offsetz = offsetz_;
     const int& pbasis = pbasis_;
+    const double& vel = vel_;
 
     const int size() const { return pbasis; }
     T* data() { return data_; }
@@ -195,6 +196,7 @@ protected:
    int offsetz_;
    int pbasis_;
    int factor = 1;
+   double vel_;
    T *data_;
 
    void allocate(int components)
@@ -242,11 +244,11 @@ template <typename T> class fgobj : public GridObject<T>
     return a;
   }
   friend fgobj operator-(fgobj a, const fgobj& b) {
-    a += b;
+    a -= b;
     return std::move(a);
   }
   friend fgobj& operator-=(fgobj& a, const fgobj& b) {
-    a.increment(b);
+    a.decrement(b);
     return a;
   }
   friend fgobj operator*(const T &b, fgobj a) {
@@ -284,11 +286,11 @@ template <typename T> class spinobj : public GridObject<T>
     return a;
   }
   friend spinobj operator-(spinobj a, const spinobj& b) {
-    a += b;
+    a -= b;
     return std::move(a);
   }
   friend spinobj& operator-=(spinobj& a, const spinobj& b) {
-    a.increment(b);
+    a.decrement(b);
     return a;
   }
   friend spinobj operator*(const T &b, spinobj a) {
@@ -329,11 +331,11 @@ template <typename T> class wfobj : public GridObject<T>
     return a;
   }
   friend wfobj operator-(wfobj a, const wfobj& b) {
-    a += b;
+    a -= b;
     return std::move(a);
   }
   friend wfobj& operator-=(wfobj& a, const wfobj& b) {
-    a.increment(b);
+    a.decrement(b);
     return a;
   }
   friend wfobj operator*(const T &b, wfobj a) {
