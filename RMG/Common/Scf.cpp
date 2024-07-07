@@ -69,7 +69,7 @@ template <typename OrbitalType> bool Scf (
     int P0_BASIS = vtot_psi.size();
 
     /* save old vhxc + vnuc */
-    for (int idx = 0; idx < vtot.size(); idx++) {
+    for (int idx = 0; idx < vtot.pbasis; idx++) {
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     }
 
@@ -95,7 +95,7 @@ template <typename OrbitalType> bool Scf (
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
 
-    for (int idx = 0; idx < FP0_BASIS; idx++)
+    for (int idx = 0; idx < vtot.pbasis; idx++)
     {
         t3 = -vtot[idx];
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -283,10 +283,10 @@ template <typename OrbitalType> bool Scf (
 
     // Compute convergence measure (2nd order variational term) and average by nspin
     double sum = 0.0;
-    for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
+    for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
     if(ct.AFM) 
     {
-        for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
+        for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
     }
     sum = 0.5 * rho.vel * sum;
 
@@ -313,7 +313,7 @@ template <typename OrbitalType> bool Scf (
                 && ct.potential_acceleration_constant_step > 1.0e-5)
         {
             ct.scf_correction = 0.0;
-            for (int idx = 0; idx < FP0_BASIS; idx++)
+            for (int idx = 0; idx < vtot.pbasis; idx++)
             {
                 vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
             }
