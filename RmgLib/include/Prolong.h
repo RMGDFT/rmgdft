@@ -71,6 +71,9 @@ public:
     template <typename T, int ord>
     void prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
+    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+    float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+
 private:
     void cgen_prolong (double *coef, double fraction);
     void cgen_dist_inverse(std::vector<coef_idx> &coef_index, std::vector<double> &fraction);
@@ -82,8 +85,6 @@ private:
     Lattice &L;
     BaseGrid &BG;
     int ibrav;
-    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
-    float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
     std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
 
 };

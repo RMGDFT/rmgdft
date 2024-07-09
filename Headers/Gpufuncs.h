@@ -108,6 +108,7 @@ struct fdparms_o8 {
 };
 
 int getThreadId(void);
+int getThreadNum(void);
 
 #if CUDA_ENABLED
 #include <cublas_v2.h>
@@ -154,6 +155,9 @@ void app8_del2_gpu(T * __restrict__ a,
                    const int dimz,
                    const fdparms_o8<T> &c);
 hipStream_t getGpuStream(void);
+template <typename T>
+void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz);
+void fetch_gpu_density(double *rho);
 #endif
 
 #if SYCL_ENABLED
