@@ -74,6 +74,15 @@ public:
     template <typename T, int ord>
     void prolong_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
+#if HIP_ENABLED
+    template <typename T, int ord>
+    void prolong_ortho_gpu(T *full,
+                   T *half,
+                   const int dimx,
+                   const int dimy,
+                   const int dimz);
+#endif
+
     double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
     float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
 

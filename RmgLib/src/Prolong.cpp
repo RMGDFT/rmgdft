@@ -941,6 +941,8 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
         std::vector<float> f1(8*half_dimx*half_dimy*half_dimz);
         for(size_t i=0;i < n1;i++) h1[i] = (float)half[i];
 
+        if constexpr(ord == 6)
+            prolong_internal<float, 6> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
         if constexpr(ord == 8)
             prolong_internal<float, 8> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
         if constexpr(ord == 10)
@@ -955,6 +957,8 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
         std::vector<std::complex<float>> f1(8*half_dimx*half_dimy*half_dimz);
         for(size_t i=0;i < n1;i++) h1[i] = std::complex<float>(std::real(half[i]), std::imag(half[i]));
 
+        if constexpr(ord == 6)
+            prolong_internal<std::complex<float>, 6> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
         if constexpr(ord == 8)
             prolong_internal<std::complex<float>, 8> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
         if constexpr(ord == 10)
@@ -972,6 +976,32 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
 
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+
+#if HIP_ENABLED
+    if constexpr (std::is_same_v<T, float>)
+    {
+        if constexpr(ord == 6)
+            prolong_ortho_gpu<float, 6> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_ortho_gpu<float, 8> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_ortho_gpu<float, 10> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_ortho_gpu<float, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+    }
+    if constexpr (std::is_same_v<T, std::complex<float>>)
+    {
+        if constexpr(ord == 6)
+            prolong_ortho_gpu<std::complex<float>, 6> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_ortho_gpu<std::complex<float>, 8> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_ortho_gpu<std::complex<float>, 10> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_ortho_gpu<std::complex<float>, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
+    }
+    return;
+#endif
 
     int ic = ord/2 - 1;
     int dimx = 2 * half_dimx;

@@ -57,6 +57,11 @@
 #include "bfgs.h"
 #include "FDOpt.h"
 
+#if HIP_ENABLED
+template <typename T>
+void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz);
+#endif
+
 extern Scalapack *MainSp;
 
 
@@ -108,6 +113,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
     FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
+
+#if HIP_ENABLED
+    int dimx = Rmg_G->get_PX0_GRID(1);
+    int dimy = Rmg_G->get_PY0_GRID(1);
+    int dimz = Rmg_G->get_PZ0_GRID(1);
+    init_orthorhombic_gpu_prolong<OrbitalType>(dimx, dimy, dimz);
+#endif
 
     // Initialize buffers for gather scatter
     GatherScatterInit(P0_BASIS * pct.coalesce_factor);
