@@ -116,8 +116,7 @@ __global__ void prolong_ortho_kernel(T * full,
         __syncthreads();
     };
 
-//    for (int ix = 0; ix < dimx; ix++)
-for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * blockDim.x)
+    for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * blockDim.x)
     {
         // This first block is the only time we access global memory
         // The chunks are (dimy +2*images)*(dimz + 2*images) and
@@ -131,7 +130,7 @@ for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * b
                 fulla0[iy1 * incy + iz1] = a.a[0][ic] * halfptr[ic*incx + iz1];
             }
         }
-        syncblocksy();
+        __syncthreads();
         for (int iy1 = 0; iy1 < dimy + 2*images; iy1++)
         {
             __syncthreads();
@@ -141,7 +140,7 @@ for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * b
                         fulla1[iy1 * incy + iz1] = stencil(halfptr + iz1, incx);
             }
         }
-        syncblocksy();
+        __syncthreads();
 
         for (int iy1 = 0; iy1 < dimy; iy1++)
         {
@@ -149,14 +148,14 @@ for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * b
             fullb0[(2 * iy1 + 0) * incy + iz1] = a.a[0][ic] * full_tmp[ic*incy];
             fullb0[(2 * iy1 + 1) * incy + iz1] = stencil(full_tmp, incy);
         }
-        syncblocksy();
+        __syncthreads();
         for (int iy1 = 0; iy1 < dimy; iy1++)
         {
             T *full_tmp = &fulla1[(iy1 + 1) * incy + iz1];
             fullb1[(2 * iy1 + 0) * incy + iz1] = a.a[0][ic] * full_tmp[ic*incy];
             fullb1[(2 * iy1 + 1) * incy + iz1] = stencil(full_tmp, incy);
         }
-        syncblocksy();
+        __syncthreads();
         // This last block writes back to global memory
         for (int iy1 = 0; iy1 < 2*dimy; iy1++)
         {
@@ -167,7 +166,7 @@ for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * b
                 full[2*ix * incx2 + iy1 * incy2 + 2 * iz1 + 1] = stencil(full_tmp, 1);
             }
         }
-        syncblocksy();
+        __syncthreads();
         for (int iy1 = 0; iy1 < 2*dimy; iy1++)
         {
             for(int iz1 = blockIdx.y * blockDim.y + threadIdx.y;iz1 < dimz;iz1 += gridDim.y * blockDim.y)
@@ -177,7 +176,6 @@ for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * b
                 full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * iz1 + 1] = stencil(full_tmp, 1);
             }
         }
-        syncblocksx();
     }
 }
 #endif
