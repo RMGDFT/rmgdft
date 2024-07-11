@@ -71,6 +71,9 @@ public:
     template <typename T, int ord>
     void prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
+    template <typename T, int ord>
+    void prolong_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
     double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
     float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
 

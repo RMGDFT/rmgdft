@@ -929,9 +929,44 @@ template <typename T> void Prolong::prolong_fcc (T *full, T *half, int dimx, int
 
 }
 
-
 template <typename T, int ord>
 void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
+{
+    size_t n1 = half_dimx*half_dimy*half_dimz;
+    size_t n2 = 8*half_dimx*half_dimy*half_dimz;
+
+    if constexpr (std::is_same_v<T, double>)
+    {
+        std::vector<float> h1(half_dimx*half_dimy*half_dimz);
+        std::vector<float> f1(8*half_dimx*half_dimy*half_dimz);
+        for(size_t i=0;i < n1;i++) h1[i] = (float)half[i];
+
+        if constexpr(ord == 8)
+            prolong_internal<float, 8> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_internal<float, 10> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_internal<float, 12> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = (double)f1[i];
+    }
+    if constexpr (std::is_same_v<T, std::complex<double>>)
+    {
+        std::vector<std::complex<float>> h1(half_dimx*half_dimy*half_dimz);
+        std::vector<std::complex<float>> f1(8*half_dimx*half_dimy*half_dimz);
+        for(size_t i=0;i < n1;i++) h1[i] = std::complex<float>(std::real(half[i]), std::imag(half[i]));
+
+        if constexpr(ord == 8)
+            prolong_internal<std::complex<float>, 8> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_internal<std::complex<float>, 10> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_internal<std::complex<float>, 12> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = std::complex<double>(std::real(f1[i]), std::imag(f1[i]));
+    }
+}
+
+template <typename T, int ord>
+void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
 {
     size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
 
@@ -957,7 +992,10 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
     // lambda to clean up code
     auto stencil = [&](const T *ptr, const int stride) {
         T sum(0.0);
-        for(int k = 0;k < ord;k++) sum = sum + a[1][k] * ptr[k*stride];
+        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+            for(int k = 0;k < ord;k++) sum = sum + a[1][k] * ptr[k*stride];
+        if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+            for(int k = 0;k < ord;k++) sum = sum + af[1][k] * ptr[k*stride];
         return sum;
     };
 
@@ -970,7 +1008,11 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             T *halfptr = &baseptr[(ix + 1) * incx + iy * incy];
             for (int iz = 0; iz < dimz / 2 + ord; iz++)
             {
-                fulla0[iy * incy + iz] = a[0][ic] * halfptr[ic*incx + iz];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    fulla0[iy * incy + iz] = a[0][ic] * halfptr[ic*incx + iz];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    fulla0[iy * incy + iz] = af[0][ic] * halfptr[ic*incx + iz];
+
                 fulla1[iy * incy + iz] = stencil(halfptr + iz, incx);
             }
         }
@@ -980,11 +1022,19 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             for (int iz = 0; iz < dimz / 2 + ord; iz++)
             {
                 T *full_tmp = &fulla0[(iy + 1) * incy + iz];
-                fullb0[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    fullb0[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    fullb0[(2 * iy + 0) * incy + iz] = af[0][ic] * full_tmp[ic*incy];
+
                 fullb0[(2 * iy + 1) * incy + iz] = stencil(full_tmp, incy);
 
                 full_tmp = &fulla1[(iy + 1) * incy + iz];
-                fullb1[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    fullb1[(2 * iy + 0) * incy + iz] = a[0][ic] * full_tmp[ic*incy];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    fullb1[(2 * iy + 0) * incy + iz] = af[0][ic] * full_tmp[ic*incy];
+
                 fullb1[(2 * iy + 1) * incy + iz] = stencil(full_tmp, incy);
             }
         }
@@ -994,11 +1044,19 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
             for (int iz = 0; iz < dimz / 2; iz++)
             {
                 T *full_tmp = &fullb0[iy * incy + iz + 1];
-                full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    full[2*ix * incx2 + iy * incy2 + 2 * iz + 0] = af[0][ic] * full_tmp[ic];
+
                 full[2*ix * incx2 + iy * incy2 + 2 * iz + 1] = stencil(full_tmp, 1);
 
                 full_tmp = &fullb1[iy * incy + iz + 1];
-                full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = a[0][ic] * full_tmp[ic];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = af[0][ic] * full_tmp[ic];
+
                 full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = stencil(full_tmp, 1);
             }
         }
