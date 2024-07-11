@@ -977,6 +977,7 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
 
+#if 0
 #if HIP_ENABLED
     if constexpr (std::is_same_v<T, float>)
     {
@@ -1001,6 +1002,7 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
             prolong_ortho_gpu<std::complex<float>, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
     }
     return;
+#endif
 #endif
 
     int ic = ord/2 - 1;
