@@ -33,6 +33,11 @@
 #include <iostream>
 #include <vector>
 #include "Prolong.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "rmg_control.h"
 
 
 typedef struct {
@@ -55,21 +60,12 @@ void prolong_ortho_gpu_internal(T *full,
                    float (&a)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
-// A global var with 64 bits can track 64 blocks, 
-// use an array if you need to track more blocks
-__device__ uint64_t CompleteMaskx[32]; 
-__device__ uint64_t CompleteMasky[32]; 
-
-__global__ void prolong_ortho_kernel_init(int tid)
-{
-    atomicAnd(&CompleteMaskx[tid], 0);
-    atomicAnd(&CompleteMasky[tid], 0);
-}
-
 // Version with shared memory slice
 template <typename T, int images>
 __global__ void prolong_ortho_kernel(T * full, 
                                      const T *half, 
+                                     const int zstart,
+                                     const int zlen,
                                      const int dimx,
                                      const int dimy,
                                      const int dimz,
@@ -79,14 +75,17 @@ __global__ void prolong_ortho_kernel(T * full,
 {
     extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
     T *fulla0 = reinterpret_cast<T *>(sbuf);
-    T *fulla1 = fulla0 + ((dimy + 2*images) * (dimz + 2*images));
-    T *fullb0 = fulla1 + ((dimy + 2*images) * (dimz + 2*images));
-    T *fullb1 = fullb0 + ((2*dimy) * (dimz + 2*images));
+    T *fulla1 = fulla0 + ((dimy + 2*images) * (zlen + 2*images));
+    T *fullb0 = fulla1 + ((dimy + 2*images) * (zlen + 2*images));
+    T *fullb1 = fullb0 + ((2*dimy) * (zlen + 2*images));
 
     const int iz1 = threadIdx.y;
 
     const int incy = dimz + 2*images;
     const int incx = (dimy + 2*images) * incy;
+    const int sincy = zlen + 2*images;
+    const int sincx = (dimy + 2*images) * sincy;
+
     const int incy2 = 2*dimz;
     const int incx2 = 2*dimy * incy2;
 
@@ -99,23 +98,6 @@ __global__ void prolong_ortho_kernel(T * full,
         return sum;
     };
 
-    auto syncblocksx = [&](void) {
-        __syncthreads();
-        const auto SollMask = (1 << gridDim.x) - 1;
-        if (threadIdx.x == 0) {
-            while ((atomicOr(&CompleteMaskx[tid], 1ULL << blockIdx.x)) != SollMask) { /*do nothing*/ }
-        }
-        __syncthreads();
-    };
-    auto syncblocksy = [&](void) {
-        __syncthreads();
-        const auto SollMask = (1 << gridDim.y) - 1;
-        if (threadIdx.y == 0) {
-            while ((atomicOr(&CompleteMasky[tid], 1ULL << blockIdx.y)) != SollMask) { /*do nothing*/ }
-        }
-        __syncthreads();
-    };
-
     for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * blockDim.x)
     {
         // This first block is the only time we access global memory
@@ -124,56 +106,56 @@ __global__ void prolong_ortho_kernel(T * full,
         for (int iy1 = 0; iy1 < dimy + 2*images; iy1++)
         {
             __syncthreads();
-            for(int iz1 = blockIdx.y * blockDim.y + threadIdx.y;iz1 < dimz+2*images;iz1 += gridDim.y * blockDim.y)
+            for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen+2*images;iz1 += gridDim.y*blockDim.y)
             {
                 const T *halfptr = &half[(ix + 1) * incx + iy1 * incy];
-                fulla0[iy1 * incy + iz1] = a.a[0][ic] * halfptr[ic*incx + iz1];
+                fulla0[iy1 * sincy + iz1] = a.a[0][ic] * halfptr[ic*incx + zstart + iz1];
             }
         }
         __syncthreads();
         for (int iy1 = 0; iy1 < dimy + 2*images; iy1++)
         {
             __syncthreads();
-            for(int iz1 = blockIdx.y * blockDim.y + threadIdx.y;iz1 < dimz+2*images;iz1 += gridDim.y * blockDim.y)
+            for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen+2*images;iz1 += gridDim.y*blockDim.y)
             {
-                        const T *halfptr = &half[(ix + 1) * incx + iy1 * incy];
-                        fulla1[iy1 * incy + iz1] = stencil(halfptr + iz1, incx);
+                const T *halfptr = &half[(ix + 1) * incx + iy1 * incy];
+                fulla1[iy1 * sincy + iz1] = stencil(halfptr + zstart + iz1, incx);
             }
         }
         __syncthreads();
 
         for (int iy1 = 0; iy1 < dimy; iy1++)
         {
-            T *full_tmp = &fulla0[(iy1 + 1) * incy + iz1];
-            fullb0[(2 * iy1 + 0) * incy + iz1] = a.a[0][ic] * full_tmp[ic*incy];
-            fullb0[(2 * iy1 + 1) * incy + iz1] = stencil(full_tmp, incy);
+            T *full_tmp = &fulla0[(iy1 + 1) * sincy + iz1];
+            fullb0[(2 * iy1 + 0) * sincy + iz1] = a.a[0][ic] * full_tmp[ic*sincy];
+            fullb0[(2 * iy1 + 1) * sincy + iz1] = stencil(full_tmp, sincy);
         }
         __syncthreads();
         for (int iy1 = 0; iy1 < dimy; iy1++)
         {
-            T *full_tmp = &fulla1[(iy1 + 1) * incy + iz1];
-            fullb1[(2 * iy1 + 0) * incy + iz1] = a.a[0][ic] * full_tmp[ic*incy];
-            fullb1[(2 * iy1 + 1) * incy + iz1] = stencil(full_tmp, incy);
+            T *full_tmp = &fulla1[(iy1 + 1) * sincy + iz1];
+            fullb1[(2 * iy1 + 0) * sincy + iz1] = a.a[0][ic] * full_tmp[ic*sincy];
+            fullb1[(2 * iy1 + 1) * sincy + iz1] = stencil(full_tmp, sincy);
         }
         __syncthreads();
         // This last block writes back to global memory
         for (int iy1 = 0; iy1 < 2*dimy; iy1++)
         {
-            for(int iz1 = blockIdx.y * blockDim.y + threadIdx.y;iz1 < dimz;iz1 += gridDim.y * blockDim.y)
+            for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen;iz1 += gridDim.y*blockDim.y)
             {
-                T *full_tmp = &fullb0[iy1 * incy + iz1 + 1];
-                full[2*ix * incx2 + iy1 * incy2 + 2 * iz1 + 0] = a.a[0][ic] * full_tmp[ic];
-                full[2*ix * incx2 + iy1 * incy2 + 2 * iz1 + 1] = stencil(full_tmp, 1);
+                T *full_tmp = &fullb0[iy1 * sincy + iz1 + 1];
+                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] = a.a[0][ic] * full_tmp[ic];
+                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] = stencil(full_tmp, 1);
             }
         }
         __syncthreads();
         for (int iy1 = 0; iy1 < 2*dimy; iy1++)
         {
-            for(int iz1 = blockIdx.y * blockDim.y + threadIdx.y;iz1 < dimz;iz1 += gridDim.y * blockDim.y)
+            for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen;iz1 += gridDim.y*blockDim.y)
             {
-                T *full_tmp = &fullb1[iy1 * incy + iz1 + 1];
-                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * iz1 + 0] = a.a[0][ic] * full_tmp[ic];
-                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * iz1 + 1] = stencil(full_tmp, 1);
+                T *full_tmp = &fullb1[iy1 * sincy + iz1 + 1];
+                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] = a.a[0][ic] * full_tmp[ic];
+                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] = stencil(full_tmp, 1);
             }
         }
     }
@@ -282,33 +264,61 @@ void prolong_ortho_gpu_internal(T *full,
 
     dim3 Grid, Block, Grid1, Block1;
     hipStream_t stream = getGpuStream();
+    std::vector<int> zstart, zlen, smem_sizes;
+    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
+
+    auto smem_needed = [&](const int dimy, int dimz) {
+        int val = 2*(dimy + 2*images) * (dimz + 2*images) +
+                   2*(2*dimy) * (dimz + 2*images);
+        return val * sizeof(T);
+    };
+
+    int chunksize = dimz;
+    // Get max possible chunksize
+    while(smem_needed(dimy, chunksize) > smem_limit) chunksize--;
+    int chunks = dimz / chunksize;
+    if(dimz % chunksize) chunks++;
+    for(int i=0;i < chunks;i++)
+    {
+        zstart.emplace_back(i*chunksize);
+        zlen.emplace_back(chunksize);
+        if((zstart[i] + zlen[i]) > dimz) zlen[i] = dimz - zstart[i];
+        smem_sizes.emplace_back(smem_needed(dimy, chunksize));
+        //printf("DDDD  %d  %d  %d  %d  %d\n",i, dimz, zstart[i], smem_sizes[i], zlen[i]);fflush(NULL);
+    }
+
     int tid = getThreadId();
     int fbasis = 8*dimx*dimy*dimz;
     int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
-
-    Grid1.x = 1;
-    Grid1.y = 1;
-    Block1.x = 1;
-    Block1.y = 1;
-
     Grid.x = dimx;
     Grid.y = 1;
-    Block.x = 1;
-    Block.y = (dimz + 2*images);
-    int smem_siz = 2*(dimy + 2*images) * (dimz + 2*images) +
-                   2*(2*dimy) * (dimz + 2*images);
-    smem_siz *= sizeof(T);
 
     T *hptr = (T *)hbufs[tid];
+    RmgTimer *RT = new RmgTimer("Prolong copy to");
     std::copy(half, half+sbasis, hptr);
     hipMemcpyAsync(abufs[tid], hbufs[tid], sbasis*sizeof(T), hipMemcpyHostToDevice, stream);
     hipStreamSynchronize(stream);
+    delete RT;
 
-    RmgTimer *RT = new RmgTimer("Prolong kernel");
-    hipLaunchKernelGGL(HIP_KERNEL_NAME(prolong_ortho_kernel_init), Grid1, Block1, 0, stream, tid);
-    hipLaunchKernelGGL(HIP_KERNEL_NAME(prolong_ortho_kernel<T, images>), Grid, Block, smem_siz, stream,
-               (T *)rbufs[tid], (T *)abufs[tid], dimx, dimy, dimz, tid, agpu);
+    RT = new RmgTimer("Prolong kernel");
+
+    for(int i=0;i < chunks;i++)
+    {
+        Block.x = 1;
+        Block.y = (zlen[i] + 2*images);
+        hipLaunchKernelGGL(HIP_KERNEL_NAME(prolong_ortho_kernel<T, images>), 
+                   Grid,
+                   Block,
+                   smem_sizes[i],
+                   stream,
+                   (T *)rbufs[tid],
+                   (T *)abufs[tid],
+                   zstart[i],
+                   zlen[i],
+                   dimx, dimy, dimz, tid, agpu);
+    }
+
     hipStreamSynchronize(stream);
     delete RT;
 
