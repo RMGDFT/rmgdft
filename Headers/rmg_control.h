@@ -782,6 +782,7 @@ public:
     // Hip devices
     hipDevice_t hip_dev;
     hipDevice_t hip_devices[MAX_GPU_DEVICES];
+    int smemSize[MAX_GPU_DEVICES];
 
     // Hip device context
     hipCtx_t hip_context;

@@ -513,6 +513,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if HIP_ENABLED
             hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
             hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
+            hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
+//            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;
