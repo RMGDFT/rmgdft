@@ -219,6 +219,8 @@ std::mutex rhomutex;
 
 template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolong *P, double *work, double scale)
 {
+    if(scale < 1.0e-10) return;  // No need to include unoccupied orbitals
+
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
 
@@ -231,6 +233,7 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
+
 
     OrbitalType *psi = sp->psi;
     std::complex<double> psiud;
@@ -246,7 +249,7 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
 
 
     // Energy correction terms evaluated in this block
-    if(ct.norm_conserving_pp)
+    if(ct.use_energy_correction && ct.norm_conserving_pp)
     {
         // Fix any normalization change from interpolation
         double snorm = 0.0;
