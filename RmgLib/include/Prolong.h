@@ -52,6 +52,7 @@ class Prolong {
 public:
     Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
     ~Prolong(void);
+
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
@@ -59,6 +60,7 @@ public:
     void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
     template<typename T>
     void prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+
     template<typename T>
     void prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
     template<typename T>
@@ -73,6 +75,15 @@ public:
 
     template <typename T, int ord>
     void prolong_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template<typename T, int ord>
+    void prolong_hex2 (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template<typename T, int ord>
+    void prolong_hex2a (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template <typename T, int ord, int htype>
+    void prolong_hex_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
 #if HIP_ENABLED
     template <typename T, int ord>

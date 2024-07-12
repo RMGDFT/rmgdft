@@ -24,6 +24,7 @@
 #include "blas.h"
 #include <complex>
 #include <cmath>
+#include "RmgTimer.h"
 //#include "transition.h"
 
 // This is a high order interpolation/prolongation operators used when constructing the
@@ -44,6 +45,16 @@ template void Prolong::prolong<double, 6> (double *full, double *half, int half_
 template void Prolong::prolong<double, 8> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<double, 10> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 template void Prolong::prolong<double, 12> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+
+template void Prolong::prolong_hex2<float, 6> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<float, 8> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<float, 10> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<float, 12> (float *full, float *half, int half_dimx, int half_dimy, int half_dimz);
+
+template void Prolong::prolong_hex2<double, 6> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<double, 8> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<double, 10> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
+template void Prolong::prolong_hex2<double, 12> (double *full, double *half, int half_dimx, int half_dimy, int half_dimz);
 
 template void Prolong::prolong<std::complex<double>, 6>
   (std::complex<double> *full, std::complex<double> *half, int half_dimx, int half_dimy, int half_dimz);
@@ -274,13 +285,45 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
     }
     if(ibrav == HEXAGONAL && ratio == 2)
     {
-        prolong_hex2 (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        //prolong_hex2 (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        if (order == 6)
+        {
+           prolong_hex2<T, 6>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 8)
+        {
+           prolong_hex2<T, 8>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 10)
+        {
+           prolong_hex2<T, 10>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 12)
+        {
+           prolong_hex2<T, 12>(full, half, half_dimx, half_dimy, half_dimz);
+        }
         return;
     }
 
     if(ibrav == HEXAGONAL2 && ratio == 2)
     {
-        prolong_hex2a (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+//        prolong_hex2a (full, half, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        if (order == 6)
+        {
+           prolong_hex2a<T, 6>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 8)
+        {
+           prolong_hex2a<T, 8>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 10)
+        {
+           prolong_hex2a<T, 10>(full, half, half_dimx, half_dimy, half_dimz);
+        }
+        if (order == 12)
+        {
+           prolong_hex2a<T, 12>(full, half, half_dimx, half_dimy, half_dimz);
+        }
         return;
     }
 
@@ -403,6 +446,8 @@ template void Prolong::prolong_hex2 (double *full, double *half, int dimx, int d
         int half_dimy, int half_dimz);
 template void Prolong::prolong_hex2 (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
         int half_dimy, int half_dimz);
+
+
 template <typename T> void Prolong::prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
         int half_dimy, int half_dimz)
 {
@@ -548,6 +593,87 @@ template <typename T> void Prolong::prolong_hex2a (T *full, T *half, int dimx, i
     delete [] sg_half;
 
 }
+
+
+template <typename T, int ord> void Prolong::prolong_hex2 (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
+{
+
+    size_t n1 = half_dimx*half_dimy*half_dimz;
+    size_t n2 = 8*half_dimx*half_dimy*half_dimz;
+
+    if constexpr (std::is_same_v<T, double>)
+    {
+        std::vector<float> h1(n1);
+        std::vector<float> f1(n2);
+        for(size_t i=0;i < n1;i++) h1[i] = (float)half[i];
+        if constexpr(ord == 6)
+            prolong_hex_internal<float, 6, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_hex_internal<float, 8, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_hex_internal<float, 10, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_hex_internal<float, 12, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = (double)f1[i];
+    }
+    if constexpr (std::is_same_v<T, std::complex<double>>)
+    {
+        std::vector<std::complex<float>> h1(half_dimx*half_dimy*half_dimz);
+        std::vector<std::complex<float>> f1(8*half_dimx*half_dimy*half_dimz);
+        for(size_t i=0;i < n1;i++) h1[i] = std::complex<float>(std::real(half[i]), std::imag(half[i]));
+
+        if constexpr(ord == 6)
+            prolong_hex_internal<std::complex<float>, 6, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_hex_internal<std::complex<float>, 8, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_hex_internal<std::complex<float>, 10, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_hex_internal<std::complex<float>, 12, HEXAGONAL> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = std::complex<double>(std::real(f1[i]), std::imag(f1[i]));
+    }
+}
+
+template <typename T, int ord> void Prolong::prolong_hex2a (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
+{
+
+    size_t n1 = half_dimx*half_dimy*half_dimz;
+    size_t n2 = 8*half_dimx*half_dimy*half_dimz;
+
+    if constexpr (std::is_same_v<T, double>)
+    {
+        std::vector<float> h1(n1);
+        std::vector<float> f1(n2);
+        for(size_t i=0;i < n1;i++) h1[i] = (float)half[i];
+
+        if constexpr(ord == 6)
+            prolong_hex_internal<float, 6, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_hex_internal<float, 8, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_hex_internal<float, 10, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_hex_internal<float, 12, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = (double)f1[i];
+    }
+    if constexpr (std::is_same_v<T, std::complex<double>>)
+    {
+        std::vector<std::complex<float>> h1(half_dimx*half_dimy*half_dimz);
+        std::vector<std::complex<float>> f1(8*half_dimx*half_dimy*half_dimz);
+        for(size_t i=0;i < n1;i++) h1[i] = std::complex<float>(std::real(half[i]), std::imag(half[i]));
+
+        if constexpr(ord == 6)
+            prolong_hex_internal<std::complex<float>, 6, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 8)
+            prolong_hex_internal<std::complex<float>, 8, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 10)
+            prolong_hex_internal<std::complex<float>, 10, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        if constexpr(ord == 12)
+            prolong_hex_internal<std::complex<float>, 12, HEXAGONAL2> (f1.data(), h1.data(), half_dimx, half_dimy, half_dimz);
+        for(size_t i=0;i < n2;i++) full[i] = std::complex<double>(std::real(f1[i]), std::imag(f1[i]));
+    }
+}
+
 
 template void Prolong::prolong_bcc (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
         int half_dimy, int half_dimz);
@@ -937,8 +1063,8 @@ void Prolong::prolong (T *full, T *half, int half_dimx, int half_dimy, int half_
 
     if constexpr (std::is_same_v<T, double>)
     {
-        std::vector<float> h1(half_dimx*half_dimy*half_dimz);
-        std::vector<float> f1(8*half_dimx*half_dimy*half_dimz);
+        std::vector<float> h1(n1);
+        std::vector<float> f1(n2);
         for(size_t i=0;i < n1;i++) h1[i] = (float)half[i];
 
         if constexpr(ord == 6)
@@ -974,10 +1100,11 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
 {
     size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
 
+    RmgTimer *RT = new RmgTimer("Prolong tradeimages");
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+    delete RT;
 
-#if 0
 #if HIP_ENABLED
     if constexpr (std::is_same_v<T, float>)
     {
@@ -1002,7 +1129,6 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
             prolong_ortho_gpu<std::complex<float>, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
     }
     return;
-#endif
 #endif
 
     int ic = ord/2 - 1;
@@ -1090,6 +1216,149 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
                     full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 0] = af[0][ic] * full_tmp[ic];
 
                 full[(2*ix + 1) * incx2 + iy * incy2 + 2 * iz + 1] = stencil(full_tmp, 1);
+            }
+        }
+    }
+}
+
+
+#if 0
+template void Prolong::prolong_hex2_internal<float, 6, HEXAGONAL> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 6, HEXAGONAL2> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 8, HEXAGONAL> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 8, HEXAGONAL2> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 10, HEXAGONAL> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 10, HEXAGONAL2> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 12, HEXAGONAL> (float *, float *, int, int, int);
+template void Prolong::prolong_hex2_internal<float, 12, HEXAGONAL2> (float *, float *, int, int, int);
+
+template void Prolong::prolong_hex2_internal<std::complex<float>, 6, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 6, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 8, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 8, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 10, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 10, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 12, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<float>, 12, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
+
+template void Prolong::prolong_hex2_internal<double, 6, HEXAGONAL> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 6, HEXAGONAL2> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 8, HEXAGONAL> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 8, HEXAGONAL2> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 10, HEXAGONAL> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 10, HEXAGONAL2> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 12, HEXAGONAL> (double *, double *, int, int, int);
+template void Prolong::prolong_hex2_internal<double, 12, HEXAGONAL2> (double *, double *, int, int, int);
+
+template void Prolong::prolong_hex2_internal<std::complex<double>, 6, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 6, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 8, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 8, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 10, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 10, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 12, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
+template void Prolong::prolong_hex2_internal<std::complex<double>, 12, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
+#endif
+
+template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T *full, T *half, int half_dimx,
+        int half_dimy, int half_dimz)
+{
+
+    size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
+    std::vector<T> sg_half(sg_hbasis);
+    TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+
+    int dimx = 2 * half_dimx;
+    int dimy = 2 * half_dimy;
+    int dimz = 2 * half_dimz;
+
+    int incy = half_dimz + ord;
+    int incx = (half_dimy + ord)*incy;
+
+    int incy2 = half_dimz + ord;
+    int incx2 = dimy * incy2;
+
+    std::vector<T> fulla(dimx * dimy * (dimz / 2 + ord));
+
+    for (int ix = 0; ix < half_dimx; ix++)
+    {
+        for (int iy = 0; iy < half_dimy; iy++)
+        {
+            for (int iz = 0; iz < half_dimz + ord; iz++)
+            {
+                T sum = 0.0;
+                fulla[(2 * ix) * incx2 + 2 * iy * incy2 + iz] = sg_half[(ix+ord/2) * incx + (iy+ord/2) * incy + iz];
+
+                sum = 0.0;
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+ord/2) * incy + iz];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+k+1)*incx + (iy+ord/2) * incy + iz];
+                fulla[((2 * ix) + 1) * incx2 + 2 * iy * incy2 + iz] = sum;
+
+                sum = 0.0;
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+ord/2)*incx + (iy+k+1) * incy + iz];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+ord/2)*incx + (iy+k+1) * incy + iz];
+                fulla[(2 * ix) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
+
+                sum = 0.0;
+                // This is for hex2
+                if constexpr (htype == HEXAGONAL && (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>))
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+k+1) * incy + iz];
+                if constexpr (htype == HEXAGONAL && (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>))
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+k+1)*incx + (iy+k+1) * incy + iz];
+
+                // This is for hex2a
+                if constexpr (htype == HEXAGONAL2 && (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>))
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy + ord -k) * incy + iz];
+                if constexpr (htype == HEXAGONAL2 && (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>))
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+k+1)*incx + (iy + ord -k) * incy + iz];
+
+                fulla[((2 * ix)+1) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
+            }
+        }
+    }
+
+
+    for (int ix = 0; ix < dimx/2; ix++)
+    {
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            for (int iz = 0; iz < dimz / 2; iz++)
+            {
+                T sum = 0.0;
+                T *full_tmp = &fulla[2*ix * incx2 + iy * incy + iz + 1];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[0][k] * full_tmp[k];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[0][k] * full_tmp[k];
+
+                full[2*ix * dimy * dimz + iy * dimz + 2 * iz + 0] = sum;
+
+                sum = 0.0;
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * full_tmp[k];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * full_tmp[k];
+                full[2*ix * dimy * dimz + iy * dimz + 2 * iz + 1] = sum;
+
+                sum = 0.0;
+                full_tmp = &fulla[(2*ix+1) * incx2 + iy * incy + iz + 1];
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[0][k] * full_tmp[k];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[0][k] * full_tmp[k];
+                full[(2*ix+1) * dimy * dimz + iy * dimz + 2 * iz + 0] = sum;
+
+                sum = 0.0;
+                if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
+                    for(int k = 0;k < ord;k++) sum+= a[1][k] * full_tmp[k];
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
+                    for(int k = 0;k < ord;k++) sum+= af[1][k] * full_tmp[k];
+                full[(2*ix+1) * dimy * dimz + iy * dimz + 2 * iz + 1] = sum;
+
             }
         }
     }

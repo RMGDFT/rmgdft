@@ -242,6 +242,15 @@ void Prolong::prolong_ortho_gpu(T *full,
     if constexpr (std::is_same_v<T, float> && ord==12)
         prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, af);
 
+    if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
+        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, af);
+    if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
+        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, af);
+    if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
+        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, af);
+    if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
+        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, af);
+
 }
 
 template <typename T, int images>
