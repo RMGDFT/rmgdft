@@ -440,161 +440,6 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
 
 
 
-template void Prolong::prolong_hex2 (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-template void Prolong::prolong_hex2 (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-template void Prolong::prolong_hex2 (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-
-
-template <typename T> void Prolong::prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz)
-{
-
-    if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
-
-    T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
-
-    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
-
-    int incy = dimz / ratio + order;
-    int incx = (dimz / ratio + order) * (dimy / ratio + order);
-
-
-    int incx2 = (dimz / ratio + order) * dimy;
-    int incy2 = dimz / ratio + order;
-
-    // Optimized most common case
-
-    T* fulla = new T[dimx * dimy * (dimz / ratio + order)];
-
-    for (int ix = 0; ix < dimx / ratio; ix++)
-    {
-        for (int iy = 0; iy < dimy / ratio; iy++)
-        {
-            for (int iz = 0; iz < dimz / ratio + order; iz++)
-            {
-                T sum = 0.0;
-                fulla[(ratio * ix) * incx2 + ratio * iy * incy2 + iz] = sg_half[(ix+order/2) * incx + (iy+order/2) * incy + iz];
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+order/2) * incy + iz];
-                fulla[((ratio * ix) + 1) * incx2 + ratio * iy * incy2 + iz] = sum;
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+order/2)*incx + (iy+k+1) * incy + iz];
-                fulla[(ratio * ix) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+k+1) * incy + iz];
-                fulla[((ratio * ix)+1) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
-            }
-        }
-    }
-
-
-    for (int i = 0; i < ratio; i++)
-    {
-        for (int ix = 0; ix < dimx; ix++)
-        {
-            for (int iy = 0; iy < dimy; iy++)
-            {
-                for (int iz = 0; iz < dimz / ratio; iz++)
-                {
-                    T sum = 0.0;
-                    T *full_tmp = &fulla[ix * incx2 + iy * incy + iz + 1];
-                    for(int k = 0;k < order;k++) sum+= a[i][k] * full_tmp[k];
-                    full[ix * dimy * dimz + iy * dimz + ratio * iz + i] = sum;
-                }
-            }
-        }
-    }
-
-
-    delete [] fulla;
-    delete [] sg_half;
-
-}
-
-template void Prolong::prolong_hex2a (float *full, float *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-template void Prolong::prolong_hex2a (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-template void Prolong::prolong_hex2a (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz);
-template <typename T> void Prolong::prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
-        int half_dimy, int half_dimz)
-{
-
-    if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
-
-    T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
-
-    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, order/2, FULL_TRADE);
-
-    int incy = dimz / ratio + order;
-    int incx = (dimz / ratio + order) * (dimy / ratio + order);
-
-
-    int incx2 = (dimz / ratio + order) * dimy;
-    int incy2 = dimz / ratio + order;
-
-    // Optimized most common case
-
-    T* fulla = new T[dimx * dimy * (dimz / ratio + order)];
-
-    for (int ix = 0; ix < dimx / ratio; ix++)
-    {
-        for (int iy = 0; iy < dimy / ratio; iy++)
-        {
-            for (int iz = 0; iz < dimz / ratio + order; iz++)
-            {
-                T sum = 0.0;
-                fulla[(ratio * ix) * incx2 + ratio * iy * incy2 + iz] = sg_half[(ix+order/2) * incx + (iy+order/2) * incy + iz];
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+order/2) * incy + iz];
-                fulla[((ratio * ix) + 1) * incx2 + ratio * iy * incy2 + iz] = sum;
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+order/2)*incx + (iy+k+1) * incy + iz];
-                fulla[(ratio * ix) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
-
-                sum = 0.0;
-                for(int k = 0;k < order;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy + order -k) * incy + iz];
-                fulla[((ratio * ix)+1) * incx2 + (ratio * iy +1) * incy2 + iz] = sum;
-            }
-        }
-    }
-
-
-    for (int i = 0; i < ratio; i++)
-    {
-        for (int ix = 0; ix < dimx; ix++)
-        {
-            for (int iy = 0; iy < dimy; iy++)
-            {
-                for (int iz = 0; iz < dimz / ratio; iz++)
-                {
-                    T sum = 0.0;
-                    T *full_tmp = &fulla[ix * incx2 + iy * incy + iz + 1];
-                    for(int k = 0;k < order;k++) sum+= a[i][k] * full_tmp[k];
-                    full[ix * dimy * dimz + iy * dimz + ratio * iz + i] = sum;
-                }
-            }
-        }
-    }
-
-
-    delete [] fulla;
-    delete [] sg_half;
-
-}
-
-
 template <typename T, int ord> void Prolong::prolong_hex2 (T *full, T *half, int half_dimx, int half_dimy, int half_dimz)
 {
 
@@ -1222,48 +1067,9 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
 }
 
 
-#if 0
-template void Prolong::prolong_hex2_internal<float, 6, HEXAGONAL> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 6, HEXAGONAL2> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 8, HEXAGONAL> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 8, HEXAGONAL2> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 10, HEXAGONAL> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 10, HEXAGONAL2> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 12, HEXAGONAL> (float *, float *, int, int, int);
-template void Prolong::prolong_hex2_internal<float, 12, HEXAGONAL2> (float *, float *, int, int, int);
-
-template void Prolong::prolong_hex2_internal<std::complex<float>, 6, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 6, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 8, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 8, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 10, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 10, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 12, HEXAGONAL> (std::complex<float> *, std::complex<float> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<float>, 12, HEXAGONAL2> (std::complex<float> *, std::complex<float> *, int, int, int);
-
-template void Prolong::prolong_hex2_internal<double, 6, HEXAGONAL> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 6, HEXAGONAL2> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 8, HEXAGONAL> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 8, HEXAGONAL2> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 10, HEXAGONAL> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 10, HEXAGONAL2> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 12, HEXAGONAL> (double *, double *, int, int, int);
-template void Prolong::prolong_hex2_internal<double, 12, HEXAGONAL2> (double *, double *, int, int, int);
-
-template void Prolong::prolong_hex2_internal<std::complex<double>, 6, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 6, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 8, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 8, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 10, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 10, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 12, HEXAGONAL> (std::complex<double> *, std::complex<double> *, int, int, int);
-template void Prolong::prolong_hex2_internal<std::complex<double>, 12, HEXAGONAL2> (std::complex<double> *, std::complex<double> *, int, int, int);
-#endif
-
 template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T *full, T *half, int half_dimx,
         int half_dimy, int half_dimz)
 {
-
     size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
@@ -1287,21 +1093,21 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
             for (int iz = 0; iz < half_dimz + ord; iz++)
             {
                 T sum = 0.0;
-                fulla[(2 * ix) * incx2 + 2 * iy * incy2 + iz] = sg_half[(ix+ord/2) * incx + (iy+ord/2) * incy + iz];
+                fulla[(0) * incx2 + 2 * iy * incy2 + iz] = sg_half[(ix+ord/2) * incx + (iy+ord/2) * incy + iz];
 
                 sum = 0.0;
                 if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
                     for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+k+1)*incx + (iy+ord/2) * incy + iz];
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
                     for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+k+1)*incx + (iy+ord/2) * incy + iz];
-                fulla[((2 * ix) + 1) * incx2 + 2 * iy * incy2 + iz] = sum;
+                fulla[(1) * incx2 + 2 * iy * incy2 + iz] = sum;
 
                 sum = 0.0;
                 if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
                     for(int k = 0;k < ord;k++) sum+= a[1][k] * sg_half[(ix+ord/2)*incx + (iy+k+1) * incy + iz];
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
                     for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+ord/2)*incx + (iy+k+1) * incy + iz];
-                fulla[(2 * ix) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
+                fulla[(0) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
 
                 sum = 0.0;
                 // This is for hex2
@@ -1316,20 +1122,16 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
                 if constexpr (htype == HEXAGONAL2 && (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>))
                     for(int k = 0;k < ord;k++) sum+= af[1][k] * sg_half[(ix+k+1)*incx + (iy + ord -k) * incy + iz];
 
-                fulla[((2 * ix)+1) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
+                fulla[(1) * incx2 + (2 * iy +1) * incy2 + iz] = sum;
             }
         }
-    }
 
-
-    for (int ix = 0; ix < dimx/2; ix++)
-    {
         for (int iy = 0; iy < dimy; iy++)
         {
             for (int iz = 0; iz < dimz / 2; iz++)
             {
                 T sum = 0.0;
-                T *full_tmp = &fulla[2*ix * incx2 + iy * incy + iz + 1];
+                T *full_tmp = &fulla[0*ix * incx2 + iy * incy + iz + 1];
                 if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
                     for(int k = 0;k < ord;k++) sum+= a[0][k] * full_tmp[k];
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
@@ -1345,7 +1147,7 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
                 full[2*ix * dimy * dimz + iy * dimz + 2 * iz + 1] = sum;
 
                 sum = 0.0;
-                full_tmp = &fulla[(2*ix+1) * incx2 + iy * incy + iz + 1];
+                full_tmp = &fulla[(1) * incx2 + iy * incy + iz + 1];
                 if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
                     for(int k = 0;k < ord;k++) sum+= a[0][k] * full_tmp[k];
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, std::complex<float>>)
