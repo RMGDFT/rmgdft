@@ -107,7 +107,7 @@ hipError_t gpuGetDeviceCount(int *count);
 #define GPUBLAS_OP_N CUBLAS_OP_N
 #define GPUBLAS_OP_T CUBLAS_OP_T
 #define gpuCpuDeviceId cudaCpuDeviceId
-#define gpuStream_t hipStream_t
+#define gpuStream_t cudaStream_t
 
 cudaError_t gpuMalloc(void **ptr, size_t size);
 cudaError_t gpuMallocManaged(void **ptr, size_t size);

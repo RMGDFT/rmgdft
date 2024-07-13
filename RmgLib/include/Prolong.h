@@ -40,6 +40,13 @@
 #define MAX_PROLONG_RATIO 4
 #define MAX_PROLONG_ORDER 12
 
+#if HIP_ENABLED || CUDA_ENABLED
+typedef struct {
+  float a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+} pcoeff;
+#endif
+
+
 class coef_idx {
 
 public:
@@ -55,11 +62,6 @@ public:
 
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
-
-    template<typename T>
-    void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
-    template<typename T>
-    void prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
     template<typename T>
     void prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
@@ -88,6 +90,12 @@ public:
 #if HIP_ENABLED
     template <typename T, int ord>
     void prolong_ortho_gpu(T *full,
+                   T *half,
+                   const int dimx,
+                   const int dimy,
+                   const int dimz);
+    template <typename T, int ord, int htype>
+    void prolong_hex_gpu(T *full,
                    T *half,
                    const int dimx,
                    const int dimy,

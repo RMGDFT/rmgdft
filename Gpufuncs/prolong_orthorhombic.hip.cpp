@@ -40,10 +40,6 @@
 #include "rmg_control.h"
 
 
-typedef struct {
-  float a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
-} pcoeff; 
-
 template <typename T, int ord>
 void prolong_ortho_gpu(T *full,
                    T *half,
