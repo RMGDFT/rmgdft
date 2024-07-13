@@ -1084,7 +1084,7 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     int incy2 = half_dimz + ord;
     int incx2 = dimy * incy2;
 
-    std::vector<T> fulla(dimx * dimy * (dimz / 2 + ord));
+    std::vector<T> fulla(2 * dimy * (dimz / 2 + ord));
 
     for (int ix = 0; ix < half_dimx; ix++)
     {
