@@ -950,7 +950,7 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
     delete RT;
 
-#if !HIP_ENABLED
+#if HIP_ENABLED
     if constexpr (std::is_same_v<T, float>)
     {
         if constexpr(ord == 6)
