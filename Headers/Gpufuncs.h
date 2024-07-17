@@ -156,7 +156,7 @@ void app8_del2_gpu(T * __restrict__ a,
                    const fdparms_o8<T> &c);
 hipStream_t getGpuStream(void);
 template <typename T>
-void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz);
+void init_gpu_prolong(int dimx, int dimy, int dimz);
 void fetch_gpu_density(double *rho);
 #endif
 

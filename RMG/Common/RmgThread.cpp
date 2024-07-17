@@ -190,6 +190,14 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
+#if HIP_ENABLED
+            case GPU_GET_RHO:
+                if(ct.is_gamma)
+                    GetNewRhoGpuOne((State<double> *)ss.p1, (Prolong *)ss.p2, ss.fd_diag);
+                else
+                    GetNewRhoGpuOne((State<std::complex<double>> *)ss.p1, (Prolong *)ss.p2, ss.fd_diag);
+                break;
+#endif
             case HYBRID_GET_RHO:
                 if(ct.is_gamma)
                     GetNewRhoOne((State<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);

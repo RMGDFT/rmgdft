@@ -88,12 +88,26 @@ public:
     void prolong_hex_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
 #if HIP_ENABLED
+    static inline std::vector<void *> abufs;
+    static inline std::vector<void *> hbufs;
+    static inline std::vector<double *> rbufs;
+
     template <typename T, int ord>
-    void prolong_ortho_gpu(T *full,
+    void prolong_ortho_gpu(double *full,
                    T *half,
                    const int dimx,
                    const int dimy,
-                   const int dimz);
+                   const int dimz,
+                   double scale);
+
+    template <typename T, int images>
+    void prolong_ortho_gpu_internal(double *full,
+                   T *half,
+                   const int dimx,
+                   const int dimy,
+                   const int dimz,
+                   double scale);
+
     template <typename T, int ord, int htype>
     void prolong_hex_gpu(T *full,
                    T *half,
@@ -104,13 +118,13 @@ public:
 
     double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
     float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+    int ratio;
+    int order;
 
 private:
     void cgen_prolong (double *coef, double fraction);
     void cgen_dist_inverse(std::vector<coef_idx> &coef_index, std::vector<double> &fraction);
 
-    int ratio;
-    int order;
     double cmix;
     TradeImages &TR;
     Lattice &L;

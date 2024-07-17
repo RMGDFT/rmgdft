@@ -950,32 +950,6 @@ void Prolong::prolong_internal (T *full, T *half, int half_dimx, int half_dimy, 
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
     delete RT;
 
-#if HIP_ENABLED
-    if constexpr (std::is_same_v<T, float>)
-    {
-        if constexpr(ord == 6)
-            prolong_ortho_gpu<float, 6> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 8)
-            prolong_ortho_gpu<float, 8> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 10)
-            prolong_ortho_gpu<float, 10> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 12)
-            prolong_ortho_gpu<float, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-    }
-    if constexpr (std::is_same_v<T, std::complex<float>>)
-    {
-        if constexpr(ord == 6)
-            prolong_ortho_gpu<std::complex<float>, 6> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 8)
-            prolong_ortho_gpu<std::complex<float>, 8> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 10)
-            prolong_ortho_gpu<std::complex<float>, 10> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-        if constexpr(ord == 12)
-            prolong_ortho_gpu<std::complex<float>, 12> (full, sg_half.data(), half_dimx, half_dimy, half_dimz);
-    }
-    return;
-#endif
-
     int ic = ord/2 - 1;
     int dimx = 2 * half_dimx;
     int dimy = 2 * half_dimy;

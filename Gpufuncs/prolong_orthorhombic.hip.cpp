@@ -40,32 +40,16 @@
 #include "rmg_control.h"
 
 
-template <typename T, int ord>
-void prolong_ortho_gpu(T *full,
-                   T *half,
-                   const int dimx,
-                   const int dimy,
-                   const int dimz);
-
-template <typename T, int images>
-void prolong_ortho_gpu_internal(T *full,
-                   T *half,
-                   const int dimx,
-                   const int dimy,
-                   const int dimz,
-                   float (&a)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
-
 // Version with shared memory slice
 template <typename T, int images>
-__global__ void prolong_ortho_kernel(T * full, 
+__global__ void prolong_ortho_kernel(double * full, 
                                      const T *half, 
                                      const int zstart,
                                      const int zlen,
                                      const int dimx,
                                      const int dimy,
                                      const int dimz,
-                                     int tid,
+                                     double scale,
                                      pcoeff a)
 
 {
@@ -140,8 +124,11 @@ __global__ void prolong_ortho_kernel(T * full,
             for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen;iz1 += gridDim.y*blockDim.y)
             {
                 T *full_tmp = &fullb0[iy1 * sincy + iz1 + 1];
-                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] = a.a[0][ic] * full_tmp[ic];
-                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] = stencil(full_tmp, 1);
+                double t1;
+                t1 = scale*std::norm(a.a[0][ic] * full_tmp[ic]);
+                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
+                t1 = scale*std::norm(stencil(full_tmp, 1));
+                full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
         __syncthreads();
@@ -150,114 +137,81 @@ __global__ void prolong_ortho_kernel(T * full,
             for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen;iz1 += gridDim.y*blockDim.y)
             {
                 T *full_tmp = &fullb1[iy1 * sincy + iz1 + 1];
-                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] = a.a[0][ic] * full_tmp[ic];
-                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] = stencil(full_tmp, 1);
+                double t1;
+                t1 = scale*std::norm(a.a[0][ic] * full_tmp[ic]);
+                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
+                t1 = scale*std::norm(stencil(full_tmp, 1));
+                full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
     }
 }
 #endif
 
-std::vector<void *> abufs;
-std::vector<void *> hbufs;
-std::vector<float *> rbufs;
 
-template <typename T>
-void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz)
-{
-    int order = MAX_PROLONG_ORDER;
-    size_t rbufsize = 8*dimx*dimy*dimz*sizeof(double);
-    size_t bufsize = (dimx + order)*(dimy + order)*(dimz + order)*sizeof(T);
+template void Prolong::prolong_ortho_gpu<float,6>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double);
 
-    // Check if just clearing the accumulators
-    if(rbufs.size() > 0)
-    {
-        //GpuFill(rbufs[getThreadId()], 8*dimx*dimy*dimz, 0.0);
-        return;
-    }
+template void Prolong::prolong_ortho_gpu<float,8>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu<std::complex<float>,8>(double * , std::complex<float> *, int, int, int, double);
 
-    int max_threads = getThreadNum();
-    abufs.resize(max_threads);
-    rbufs.resize(max_threads);
-    hbufs.resize(max_threads);
-    for(int i=0;i < max_threads;i++)
-    {
-        hipMalloc((void **)&abufs[i], bufsize);
-        hipMallocHost((void **)&hbufs[i], rbufsize);
-        hipMalloc((void **)&rbufs[i], rbufsize);
-    }
-    hipDeviceSynchronize();
-}
+template void Prolong::prolong_ortho_gpu<float,10>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu<std::complex<float>,10>(double * , std::complex<float> *, int, int, int, double);
 
+template void Prolong::prolong_ortho_gpu<float,12>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu<std::complex<float>,12>(double * , std::complex<float> *, int, int, int, double);
 
-template void init_orthorhombic_gpu_prolong<double>(int, int, int);
-template void init_orthorhombic_gpu_prolong<std::complex<double>>(int, int, int);
-template void init_orthorhombic_gpu_prolong<float>(int, int, int);
-template void init_orthorhombic_gpu_prolong<std::complex<float>>(int, int, int);
+template void Prolong::prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double);
 
-template void Prolong::prolong_ortho_gpu<float,6>(float * , float *, int, int, int);
-template void Prolong::prolong_ortho_gpu<std::complex<float>,6>(std::complex<float> * , std::complex<float> *, int, int, int);
+template void Prolong::prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double);
 
-template void Prolong::prolong_ortho_gpu<float,8>(float * , float *, int, int, int);
-template void Prolong::prolong_ortho_gpu<std::complex<float>,8>(std::complex<float> * , std::complex<float> *, int, int, int);
+template void Prolong::prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double);
 
-template void Prolong::prolong_ortho_gpu<float,10>(float * , float *, int, int, int);
-template void Prolong::prolong_ortho_gpu<std::complex<float>,10>(std::complex<float> * , std::complex<float> *, int, int, int);
-
-template void Prolong::prolong_ortho_gpu<float,12>(float * , float *, int, int, int);
-template void Prolong::prolong_ortho_gpu<std::complex<float>,12>(std::complex<float> * , std::complex<float> *, int, int, int);
-
-template void prolong_ortho_gpu_internal<float,3>(float * , float *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,3>(std::complex<float> * , std::complex<float> *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
-template void prolong_ortho_gpu_internal<float,4>(float * , float *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,4>(std::complex<float> * , std::complex<float> *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
-template void prolong_ortho_gpu_internal<float,5>(float * , float *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,5>(std::complex<float> * , std::complex<float> *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
-template void prolong_ortho_gpu_internal<float,6>(float * , float *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,6>(std::complex<float> * , std::complex<float> *, int, int, int, float (&)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void Prolong::prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double);
+template void Prolong::prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double);
 
 
 #include "RmgTimer.h"
 
 template <typename T, int ord>
-void Prolong::prolong_ortho_gpu(T *full, 
+void Prolong::prolong_ortho_gpu(double *full, 
                    T *half, 
                    const int dimx,
                    const int dimy,
-                   const int dimz)
+                   const int dimz, 
+                   double scale)
 {
     if constexpr (std::is_same_v<T, float> && ord==6)
-        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, float> && ord==8)
-        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, float> && ord==10)
-        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, float> && ord==12)
-        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, scale);
 
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
-        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
-        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
-        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, scale);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
-        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, af);
+        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, scale);
 
 }
 
 template <typename T, int images>
-void prolong_ortho_gpu_internal(T *full, 
+void Prolong::prolong_ortho_gpu_internal(double *full, 
                    T *half, 
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   float (&a)[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER])
+                   double scale)
 {
-
     pcoeff agpu;
     for(int i=0;i<MAX_PROLONG_RATIO;i++)
     {
@@ -302,7 +256,7 @@ void prolong_ortho_gpu_internal(T *full,
     T *hptr = (T *)hbufs[tid];
     RmgTimer *RT = new RmgTimer("Prolong copy to");
     std::copy(half, half+sbasis, hptr);
-    hipMemcpyAsync(abufs[tid], hbufs[tid], sbasis*sizeof(T), hipMemcpyHostToDevice, stream);
+    hipMemcpyAsync(abufs[tid], hptr, sbasis*sizeof(T), hipMemcpyHostToDevice, stream);
     hipStreamSynchronize(stream);
     delete RT;
 
@@ -317,19 +271,19 @@ void prolong_ortho_gpu_internal(T *full,
                    Block,
                    smem_sizes[i],
                    stream,
-                   (T *)rbufs[tid],
+                   rbufs[tid],
                    (T *)abufs[tid],
                    zstart[i],
                    zlen[i],
-                   dimx, dimy, dimz, tid, agpu);
+                   dimx, dimy, dimz, scale, agpu);
     }
 
     hipStreamSynchronize(stream);
     delete RT;
 
-    RT = new RmgTimer("Prolong copy back");
-    hipMemcpyAsync(hbufs[tid], rbufs[tid], fbasis*sizeof(T), hipMemcpyDeviceToHost, stream);
-    hipStreamSynchronize(stream);
-    std::copy(hptr, hptr+fbasis, full);
-    delete RT;
+//    RT = new RmgTimer("Prolong copy back");
+//    hipMemcpyAsync(hbufs[tid], rbufs[tid], fbasis*sizeof(T), hipMemcpyDeviceToHost, stream);
+//    hipStreamSynchronize(stream);
+//    std::copy(hptr, hptr+fbasis, full);
+//    delete RT;
 }
