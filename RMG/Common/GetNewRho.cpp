@@ -74,7 +74,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
     else
     {
-#if HIP_ENABLED
+#if 0 && HIP_ENABLED
         if(ct.prolong_order == 0)
         {
             GetNewRhoPre(Kpts, rho);
@@ -493,6 +493,8 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
     T->thread_barrier_wait(false);
     int tid = getThreadId();
     int ord = P->order;
+    gpuStream_t stream = getGpuStream();
+
 
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
@@ -506,14 +508,19 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         std::vector<float> sg_half(sg_hbasis), thalf(hbasis);
         for(size_t idx =0;idx < hbasis;idx++) thalf[idx] = (float)sp->psi[idx];
         Rmg_T->trade_imagesx (thalf.data(), sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+        float *hptr = (float *)P->hbufs[tid];
+        float *gptr = (float *)P->abufs[tid];
+        std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
+        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
+
         if(ord == 6)
-            P->prolong_ortho_gpu<float, 6>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<float, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 8)
-            P->prolong_ortho_gpu<float, 8>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<float, 8>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 10)
-            P->prolong_ortho_gpu<float, 10>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<float, 10>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 12)
-            P->prolong_ortho_gpu<float, 12>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<float, 12>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
     }
     if constexpr (std::is_same_v<OrbitalType, std::complex<double>>)
     {
@@ -521,14 +528,18 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         for(int idx =0;idx < hbasis;idx++) 
             thalf[idx] = std::complex<float>(std::real(sp->psi[idx]), std::imag(sp->psi[idx]));
         Rmg_T->trade_imagesx (thalf.data(), sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
+        std::complex<float> *hptr = (std::complex<float> *)P->hbufs[tid];
+        std::complex<float> *gptr = (std::complex<float> *)P->abufs[tid];
+        std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
+        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
         if(ord == 6)
-            P->prolong_ortho_gpu<std::complex<float>, 6>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<std::complex<float>, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 8)
-            P->prolong_ortho_gpu<std::complex<float>, 8>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<std::complex<float>, 8>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 10)
-            P->prolong_ortho_gpu<std::complex<float>, 10>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<std::complex<float>, 10>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 12)
-            P->prolong_ortho_gpu<std::complex<float>, 12>(P->rbufs[tid], sg_half.data(), half_dimx, half_dimy, half_dimz, scale);
+            P->prolong_ortho_gpu<std::complex<float>, 12>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
     }
 }
 

@@ -2,6 +2,9 @@
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
 
+#define RMG_Prolong_const_only 1
+#include "Prolong.h"
+
 #include <complex>
 template <typename T>
 struct fdparms_o8 {
@@ -157,7 +160,15 @@ void app8_del2_gpu(T * __restrict__ a,
 hipStream_t getGpuStream(void);
 template <typename T>
 void init_gpu_prolong(int dimx, int dimy, int dimz);
-void fetch_gpu_density(double *rho);
+template <typename T, int images>
+
+void prolong_ortho_gpu_internal(double *full,
+               T *half,
+               const int dimx,
+               const int dimy,
+               const int dimz,
+               double scale,
+               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 #endif
 
 #if SYCL_ENABLED

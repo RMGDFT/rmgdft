@@ -27,6 +27,17 @@
  * 
 */
 
+// We have to do this wierdness since the clang compiler for gpu code
+// has issues on some platforms with the other include files.
+#ifdef RMG_Prolong_const_only
+#define MAX_PROLONG_RATIO 4
+#define MAX_PROLONG_ORDER 12
+
+#else
+
+#define MAX_PROLONG_RATIO 4
+#define MAX_PROLONG_ORDER 12
+
 #ifndef RMG_Prolong_H
 #define RMG_Prolong_H 1
 
@@ -37,14 +48,6 @@
 #include "BaseGrid.h"
 #include "rmg_error.h"
 
-#define MAX_PROLONG_RATIO 4
-#define MAX_PROLONG_ORDER 12
-
-#if HIP_ENABLED || CUDA_ENABLED
-typedef struct {
-  float a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
-} pcoeff;
-#endif
 
 
 class coef_idx {
@@ -100,14 +103,6 @@ public:
                    const int dimz,
                    double scale);
 
-    template <typename T, int images>
-    void prolong_ortho_gpu_internal(double *full,
-                   T *half,
-                   const int dimx,
-                   const int dimy,
-                   const int dimz,
-                   double scale);
-
     template <typename T, int ord, int htype>
     void prolong_hex_gpu(T *full,
                    T *half,
@@ -134,4 +129,5 @@ private:
 
 };
 
+#endif
 #endif

@@ -24,6 +24,7 @@
 #ifndef RMG_prototypes_rmg_H
 #define RMG_prototypes_rmg_H 1
 
+#undef RMG_Prolong_const_only
 #include "Kpoint.h"
 #include "PulayMixing.h"
 #include "LaplacianCoeff.h"
