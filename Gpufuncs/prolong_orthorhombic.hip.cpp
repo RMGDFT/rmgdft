@@ -159,7 +159,6 @@ template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::
 template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-#include "RmgTimer.h"
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full, 
@@ -212,13 +211,6 @@ void prolong_ortho_gpu_internal(double *full,
     Grid.x = dimx;
     Grid.y = 1;
 
-//    RmgTimer *RT = new RmgTimer("Prolong copy to");
-//    hipMemcpyAsync(abufs[tid], half, sbasis*sizeof(T), hipMemcpyHostToDevice, stream);
-//    hipStreamSynchronize(stream);
-//    delete RT;
-
-    RmgTimer *RT = new RmgTimer("Prolong kernel");
-
     for(int i=0;i < chunks;i++)
     {
         Block.x = 1;
@@ -237,6 +229,5 @@ void prolong_ortho_gpu_internal(double *full,
     }
 
     hipStreamSynchronize(stream);
-    delete RT;
 
 }
