@@ -74,8 +74,15 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
     else
     {
-#if 0 || HIP_ENABLED
-        GetNewRhoGpu(Kpts, rho);
+#if HIP_ENABLED
+        if(ct.prolong_order == 0)
+        {
+            GetNewRhoPre(Kpts, rho);
+        }
+        else
+        {
+            GetNewRhoGpu(Kpts, rho);
+        }
 #else
         GetNewRhoPre(Kpts, rho);
 #endif
