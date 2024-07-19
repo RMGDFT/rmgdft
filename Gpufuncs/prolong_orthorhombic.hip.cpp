@@ -144,7 +144,6 @@ __global__ void prolong_ortho_kernel(double * full,
         }
     }
 }
-#endif
 
 
 template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
@@ -231,3 +230,4 @@ void prolong_ortho_gpu_internal(double *full,
     hipStreamSynchronize(stream);
 
 }
+#endif
