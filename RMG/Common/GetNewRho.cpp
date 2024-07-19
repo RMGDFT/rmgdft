@@ -548,6 +548,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         if(ord == 12)
             P->prolong_ortho_gpu<std::complex<float>, 12>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
     }
+    hipStreamSynchronize(stream);
 }
 
 #endif
