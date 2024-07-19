@@ -74,14 +74,19 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
     else
     {
-#if 0 && HIP_ENABLED
+#if HIP_ENABLED
+        int ibrav = Rmg_L.get_ibrav_type();
         if(ct.prolong_order == 0)
         {
             GetNewRhoPre(Kpts, rho);
         }
-        else
+        else if(ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == CUBIC_PRIMITIVE)
         {
             GetNewRhoGpu(Kpts, rho);
+        }
+        else
+        {
+            GetNewRhoPre(Kpts, rho);
         }
 #else
         GetNewRhoPre(Kpts, rho);
@@ -203,10 +208,10 @@ std::mutex rhomutex;
 
 template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolong *P, double *work, double scale)
 {
-    if(scale < 1.0e-10) return;  // No need to include unoccupied orbitals
 
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
+    if(scale < 1.0e-10) return;              // No need to include unoccupied orbitals
 
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
@@ -475,9 +480,12 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     {
         gpublasDaxpy (ct.gpublas_handle, rhop.pbasis, &rone, P.rbufs[i], ione, P.rbufs[0], ione);
     }
-    DeviceSynchronize();
     hipMemcpy(P.hbufs[0], P.rbufs[0], rhop.pbasis*sizeof(double), hipMemcpyDeviceToHost);
     double *hptr = (double *)P.hbufs[0];
+
+    // Sum over kpoints and spin
+    MPI_Allreduce(MPI_IN_PLACE, hptr, rhop.pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
     std::copy(hptr, hptr+rhop.pbasis, rho);
     
 }
@@ -487,20 +495,19 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
                         Prolong *P, 
                         double scale)
 {
-    if(scale < 1.0e-10) return;  // No need to include unoccupied orbitals
+    RmgTimer RT("2-Prolong gpu");
 
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
-    int tid = getThreadId();
+    if(scale < 1.0e-10) return;              // No need to include unoccupied orbitals
+    int tid = T->get_thread_tid();
     int ord = P->order;
     gpuStream_t stream = getGpuStream();
-
 
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
     size_t hbasis = half_dimx * half_dimy * half_dimz;
-    size_t fbasis = 8 * half_dimx * half_dimy * half_dimz;
     size_t sg_hbasis = (half_dimx + ord) * (half_dimy + ord) * (half_dimz + ord);
 
     if constexpr (std::is_same_v<OrbitalType, double>)
