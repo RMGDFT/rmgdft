@@ -103,12 +103,14 @@ public:
                    const int dimz,
                    double scale);
 
-    template <typename T, int ord, int htype>
-    void prolong_hex_gpu(T *full,
+    template <typename T, int ord>
+    void prolong_hex_gpu(double *full,
                    T *half,
                    const int dimx,
                    const int dimy,
-                   const int dimz);
+                   const int dimz,
+                   const int type,
+                   double scale);
 #endif
 
     double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];

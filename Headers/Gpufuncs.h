@@ -160,13 +160,23 @@ void app8_del2_gpu(T * __restrict__ a,
 hipStream_t getGpuStream(void);
 template <typename T>
 void init_gpu_prolong(int dimx, int dimy, int dimz);
-template <typename T, int images>
 
+template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full,
                T *half,
                const int dimx,
                const int dimy,
                const int dimz,
+               double scale,
+               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+
+template <typename T, int images>
+void prolong_hex_gpu_internal(double *full,
+               T *half,
+               const int dimx,
+               const int dimy,
+               const int dimz,
+               const int type,
                double scale,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 #endif
