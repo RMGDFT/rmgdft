@@ -71,6 +71,7 @@ void write_ffield (std::string &filename)
     pt::ptree rec_basis;
     pt::ptree positions;
     pt::ptree forces;
+    pt::ptree stress;
 
 //    tree.put("energy.<xmlattr>.units","Ha");
 //    tree.put("energy.total",ct.TOTAL);
@@ -148,16 +149,35 @@ void write_ffield (std::string &filename)
        forces.add("v", f);
    }
 
+   stress.put("<xmlattr>.name","stress");
+   std::string ss;
+   ss = "      " +
+        std::to_string(ct.stress_tensor[0]) + "      " +
+        std::to_string(ct.stress_tensor[1]) + "      " +
+        std::to_string(ct.stress_tensor[2]);
+   stress.add("v", ss);
+   ss = "      " +
+        std::to_string(ct.stress_tensor[3]) + "      " +
+        std::to_string(ct.stress_tensor[4]) + "      " +
+        std::to_string(ct.stress_tensor[5]);
+   stress.add("v", ss);
+   ss = "      " +
+        std::to_string(ct.stress_tensor[6]) + "      " +
+        std::to_string(ct.stress_tensor[7]) + "      " +
+        std::to_string(ct.stress_tensor[8]);
+   stress.add("v", ss);
+ 
    structure.add_child("crystal", crystal);
    structure.add_child("varray", positions);
-   structure.add_child("varray", forces);
+   modeling.add_child("varray", forces);
+   modeling.add_child("varray", stress);
    modeling.add_child("structure", structure);
    
 
     // Write the xml file
-    pt::xml_writer_settings<std::string> settings('\t', 1);
+   // pt::xml_writer_settings<std::string> settings('\t', 1);
     pt::write_xml( filename,
                 modeling,  
                 std::locale(),
-                pt::xml_writer_make_settings< std::string >( ' ', 1) );
+                pt::xml_writer_make_settings< std::string >( ' ', 2) );
 }

@@ -181,6 +181,9 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
 
     delete [] rho_tot;
+
+    // Save stress tensor
+    for(int i=0;i < 9;i++) ct.stress_tensor[i] = stress_tensor[i];
 }
 
 template void Stress<double>::Kinetic_term_FFT(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);

@@ -1025,6 +1025,7 @@ public:
    bool cell_relax;
    int cell_movable[9];
    double ldaU_radius;
+   double stress_tensor[9];
 
    // Memory usage options
    size_t q_alloc[3];
