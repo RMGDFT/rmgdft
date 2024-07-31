@@ -80,7 +80,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         {
             GetNewRhoPre(Kpts, rho);
         }
-        else if(ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == CUBIC_PRIMITIVE)
+        else if( (ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == CUBIC_PRIMITIVE) && ratio == 2)
         {
             GetNewRhoGpu(Kpts, rho);
         }

@@ -292,7 +292,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double *Hcore_tddft = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
     double ES = 0.0, E_downfold = 0.0, EkinPseudo = 0.0, totalE=0.0;
     double ES_0 = 0.0, EkinPseudo_0 = 0.0, totalE_0=0.0;
-    double vtxc, etxc, etxc_0=0.0;
+    double ES_00 = 0.0, EkinPseudo_00 = 0.0, totalE_00=0.0;
+    double vtxc, etxc, etxc_0=0.0, etxc_00=0.0;
     std::vector<double> Eterms(6, 1.0);
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
@@ -414,6 +415,32 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             delete [] v_psi;
             delete [] vxc_psi;
             RmgFreeHost(Hcore);
+
+            //get_vxc(rho, rho_oppo, rhocore, vxc);
+            RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
+            Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
+            etxc_00 = etxc;
+            delete F;
+            delete RT1;
+
+            RT1 = new RmgTimer("2-TDDFT: Vh");
+            VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
+            delete RT1;
+
+            ES_00 = 0.0;
+            for (int idx = 0; idx < FP0_BASIS; idx++) 
+            {
+                ES_00 += (rho[idx] - rhoc[idx]) * vh[idx];
+            }
+
+            ES_00 = 0.5 * vel * RmgSumAll(ES_00, pct.grid_comm);
+            int ntot2 = numst *numst;
+            int ione = 1;
+            for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
+            for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].occupation[0];
+            EkinPseudo_00 = ddot(&ntot2, matrix_glob, &ione, Hcore_tddft, &ione);
+            totalE_00 = E_downfold + EkinPseudo_00 + ES_00 + etxc_00 + ct.II;
 
         }
         for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
@@ -607,14 +634,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             EkinPseudo = ddot(&ntot2, matrix_glob, &ione, Hcore_tddft, &ione);
             totalE = E_downfold + EkinPseudo + ES + etxc + ct.II;
 
-
-            if(tot_steps == 0) 
+            if(tot_steps == 0 )
             {
                 totalE_0 = totalE;
                 EkinPseudo_0 = EkinPseudo;
                 ES_0 = ES;
                 etxc_0 = etxc;
             }
+
+
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             RT2a = new RmgTimer("2-TDDFT: Hupdate");
             HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);                                     
@@ -670,7 +698,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 Eterms[4] = ct.II       ;
                 Eterms[5] = totalE_0    ;
                 fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  %s", eunits);
-                fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f", totalE_0, EkinPseudo_0, ES_0, etxc_0);
+                fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f at Ground state", totalE_00, EkinPseudo_00, ES_00, etxc_00);
+                fprintf(efi, "\n&& %18.10f  %18.10f  %18.10f  %18.10f at 1st TDDFT step", totalE_0, EkinPseudo_0, ES_0, etxc_0);
                 fprintf(efi, "\n&&time  EkinPseudo_diff, Vh_diff, Exc_diff  totalE_diff%s", eunits);
             }
             fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
