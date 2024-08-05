@@ -72,11 +72,25 @@ void write_ffield (std::string &filename)
     pt::ptree positions;
     pt::ptree forces;
     pt::ptree stress;
+    pt::ptree charges;
+    pt::ptree energy;
+    pt::ptree converged;
 
 //    tree.put("energy.<xmlattr>.units","Ha");
 //    tree.put("energy.total",ct.TOTAL);
 
+   if(ct.forces_converged)
+       converged.put("force", "yes");
+   else
+       converged.put("force", "no");
+   if(ct.is_converging)
+       converged.put("convergent", "yes");
+   else
+       converged.put("convergent", "no");
+
    modeling.put("modeling","");
+   modeling.add_child("converged", converged);
+
    atom_field1.add("<xmlattr>.type", "string");
    atom_field1.put_value("element");
    atom_field2.add("<xmlattr>.type", "int");
@@ -105,6 +119,7 @@ void write_ffield (std::string &filename)
 
    structure.put("<xmlattr>.name","finalpos");
    basis.put("<xmlattr>.name","basis");
+   basis.put("<xmlattr>.units","bohr");
        std::string a1 = std::to_string(Rmg_L.a0[0]) + "  " + 
                      std::to_string(Rmg_L.a0[1]) + "  " +
                      std::to_string(Rmg_L.a0[2]) + " ";
@@ -134,7 +149,10 @@ void write_ffield (std::string &filename)
    crystal.add_child("varray", rec_basis);
 
    positions.put("<xmlattr>.name","positions");
+   positions.put("<xmlattr>.units","crystal");
    forces.put("<xmlattr>.name","forces");
+   forces.put("<xmlattr>.units","Ha/a0");
+   charges.put("<xmlattr>.name","voronoi_charge");
    for(auto Atom : Atoms)
    {
        std::string p = "      " + 
@@ -147,30 +165,67 @@ void write_ffield (std::string &filename)
                        std::to_string(Atom.force[0][1]) + "      " +
                        std::to_string(Atom.force[0][2]) + " ";
        forces.add("v", f);
+       std::string c = "      " + 
+                       std::to_string(Atom.partial_charge) + " ";
+       charges.add("v", c);
    }
 
    stress.put("<xmlattr>.name","stress");
+   stress.put("<xmlattr>.units","kbar");
    std::string ss;
    ss = "      " +
-        std::to_string(ct.stress_tensor[0]) + "      " +
-        std::to_string(ct.stress_tensor[1]) + "      " +
-        std::to_string(ct.stress_tensor[2]);
+        std::to_string(Ha_Kbar*ct.stress_tensor[0]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[1]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[2]);
    stress.add("v", ss);
    ss = "      " +
-        std::to_string(ct.stress_tensor[3]) + "      " +
-        std::to_string(ct.stress_tensor[4]) + "      " +
-        std::to_string(ct.stress_tensor[5]);
+        std::to_string(Ha_Kbar*ct.stress_tensor[3]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[4]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[5]);
    stress.add("v", ss);
    ss = "      " +
-        std::to_string(ct.stress_tensor[6]) + "      " +
-        std::to_string(ct.stress_tensor[7]) + "      " +
-        std::to_string(ct.stress_tensor[8]);
+        std::to_string(Ha_Kbar*ct.stress_tensor[6]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[7]) + "      " +
+        std::to_string(Ha_Kbar*ct.stress_tensor[8]);
    stress.add("v", ss);
  
+   energy.put("<xmlattr>.units","Ha");
+   {
+       pt::ptree ii;
+       ii.put("<xmlattr>.name","ion-ion");
+       ii.put_value("      " + std::to_string(ct.II));
+       energy.add_child("i", ii);
+       pt::ptree es;
+       es.put("<xmlattr>.name","electrostatic");
+       es.put_value("      " + std::to_string(-ct.ES));
+       energy.add_child("i", es);
+       pt::ptree vxc;
+       vxc.put("<xmlattr>.name","vxc");
+       vxc.put_value("      " + std::to_string(ct.xcstate));
+       energy.add_child("i", vxc);
+       pt::ptree exc;
+       exc.put("<xmlattr>.name","exc");
+       exc.put_value("      " + std::to_string(ct.XC));
+       energy.add_child("i", exc);
+       pt::ptree vdw_corr;
+       vdw_corr.put("<xmlattr>.name","vdw_corr");
+       vdw_corr.put_value("      " + std::to_string(ct.Evdw));
+       energy.add_child("i", vdw_corr);
+       pt::ptree fock;
+       fock.put("<xmlattr>.name","fock");
+       fock.put_value("      " + std::to_string(ct.FOCK));
+       energy.add_child("i", fock);
+       pt::ptree total;
+       total.put("<xmlattr>.name","total");
+       total.put_value("      " + std::to_string(ct.TOTAL));
+       energy.add_child("i", total);
+   }
+   modeling.add_child("energy", energy);
    structure.add_child("crystal", crystal);
    structure.add_child("varray", positions);
    modeling.add_child("varray", forces);
    modeling.add_child("varray", stress);
+   modeling.add_child("varray", charges);
    modeling.add_child("structure", structure);
    
 

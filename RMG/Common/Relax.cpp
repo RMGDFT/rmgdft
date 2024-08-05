@@ -41,6 +41,7 @@
 #include "bfgs.h"
 #include "GridObject.h"
 
+void write_ffield (std::string &filename);
 
 // Instantiate gamma and non-gamma versions
 template void Relax<double>(int , 
@@ -198,6 +199,9 @@ template <typename OrbitalType> void Relax (
 
     /* ---------- end relax loop --------- */
 
+    ct.forces_converged = CONV_FORCE;
+    ct.is_converging = true;
+
     if (ct.max_md_steps > 0 && steps > 0)
     {
 
@@ -213,7 +217,12 @@ template <typename OrbitalType> void Relax (
 
     if(ct.cell_relax)
         rmg_printf("        Final volume      = %12.6f\n", Rmg_L.omega);
-}                               /* end fastrlx */
+
+    // Write forcefield info
+    std::string ffield("forcefield.xml");
+    write_ffield (ffield);
+
+}   // end Relax
 
 
 /******/
