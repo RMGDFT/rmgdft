@@ -511,6 +511,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         get_dipole(rho, dipole_ele);
 
+        if(pct.gridpe == 0)
+        {
+            fprintf(dfi, "\n  &&dipole at groud state:  %18.10f  %18.10f  %18.10f ",
+                dipole_ele[0], dipole_ele[1], dipole_ele[2]);
+        }
         rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
@@ -671,6 +676,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
+            rmg_printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
+                    tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err);  
             //err= -1.0e0 ;  
             iter_scf ++ ;
         } //---- end of  SCF/while loop 
