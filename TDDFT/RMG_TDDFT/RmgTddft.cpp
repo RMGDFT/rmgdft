@@ -338,7 +338,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         dfi = fopen(filename.c_str(), "w");
 
-        fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",efield[0], efield[1], efield[2]);
         filename = std::string(pct.image_path[pct.thisimg]) +"totalE_"+ std::string(ct.basename);
         efi = fopen(filename.c_str(), "w");
 
@@ -513,7 +513,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         if(pct.gridpe == 0)
         {
-            fprintf(dfi, "\n  &&dipole at groud state:  %18.10f  %18.10f  %18.10f ",
+            fprintf(dfi, "\n  &&dipole at groud state:  %18.10e  %18.10e  %18.10e ",
                 dipole_ele[0], dipole_ele[1], dipole_ele[2]);
         }
         rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
@@ -712,7 +712,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
                     tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
         }
-        if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
+        if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
 
         if((tddft_steps +1) % ct.checkpoint == 0)

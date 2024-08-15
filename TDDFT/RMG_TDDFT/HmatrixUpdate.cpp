@@ -87,6 +87,63 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         trans_a = trans_t;
     }   
 
+#if CUDA_ENABLED || HIP_ENABLED
+    KpointType *psi_dev = (KpointType *)kptr->psi_dev;
+    psi_dev = psi_dev + tddft_start_state * pbasis;
+    KpointType *work_dev = (KpointType *)kptr->work_dev;
+    static double *v_dev;
+    static KpointType *mat_dev;
+    gpublasStatus_t gstat;
+
+    int block_size = ct.scalapack_block_factor;
+     block_size = num_states;
+    int nblock = (num_states + block_size -1)/block_size;
+
+
+    if(!v_dev)
+    {
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
+        gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(KpointType));
+        int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+
+        if(retval1 != MPI_SUCCESS) {
+            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+        }
+    }
+
+    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
+    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
+    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+
+    // V|psi> is in work_dev now
+    // Compute A matrix
+    KpointType alpha(vel);
+    KpointType beta(0.0);
+    for(int j = 0; j < nblock; j++)
+    {
+        int size_col = std::min(block_size, num_states - j * block_size);
+        RmgGemm(trans_a, trans_n, num_states, size_col,  pbasis, alpha, psi_dev, pbasis, work_dev + j * block_size * pbasis, 
+                pbasis, beta, mat_dev, num_states);
+        gpuMemcpy(global_matrix1, mat_dev,  (size_t)num_states * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
+
+        BlockAllreduce((double *)global_matrix1, (size_t)num_states * (size_t)size_col * (size_t)factor , pct.grid_comm);
+
+        for(int jst = 0; jst < size_col; jst++)
+        {
+            for(int ist = 0; ist < num_states; ist++)
+            {
+                int idx1 = ist + (j * block_size + jst) * num_states;
+                int idx2 = ist * num_states + (j * block_size + jst);
+                Aij[idx1] = global_matrix1[jst * num_states + ist];
+                Aij[idx2] = MyConj(global_matrix1[jst * num_states + ist]);
+
+            }
+        }
+    }
+
+#else
+
     // First time through allocate pinned memory for global_matrix1
     if(!global_matrix1) {
 
@@ -97,32 +154,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         }
 
     }
-
-#if CUDA_ENABLED || HIP_ENABLED
-    KpointType *psi_dev = (KpointType *)kptr->psi_dev;
-    psi_dev = psi_dev + tddft_start_state * pbasis;
-    KpointType *work_dev = (KpointType *)kptr->work_dev;
-    static double *v_dev;
-    gpublasStatus_t gstat;
-    if(!v_dev)
-    {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
-        RmgGpuError(__FILE__, __LINE__, gpuHostRegister( global_matrix1, num_states * num_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
-    }
-
-    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
-    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-                         (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
-
-    // V|psi> is in work_dev now
-    // Compute A matrix
-    KpointType alpha(vel);
-    KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, psi_dev, pbasis, work_dev, 
-            pbasis, beta, global_matrix1, num_states);
-DeviceSynchronize();
-#else
 
     // V|psi> is in tmp_arrayT
     tmp_arrayT = new KpointType[psi_alloc];
@@ -143,14 +174,14 @@ DeviceSynchronize();
             pbasis, beta, global_matrix1, num_states);
 
     delete [] tmp_arrayT;
-#endif
 
 
-//    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    //    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     BlockAllreduce((double *)global_matrix1, (size_t)num_states * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
     // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
+#endif
 
 }
 
