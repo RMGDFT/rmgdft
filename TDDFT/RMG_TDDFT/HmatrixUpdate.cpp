@@ -96,7 +96,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     gpublasStatus_t gstat;
 
     int block_size = ct.scalapack_block_factor;
-     block_size = num_states;
+    block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
 
 
@@ -123,20 +123,21 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     for(int j = 0; j < nblock; j++)
     {
         int size_col = std::min(block_size, num_states - j * block_size);
-        RmgGemm(trans_a, trans_n, num_states, size_col,  pbasis, alpha, psi_dev, pbasis, work_dev + j * block_size * pbasis, 
-                pbasis, beta, mat_dev, num_states);
-        gpuMemcpy(global_matrix1, mat_dev,  (size_t)num_states * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
+        int size_row = num_states - j * block_size;
+        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi_dev+ j*block_size*pbasis, pbasis, work_dev + j * block_size * pbasis, 
+                pbasis, beta, mat_dev, size_row);
+        gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
 
-        BlockAllreduce((double *)global_matrix1, (size_t)num_states * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         for(int jst = 0; jst < size_col; jst++)
         {
-            for(int ist = 0; ist < num_states; ist++)
+            for(int ist = 0; ist < size_row; ist++)
             {
-                int idx1 = ist + (j * block_size + jst) * num_states;
-                int idx2 = ist * num_states + (j * block_size + jst);
-                Aij[idx1] = global_matrix1[jst * num_states + ist];
-                Aij[idx2] = MyConj(global_matrix1[jst * num_states + ist]);
+                int idx1 = (ist + j * block_size) + (j * block_size + jst) * num_states;
+                int idx2 = (ist + j * block_size) * num_states + (j * block_size + jst);
+                Aij[idx1] = global_matrix1[jst * size_row + ist];
+                Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
 
             }
         }
