@@ -413,6 +413,10 @@ template <typename OrbitalType> void run (
             }
 
         case TDDFT:
+            ct.dipole_corr[0] = 1;
+            ct.dipole_corr[1] = 1;
+            ct.dipole_corr[2] = 1;
+
             if(!ct.restart_tddft) 
             {   
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);

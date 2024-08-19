@@ -9,9 +9,6 @@ add_library (ON_Common
  CalculateResidual.cpp
  get_te.cpp
  ReadDataFromRMG.cpp
- VhcorrDipoleInit.cpp
- VhcorrPeriodicPart.cpp
- DipoleCorrection.cpp
  UpdatePot.cpp
  OrbitalOptimize.cpp
  DiagScalapack.cpp

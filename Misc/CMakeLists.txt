@@ -1,4 +1,5 @@
 add_library (Misc
+DipoleCorrection.cpp
 GridObject.cpp
 PolyFit.cpp
 WritePoscar.cpp

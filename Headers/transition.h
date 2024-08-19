@@ -203,6 +203,7 @@ template <typename T> void Write_Wfs_forWannier(int kpt_global, Kpoint<T> *kptr,
 double GetPlanarAnisotropy(double *density);
 void GetFdFactor(int kidx);
 void SimplePolyFit(const double *x, double *y, const size_t n, const size_t k, double *beta);
+void DipoleCorrection(double *dipole,  double *vh_dipole);
 
 #endif
 #endif

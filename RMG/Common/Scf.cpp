@@ -64,13 +64,20 @@ template <typename OrbitalType> bool Scf (
 
     spinobj<double> new_rho;
     fgobj<double> vtot;
+    fgobj<double> vh_dipole_corr;
     wfobj<double> vtot_psi;
     int FP0_BASIS = vtot.size();
     int P0_BASIS = vtot_psi.size();
 
+    if(ct.dipole_corr[0]+ct.dipole_corr[0]+ct.dipole_corr[0] >0)
+    {
+        double dipole[3];
+        get_dipole(rho.data(), dipole);
+        DipoleCorrection(dipole,  vh_dipole_corr.data());
+    }
     /* save old vhxc + vnuc */
     for (int idx = 0; idx < vtot.pbasis; idx++) {
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_dipole_corr[idx];
     }
 
     if(ct.noncoll) vxc_psi = new double[4*P0_BASIS];
@@ -98,7 +105,7 @@ template <typename OrbitalType> bool Scf (
     for (int idx = 0; idx < vtot.pbasis; idx++)
     {
         t3 = -vtot[idx];
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_dipole_corr[idx];
         t3 += vtot[idx];
         t[0] += rho[idx] * t3;
         t[1] += t3 * t3;
