@@ -309,13 +309,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     fflush(NULL);
 
 
-
-    if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
-    {
-        VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
-    }
-
-
     int FP0_BASIS = get_FP0_BASIS();
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     switch(ct.runflag)

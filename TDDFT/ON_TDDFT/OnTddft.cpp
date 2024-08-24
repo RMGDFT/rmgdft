@@ -189,8 +189,6 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 
 
-    //    VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
-
     /* allocate memory for eigenvalue send array and receive array */
 
     vtot = new double[FP0_BASIS];
