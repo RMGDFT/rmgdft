@@ -15,4 +15,6 @@ mkdir build-frontier-gpu
 cd build-frontier-gpu
 cmake .. -DRMG_HIP_ENABLED=1 -DHIP_PATH="/opt/rocm-6.0.0/"
 make rmg-gpu -j 20
+make rmg-on-gpu -j 20
+make rmg-negf-gpu -j 20
 
