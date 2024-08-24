@@ -80,7 +80,7 @@ template <typename OrbitalType> void Relax (
     FILE *XDATCAR_fh = NULL;
     if(pct.imgpe == 0) 
     {
-        std::string filename = std::string(pct.image_path[pct.thisimg]) + std::string(ct.basename) + ".XDATCAR5";
+        std::string filename = std::string(ct.basename) + ".XDATCAR5";
 
         XDATCAR_fh = fopen(filename.c_str(), "w");
         WritePoscar(XDATCAR_fh, rlx_steps);
@@ -219,7 +219,7 @@ template <typename OrbitalType> void Relax (
         rmg_printf("        Final volume      = %12.6f\n", Rmg_L.omega);
 
     // Write forcefield info
-    std::string ffield("forcefield.xml");
+    std::string ffield = std::string(pct.image_path[pct.thisimg]) + "forcefield.xml";
     write_ffield (ffield);
 
 }   // end Relax

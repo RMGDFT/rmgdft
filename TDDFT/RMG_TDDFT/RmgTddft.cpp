@@ -337,12 +337,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     efield[2] = ct.z_field_0 * ct.e_field;
     if(pct.gridpe == 0)
     {
-        filename = std::string(pct.image_path[pct.thisimg]) +"dipole.dat_"+ std::string(ct.basename);
+        filename = std::string(ct.basename) + "_dipole.dat";
 
         dfi = fopen(filename.c_str(), "w");
 
         fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",efield[0], efield[1], efield[2]);
-        filename = std::string(pct.image_path[pct.thisimg]) +"totalE_"+ std::string(ct.basename);
+        filename = std::string(ct.basename) + "_totalE";
         efi = fopen(filename.c_str(), "w");
 
     }
