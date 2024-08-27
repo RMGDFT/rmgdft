@@ -58,7 +58,7 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
 template <typename OrbitalType> 
-void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state);
+void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);

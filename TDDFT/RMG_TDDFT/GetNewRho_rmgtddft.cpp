@@ -31,10 +31,10 @@
 #include "RmgGemm.h"
 #include "blas_driver.h"
 
-template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
-template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, double *rho_matrix, int numst, int tddft_start_state);
+template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
+template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
 template <typename KpointType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state)
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground)
 {
     int idx;
 
@@ -60,22 +60,12 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
     {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for noncoll \n");
     }
-    static double *rho_downfold = NULL;
-    if(rho_downfold == NULL)
+
+    for (int istate = 0; istate < numst; istate++)
     {
-        rho_downfold = new double[pbasis]();
-        for (int istate = 0; istate < tddft_start_state; istate++)
-        {
+        rho_matrix[istate * numst + istate] -=
+            kptr->Kstates[istate + tddft_start_state].occupation[0];
 
-            double scale = kptr->Kstates[istate].occupation[0];
-
-            KpointType *psi = kptr->Kstates[istate].psi;
-
-            for (int idx = 0; idx < pbasis; idx++)
-            {
-                rho_downfold[idx] += scale * std::norm(psi[idx]);
-            }
-        }
     }
 
 #if CUDA_ENABLED || HIP_ENABLED 
@@ -111,7 +101,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 #endif
     }
 
-    for(idx = 0; idx < pbasis; idx++)rho_temp[idx] += rho_downfold[idx];
 
     /* Interpolate onto fine grid, result will be stored in rho*/
     switch (ct.interp_flag)
@@ -140,6 +129,8 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
     ct.tcharge = ZERO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     for (int idx = 0; idx < FP0_BASIS; idx++)
+        rho[idx] += rho_ground[idx];
+    for (int idx = 0; idx < FP0_BASIS; idx++)
         ct.tcharge += rho[idx];
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */
@@ -148,7 +139,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     double t1 = ct.nel / ct.tcharge;
-    if(std::abs(t1-1) > 1.0e-6) rmg_printf ("normalization constant-1 for new charge is %e\n", t1-1);
+    if(std::abs(t1-1) > 1.0e-6) rmg_printf ("normalization constant-1 for new charge in tddft is %e\n", t1-1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
 #if CUDA_ENABLED || HIP_ENABLED 

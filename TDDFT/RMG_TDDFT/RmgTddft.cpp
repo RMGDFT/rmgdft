@@ -354,11 +354,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
+    fgobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
     int pbasis = Kptr[0]->pbasis;
     size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis * sizeof(OrbitalType);
-    ReadData (ct.infile, vh, rho, vxc, Kptr);
+    ReadData (ct.infile, vh, rho_ground.data(), vxc, Kptr);
 #if CUDA_ENABLED || HIP_ENABLED
     // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
     // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
@@ -589,7 +590,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
             my_sync_device();
-            GetNewRho_rmgtddft(Kptr[0], rho, matrix_glob, numst, ct.tddft_start_state);
+            GetNewRho_rmgtddft(Kptr[0], rho, matrix_glob, numst, ct.tddft_start_state, rho_ground.data());
             delete(RT2a);
 
             dcopy(&FP0_BASIS, vh_dipole, &ione, vh_dipole_old, &ione);
