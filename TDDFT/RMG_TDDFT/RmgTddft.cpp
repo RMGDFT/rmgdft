@@ -331,17 +331,13 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         exit(0);
     }
 
-    double efield[3];
-    efield[0] = ct.x_field_0 * ct.e_field;
-    efield[1] = ct.y_field_0 * ct.e_field;
-    efield[2] = ct.z_field_0 * ct.e_field;
     if(pct.gridpe == 0)
     {
         filename = std::string(ct.basename) + "_dipole.dat";
 
         dfi = fopen(filename.c_str(), "w");
 
-        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",efield[0], efield[1], efield[2]);
+        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
         filename = std::string(ct.basename) + "_totalE";
         efi = fopen(filename.c_str(), "w");
 
@@ -446,7 +442,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
         if(ct.tddft_mode == EFIELD)
         {
-            init_efield(vtot);
+            init_efield(vtot, ct.efield_tddft);
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
         }
         else if(ct.tddft_mode == POINT_CHARGE)

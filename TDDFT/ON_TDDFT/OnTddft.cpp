@@ -173,17 +173,13 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         exit(0);
     }
 
-    double efield[3];
-    efield[0] = ct.x_field_0 * ct.e_field;
-    efield[1] = ct.y_field_0 * ct.e_field;
-    efield[2] = ct.z_field_0 * ct.e_field;
     if(pct.gridpe == 0)
     {
         filename = std::string(pct.image_path[pct.thisimg])+ "dipole.dat_"+std::string(ct.basename);
 
         dfi = fopen(filename.c_str(), "w");
 
-        fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
 
     }
 
@@ -260,7 +256,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         pre_steps = 0;
 
         for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
-        init_efield(vtot);
+        init_efield(vtot, ct.efield_tddft);
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
         HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Hij_local);

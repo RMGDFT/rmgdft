@@ -1346,11 +1346,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Ratio between target RMS for get_vh and RMS total potential. ",
             "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0. ", POISSON_OPTIONS);
 
-    If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
-            CHECK_AND_TERMINATE, OPTIONAL,
-            "Magnitude of external electric field. ",
-            "electric_field_magnitude must be a postive value. ");
-
     Ri::ReadVector<double> def_tddft_qpos({{0.0,0.0,0.0}});
     Ri::ReadVector<double> tddft_qpos;
     If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
@@ -1362,10 +1357,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Gaussian parameter for point charge to Gaussian charge",
             "", TDDFT_OPTIONS);
 
-    Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
+    Ri::ReadVector<double> def_electric_field({{0.0,0.0,0.0}});
     Ri::ReadVector<double> electric_field;
-    If.RegisterInputKey("electric_field_vector", &electric_field, &def_electric_field, 3, OPTIONAL,
+    If.RegisterInputKey("electric_field", &electric_field, &def_electric_field, 3, OPTIONAL,
             "Components of the electric field. ",
+            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
+
+    Ri::ReadVector<double> electric_field_tddft;
+    If.RegisterInputKey("electric_field_tddft", &electric_field_tddft, &def_electric_field, 3, OPTIONAL,
+            "the electric field for TDDFT. ",
             "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
 
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
@@ -1675,12 +1675,21 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ct.tddft_qpos[2] = tddft_qpos.vals.at(2);
     /* read the electric field vector */
     try {
-        ct.x_field_0 = electric_field.vals.at(0);
-        ct.y_field_0 = electric_field.vals.at(1);
-        ct.z_field_0 = electric_field.vals.at(2);
+        ct.efield[0] = electric_field.vals.at(0);
+        ct.efield[1] = electric_field.vals.at(1);
+        ct.efield[2] = electric_field.vals.at(2);
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the electric field vector.\n";
+    }
+
+    try {
+        ct.efield_tddft[0] = electric_field_tddft.vals.at(0);
+        ct.efield_tddft[1] = electric_field_tddft.vals.at(1);
+        ct.efield_tddft[2] = electric_field_tddft.vals.at(2);
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the TDDFT electric field vector.\n";
     }
 
 
@@ -1694,7 +1703,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.background_charge = -lc.system_charge;
 
     lc.occ_width *= eV_Ha;
-    lc.e_field *= eV_Ha;
 
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
