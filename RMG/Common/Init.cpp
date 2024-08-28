@@ -687,21 +687,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
     }
 
+    vtot = new double[FP0_BASIS];
+    for (int idx = 0; idx < FP0_BASIS; idx++)
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+    /*Generate the Dnm_I */
+    get_ddd (vtot, vxc, true);
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
     {
 
         /*dnmI has to be stup before calling subdiag */
-        vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
         double *vxc_psi = NULL;
-
-
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-
-        /*Generate the Dnm_I */
-        get_ddd (vtot, vxc, true);
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
@@ -791,11 +788,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Release vtot memory */
         delete [] vtot_psi;
-        delete [] vtot;
         if(ct.noncoll) delete [] vxc_psi;
 
     }
 
+    delete [] vtot;
 
 
     ct.num_states = ct.run_states;

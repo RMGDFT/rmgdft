@@ -146,6 +146,7 @@ public:
     char infile_tddft[2*MAX_PATH];
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
+    bool tddft_noscf;
     int tddft_mode;
     double tddft_qpos[3];
     double tddft_qgau;

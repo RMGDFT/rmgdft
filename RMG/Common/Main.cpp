@@ -417,10 +417,19 @@ template <typename OrbitalType> void run (
             ct.dipole_corr[1] = 1;
             ct.dipole_corr[2] = 1;
 
-            if(!ct.restart_tddft) 
+            if(!ct.restart_tddft && !ct.tddft_noscf) 
             {   
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                outcubes(Kptr, vh.data(), rho.data());
+            }
+            else
+            {
+                spinobj<double> &rho = *(Kptr[0]->rho);
+                spinobj<double> &vxc = *(Kptr[0]->vxc);
+                fgobj<double> &rhoc = *(Kptr[0]->rhoc);
+                fgobj<double> &rhocore = *(Kptr[0]->rhocore);
+                fgobj<double> &vnuc = *(Kptr[0]->vnuc);
+                fgobj<double> &vh = *(Kptr[0]->vh);
+
             }
             ct.cube_rho = false;
             RmgTddft (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr);
