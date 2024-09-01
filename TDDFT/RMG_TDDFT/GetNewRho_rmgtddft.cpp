@@ -148,5 +148,11 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 #else
     delete [] rho_temp;
 #endif
+    for (int istate = 0; istate < numst; istate++)
+    {
+        rho_matrix[istate * numst + istate] +=
+            kptr->Kstates[istate + tddft_start_state].occupation[0];
+
+    }
 }
 

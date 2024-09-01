@@ -44,6 +44,14 @@
 
 void CheckSetDefault(void)
 {
+#if !(CUDA_ENABLED || HIP_ENABLED)
+    ct.tddft_gpu = false;
+#endif
+
+    if(ct.tddft_noscf)
+    {
+        ct.runflag = RESTART;
+    }
     if(ct.cell_relax)
     {
         ct.stress = true;
@@ -65,7 +73,7 @@ void CheckSetDefault(void)
         }
 
     }
-    
+
     if(ct.stress)
     {
         ct.localize_localpp = false;
@@ -118,7 +126,7 @@ void CheckSetDefault(void)
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 
-       /* Initialize symmetry stuff */
+    /* Initialize symmetry stuff */
 
     ct.is_gamma = true;
     ct.is_gamma = ct.is_gamma && (ct.kpoint_mesh[0] == 1);
@@ -179,8 +187,8 @@ void CheckSetDefault(void)
         ct.potential_acceleration_constant_step = 0.0;
 
     }
-     if(ct.wannier90) {
-         ct.frac_symm = false;
-         ct.time_reversal = false;
-     }
+    if(ct.wannier90) {
+        ct.frac_symm = false;
+        ct.time_reversal = false;
+    }
 }

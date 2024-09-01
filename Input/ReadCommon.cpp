@@ -244,6 +244,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_gpu", &lc.tddft_gpu, true, 
+                        "use gpu for ELYDYN or not", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
                         "TDDFT run read data directly from the last scf job", TDDFT_OPTIONS);
 

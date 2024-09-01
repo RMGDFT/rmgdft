@@ -242,7 +242,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     } // end switch
 
 #if CUDA_ENABLED || HIP_ENABLED
-    scalapack_groups = pct.grid_npes;
+    if(ct.tddft_gpu)
+    {
+        scalapack_groups = pct.grid_npes;
+    }
     // all tddft propergating will use 1 gpu only, not sure the speed comparison with scalapack for a large system 
 #endif
     int last = 1;
@@ -415,19 +418,19 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             //get_vxc(rho, rho_oppo, rhocore, vxc);
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
             Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
+            F->v_xc(rho_ground.data(), rhocore, etxc, vtxc, vxc, ct.nspin);
             etxc_00 = etxc;
             delete F;
             delete RT1;
 
             RT1 = new RmgTimer("2-TDDFT: Vh");
-            VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
+            VhDriver(rho_ground.data(), rhoc, vh, ct.vh_ext, 1.0-12);
             delete RT1;
 
             ES_00 = 0.0;
             for (int idx = 0; idx < FP0_BASIS; idx++) 
             {
-                ES_00 += (rho[idx] - rhoc[idx]) * vh[idx];
+                ES_00 += (rho_ground[idx] - rhoc[idx]) * vh[idx];
             }
 
             ES_00 = 0.5 * vel * RmgSumAll(ES_00, pct.grid_comm);
