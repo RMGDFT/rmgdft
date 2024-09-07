@@ -287,6 +287,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         gpuMalloc((void **)&Hmatrix_m1, n2*sizeof(double));
         gpuMalloc((void **)&Hmatrix_0, n2*sizeof(double));
         gpuMalloc((void **)&Pn0, 2*n2*sizeof(double));
+
+        gpuMalloc((void **)&Hmatrix_old, n2*sizeof(double));
+        gpuMalloc((void **)&Hmatrix_1, n2*sizeof(double));
+        gpuMalloc((void **)&Hmatrix_dt, n2*sizeof(double));
+        gpuMalloc((void **)&Pn1, 2*n2*sizeof(double));
     }
     else
     {
@@ -294,13 +299,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
        Hmatrix_m1 = Hmatrix_m1_cpu;
        Hmatrix_0 = Hmatrix_0_cpu;
        Pn0 = Pn0_cpu;
+
+       Hmatrix_old = new double[n2];
+       Hmatrix_1 = new double[n2];
+       Hmatrix_dt = new double[n2];
+       Pn1 = new double[2*n2];
     }
 
     double *Akick       = Hmatrix_0;
-    MallocHostOrDevice((void **)&Hmatrix_old, n2*sizeof(double));
-    MallocHostOrDevice((void **)&Hmatrix_1, n2*sizeof(double));
-    MallocHostOrDevice((void **)&Hmatrix_dt, n2*sizeof(double));
-    MallocHostOrDevice((void **)&Pn1, 2*n2*sizeof(double));
 
 
     double    err        ;
