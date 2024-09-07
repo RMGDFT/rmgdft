@@ -28,27 +28,41 @@
 #include "ErrorFuncs.h"
 
 
+void MallocHostOrDevice(void **ptr, size_t size)
+{
+    if(ct.tddft_gpu)
+    {
+        gpuMalloc(ptr, size);
+    }
+    else
+    {
+        *ptr = malloc(size);
+    }
+}
+void FreeHostOrDevice(void *ptr)
+{
+    if(ct.tddft_gpu)
+    {
+        gpuFree(ptr);
+    }
+    else
+    {
+        free(ptr);
+    }
+}
 
 #if HIP_ENABLED
 
 #ifdef __HIP_PLATFORM_NVCC__
-    #include <cuda.h>
-    #include <cuda_runtime_api.h>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 #endif
-void MallocHostOrDevice(void **ptr, size_t size)
-{
-    gpuMalloc(ptr, size);
-}
-void FreeHostOrDevice(void *ptr)
-{
-    gpuFree(ptr);
-}
 
 hipError_t gpuMalloc(void **ptr, size_t size)
 {
     hipError_t hiperr = hipMalloc(ptr, size);
     if(hiperr != hipSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
     return hiperr;
 }
 
@@ -58,7 +72,7 @@ hipError_t gpuMallocManaged(void **ptr, size_t size)
     //hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
 
     if(hiperr != hipSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
     return hiperr;
 }
 
@@ -109,7 +123,7 @@ hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemc
 
 hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream)
 {
-// Bit of a hack until HIP implements this
+    // Bit of a hack until HIP implements this
 #ifdef __HIP_PLATFORM_NVCC__
     cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
     return hipSuccess;
@@ -159,14 +173,6 @@ hipError_t gpuGetDeviceCount(int *count)
 }
 #elif CUDA_ENABLED
 
-void MallocHostOrDevice(void **ptr, size_t size)
-{
-   gpuMalloc(ptr, size);
-}
-void FreeHostOrDevice(void *ptr)
-{
-    gpuFree(ptr);
-}
 cudaError_t gpuMalloc(void **ptr, size_t size)
 {
     cudaError_t cuerr = cudaMalloc(ptr, size);
@@ -182,7 +188,7 @@ cudaError_t gpuMallocManaged(void **ptr, size_t size)
 {
     cudaError_t cuerr = cudaMallocManaged(ptr, size);
     if(cuerr != cudaSuccess)
-    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
     return cuerr;
 }
 
@@ -196,7 +202,7 @@ cudaError_t gpuMallocHost(void **ptr, size_t size)
     {
         cudaError_t cuerr = cudaMallocHost(ptr, size);
         if(cuerr != cudaSuccess)
-        rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
+            rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
         return cuerr;
     }
 }
@@ -277,15 +283,11 @@ cudaError_t gpuGetDeviceCount(int *count)
 #include "GpuAlloc.h"
 #include <omp.h>
 
-void MallocHostOrDevice(void **ptr, size_t size)
-{
-   gpuMalloc(ptr, size);
-}
-void FreeHostOrDevice(void *ptr)
-{
-    int device_id = omp_get_default_device();
-    omp_target_free(ptr, device_id);
-}
+//void FreeHostOrDevice(void *ptr)
+//{
+//    int device_id = omp_get_default_device();
+//    omp_target_free(ptr, device_id);
+//}
 int gpuMalloc(void **ptr, size_t size)
 {
     *ptr = cl::sycl::malloc_device(size, ct.sycl_Q);
@@ -387,17 +389,9 @@ cudaError_t gpuGetDeviceCount(int *count)
 }
 #endif
 #else
-void MallocHostOrDevice(void **ptr, size_t size)
-{
-    *ptr = malloc(size);
-}
-void FreeHostOrDevice(void *ptr)
-{
-    free(ptr);
-}
 void gpuMalloc(void **ptr, size_t size)
 {
-   ptr = NULL;
+    ptr = NULL;
 }
 void gpuFree(void *ptr)
 {}
