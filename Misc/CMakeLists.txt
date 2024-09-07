@@ -1,4 +1,5 @@
 add_library (Misc
+GpuCpuWraper.cpp
 DipoleCorrection.cpp
 GridObject.cpp
 PolyFit.cpp

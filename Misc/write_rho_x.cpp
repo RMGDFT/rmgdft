@@ -5,7 +5,7 @@
 
 
 #include <stdio.h>
-#include "main.h"
+#include "transition.h"
 #include "prototypes_on.h"
 
 void write_rho_x(double * rho, char *ab)
@@ -13,9 +13,7 @@ void write_rho_x(double * rho, char *ab)
 
     int ix, iy, iz, poff;
     double t1;
-    double *zvec;
-
-    my_malloc_init( zvec, get_FNX_GRID(), double );
+    double *zvec = new double[get_FNX_GRID()]();
     /* Get this processors offset */
     poff = get_FPX_OFFSET();
 
@@ -57,7 +55,7 @@ void write_rho_x(double * rho, char *ab)
         fflush(NULL);
     }
 
-    my_free(zvec);
+    delete []zvec;
 }                               /* end get_avgd */
 
 /******/

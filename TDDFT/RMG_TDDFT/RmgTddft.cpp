@@ -241,13 +241,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     } // end switch
 
-#if CUDA_ENABLED || HIP_ENABLED
     if(ct.tddft_gpu)
     {
         scalapack_groups = pct.grid_npes;
     }
     // all tddft propergating will use 1 gpu only, not sure the speed comparison with scalapack for a large system 
-#endif
     int last = 1;
     numst = ct.num_states - ct.tddft_start_state; 
     Scalapack *Sp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
@@ -262,21 +260,49 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     n22 = 2* n2;
 
     double *matrix_glob = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
-    double *Hmatrix     = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Hmatrix_old = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Akick       = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Pn0         = (double *)RmgMallocHost((size_t)n2*sizeof(double)*2);
-    double *Pn1         = (double *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+    double *Hmatrix_cpu     = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Pn0_cpu         = (double *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+    double *Hmatrix_m1_cpu  = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_0_cpu   = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Akick_cpu = Hmatrix_0_cpu;
     double *vh_old      = new double[FP0_BASIS];
     double *vxc_old     = new double[FP0_BASIS];
     double *vh_dipole_old = new double[FP0_BASIS];
     double *vh_dipole     = new double[FP0_BASIS];
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
-    double *Hmatrix_m1  = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Hmatrix_0   = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Hmatrix_1   = (double *)RmgMallocHost((size_t)n2*sizeof(double));
-    double *Hmatrix_dt  = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_old;
+    double *Pn1        ;
+    double *Hmatrix_1  ;
+    double *Hmatrix_dt ;
+
+    double *Hmatrix     = NULL;
+    double *Pn0         = NULL;
+    double *Hmatrix_m1  = NULL;
+    double *Hmatrix_0   = NULL;
+    size_t matrix_size = n2*sizeof(double);
+    if(ct.tddft_gpu)
+    {
+        gpuMalloc((void **)&Hmatrix, n2*sizeof(double));
+        gpuMalloc((void **)&Hmatrix_m1, n2*sizeof(double));
+        gpuMalloc((void **)&Hmatrix_0, n2*sizeof(double));
+        gpuMalloc((void **)&Pn0, 2*n2*sizeof(double));
+    }
+    else
+    {
+       Hmatrix = Hmatrix_cpu;
+       Hmatrix_m1 = Hmatrix_m1_cpu;
+       Hmatrix_0 = Hmatrix_0_cpu;
+       Pn0 = Pn0_cpu;
+    }
+
+    double *Akick       = Hmatrix_0;
+    MallocHostOrDevice((void **)&Hmatrix_old, n2*sizeof(double));
+    MallocHostOrDevice((void **)&Hmatrix_1, n2*sizeof(double));
+    MallocHostOrDevice((void **)&Hmatrix_dt, n2*sizeof(double));
+    MallocHostOrDevice((void **)&Pn1, 2*n2*sizeof(double));
+
+
     double    err        ;
     int       ij_err     ;
     double   thrs_dHmat =1.0e-5 ;
@@ -295,7 +321,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     get_dipole(rho, dipole_ele);
     DipoleCorrection(dipole_ele,  vh_dipole);
 
-    double *Hcore_tddft = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
+    double *Hcore_tddft = new double[(size_t)numst * (size_t)numst];
     double ES = 0.0, E_downfold = 0.0, EkinPseudo = 0.0, totalE=0.0;
     double ES_0 = 0.0, EkinPseudo_0 = 0.0, totalE_0=0.0;
     double ES_00 = 0.0, EkinPseudo_00 = 0.0, totalE_00=0.0;
@@ -348,7 +374,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
 
-
     /* allocate memory for eigenvalue send array and receive array */
 
     vtot = new double[FP0_BASIS];
@@ -372,15 +397,19 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_dipole, Pn0, Hmatrix, Hmatrix_m1, Hmatrix_0, 
+        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_dipole, Pn0_cpu, Hmatrix_cpu, Hmatrix_m1_cpu, Hmatrix_0_cpu, 
                 &pre_steps, n2, Eterms, Hcore_tddft, numst);
+        MemcpyHostDevice(matrix_size, Hmatrix_cpu, Hmatrix);
+        MemcpyHostDevice(matrix_size, Hmatrix_m1_cpu, Hmatrix_m1);
+        MemcpyHostDevice(matrix_size, Hmatrix_0_cpu, Hmatrix_0);
+        MemcpyHostDevice(2*matrix_size, Pn0_cpu, Pn0);
         E_downfold   = Eterms[0];
         EkinPseudo_0 = Eterms[1];
         ES_0         = Eterms[2];
         etxc_0       = Eterms[3];
         ct.II        = Eterms[4];
         totalE_0     = Eterms[5];
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);
 
     }
     else
@@ -459,13 +488,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);
-        Sp->CopySquareMatrixToDistArray(matrix_glob, Akick, numst, desca);
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Akick_cpu, numst, desca);
+
+        MemcpyHostDevice(matrix_size, Akick_cpu, Akick);
 
 
         for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
         for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].eig[0];
 
-        Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix_cpu, numst, desca);
+        MemcpyHostDevice(matrix_size, Hmatrix_cpu, Hmatrix);
 
         my_sync_device();
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);
@@ -477,7 +509,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             {
 
                 printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %10.3e",  Hmatrix[i*numst + j]);
+                for(int j = 0; j < 10; j++) printf(" %10.3e",  Hmatrix_cpu[i*numst + j]);
             }
 
         }
@@ -488,12 +520,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         double alpha = 1.0/time_step;
         daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
 
-        for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
+        for(i = 0; i < 2* n2; i++) Pn0_cpu[i] = 0.0;
 
         for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
         for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].occupation[0];
-        Sp->CopySquareMatrixToDistArray(matrix_glob, Pn0, numst, desca);
-
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Pn0_cpu, numst, desca);
+        MemcpyHostDevice(matrix_size*2, Pn0_cpu, Pn0);
 
         if(pct.gridpe == 0)
         {
@@ -502,7 +534,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
         rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
-        rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
+        rmg_printf("\n  z dipolll  %f \n", dipole_ele[2]);
 
         //   if(pct.gridpe == 0)
         //   for(int i = 0; i < 5; i++) 
@@ -511,8 +543,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //   }
 
 
-        for(i = 0; i < n2; i++) Hmatrix_m1[i] = 0.0;
-        for(i = 0; i < n2; i++) Hmatrix_0[i] = 0.0;
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
         my_sync_device();
@@ -533,7 +563,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
 
         tot_steps = pre_steps + tddft_steps;
-
         //  guess H1 from  H(0) and H(-1):
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
@@ -584,13 +613,23 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             else
             {
-                dcopy_driver(n2, Pn1, ione, matrix_glob, ione);
+                if(ct.tddft_gpu)
+                {
+                    MemcpyDeviceHost(matrix_size, Pn1, matrix_glob);
+                }
+                else
+                {
+                    dcopy_driver(n2, Pn1, ione, matrix_glob, ione);
+                }
             }
 
 
             my_sync_device();
             GetNewRho_rmgtddft(Kptr[0], rho, matrix_glob, numst, ct.tddft_start_state, rho_ground.data());
             delete(RT2a);
+
+            //write_rho_x(rho, "update rho");
+            //write_rho_x(rho_ground.data(), "groumd rho");
 
             dcopy(&FP0_BASIS, vh_dipole, &ione, vh_dipole_old, &ione);
             dcopy(&FP0_BASIS, vh, &ione, vh_old, &ione);
@@ -645,8 +684,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             else
             {
-                my_sync_device();
-                dcopy_driver(n2, matrix_glob, ione, Hmatrix, ione);
+                if(ct.tddft_gpu)
+                {
+                    MemcpyHostDevice(matrix_size, matrix_glob, Hmatrix);
+                    my_sync_device();
+                }
+                else
+                {
+                    dcopy_driver(n2, matrix_glob, ione, Hmatrix, ione);
+                }
             }
             delete(RT2a);
 
@@ -706,9 +752,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         if((tddft_steps +1) % ct.checkpoint == 0)
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
+
+            MemcpyDeviceHost(2*matrix_size, Pn0, Pn0_cpu);
+            MemcpyDeviceHost(matrix_size, Hmatrix, Hmatrix_cpu);
+            MemcpyDeviceHost(matrix_size, Hmatrix_m1, Hmatrix_m1_cpu);
+            MemcpyDeviceHost(matrix_size, Hmatrix_0, Hmatrix_0_cpu);
+
             my_sync_device();
-            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_dipole, Pn0, Hmatrix, 
-                    Hmatrix_m1, Hmatrix_0, tot_steps+1, n2, Eterms, Hcore_tddft, numst);
+            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_dipole, Pn0_cpu, Hmatrix_cpu, 
+                    Hmatrix_m1_cpu, Hmatrix_0_cpu, tot_steps+1, n2, Eterms, Hcore_tddft, numst);
             delete RT2a;
             if(pct.gridpe == 0)fflush(dfi);
             if(pct.gridpe == 0)fflush(efi);
@@ -728,11 +780,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     }
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
+    MemcpyDeviceHost(2*matrix_size, Pn0, Pn0_cpu);
+    MemcpyDeviceHost(matrix_size, Hmatrix, Hmatrix_cpu);
+    MemcpyDeviceHost(matrix_size, Hmatrix_m1, Hmatrix_m1_cpu);
+    MemcpyDeviceHost(matrix_size, Hmatrix_0, Hmatrix_0_cpu);
     my_sync_device();
-    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_dipole, Pn0, Hmatrix, 
-            Hmatrix_m1, Hmatrix_0, tot_steps+1, n2, Eterms, Hcore_tddft, numst);
+    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_dipole, Pn0_cpu, Hmatrix_cpu, 
+            Hmatrix_m1_cpu, Hmatrix_0_cpu, tot_steps+1, n2, Eterms, Hcore_tddft, numst);
     delete RT2a;
     delete RT0;
 }
-
 

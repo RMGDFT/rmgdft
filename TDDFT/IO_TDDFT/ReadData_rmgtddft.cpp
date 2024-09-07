@@ -65,7 +65,9 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
     read (fhand, vh, fgrid_size * sizeof(double));
     read (fhand, vxc, fgrid_size * sizeof(double));
     read (fhand, vh_corr, fgrid_size * sizeof(double));
-    read (fhand, Pn0, 2* n2 * sizeof(double));
+    double *PnI = Pn0 + n2;
+    read (fhand, Pn0, n2 * sizeof(double));
+    read (fhand, PnI, n2 * sizeof(double));
     read (fhand, Hmatrix, n2 * sizeof(double));
     read (fhand, Hmatrix_m1, n2 * sizeof(double));
     read (fhand, Hmatrix_0, n2 * sizeof(double));

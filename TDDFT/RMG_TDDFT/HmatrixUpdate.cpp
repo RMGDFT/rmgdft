@@ -98,6 +98,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     int block_size = ct.scalapack_block_factor;
     block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
+    //rmg_printf("\n block_size in HmatrixUpdate %d %d %d %d", block_size, nblock, num_states, nblock* block_size);
 
 
     if(!v_dev)
