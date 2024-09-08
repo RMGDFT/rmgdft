@@ -232,12 +232,12 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
        int idx;
 #if HIP_ENABLED
        hipblasIdamax(ct.gpublas_handle, M, C, 1, &idx);
-       idx -=1;    
-       // hipblasIdamax return the index in fortran way, starting from 1
 #endif
 #if CUDA_ENABLED
        cublasIdamax(ct.gpublas_handle, M, C, 1, &idx);
 #endif
+       idx -=1;    
+       // hipblasIdamax return the index in fortran way, starting from 1
        gpuMemcpy(&err, &C[idx], sizeof(double), gpuMemcpyDeviceToHost);
        err = abs(err);
        ierr = idx;
@@ -271,11 +271,11 @@ void  tstconv(float *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool
     int idx;
 #if HIP_ENABLED
     hipblasIsamax(ct.gpublas_handle, M, C, 1, &idx);
-    idx -= 1;
 #endif
 #if CUDA_ENABLED
     cublasIsamax(ct.gpublas_handle, M, C, 1, &idx);
 #endif
+    idx -=1;    
     gpuMemcpy(&err, &C[idx], sizeof(float), gpuMemcpyDeviceToHost);
     err = abs(err);
     ierr = idx;
