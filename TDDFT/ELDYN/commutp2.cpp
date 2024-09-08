@@ -355,7 +355,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
             daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv(dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
+            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
             iter ++ ;
@@ -396,7 +396,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             daxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
 
             tstconv(dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
+            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
             iter ++ ;

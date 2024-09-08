@@ -218,7 +218,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int tot_steps = 0, pre_steps, tddft_steps;
     int Ieldyn = 1;    // BCH  
     //int Ieldyn = 2;    // Diagev
-    int iprint = 0;
+    int iprint = ct.verbose;
 
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -579,7 +579,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
 
-        double  thrs_bch =1.0e-10; 
+        double  thrs_bch =1.0e-7; 
         int     maxiter_bch  =100;
         double  errmax_bch ;
         int     niter_bch ;
