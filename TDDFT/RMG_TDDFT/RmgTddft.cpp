@@ -59,6 +59,8 @@ void  init_point_charge_pot(double *vtot_psi, int density);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
 *niter , int *p_iprint, MPI_Comm comm) ;
 void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
+void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm);
+
   
 
 void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
@@ -703,7 +705,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             delete(RT2a);
 
             my_sync_device();
-            double one = 1.0;
+            double one = 1.0, mone = -1.0;
             daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
             dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
 
@@ -711,7 +713,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             // check error and update Hmatrix_1:
             my_sync_device();
-            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
+            daxpy_driver ( n2 ,  mone, Hmatrix, ione , Hmatrix_1 ,  ione) ;
+            //tst_conv_matrix (&err, &ij_err ,  Hmatrix_1,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
+                                                                                
+            bool tConv;
+            tstconv(Hmatrix_1, &n2, &thrs_dHmat,&ij_err,&err,&tConv, Sp->GetComm());
             dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
