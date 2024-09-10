@@ -538,7 +538,7 @@ void report (void)
     {
         num_owned_ions = Kptr_c[0]->BetaProjector->get_num_owned_ions();
     }
-    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, num_owned_ions * ct.num_kpts_pe, override_rank);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, num_owned_ions * ct.num_kpts_pe, override_rank, ct.tddft_steps);
 
 
 }                               /* end report */

@@ -109,6 +109,7 @@ template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, Orbital
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
 // Print function
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank, int tddft_steps);
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank);
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc);
 template <typename KpointType>
