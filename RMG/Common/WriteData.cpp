@@ -35,6 +35,7 @@
 #include "params.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
+#include "common_prototypes.h"
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
@@ -218,7 +219,7 @@ static void write_double (int fh, double * rp, int count)
     int size;
 
     size = count * sizeof (double);
-    if (size != write (fh, rp, size))
+    if (size != rmg_write (fh, rp, size))
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
     totalsize += size;
@@ -230,7 +231,7 @@ static void write_int (int fh, int *ip, int count)
     int size;
 
     size = count * sizeof (int);
-    if (size != write (fh, ip, size))
+    if (size != rmg_write (fh, ip, size))
         rmg_error_handler (__FILE__, __LINE__, "error writing");
 
     totalsize += size;
@@ -243,11 +244,11 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     double *out = new double[2*nx*ny*nz];
 
     size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
-    size_t wsize = write (fh, &csize, sizeof(csize));
+    size_t wsize = rmg_write (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
-    wsize = write (fh, out, csize);
+    wsize = rmg_write (fh, out, csize);
     if(wsize != csize)
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
