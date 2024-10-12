@@ -60,7 +60,7 @@ template Pdos<double>::~Pdos(void);
 template Pdos<std::complex<double>>::~Pdos(void);
 template <class T> Pdos<T>::~Pdos ()
 {
-    std::cout << "exit pdos" << std::endl;
+    //std::cout << "exit pdos" << std::endl;
 }
 
 template <class T> Pdos<T>::Pdos(
@@ -126,9 +126,18 @@ template <class T> void Pdos<T>::ReadRotatePsi(int ikindex, int isym, int isyma,
                 int iy_g = iy + py_offset;
                 int iz_g = iz + pz_offset;
 
+                if(ct.is_use_symmetry)
+                {
                 symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
                         ix_g, iy_g, iz_g, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
-
+                }
+                else
+                {
+                    ixx = ix_g;
+                    iyy = iy_g;
+                    izz = iz_g;
+                }
+       
                 for(int st = 0; st < nstates; st++)
                 {
                     if(ct.noncoll) 
@@ -171,7 +180,6 @@ template <class T> void Pdos<T>::ReadRotatePsi(int ikindex, int isym, int isyma,
     close(serial_fd);
 
 }
-
 
 template  void Pdos<double>::Pdos_calc(Kpoint<double> **Kptr, std::vector<double> eigs);
 template  void Pdos<std::complex<double>>::Pdos_calc(Kpoint<std::complex<double>> **Kptr, std::vector<double> eigs);
@@ -399,3 +407,116 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
    // RmgFreeHost(psi_k);
 }
 
+template  void Ldos_calc(Kpoint<double> **Kptr, std::vector<double> eigs, double Ef);
+template  void Ldos_calc(Kpoint<std::complex<double>> **Kptr, std::vector<double> eigs,double Ef);
+template <typename T> void Ldos_calc(Kpoint<T> **Kptr, std::vector<double> eigs,double Ef)
+{
+
+    if(!ct.is_gamma)
+    {
+        std::cout << "Ldos not programmed for kpoints" << std::endl;
+        return;
+    }
+    int px0_grid = Rmg_G->get_PX0_GRID(1);
+    int py0_grid = Rmg_G->get_PY0_GRID(1);
+    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
+    int px_offset = Rmg_G->get_PX_OFFSET(1);
+    int py_offset = Rmg_G->get_PY_OFFSET(1);
+    int pz_offset = Rmg_G->get_PZ_OFFSET(1);
+    int pbasis = px0_grid * py0_grid * pz0_grid;
+
+    T *psi_k ;
+   // T *psi_k = (T *)RmgMallocHost(length);
+    int ix0 = ct.ldos_start_grid[0];
+    int iy0 = ct.ldos_start_grid[1];
+    int iz0 = ct.ldos_start_grid[2];
+    int ix1 = ct.ldos_end_grid[0];
+    int iy1 = ct.ldos_end_grid[1];
+    int iz1 = ct.ldos_end_grid[2];
+
+
+    //  total rho projected in x,y,z direction
+    // magnatic rho projected in x, y, z direction
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+
+    double rho_temp[factor];
+    double gaus_broad = ct.gaus_broad;
+    double Emax = *std::max_element(eigs.begin(), eigs.end());
+    double Emin = *std::min_element(eigs.begin(), eigs.end());
+    Emin = std::floor(Emin - Ef);
+    Emax = std::ceil(Emax - Ef);
+    double delta_e = 0.01;
+    int num_epoint = (int) ((Emax - Emin)/delta_e) + 1;
+
+    double_2d_array ldos;
+    ldos.resize(boost::extents[factor][num_epoint]);
+    std::fill(ldos.origin(), ldos.origin() + factor * num_epoint, 0.0);
+
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+    {
+        for(int st = 0; st < ct.num_states; st++) {
+
+            psi_k = Kptr[ik]->Kstates[st].psi;
+            for(int is = 0; is < factor; is++){
+                rho_temp[is] = 0.0;
+            }
+            for(int ix = 0; ix < px0_grid; ix++){
+                if(ix + px_offset >= ix0 && ix + px_offset < ix1){
+
+                    for(int iy = 0; iy < py0_grid; iy++){
+                        if(iy + py_offset >= iy0 && iy + py_offset < iy1){
+                            for(int iz = 0; iz < pz0_grid; iz++){
+                                if(iz + pz_offset >= iz0 && iz + pz_offset < iz1){
+                                    int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
+
+                                    rho_temp[0] += std::norm(psi_k[idx]);
+                                    if(ct.noncoll)
+                                    {
+                                        std::complex<double> psiud = 2.0 * psi_k[idx] * std::conj(psi_k[idx + pbasis]);
+                                        double psiup = std::norm(psi_k[idx]);
+                                        double psidn = std::norm(psi_k[idx + pbasis]);
+                                        rho_temp[0] += psiup + psidn;
+                                        rho_temp[1] += std::real(psiud);
+
+                                        rho_temp[2] += std::imag(psiud);
+                                        rho_temp[3] += psiup - psidn;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            int count = factor;
+            MPI_Allreduce(MPI_IN_PLACE, rho_temp, count, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+            //std::cout << rho_temp[0] *  get_vel() << "BBB" << st << std::endl;
+            for(int is = 0; is < factor; is++){
+                for(int ie = pct.gridpe; ie < num_epoint; ie+=pct.grid_npes)
+                {
+                    double energy = Emin + ie * delta_e + Ef;
+                    double tem = energy - Kptr[ik]->Kstates[st].eig[0] * Ha_eV;
+                    double dos_one = std::exp(-tem * tem/gaus_broad/gaus_broad) / gaus_broad /std::sqrt(PI);
+                    ldos[is][ie] +=  dos_one * rho_temp[is] * Kptr[ik]->kp.kweight *get_vel();
+
+                }
+            }
+        }
+    }
+
+    int count = num_epoint * factor;
+    MPI_Allreduce(MPI_IN_PLACE, ldos.origin(), count, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+    if(pct.imgpe == 0)
+    {
+        std::string filename = "LDOS_spin" + std::to_string(pct.spinpe) + ".dat";
+        FILE *dos_f = fopen (filename.c_str(), "w");
+        for(int ie = 0; ie < num_epoint; ie++)
+        {
+
+            fprintf(dos_f, " %e  %e \n", Emin + ie *delta_e, ldos[0][ie]);
+        }
+        fclose(dos_f);
+    }
+}

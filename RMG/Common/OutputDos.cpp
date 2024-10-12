@@ -61,7 +61,15 @@ void OutputDos (Kpoint<KpointType> **Kptr)
     double Ef_ev = ct.efermi * Ha_eV;
     Dos_calc->tot_dos(nk_tot, ct.num_states, eigs, Ef_ev);
 
-    if(ct.pdos_flag)
+    bool ldos_flag = true;
+
+    if(ct.ldos_start_grid[0] + ct.ldos_start_grid[1] + ct.ldos_start_grid[2] == -3) ldos_flag = false;
+    if(ct.ldos_end_grid[0] + ct.ldos_end_grid[1] + ct.ldos_end_grid[2] == -3) ldos_flag = false;
+    if(ldos_flag )
+    {
+        Ldos_calc(Kptr, eigs, Ef_ev);
+    }
+    if(ct.pdos_flag )
     {
         Pdos<KpointType> pdos(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates,
                 Kptr[0]->orbital_storage, Kptr);

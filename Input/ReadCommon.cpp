@@ -154,6 +154,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
+    Ri::ReadVector<int> ldos_start_grid;
+    Ri::ReadVector<int> ldos_end_grid;
+    Ri::ReadVector<int> def_ldos_start_grid({{-1,-1,-1}});
+    Ri::ReadVector<int> def_ldos_end_grid({{-1,-1,-1}});
 
     static Ri::ReadVector<int> DipoleCorrection;
     Ri::ReadVector<int> DefDipoleCorrection({{0,0,0}});
@@ -270,6 +274,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("cell_movable", &Cell_movable, &DefCell_movable, 9, OPTIONAL, 
                      "9 numbers to control cell relaxation  ", 
                      "0 0 0 0 0 0 0 0 0 by default, no cell relax ", CELL_OPTIONS);
+
+    If.RegisterInputKey("ldos_start_grid", &ldos_start_grid, &def_ldos_start_grid, 3, OPTIONAL, 
+                     "a grid point for starting ldos caclualtion", 
+                     "You must specify a triplet of grid index ix0, iy0, iz0 . ", CELL_OPTIONS);
+    If.RegisterInputKey("ldos_end_grid", &ldos_end_grid, &def_ldos_end_grid, 3, OPTIONAL, 
+                     "a ending grid point for ldos caclualtion", 
+                     "You must specify a triplet of grid index ix1, iy1, iz1 . ", CELL_OPTIONS);
+
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -1545,6 +1557,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         for(int ix = 0;ix < 3;ix++) {
             lc.kpoint_mesh[ix] = kpoint_mesh.vals.at(ix);
             lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
+            lc.ldos_start_grid[ix] = ldos_start_grid.vals.at(ix);
+            lc.ldos_end_grid[ix] = ldos_end_grid.vals.at(ix);
         }
     }
     catch (const std::out_of_range& oor) {
