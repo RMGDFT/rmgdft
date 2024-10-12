@@ -61,6 +61,7 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
+#include "GlobalSums.h"
 
 
 void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filenamne);
@@ -103,10 +104,10 @@ height_list)
     double hz = Rmg_L.get_zside() *a0_A/ NZ;
 
     int iz_max = int((z_max + (height_list.back()) )/hz);
+    int iz_idx = iz_max - FPZ_OFFSET;
+
     mkdir("STM", S_IRWXU);
     std::vector<double> rho_xy;
-    std::vector<double> rho_3d;
-    rho_3d.resize(NX * NY * NZ, 0.0);
     rho_xy.resize(NX*NY);
     for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
     {
@@ -156,14 +157,7 @@ height_list)
         int ratio = Rmg_G->default_FG_RATIO;
         int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
 
-        GetNewRhoPost(Kptr, rho);
-
-        if(!ct.norm_conserving_pp) {
-            double *augrho = new double[FP0_BASIS*factor]();
-            GetAugRho(Kptr, augrho);
-            for(int idx = 0;idx < FP0_BASIS*factor;idx++) rho[idx] += augrho[idx];
-            delete [] augrho;
-        }
+        GetNewRho(Kptr, rho);
 
         if (ct.nspin == 2)
             get_rho_oppo (rho,  &rho[FP0_BASIS]);
@@ -178,14 +172,24 @@ height_list)
                 Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
         }
 
-        std::vector<double> rho_coarse;
-        int P0_BASIS = Rmg_G->get_P0_BASIS(1);
-        rho_coarse.resize(P0_BASIS);
-        GetVtotPsi (rho_coarse.data(), rho, Rmg_G->default_FG_RATIO);
-
-        OutputCubeFile(rho_coarse.data(), 1, filename +".cube");
+        OutputCubeFile(rho, grid, filename +".cube");
 
 
+        fill(rho_xy.begin(), rho_xy.end(), 0.0);
+        if(iz_idx >=0 && iz_idx < PZ0)
+        {
+            for(int ix = 0; ix < PX0; ix++)
+            {
+                for(int iy =0; iy < PY0; iy++)
+                {
+                    int idx = ix * PY0 * PZ0 + iy*PZ0 + iz_idx;
+                    rho_xy[(ix+FPX_OFFSET) * NY + iy+FPY_OFFSET] = rho[idx];
+                }
+            }
+        }
+
+        GlobalSums (rho_xy.data(), NX*NY, pct.grid_comm);
+        OutputSTM(rho_xy, NX, NY, filename + ".stm");
     }
 
 }
