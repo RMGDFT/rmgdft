@@ -80,13 +80,13 @@ void write_ffield (std::string &filename)
 //    tree.put("energy.total",ct.TOTAL);
 
    if(ct.forces_converged)
-       converged.put("force", "yes");
+       converged.put("force", "True");
    else
-       converged.put("force", "no");
+       converged.put("force", "False");
    if(ct.is_converging)
-       converged.put("convergent", "yes");
+       converged.put("convergent", "True");
    else
-       converged.put("convergent", "no");
+       converged.put("convergent", "False");
 
    modeling.put("modeling","");
    modeling.add_child("converged", converged);
