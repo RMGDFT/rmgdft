@@ -61,7 +61,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
 
-//    ct.mix = AutoMix (new_rho, rho, rhocore, vh_in, vh_out, rhoc, ControlMap, reset);
+    ct.mix = AutoMix (new_rho, rho, rhocore, vh_in, vh_out, rhoc, ControlMap, reset);
 
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
@@ -343,23 +343,19 @@ double AutoMix (double * new_rho, double * rho, double *rhocore, double *vh_in, 
     if(ct.verbose && pct.gridpe == 0) printf("\nRMSdrho = %16.8e\n", drho);
 
     int j = RMSdrho.size();
+    double newmix = ct.mix;
     if(j >= 3)
     {
         double ravg0 = (RMSdrho[j-2] + RMSdrho[j-1]) / 2.0;
         double ravg1 = (RMSdrho[j-3] + RMSdrho[j-2]) / 2.0;
         if(ravg0 > ravg1)
         {
+            newmix = ct.mix - ct.mix*adj_factor;
             if(pct.gridpe == 0)
             {
-                printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.cmix, ct.cmix - ct.mix*adj_factor);
+                printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
             }
-            return ct.cmix - ct.mix*adj_factor;
-        }
-        else
-        {
-            return ct.cmix;
         }
     }
-    else
-        return ct.mix;
+    return newmix;
 }
