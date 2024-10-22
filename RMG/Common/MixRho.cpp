@@ -36,6 +36,7 @@
 #include "RmgParallelFft.h"
 #include "RmgException.h"
 #include "transition.h"
+#include "RmgSumAll.h"
 #include "blas.h"
 #include "GlobalSums.h"
 #include "Functional.h"
@@ -51,6 +52,7 @@
 void mix_johnson(double *xm, double *fm, int NDIM, int ittot);
 
 
+
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset)
 {
     RmgTimer RT0("Mix rho");
@@ -59,6 +61,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
 
+//    ct.mix = AutoMix (new_rho, rho, rhocore, vh_in, vh_out, rhoc, ControlMap, reset);
 
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
@@ -323,4 +326,40 @@ void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
 }
 
 
+// Function to automatically adjust mixing parameter
+double AutoMix (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset)
+{
+    static std::vector<double> RMSdrho;
+    static double adj_factor = 0.25;
 
+    double drho = 0.0;
+    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
+    for(int ix=0;ix < pbasis_noncoll;ix++) drho += (new_rho[ix]-rho[ix])*(new_rho[ix]-rho[ix]);
+    drho = RmgSumAll(drho, pct.grid_comm);
+    drho = RmgSumAll(drho, pct.spin_comm);
+    drho /= ct.psi_fnbasis;
+    RMSdrho.push_back(drho);
+    if(ct.verbose && pct.gridpe == 0) printf("\nRMSdrho = %16.8e\n", drho);
+
+    int j = RMSdrho.size();
+    if(j >= 3)
+    {
+        double ravg0 = (RMSdrho[j-2] + RMSdrho[j-1]) / 2.0;
+        double ravg1 = (RMSdrho[j-3] + RMSdrho[j-2]) / 2.0;
+        if(ravg0 > ravg1)
+        {
+            if(pct.gridpe == 0)
+            {
+                printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.cmix, ct.cmix - ct.mix*adj_factor);
+            }
+            return ct.cmix - ct.mix*adj_factor;
+        }
+        else
+        {
+            return ct.cmix;
+        }
+    }
+    else
+        return ct.mix;
+}
