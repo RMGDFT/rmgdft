@@ -89,7 +89,7 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag,
 
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
-double AutoMix (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool &reset);
+double AutoMix (void);
 
 void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 

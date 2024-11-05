@@ -61,8 +61,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
 
-    //ct.mix = AutoMix (new_rho, rho, rhocore, vh_in, vh_out, rhoc, ControlMap, reset);
-
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
@@ -84,6 +82,12 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
     {
         RmgTimer RT1("Mix rho: Pulay");
+        if(reset && Pulay_rho) {
+            delete Pulay_rho;
+            Pulay_rho = NULL;
+            return;
+        }
+
         if(!Pulay_rho)
         {
             Pulay_rho = new PulayMixing(pbasis_noncoll, ct.charge_pulay_order, ct.charge_pulay_refresh,
@@ -92,10 +96,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
         }
 
-        if(reset) {
-            Pulay_rho->Refresh();
-            return;
-        }
 
         double mone = -1.0;
         int ione = 1;
@@ -327,41 +327,36 @@ void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
 
 
 // Function to automatically adjust mixing parameter
-double AutoMix (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool &reset)
+double AutoMix (void)
 {
-    static std::vector<double> RMSdrho;
-    static double adj_factor = 0.3;
+    static std::vector<double> ravg_hist;
 
-    double drho = 0.0;
-    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
-    for(int ix=0;ix < pbasis_noncoll;ix++) drho += (new_rho[ix]-rho[ix])*(new_rho[ix]-rho[ix]);
-    drho = RmgSumAll(drho, pct.grid_comm);
-    drho = RmgSumAll(drho, pct.spin_comm);
-    drho /= ct.psi_fnbasis;
-    drho = sqrt(drho);
-    RMSdrho.push_back(drho);
-    if(ct.verbose && pct.gridpe == 0) printf("\nRMSdrho = %16.8e\n", drho);
+    double ravg = 0.0;
+    int l = 10;
+    ravg = ct.scf_accuracy;
+    ravg = ct.rms;
+    ravg_hist.push_back(ravg);
+    if(ct.verbose && pct.gridpe == 0) printf("\nravg = %16.8e\n", ravg);
 
-    int j = RMSdrho.size();
+    int j = ravg_hist.size();
     double newmix = ct.mix;
-    if(j >= 5)
+    if(j > (l+1) && ct.scf_steps > 1)
     {
-        double ravg0 = (RMSdrho[j-4] + RMSdrho[j-3] + RMSdrho[j-2] + RMSdrho[j-1]) / 4.0;
-        double ravg1 = (RMSdrho[j-5] + RMSdrho[j-4] + RMSdrho[j-3] + RMSdrho[j-2]) / 4.0;
-        if(ravg0 > ravg1)
+        double ravg0 = (ravg_hist[j-l] + ravg_hist[j-l+1] + ravg_hist[j-l+2]);
+        double ravg1 = (ravg_hist[j-1] + ravg_hist[j-2] + ravg_hist[j-3]);
+        if(ct.verbose && pct.gridpe == 0)
         {
-            newmix = ct.mix*(1.0-adj_factor);
-            RMSdrho.clear();
+            printf("\nj = %d  ravg0 = %8.4e, ravg1 = %8.4e", j, ravg0, ravg1);
         }
-        else
+        if(ravg1 > ravg0 || ravg > 0.1)
         {
-//            newmix = std::min(1.0, ct.mix*((1.0-adj_factor)+adj_factor/2.0));
+            newmix = ct.mix/2.0;
+            if(ct.verbose && pct.gridpe == 0)
+            {
+                printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
+            }
         }
-        if(pct.gridpe == 0)
-        {
-            printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
-        }
+        ravg_hist.clear();
     }
     return newmix;
 }

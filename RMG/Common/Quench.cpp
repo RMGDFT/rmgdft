@@ -83,6 +83,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     fgobj<double> vh_in;
     spinobj<double> vxc_in;
 
+    // Now we save the initial wavefunctions in case we need to restart
+    std::string initfile(ct.outfile);
+    initfile = initfile + std::string("_init");
+    WriteRestart ((char *)initfile.c_str(), vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
+
 
     /* ---------- begin scf loop ---------- */
     
@@ -150,6 +155,20 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             }
             else
             {
+                double tmix = AutoMix(rho.data(), rho.data());
+                if(tmix != ct.mix)
+                {
+                    bool reset = true;
+                    std::string initfile(ct.outfile);
+                    initfile = initfile + std::string("_init");
+                    ReadData ((char *)initfile.c_str(), vh.data(), rho.data(), vxc.data(), Kptr);
+                    rho.get_oppo();
+                    ct.mix /= 2.0;
+                    MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
+                    RMSdV.clear();
+                    ct.scf_steps = 0;
+                }
+                // Should add a check here for a minimum density mixing to trigger an error
                 CONVERGED = Scf (vxc_in, vh_in, ct.vh_ext, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             step_time = my_crtc () - step_time;
