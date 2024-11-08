@@ -155,7 +155,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             }
             else
             {
-                double tmix = AutoMix(rho.data(), rho.data());
+                double tmix = AutoMix();
                 if(tmix != ct.mix)
                 {
                     bool reset = true;
