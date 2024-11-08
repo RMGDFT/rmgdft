@@ -64,6 +64,7 @@ int init_kpoints (int *mesh, int *is_shift);
 template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double>
 height_list);
 template <typename DataType> void OutputCubeFile(DataType *a, int grid, std::string filename);
+template <typename DataType> void OutputCubeFile(DataType *a, int NX, int NY, int NZ, std::string filename, bool global_data);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, double *kvec);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, int, int, int, double, double, double, int, double *kvec);
@@ -87,6 +88,8 @@ void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi,
 void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
 
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
+
+double AutoMix (void);
 
 void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 

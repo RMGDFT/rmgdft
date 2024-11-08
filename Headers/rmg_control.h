@@ -693,6 +693,7 @@ public:
 
     double neb_spring_constant;
 
+    bool adaptive_convergence;
     /*Current RMS value*/
     double rms;
 

@@ -61,6 +61,7 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
+#include "GlobalSums.h"
 
 
 void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filenamne);
@@ -89,7 +90,7 @@ height_list)
     }
 
     // for STM we don't include augmented charge even when ultra-soft psuedopotentials are used.
-    int grid =  Rmg_G->default_FG_RATIO;
+    int grid =  1;
     int NX = Rmg_G->get_NX_GRID(grid);
     int NY = Rmg_G->get_NY_GRID(grid);
     int NZ = Rmg_G->get_NZ_GRID(grid);
@@ -98,15 +99,21 @@ height_list)
     int PY0 = Rmg_G->get_PY0_GRID(grid);
     int PZ0 = Rmg_G->get_PZ0_GRID(grid);
 
-    int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
-    Rmg_G->find_node_offsets(pct.gridpe,NX, NY, NZ, &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
+    int PX_OFFSET = Rmg_G->get_PX_OFFSET(grid);
+    int PY_OFFSET = Rmg_G->get_PY_OFFSET(grid);
+    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(grid);
+
     double hz = Rmg_L.get_zside() *a0_A/ NZ;
+    int pbasis =  Rmg_G->get_P0_BASIS(grid);
+    int nstates = ct.num_states;
+    double *work = new double[pbasis ];
+    double *work_glob = new double[NX*NY*NZ];
 
     int iz_max = int((z_max + (height_list.back()) )/hz);
+    int iz_idx = iz_max - PZ_OFFSET;
+
     mkdir("STM", S_IRWXU);
     std::vector<double> rho_xy;
-    std::vector<double> rho_3d;
-    rho_3d.resize(NX * NY * NZ, 0.0);
     rho_xy.resize(NX*NY);
     ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
     for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
@@ -152,41 +159,60 @@ height_list)
             }
         }
 
-        int factor = ct.noncoll_factor * ct.noncoll_factor;
 
-        int ratio = Rmg_G->default_FG_RATIO;
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
 
-        GetNewRhoPost(Kptr, rho);
 
-        if(!ct.norm_conserving_pp) {
-            double *augrho = new double[FP0_BASIS*factor]();
-            GetAugRho(Kptr, augrho);
-            for(int idx = 0;idx < FP0_BASIS*factor;idx++) rho[idx] += augrho[idx];
-            delete [] augrho;
-        }
+        for(int idx = 0;idx < pbasis;idx++)
+            work[idx] = 0.0;
 
-        if (ct.nspin == 2)
-            get_rho_oppo (rho,  &rho[FP0_BASIS]);
-        if(ct.AFM)
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
-            Rmg_Symm->symmetrize_rho_AFM(rho, &rho[FP0_BASIS]);
+            for (int istate = 0; istate < nstates; istate++)
+            {
+
+                double scale = Kptr[kpt]->Kstates[istate].occupation[0] * Kptr[kpt]->kp.kweight;
+
+                OrbitalType *psi = Kptr[kpt]->Kstates[istate].psi;
+
+                for (int idx = 0; idx < pbasis; idx++)
+                {
+                    work[idx] += scale * std::norm(psi[idx]);
+                    if(ct.noncoll)
+                    {
+                        work[idx] += scale * std::norm(psi[idx + pbasis]);
+                    }
+                }                   /* end for */
+
+            }                       /*end for istate */
         }
-        else
+
+        for(int idx =0; idx < NX  * NY * NZ; idx++){
+            work_glob[idx] = 0.0;
+        }
+
+        MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+        DistributeToGlobal(work, work_glob);
+
+
+        OutputCubeFile(work_glob, NX, NY, NZ, filename +".cube", true);
+
+
+        fill(rho_xy.begin(), rho_xy.end(), 0.0);
+        if(iz_idx >=0 && iz_idx < PZ0)
         {
-            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
-            if(ct.noncoll && Rmg_Symm)
-                Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+            for(int ix = 0; ix < PX0; ix++)
+            {
+                for(int iy =0; iy < PY0; iy++)
+                {
+                    int idx = ix * PY0 * PZ0 + iy*PZ0 + iz_idx;
+                    rho_xy[(ix+PX_OFFSET) * NY + iy+PY_OFFSET] = work[idx];
+                }
+            }
         }
 
-        std::vector<double> rho_coarse;
-        int P0_BASIS = Rmg_G->get_P0_BASIS(1);
-        rho_coarse.resize(P0_BASIS);
-        GetVtotPsi (rho_coarse.data(), rho, Rmg_G->default_FG_RATIO);
-
-        OutputCubeFile(rho_coarse.data(), 1, filename +".cube");
-
-
+        GlobalSums (rho_xy.data(), NX*NY, pct.grid_comm);
+        OutputSTM(rho_xy, NX, NY, filename + ".stm");
     }
 
 }
@@ -215,3 +241,4 @@ void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filename)
     }
     fclose(fhand);
 }
+

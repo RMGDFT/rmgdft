@@ -16,7 +16,7 @@ private:
     int max_order = 10;
     double *hist;
     double *res_hist;
-    std::complex<double> *res_histG;
+    std::complex<double> *res_histG=NULL;
     double *A_mat;
     std::vector<double*> hist_ptr;
     std::vector<double*> res_hist_ptr;

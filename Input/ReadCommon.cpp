@@ -1165,6 +1165,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "As the cutoff (grid-density) increases this method improves in accuracy. This option should be set to "
             "false if you receive warnings about negative charge densities after interpolation.", MISC_OPTIONS|EXPERT_OPTION);
 
+    If.RegisterInputKey("adaptive_convergence", &lc.adaptive_convergence, false,
+            "Parameters that control initial SCF convergence are adaptively modified. "
+            "Affected parameters include density mixing and preconditioning and electron temperature.", MISC_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
             "Some pseudopotentials contain unbound atomic orbitals and this flag indicates "
             "whether or not they should be used for LCAO starts.", MISC_OPTIONS);
