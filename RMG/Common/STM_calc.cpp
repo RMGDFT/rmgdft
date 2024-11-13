@@ -115,6 +115,7 @@ height_list)
     mkdir("STM", S_IRWXU);
     std::vector<double> rho_xy;
     rho_xy.resize(NX*NY);
+    ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
     for(auto bias_ptr = bias_list.begin(); bias_ptr != bias_list.end(); ++bias_ptr)
     {
         double bias = *bias_ptr;
