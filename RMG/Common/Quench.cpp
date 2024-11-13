@@ -155,7 +155,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             }
             else
             {
-                double tmix = AutoMix(rho.data(), rho.data());
+                double tmix = AutoMix();
                 if(tmix != ct.mix)
                 {
                     bool reset = true;
@@ -168,6 +168,13 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     RMSdV.clear();
                     ct.scf_steps = 0;
                 }
+                if(ct.mix < 0.02)
+                {
+                     rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
+                     rmg_printf ("and usually means something is wrong with the job.\n");
+                     rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+                }
+
                 // Should add a check here for a minimum density mixing to trigger an error
                 CONVERGED = Scf (vxc_in, vh_in, ct.vh_ext, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
