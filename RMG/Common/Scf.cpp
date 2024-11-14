@@ -96,9 +96,6 @@ template <typename OrbitalType> bool Scf (
     double hartree_residual = VhDriver(rho.data(), rhoc.data(), vh.data(), vh_ext, rms_target);
     delete(RT1);
 
-    // Save input hartree potential
-    vh_in = vh;
-
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
 
@@ -109,26 +106,31 @@ template <typename OrbitalType> bool Scf (
         t3 += vtot[idx];
         t[0] += rho[idx] * t3;
         t[1] += t3 * t3;
-        t[2] += vh[idx];
+        t[2] += (vh[idx] - vh_in[idx])*(vh[idx] - vh_in[idx]);
     }                           /* idx */
 
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
     t[0] *= rho.vel;
+    t[2] *= vh.vel;
 
     /* get the averaged value over each spin and each fine grid */
     if(ct.AFM)
     {
         t[1] = sqrt (t[1] / ((double) (ct.psi_fnbasis)));  
-        t[2] /= ((double) (ct.psi_fnbasis));   
+        t[2] = sqrt (t[2] / ((double) (ct.psi_fnbasis)));
     }
     else
     {
         t[1] = sqrt (t[1] / ((double) (ct.nspin * ct.psi_fnbasis)));  
-        t[2] /= ((double) (ct.nspin * ct.psi_fnbasis));   
+        t[2] = sqrt (t[2] / ((double) (ct.nspin * ct.psi_fnbasis)));
     }
     ct.rms = t[1];
+    ct.rms_vh = t[2];
+
+    // Save input hartree potential
+    vh_in = vh;
 
     if(std::isnan(ct.rms))
         rmg_error_handler(__FILE__, __LINE__, "NaN encountered in computational stream. Terminating.\n");

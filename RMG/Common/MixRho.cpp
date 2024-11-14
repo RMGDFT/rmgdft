@@ -334,7 +334,6 @@ double AutoMix (void)
     double ravg = 0.0;
     int l = 10;
     ravg = ct.scf_accuracy;
-    ravg = ct.rms;
     ravg_hist.push_back(ravg);
     if(ct.verbose && pct.gridpe == 0) printf("\nravg = %16.8e\n", ravg);
 
@@ -348,7 +347,7 @@ double AutoMix (void)
         {
             printf("\nj = %d  ravg0 = %8.4e, ravg1 = %8.4e", j, ravg0, ravg1);
         }
-        if(ravg1 > ravg0 || ravg > 0.1)
+        if(ravg1 > ravg0)
         {
             newmix = ct.mix/2.0;
             if(ct.verbose && pct.gridpe == 0)

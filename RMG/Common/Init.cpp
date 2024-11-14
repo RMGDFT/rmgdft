@@ -585,6 +585,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     ct.rms = 0.0;
+    ct.rms_vh = 0.0;
 
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
