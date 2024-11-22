@@ -356,7 +356,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Units for the lattice vectors ", 
                      "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ", CELL_OPTIONS);
 
-    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Broyden",
+    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Auto",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
 "RMG supports Broyden, Pulay and Linear mixing "
 "When the davidson Kohn-Sham solver is selected Broyden or "
@@ -1809,6 +1809,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
         //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+    }
+
+    if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
+    {
+        auto K1 = InputMap["charge_mixing_type"];
+        K1->Readstr = "Pulay";
+    }
+    else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
+    {
+        auto K1 = InputMap["charge_mixing_type"];
+        K1->Readstr = "Broyden";
     }
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose

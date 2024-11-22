@@ -329,33 +329,46 @@ void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
 // Function to automatically adjust mixing parameter
 double AutoMix (void)
 {
-    static std::vector<double> ravg_hist;
+    static boost::circular_buffer<double> chist(20);
+    static boost::circular_buffer<double> xvals(20);
 
     double ravg = 0.0;
     int l = 10;
     ravg = ct.scf_accuracy;
-    ravg_hist.push_back(ravg);
-    if(ct.verbose && pct.gridpe == 0) printf("\nravg = %16.8e\n", ravg);
+    if(ct.scf_steps >= 1)
+    {
+        chist.push_back(log(ravg));
+        xvals.push_back((double)ct.scf_steps);
+        if(ct.verbose && pct.gridpe == 0) printf("\nravg = %16.8e\n", log(ravg));
+    }
 
-    int j = ravg_hist.size();
+    int j = chist.size();
     double newmix = ct.mix;
     if(j > (l+1) && ct.scf_steps > 1)
     {
-        double ravg0 = (ravg_hist[j-l] + ravg_hist[j-l+1] + ravg_hist[j-l+2] + ravg_hist[j-l+3]);
-        double ravg1 = (ravg_hist[j-1] + ravg_hist[j-2] + ravg_hist[j-3] + ravg_hist[j-4]);
+        int order = 1;
+        std::array<double, 4> coeffs;
+        std::vector<double> cvals, yvals;
+        for (auto it = xvals.begin(); it != xvals.end(); ++it) cvals.push_back(*it);
+        for (auto it = chist.begin(); it != chist.end(); ++it) yvals.push_back(*it);
+        SimplePolyFit(cvals.data(), yvals.data(), j, order, coeffs.data());
+
         if(ct.verbose && pct.gridpe == 0)
         {
-            printf("\nj = %d  ravg0 = %8.4e, ravg1 = %8.4e", j, ravg0, ravg1);
+            printf("\nj = %d  coeff = %8.4f   %8.4f\n", j, coeffs[0], coeffs[1]);
         }
-        if(ravg1 > ravg0)
+
+        if(coeffs[1] > 0.0)
         {
             newmix = ct.mix/2.0;
             if(ct.verbose && pct.gridpe == 0)
             {
                 printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
             }
-            ravg_hist.clear();
+            chist.clear();
+            xvals.clear();
         }
+
     }
     return newmix;
 }
