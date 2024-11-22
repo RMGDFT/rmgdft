@@ -356,7 +356,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Units for the lattice vectors ", 
                      "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ", CELL_OPTIONS);
 
-    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
+    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Broyden",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
 "RMG supports Broyden, Pulay and Linear mixing "
 "When the davidson Kohn-Sham solver is selected Broyden or "

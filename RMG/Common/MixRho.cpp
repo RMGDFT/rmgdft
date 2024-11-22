@@ -341,8 +341,8 @@ double AutoMix (void)
     double newmix = ct.mix;
     if(j > (l+1) && ct.scf_steps > 1)
     {
-        double ravg0 = (ravg_hist[j-l] + ravg_hist[j-l+1] + ravg_hist[j-l+2]);
-        double ravg1 = (ravg_hist[j-1] + ravg_hist[j-2] + ravg_hist[j-3]);
+        double ravg0 = (ravg_hist[j-l] + ravg_hist[j-l+1] + ravg_hist[j-l+2] + ravg_hist[j-l+3]);
+        double ravg1 = (ravg_hist[j-1] + ravg_hist[j-2] + ravg_hist[j-3] + ravg_hist[j-4]);
         if(ct.verbose && pct.gridpe == 0)
         {
             printf("\nj = %d  ravg0 = %8.4e, ravg1 = %8.4e", j, ravg0, ravg1);
@@ -354,8 +354,8 @@ double AutoMix (void)
             {
                 printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
             }
+            ravg_hist.clear();
         }
-        ravg_hist.clear();
     }
     return newmix;
 }
