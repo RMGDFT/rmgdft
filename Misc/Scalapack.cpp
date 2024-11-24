@@ -327,6 +327,11 @@ MPI_Comm Scalapack::GetComm(void)
     return this->comm;
 }
 
+int Scalapack::GetNB(void)
+{
+    return this->NB;
+}
+
 int Scalapack::GetRows(void)
 {
     return this->group_rows;

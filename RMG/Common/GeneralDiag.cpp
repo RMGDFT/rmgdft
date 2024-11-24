@@ -365,15 +365,19 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
                     (double *)distB, &ione, &ione, desca, &scale, &info);
 
             if(info) return info;
-            // Get workspace required
-            int lwork = -1, liwork=-1, lrwork=-1;
-            double lwork_tmp[2], lrwork_tmp;
-            int liwork_tmp;
-            pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                    eigs, (double *)distV, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
-            lwork = (int)lwork_tmp[0]+1;
-            liwork = liwork_tmp + 1;
-            lrwork = 2*(int)lrwork_tmp;
+
+            int NB = MainSp->GetNB();
+            int NN = std::max( N, NB);
+
+            int izero = 0;
+            int nprow = MainSp->GetRows();
+            int npcol = MainSp->GetCols();
+            int NQ = numroc( &NN, &NB, &izero, &izero, &npcol );
+            int NP = numroc( &NN, &NB, &izero, &izero, &nprow );
+            int lwork = N + ( NP+NQ+NB )*NB;
+            int lrwork = 1 + 9*N + 3*NP*NQ;
+            int liwork = 7*N + 8* npcol + 2;
+
             double *rwork = new double[lrwork];
             double *nwork = new double[lwork*2];
             int *iwork = new int[liwork];
