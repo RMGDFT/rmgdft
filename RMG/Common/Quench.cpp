@@ -65,6 +65,9 @@ template bool Quench<std::complex<double> > (Kpoint<std::complex<double>> **Kptr
 
 template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool compute_forces)
 {
+    /* reset total number of scf steps */
+    ct.total_scf_steps = 0;
+
     spinobj<double> &rho = *(Kptr[0]->rho);
     spinobj<double> &vxc = *(Kptr[0]->vxc);
     fgobj<double> &rhoc = *(Kptr[0]->rhoc);
@@ -146,6 +149,13 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
+
+            if(ct.total_scf_steps > ct.max_scf_steps)
+            {
+                rmg_printf ("\nMax number of scf steps (%d) exceeded.\n", ct.max_scf_steps);
+                rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+            }
+
 
             /* perform a single self-consistent step */
             step_time = my_crtc ();

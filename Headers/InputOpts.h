@@ -63,7 +63,8 @@ static std::unordered_map<std::string, int> lattice_units = {
 static std::unordered_map<std::string, int> charge_mixing_type = {
         {"Linear", 0},
         {"Pulay", 1},
-        {"Broyden", 2}};
+        {"Broyden", 2},
+        {"Auto", 3}};
 
 static std::unordered_map<std::string, int> charge_analysis = {
         {"None", 0},

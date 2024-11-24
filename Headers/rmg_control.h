@@ -696,6 +696,7 @@ public:
     bool adaptive_convergence;
     /*Current RMS value*/
     double rms;
+    double rms_vh;
 
     /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
     double scf_accuracy;
