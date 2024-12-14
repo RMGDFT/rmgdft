@@ -353,6 +353,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
         }                           /* end for */
 
+        delete pwave;
+        delete LG;
     }
 
 
