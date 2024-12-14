@@ -277,7 +277,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
-        Pw *pwave = new Pw(*LG, Rmg_L, 1, false);
+        Pw *pwave = new Pw(*LG, Rmg_L, 1, false, false);
         double tpiba = 2.0*PI / Rmg_L.celldm[0];
         double crds[3], xtal[3];
         int half_size = pwave->pbasis;

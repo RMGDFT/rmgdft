@@ -49,8 +49,19 @@ auto fft_sycl_exception_handler = [] (sycl::exception_list exceptions) {
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
+    pw_internal (G, L, ratio, gamma_flag, true);
+}
+
+Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+{
+    pw_internal (G, L, ratio, gamma_flag, create_buffers);
+}
+
+void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+{
 
   // Grid parameters
+  this->use_internal_buffers = create_buffers;
   this->Grid = &G;
   this->comm = G.comm;
   this->L = &L;
@@ -238,11 +249,13 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
          cufftSetStream(gpu_plans_r2c[i], streams[i]);
          cufftSetStream(gpu_plans_c2r[i], streams[i]);
 
-         RmgGpuError(__FILE__, __LINE__, 
+         if(use_internal_buffers)
+             RmgGpuError(__FILE__, __LINE__, 
              gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
              "Error: gpuMallocHost failed.\n");
 
-         RmgGpuError(__FILE__, __LINE__, 
+         if(use_internal_buffers)
+             RmgGpuError(__FILE__, __LINE__, 
              gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
              "Error: gpuMalloc failed.\n");
       }
@@ -334,20 +347,26 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
           if(status != rocfft_status_success) printf("ERROR setting rocfft streams.\n");
           if(work_size)
           {
-              RmgGpuError(__FILE__, __LINE__, 
+              if(use_internal_buffers)
+              {
+                  RmgGpuError(__FILE__, __LINE__, 
                          gpuMalloc((void **)&work_bufs[i], work_size),
                          "Error: gpuMalloc failed.\n");
-              status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
+                 status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
+              }
           }
 
 
-          RmgGpuError(__FILE__, __LINE__, 
+          if(use_internal_buffers)
+          {
+              RmgGpuError(__FILE__, __LINE__, 
                    gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
                    "Error: gpuMallocHost failed.\n");
 
-          RmgGpuError(__FILE__, __LINE__, 
+              RmgGpuError(__FILE__, __LINE__, 
                    gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
                    "Error: gpuMalloc failed.\n");
+           }
 
 #if (VKFFT_BACKEND == 2)
           VkFFTConfiguration vkconf = {};
@@ -436,9 +455,12 @@ std::int64_t strides[4] = {0, (int64_t)(this->global_dimy*this->global_dimz), (i
           gpu_plans_d2z[i]->set_value(oneapi::mkl::dft::config_param::COMPLEX_STORAGE, DFTI_COMPLEX_COMPLEX);
           gpu_plans_d2z[i]->commit(queues[i]);
 
-          gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
-          gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
-          gpuMalloc((void **)&dev_bufs1[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+          if(use_internal_buffers)
+          {
+              gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+              gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+              gpuMalloc((void **)&dev_bufs1[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+          }
 
       }
 #endif
@@ -512,7 +534,8 @@ std::int64_t strides[4] = {0, (int64_t)(this->global_dimy*this->global_dimz), (i
       host_bufs.resize(nthreads);
       for (int i = 0; i < nthreads; i++)
       {
-          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+          if(use_internal_buffers)
+              host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
       }
       
 #endif
@@ -1394,8 +1417,11 @@ Pw::~Pw(void)
          cufftDestroy(gpu_plans_c2r[i]);
          cufftDestroy(gpu_plans_d2z[i]);
          cufftDestroy(gpu_plans_z2d[i]);
-         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
-         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+         if(use_internal_buffers)
+         {
+             RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
+             RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+         }
       }
 
       // Gpu streams and plans
@@ -1411,8 +1437,11 @@ Pw::~Pw(void)
          rocfft_plan_destroy(gpu_plans_c2r[i]);
          rocfft_plan_destroy(gpu_plans_d2z[i]);
          rocfft_plan_destroy(gpu_plans_z2d[i]);
-         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
-         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+         if(use_internal_buffers)
+         {
+             RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
+             RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+         }
       }
 
       // Gpu streams and plans
@@ -1442,7 +1471,7 @@ Pw::~Pw(void)
       int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
       for (int i = 0; i < nthreads; i++)
       {
-          fftw_free(host_bufs[i]);
+          if(use_internal_buffers) fftw_free(host_bufs[i]);
       }
 #endif
   }
