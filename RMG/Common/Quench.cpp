@@ -89,7 +89,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     // Now we save the initial wavefunctions in case we need to restart
     std::string initfile(ct.outfile);
     initfile = initfile + std::string("_init");
-    WriteRestart ((char *)initfile.c_str(), vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
+    if (!(!strcmp ("/dev/null", ct.outfile)) || (!strcmp ("/dev/null/", ct.outfile)) )
+        WriteRestart ((char *)initfile.c_str(), vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
 
     /* ---------- begin scf loop ---------- */
