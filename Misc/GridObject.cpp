@@ -53,7 +53,7 @@ GridObject<T>::GridObject(int density)
     incx_ = dimy_*dimz_;
     pbasis_ = dimx_ * dimy_ * dimz_;
     vel_ = Rmg_L.get_omega() /
-    ((double)(Rmg_G->get_NX_GRID(density) * Rmg_G->get_NY_GRID(density) * Rmg_G->get_NZ_GRID(density)));
+    ((double)((size_t)Rmg_G->get_NX_GRID(density) * (size_t)Rmg_G->get_NY_GRID(density) * (size_t)Rmg_G->get_NZ_GRID(density)));
 }
 
 template<typename T>
@@ -70,7 +70,7 @@ GridObject<T>::GridObject(int density, T *data_ptr)
     offsetz_ = Rmg_G->get_PZ_OFFSET(density);
     pbasis_ = dimx_ * dimy_ * dimz_;
     vel_ = Rmg_L.get_omega() /
-    ((double)(Rmg_G->get_NX_GRID(density) * Rmg_G->get_NY_GRID(density) * Rmg_G->get_NZ_GRID(density)));
+    ((double)((size_t)Rmg_G->get_NX_GRID(density) * (size_t)Rmg_G->get_NY_GRID(density) * (size_t)Rmg_G->get_NZ_GRID(density)));
 }
 
 template<typename T>

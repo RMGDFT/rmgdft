@@ -101,7 +101,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         trans_a = trans_t;
     }
     double vel = this->L->get_omega() / 
-                 ((double)(this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1)));
+                 ((double)((size_t)this->G->get_NX_GRID(1) * (size_t)this->G->get_NY_GRID(1) * (size_t)this->G->get_NZ_GRID(1)));
     KpointType alphavel(vel);
 
     double avg_potential = 0.0;

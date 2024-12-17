@@ -310,7 +310,7 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     // For Matrix multiplications
     double vel = kptr->L->get_omega() /
-                ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
+                ((double)((size_t)kptr->G->get_NX_GRID(1) * (size_t)kptr->G->get_NY_GRID(1) * (size_t)kptr->G->get_NZ_GRID(1)));
     KpointType alpha(1.0);
     KpointType alphavel(vel);
     KpointType beta(0.0);

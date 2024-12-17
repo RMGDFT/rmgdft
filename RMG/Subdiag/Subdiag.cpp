@@ -63,7 +63,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 {
     RmgTimer RT0("4-Diagonalization");
 
-    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
+    double vel = L->get_omega() / ((double)((size_t)G->get_NX_GRID(1) * (size_t)G->get_NY_GRID(1) * (size_t)G->get_NZ_GRID(1)));
 
     // For MPI routines
     int factor = 1;

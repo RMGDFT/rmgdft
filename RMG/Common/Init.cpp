@@ -120,8 +120,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.total_scf_steps = 0;
     ct.md_steps = 0;
 
-    ct.psi_nbasis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
-    ct.psi_fnbasis = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    ct.psi_nbasis = (size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1);
+    ct.psi_fnbasis = (size_t)Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * (size_t)Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * (size_t)Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
 
 
     // Set ct.num_states to ct.init_states. After init it is set to ct.run_states

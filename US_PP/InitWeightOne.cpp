@@ -46,7 +46,8 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     gcut = sqrt(coarse_pwaves->gcut*tpiba2); // pwave structures store the squared magnitude
 
-    double vol = Rmg_L.get_omega() * xdim * ydim * zdim / (get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()); 
+    double vol = Rmg_L.get_omega() * (double)xdim * (double)ydim * (double)zdim /
+                 (double)Rmg_G->get_GLOBAL_BASIS(1);
 
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> IL = std::pow(-I_t, l);

@@ -393,7 +393,7 @@ public:
     bool use_gpu_fd;
 
     /* This is the max of nldim for any species cubed */
-    int max_nlpoints;
+    size_t max_nlpoints;
     int max_lpoints;
     int max_Qpoints;
 
@@ -470,8 +470,8 @@ public:
 
 
     /* Total points for wavefunctions */
-    int psi_nbasis;
-    int psi_fnbasis;
+    size_t psi_nbasis;
+    size_t psi_fnbasis;
 
     /* Decoupled hartree potential */
     double *vh_ext;

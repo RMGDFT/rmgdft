@@ -218,7 +218,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
     int ixoff, iyoff, izoff;
     int mindim, offset;
-    bool check=false;
+    bool check;
     if(level)
     {
         mindim = Mgrid::toffsets[level-1];

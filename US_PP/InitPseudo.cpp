@@ -121,7 +121,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         ct.max_nlpoints = this->nldim * this->nldim * this->nldim;
 
     if(!ct.localize_projectors) {
-        ct.max_nlpoints = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+        ct.max_nlpoints = (size_t)get_NX_GRID() * (size_t)get_NY_GRID() * (size_t)get_NZ_GRID();
     }
 
     if(ct.localize_projectors)

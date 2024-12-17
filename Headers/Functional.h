@@ -50,7 +50,7 @@ private:
     int pbasis;     // Grid points on this processing node
 
     // Total number of grid points
-    int N;
+    size_t N;
 
     int fd_order;
 

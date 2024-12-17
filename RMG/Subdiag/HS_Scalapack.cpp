@@ -68,7 +68,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
     }
     // For Matrix multiplications
     double vel = Rmg_L.get_omega() /
-        ((double)(Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1)));
+        ((double)((size_t)(Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1))));
     KpointType alphavel(vel);
     KpointType beta(0.0);
 
