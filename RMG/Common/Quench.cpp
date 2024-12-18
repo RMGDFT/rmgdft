@@ -67,6 +67,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 {
     /* reset total number of scf steps */
     ct.total_scf_steps = 0;
+    ct.scf_converged = false;
 
     spinobj<double> &rho = *(Kptr[0]->rho);
     spinobj<double> &vxc = *(Kptr[0]->vxc);
@@ -75,7 +76,6 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     fgobj<double> &vnuc = *(Kptr[0]->vnuc);
     fgobj<double> &vh = *(Kptr[0]->vh);
 
-    bool CONVERGED = false;
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
     static std::vector<double> etot;
@@ -147,8 +147,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 ct.adaptive_thr_energy = 1.0e-8;
         }
 
-        for (ct.scf_steps = 0, CONVERGED = false;
-                ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
+        for (ct.scf_steps = 0, ct.scf_converged = false;
+                ct.scf_steps < ct.max_scf_steps && !ct.scf_converged; ct.scf_steps++, ct.total_scf_steps++)
         {
 
             if(ct.total_scf_steps > ct.max_scf_steps)
@@ -162,7 +162,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             step_time = my_crtc ();
             if(ct.forceflag == NSCF)
             {
-                CONVERGED = Nscf (vxc.data(), vxc_in.data(), vh.data(), vh_in.data(), ct.vh_ext, vnuc.data(), rho.up.data(), rho.dw.data(), rhocore.data(), rhoc.data(), ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+                ct.scf_converged = Nscf (vxc.data(), vxc_in.data(), vh.data(), vh_in.data(), ct.vh_ext, vnuc.data(), rho.up.data(), rho.dw.data(), rhocore.data(), rhoc.data(), ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             else
             {
@@ -187,7 +187,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 }
 
                 // Should add a check here for a minimum density mixing to trigger an error
-                CONVERGED = Scf (vxc_in, vh_in, ct.vh_ext, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+                ct.scf_converged = Scf (vxc_in, vh_in, ct.vh_ext, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             }
             step_time = my_crtc () - step_time;
 
@@ -208,7 +208,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
 #if PLPLOT_LIBS
             // Generate convergence plots
-            PlotConvergence(RMSdV, CONVERGED);
+            PlotConvergence(RMSdV, ct.scf_converged);
 #endif
 
             // Write out progress info
@@ -257,7 +257,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     /* ---------- end exx loop ---------- */
 
 
-    if(CONVERGED)
+    if(ct.scf_converged)
     {
         if(ct.rms < ct.thr_rms)
         {
@@ -613,20 +613,20 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         write_force ();
 
 
-    return CONVERGED;
+    return ct.scf_converged;
 
 }                               /* end quench */
 
 
 #if PLPLOT_LIBS
-void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED)
+void PlotConvergence(std::vector<double> &RMSdV, bool ct.scf_converged)
 {
     if(pct.imgpe == 0) {
         std::vector<double> x;
         std::string ConvergencePlot(ct.basename);
         ConvergencePlot = ConvergencePlot + ".rmsdv.png";
         std::string ConvergenceTitle("RMG convergence:");
-        if(CONVERGED) {
+        if(ct.scf_converged) {
             ConvergenceTitle = ConvergenceTitle + " quench completed.";
         }
         else {

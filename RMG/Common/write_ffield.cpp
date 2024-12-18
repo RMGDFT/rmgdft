@@ -83,6 +83,10 @@ void write_ffield (std::string &filename)
        converged.put("force", "True");
    else
        converged.put("force", "False");
+   if(ct.scf_converged)
+       converged.put("scf", "True");
+   else
+       converged.put("scf", "False");
    if(ct.is_converging)
        converged.put("convergent", "True");
    else

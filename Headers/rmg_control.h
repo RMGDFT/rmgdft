@@ -1039,8 +1039,9 @@ public:
    std::string input_initial, input_final;
    double totale_initial, totale_final;
 
-   // Whether or not forces and stress have converged or not.
+   // Whether or not electrons, forces and stress have converged or not.
    bool forces_converged;
+   bool scf_converged;
    bool is_converging;
 
    // bfgs options
