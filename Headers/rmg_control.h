@@ -1042,7 +1042,8 @@ public:
    // Whether or not electrons, forces and stress have converged or not.
    bool forces_converged;
    bool scf_converged;
-   bool is_converging;
+   bool scf_is_converging;
+   bool force_is_converging;
 
    // bfgs options
    int bfgs_ndim = 1;

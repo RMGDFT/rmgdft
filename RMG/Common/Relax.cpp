@@ -41,8 +41,6 @@
 #include "bfgs.h"
 #include "GridObject.h"
 
-void write_ffield (std::string &filename);
-
 // Instantiate gamma and non-gamma versions
 template void Relax<double>(int , 
               spinobj<double> &, fgobj<double> &, fgobj<double> &,
@@ -200,7 +198,7 @@ template <typename OrbitalType> void Relax (
     /* ---------- end relax loop --------- */
 
     ct.forces_converged = CONV_FORCE;
-    ct.is_converging = true;
+    ct.force_is_converging = true;
 
     if (ct.max_md_steps > 0 && steps > 0)
     {

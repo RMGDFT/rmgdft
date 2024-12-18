@@ -68,6 +68,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     /* reset total number of scf steps */
     ct.total_scf_steps = 0;
     ct.scf_converged = false;
+    ct.scf_is_converging = true;
 
     spinobj<double> &rho = *(Kptr[0]->rho);
     spinobj<double> &vxc = *(Kptr[0]->vxc);
@@ -181,6 +182,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 }
                 if(ct.mix < 0.02)
                 {
+                     ct.scf_is_converging = false;
+                     // Write forcefield info
+                     std::string ffield = std::string(pct.image_path[pct.thisimg]) + 
+                                         "forcefield.xml";
+                     write_ffield (ffield);
+
                      rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
                      rmg_printf ("and usually means something is wrong with the job.\n");
                      rmg_error_handler(__FILE__, __LINE__, "Terminating.");

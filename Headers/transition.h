@@ -208,6 +208,7 @@ double GetPlanarAnisotropy(double *density);
 void GetFdFactor(int kidx);
 void SimplePolyFit(const double *x, double *y, const size_t n, const size_t k, double *beta);
 void DipoleCorrection(double *dipole,  double *vh_dipole);
+void write_ffield (std::string &filename);
 
 #endif
 #endif

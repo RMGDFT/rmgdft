@@ -87,10 +87,14 @@ void write_ffield (std::string &filename)
        converged.put("scf", "True");
    else
        converged.put("scf", "False");
-   if(ct.is_converging)
-       converged.put("convergent", "True");
+   if(ct.scf_is_converging)
+       converged.put("scf_convergent", "True");
    else
-       converged.put("convergent", "False");
+       converged.put("scf_convergent", "False");
+   if(ct.force_is_converging)
+       converged.put("force_convergent", "True");
+   else
+       converged.put("force_convergent", "False");
 
    modeling.put("modeling","");
    modeling.add_child("converged", converged);
