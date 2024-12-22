@@ -171,10 +171,13 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 if(tmix != ct.mix)
                 {
                     bool reset = true;
-                    std::string initfile(ct.outfile);
-                    initfile = initfile + std::string("_init");
-                    ReadData ((char *)initfile.c_str(), vh.data(), rho.data(), vxc.data(), Kptr);
-                    rho.get_oppo();
+                    if(ct.scf_accuracy > 1.0e-3)
+                    {
+                        std::string initfile(ct.outfile);
+                        initfile = initfile + std::string("_init");
+                        ReadData ((char *)initfile.c_str(), vh.data(), rho.data(), vxc.data(), Kptr);
+                        rho.get_oppo();
+                    }
                     ct.mix /= 2.0;
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
