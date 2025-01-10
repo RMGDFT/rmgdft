@@ -38,15 +38,14 @@
 
 #if USE_ELPA
 #include <elpa/elpa.h>
+static int once;
 #endif
 
-static int once;
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
     this->ngroups = ngroups;
     this->N = N;
-    this->NB = NB;
     this->root_comm = rootcomm;
 
     MPI_Comm_size(rootcomm, &this->npes);
@@ -61,8 +60,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_pes < 1) 
         throw RmgFatalException() << "Too many Scalapack groups requested in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
-    int num_blocks = N / NB;
-    if(N % NB) num_blocks++;
 
 
     // Get 2-d grid dimensions for this group
@@ -77,6 +74,20 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_cols * this->group_rows > this->group_pes)
         throw RmgFatalException() << "Problem with processor distribution in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
+    this->NB = NB;
+    int num_blocks = N / NB;
+    if(N % NB) num_blocks++;
+
+    while (num_blocks < this->group_cols )
+    {
+        this->NB /=2;
+        num_blocks = (N + this->NB -1) / this->NB;
+    }
+
+    if(this->NB < 2)
+    {
+        rmg_printf("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+    }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
 //    if(num_blocks < this->group_cols) this->group_cols = num_blocks;
