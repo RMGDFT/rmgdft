@@ -323,30 +323,29 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
 
             // Get pdsyngst_ workspace
-            int lwork = -1;
-            double lwork_tmp;
-            pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
-                    (double *)distB, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-            lwork = 2*(int)lwork_tmp;
+            //
+              // Get workspace required
+            int NB = MainSp->GetNB();
+            int NN = std::max( N, NB);
+            int izero = 0;
+            int nprow = MainSp->GetRows();
+            int npcol = MainSp->GetCols();
+            int NQ = numroc( &NN, &NB, &izero, &izero, &npcol );
+            int NP = numroc( &NN, &NB, &izero, &izero, &nprow );
+            int lrwork = 1 + 9*N + 3*NP*NQ;
+            int liwork = 7*N + 8* npcol + 2;
+            int lwork = 2*NP*NB + NQ*NB + NB*NB;
             double *work2 = new double[lwork];
 
             pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                     (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
-            // Get workspace required
-            lwork = -1;
-            int liwork=-1;
-            int liwork_tmp;
-            pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                    eigs, (double *)distV, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-            lwork = 16*(int)lwork_tmp;
-            liwork = 16*N;
-            double *nwork = new double[lwork];
+            double *nwork = new double[lrwork];
             int *iwork = new int[liwork];
 
             // and now solve it 
             pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
 
             pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
                     (double *)distV, &ione, &ione, desca);
@@ -465,8 +464,8 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         else if(N > M) {
             magma_dsygvdx (itype, MagmaVec, MagmaRangeI, MagmaLower, N, (double *)A, ld, (double *)B, ld,
                     vx, vx, ione, M,  &eigs_found, eigs, work, lwork, iwork, liwork, &info);
-//magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeI,MagmaLower,N,(double *)A,ld,(double *)B,ld, vx, vx,
-//ione, M, &eigs_found, eigs, work,lwork,iwork,liwork,&info);		
+            //magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeI,MagmaLower,N,(double *)A,ld,(double *)B,ld, vx, vx,
+            //ione, M, &eigs_found, eigs, work,lwork,iwork,liwork,&info);		
 
             for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
         }

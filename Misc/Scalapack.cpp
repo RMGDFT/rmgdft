@@ -514,12 +514,16 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
        rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
     }
 
-    // Get pdsyngst_ workspace
-    int lwork = -1;
-    double lwork_tmp;
-    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
-            b, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-    lwork = 2*(int)lwork_tmp; 
+    // Get workspace required
+    int NN = std::max( N, this->NB);
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+    int lwork = 2*NP*this->NB + NQ*this->NB + this->NB*this->NB;
     double *work2 = new double[lwork];
     
     pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
@@ -531,20 +535,13 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
        rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
     }
 
-    // Get workspace required
-    lwork = -1;
-    int liwork=-1;
-    int liwork_tmp;
-    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
-            ev, a, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-    lwork = 16*(int)lwork_tmp;
-    liwork = 16*N;
-    double *nwork = new double[lwork];
+
+    double *nwork = new double[lrwork];
     int *iwork = new int[liwork];
 
     // and now solve it 
     pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
-            ev, a, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+            ev, a, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
 
     if (info)
     {
