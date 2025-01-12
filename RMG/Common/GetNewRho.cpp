@@ -454,7 +454,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = GPU_GET_RHO;
-                if(ist >= nstates){
+                if(st1+ist >= nstates){
                     thread_control.p1 = NULL;
                     thread_control.p2 = (void *)&P;
                     thread_control.fd_diag = 0.0;
