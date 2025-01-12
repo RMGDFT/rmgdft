@@ -65,6 +65,11 @@ template bool Quench<std::complex<double> > (Kpoint<std::complex<double>> **Kptr
 
 template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool compute_forces)
 {
+    if(ct.verbose) {
+        printf("PE: %d  start Quench \n", pct.gridpe);
+        fflush(NULL);
+    }
+
     /* reset total number of scf steps */
     ct.total_scf_steps = 0;
     ct.scf_converged = false;
@@ -95,7 +100,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
 
     /* ---------- begin scf loop ---------- */
-    
+
     double start_time = my_crtc ();
     double exx_start_time = start_time;
     double step_time;
@@ -185,15 +190,15 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 }
                 if(ct.mix < 0.02)
                 {
-                     ct.scf_is_converging = false;
-                     // Write forcefield info
-                     std::string ffield = std::string(pct.image_path[pct.thisimg]) + 
-                                         "forcefield.xml";
-                     write_ffield (ffield);
+                    ct.scf_is_converging = false;
+                    // Write forcefield info
+                    std::string ffield = std::string(pct.image_path[pct.thisimg]) + 
+                        "forcefield.xml";
+                    write_ffield (ffield);
 
-                     rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
-                     rmg_printf ("and usually means something is wrong with the job.\n");
-                     rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
+                    rmg_printf ("and usually means something is wrong with the job.\n");
+                    rmg_error_handler(__FILE__, __LINE__, "Terminating.");
                 }
 
                 // Should add a check here for a minimum density mixing to trigger an error
@@ -431,7 +436,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
         rmg_printf ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
 
-       
+
         fflush(NULL);
         delete Exx;
 
@@ -622,6 +627,10 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     if (pct.imgpe == 0)
         write_force ();
 
+    if(ct.verbose) {
+        printf("PE: %d  done Quench \n", pct.gridpe);
+        fflush(NULL);
+    }
 
     return ct.scf_converged;
 

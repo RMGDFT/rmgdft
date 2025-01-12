@@ -44,6 +44,11 @@ template <typename OrbitalType> bool Scf (
           spinobj<double> &vxc_in, fgobj<double> &vh_in, double *vh_ext,
           int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
+    if(ct.verbose) {
+        printf("PE: %d  start scf \n", pct.gridpe);
+        fflush(NULL);
+    }
+
 
     spinobj<double> &rho = *(Kptr[0]->rho);
     spinobj<double> &vxc = *(Kptr[0]->vxc);
@@ -200,7 +205,7 @@ template <typename OrbitalType> bool Scf (
     }
 
 
-//    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) && ct.scf_steps  < ct.freeze_ldaU_steps )
+    //    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) && ct.scf_steps  < ct.freeze_ldaU_steps )
     if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0))
     {
         RmgTimer("3-MgridSubspace: ldaUop x psi");
@@ -255,7 +260,7 @@ template <typename OrbitalType> bool Scf (
 
         if( ct.scf_steps  < ct.freeze_ldaU_steps )
         {
-           MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
+            MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
         }
 
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
@@ -268,7 +273,15 @@ template <typename OrbitalType> bool Scf (
     }
 
     /* Take care of occupation filling */
+    if(ct.verbose) {
+        printf("PE: %d  start find Fermi \n", pct.gridpe);
+        fflush(NULL);
+    }
     ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
+    if(ct.verbose) {
+        printf("PE: %d  done find Fermi \n", pct.gridpe);
+        fflush(NULL);
+    }
 
     rmg_printf ("\n");
     //progress_tag ();
@@ -276,11 +289,27 @@ template <typename OrbitalType> bool Scf (
 
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
+    if(ct.verbose) {
+        printf("PE: %d  start GetTe \n", pct.gridpe);
+        fflush(NULL);
+    }
     GetTe (rho, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+    if(ct.verbose) {
+        printf("PE: %d  donet GetTe \n", pct.gridpe);
+        fflush(NULL);
+    }
 
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
+    if(ct.verbose) {
+        printf("PE: %d  start GetNewRho \n", pct.gridpe);
+        fflush(NULL);
+    }
     GetNewRho(Kptr, new_rho.data());
+    if(ct.verbose) {
+        printf("PE: %d  done GetNewRho \n", pct.gridpe);
+        fflush(NULL);
+    }
     new_rho.get_oppo();
     delete(RT1);
 
@@ -442,6 +471,10 @@ template <typename OrbitalType> bool Scf (
     }
 
     vh = vh_out;
+    if(ct.verbose) {
+        printf("PE: %d  done scf \n", pct.gridpe);
+        fflush(NULL);
+    }
     return CONVERGED;
 }                               /* end scf */
 

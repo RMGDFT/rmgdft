@@ -423,6 +423,11 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
 template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, double *rho)
 {
 
+    if(ct.verbose) {
+        printf("PE: %d  start GetnewRhoGpu \n", pct.gridpe);
+        fflush(NULL);
+    }
+
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
     BaseThread *T = BaseThread::getBaseThread(0);
     spinobj<double> &rhop = *(Kpts[0]->rho);
@@ -488,6 +493,10 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
 
     std::copy(hptr, hptr+rhop.pbasis, rho);
     
+    if(ct.verbose) {
+        printf("PE: %d  done GetnewRhoGpu \n", pct.gridpe);
+        fflush(NULL);
+    }
 }
 
 template <typename OrbitalType> void GetNewRhoGpuOne(

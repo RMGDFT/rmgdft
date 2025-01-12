@@ -60,6 +60,11 @@ static double occupied_tol = 0.01;
 
 template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, double *vxc_psi, int &notconv)
 {
+    if(ct.verbose) {
+        printf("PE: %d  start Davidson \n", pct.gridpe);
+        fflush(NULL);
+    }
+
     RmgTimer RT0("6-Davidson"), *RT1;
 
     KpointType alpha(1.0);
@@ -506,5 +511,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, weight);
     delete RT1;
 
+    if(ct.verbose) {
+        printf("PE: %d  done Davidson \n", pct.gridpe);
+        fflush(NULL);
+    }
 }
 

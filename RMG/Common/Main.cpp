@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 
 #include <float.h>
@@ -59,14 +59,14 @@
 
 
 template <typename OrbitalType> void run (
-            Kpoint<OrbitalType> **Kptr,
-            spinobj<double> &rho,
-            spinobj<double> &vxc,
-            fgobj<double> &vh,
-            fgobj<double> &vnuc,
-            fgobj<double> &rhoc,
-            fgobj<double> &rhocore);
-            
+        Kpoint<OrbitalType> **Kptr,
+        spinobj<double> &rho,
+        spinobj<double> &vxc,
+        fgobj<double> &vh,
+        fgobj<double> &vnuc,
+        fgobj<double> &rhoc,
+        fgobj<double> &rhocore);
+
 template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho);
 
 void report (void);
@@ -144,8 +144,8 @@ int main (int argc, char **argv)
 
     ct.logfile = stdout;
 
-// for RMG, the projectors |beta> are multiplied by exp(-ik.r) for non-gamma point
-// for ON and NEGF, the phase exp(-ik.r) is in the matrix separtion.
+    // for RMG, the projectors |beta> are multiplied by exp(-ik.r) for non-gamma point
+    // for ON and NEGF, the phase exp(-ik.r) is in the matrix separtion.
     ct.proj_nophase = 0; 
 
 
@@ -168,6 +168,10 @@ int main (int argc, char **argv)
         /* Initialize all I/O including MPI group comms */
         /* Also reads control and pseudopotential files*/
         InitIo (argc, argv, ControlMap);
+        if(ct.verbose) {
+            printf("PE: %d  InitIo done\n", pct.gridpe);
+            fflush(NULL);
+        }
 
         FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
@@ -224,6 +228,10 @@ int main (int argc, char **argv)
             Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_c);
         }
 
+        if(ct.verbose) {
+            printf("PE: %d  Init done\n", pct.gridpe);
+            fflush(NULL);
+        }
         /* Flush the results immediately */
         fflush (NULL);
 
@@ -239,25 +247,41 @@ int main (int argc, char **argv)
         RmgTimer *RT2 = new RmgTimer("1-TOTAL: run");
         if(ct.is_gamma)
         {
+            if(ct.verbose) {
+                printf("PE: %d  start run gamma\n", pct.gridpe);
+                fflush(NULL);
+            }
             run<double> (
-                (Kpoint<double> **)Kptr_g,
-                rho,
-                vxc,
-                vh,
-                vnuc,
-                rhoc,
-                rhocore);
+                    (Kpoint<double> **)Kptr_g,
+                    rho,
+                    vxc,
+                    vh,
+                    vnuc,
+                    rhoc,
+                    rhocore);
+            if(ct.verbose) {
+                printf("PE: %d  done run gamma\n", pct.gridpe);
+                fflush(NULL);
+            }
         }
         else
         {
+            if(ct.verbose) {
+                printf("PE: %d  start run non-gamma\n", pct.gridpe);
+                fflush(NULL);
+            }
             run<std::complex<double> >(
-                (Kpoint<std::complex<double>> **)Kptr_c,
-                rho,
-                vxc,
-                vh,
-                vnuc,
-                rhoc,
-                rhocore);
+                    (Kpoint<std::complex<double>> **)Kptr_c,
+                    rho,
+                    vxc,
+                    vh,
+                    vnuc,
+                    rhoc,
+                    rhocore);
+            if(ct.verbose) {
+                printf("PE: %d  done run non-gamma\n", pct.gridpe);
+                fflush(NULL);
+            }
         }
         delete(RT2);
 
@@ -309,13 +333,13 @@ int main (int argc, char **argv)
 
 
 template <typename OrbitalType> void run (
-            Kpoint<OrbitalType> **Kptr,
-            spinobj<double> &rho,
-            spinobj<double> &vxc,
-            fgobj<double> &vh,
-            fgobj<double> &vnuc,
-            fgobj<double> &rhoc,
-            fgobj<double> &rhocore)
+        Kpoint<OrbitalType> **Kptr,
+        spinobj<double> &rho,
+        spinobj<double> &vxc,
+        fgobj<double> &vh,
+        fgobj<double> &vnuc,
+        fgobj<double> &rhoc,
+        fgobj<double> &rhocore)
 {
 
 
