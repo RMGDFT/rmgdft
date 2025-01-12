@@ -443,12 +443,10 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
-    int istop = nstates / active_threads;
-    istop = istop * active_threads;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         /* Loop over states and accumulate charge */
-        for(int st1=0;st1 < istop;st1+=active_threads)
+        for(int st1=0;st1 < nstates;st1+=active_threads)
         {
 
             SCF_THREAD_CONTROL thread_control;
@@ -456,11 +454,20 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = GPU_GET_RHO;
-                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
-                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
-                thread_control.p2 = (void *)&P;
-                thread_control.fd_diag = scale;
-                thread_control.basetag = st1 + ist;
+                if(ist >= nstates){
+                    thread_control.p1 = NULL;
+                    thread_control.p2 = (void *)&P;
+                    thread_control.fd_diag = 0.0;
+                    thread_control.basetag = st1 + ist;
+                }
+                else
+                {
+                    double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                    thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
+                    thread_control.p2 = (void *)&P;
+                    thread_control.fd_diag = scale;
+                    thread_control.basetag = st1 + ist;
+                }
                 QueueThreadTask(ist, thread_control);
             }
             // Thread tasks are set up so wake them
@@ -469,11 +476,6 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
         }
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-        for(int st1=istop;st1 < nstates;st1++)
-        {
-            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
-            GetNewRhoGpuOne(&Kpts[kpt]->Kstates[st1], &P, scale);
-        }
         MPI_Barrier(pct.grid_comm);
     }                           /*end for kpt */
 
@@ -492,7 +494,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     MPI_Allreduce(MPI_IN_PLACE, hptr, rhop.pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
     std::copy(hptr, hptr+rhop.pbasis, rho);
-    
+
     if(ct.verbose) {
         printf("PE: %d  done GetnewRhoGpu \n", pct.gridpe);
         fflush(NULL);
@@ -500,9 +502,9 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
 }
 
 template <typename OrbitalType> void GetNewRhoGpuOne(
-                        State<OrbitalType> *sp, 
-                        Prolong *P, 
-                        double scale)
+        State<OrbitalType> *sp, 
+        Prolong *P, 
+        double scale)
 {
     RmgTimer RT("2-Prolong gpu");
 
