@@ -32,9 +32,9 @@
 #include "blas_driver.h"
 
 template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
-template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
+template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
 template <typename KpointType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground)
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_matrix, int numst, int tddft_start_state, double *rho_ground)
 {
     int idx;
 
@@ -42,7 +42,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 
     int st1;
 
-    double one = 1.0, zero = 0.0;
+    KpointType one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();
     
     if(!ct.norm_conserving_pp) {
@@ -83,21 +83,21 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, double *rho_matr
 #if CUDA_ENABLED || HIP_ENABLED 
         // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
         // the reduction over numst.
-        double *psi_dev = (double *)&kptr->psi_dev[tddft_start_state * pbasis];
-        double *xpsi = (double *)kptr->work_dev;
+        KpointType *psi_dev = &kptr->psi_dev[tddft_start_state * pbasis];
+        KpointTypedouble *xpsi = kptr->work_dev;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
         GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
         gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
 #else
-        double *psi = (double *)&kptr->orbital_storage[tddft_start_state * pbasis];
-        double *xpsi = (double *)kptr->work_cpu;
+        KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
+        KpointType *xpsi = kptr->work_cpu;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
-                rho_temp[idx] += psi[st1 * pbasis + idx] * xpsi[st1 * pbasis + idx];
+                rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * xpsi[st1 * pbasis + idx]);
 #endif
     }
 

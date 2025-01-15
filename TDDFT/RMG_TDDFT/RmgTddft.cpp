@@ -643,7 +643,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
             my_sync_device();
-            GetNewRho_rmgtddft(Kptr[0], rho, (double *)matrix_glob, numst, ct.tddft_start_state, rho_ground.data());
+            GetNewRho_rmgtddft(Kptr[0], rho, matrix_glob, numst, ct.tddft_start_state, rho_ground.data());
             delete(RT2a);
 
             //write_rho_x(rho, "update rho");

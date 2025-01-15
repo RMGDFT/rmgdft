@@ -624,7 +624,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
             zaxpy_driver(Nsq, mone,  C, ione, dP, ione)       ;  // dP = i(OM * dP - dP * OM)
 
             zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
-            tstconv((double *)dP, &Nsq, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
+            tstconv((double *)dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
