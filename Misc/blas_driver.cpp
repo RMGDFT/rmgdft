@@ -273,7 +273,7 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
     int ictxt = desca[1];
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-    if(nprow*npcol > 1)
+    if(!ct.tddft_gpu)
     {
         dgemm_driver (transa, transb, m, n, k, 
                 alpha, A, ia, ja, desca,

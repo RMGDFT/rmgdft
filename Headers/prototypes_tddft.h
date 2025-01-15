@@ -47,10 +47,10 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst);
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst);
 void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int *tot_steps, int n2);
