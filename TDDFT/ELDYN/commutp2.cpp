@@ -100,7 +100,7 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
         int ij=0  ;
         for (int ix=0; ix< Nbasis;ix++) {
             for (int iy=0; iy<Nbasis;  iy++) {
-                B[iy*Nbasis +ix] =A[ij++]  ;
+                B[iy*Nbasis +ix] =std::conj(A[ij++])  ;
             }   
         }
 #endif
@@ -109,7 +109,7 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
     {
         std::complex<double> zero = 0.0, one = 1.0;
         int ione = 1;
-        pztranu(&Nbasis, &Nbasis, &one, A, &ione, &ione, desca, &zero, B, &ione, &ione, desca);
+        pztranc(&Nbasis, &Nbasis, &one, A, &ione, &ione, desca, &zero, B, &ione, &ione, desca);
     }
     //printf(" *** A :     \n"); print_matrix(A,Nbasis);
     //printf(" *** B= A^T :\n"); print_matrix(B,Nbasis);
@@ -397,6 +397,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
             daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv(dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
+            printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
@@ -597,7 +598,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
     double   err    = 0.0e0            ;
     int      ierr   = 0                ;
     int      ione   = 1                ;
-    std::complex<double>   rone(1.0,0.0)           ;
+    std::complex<double>   rone(1.0, 0.0)           ;
     std::complex<double>   mone(-1.0,0.0)           ;
     int Mglob = desca[3];
 
@@ -613,16 +614,19 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         std::complex<double> *W   = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
         while ( iter  <= maxiter && tConv ==  false ) {
-            std::complex<double> alpha(0.0,   -1.0e0 /iter) ;
+            std::complex<double> alpha(0.0, -1.0e0 /iter) ;
             std::complex<double> beta (0.0,0.0) ;
 
             zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
             dP, ione, ione, desca, beta, C, ione, ione, desca);
             // C = -i * Om * dP
 
-            transpose(C, dP, desca);   // dP = -i dP * OM
-            zaxpy_driver(Nsq, mone,  C, ione, dP, ione)       ;  // dP = i(OM * dP - dP * OM)
-
+            zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
+            Om, ione, ione, desca, mone, C, ione, ione, desca);
+               // C = -i (dP * OM - Om * dP)
+               
+            zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
+                                                                 //
             zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv((double *)dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;

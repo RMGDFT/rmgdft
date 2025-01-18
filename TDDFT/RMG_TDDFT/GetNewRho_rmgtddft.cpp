@@ -44,7 +44,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_
 
     KpointType one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();
-    
+
     if(!ct.norm_conserving_pp) {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
     }
@@ -97,7 +97,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_
 
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
-                rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * xpsi[st1 * pbasis + idx]);
+                rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
 #endif
     }
 

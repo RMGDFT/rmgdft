@@ -156,6 +156,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 
     }
 
+    RmgTimer  *RT1 = new RmgTimer("2-TDDFT: Hupdate: V * psi");
+
     // V|psi> is in tmp_arrayT
     tmp_arrayT = new KpointType[psi_alloc];
     for (int st1 = 0; st1 < num_states; st1++)
@@ -167,6 +169,9 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         } 
     }
 
+    delete(RT1);
+    RT1 = new RmgTimer("2-TDDFT: Hupdate: gemm");
+
     // Compute A matrix
     KpointType alpha(vel);
     KpointType beta(0.0);
@@ -176,10 +181,13 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 
     delete [] tmp_arrayT;
 
+    delete(RT1);
+    RT1 = new RmgTimer("2-TDDFT: Hupdate: reduc");
 
     //    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     BlockAllreduce((double *)global_matrix1, (size_t)num_states * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
+    delete(RT1);
     // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
 #endif
