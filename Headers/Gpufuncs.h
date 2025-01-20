@@ -120,6 +120,7 @@ void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
+void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, std::complex<double> *out, int n, int k);
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
@@ -146,6 +147,7 @@ cudaStream_t getGpuStream(void);
 void init_hip_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
+void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);

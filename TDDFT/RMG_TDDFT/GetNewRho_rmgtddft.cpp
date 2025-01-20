@@ -84,7 +84,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_
         // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
         // the reduction over numst.
         KpointType *psi_dev = &kptr->psi_dev[tddft_start_state * pbasis];
-        KpointTypedouble *xpsi = kptr->work_dev;
+        KpointType *xpsi = kptr->work_dev;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
         GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);

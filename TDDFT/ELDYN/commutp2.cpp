@@ -72,6 +72,7 @@ void transpose( double *A,  double *B, int *desca)
     //printf(" *** B= A^T :\n"); print_matrix(B,Nbasis);
 }
 
+#if 0
 void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca) 
 {
   //printf(" transpose  %d \n", Nbasis) ;
@@ -114,6 +115,7 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
     //printf(" *** A :     \n"); print_matrix(A,Nbasis);
     //printf(" *** B= A^T :\n"); print_matrix(B,Nbasis);
 }
+#endif 
 
 void transpose( float *A,  float *B, int *desca) 
 {
@@ -605,7 +607,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
     
     // Needed for padding in C_dev
     Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
-    if(!ct.tddft_gpu)
+// if(!ct.tddft_gpu)
     {
         /* ----  P1=P0 ,  dP=P0   ---- */
         std::complex<double>      *C   = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
@@ -637,57 +639,6 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         RmgFreeHost(W);
         RmgFreeHost(C);
         RmgFreeHost(dP);
-    }
-    else
-    {
-#if CUDA_ENABLED || HIP_ENABLED
-        double *Om_dev, *P0_dev, *P1_dev, *W_dev, *C_dev, *dP_dev;
-        gpublasStatus_t gstat;
-        gpuMalloc((void **)&Om_dev, Nsq * sizeof(double));
-        gpuMalloc((void **)&P0_dev, Nsq2 * sizeof(double));
-        gpuMalloc((void **)&P1_dev, Nsq2 * sizeof(double));
-        gpuMalloc((void **)&W_dev, Nsq * sizeof(double));
-        //    gpuMalloc((void **)&C_dev, Nsq2_alloc * sizeof(double));
-        double *C0_dev, *C1_dev;
-        gpuMalloc((void **)&C0_dev, Nsq_alloc * sizeof(double));
-        gpuMalloc((void **)&C1_dev, Nsq_alloc * sizeof(double));
-        gpuMalloc((void **)&dP_dev, Nsq2 * sizeof(double));
-        dcopy_driver(Nsq,   Om, ione, Om_dev ,ione) ;      // GPU buffer for Om
-        /* ----  P1=P0 ,  dP=P0   ---- */
-        dcopy_driver(Nsq2,  P0, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-        dcopy_driver(Nsq2,  P0, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-        while ( iter  <= maxiter && tConv ==  false ) {
-            double alpha     =  1.0e0 /iter ;
-            double neg_alpha = -alpha       ;
-
-            //commatr(Om_dev, &dP_dev[Nsq], &C_dev[0]  , &alpha,    desca, Mdim, Ndim, W_dev)    ;  // real contrib correction  
-            commatr(Om_dev, &dP_dev[Nsq], C0_dev  , &alpha,    desca, Mdim, Ndim, W_dev)    ;  // real contrib correction  
-                                                                                               //        commstr(Om_dev, &dP_dev[0]  , &C_dev[Nsq], &neg_alpha,desca, Mdim, Ndim, W_dev)    ;  // imag contrib correction 
-            commstr(Om_dev, &dP_dev[0]  , C1_dev, &neg_alpha,desca, Mdim, Ndim, W_dev)    ;  // imag contrib correction 
-                                                                                             //        dcopy_driver(Nsq2, C_dev, ione, dP_dev ,ione)             ;  // dP=C     
-            dcopy_driver(Nsq, C0_dev, ione, dP_dev ,ione)             ;  // dP=C     
-            dcopy_driver(Nsq, C1_dev, ione, &dP_dev[Nsq] ,ione)             ;  // dP=C     
-            daxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
-
-            tstconv(dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
-            if (abs(err) >  errmax)  errmax= abs(err)  ;
-
-            iter ++ ;
-        }
-
-        dcopy_driver(Nsq2,  P1_dev, ione, P1, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-
-        gpuFree(dP_dev);
-        gpuFree(C1_dev);
-        gpuFree(C0_dev);
-        //gpuFree(C_dev);
-        gpuFree(W_dev);
-        gpuFree(P1_dev);
-        gpuFree(P0_dev);
-        gpuFree(Om_dev);
-
-#endif
     }
 
     /*--- return  error max---- */
