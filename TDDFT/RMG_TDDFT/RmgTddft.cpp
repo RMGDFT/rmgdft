@@ -503,7 +503,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         MemcpyHostDevice(matrix_size, Akick_cpu, Akick);
 
-
         for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
         for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].eig[0];
 
@@ -604,6 +603,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_dt , n2_C) ; 
             /* --- C++  version:  --*/
             my_sync_device();
+
             eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
@@ -631,14 +631,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             else
             {
-                if(ct.tddft_gpu)
-                {
-                    MemcpyDeviceHost(matrix_size, Pn1, matrix_glob);
-                }
-                else
-                {
-                    dcopy_driver(n2_C, (double *)Pn1, ione, (double *)matrix_glob, ione);
-                }
+                MemcpyDeviceHost(matrix_size, Pn1, matrix_glob);
             }
 
 

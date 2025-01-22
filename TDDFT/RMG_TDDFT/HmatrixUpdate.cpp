@@ -54,6 +54,10 @@
 #include <cublas_v2.h>
 #endif
 
+#if CUDA_ENABLED || HIP_ENABLED
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states);
+#endif
 
 template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state);
 template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state);
@@ -91,7 +95,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     KpointType *psi_dev = (KpointType *)kptr->psi_dev;
     psi_dev = psi_dev + tddft_start_state * pbasis;
     KpointType *work_dev = (KpointType *)kptr->work_dev;
-    static double *v_dev;
     static KpointType *mat_dev;
     gpublasStatus_t gstat;
 
@@ -99,10 +102,11 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     //block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
 
+    Veff_x_psi(psi_dev, work_dev, vtot_eig, pbasis, num_states);
 
-    if(!v_dev)
+
+    if(!mat_dev)
     {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
         gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(KpointType));
         int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
 
@@ -110,11 +114,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
         }
     }
-
-    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
-    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 
     // V|psi> is in work_dev now
     // Compute A matrix
@@ -195,3 +194,40 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 
 }
 
+#if CUDA_ENABLED || HIP_ENABLED
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states)
+{
+    gpublasStatus_t gstat;
+    static double *v_dev;
+    if(!v_dev)
+    {
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
+    }
+    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
+    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
+    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+}
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states)
+{
+    gpublasStatus_t gstat;
+    static std::complex<double> *v_dev, *vtot_eig_C;
+    if(!v_dev)
+    {
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(std::complex<double>));
+        vtot_eig_C = new std::complex<double>[pbasis];
+    }
+    for(int i = 0; i < pbasis; i++) vtot_eig_C[i] = vtot_eig[i];
+    gpuMemcpy(v_dev, vtot_eig_C,  pbasis * sizeof(std::complex<double>), gpuMemcpyHostToDevice);
+
+#if  HIP_ENABLED
+    gstat = hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (hipblasDoubleComplex *)psi_dev, pbasis, (hipblasDoubleComplex *)v_dev, 1, (hipblasDoubleComplex *)work_dev, pbasis);
+#endif
+#if  CUDA_ENABLED 
+    gstat = cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            psi_dev, pbasis, v_dev, 1, work_dev, pbasis);
+#endif
+    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+}
+#endif

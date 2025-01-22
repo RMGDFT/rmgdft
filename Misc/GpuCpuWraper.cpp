@@ -29,6 +29,10 @@ void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device)
         hipMemcpyHtoD(A_device, A_host, a_size );
 #endif 
     }
+    else
+    {
+        memcpy(A_device, A_host, a_size);
+    }
 }
 
 void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host)
@@ -43,6 +47,10 @@ void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host)
 #elif HIP_ENABLED
     hipMemcpyDtoH(A_host, A_device, a_size );
 #endif 
+    }
+    else
+    {
+        memcpy(A_host, A_device, a_size);
     }
 }
 
