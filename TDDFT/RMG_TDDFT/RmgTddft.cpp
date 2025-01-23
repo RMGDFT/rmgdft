@@ -279,7 +279,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     OrbitalType *Hmatrix_old;
     OrbitalType *Pn1        ;
     OrbitalType *Hmatrix_1  ;
-    OrbitalType *Hmatrix_dt ;
 
     OrbitalType *Hmatrix     = NULL;
     OrbitalType *Pn0         = NULL;
@@ -295,7 +294,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         gpuMalloc((void **)&Hmatrix_old, n2*sizeof(OrbitalType));
         gpuMalloc((void **)&Hmatrix_1, n2*sizeof(OrbitalType));
-        gpuMalloc((void **)&Hmatrix_dt, n2*sizeof(OrbitalType));
         gpuMalloc((void **)&Pn1, 2*n2*sizeof(double));
     }
     else
@@ -307,7 +305,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
        Hmatrix_old = new OrbitalType[n2];
        Hmatrix_1 = new OrbitalType[n2];
-       Hmatrix_dt = new OrbitalType[n2];
        Pn1  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
     }
 
@@ -600,11 +597,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             RT2a = new RmgTimer("2-TDDFT: ELDYN");
-            magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_dt , n2_C) ; 
+            magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
             /* --- C++  version:  --*/
             my_sync_device();
 
-            eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
+            eldyn_ort(desca, Mdim, Ndim,  Hmatrix_m1,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
 
