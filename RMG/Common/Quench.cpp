@@ -71,7 +71,6 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     }
 
     /* reset total number of scf steps */
-    ct.total_scf_steps = 0;
     ct.scf_converged = false;
     ct.scf_is_converging = true;
 
@@ -143,6 +142,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         exx_step_time = my_crtc ();
         RMSdV.clear();
 
+        ct.total_scf_steps = 0;
         // Adjust exx convergence threshold
         if(ct.xc_is_hybrid)
         {
@@ -154,15 +154,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         }
 
         for (ct.scf_steps = 0, ct.scf_converged = false;
-                ct.scf_steps < ct.max_scf_steps && !ct.scf_converged; ct.scf_steps++, ct.total_scf_steps++)
+                ct.total_scf_steps < ct.max_scf_steps && !ct.scf_converged; ct.scf_steps++, ct.total_scf_steps++)
         {
-
-            if(ct.total_scf_steps > ct.max_scf_steps)
-            {
-                rmg_printf ("\nMax number of scf steps (%d) exceeded.\n", ct.max_scf_steps);
-                rmg_error_handler(__FILE__, __LINE__, "Terminating.");
-            }
-
 
             /* perform a single self-consistent step */
             step_time = my_crtc ();
