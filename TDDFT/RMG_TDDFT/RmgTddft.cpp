@@ -269,14 +269,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     OrbitalType *Pn0_cpu         = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
     OrbitalType *Hmatrix_m1_cpu  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
     OrbitalType *Hmatrix_0_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-    OrbitalType *Akick_cpu = Hmatrix_0_cpu;
     double *vh_old      = new double[FP0_BASIS];
     double *vxc_old     = new double[FP0_BASIS];
     double *vh_dipole_old = new double[FP0_BASIS];
     double *vh_dipole     = new double[FP0_BASIS];
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
-    OrbitalType *Hmatrix_old;
     OrbitalType *Pn1        ;
     OrbitalType *Hmatrix_1  ;
 
@@ -292,7 +290,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         gpuMalloc((void **)&Hmatrix_0, n2*sizeof(OrbitalType));
         gpuMalloc((void **)&Pn0, 2*n2*sizeof(double));
 
-        gpuMalloc((void **)&Hmatrix_old, n2*sizeof(OrbitalType));
         gpuMalloc((void **)&Hmatrix_1, n2*sizeof(OrbitalType));
         gpuMalloc((void **)&Pn1, 2*n2*sizeof(double));
     }
@@ -303,12 +300,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
        Hmatrix_0 = Hmatrix_0_cpu;
        Pn0 = Pn0_cpu;
 
-       Hmatrix_old = new OrbitalType[n2];
        Hmatrix_1 = new OrbitalType[n2];
        Pn1  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
     }
 
-    OrbitalType *Akick       = Hmatrix_0;
 
 
     double    err        ;
@@ -417,8 +412,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         etxc_0       = Eterms[3];
         ct.II        = Eterms[4];
         totalE_0     = Eterms[5];
-        dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_old, ione);
-
     }
     else
     {
@@ -496,9 +489,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);
-        Sp->CopySquareMatrixToDistArray(matrix_glob, Akick_cpu, numst, desca);
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix_0_cpu, numst, desca);
 
-        MemcpyHostDevice(matrix_size, Akick_cpu, Akick);
+        MemcpyHostDevice(matrix_size, Hmatrix_0_cpu, Hmatrix_0);
 
         for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
         for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].eig[0];
@@ -507,7 +500,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         MemcpyHostDevice(matrix_size, Hmatrix_cpu, Hmatrix);
 
         my_sync_device();
-        dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_old, ione);
 
         if(pct.gridpe == 0 && ct.verbose)
         { 
@@ -525,7 +517,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         pre_steps = 0;
 
         double alpha = 1.0/time_step;
-        daxpy_driver ( n2_C ,  alpha, (double *)Akick, ione , (double *)Hmatrix ,  ione) ;
+        dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_m1, ione);
+        daxpy_driver ( n2_C ,  alpha, (double *)Hmatrix_0, ione , (double *)Hmatrix_m1 ,  ione) ;
 
         if(n2 == n2_C)
         {
@@ -557,8 +550,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //   }
 
 
-        dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_m1, ione);
-        dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_0 , ione);
+        dcopy_driver(n2_C, (double *)Hmatrix_m1, ione, (double *)Hmatrix_0 , ione);
         my_sync_device();
     }
 
@@ -688,32 +680,32 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             HmatrixUpdate(Kptr[0], vtot_psi, matrix_glob, ct.tddft_start_state);                                     
             if( scalapack_groups != pct.grid_npes)
             {
-                Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
+                Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix_m1, numst, desca);
             }
             else
             {
                 if(ct.tddft_gpu)
                 {
-                    MemcpyHostDevice(matrix_size, matrix_glob, Hmatrix);
+                    MemcpyHostDevice(matrix_size, matrix_glob, Hmatrix_m1);
                     my_sync_device();
                 }
                 else
                 {
-                    dcopy_driver(n2_C, (double *)matrix_glob, ione, (double *)Hmatrix, ione);
+                    dcopy_driver(n2_C, (double *)matrix_glob, ione, (double *)Hmatrix_m1, ione);
                 }
             }
             delete(RT2a);
 
             my_sync_device();
             double one = 1.0, mone = -1.0;
-            daxpy_driver ( n2_C ,  one, (double *)Hmatrix_old, ione , (double *)Hmatrix ,  ione) ;
-            dcopy_driver(n2_C, (double *)Hmatrix, ione, (double *)Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
+            daxpy_driver ( n2_C ,  one, (double *)Hmatrix_m1, ione , (double *)Hmatrix,  ione) ;
 
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
             my_sync_device();
             daxpy_driver ( n2_C ,  mone, (double *)Hmatrix, ione , (double *)Hmatrix_1 ,  ione) ;
+
             //tst_conv_matrix (&err, &ij_err ,  Hmatrix_1,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
                                                                                 
             bool tConv;
