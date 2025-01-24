@@ -338,6 +338,11 @@ MPI_Comm Scalapack::GetComm(void)
     return this->comm;
 }
 
+int Scalapack::GetN(void)
+{
+    return this->N;
+}
+
 int Scalapack::GetNB(void)
 {
     return this->NB;

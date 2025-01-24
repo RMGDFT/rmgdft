@@ -73,6 +73,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         MainSp = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, kptr->nstates,
                      ct.scalapack_block_factor, last, pct.grid_comm);
     }
+    else if (MainSp->GetN() != kptr->nstates)
+    {
+        int last = !ct.use_folded_spectrum;
+        delete MainSp;
+        MainSp = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, kptr->nstates,
+                     ct.scalapack_block_factor, last, pct.grid_comm);
+    }
 
     int *desca = MainSp->GetDistDesca();
     bool participates = MainSp->Participates();

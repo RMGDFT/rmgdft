@@ -276,6 +276,15 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
                 ct.scalapack_block_factor, last, pct.grid_comm);
 
     }
+    else if(MainSp->GetN() != ct.max_states)
+    {
+        delete MainSp;
+        int scalapack_groups = 1;
+        int last = !ct.use_folded_spectrum;
+        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, ct.max_states,
+                ct.scalapack_block_factor, last, pct.grid_comm);
+
+    }
 
     bool participates = MainSp->Participates();
 
