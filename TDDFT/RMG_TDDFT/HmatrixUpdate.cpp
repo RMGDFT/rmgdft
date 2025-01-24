@@ -226,7 +226,9 @@ void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, 
 #endif
 #if  CUDA_ENABLED 
     gstat = cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            psi_dev, pbasis, v_dev, 1, work_dev, pbasis);
+            reinterpret_cast<cuDoubleComplex*>(psi_dev), pbasis,
+            reinterpret_cast<cuDoubleComplex*>(v_dev), 1,
+            reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis);
 #endif
     RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }
