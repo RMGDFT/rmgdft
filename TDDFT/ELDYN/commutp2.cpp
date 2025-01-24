@@ -608,7 +608,6 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         std::complex<double>      *dP  = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
         zcopy_driver(Nsq,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
         zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-        std::complex<double> *W   = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
         while ( iter  <= maxiter && tConv ==  false ) {
             std::complex<double> alpha(0.0, -1.0e0 /iter) ;
             std::complex<double> beta (0.0,0.0) ;
@@ -630,7 +629,6 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
 
             iter ++ ;
         }
-        RmgFreeHost(W);
         RmgFreeHost(C);
         RmgFreeHost(dP);
     }
