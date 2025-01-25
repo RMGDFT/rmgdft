@@ -174,6 +174,7 @@ void gpuFree(void *ptr);
 #endif
 
 
+void RmgMemcpy (void *A_dest, void *A_src, size_t a_size);
 void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device);
 void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host);
 template <typename T> T *MemoryPtrHostDevice(T *ptr_host, T *ptr_device);

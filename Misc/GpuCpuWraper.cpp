@@ -15,6 +15,20 @@
 #endif
 
 
+void RmgMemcpy(void *A_dest, void *A_source, size_t a_size)
+{
+    if(A_dest == A_source) return;
+#if CUDA_ENABLED
+        cudaMemcpy(A_dest, A_source, a_size, cudaMemcpyDefault);
+#elif SYCL_ENABLED
+        gpuMemcpy(A_dest, A_source, a_size, gpuMemcpyHostToDevice);
+#elif HIP_ENABLED
+        cudaMemcpy(A_dest, A_source, a_size, hipMemcpyDefault);
+#else
+       memcpy(A_dest, A_source, a_size); 
+#endif 
+
+} 
 
 void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device)
 {
