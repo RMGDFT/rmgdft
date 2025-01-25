@@ -23,7 +23,7 @@ void RmgMemcpy(void *A_dest, void *A_source, size_t a_size)
 #elif SYCL_ENABLED
         gpuMemcpy(A_dest, A_source, a_size, gpuMemcpyHostToDevice);
 #elif HIP_ENABLED
-        cudaMemcpy(A_dest, A_source, a_size, hipMemcpyDefault);
+        hipMemcpy(A_dest, A_source, a_size, hipMemcpyDefault);
 #else
        memcpy(A_dest, A_source, a_size); 
 #endif 
