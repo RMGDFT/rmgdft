@@ -48,10 +48,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
     if(!ct.norm_conserving_pp) {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
     }
-    if(ct.num_kpts > 1)
-    {
-        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for kpoint \n");
-    } 
     if(ct.nspin > 1)
     {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for spin-polarized \n");

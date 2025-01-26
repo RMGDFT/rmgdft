@@ -207,6 +207,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 #endif  
 
     double *vtot, *vtot_psi;
+    double dipole_ele[3];
 
     int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
@@ -325,7 +326,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     //    double *vh_y = new double[FP0_BASIS];
     //    double *vh_z = new double[FP0_BASIS];
 
-    double dipole_ele[3];
 
     get_dipole(rho, dipole_ele);
     DipoleCorrection(dipole_ele,  vh_dipole);
@@ -351,15 +351,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     RmgTimer *RT0 = new RmgTimer("2-TDDFT");
 
-    // Loop over k-points
-    if(ct.num_kpts != 1) 
-    {
-        rmg_printf(" \n  TDDFT does not support multiple k-points \n");
-
-        fflush(NULL);
-        throw RmgFatalException() << " TDDFT does not support multiple k-points in "<< __FILE__ << " at line " << __LINE__ << "\n";
-        exit(0);
-    }
     if(!ct.norm_conserving_pp)
     {
         rmg_printf(" \n  TDDFT support NCPP only \n");
