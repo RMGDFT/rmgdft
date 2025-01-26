@@ -213,7 +213,13 @@ public:
     fgobj<double> *rhocore;
     spinobj<double> *rho;
     spinobj<double> *vxc;
-    double kweight;
+    KpointType *Hmatrix_cpu    ;
+    KpointType *Pn0_cpu        ;
+    KpointType *Pn1_cpu        ;
+    KpointType *Hmatrix_1_cpu ;
+    KpointType *Hmatrix_m1_cpu ;
+    KpointType *Hmatrix_0_cpu  ;
+    KpointType *Akick_cpu  ;
 
 private:
 
