@@ -31,10 +31,10 @@
 #include "RmgGemm.h"
 #include "blas_driver.h"
 
-template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
-template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, double *rho_ground);
+template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
+template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state);
 template <typename KpointType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_matrix, int numst, int tddft_start_state, double *rho_ground)
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rho_matrix, int numst, int tddft_start_state)
 {
     int idx;
 
@@ -106,13 +106,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_
     switch (ct.interp_flag)
     {
         case CUBIC_POLYNOMIAL_INTERPOLATION:
-            pack_rho_ctof (rho_temp, rho);
+            pack_rho_ctof (rho_temp, rho_k);
             break;
         case PROLONG_INTERPOLATION:
-            mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
+            mg_prolong_MAX10 (rho_k, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
         case FFT_INTERPOLATION:
-            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
+            FftInterpolation (*Rmg_G, rho_temp, rho_k, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
             break;
 
         default:
@@ -124,23 +124,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho, KpointType *rho_
     }
 
 
-
-    /* Check total charge. */
-    ct.tcharge = ZERO;
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    for (int idx = 0; idx < FP0_BASIS; idx++)
-        rho[idx] += rho_ground[idx];
-    for (int idx = 0; idx < FP0_BASIS; idx++)
-        ct.tcharge += rho[idx];
-
-    /* ct.tcharge = real_sum_all (ct.tcharge); */
-    ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);
-    ct.tcharge = ct.tcharge * get_vel_f();
-
-    /* Renormalize charge, there could be some discrpancy because of interpolation */
-    double t1 = ct.nel / ct.tcharge;
-    if(std::abs(t1-1) > 1.0e-6) rmg_printf ("normalization constant-1 for new charge in tddft is %e\n", t1-1);
-    for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
 #if CUDA_ENABLED || HIP_ENABLED 
     gpuFree(rho_temp_dev);

@@ -213,6 +213,7 @@ public:
     fgobj<double> *rhocore;
     spinobj<double> *rho;
     spinobj<double> *vxc;
+    double kweight;
 
 private:
 
