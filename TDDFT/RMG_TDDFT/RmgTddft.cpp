@@ -218,7 +218,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double vel = get_vel_f();
     std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
-    int tot_steps = 0, pre_steps, tddft_steps;
+    int tot_steps = 0, pre_steps = 0, tddft_steps;
     int Ieldyn = 1;    // BCH  
                        //int Ieldyn = 2;    // Diagev
     int iprint = ct.verbose;
@@ -472,34 +472,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             totalE_00 = E_downfold + EkinPseudo_00 + ES_00 + etxc_00 + ct.II;
 
         }
-        for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
-        if(ct.tddft_mode == EFIELD)
-        {
-            init_efield(vtot, ct.efield_tddft);
-            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-        }
-        else if(ct.tddft_mode == POINT_CHARGE)
-        {
-            init_point_charge_pot(vtot_psi, 1);
-        }
-        else
-        {
-            throw RmgFatalException() << " TDDFT mode not defined: "<< ct.tddft_mode<< __FILE__ << " at line " << __LINE__ << "\n";
-        }
 
-        double alpha = 1.0/time_step;
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            HmatrixUpdate(Kptr[kpt], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);
-            Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
-
 
             for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
 
             Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
             RmgMemcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-
-            daxpy_driver ( n2_C ,  alpha, (double *)Kptr[kpt]->Akick_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu ,  ione) ;
             RmgMemcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
 
 
@@ -533,6 +513,26 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
+        if(ct.tddft_mode == EFIELD || ct.tddft_mode == POINT_CHARGE)
+        {
+            double alpha = 1.0/time_step;
+            for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
+            if(ct.tddft_mode == EFIELD)
+            {
+                init_efield(vtot, ct.efield_tddft);
+                GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+            }
+            else if(ct.tddft_mode == POINT_CHARGE)
+            {
+                init_point_charge_pot(vtot_psi, 1);
+            }
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+                HmatrixUpdate(Kptr[kpt], vtot_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state);
+                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
+                daxpy_driver ( n2_C ,  alpha, (double *)Kptr[kpt]->Akick_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu ,  ione) ;
+                RmgMemcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
+            }
+        }
     }
 
     //  initialize   data for rt-td-dft
@@ -721,10 +721,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 RmgMemcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             }
 
-            MPI_Allreduce(MPI_IN_PLACE, &thrs_dHmat, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
+            MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
 
 
-            if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
+            if(pct.imgpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
             rmg_printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err);  
@@ -765,7 +765,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
                     tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
             fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
+                    tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
         }
 
         if((tddft_steps +1) % ct.checkpoint == 0)
