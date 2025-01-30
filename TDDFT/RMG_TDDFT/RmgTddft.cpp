@@ -273,7 +273,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         Kptr[kpt]->Hmatrix_m1_cpu  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
         Kptr[kpt]->Hmatrix_1_cpu  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
         Kptr[kpt]->Hmatrix_0_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Akick_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        if(ct.tddft_mode == VECTOR_POT)
+        {
+            Kptr[kpt]->Pxmatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+            Kptr[kpt]->Pymatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+            Kptr[kpt]->Pzmatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        }
+        else
+        {
+            Kptr[kpt]->Akick_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        }
     }
 
     OrbitalType *matrix_glob = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
@@ -544,6 +553,23 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
        if(pct.gridpe == 0) { printf("**** Hmat1 : \n");  print_matrix_d(Hmatrix_1, &nblock, &numst)   ; }
      */
 
+    if(ct.tddft_mode == VECTOR_POT)
+    {
+        // vector potential will be A(t) =  ct.efield_tddft * cos(tddft_frequency * t)
+        // VecP matrix is <psi| ct.efied_tddft dot gradient | psi> 
+        //
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            VecPHmatrix(Kptr[kpt], ct.efield_tddft, desca, ct.tddft_start_state);
+            if(pre_steps == 0)
+            {
+                // at t= 0, cos(omega t) = 1.0
+                daxpy_driver ( n2_C ,  ct.efield_tddft[0], (double *)Kptr[kpt]->Pxmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  ct.efield_tddft[1], (double *)Kptr[kpt]->Pymatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  ct.efield_tddft[2], (double *)Kptr[kpt]->Pzmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+            }
+        }
+    }
+
     //  run rt-td-dft
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -554,6 +580,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //  guess H1 from  H(0) and H(-1):
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                double coswt = cos(ct.tddft_frequency * tot_steps * time_step);
+                double coswtx = coswt * ct.efield_tddft[0];
+                double coswty = coswt * ct.efield_tddft[1];
+                double coswtz = coswt * ct.efield_tddft[2];
+                daxpy_driver ( n2_C ,  coswtx, (double *)Kptr[kpt]->Pxmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  coswty, (double *)Kptr[kpt]->Pymatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  coswtz, (double *)Kptr[kpt]->Pzmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
+            }
             extrapolate_Hmatrix ((double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, (double *)Kptr[kpt]->Hmatrix_1_cpu, n2_C) ;
         }   
 

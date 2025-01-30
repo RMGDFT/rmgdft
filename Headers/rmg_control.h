@@ -149,6 +149,7 @@ public:
     bool tddft_noscf;
     bool tddft_gpu =1;
     int tddft_mode;
+    double tddft_frequency;
     double tddft_qpos[3];
     double tddft_qgau;
     

@@ -260,6 +260,7 @@
 
 #define EFIELD 0
 #define POINT_CHARGE 1
+#define VECTOR_POT 2
 // Projector types
 #define LOCALIZED 0
 #define DELOCALIZED 1

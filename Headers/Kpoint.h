@@ -203,7 +203,7 @@ public:
 
     // For CUDA or HIP the TDDFT code leaves a copy of the wavefunctions on the GPUs so
     // we store a pointer to that here.
-    KpointType *psi_dev, *work_dev, *work_cpu;
+    KpointType *psi_dev = NULL, *work_dev, *work_cpu;
 
     // Grid objects
     fgobj<double> *vh;
@@ -220,6 +220,9 @@ public:
     KpointType *Hmatrix_m1_cpu ;
     KpointType *Hmatrix_0_cpu  ;
     KpointType *Akick_cpu  ;
+    KpointType *Pxmatrix_cpu  ;
+    KpointType *Pymatrix_cpu  ;
+    KpointType *Pzmatrix_cpu  ;
 
 private:
 

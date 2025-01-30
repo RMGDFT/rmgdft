@@ -43,6 +43,9 @@ template <typename OrbitalType>
 void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho_oppo,
      double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename KpointType>
+void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+
+template <typename KpointType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);

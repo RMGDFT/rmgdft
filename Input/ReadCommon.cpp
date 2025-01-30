@@ -662,6 +662,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid solver.",
             "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("tddft_frequency", &lc.tddft_frequency, 0.0, DBL_MAX, 0.2, 
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "TDDFT frequency for use in TDDFT vector potential mode ",
+            "tddft_frequency is in atomic unit ", MD_OPTIONS);
     If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
             CHECK_AND_TERMINATE, OPTIONAL,
             "TDDFT time step for use in TDDFT mode ",
