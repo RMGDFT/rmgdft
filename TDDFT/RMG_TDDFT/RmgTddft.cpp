@@ -214,7 +214,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int FP0_BASIS = dimx * dimy * dimz;
 
-    FILE *dfi = NULL, *efi = NULL;
+    FILE *dfi = NULL, *efi = NULL, *current_fi = NULL;
     double vel = get_vel_f();
     std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
@@ -375,6 +375,13 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         filename = std::string(ct.basename) + "_totalE";
         efi = fopen(filename.c_str(), "w");
 
+        
+        if(ct.tddft_mode == VECTOR_POT)
+        {
+            filename = std::string(ct.basename) + "_current.dat";
+            current_fi = fopen(filename.c_str(), "w");
+            fprintf(current_fi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
+        }
     }
 
 
@@ -570,6 +577,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
     }
 
+    double current[3];
     //  run rt-td-dft
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -579,8 +587,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         //  guess H1 from  H(0) and H(-1):
 
+        current[0] = 0.0;
+        current[1] = 0.0;
+        current[2] = 0.0;
+
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            if(ct.tddft_mode == VECTOR_POT)
+            if(ct.tddft_mode == VECTOR_POT && tot_steps == 0)
             {
                 double coswt = cos(ct.tddft_frequency * tot_steps * time_step);
                 double coswtx = coswt * ct.efield_tddft[0];
@@ -781,7 +793,19 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
 
             RmgMemcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_1_cpu, matrix_size);
+
+            if(ct.tddft_mode == VECTOR_POT )
+            {
+                double tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                current[0] += tem * Kptr[kpt]->kp.kweight;
+                tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                current[1] += tem * Kptr[kpt]->kp.kweight;
+                tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                current[2] += tem * Kptr[kpt]->kp.kweight;
+            }
         }
+
+        MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
         if(pct.imgpe == 0)
         {
@@ -802,6 +826,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                     tot_steps*time_step, (EkinPseudo-EkinPseudo_0) * efactor, (ES-ES_0) * efactor, (etxc-etxc_0) * efactor, (totalE-totalE_0) * efactor);
             fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                     tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
+            if(ct.tddft_mode == VECTOR_POT )
+                fprintf(current_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
+                        tot_steps*time_step, current[0], current[1], current[2]);
         }
 
         if((tddft_steps +1) % ct.checkpoint == 0)
@@ -820,6 +847,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             if(pct.imgpe == 0)fflush(dfi);
             if(pct.imgpe == 0)fflush(efi);
+            if(ct.tddft_mode == VECTOR_POT )
+                if(pct.imgpe == 0)fflush(current_fi);
         }
 
 
@@ -833,6 +862,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     {
         fclose(dfi);
         fclose(efi);
+        if(ct.tddft_mode == VECTOR_POT )
+            fclose(current_fi);
     }
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
