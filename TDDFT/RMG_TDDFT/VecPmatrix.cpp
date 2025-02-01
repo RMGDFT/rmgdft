@@ -39,17 +39,20 @@
 #include "blas.h"
 #include "blacs.h"
 #include "RmgParallelFft.h"
+#include "RmgException.h"
+
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-template void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
-template void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state)
+{
+     throw RmgFatalException() << "TDDFT vector potential mode: wave function cannot be real now " << "\n";
+}
 
-template <typename KpointType>
-void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, int tddft_start_state)
+void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state)
 {
 
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
@@ -63,10 +66,10 @@ void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, in
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-    KpointType alpha(vel);
-    KpointType beta(0.0);
+    std::complex<double> alpha(vel);
+    std::complex<double> beta(0.0);
 
-    KpointType *block_matrix;
+    std::complex<double> *block_matrix;
 
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
@@ -75,22 +78,17 @@ void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, in
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a;
-    if(typeid(KpointType) == typeid(std::complex<double>)) {
-         trans_a = trans_c;
-    }
-    else {
-        trans_a = trans_t;
-    }   
+    trans_a = trans_c;
 
     //block_size = num_states;
     int num_blocks = (num_states + nb -1)/nb;
     // First time through allocate pinned memory for global_matrix1
 
     // 3 block matrix for px, py, pz operators
-    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(KpointType) , MPI_INFO_NULL, &block_matrix);
-    KpointType *block_matrix_x = block_matrix;
-    KpointType *block_matrix_y = block_matrix_x + num_states * nb;
-    KpointType *block_matrix_z = block_matrix_y + num_states * nb;
+    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(std::complex<double>) , MPI_INFO_NULL, &block_matrix);
+    std::complex<double> *block_matrix_x = block_matrix;
+    std::complex<double> *block_matrix_y = block_matrix_x + num_states * nb;
+    std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
 
 
     if(retval1 != MPI_SUCCESS) {
@@ -99,8 +97,8 @@ void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, in
 
 
     // V|psi> is in tmp_arrayT
-    KpointType *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
-    KpointType *psi_dev;
+    std::complex<double> *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
+    std::complex<double> *psi_dev;
     if(kptr->psi_dev)
     {
         psi_dev = kptr->psi_dev + tddft_start_state * pbasis_noncol;
@@ -110,23 +108,31 @@ void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, in
         psi_dev = psi;
     }
 
-    KpointType *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
-    KpointType *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
-    KpointType *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    std::complex<double> *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
+    std::complex<double> *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    std::complex<double> *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
 
     for(int ib = 0; ib < num_blocks; ib++)
     {
-        int size_col = std::min(nb, num_states - ib * nb);
-        int size_row = num_states - ib * nb;
-        int this_block_size = size_col;
+        // upper triagle blocks only
+        // ib : (nstates - ib * nb) * block_size matrix
+        // ib = 0: nstates * block_size matrix
+        // ib = 1: (nstates - nb) * block_size matrix
+        // block index (ib, ib:num_blocks)
+        // this_block_size will be nb for the first num_blocks-1 block, the last block could be smaller than nb
 
 
-        for (int st1 = 0; st1 < size_col; st1++)
+        int this_block_size, length_block;
+        length_block = num_states - nb * ib;
+        this_block_size = std::min(nb, length_block);
+
+
+        for (int st1 = 0; st1 < this_block_size; st1++)
         {
-            KpointType *psi1 = psi + (ib*nb + st1) * pbasis_noncol;
-            KpointType *psi1_x = psi_x + st1 * pbasis_noncol;
-            KpointType *psi1_y = psi_y + st1 * pbasis_noncol;
-            KpointType *psi1_z = psi_z + st1 * pbasis_noncol;
+            std::complex<double> *psi1 = psi + (ib*nb + st1) * pbasis_noncol;
+            std::complex<double> *psi1_x = psi_x + st1 * pbasis_noncol;
+            std::complex<double> *psi1_y = psi_y + st1 * pbasis_noncol;
+            std::complex<double> *psi1_z = psi_z + st1 * pbasis_noncol;
             ApplyGradient(psi1, psi1_x, psi1_y, psi1_z, ct.force_grad_order, "Coarse");
             if(ct.noncoll)
             {
@@ -151,17 +157,17 @@ void VecPHmatrix (Kpoint<KpointType> *kptr, double *efield_tddft, int *desca, in
 
         }
 
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_x, 
-                pbasis_noncol, beta, block_matrix_x, size_row);
-        BlockAllreduce((double *)block_matrix_x, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_x, 
+                pbasis_noncol, beta, block_matrix_x, this_block_size);
+        BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_y, 
-                pbasis_noncol, beta, block_matrix_y, size_row);
-        BlockAllreduce((double *)block_matrix_y, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_y, 
+                pbasis_noncol, beta, block_matrix_y, this_block_size);
+        BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_z, 
-                pbasis_noncol, beta, block_matrix_z, size_row);
-        BlockAllreduce((double *)block_matrix_z, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_z, 
+                pbasis_noncol, beta, block_matrix_z, this_block_size);
+        BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
         //block_matrix to distHij;
         if(myrow == ib%nprow)

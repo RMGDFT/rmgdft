@@ -136,6 +136,7 @@ void CheckSetDefault(void)
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[1] == 0);
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[2] == 0);
     ct.is_gamma = ct.is_gamma && (!ct.noncoll);
+    ct.is_gamma = ct.is_gamma && (ct.tddft_mode != VECTOR_POT);
     if(ct.is_use_symmetry == 2)
     {
         ct.is_use_symmetry = 1;
