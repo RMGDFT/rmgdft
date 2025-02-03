@@ -669,7 +669,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                             Sp->ScalapackBlockAllreduce((double *)matrix_glob, (size_t)numst * (size_t)numst *n2_C/n2);
                     }
 
-                    Sp->BcastRoot((double *)matrix_glob, numst * numst * n2_C/n2, MPI_DOUBLE);
+                    size_t count = numst * numst * sizeof(OrbitalType) /sizeof(double);
+                    Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
                 }
                 else
                 {
@@ -796,16 +797,17 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             if(ct.tddft_mode == VECTOR_POT )
             {
-                double tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pxmatrix_cpu, &ione);
-                current[0] += tem * Kptr[kpt]->kp.kweight;
-                tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pymatrix_cpu, &ione);
-                current[1] += tem * Kptr[kpt]->kp.kweight;
-                tem = ddot(&n2_C, (double *)Kptr[kpt]->Pn0_cpu, &ione, (double *)Kptr[kpt]->Pzmatrix_cpu, &ione);
-                current[2] += tem * Kptr[kpt]->kp.kweight;
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
+                std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
+                std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
             }
         }
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+        Sp->ScalapackBlockAllreduce(current, 3);
 
         if(pct.imgpe == 0)
         {

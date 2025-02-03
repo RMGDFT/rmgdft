@@ -100,6 +100,7 @@
 #define		zgeev		RMG_FC_GLOBAL(zgeev, ZGEEV)
 #define		zgemv		RMG_FC_GLOBAL(zgemv, ZGEMV)
 #define		zdotc		RMG_FC_GLOBAL(zdotc, ZDOTC)
+#define		zdotu		RMG_FC_GLOBAL(zdotu, ZDOTU)
 #define		dgels		RMG_FC_GLOBAL(dgels, DGELS)
 #define		dsytrf		RMG_FC_GLOBAL(dsytrf, DSYTRF)
 #define		dsytri		RMG_FC_GLOBAL(dsytri, DSYTRI)
@@ -244,6 +245,7 @@ void zimatcopy(char *, char *, int *, int *, double  *, double  *, int *, int *)
 
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
+DoubleC zdotu(int*, DoubleC *, int*, DoubleC *, int*);
 
 void openblas_set_num_threads(int nthreads);
 

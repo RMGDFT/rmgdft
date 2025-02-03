@@ -66,7 +66,8 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-    std::complex<double> alpha(vel);
+    //  alpha take care of i in moment operator
+    std::complex<double> alpha(0.0, vel);
     std::complex<double> beta(0.0);
 
     std::complex<double> *block_matrix;
