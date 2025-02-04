@@ -123,7 +123,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
 
     cublasOperation_t trans =CUBLAS_OP_N;
-    cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nhrs, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo );
+    cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nn, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo );
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
 
 
