@@ -158,15 +158,15 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
         }
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_x, 
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
                 pbasis_noncol, beta, block_matrix_x, this_block_size);
         BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_y, 
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
                 pbasis_noncol, beta, block_matrix_y, this_block_size);
         BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_dev+ib*nb*pbasis_noncol, pbasis_noncol, psi_z, 
+        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
                 pbasis_noncol, beta, block_matrix_z, this_block_size);
         BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
