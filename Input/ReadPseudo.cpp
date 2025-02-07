@@ -145,8 +145,8 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
         if(!short_name.compare("PZ")) {
             lc.xctype = LDA_PZ81; 
         }
-        else if(!short_name.compare("PBE")) {
-            lc.xctype = GGA_PBE;
+        else if(!short_name.compare("LDA")) {
+            lc.xctype = LDA_PZ81;
         }
         else if(!short_name.compare("PBE")) {
             lc.xctype = GGA_PBE;
