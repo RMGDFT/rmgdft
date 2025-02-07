@@ -797,11 +797,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             if(ct.tddft_mode == VECTOR_POT )
             {
-                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
                 current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
                 current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
                 current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
             }
         }
