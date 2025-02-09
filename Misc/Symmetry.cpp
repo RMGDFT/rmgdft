@@ -294,7 +294,8 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 {
                     rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
                 }
-                rmg_printf("  with translation of (%d %d %d) grids %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], int(time_rev[isym]));
+                rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                        int(time_rev[isym]), int(inv_type[isym]));
             }
         }
 
@@ -395,6 +396,21 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
 
+    // remove inversion symmetry with electric field
+    double efield = 0.0;
+    for(int i = 0;i < 3; i++) 
+    {
+        efield += ct.efield[i] * ct.efield[i];
+        efield += ct.efield_tddft[i] * ct.efield_tddft[i];
+    }
+    if(efield > 0.0)
+    {
+        for (int isym = 0; isym < nsym; isym++)
+        {
+            if(inv_type[isym]) sym_to_be_removed.push_back(isym);
+        }
+    }
+
     if (sym_to_be_removed.size() > 0)
     {
         for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
@@ -421,7 +437,8 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
             }
-            rmg_printf("  with translation of (%d %d %d) grids, time_rev %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], time_rev[isym]);
+            rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                    int(time_rev[isym]), int(inv_type[isym]));
         }
     }
     nsym = (int)sym_rotate.size()/9;
@@ -685,6 +702,32 @@ void Symmetry::symmetrize_grid_vector(double *object)
     for(int ix = 0; ix < 3*pbasis; ix++) object[ix] = object[ix] * t1;
 
     delete [] da;
+
+}
+
+void Symmetry::symm_vec(double *vec)
+{
+    double vec_tem[3], vec_rot[3];
+    for (int ir = 0; ir < 3; ir++)
+    {
+        vec_tem[ir] = vec[0] * L.b0[ir] +vec[1] * L.b1[ir] +vec[2] * L.b2[ir];
+    }                       /* end for ir */
+
+    vec_rot[0] = 0.0;
+    vec_rot[1] = 0.0;
+    vec_rot[2] = 0.0;
+    for(int isy = 0; isy < nsym_full; isy++)
+    {
+        for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+                vec_rot[i] += full_sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
+    }
+
+    for (int ir = 0; ir < 3; ir++)
+    {
+        vec[ir] = vec_rot[0] * L.a0[ir] + vec_rot[1] * L.a1[ir] + vec_rot[2] * L.a2[ir];
+        vec[ir] = vec[ir] / (double)nsym_full;
+    }                       /* end for ir */
 
 }
 

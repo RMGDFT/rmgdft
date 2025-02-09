@@ -80,6 +80,12 @@ template <typename OrbitalType> bool Scf (
         get_dipole(rho.data(), dipole);
         DipoleCorrection(dipole,  vh_dipole_corr.data());
     }
+    else
+    {
+        for (int idx = 0; idx < vtot.pbasis; idx++) {
+            vh_dipole_corr[idx] = 0.0;
+        }
+    }
     /* save old vhxc + vnuc */
     for (int idx = 0; idx < vtot.pbasis; idx++) {
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_dipole_corr[idx];
