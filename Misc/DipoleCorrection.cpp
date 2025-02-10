@@ -24,6 +24,7 @@ double gaussintegral(double r, int n);
 
 void DipoleCorrection(double *dipole,  double *vh_dipole)
 {
+    if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] == 0) return;
     static double *vh_x=NULL, *vh_y=NULL, *vh_z=NULL;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 

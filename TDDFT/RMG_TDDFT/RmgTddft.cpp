@@ -288,8 +288,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     OrbitalType *matrix_glob = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
     double *vh_old      = new double[FP0_BASIS];
     double *vxc_old     = new double[FP0_BASIS];
-    double *vh_dipole_old = new double[FP0_BASIS];
-    double *vh_dipole     = new double[FP0_BASIS];
+    double *vh_dipole_old = new double[FP0_BASIS]();
+    double *vh_dipole     = new double[FP0_BASIS]();
     double *rho_k =  new double[FP0_BASIS];
     double *rho_ksum = new double[FP0_BASIS];
     // Jacek: 
@@ -808,7 +808,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
-        Rmg_Symm->symm_vec(current);
+      //  Rmg_Symm->symm_vec(current);
 
         if(pct.imgpe == 0)
         {
