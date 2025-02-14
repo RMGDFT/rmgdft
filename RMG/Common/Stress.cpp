@@ -799,8 +799,11 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     int first_state = ct.num_states + id1 * ct.state_block_size;
 
                     // nlweight points to beta * x, beta * y, and beta * z for id2 = 0, 1, 2
+#if HIP_ENABLED || CUDA_ENABLED     
+                    T *nlweight = &kptr->nl_weight_gpu[ (id2 + 1) *kptr->nl_weight_size];
+#else                                   
                     T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
-
+#endif   
                     kptr->BetaProjector->project(kptr, sint_der, first_state *ct.noncoll_factor, 
                             num_state_thisblock *ct.noncoll_factor, nlweight);
                     delete RT1;
