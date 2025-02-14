@@ -178,10 +178,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     //  determine equivenlent ions after symmetry operation
     double xtal[3];
-    double ndim[3];
-    ndim[0] = (double)nx_grid;
-    ndim[1] = (double)ny_grid;
-    ndim[2] = (double)nz_grid;
     for(int isym = 0; isym < nsym_atom; isym++)
     {
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -398,16 +394,47 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     // remove inversion symmetry with electric field
     double efield = 0.0;
+    double efield_tddft = 0.0;
     for(int i = 0;i < 3; i++) 
     {
         efield += ct.efield[i] * ct.efield[i];
-        efield += ct.efield_tddft[i] * ct.efield_tddft[i];
+        efield_tddft += ct.efield_tddft[i] * ct.efield_tddft[i];
     }
     if(efield > 0.0)
     {
+        double tem[3];
         for (int isym = 0; isym < nsym; isym++)
         {
-            if(inv_type[isym]) sym_to_be_removed.push_back(isym);
+            tem[0] = ct.efield[0];
+            tem[1] = ct.efield[1];
+            tem[2] = ct.efield[2];
+            symm_vec(isym, tem);
+            if( (std::abs(tem[0] - ct.efield[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - ct.efield[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - ct.efield[2]) > 1.0e-10) ||
+                inv_type[isym])
+            {
+                sym_to_be_removed.push_back(isym);
+            }
+        }
+    }
+
+    if(efield_tddft > 0.0)
+    {
+        double tem[3];
+        for (int isym = 0; isym < nsym; isym++)
+        {
+            tem[0] = ct.efield_tddft[0];
+            tem[1] = ct.efield_tddft[1];
+            tem[2] = ct.efield_tddft[2];
+            symm_vec(isym, tem);
+            if( (std::abs(tem[0] - ct.efield_tddft[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - ct.efield_tddft[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - ct.efield_tddft[2]) > 1.0e-10) ||
+                inv_type[isym])
+            {
+                sym_to_be_removed.push_back(isym);
+            }
         }
     }
 
@@ -734,21 +761,22 @@ void Symmetry::symm_vec(double *vec)
 void Symmetry::symm_vec(int isy, double *vec)
 {
     double vec_tem[3], vec_rot[3];
-    for (int ir = 0; ir < 3; ir++)
-    {
-        vec_tem[ir] = vec[0] * L.b0[ir] +vec[1] * L.b1[ir] +vec[2] * L.b2[ir];
-    }                       /* end for ir */
+    L.to_crystal_vector(vec_tem, vec);
 
     vec_rot[0] = 0.0;
     vec_rot[1] = 0.0;
     vec_rot[2] = 0.0;
     for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
+        {
             vec_rot[i] += sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
+        }
+
+
+    L.to_cartesian(vec_rot, vec);
 
     for (int ir = 0; ir < 3; ir++)
     {
-        vec[ir] = vec_rot[0] * L.a0[ir] + vec_rot[1] * L.a1[ir] + vec_rot[2] * L.a2[ir];
         if(inv_type[isy]) vec[ir] = - vec[ir];
     }                       /* end for ir */
 

@@ -808,7 +808,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
-      //  Rmg_Symm->symm_vec(current);
+        Rmg_Symm->symm_vec(current);
 
         if(pct.imgpe == 0)
         {
