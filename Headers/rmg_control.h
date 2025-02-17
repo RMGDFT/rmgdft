@@ -688,9 +688,11 @@ public:
     int interp_trade;
 
     /* the external electric field */
-    double efield[3];
+    double efield_xtal[3];
+    double efield_crds[3];
 
-    double efield_tddft[3];
+    double efield_tddft_xtal[3];
+    double efield_tddft_crds[3];
 
     double neb_spring_constant;
 

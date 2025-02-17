@@ -397,21 +397,21 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     double efield_tddft = 0.0;
     for(int i = 0;i < 3; i++) 
     {
-        efield += ct.efield[i] * ct.efield[i];
-        efield_tddft += ct.efield_tddft[i] * ct.efield_tddft[i];
+        efield += ct.efield_crds[i] * ct.efield_crds[i];
+        efield_tddft += ct.efield_tddft_crds[i] * ct.efield_tddft_crds[i];
     }
     if(efield > 0.0)
     {
         double tem[3];
         for (int isym = 0; isym < nsym; isym++)
         {
-            tem[0] = ct.efield[0];
-            tem[1] = ct.efield[1];
-            tem[2] = ct.efield[2];
+            tem[0] = ct.efield_crds[0];
+            tem[1] = ct.efield_crds[1];
+            tem[2] = ct.efield_crds[2];
             symm_vec(isym, tem);
-            if( (std::abs(tem[0] - ct.efield[0]) > 1.0e-10) ||
-                (std::abs(tem[1] - ct.efield[1]) > 1.0e-10) ||
-                (std::abs(tem[2] - ct.efield[2]) > 1.0e-10) ||
+            if( (std::abs(tem[0] - ct.efield_crds[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - ct.efield_crds[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - ct.efield_crds[2]) > 1.0e-10) ||
                 inv_type[isym])
             {
                 sym_to_be_removed.push_back(isym);
@@ -424,13 +424,13 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         double tem[3];
         for (int isym = 0; isym < nsym; isym++)
         {
-            tem[0] = ct.efield_tddft[0];
-            tem[1] = ct.efield_tddft[1];
-            tem[2] = ct.efield_tddft[2];
+            tem[0] = ct.efield_tddft_crds[0];
+            tem[1] = ct.efield_tddft_crds[1];
+            tem[2] = ct.efield_tddft_crds[2];
             symm_vec(isym, tem);
-            if( (std::abs(tem[0] - ct.efield_tddft[0]) > 1.0e-10) ||
-                (std::abs(tem[1] - ct.efield_tddft[1]) > 1.0e-10) ||
-                (std::abs(tem[2] - ct.efield_tddft[2]) > 1.0e-10) ||
+            if( (std::abs(tem[0] - ct.efield_tddft_crds[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - ct.efield_tddft_crds[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - ct.efield_tddft_crds[2]) > 1.0e-10) ||
                 inv_type[isym])
             {
                 sym_to_be_removed.push_back(isym);

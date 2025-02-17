@@ -179,7 +179,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         dfi = fopen(filename.c_str(), "w");
 
-        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
+        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
 
     }
 
@@ -256,7 +256,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         pre_steps = 0;
 
         for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
-        init_efield(vtot, ct.efield_tddft);
+        init_efield(vtot, ct.efield_tddft_crds);
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
         HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Hij_local);

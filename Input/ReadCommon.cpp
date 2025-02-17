@@ -1384,13 +1384,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<double> def_electric_field({{0.0,0.0,0.0}});
     Ri::ReadVector<double> electric_field;
     If.RegisterInputKey("electric_field", &electric_field, &def_electric_field, 3, OPTIONAL,
-            "Components of the electric field. ",
-            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
+            "Components of the electric field in crystal unit. ",
+            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
 
     Ri::ReadVector<double> electric_field_tddft;
     If.RegisterInputKey("electric_field_tddft", &electric_field_tddft, &def_electric_field, 3, OPTIONAL,
-            "the electric field for TDDFT. ",
-            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
+            "the electric field for TDDFT in crystal unit. ",
+            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
 
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -1701,23 +1701,57 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ct.tddft_qpos[2] = tddft_qpos.vals.at(2);
     /* read the electric field vector */
     try {
-        ct.efield[0] = electric_field.vals.at(0);
-        ct.efield[1] = electric_field.vals.at(1);
-        ct.efield[2] = electric_field.vals.at(2);
+        ct.efield_xtal[0] = electric_field.vals.at(0);
+        ct.efield_xtal[1] = electric_field.vals.at(1);
+        ct.efield_xtal[2] = electric_field.vals.at(2);
+
+        if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
+           std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
+           std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+        {
+            throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+        }
+
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the electric field vector.\n";
     }
 
     try {
-        ct.efield_tddft[0] = electric_field_tddft.vals.at(0);
-        ct.efield_tddft[1] = electric_field_tddft.vals.at(1);
-        ct.efield_tddft[2] = electric_field_tddft.vals.at(2);
+        ct.efield_tddft_xtal[0] = electric_field_tddft.vals.at(0);
+        ct.efield_tddft_xtal[1] = electric_field_tddft.vals.at(1);
+        ct.efield_tddft_xtal[2] = electric_field_tddft.vals.at(2);
+        if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
+                std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
+                std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+        {
+            throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+        }
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the TDDFT electric field vector.\n";
     }
 
+    for(int i = 0; i < 3; i++)
+    {
+        double b0_length(0.0), b1_length(0.0), b2_length(0.0);
+        for(int j = 0; j <3; j++)
+        {
+           b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
+           b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
+           b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
+        }
+        b0_length = sqrt(b0_length);
+        b1_length = sqrt(b1_length);
+        b2_length = sqrt(b2_length);
+
+        ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
+        ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
+        ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
+        ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
+        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
+        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+    }
 
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";

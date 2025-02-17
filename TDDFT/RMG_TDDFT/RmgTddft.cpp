@@ -371,7 +371,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         dfi = fopen(filename.c_str(), "w");
 
-        fprintf(dfi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
+        fprintf(dfi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
+        fprintf(dfi, "\n  &&electric field in crystal unit:  %e  %e  %e ",ct.efield_tddft_xtal[0], ct.efield_tddft_xtal[1], ct.efield_tddft_xtal[2]);
         filename = std::string(ct.basename) + "_totalE";
         efi = fopen(filename.c_str(), "w");
 
@@ -380,7 +381,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         {
             filename = std::string(ct.basename) + "_current.dat";
             current_fi = fopen(filename.c_str(), "w");
-            fprintf(current_fi, "\n  &&electric field:  %e  %e  %e ",ct.efield_tddft[0], ct.efield_tddft[1], ct.efield_tddft[2]);
+            fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
+            fprintf(current_fi, "\n  &&electric field in crystal unit:  %e  %e  %e ",ct.efield_tddft_xtal[0], ct.efield_tddft_xtal[1], ct.efield_tddft_xtal[2]);
         }
     }
 
@@ -535,7 +537,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
             if(ct.tddft_mode == EFIELD)
             {
-                init_efield(vtot, ct.efield_tddft);
+                init_efield(vtot, ct.efield_tddft_crds);
                 GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             }
             else if(ct.tddft_mode == POINT_CHARGE)
@@ -566,13 +568,13 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         // VecP matrix is <psi| ct.efied_tddft dot gradient | psi> 
         //
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            VecPHmatrix(Kptr[kpt], ct.efield_tddft, desca, ct.tddft_start_state);
+            VecPHmatrix(Kptr[kpt], ct.efield_tddft_crds, desca, ct.tddft_start_state);
             if(pre_steps == 0)
             {
                 // at t= 0, cos(omega t) = 1.0
-                daxpy_driver ( n2_C ,  ct.efield_tddft[0], (double *)Kptr[kpt]->Pxmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
-                daxpy_driver ( n2_C ,  ct.efield_tddft[1], (double *)Kptr[kpt]->Pymatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
-                daxpy_driver ( n2_C ,  ct.efield_tddft[2], (double *)Kptr[kpt]->Pzmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  ct.efield_tddft_crds[0], (double *)Kptr[kpt]->Pxmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  ct.efield_tddft_crds[1], (double *)Kptr[kpt]->Pymatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
+                daxpy_driver ( n2_C ,  ct.efield_tddft_crds[2], (double *)Kptr[kpt]->Pzmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  ione) ;
             }
         }
     }
@@ -595,9 +597,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             if(ct.tddft_mode == VECTOR_POT && tot_steps == 0)
             {
                 double coswt = cos(ct.tddft_frequency * tot_steps * time_step);
-                double coswtx = coswt * ct.efield_tddft[0];
-                double coswty = coswt * ct.efield_tddft[1];
-                double coswtz = coswt * ct.efield_tddft[2];
+                double coswtx = coswt * ct.efield_tddft_crds[0];
+                double coswty = coswt * ct.efield_tddft_crds[1];
+                double coswtz = coswt * ct.efield_tddft_crds[2];
                 daxpy_driver ( n2_C ,  coswtx, (double *)Kptr[kpt]->Pxmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
                 daxpy_driver ( n2_C ,  coswty, (double *)Kptr[kpt]->Pymatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
                 daxpy_driver ( n2_C ,  coswtz, (double *)Kptr[kpt]->Pzmatrix_cpu, ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  ione) ;
