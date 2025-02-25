@@ -53,7 +53,7 @@ void LoadPseudo(SPECIES *sp)
         return;
     }
 
-    std::string extension = boost::filesystem::extension(sp->pseudo_filename);
+    std::string extension = sp->pseudo_filename.substr(sp->pseudo_filename.size() - 3);
     boost::to_upper(extension);
 
     std::string check = ".UPF";
