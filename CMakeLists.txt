@@ -774,6 +774,7 @@ include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
 include_directories("${PROJECT_SOURCE_DIR}/spglib/src")
+include_directories("${PROJECT_SOURCE_DIR}/BerryPhase")
 
 
 if(QMCPACK_SUPPORT)
@@ -807,6 +808,7 @@ add_subdirectory (spglib EXCLUDE_FROM_ALL)
 add_subdirectory (dftd3 EXCLUDE_FROM_ALL) 
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 add_subdirectory (Diagonalization EXCLUDE_FROM_ALL) 
+add_subdirectory (BerryPhase EXCLUDE_FROM_ALL) 
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default

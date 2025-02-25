@@ -133,6 +133,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(ct.verbose && pct.gridpe==0) rmg_printf("nsym_atom = %d\n",nrot);
 
     if(!ct.time_reversal) time_reversal = false;
+    if(ct.BerryPhase) time_reversal = false;
 
     for(int isym = 0; isym < nrot; isym++)
     {
@@ -395,48 +396,62 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     // remove inversion symmetry with electric field
     double efield = 0.0;
     double efield_tddft = 0.0;
+    double BP[3]{0.0,0.0,0.0};
+    // a vector along BerryPhase direction or electric field
     for(int i = 0;i < 3; i++) 
     {
         efield += ct.efield_crds[i] * ct.efield_crds[i];
         efield_tddft += ct.efield_tddft_crds[i] * ct.efield_tddft_crds[i];
     }
-    if(efield > 0.0)
+    if(efield > 0.0 )
     {
-        double tem[3];
-        for (int isym = 0; isym < nsym; isym++)
+        BP[0] = ct.efield_crds[0];
+        BP[1] = ct.efield_crds[1];
+        BP[2] = ct.efield_crds[2];
+    }
+    else if(efield_tddft > 0.0)
+    {
+        BP[0] = ct.efield_tddft_crds[0];
+        BP[1] = ct.efield_tddft_crds[1];
+        BP[2] = ct.efield_tddft_crds[2];
+    }
+    else if(ct.BerryPhase)
+    {
+        if(ct.BerryPhase_dir == 0)
         {
-            tem[0] = ct.efield_crds[0];
-            tem[1] = ct.efield_crds[1];
-            tem[2] = ct.efield_crds[2];
-            symm_vec(isym, tem);
-            if( (std::abs(tem[0] - ct.efield_crds[0]) > 1.0e-10) ||
-                (std::abs(tem[1] - ct.efield_crds[1]) > 1.0e-10) ||
-                (std::abs(tem[2] - ct.efield_crds[2]) > 1.0e-10) ||
-                inv_type[isym])
-            {
-                sym_to_be_removed.push_back(isym);
-            }
+            BP[0] = Rmg_L.b0[0];
+            BP[1] = Rmg_L.b0[1];
+            BP[2] = Rmg_L.b0[2];
+        }
+        else if(ct.BerryPhase_dir == 1)
+        {
+            BP[0] = Rmg_L.b1[0];
+            BP[1] = Rmg_L.b1[1];
+            BP[2] = Rmg_L.b1[2];
+        }
+        else if(ct.BerryPhase_dir == 2)
+        {
+            BP[0] = Rmg_L.b2[0];
+            BP[1] = Rmg_L.b2[1];
+            BP[2] = Rmg_L.b2[2];
         }
     }
 
-    if(efield_tddft > 0.0)
+    double tem[3];
+    for (int isym = 0; isym < nsym; isym++)
     {
-        double tem[3];
-        for (int isym = 0; isym < nsym; isym++)
+        tem[0] = BP[0];
+        tem[1] = BP[1];
+        tem[2] = BP[2];
+        symm_vec(isym, tem);
+        if( (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - BP[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - BP[2]) > 1.0e-10) )
         {
-            tem[0] = ct.efield_tddft_crds[0];
-            tem[1] = ct.efield_tddft_crds[1];
-            tem[2] = ct.efield_tddft_crds[2];
-            symm_vec(isym, tem);
-            if( (std::abs(tem[0] - ct.efield_tddft_crds[0]) > 1.0e-10) ||
-                (std::abs(tem[1] - ct.efield_tddft_crds[1]) > 1.0e-10) ||
-                (std::abs(tem[2] - ct.efield_tddft_crds[2]) > 1.0e-10) ||
-                inv_type[isym])
-            {
-                sym_to_be_removed.push_back(isym);
-            }
+            sym_to_be_removed.push_back(isym);
         }
     }
+
 
     if (sym_to_be_removed.size() > 0)
     {

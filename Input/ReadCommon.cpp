@@ -1381,15 +1381,21 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Gaussian parameter for point charge to Gaussian charge",
             "", TDDFT_OPTIONS);
 
+    If.RegisterInputKey("BerryPhase", &lc.BerryPhase, false, 
+            "turn on/off Berry Phase calcualtion ", CONTROL_OPTIONS);
+    If.RegisterInputKey("BerryPhaseDirection", &lc.BerryPhase_dir, 0, 2, 2,
+            CHECK_AND_FIX, OPTIONAL,
+            "Berry Phase direction: it will be efield direction when efield is non zero", 
+            "for 0 efield Berry Phase calculation, direction needs to be defined, default the third recip lattice", CONTROL_OPTIONS);
     Ri::ReadVector<double> def_electric_field({{0.0,0.0,0.0}});
     Ri::ReadVector<double> electric_field;
     If.RegisterInputKey("electric_field", &electric_field, &def_electric_field, 3, OPTIONAL,
-            "Components of the electric field in crystal unit. ",
+            "Components of the electric field in reciprocal lattice direction and unit of Ha/bohr. ",
             "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
 
     Ri::ReadVector<double> electric_field_tddft;
     If.RegisterInputKey("electric_field_tddft", &electric_field_tddft, &def_electric_field, 3, OPTIONAL,
-            "the electric field for TDDFT in crystal unit. ",
+            "the electric field for TDDFT in reciprocal lattice direction and unit of Ha/bohr ",
             "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
 
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
@@ -1428,8 +1434,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
             CHECK_AND_FIX, OPTIONAL,
-"This option affects kpoint parallelization. If there are M MPI procs then N = M/kpoint_distribution procs "
-" are assigned to each kpoint. M must be evenly divisible by kpoint_distribution.", 
+            "This option affects kpoint parallelization. If there are M MPI procs then N = M/kpoint_distribution procs "
+            " are assigned to each kpoint. M must be evenly divisible by kpoint_distribution.", 
             "", CELL_OPTIONS);
 
     If.RegisterInputKey("time_reversal", &lc.time_reversal, true,
@@ -1458,7 +1464,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_TERMINATE, OPTIONAL, tetra_method,
             "tetrahedron method to use ",
             "tetra_method must be one of  \"Bloechl\", \"Linear\", or \"Optimized\". Terminating. ",
-             OCCUPATION_OPTIONS);
+            OCCUPATION_OPTIONS);
 
     // Command line help request?
     bool cmdline = (std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end());
@@ -1470,12 +1476,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // documentation. If you change the documentation in the other location make sure to change it here as well.
         std::string KpointArray;
         If.RegisterInputKey("kpoints", &KpointArray, "",
-                         CHECK_AND_FIX, REQUIRED,
-                         "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n", "");
+                CHECK_AND_FIX, REQUIRED,
+                "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n", "");
 
         If.RegisterInputKey("kpoints_bandstructure", &KpointArray, "",
-                         CHECK_AND_FIX, OPTIONAL,
-                         "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
+                CHECK_AND_FIX, OPTIONAL,
+                "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
 
         if(pct.imgpe == 0 && cmdline) WriteInputOptions(InputMap, std::string("cmdline"));
         if(pct.imgpe == 0 && markdown) WriteInputOptions(InputMap, std::string("markdown"));
@@ -1635,7 +1641,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
-    // Set up the lattice vectors
+        // Set up the lattice vectors
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
         Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
@@ -1706,8 +1712,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         ct.efield_xtal[2] = electric_field.vals.at(2);
 
         if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
-           std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
-           std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+                std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
+                std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
         {
             throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
         }
@@ -1737,13 +1743,26 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         double b0_length(0.0), b1_length(0.0), b2_length(0.0);
         for(int j = 0; j <3; j++)
         {
-           b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
-           b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
-           b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
+            b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
+            b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
+            b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
         }
         b0_length = sqrt(b0_length);
         b1_length = sqrt(b1_length);
         b2_length = sqrt(b2_length);
+
+        if(ct.forceflag== TDDFT)
+        {
+            if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+            if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+            if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        }
+        else
+        {
+            if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+            if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+            if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        }
 
         ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
         ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;

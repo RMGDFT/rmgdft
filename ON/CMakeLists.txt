@@ -4,6 +4,8 @@ list(APPEND RMGLIBS ON_NEGF_share)
 list(APPEND RMGLIBS OnTddft)
 list(APPEND RMGLIBS IO_Tddft)
 list(APPEND RMGLIBS Eldyn)
+list(APPEND RMGLIBS BerryPhase)
+
 if(QMCPACK_SUPPORT)
     list(APPEND RMGLIBS Interfaces)
 endif()

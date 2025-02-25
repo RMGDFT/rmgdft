@@ -360,6 +360,10 @@ template <typename OrbitalType> void run (
                             n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
                 }
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                if(ct.BerryPhase)
+                {
+                    Rmg_BP->CalcBP(Kptr);
+                }
                 break;
             }
 

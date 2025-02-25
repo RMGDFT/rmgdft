@@ -23,6 +23,7 @@
 #include "PulayMixing.h"
 #include "Symmetry.h"
 #include "Tetrahedron.h"
+#include "BerryPhase.h"
 #include "rmgfiles.h"
 
 
@@ -36,6 +37,7 @@ extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 extern Symmetry *Rmg_Symm;
 extern Tetrahedron *Tetra;
+extern BerryPhase *Rmg_BP;
 
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
@@ -60,6 +62,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 
 int init_kpoints (int *mesh, int *is_shift);
+int init_kpoints_bp (int *mesh, int *is_shift);
 
 template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double>
 height_list);

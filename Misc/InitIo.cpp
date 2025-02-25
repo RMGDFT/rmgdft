@@ -52,6 +52,7 @@
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 #include "Tetrahedron.h"
+#include "BerryPhase.h"
 
 #if CUDA_ENABLED
     #include <cuda.h>
@@ -240,6 +241,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
     {
         ReadKpoints(ct.cfile, ct, ControlMap);
+    }
+    else if(ct.BerryPhase)
+    {
+        Rmg_BP = new BerryPhase();
+        //init_kpoints_bp(ct.kpoint_mesh, ct.kpoint_is_shift);
+        // kpoint will be initialied in BerryPhase
     }
     else
     {
@@ -809,6 +816,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
 
+    if(ct.wannier90 && ct.BerryPhase)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+    }
+    if(ct.xc_is_hybrid && ct.BerryPhase)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+    }
 #if HIP_ENABLED || CUDA_ENABLED
     size_t factor = 2;
     if(ct.is_gamma) factor = 1;

@@ -688,9 +688,11 @@ public:
     int interp_trade;
 
     /* the external electric field */
+
+    bool BerryPhase;
+    int BerryPhase_dir;
     double efield_xtal[3];
     double efield_crds[3];
-
     double efield_tddft_xtal[3];
     double efield_tddft_crds[3];
 
