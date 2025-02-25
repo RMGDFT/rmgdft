@@ -717,14 +717,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
             Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
 
-            // Force reinit of MainSp in case initialzation matrices are
-            // not the same size
-#if SCALAPACK_LIBS
-            if(MainSp) {
-                if(MainSp->Participates()) delete MainSp;
-                MainSp = NULL;
-            }
-#endif
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
@@ -739,6 +731,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             delete RT3;
 
         }
+        // Force reinit of MainSp in case initialzation matrices are
+        // not the same size
+#if SCALAPACK_LIBS
+        if(MainSp) {
+            if(MainSp->Participates()) delete MainSp;
+            MainSp = NULL;
+        }
+#endif
 
         if (ct.nspin == 2 )
             GetOppositeEigvals (Kptr);
