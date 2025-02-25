@@ -48,6 +48,11 @@ void InitPe4kpspin()
     int npes;
     npes = pct.image_npes[pct.thisimg]/nspin;
 
+    while(pct.pe_kpoint > ct.num_kpts)
+    {
+        pct.pe_kpoint /=2;
+    }
+
     if(pct.pe_kpoint <1 || pct.pe_kpoint > npes )
     {
         pct.pe_kpoint = 1;
@@ -65,8 +70,7 @@ void InitPe4kpspin()
 
     if(npes % pct.pe_kpoint != 0) 
     {
-        printf("\n npes %d for k-parallelization needs to be divisible by pe_kpoint %d", npes, pct.pe_kpoint);
-        exit(0);
+        pct.pe_kpoint = 1;
     }
 
     //pct.pe_kpoint = std::min(2, npes);
@@ -104,12 +108,6 @@ void InitPe4kpspin()
 
     ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
     pct.kstart = ct.num_kpts_pe * kpsub_rank;
-
-    if(ct.num_kpts_pe == 0)
-    {
-        printf("\nnpes=%d is too large for the specified k-parallelization configuration pe_kpoint=%d\n try setting kpoint_distribution to a smaller value\n", npes, pct.pe_kpoint);
-        exit(0);
-    }
 
     int kpt_mode = ct.num_kpts % pct.pe_kpoint;
     if( kpt_mode > 0) 
