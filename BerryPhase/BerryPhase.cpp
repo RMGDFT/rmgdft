@@ -241,7 +241,10 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 if(i != ipiv[i]) det = -det;
             }
 
-            rmg_printf("kort %d kpp %d  det %f %f\n", iort, jpp, det);
+            if(ct.verbose)
+            {
+                rmg_printf("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
+            }
             zeta = zeta * det;
 
         }
@@ -254,8 +257,11 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         else
         {
             phik[iort] = std::imag( log(zeta) );
-            rmg_printf("kort %d phik  %f %f\n", iort,  phik[iort]);
             cphik[iort] = std::complex<double>(cos(phik[iort]), sin(phik[iort]));
+            if(ct.verbose)
+            {
+                rmg_printf("kort %d phik  %f \n", iort,  phik[iort]);
+            }
         }
     }
 
@@ -294,16 +300,57 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         if(abs(t-1.0-t1) < abs(t-t1))phik[iort]=phik[iort]-PI;
         pdl_elec[iort] = phik[iort]/PI ;
         phik_ave=phik_ave+kweight_string[iort]*phik[iort];
-        rmg_printf("\n kstring %d phase %f weight %f", iort, kweight_string[iort], pdl_elec[iort]);
+        if(ct.verbose)
+        {
+            rmg_printf("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
+        }
     }
 
     pdl_elec_tot = phik_ave/twoPI;
     if(ct.nspin == 1) pdl_elec_tot *=2.0;
-    rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
-    pdl_elec_tot = pdl_elec_tot - std::round(pdl_elec_tot);
     // spin sum 
+    pdl_elec_tot = pdl_elec_tot - 2.0*std::round(pdl_elec_tot/2.0);
+    // pdl_elec_tot is [-1.0, 1.0] 
 
+    // ionic phase  z * r_ion * b_berryPhaseDir
 
+    double pdl_ion_tot = 0.0;
+    for(int ion = 0; ion < ct.num_ions; ion++)
+    {
+        ION *iptr = &Atoms[ion];
+        double Zj = Species[iptr->species].zvalence;
+        pdl_ion_tot += Zj * iptr->xtal[BerryPhase_dir];
+    }
+    pdl_ion_tot = pdl_ion_tot - 2.0 * std::round(pdl_ion_tot/2.0);
+    double pdl_tot = pdl_elec_tot + pdl_ion_tot;
+    pdl_tot = pdl_tot - 2.0 * std::round(pdl_tot/2.0);
+
+    rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
+    rmg_printf("\n  Ionic      phase %f ", pdl_ion_tot);
+    rmg_printf("\n  Total      phase %f ", pdl_tot);
+
+    //  Polarization 
+
+    // adapted from QE 
+    //    Calculate direction of polarization and modulus of lattice vector ---
+    //    lattice vector or reciprocal lattice vector with direction
+    double rmod(1.0);
+    if(BerryPhase_dir == 0)
+    {
+        rmod = Rmg_L.get_xside();
+    }
+    if(BerryPhase_dir == 1)
+    {
+        rmod = Rmg_L.get_yside();
+    }
+    if(BerryPhase_dir == 2)
+    {
+        rmod = Rmg_L.get_zside();
+    }
+    //  --- Give polarization in units of (e/Omega).bohr ---
+    rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
+    rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
+    rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
 
     RmgFreeHost(mat);
     delete [] ipiv;
