@@ -105,6 +105,43 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
            }
            rmg_printf ("\n\n");
         }
+
+        double vbm_up = -10000.0;
+        double cbm_up = 10000.0;
+        double vbm_dn = -10000.0;
+        double cbm_dn = 10000.0;
+        for(int st = 0; st < ct.num_kpts * ct.num_states; st++)
+        {
+            if (std::abs(eigs_up_occ[st]) > 0.05 ) vbm_up = std::max(vbm_up, eigs_up[st]);
+            if (std::abs(eigs_up_occ[st]) < 0.05 ) cbm_up = std::min(cbm_up, eigs_up[st]);
+            if(nspin == 2)
+            {
+                if (std::abs(eigs_down_occ[st]) > 0.05 ) vbm_dn = std::max(vbm_dn, eigs_down[st]);
+                if (std::abs(eigs_down_occ[st]) < 0.05 ) cbm_dn = std::min(cbm_dn, eigs_down[st]);
+            }
+        }
+        rmg_printf ("spinup:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_up*Ha_eV, cbm_up*Ha_eV);
+        if (cbm_up > vbm_up)
+        {
+            rmg_printf ("spinup:  Band gap = %f eV\n", (cbm_up-vbm_up)*Ha_eV);
+        }
+        else
+        {
+            rmg_printf ("spinup:  no Band gap, metalic system\n"); 
+        }
+        if(nspin == 2)
+        {
+            rmg_printf ("spindn:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_dn*Ha_eV, cbm_dn*Ha_eV);
+            if (cbm_up > vbm_up)
+            {
+                rmg_printf ("spindn:  Band gap = %f eV\n", (cbm_dn-vbm_dn)*Ha_eV);
+            }
+            else
+            {
+                rmg_printf ("spindn:  no Band gap, metalic system\n"); 
+            }
+        }
+
     }
     else
     {
@@ -143,8 +180,8 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
                             kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 5 == 4) ? "\n" : ""));
                 }
                 rmg_printf ("\n");
-           }
-           rmg_printf ("\n\n");
+            }
+            rmg_printf ("\n\n");
         }
     }
 }
