@@ -79,7 +79,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Hpsi");
     KpointType *h_psi = (KpointType *)tmp_arrayT;
-    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
+       ApplyHamiltonianBlock<KpointType> (this, 0, nstates, h_psi, vtot_eig, vxc_psi);
+//    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
     delete(RT1);
     DeviceSynchronize();
 

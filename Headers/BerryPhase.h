@@ -32,6 +32,8 @@ private:
 public:
     int num_kort, num_kort_pe, num_kpp;
     int BerryPhase_dir;
+    double efield_mag=0.0;
+    double pol_elec, pol_ion, pol_tot;
     std::vector<double> kweight_string;
     BerryPhase();
 

@@ -44,7 +44,24 @@ BerryPhase::BerryPhase(void)
     {
         rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp now\n");
     }
+
+    if(ct.forceflag== TDDFT)
+    {
+        if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+        if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+        if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        this->efield_mag = ct.efield_tddft_xtal[ct.BerryPhase_dir];
+    }
+    else
+    {
+        if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+        if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+        if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        this->efield_mag = ct.efield_xtal[ct.BerryPhase_dir];
+    }
+
     BerryPhase_dir = ct.BerryPhase_dir;
+
     int kmesh[3], is_shift[3];
     for (int i = 0; i < 3; i++)
     {
@@ -145,6 +162,15 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     //eq 15 of PRB 47, 1651(1993) King-Smith and Vanderbilt
     // phik in eq 15
     // mat = <psi_k | psi_(k+1)>
+    // BP_matrix_cpu: <psi_k |psi_(k+1)> ^-1
+     
+    if(std::abs(efield_mag) > 0.0 && Kptr[0]->BP_matrix_cpu == NULL)
+    {
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            Kptr[kpt]->BP_matrix_cpu = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
+        }
+    } 
     static std::complex<double> *mat=NULL, *psi_k0 = NULL;
 
     double vel = Rmg_L.get_omega() / ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
@@ -200,17 +226,17 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         {
             for (int ix = 0; ix < px0_grid; ix++)
             {
-               for(int iy = 0; iy < py0_grid; iy++)
-               {
-                  for(int iz = 0; iz < pz0_grid; iz++)
-                  {
-                      int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
-                      double gmr = ( (ix + pxoffset)/(double)Nx * gr[0] +
-                                     (iy + pyoffset)/(double)Ny * gr[1] +
-                                     (iz + pzoffset)/(double)Nz * gr[2] ) * twoPI;
-                      psi_k0[st * pbasis_noncoll + idx] *= std::complex(cos(gmr), -sin(gmr));
-                  }
-               }
+                for(int iy = 0; iy < py0_grid; iy++)
+                {
+                    for(int iz = 0; iz < pz0_grid; iz++)
+                    {
+                        int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
+                        double gmr = ( (ix + pxoffset)/(double)Nx * gr[0] +
+                                (iy + pyoffset)/(double)Ny * gr[1] +
+                                (iz + pzoffset)/(double)Nz * gr[2] ) * twoPI;
+                        psi_k0[st * pbasis_noncoll + idx] *= std::complex(cos(gmr), -sin(gmr));
+                    }
+                }
             }
 
         }
@@ -219,6 +245,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         {
             int ik_index = iort * num_kpp + jpp;
             psi_k = Kptr[ik_index]->orbital_storage;
+            std::complex<double> *BP_matrix_cpu = Kptr[ik_index]->BP_matrix_cpu;
             if(jpp == num_kpp-1)
             {
                 psi_k1 = psi_k0;
@@ -234,12 +261,34 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
             //calculate determinant of mat <psi_k |psi_(k+1)>
 
             zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
+            if (info != 0)
+            {
+                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                fflush (NULL);
+                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+            }
+
             det = 1.0;
             for (int i = 0; i < nband_occ; i++)
             {
                 det = det * mat[i * nband_occ +i];
                 if(i != ipiv[i]) det = -det;
             }
+
+
+            if(std::abs(efield_mag) > 0.0 )
+            {
+                int lwork = nband_occ * nband_occ;
+                zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
+                if (info != 0)
+                {
+                    rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
+                    fflush (NULL);
+                    rmg_error_handler(__FILE__, __LINE__,"zgetri failed\n");
+                }
+                memcpy(BP_matrix_cpu, mat, nband_occ * nband_occ * sizeof(std::complex<double>));
+            }
+
 
             if(ct.verbose)
             {
@@ -348,6 +397,9 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         rmod = Rmg_L.get_zside();
     }
     //  --- Give polarization in units of (e/Omega).bohr ---
+    pol_elec = pdl_elec_tot * rmod;
+    pol_ion = pdl_ion_tot * rmod;  
+    pol_tot = pdl_tot * rmod;
     rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
     rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
     rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));

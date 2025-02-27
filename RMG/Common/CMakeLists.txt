@@ -2,7 +2,6 @@ add_library (RMG_Common
 #GetFdFactor.cpp
 STM_calc.cpp
 ComputeHcore.cpp
-ComputeHpsi.cpp
 OutputDos.cpp
 Reinit.cpp
 Stress.cpp
