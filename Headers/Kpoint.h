@@ -225,6 +225,7 @@ public:
     KpointType *Pzmatrix_cpu  ;
     // BP_matrix_cpu: S^-1(k, k+1) Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
     KpointType *BP_matrix_cpu=NULL  ;
+    KpointType *BP_Hpsi=NULL  ;
 
 private:
 

@@ -145,7 +145,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     // following the procedure in QE bp_c_phase.f90 
     double eps = 1.0e-6;
     // find the number of states with non-zero occupation
-    int nband_occ = 0;
+    nband_occ = 0;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         int st = 0;
@@ -159,6 +159,10 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         nband_occ = std::max(nband_occ, st);
     }
 
+    double vel = Rmg_L.get_omega() / ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
+    int pbasis = Rmg_G->get_P0_BASIS(1);
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
+
     //eq 15 of PRB 47, 1651(1993) King-Smith and Vanderbilt
     // phik in eq 15
     // mat = <psi_k | psi_(k+1)>
@@ -169,22 +173,11 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             Kptr[kpt]->BP_matrix_cpu = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
+            Kptr[kpt]->BP_Hpsi = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * pbasis_noncoll*sizeof(std::complex<double>));
         }
     } 
     static std::complex<double> *mat=NULL, *psi_k0 = NULL;
 
-    double vel = Rmg_L.get_omega() / ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
-    int pbasis = Rmg_G->get_P0_BASIS(1);
-    int pbasis_noncoll = pbasis * ct.noncoll_factor;
-    int px0_grid = Rmg_G->get_PX0_GRID(1);
-    int py0_grid = Rmg_G->get_PY0_GRID(1);
-    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
-    int pxoffset = Rmg_G->get_PX_OFFSET(1);
-    int pyoffset = Rmg_G->get_PY_OFFSET(1);
-    int pzoffset = Rmg_G->get_PZ_OFFSET(1);
-    int Nx = Rmg_G->get_NX_GRID(1);
-    int Ny = Rmg_G->get_NY_GRID(1);
-    int Nz = Rmg_G->get_NZ_GRID(1);
 
 
     if(!mat)
@@ -208,7 +201,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     std::complex<double> *psi_k, *psi_k1;
 
     double gr[3]{0.0,0.0,0.0};
-    gr[BerryPhase_dir] = 1.0;
+    gr[BerryPhase_dir] = -1.0;
     std::complex<double> phase;
     for(int iort = 0; iort < num_kort; iort++)
     {
@@ -222,25 +215,9 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         memcpy(psi_k0, Kptr[iort*num_kpp]->orbital_storage, wfc_size);
 
         RmgTimer *RT1 = new RmgTimer("Berry Phase: psi0 * exp(-igr)");
-        for(int st = 0; st < nband_occ; st++)
-        {
-            for (int ix = 0; ix < px0_grid; ix++)
-            {
-                for(int iy = 0; iy < py0_grid; iy++)
-                {
-                    for(int iz = 0; iz < pz0_grid; iz++)
-                    {
-                        int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
-                        double gmr = ( (ix + pxoffset)/(double)Nx * gr[0] +
-                                (iy + pyoffset)/(double)Ny * gr[1] +
-                                (iz + pzoffset)/(double)Nz * gr[2] ) * twoPI;
-                        psi_k0[st * pbasis_noncoll + idx] *= std::complex(cos(gmr), -sin(gmr));
-                    }
-                }
-            }
-
-        }
+        psi_x_phase(psi_k0, gr);
         delete RT1;
+        RT1 = new RmgTimer("Berry Phase: phase calculation");
         for(int jpp = 0; jpp < num_kpp; jpp++)
         {
             int ik_index = iort * num_kpp + jpp;
@@ -312,6 +289,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 rmg_printf("kort %d phik  %f \n", iort,  phik[iort]);
             }
         }
+        delete RT1;
     }
 
     //  -------------------------------------------------------------------------   !
@@ -396,6 +374,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     {
         rmod = Rmg_L.get_zside();
     }
+    this->eai = rmod * this->efield_mag;
     //  --- Give polarization in units of (e/Omega).bohr ---
     pol_elec = pdl_elec_tot * rmod;
     pol_ion = pdl_ion_tot * rmod;  
@@ -406,10 +385,58 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 
     RmgFreeHost(mat);
     delete [] ipiv;
+
+    Apply_BP_Hpsi(Kptr);
+
 }
 
+// calculate second part of eq. 4  
+//  Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
+// S^-1(k, k+1) psi_(k+1) - S^1(k, k-1) psi_(k-1)
+// S^-1(k, k-1) = [S^-1(k-1,k)]^+ hermitian
+//
+
+void BerryPhase::Apply_BP_Hpsi (Kpoint<std::complex<double>> **Kptr)
+{
+    std::complex<double> alpha = std::complex<double>(0.0, this->eai/twoPI/2.0 * num_kpp);
+
+}
 
 BerryPhase::~BerryPhase(void)
 {
 }
+void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3])
+{
 
+    // psi_k0 = psi_k0 * exp(i gr )
+    int pbasis = Rmg_G->get_P0_BASIS(1);
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
+    int px0_grid = Rmg_G->get_PX0_GRID(1);
+    int py0_grid = Rmg_G->get_PY0_GRID(1);
+    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
+    int pxoffset = Rmg_G->get_PX_OFFSET(1);
+    int pyoffset = Rmg_G->get_PY_OFFSET(1);
+    int pzoffset = Rmg_G->get_PZ_OFFSET(1);
+    int Nx = Rmg_G->get_NX_GRID(1);
+    int Ny = Rmg_G->get_NY_GRID(1);
+    int Nz = Rmg_G->get_NZ_GRID(1);
+
+    for(int st = 0; st < nband_occ; st++)
+    {
+        for (int ix = 0; ix < px0_grid; ix++)
+        {
+            for(int iy = 0; iy < py0_grid; iy++)
+            {
+                for(int iz = 0; iz < pz0_grid; iz++)
+                {
+                    int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
+                    double gmr = ( (ix + pxoffset)/(double)Nx * gr[0] +
+                            (iy + pyoffset)/(double)Ny * gr[1] +
+                            (iz + pzoffset)/(double)Nz * gr[2] ) * twoPI;
+                    psi_k0[st * pbasis_noncoll + idx] *= std::complex(cos(gmr), sin(gmr));
+                }
+            }
+        }
+
+    }
+}

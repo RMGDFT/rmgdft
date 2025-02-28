@@ -33,14 +33,20 @@ public:
     int num_kort, num_kort_pe, num_kpp;
     int BerryPhase_dir;
     double efield_mag=0.0;
+    double eai; //efield dot lattice vector in berryphase_dri
     double pol_elec, pol_ion, pol_tot;
+    int nband_occ;
     std::vector<double> kweight_string;
     BerryPhase();
 
     ~BerryPhase(void);
 
+    void Apply_BP_Hpsi(Kpoint<std::complex<double>> **Kptr);
+    void Apply_BP_Hpsi(Kpoint<double> **Kptr);
     void CalcBP(Kpoint<std::complex<double>> **Kptr);
     void CalcBP(Kpoint<double> **Kptr);
+    void psi_x_phase(std::complex<double> *psi_k0, double gr[3]);
+
 };
 
 #endif
