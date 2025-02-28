@@ -133,7 +133,36 @@ BerryPhase::BerryPhase(void)
     }
 
 
+}
 
+void BerryPhase::init(Kpoint<double> **Kptr)
+{
+    std::cout << "not programed yet for gamma point" << std::endl;
+    rmg_error_handler(__FILE__, __LINE__, "only support complex version-non-gamma now\n");
+}
+void BerryPhase::init(Kpoint<std::complex<double>> **Kptr)
+{
+    // find the number of states with non-zero occupation
+    nband_occ = ct.nel/2;
+    pbasis = Rmg_G->get_P0_BASIS(1);
+    pbasis_noncoll = pbasis * ct.noncoll_factor;
+    wfc_size = nband_occ * pbasis_noncoll * sizeof(std::complex<double>);
+    mat = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
+    psi_k0 = (std::complex<double> *)RmgMallocHost(wfc_size);
+
+    //eq 15 of PRB 47, 1651(1993) King-Smith and Vanderbilt
+    // phik in eq 15
+    // mat = <psi_k | psi_(k+1)>
+    // BP_matrix_cpu: <psi_k |psi_(k+1)> ^-1
+
+    if(std::abs(efield_mag) > 0.0 )
+    {
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            Kptr[kpt]->BP_matrix_cpu = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
+            Kptr[kpt]->BP_Hpsi = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * pbasis_noncoll*sizeof(std::complex<double>));
+        }
+    } 
 }
 
 void BerryPhase::CalcBP (Kpoint<double> **Kptr)
@@ -144,49 +173,8 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 {
     // following the procedure in QE bp_c_phase.f90 
     double eps = 1.0e-6;
-    // find the number of states with non-zero occupation
-    nband_occ = 0;
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-    {
-        int st = 0;
-        for(st = 0;  st < ct.num_states; st++)
-        {
-            if(std::abs(Kptr[kpt]->Kstates[st].occupation[0]) < eps)
-            {
-                break;
-            }
-        }
-        nband_occ = std::max(nband_occ, st);
-    }
 
     double vel = Rmg_L.get_omega() / ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
-    int pbasis = Rmg_G->get_P0_BASIS(1);
-    int pbasis_noncoll = pbasis * ct.noncoll_factor;
-
-    //eq 15 of PRB 47, 1651(1993) King-Smith and Vanderbilt
-    // phik in eq 15
-    // mat = <psi_k | psi_(k+1)>
-    // BP_matrix_cpu: <psi_k |psi_(k+1)> ^-1
-     
-    if(std::abs(efield_mag) > 0.0 && Kptr[0]->BP_matrix_cpu == NULL)
-    {
-        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            Kptr[kpt]->BP_matrix_cpu = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
-            Kptr[kpt]->BP_Hpsi = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * pbasis_noncoll*sizeof(std::complex<double>));
-        }
-    } 
-    static std::complex<double> *mat=NULL, *psi_k0 = NULL;
-
-
-
-    if(!mat)
-    {
-        mat = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * nband_occ*sizeof(std::complex<double>));
-        psi_k0 = (std::complex<double> *)RmgMallocHost((size_t)nband_occ * pbasis_noncoll *sizeof(std::complex<double>));
-    }
-
-    size_t wfc_size = nband_occ * pbasis_noncoll * sizeof(std::complex<double>);
 
     std::complex<double> alphavel(vel);
     std::complex<double> beta(0.0);
@@ -383,7 +371,6 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
     rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
 
-    RmgFreeHost(mat);
     delete [] ipiv;
 
     Apply_BP_Hpsi(Kptr);
@@ -399,6 +386,14 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 void BerryPhase::Apply_BP_Hpsi (Kpoint<std::complex<double>> **Kptr)
 {
     std::complex<double> alpha = std::complex<double>(0.0, this->eai/twoPI/2.0 * num_kpp);
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        memcpy(psi_k0, Kptr[iort*num_kpp]->orbital_storage, wfc_size);
+        //psi_x_phase(psi_k0, gr);
+        for(int jpp = 0; jpp < num_kpp; jpp++)
+        {
+        }
+    }
 
 }
 

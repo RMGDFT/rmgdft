@@ -36,11 +36,16 @@ public:
     double eai; //efield dot lattice vector in berryphase_dri
     double pol_elec, pol_ion, pol_tot;
     int nband_occ;
+    int pbasis, pbasis_noncoll;
+    size_t wfc_size;
     std::vector<double> kweight_string;
+    std::complex<double> *mat, *psi_k0;
     BerryPhase();
 
     ~BerryPhase(void);
 
+    void init(Kpoint<std::complex<double>> **Kptr);;
+    void init(Kpoint<double> **Kptr);;
     void Apply_BP_Hpsi(Kpoint<std::complex<double>> **Kptr);
     void Apply_BP_Hpsi(Kpoint<double> **Kptr);
     void CalcBP(Kpoint<std::complex<double>> **Kptr);

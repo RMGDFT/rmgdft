@@ -510,6 +510,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
+    if(ct.BerryPhase)
+    {
+        Rmg_BP->init(Kptr);
+    }
 
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
@@ -831,6 +835,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
                 &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
     }
+
 
 }                               /* end init */
 
