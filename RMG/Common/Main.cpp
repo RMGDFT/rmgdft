@@ -54,6 +54,7 @@
 #include "Wannier.h"
 #include "GlobalSums.h"
 #include "GridObject.h"
+#include "BerryPhase.h"
 
 
 

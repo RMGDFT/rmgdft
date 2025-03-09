@@ -32,6 +32,7 @@
 #include "common_prototypes1.h"
 #include "Functional.h"
 #include "GridObject.h"
+#include "BerryPhase.h"
 
 
 
@@ -171,27 +172,37 @@ template <typename OrbitalType> bool Scf (
     /*Generate the Dnm_I */
     get_ddd (vtot.data(), vxc.data(), true);
 
-
-    // Loop over k-points
-    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
-
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || 
-                ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
-                (ct.xc_is_hybrid && Functional::is_exx_active())) {
-            RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-            Kptr[kpt]->MgridSubspace(vtot_psi.data(), vxc_psi);
-            delete RT1;
-        }
-        else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-            int notconv;
-            RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
-            Kptr[kpt]->Davidson(vtot_psi.data(), vxc_psi, notconv);
-            delete RT1;
+    for(int berryloop = 0; berryloop < ct.BerryPhaseCycle; berryloop++)
+    {
+        if(ct.BerryPhase)
+        {
+            if(std::abs(Rmg_BP->efield_mag)>Rmg_BP->eps)
+            {
+                Rmg_BP->CalcBP(Kptr);
+            }
         }
 
-        // Needed to ensure consistency with some types of kpoint parrelization
-        MPI_Barrier(pct.grid_comm);
-    } // end loop over kpoints
+        // Loop over k-points
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
+
+            if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || 
+                    ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
+                    (ct.xc_is_hybrid && Functional::is_exx_active())) {
+                RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
+                Kptr[kpt]->MgridSubspace(vtot_psi.data(), vxc_psi);
+                delete RT1;
+            }
+            else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+                int notconv;
+                RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
+                Kptr[kpt]->Davidson(vtot_psi.data(), vxc_psi, notconv);
+                delete RT1;
+            }
+
+            // Needed to ensure consistency with some types of kpoint parrelization
+            MPI_Barrier(pct.grid_comm);
+        } // end loop over kpoints
+    }
 
     if (ct.nspin == 2)
         GetOppositeEigvals (Kptr);

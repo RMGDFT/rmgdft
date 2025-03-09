@@ -393,6 +393,39 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
 
+    if (sym_to_be_removed.size() > 0)
+    {
+        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+        {
+            int isym = *it;
+            ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+            ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+            sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+            sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+            sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+            time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
+        }
+    }
+
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        rmg_printf("\n sym operation after removing duplicating rotation symmetries with different translation # %d",(int) sym_rotate.size()/9);
+        for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+        {
+            rmg_printf("\n symmetry operation # %d:", isym);
+            for(int i = 0; i < 3; i++)
+            {
+                rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+            }
+            rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                    int(time_rev[isym]), int(inv_type[isym]));
+        }
+    }
+
+    nsym = (int)sym_rotate.size()/9;
+
     // remove inversion symmetry with electric field
     double efield = 0.0;
     double efield_tddft = 0.0;
@@ -438,6 +471,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     }
 
     double tem[3];
+    sym_to_be_removed.clear();
     for (int isym = 0; isym < nsym; isym++)
     {
         tem[0] = BP[0];
@@ -471,7 +505,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     if(ct.verbose && pct.imgpe == 0)
     {
-        rmg_printf("\n sym operation after removing duplicating rotation symmetries with different translation # %d",(int) sym_rotate.size()/9);
+        rmg_printf("\n sym operation after removing electric field broken %d",(int) sym_rotate.size()/9);
         for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
         {
             rmg_printf("\n symmetry operation # %d:", isym);
@@ -483,6 +517,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     int(time_rev[isym]), int(inv_type[isym]));
         }
     }
+
     nsym = (int)sym_rotate.size()/9;
 
     // if use_symmetry = false and AFM = true, just use one time_rev symmetry + unitary

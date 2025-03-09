@@ -691,6 +691,7 @@ public:
 
     bool BerryPhase;
     int BerryPhase_dir;
+    int BerryPhaseCycle;
     double efield_xtal[3];
     double efield_crds[3];
     double efield_tddft_xtal[3];

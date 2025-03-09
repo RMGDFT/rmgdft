@@ -50,6 +50,7 @@
 #include "Wannier.h"
 #include "RmgSumAll.h"
 #include "FDOpt.h"
+#include "BerryPhase.h"
 
 
 
@@ -225,6 +226,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
         }
         /* ---------- end scf loop ---------- */
+
+        if(ct.BerryPhase)
+        {
+            Rmg_BP->CalcBP(Kptr);
+        }
 
         etot.push_back(ct.TOTAL);
 

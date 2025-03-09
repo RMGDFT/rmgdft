@@ -1383,6 +1383,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("BerryPhase", &lc.BerryPhase, false, 
             "turn on/off Berry Phase calcualtion ", CONTROL_OPTIONS);
+    If.RegisterInputKey("BerryPhaseCycle", &lc.BerryPhaseCycle, 1, 10, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "Berry Phase loop without updating rho and potentials", 
+            "", CONTROL_OPTIONS);
     If.RegisterInputKey("BerryPhaseDirection", &lc.BerryPhase_dir, 0, 2, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Berry Phase direction: it will be efield direction when efield is non zero", 

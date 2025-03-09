@@ -33,6 +33,9 @@ public:
     int num_kort, num_kort_pe, num_kpp;
     int BerryPhase_dir;
     double efield_mag=0.0;
+    double eps = 1.0e-10;
+    double vel;
+    std::complex<double> vel_C;
     double eai; //efield dot lattice vector in berryphase_dri
     double pol_elec, pol_ion, pol_tot;
     int nband_occ;
@@ -46,8 +49,10 @@ public:
 
     void init(Kpoint<std::complex<double>> **Kptr);;
     void init(Kpoint<double> **Kptr);;
-    void Apply_BP_Hpsi(Kpoint<std::complex<double>> **Kptr);
-    void Apply_BP_Hpsi(Kpoint<double> **Kptr);
+    void Calc_Gnk(Kpoint<std::complex<double>> **Kptr);
+    void Calc_Gnk(Kpoint<double> **Kptr);
+    void Apply_BP_Hpsi(Kpoint<std::complex<double>> *kptr, int num_states, std::complex<double> *psi, std::complex<double> *h_psi);
+    void Apply_BP_Hpsi(Kpoint<double> *kptr, int num_states, double *psi, double *h_psi);
     void CalcBP(Kpoint<std::complex<double>> **Kptr);
     void CalcBP(Kpoint<double> **Kptr);
     void psi_x_phase(std::complex<double> *psi_k0, double gr[3]);
