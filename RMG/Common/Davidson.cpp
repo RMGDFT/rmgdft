@@ -241,6 +241,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         DavPreconditioner (this, &psi[nbase*pbasis_noncoll], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
+        //DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
+
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
         // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the
         // diagonalizer roughly equal to improve stability.
@@ -489,6 +491,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Copy eigs from compact array back into state structure
     for(int st = 0;st < nstates;st++) this->Kstates[st].eig[0] = eigs[st];
 
+    //DavidsonOrtho(nstates, 1, pbasis_noncoll, psi, vr);
 
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
