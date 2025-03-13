@@ -56,7 +56,6 @@ template <typename KpointType>
 void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat)
 {
 
-    std::cout << nbase << "  NBASE " << notcon << std::endl;
     if(!ct.norm_conserving_pp)
     {
         rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp in DavidsonOrtho now\n");
