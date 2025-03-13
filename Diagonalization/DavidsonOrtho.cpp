@@ -89,19 +89,42 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     // ortho to the first nbase states
     RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
     BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
+    RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
 
     // ortho for the remainl noncon states
 
-    KpointType norm;
+    double norm;
     int pbasis_c = pbasis_noncoll * factor;
     int ione = 1;
-    norm =  ddot(&pbasis_c, psi_extra, &ione, psi_extra, &ione);
+    norm =  ddot(&pbasis_c, (double *)psi_extra, &ione, (double *)psi_extra, &ione);
+    MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    norm = 1.0/sqrt(norm * vel);
+    dscal(&pbasis_c, &norm, (double *)psi_extra, &ione);
+
+    for (int st = 1; st < notcon; st++)
+    {
+        // mat = <psi_extra[0:st-1] |psi_extr[st]>
+        RmgGemm(trans_a, trans_n, st, ione, pbasis_noncoll, alphavel, psi_extra, pbasis_noncoll, &psi_extra[st*pbasis_noncoll], pbasis_noncoll, zero, mat, st);
+        BlockAllreduce((double *)mat, (size_t)st * (size_t)factor, pct.grid_comm);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, ione, st, mone, psi_extra, pbasis_noncoll, mat, st, one, &psi_extra[st*pbasis_noncoll], pbasis_noncoll);
+        norm =  ddot(&pbasis_c, (double *)&psi_extra[st*pbasis_noncoll], &ione, (double *)&psi_extra[st*pbasis_noncoll], &ione);
+        MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        norm = 1.0/sqrt(norm * vel);
+        dscal(&pbasis_c, &norm, (double *)&psi_extra[st*pbasis_noncoll], &ione);
+    }
 
 
+    /*
+    RmgGemm(trans_a, trans_n, nbase+notcon, nbase+notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nbase+notcon);
+    BlockAllreduce((double *)mat, (size_t)(nbase+notcon)*(size_t)(nbase+notcon) * (size_t)factor, pct.grid_comm);
+    for(int i = 0; i < nbase + notcon; i++) 
+        for(int j = 0; j < nbase + notcon; j++) 
+        {
+            if(std::abs(mat[i * (nbase + notcon) + j]) > 1.0e-5)
+            rmg_printf("\n ortho? %d %d  %e %e", i,j, mat[i *(nbase+notcon) + j]);
+        }
 
-
-    RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
-    BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-    for(int i = 0; i < nbase * notcon; i++) rmg_printf("\n ortho? %d %e %e", i, mat[i]);
+    rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp in DavidsonOrtho now\n");
+    */
 
 }
