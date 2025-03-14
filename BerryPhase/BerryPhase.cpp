@@ -147,10 +147,6 @@ void BerryPhase::init(Kpoint<double> **Kptr)
 void BerryPhase::init(Kpoint<std::complex<double>> **Kptr)
 {
     // find the number of states with non-zero occupation
-    if(ct.kohn_sham_solver == MULTIGRID_SOLVER && std::abs(efield_mag) > eps)
-    {
-        rmg_error_handler(__FILE__, __LINE__, "Berry Phase scf only work with Davidson solver now\n");
-    }
     nband_occ = ct.nel/2;
     pbasis = Rmg_G->get_P0_BASIS(1);
     pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -205,7 +201,6 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     double gr[3]{0.0,0.0,0.0};
     gr[BerryPhase_dir] = -1.0;
     std::complex<double> phase;
-    std::complex<double> zeta_tot = 1.0;
     for(int iort = 0; iort < num_kort; iort++)
     {
         // for each string, calculate the Berry Phase
@@ -293,7 +288,6 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort], zeta);
             }
         }
-        zeta_tot = zeta_tot * std::pow(zeta, kweight_string[iort]);
         delete RT1;
     }
 
@@ -357,7 +351,6 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     double pdl_tot = pdl_elec_tot + pdl_ion_tot;
     pdl_tot = pdl_tot - 2.0 * std::round(pdl_tot/2.0);
 
-    rmg_printf("\n  zeta_tot %f %f ", zeta_tot);
     rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
     rmg_printf("\n  Ionic      phase %f ", pdl_ion_tot);
     rmg_printf("\n  Total      phase %f ", pdl_tot);
@@ -470,11 +463,13 @@ void BerryPhase::Apply_BP_Hpsi(Kpoint<std::complex<double>> *kptr, int num_state
     // BP_Hpsi =     |Gnk > <psi_bp | psi current> 
     std::complex<double> one(1.0), zero(0.0); 
     RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+    BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
     RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_Gnk, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);
     // BP_Hpsi +=     |psi_bp > <Gnk | psi current> 
     RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+    BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
     RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_psi, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);

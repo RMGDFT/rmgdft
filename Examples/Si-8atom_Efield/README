@@ -1,0 +1,34 @@
+adapted an example from QE
+This example shows how to perform electronic structure calculations
+for a system undergoing the presence of a static homogeneous
+finite electric field. The method is explained in:
+
+P. Umari and A. Pasquarello, PRL 89,157602 (2002)
+I. Souza, J.Iniguez, and D.Vanderbilt, PRL 89, 117602 (2002)
+
+different from QE:
+efiled is in unit of Ha/e/bohr in RMG
+efiled is in unit of Ry/e/bohr in QE
+
+BerryPhase = "true"
+electric_filed = "0.0  0.0  0.001"
+
+Example 1 - dielectric constant of Si
+
+The system is described by a 8-atom cubic unit cell.
+We use a regular mesh of 3X3X7 k-points, where we have 7 k-points
+along the directions of the electric field
+
+At 0 electric field, Si has a zero dipole, 
+The electronic polarization: 8.771126e-04 e/bohr^2
+
+The high-frequency dielectric constant eps_inf is then given by
+
+eps_inf=4*pi*(D[0.001]-D[0.0])/(Efield 0.001) + 1
+
+Hartree = e^2/bohr
+
+eps_inf=12.02 from RMG using sg15 pseudopotential
+
+QE PW/examples/example10: eps_inf = 12.04
+
