@@ -9,7 +9,6 @@ module load craype-accel-amd-gfx90a
 module load rocm/6.0.0
 module load libfabric
 export MPICH_GPU_SUPPORT_ENABLED=0
-export FI_MR_CACHE_MONITOR=disabled
 
 rm -rf build-frontier-gpu
 mkdir build-frontier-gpu
