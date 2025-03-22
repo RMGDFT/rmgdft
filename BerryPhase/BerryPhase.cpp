@@ -220,7 +220,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         {
             int ik_index = iort * num_kpp + jpp;
             psi_k = Kptr[ik_index]->orbital_storage;
-            memcpy(Kptr[ik_index]->BP_psi, psi_k, wfc_size);
+            if(std::abs(efield_mag) > eps ) memcpy(Kptr[ik_index]->BP_psi, psi_k, wfc_size);
             std::complex<double> *BP_matrix_cpu = Kptr[ik_index]->BP_matrix_cpu;
             if(jpp == num_kpp-1)
             {
