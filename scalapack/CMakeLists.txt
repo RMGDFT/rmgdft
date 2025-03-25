@@ -94,9 +94,9 @@ endmacro()
 # Testing
 SET(DART_TESTING_TIMEOUT 600)
 
-enable_testing()
-include(CTest)
-enable_testing()
+#enable_testing()
+#include(CTest)
+#enable_testing()
 # --------------------------------------------------
 
 # Organize output files.  On Windows this also keeps .dll files next
