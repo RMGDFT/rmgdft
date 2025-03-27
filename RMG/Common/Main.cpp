@@ -44,6 +44,7 @@
 #include "blas.h"
 #include "RmgThread.h"
 #include "rmgthreads.h"
+#include "../Interfaces/WriteEshdf.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -297,6 +298,21 @@ int main (int argc, char **argv)
         {
             //write_zstates (states);
             ;
+        }
+
+	if(ct.write_qmcpack_restart)
+	{
+#if QMCPACK_SUPPORT
+            int rank;
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if(rank == 0)
+            {
+                std::string qmcpack_file(ct.outfile);
+                WriteQmcpackRestart(qmcpack_file);
+            }
+#else
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+#endif
         }
 
     }

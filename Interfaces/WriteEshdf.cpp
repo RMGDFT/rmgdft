@@ -680,7 +680,7 @@ void eshdfFile::handleRho(hid_t groupLoc) {
 
     std::string rhofname(ct.outfile);
     rhofname = rhofname + ".rho";
-
+printf("DDDD  %s\n",rhofname.c_str());fflush(NULL);
     int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg_printf("Can't open restart file %s", rhofname.c_str());
