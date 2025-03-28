@@ -32,7 +32,9 @@ void RmgMemcpy(void *A_dest, void *A_source, size_t a_size)
 
 void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device)
 {
-
+#if !CUDA_ENABLED && !SYCL_ENABLED && !HIP_ENABLED
+    return;
+#endif
     if(ct.tddft_gpu)
     {
 #if CUDA_ENABLED
@@ -51,6 +53,9 @@ void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device)
 
 void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host)
 {
+#if !CUDA_ENABLED && !SYCL_ENABLED && !HIP_ENABLED
+    return;
+#endif
 
     if(ct.tddft_gpu)
     {

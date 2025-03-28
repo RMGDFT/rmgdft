@@ -80,10 +80,14 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     RT1 = new RmgTimer("4-OrbitalOptimize: calculate: Gemms");
     int num_orb = Phi.num_thispe;
     int num_prj = NlProj.num_thispe;
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(H_Phi.storage_size, H_Phi.storage_cpu, H_Phi.storage_gpu);
-
-    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_ptr, pbasis,
-            theta_local, num_orb, mtwo, H_Phi.storage_ptr, pbasis);
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_gpu, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_cpu, pbasis);
+#else
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_cpu, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_cpu, pbasis);
+#endif
 
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));

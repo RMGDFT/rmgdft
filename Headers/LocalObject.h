@@ -32,7 +32,9 @@ public:
     size_t storage_size;
     KpointType *storage_cpu;
     KpointType *storage_ptr;
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     KpointType *storage_gpu;
+#endif
     char *mask;
 
     std::vector<std::vector<double>> boundary;

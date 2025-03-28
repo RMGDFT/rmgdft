@@ -55,7 +55,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     RmgTimer *RT = new RmgTimer("2-SCF");
 
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(LocalOrbital->storage_size, LocalOrbital->storage_cpu, LocalOrbital->storage_gpu);
+#endif
 
     RT0 = new RmgTimer("2-SCF: Kbpsi");
 
@@ -95,7 +97,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int num_tot = LocalOrbital->num_tot;
     RT1 = new RmgTimer("2-SCF: HS mat: ApplyH");
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
+#endif
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: HS mat: LOxLO");

@@ -269,7 +269,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
         
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         MemcpyHostDevice(LocalProj->storage_size, LocalProj->storage_cpu, LocalProj->storage_gpu);
+#endif
         delete [] proj_per_ion;
         Kbpsi_mat = (double *)RmgMallocHost(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
         Kbpsi_mat_local = (double *) RmgMallocHost(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
