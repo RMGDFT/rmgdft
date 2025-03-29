@@ -255,6 +255,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
     }
 
+    ct.ES -= ct.ES_rhoc;
 
     /* Sum them all up */
     ct.ldaU_E = ldaU_E;

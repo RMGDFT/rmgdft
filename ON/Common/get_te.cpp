@@ -206,6 +206,8 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
         ct.II = IonIonEnergy_Ewald();
     }
 
+    ct.ES -= ct.ES_rhoc;
+
 
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;

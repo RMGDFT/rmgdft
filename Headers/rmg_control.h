@@ -605,6 +605,7 @@ public:
 
     /* Total energies */
     double ES;
+    double ES_rhoc;
     double NUC;
     double KE;
     double XC;
