@@ -627,6 +627,7 @@ public:
 
     /* fermi energy */
     double efermi;
+    double E_lowbound;
 
     /* Tetrahedron method. 0=Bloechl, 1=Linear, 2=Optimized */
     int tetra_method;

@@ -137,6 +137,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 		sprintf (newname, "%s%s", name, ".EF");
         fhand_EF = fopen (newname, "w");
         fprintf(fhand_EF, "%15.8f\n", ct.efermi * Ha_eV);
+        fprintf(fhand_EF, "%15.8f\n", ct.E_lowbound * Ha_eV);
         fclose(fhand_EF);
     }
         
