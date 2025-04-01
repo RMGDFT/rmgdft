@@ -219,8 +219,10 @@ void read_LCR ()
 
         sprintf (newname, "%s%s", lcr[iprobe].lead_name, ".EF");
         std::ifstream Ef_file(newname);
+        double EB ;
         Ef_file >> lcr[iprobe].EF_old;
-
+        Ef_file >> EB;
+        cei.EB = std::min(EB-lcr[iprobe].EF_old - 2.0, cei.EB);
 
     }
 
