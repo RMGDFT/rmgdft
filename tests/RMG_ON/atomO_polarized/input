@@ -1,6 +1,9 @@
 # Description of run.
 description="atomO_pp"
 
+test_energy = "-15.87869559"
+test_energy_tolerance = "1.0e-5"
+
 # Wavefunction grid
 wavefunction_grid="128 128 128"
 kohn_sham_pre_smoothing = "2"
@@ -142,7 +145,6 @@ potential_grid_refinement="1"
 calculation_mode="Quench Electrons"
 number_of_kpoints="1"
 kpoints= "0.0  0.0  0.0   1.0 "
-energy_cutoff_parameter="1.75"
 kohn_sham_pre_smoothing="3"
 kohn_sham_post_smoothing="3"
 poisson_pre_smoothing="2"

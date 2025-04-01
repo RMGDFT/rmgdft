@@ -357,6 +357,9 @@ int main(int argc, char **argv)
             delete RTO;
         }
 
+        // test conditions
+        check_tests();
+
         if(ct.write_qmcpack_restart)
         {
 
