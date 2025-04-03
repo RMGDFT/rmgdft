@@ -95,54 +95,53 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_File mpi_fhand ;
 
     MPI_Barrier(pct.grid_comm);
-	sprintf(newname, "%s%s", name, ".vh");
-	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-	disp=0;
-	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-	MPI_File_write_all(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
-	MPI_File_close(&mpi_fhand);
+    if(pct.spinpe == 0)
+    {
+        sprintf(newname, "%s%s", name, ".vh");
+        MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+        MPI_File_write_all(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
+        MPI_File_close(&mpi_fhand);
+
+        sprintf(newname, "%s%s", name, ".vh_corr");
+        MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+        MPI_File_write_all(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
+        MPI_File_close(&mpi_fhand);
+    }
     MPI_Barrier(pct.grid_comm);
 
-	sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
-	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-	disp=0;
-	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-	MPI_File_write_all(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
-	MPI_File_close(&mpi_fhand);
+    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+    MPI_File_write_all(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
-	sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
-	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-	disp=0;
-	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-	MPI_File_write_all(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
-	MPI_File_close(&mpi_fhand);
-    MPI_Barrier(pct.grid_comm);
-
-	sprintf(newname, "%s%s", name, ".vh_corr");
-	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-	disp=0;
-	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-	MPI_File_write_all(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
-	MPI_File_close(&mpi_fhand);
+    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+    MPI_File_write_all(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
 
-	MPI_Barrier(pct.img_comm);
-
-
-	if(pct.gridpe == 0) 
+    if(pct.gridpe == 0) 
     {
         FILE *fhand_EF;
-		sprintf (newname, "%s%s", name, ".EF");
+        sprintf (newname, "%s%s", name, ".EF");
         fhand_EF = fopen (newname, "w");
         fprintf(fhand_EF, "%15.8f\n", ct.efermi * Ha_eV);
         fprintf(fhand_EF, "%15.8f\n", ct.E_lowbound * Ha_eV);
         fclose(fhand_EF);
     }
-        
 
-	if(pct.gridpe == 0) fflush(NULL);
+
+    if(pct.gridpe == 0) fflush(NULL);
 
 
     if(ct.LocalizedOrbitalLayout == LO_projection)
