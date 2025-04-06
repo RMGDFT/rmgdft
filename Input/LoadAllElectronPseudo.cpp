@@ -127,8 +127,8 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->nlccflag = false;
 
     // Determine log mesh parameters directly from the mesh
-    sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
-    sp->bb = log (sp->r[1] / sp->r[0] - 1);
+    //sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
+    //sp->bb = log (sp->r[1] / sp->r[0] - 1);
 
     // Generate RAB
     sp->rab = new double[sp->rg_points];
