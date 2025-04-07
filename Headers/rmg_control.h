@@ -615,6 +615,7 @@ public:
     double II;
     double FOCK;
     double TOTAL;
+    double TOTAL_DIRECT;
 
     // EXX convergence measure
     double exx_delta;
