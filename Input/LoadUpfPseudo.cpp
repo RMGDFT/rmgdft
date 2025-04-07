@@ -190,8 +190,11 @@ void LoadUpfPseudo(SPECIES *sp)
     }
 
     sp->gtype = LOG_GRID;
+    if(std::abs(t_r[0] + t_r[2] - 2.0 * t_r[1])< 1.0e-10) sp->gtype = LINEAR_GRID;
     sp->rg_points = r_total - ibegin;
     sp->r = new double[sp->rg_points];
+    // cubic extrapolation for r = 0 point
+    bool r0_extrapolation = (t_r[0] == 0.0);
     for(int i = ibegin;i < r_total;i++) {
         sp->r[i - ibegin] = t_r[i];
     }
@@ -251,8 +254,8 @@ void LoadUpfPseudo(SPECIES *sp)
     if(!s_core_correction.compare(0,4,"TRUE")) sp->nlccflag = true;
 
     // Determine log mesh parameters directly from the mesh
-    sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
-    sp->bb = log (sp->r[1] / sp->r[0] - 1);
+    //sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
+    //sp->bb = log (sp->r[1] / sp->r[0] - 1);
 
     // Read in rab and convert it into a C style array
     std::string PP_RAB = upf_tree.get<std::string>("UPF.PP_MESH.PP_RAB");
@@ -334,6 +337,9 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // UPF stores rhoatom * r^2 so rescale
     for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
+    if(r0_extrapolation){
+        sp->atomic_rho[0] =3.0*sp->atomic_rho[1] - 3.0*sp->atomic_rho[2] + sp->atomic_rho[3];
+    }
 
     if(sp->nlccflag) {
         std::string PP_NLCC = upf_tree.get<std::string>("UPF.PP_NLCC");
@@ -388,6 +394,9 @@ void LoadUpfPseudo(SPECIES *sp)
 
             // UPF stores atomic wavefunctions * r so divide through
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
+            if(r0_extrapolation){
+                sp->atomic_wave[iwf][0] = 3.0* sp->atomic_wave[iwf][1] -3.0 * sp->atomic_wave[iwf][2] + sp->atomic_wave[iwf][3];
+            }
             for(int ix = 0;ix < sp->rg_points;ix++)
             {
 //               if(sp->r[ix] > 8.0) sp->atomic_wave[iwf][ix] *= exp(-(sp->r[ix] - 8.0)*(sp->r[ix] - 8.0));
@@ -418,12 +427,15 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->beta.emplace_back(UPF_read_mesh_array(PP_BETA, r_total, ibegin));
 
             for(int ix = 0;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
+            if(r0_extrapolation){
+                sp->beta[ip][0] = 3.0*sp->beta[ip][1] -3.0*sp->beta[ip][2] + sp->beta[ip][3];
+            }
             sp->llbeta.emplace_back(upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/')));
             if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
             if(sp->llbeta[ip] > l_max) l_max = sp->llbeta[ip];        // For this species
             if(l_max > ct.max_l) ct.max_l = l_max;
-//               double cutoff_radius = upf_tree.get<int>(betapath + ".<xmlattr>.cutoff_radius");
-            
+            //               double cutoff_radius = upf_tree.get<int>(betapath + ".<xmlattr>.cutoff_radius");
+
         }
         sp->max_l = l_max;
 
@@ -448,118 +460,118 @@ void LoadUpfPseudo(SPECIES *sp)
     // Charge augmentation for US
     if(!sp->is_norm_conserving) {
 
-       std::string q_with_l = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
-       boost::to_upper(q_with_l);
-       if(!q_with_l.compare(0,1,"T") || !q_with_l.compare(0,4,"TRUE")) {
-           sp->q_with_l = true;
-       }
+        std::string q_with_l = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
+        boost::to_upper(q_with_l);
+        if(!q_with_l.compare(0,1,"T") || !q_with_l.compare(0,4,"TRUE")) {
+            sp->q_with_l = true;
+        }
 
 
 
-       sp->nqf = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqf", 0);
-       sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqlc", 2*l_max + 1);
-       int tnlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
+        sp->nqf = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqf", 0);
+        sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqlc", 2*l_max + 1);
+        int tnlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
 
-       // read in the rinner for Q_L(r) function */
-       if(sp->nqf > 0) {
-           std::string PP_RINNER = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_RINNER");
-           sp->rinner = new double[tnlc * sp->nlc * sp->nqf]();
-           double *tmatrix = UPF_str_to_double_array(PP_RINNER, sp->nlc, 0);
-           for(int i = 0;i < sp->nlc;i++) sp->rinner[i] = tmatrix[i];
-           delete [] tmatrix;
-       }
+        // read in the rinner for Q_L(r) function */
+        if(sp->nqf > 0) {
+            std::string PP_RINNER = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_RINNER");
+            sp->rinner = new double[tnlc * sp->nlc * sp->nqf]();
+            double *tmatrix = UPF_str_to_double_array(PP_RINNER, sp->nlc, 0);
+            for(int i = 0;i < sp->nlc;i++) sp->rinner[i] = tmatrix[i];
+            delete [] tmatrix;
+        }
 
-       /*read in the Matrix qqq(nbeta,nbeta) */
-       std::string PP_Q = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_Q");
-       double *tmatrix = UPF_str_to_double_array(PP_Q, sp->nbeta*sp->nbeta, 0);
-       for (int j = 0; j < sp->nbeta; j++)
-       {
-           for (int k = 0; k < sp->nbeta; k++)
-           {
-               qqq[j][k] = tmatrix[j*sp->nbeta + k];
-           }
-       }
-       delete [] tmatrix;
+        /*read in the Matrix qqq(nbeta,nbeta) */
+        std::string PP_Q = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_Q");
+        double *tmatrix = UPF_str_to_double_array(PP_Q, sp->nbeta*sp->nbeta, 0);
+        for (int j = 0; j < sp->nbeta; j++)
+        {
+            for (int k = 0; k < sp->nbeta; k++)
+            {
+                qqq[j][k] = tmatrix[j*sp->nbeta + k];
+            }
+        }
+        delete [] tmatrix;
 
-       // Read in PP_QFCOEFF
-       if(sp->nqf > 0) {
-           // UPF format calls for full matrix so store in tmatrix
-           std::string PP_QFCOEFF = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_QFCOEF");
-           double *tmatrix1 = UPF_str_to_double_array(PP_QFCOEFF, sp->nqf*sp->nlc*sp->nbeta*sp->nbeta, 0);
-           // We only use upper half of the symmetric matrix
-           sp->qfcoef = new double[tnlc * sp->nlc * sp->nqf];
+        // Read in PP_QFCOEFF
+        if(sp->nqf > 0) {
+            // UPF format calls for full matrix so store in tmatrix
+            std::string PP_QFCOEFF = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_QFCOEF");
+            double *tmatrix1 = UPF_str_to_double_array(PP_QFCOEFF, sp->nqf*sp->nlc*sp->nbeta*sp->nbeta, 0);
+            // We only use upper half of the symmetric matrix
+            sp->qfcoef = new double[tnlc * sp->nlc * sp->nqf];
 
-           for (int idx1 = 0; idx1 < sp->nbeta; idx1++)
-           {
-               for (int idx2 = idx1; idx2 < sp->nbeta; idx2++)
-               {
-                   int nmb = idx2 * (idx2 + 1) / 2 + idx1;
-                   for (int idx3 = 0; idx3 < sp->nlc; idx3++)
-                   {
-                       for (int idx4 = 0; idx4 < sp->nqf; idx4++)
-                       {
-                           int indx = nmb * sp->nlc * sp->nqf + idx3 * sp->nqf + idx4;
-                           sp->qfcoef[indx] = tmatrix1[sp->nqf*sp->nlc*sp->nbeta*idx1 + sp->nqf*sp->nlc*idx2 + sp->nqf*idx3 + idx4];
-                       }
-                   }
-               }
-           }
+            for (int idx1 = 0; idx1 < sp->nbeta; idx1++)
+            {
+                for (int idx2 = idx1; idx2 < sp->nbeta; idx2++)
+                {
+                    int nmb = idx2 * (idx2 + 1) / 2 + idx1;
+                    for (int idx3 = 0; idx3 < sp->nlc; idx3++)
+                    {
+                        for (int idx4 = 0; idx4 < sp->nqf; idx4++)
+                        {
+                            int indx = nmb * sp->nlc * sp->nqf + idx3 * sp->nqf + idx4;
+                            sp->qfcoef[indx] = tmatrix1[sp->nqf*sp->nlc*sp->nbeta*idx1 + sp->nqf*sp->nlc*idx2 + sp->nqf*idx3 + idx4];
+                        }
+                    }
+                }
+            }
 
-           delete [] tmatrix1;  
-       }
+            delete [] tmatrix1;  
+        }
 
-       // PP_Q.i.j
-       sp->qnm = new double[tnlc * MAX_RGRID]();
-       sp->qnm_l = new double[tnlc * MAX_RGRID * sp->nlc ]();
-       if(sp->q_with_l)
-       {
-           for(int i = 0;i < sp->nbeta;i++) {
-               for(int j = i;j < sp->nbeta;j++) {
-                   typedef ptree::path_type path;
-                   int li = sp->llbeta[i];
-                   int lj = sp->llbeta[j];
-                   for(int L = std::abs(li-lj); L <= li+lj; L+=2)
-                   {
-                       std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJL." + boost::lexical_cast<std::string>(i + 1);
-                       pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
-                       pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(L);
-                       std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
-                       double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
-
-
-                       int nmb = j * (j + 1) / 2 + i;
-                       for (int idx = 0; idx < sp->kkbeta; idx++)
-                       {
-                           sp->qnm_l[ (nmb * sp->nlc + L) * MAX_RGRID + idx] = tmatrix2[idx];
-                       }
-
-                       delete [] tmatrix2;
-                   }
-
-               }
-           }
-       }
-       else
-       {
-           for(int i = 0;i < sp->nbeta;i++) {
-               for(int j = i;j < sp->nbeta;j++) {
-                   typedef ptree::path_type path;
-                   std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
-                   pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
-                   std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
-                   double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
+        // PP_Q.i.j
+        sp->qnm = new double[tnlc * MAX_RGRID]();
+        sp->qnm_l = new double[tnlc * MAX_RGRID * sp->nlc ]();
+        if(sp->q_with_l)
+        {
+            for(int i = 0;i < sp->nbeta;i++) {
+                for(int j = i;j < sp->nbeta;j++) {
+                    typedef ptree::path_type path;
+                    int li = sp->llbeta[i];
+                    int lj = sp->llbeta[j];
+                    for(int L = std::abs(li-lj); L <= li+lj; L+=2)
+                    {
+                        std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJL." + boost::lexical_cast<std::string>(i + 1);
+                        pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
+                        pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(L);
+                        std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
+                        double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
 
 
-                   int nmb = j * (j + 1) / 2 + i;
-                   for (int idx = 0; idx < sp->kkbeta; idx++)
-                   {
-                       sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
-                   }
+                        int nmb = j * (j + 1) / 2 + i;
+                        for (int idx = 0; idx < sp->kkbeta; idx++)
+                        {
+                            sp->qnm_l[ (nmb * sp->nlc + L) * MAX_RGRID + idx] = tmatrix2[idx];
+                        }
 
-                   delete [] tmatrix2;
-               }
-           }
-       }
+                        delete [] tmatrix2;
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            for(int i = 0;i < sp->nbeta;i++) {
+                for(int j = i;j < sp->nbeta;j++) {
+                    typedef ptree::path_type path;
+                    std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
+                    pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
+                    std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
+                    double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
+
+
+                    int nmb = j * (j + 1) / 2 + i;
+                    for (int idx = 0; idx < sp->kkbeta; idx++)
+                    {
+                        sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
+                    }
+
+                    delete [] tmatrix2;
+                }
+            }
+        }
 
     }
 
@@ -665,4 +677,5 @@ void LoadUpfPseudo(SPECIES *sp)
     if(pp_buffer) delete [] pp_buffer;
     if(!sp->is_ddd_diagonal) ct.is_ddd_non_diagonal = true;
 }
+
 

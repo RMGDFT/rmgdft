@@ -678,37 +678,36 @@ void eshdfFile::handleRho(hid_t groupLoc) {
 
     fftContainer rho_fftCont(nx,ny,nz);
 
-    std::string rhofname(ct.outfile);
-    rhofname = rhofname + ".rho";
-    int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
-    if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", rhofname.c_str());
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
-    }
+    double *rho_buf = new double[rho_fftCont.fullSize];
 
-    int factor = ct.nspin;
-    double *rho_buf = new double[rho_fftCont.fullSize * factor];
-    size_t rsize = read (fhand, rho_buf, rho_fftCont.fullSize * sizeof(double) * factor);
-    if(rsize != rho_fftCont.fullSize * sizeof(double) * factor)
-        rmg_error_handler (__FILE__,__LINE__,"problem reading rho file");
-    close(fhand);
 
     // write rho to proper place
     hsize_t rhog_dims[]={static_cast<hsize_t>(rho_fftCont.fullSize),2};
 
     for(int ispin = 0; ispin < ct.nspin; ispin++) {
 
+        std::string rhofname(ct.outfile);
+        rhofname = rhofname + "_spin" + std::to_string(ispin) + ".rho";
+        int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+        if (fhand < 0) {
+            rmg_printf("Can't open restart file %s", rhofname.c_str());
+            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        }
+
+        size_t rsize = read (fhand, rho_buf, rho_fftCont.fullSize * sizeof(double));
+        if(rsize != rho_fftCont.fullSize * sizeof(double))
+            rmg_error_handler (__FILE__,__LINE__,"problem reading rho file");
+        close(fhand);
         std::string spin_str = "spin_" + std::to_string(ispin);
 
         hid_t spin_density_group = makeHDFGroup(spin_str.c_str(), density_group);
-        double *values = &rho_buf[ispin * rho_fftCont.fullSize];
         int index = 0;
         for (int ix = 0; ix < rho_fftCont.getNx(); ix++) {
             for (int iy = 0; iy < rho_fftCont.getNy(); iy++) {
                 for (int iz = 0; iz < rho_fftCont.getNz(); iz++) {
                     //const int qbx = rho_fftCont.getQboxIndex(ix,iy,iz);
                     const int qbx = rho_fftCont.getIndex(ix,iy,iz);
-                    rho_fftCont.rspace[index][0] = values[qbx];
+                    rho_fftCont.rspace[index][0] = rho_buf[qbx];
                     rho_fftCont.rspace[index][1] = 0.0;
                     index++;
                 }

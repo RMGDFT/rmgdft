@@ -92,6 +92,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 		sprintf (newname, "%s%s", name, ".EF");
 		fhand_EF = fopen (newname, "w");
 		fprintf(fhand_EF, "%15.8f\n", lcr[1].EF_new);
+		fprintf(fhand_EF, "%15.8f\n", cei.EB);
 		fclose(fhand_EF);
 
 
