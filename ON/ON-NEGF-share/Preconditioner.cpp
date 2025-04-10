@@ -72,6 +72,7 @@ void Preconditioner (double *res, int num_states)
 
     int istop = num_states / active_threads;
     istop = istop * active_threads;
+    if(active_threads == 1) istop = 0;
 
     Rmg_T->set_coalesce_factor(1);
     for(int st1=0;st1 < istop;st1+=active_threads) {
