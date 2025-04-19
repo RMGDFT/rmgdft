@@ -144,6 +144,14 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
             {
                 RT0 = new RmgTimer("2-SCF: DiagGpu");
                 DiagGpu(states, ct.num_states, Hij_glob, Sij_glob, rho_matrix_local, theta_local, CC_res_local);
+                for(int i = 0; i < num_orb; i++) 
+                {
+                    for(int j = 0; j < num_orb; j++) 
+                    {
+                        if(i == j ) CC_res_local[i*num_orb + j] = 1.0;
+                        else CC_res_local[i*num_orb + j] = 0.0;
+                    }
+		}
                 delete RT0;
                 break;
             }
