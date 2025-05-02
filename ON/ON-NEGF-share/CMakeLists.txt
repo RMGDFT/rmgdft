@@ -4,7 +4,6 @@ Preconditioner.cpp
 get_gamma_precond.cpp
 real_max_all.cpp
 BlockTriMatrix.cpp
-GpuCpuWraper.cpp
 WriteXyz.cpp
 ApplyHphi.cpp
 mat_local_to_glob.cpp

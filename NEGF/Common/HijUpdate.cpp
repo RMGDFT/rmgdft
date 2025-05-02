@@ -61,7 +61,9 @@ void HijUpdate (double *vtot_c)
         }
     }
 
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
+#endif
     LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
 
     for(int ib = 0; ib < ct.num_blocks; ib++)
@@ -75,8 +77,8 @@ void HijUpdate (double *vtot_c)
         int idx = (st1-st0) * (st1-st0);
         MPI_Allreduce(MPI_IN_PLACE, H_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
 
-        
-        
+
+
 
         int *desca = &pmo.desc_cond[(ib + ib * ct.num_blocks) * DLEN];
         mat_global_to_dist(H_dist, desca, H_tem);

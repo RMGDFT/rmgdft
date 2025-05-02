@@ -86,9 +86,9 @@ void get_dipole (double * rho, double *dipole)
 
     /* Sum these up over all processors, multiply by volume elemnt so that sum is 
      * integration and invert sign, since electron charge should be negative*/
-    dipole[0] = -1.0 * vel * real_sum_all (dipole[0], pct.img_comm);
-    dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.img_comm);
-    dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.img_comm);
+    dipole[0] = -1.0 * vel * real_sum_all (dipole[0], pct.grid_comm);
+    dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.grid_comm);
+    dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.grid_comm);
 
 
     /*Now we have dipole moment for electrons, need to add ions now */

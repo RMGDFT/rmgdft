@@ -57,6 +57,17 @@ using size_type  = size_t;
 
 template <typename T>
 void fill_matrix(T* ptr, size_t size) {
+    static std::mt19937 rng(42);  // Set a fixed seed value, e.g., 42
+    static std::uniform_int_distribution<int> dist(0, 9); // distribution
+
+    for (size_t i = 0; i < size; ++i) {
+        ptr[i] = static_cast<T>(dist(rng));
+    }
+}
+
+/*
+template <typename T>
+void fill_matrix(T* ptr, size_t size) {
     static std::random_device dev;                        // seed
     static std::mt19937 rng(dev());                       // generator
     static std::uniform_real_distribution<T> dist(10.0); // distribution
@@ -65,6 +76,7 @@ void fill_matrix(T* ptr, size_t size) {
         ptr[i] = T{dist(rng)};
     }
 }
+*/
 
 template <typename T>
 void copy_matrix(T* from, T* to, std::size_t size) {
@@ -226,7 +238,7 @@ int main(int argc, char** argv){
     std::cout << "      SCALING CONSTANTS " << std::endl;
     std::cout << "=============================" << std::endl;
     std::cout << " alpha = " << alpha << std::endl;
-    std::cout << " beta  = " << alpha << std::endl;
+    std::cout << " beta  = " << beta << std::endl;
     std::cout << "=============================" << std::endl;
     std::cout << "      TRANSPOSE FLAGS " << std::endl;
     std::cout << "=============================" << std::endl;

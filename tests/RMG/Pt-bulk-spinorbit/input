@@ -1,7 +1,7 @@
 # Description of run.
 description="atom_Pt_pp"
 
-test_energy="-45.09950032"
+test_energy="-45.09949342"
 test_steps = "9"
 test_steps_tolerance = "1"
 
@@ -90,7 +90,7 @@ max_scf_steps="100"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
+energy_convergence_criterion="1.0e-10"
 #rms_convergence_criterion = "1.0e-10"
 
 atomic_coordinate_type="Absolute"

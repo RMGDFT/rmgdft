@@ -23,6 +23,7 @@
 #include "PulayMixing.h"
 #include "Symmetry.h"
 #include "Tetrahedron.h"
+#include "BerryPhase.h"
 #include "rmgfiles.h"
 
 
@@ -36,6 +37,7 @@ extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 extern Symmetry *Rmg_Symm;
 extern Tetrahedron *Tetra;
+extern BerryPhase *Rmg_BP;
 
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
@@ -60,10 +62,12 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 
 int init_kpoints (int *mesh, int *is_shift);
+int init_kpoints_bp (int *mesh, int *is_shift);
 
 template <typename OrbitalType> void STM_calc (Kpoint<OrbitalType> **Kptr, double *rho, std::vector<double> bias_list, std::vector<double>
 height_list);
 template <typename DataType> void OutputCubeFile(DataType *a, int grid, std::string filename);
+template <typename DataType> void OutputCubeFile(DataType *a, int NX, int NY, int NZ, std::string filename, bool global_data);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, double *kvec);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, int, int, int, double, double, double, int, double *kvec);
@@ -88,6 +92,8 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag,
 
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
+double AutoMix (void);
+
 void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
 template <typename T> void DiagScalapack(STATE *, int, double *, double*);
@@ -109,6 +115,7 @@ template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, Orbital
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
 // Print function
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank, int tddft_steps);
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank);
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc);
 template <typename KpointType>
@@ -203,6 +210,10 @@ template <typename T> void Write_Wfs_forWannier(int kpt_global, Kpoint<T> *kptr,
 double GetPlanarAnisotropy(double *density);
 void GetFdFactor(int kidx);
 void SimplePolyFit(const double *x, double *y, const size_t n, const size_t k, double *beta);
+void DipoleCorrection(double *dipole,  double *vh_dipole);
+void write_ffield (std::string &filename);
+template <typename KpointType>
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat);
 
 #endif
 #endif

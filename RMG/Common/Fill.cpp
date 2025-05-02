@@ -69,6 +69,13 @@ template double Fill (Kpoint<std::complex<double> > **, double, double, double, 
     template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order)
 {
+    if(ct.adaptive_convergence)
+    {
+    //    width = 10.0*width*exp(-0.05*ct.scf_steps) + width;
+        double steps = (double)ct.scf_steps/40.0;
+        width = 0.5*eV_Ha*exp(-steps*steps) + width;
+    }
+
     if(ct.occ_flag == OCC_TETRA) return Tetra->FillTetra(Kptr);
 
     const int maxit = 100;

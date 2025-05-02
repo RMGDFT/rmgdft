@@ -26,9 +26,9 @@ PulayMixing::PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, doubl
     this->mix_first = mix_first;
     this->beta = beta;
     this->comm = comm;
-    this->hist = new double[Nsize * (size_t)(pulay_order) +1024];
-    this->res_hist = new double[Nsize * (size_t)(pulay_order) + 1024];
-    this->A_mat = new double[(this->max_order+1)*(this->max_order+1)];
+    this->hist = new double[Nsize * (size_t)(pulay_order) +1024]();
+    this->res_hist = new double[Nsize * (size_t)(pulay_order) + 1024]();
+    this->A_mat = new double[(this->max_order+1)*(this->max_order+1)]();
 
     for(int i = 0; i < this->pulay_order;i++)
     {
@@ -43,10 +43,12 @@ PulayMixing::PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, doubl
 
 PulayMixing::~PulayMixing(void)
 {
+    delete [] this->A_mat;
     delete [] this->hist;
+
     if(this->Gspace)
     {
-        delete [] this->res_histG;
+        if(this->res_histG) delete [] this->res_histG;
     }
     else
     {
@@ -203,7 +205,7 @@ void PulayMixing::Mixing(double *xm, double *fm)
 void PulayMixing::SetGspace(bool drho_pre_in, bool Gspace_in, double q0_in)
 {
 
-    this->c_fm = new std::complex<double>[Nsize];
+    this->c_fm = new std::complex<double>[Nsize]();
     this->q0 = q0_in;
     if(drho_pre_in) 
     {
@@ -213,7 +215,7 @@ void PulayMixing::SetGspace(bool drho_pre_in, bool Gspace_in, double q0_in)
         this->drho_pre = true;
         this->Gspace = true;
         delete [] this->res_hist;
-        this->res_histG = new std::complex<double>[Nsize * (size_t)(pulay_order) + 1024];
+        this->res_histG = new std::complex<double>[Nsize * (size_t)(pulay_order) + 1024]();
 
         for(int i = 0; i < this->pulay_order;i++)
         {

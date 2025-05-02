@@ -73,6 +73,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi)
         MainSp = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, kptr->nstates,
                      ct.scalapack_block_factor, last, pct.grid_comm);
     }
+    else if (MainSp->GetN() != kptr->nstates)
+    {
+        int last = !ct.use_folded_spectrum;
+        delete MainSp;
+        MainSp = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, kptr->nstates,
+                     ct.scalapack_block_factor, last, pct.grid_comm);
+    }
 
     int *desca = MainSp->GetDistDesca();
     bool participates = MainSp->Participates();
@@ -310,7 +317,7 @@ char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi)
 
     // For Matrix multiplications
     double vel = kptr->L->get_omega() /
-                ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
+                ((double)((size_t)kptr->G->get_NX_GRID(1) * (size_t)kptr->G->get_NY_GRID(1) * (size_t)kptr->G->get_NZ_GRID(1)));
     KpointType alpha(1.0);
     KpointType alphavel(vel);
     KpointType beta(0.0);

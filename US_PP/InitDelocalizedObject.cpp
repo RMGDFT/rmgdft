@@ -217,9 +217,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         }
     }
 
-    if(ct.runflag == RESTART || ct.runflag == Restart_TDDFT || ct.forceflag == TDDFT) return;
-
-    if(object_type == ATOMIC_LOCAL_PP) init_efield (sumobject);
+    return;
 
 }  
 

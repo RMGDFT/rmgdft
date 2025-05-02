@@ -73,7 +73,7 @@ template <class StateType> bool State<StateType>::is_occupied(void)
 
 template <class StateType> void State<StateType>::normalize(StateType *tpsi, int istate)
 {
-    double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
+    double vel = (double) ((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1));
     vel = Rmg_L.get_omega() / vel;
 
     int num_nonloc_ions = this->Kptr->BetaProjector->get_num_nonloc_ions();

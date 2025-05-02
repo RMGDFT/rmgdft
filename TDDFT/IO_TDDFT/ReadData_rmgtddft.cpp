@@ -42,7 +42,7 @@
 
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix,  
-        double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2,
+        double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2, int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst)
 {
     int fhand, fgrid_size;
@@ -65,10 +65,10 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
     read (fhand, vh, fgrid_size * sizeof(double));
     read (fhand, vxc, fgrid_size * sizeof(double));
     read (fhand, vh_corr, fgrid_size * sizeof(double));
-    read (fhand, Pn0, 2* n2 * sizeof(double));
-    read (fhand, Hmatrix, n2 * sizeof(double));
-    read (fhand, Hmatrix_m1, n2 * sizeof(double));
-    read (fhand, Hmatrix_0, n2 * sizeof(double));
+    read (fhand, Pn0, 2*n2 * sizeof(double));
+    read (fhand, Hmatrix, n2_C * sizeof(double));
+    read (fhand, Hmatrix_m1, n2_C * sizeof(double));
+    read (fhand, Hmatrix_0, n2_C * sizeof(double));
     read (fhand, tot_steps, sizeof(int));
     read (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
     size_t size = read (fhand, Hcore_tddft, numst * numst * sizeof(double));

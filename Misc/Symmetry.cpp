@@ -133,6 +133,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(ct.verbose && pct.gridpe==0) rmg_printf("nsym_atom = %d\n",nrot);
 
     if(!ct.time_reversal) time_reversal = false;
+    if(ct.BerryPhase) time_reversal = false;
 
     for(int isym = 0; isym < nrot; isym++)
     {
@@ -178,10 +179,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
 
     //  determine equivenlent ions after symmetry operation
     double xtal[3];
-    double ndim[3];
-    ndim[0] = (double)nx_grid;
-    ndim[1] = (double)ny_grid;
-    ndim[2] = (double)nz_grid;
     for(int isym = 0; isym < nsym_atom; isym++)
     {
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -294,7 +291,8 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 {
                     rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
                 }
-                rmg_printf("  with translation of (%d %d %d) grids %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], int(time_rev[isym]));
+                rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                        int(time_rev[isym]), int(inv_type[isym]));
             }
         }
 
@@ -421,9 +419,105 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             {
                 rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
             }
-            rmg_printf("  with translation of (%d %d %d) grids, time_rev %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], time_rev[isym]);
+            rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                    int(time_rev[isym]), int(inv_type[isym]));
         }
     }
+
+    nsym = (int)sym_rotate.size()/9;
+
+    // remove inversion symmetry with electric field
+    double efield = 0.0;
+    double efield_tddft = 0.0;
+    double BP[3]{0.0,0.0,0.0};
+    // a vector along BerryPhase direction or electric field
+    for(int i = 0;i < 3; i++) 
+    {
+        efield += ct.efield_crds[i] * ct.efield_crds[i];
+        efield_tddft += ct.efield_tddft_crds[i] * ct.efield_tddft_crds[i];
+    }
+    if(efield > 0.0 )
+    {
+        BP[0] = ct.efield_crds[0];
+        BP[1] = ct.efield_crds[1];
+        BP[2] = ct.efield_crds[2];
+    }
+    else if(efield_tddft > 0.0)
+    {
+        BP[0] = ct.efield_tddft_crds[0];
+        BP[1] = ct.efield_tddft_crds[1];
+        BP[2] = ct.efield_tddft_crds[2];
+    }
+    else if(ct.BerryPhase)
+    {
+        if(ct.BerryPhase_dir == 0)
+        {
+            BP[0] = Rmg_L.b0[0];
+            BP[1] = Rmg_L.b0[1];
+            BP[2] = Rmg_L.b0[2];
+        }
+        else if(ct.BerryPhase_dir == 1)
+        {
+            BP[0] = Rmg_L.b1[0];
+            BP[1] = Rmg_L.b1[1];
+            BP[2] = Rmg_L.b1[2];
+        }
+        else if(ct.BerryPhase_dir == 2)
+        {
+            BP[0] = Rmg_L.b2[0];
+            BP[1] = Rmg_L.b2[1];
+            BP[2] = Rmg_L.b2[2];
+        }
+    }
+
+    double tem[3];
+    sym_to_be_removed.clear();
+    for (int isym = 0; isym < nsym; isym++)
+    {
+        tem[0] = BP[0];
+        tem[1] = BP[1];
+        tem[2] = BP[2];
+        symm_vec(isym, tem);
+        if( (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
+                (std::abs(tem[1] - BP[1]) > 1.0e-10) ||
+                (std::abs(tem[2] - BP[2]) > 1.0e-10) )
+        {
+            sym_to_be_removed.push_back(isym);
+        }
+    }
+
+
+    if (sym_to_be_removed.size() > 0)
+    {
+        for (auto it = sym_to_be_removed.rbegin(); it!= sym_to_be_removed.rend(); ++it)
+        {
+            int isym = *it;
+            ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+            ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+            sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+            sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+            sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+            time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+            translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
+        }
+    }
+
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        rmg_printf("\n sym operation after removing electric field broken %d",(int) sym_rotate.size()/9);
+        for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+        {
+            rmg_printf("\n symmetry operation # %d:", isym);
+            for(int i = 0; i < 3; i++)
+            {
+                rmg_printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+            }
+            rmg_printf("  with translation of (%d %d %d) grids time_rev: %d inv_type: %d", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2], 
+                    int(time_rev[isym]), int(inv_type[isym]));
+        }
+    }
+
     nsym = (int)sym_rotate.size()/9;
 
     // if use_symmetry = false and AFM = true, just use one time_rev symmetry + unitary
@@ -688,7 +782,7 @@ void Symmetry::symmetrize_grid_vector(double *object)
 
 }
 
-void Symmetry::symm_vec(int isy, double *vec)
+void Symmetry::symm_vec(double *vec)
 {
     double vec_tem[3], vec_rot[3];
     for (int ir = 0; ir < 3; ir++)
@@ -699,13 +793,40 @@ void Symmetry::symm_vec(int isy, double *vec)
     vec_rot[0] = 0.0;
     vec_rot[1] = 0.0;
     vec_rot[2] = 0.0;
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-            vec_rot[i] += sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
+    for(int isy = 0; isy < nsym_full; isy++)
+    {
+        for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+                vec_rot[i] += full_sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
+    }
 
     for (int ir = 0; ir < 3; ir++)
     {
         vec[ir] = vec_rot[0] * L.a0[ir] + vec_rot[1] * L.a1[ir] + vec_rot[2] * L.a2[ir];
+        vec[ir] = vec[ir] / (double)nsym_full;
+    }                       /* end for ir */
+
+}
+
+void Symmetry::symm_vec(int isy, double *vec)
+{
+    double vec_tem[3], vec_rot[3];
+    L.to_crystal_vector(vec_tem, vec);
+
+    vec_rot[0] = 0.0;
+    vec_rot[1] = 0.0;
+    vec_rot[2] = 0.0;
+    for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+        {
+            vec_rot[i] += sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
+        }
+
+
+    L.to_cartesian(vec_rot, vec);
+
+    for (int ir = 0; ir < 3; ir++)
+    {
         if(inv_type[isy]) vec[ir] = - vec[ir];
     }                       /* end for ir */
 

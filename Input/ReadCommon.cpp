@@ -154,6 +154,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
+    Ri::ReadVector<int> ldos_start_grid;
+    Ri::ReadVector<int> ldos_end_grid;
+    Ri::ReadVector<int> def_ldos_start_grid({{-1,-1,-1}});
+    Ri::ReadVector<int> def_ldos_end_grid({{-1,-1,-1}});
 
     static Ri::ReadVector<int> DipoleCorrection;
     Ri::ReadVector<int> DefDipoleCorrection({{0,0,0}});
@@ -244,6 +248,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_gpu", &lc.tddft_gpu, true, 
+                        "use gpu for ELYDYN or not", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
+                        "TDDFT run read data directly from the last scf job", TDDFT_OPTIONS);
 
     If.RegisterInputKey("stress", &lc.stress, false, 
                         "flag to control stress cacluation", CONTROL_OPTIONS);
@@ -266,6 +274,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("cell_movable", &Cell_movable, &DefCell_movable, 9, OPTIONAL, 
                      "9 numbers to control cell relaxation  ", 
                      "0 0 0 0 0 0 0 0 0 by default, no cell relax ", CELL_OPTIONS);
+
+    If.RegisterInputKey("ldos_start_grid", &ldos_start_grid, &def_ldos_start_grid, 3, OPTIONAL, 
+                     "a grid point for starting ldos caclualtion", 
+                     "You must specify a triplet of grid index ix0, iy0, iz0 . ", CELL_OPTIONS);
+    If.RegisterInputKey("ldos_end_grid", &ldos_end_grid, &def_ldos_end_grid, 3, OPTIONAL, 
+                     "a ending grid point for ldos caclualtion", 
+                     "You must specify a triplet of grid index ix1, iy1, iz1 . ", CELL_OPTIONS);
+
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -340,7 +356,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Units for the lattice vectors ", 
                      "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ", CELL_OPTIONS);
 
-    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
+    If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Auto",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
 "RMG supports Broyden, Pulay and Linear mixing "
 "When the davidson Kohn-Sham solver is selected Broyden or "
@@ -646,6 +662,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid solver.",
             "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("tddft_frequency", &lc.tddft_frequency, 0.0, DBL_MAX, 0.2, 
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "TDDFT frequency for use in TDDFT vector potential mode ",
+            "tddft_frequency is in atomic unit ", MD_OPTIONS);
     If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
             CHECK_AND_TERMINATE, OPTIONAL,
             "TDDFT time step for use in TDDFT mode ",
@@ -809,7 +829,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "ldau pulay mixing reset steps",
             "", MIXING_OPTIONS);
 
-    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
+    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Broyden mixing is used to update the charge density.",
             "", MIXING_OPTIONS);
@@ -819,7 +839,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "When using localized projectors the radius can be adjusted with this parameter. ",
             "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
+    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50000, 5,
             CHECK_AND_FIX, OPTIONAL,
             "How often to write checkpoint files during the initial quench in units of SCF steps. During structural relaxations of molecular dynamics checkpoints are written each ionic step.",
             "", CONTROL_OPTIONS);
@@ -945,7 +965,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ",
             POISSON_OPTIONS);
 
-    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 2048,32,
+    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, INT_MAX,64,
             CHECK_AND_FIX, OPTIONAL,
             "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware. ",
             "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32. ", DIAG_OPTIONS);
@@ -1007,13 +1027,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.25,
             CHECK_AND_FIX, OPTIONAL,
-            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) ",
-            "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
+            "Kerker type preconditioning the charge density residual by q^2/(q^2+q0^2) "
+            "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ",
+            "drho_precond_q0 must lie between (0.0,10.0). Resetting to the default value of 0.25. ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("resta_beta", &lc.resta_beta, 1.0, 20.0, 8.0,
+    If.RegisterInputKey("resta_beta", &lc.resta_beta, 0.0, 1000.0, 0.0,
             CHECK_AND_FIX, OPTIONAL,
-            "Beta parameter for resta charge density preconditioning. A good estimate ",
-            "is the A0 lattice parameter in bohr for the traditional unit cell. ", MIXING_OPTIONS);
+            "Beta parameter for resta charge density preconditioning. The default value "
+            "of 0.0 means the value should be autmatically determined. ",
+            "resta_beta must lie between (0.0, 1000.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
@@ -1146,6 +1168,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Use a faster but less accurate method to generate the charge density from the electronic wavefunctions. "
             "As the cutoff (grid-density) increases this method improves in accuracy. This option should be set to "
             "false if you receive warnings about negative charge densities after interpolation.", MISC_OPTIONS|EXPERT_OPTION);
+
+    If.RegisterInputKey("adaptive_convergence", &lc.adaptive_convergence, false,
+            "Parameters that control initial SCF convergence are adaptively modified. "
+            "Affected parameters include density mixing and preconditioning and electron temperature.", MISC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
             "Some pseudopotentials contain unbound atomic orbitals and this flag indicates "
@@ -1344,11 +1370,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Ratio between target RMS for get_vh and RMS total potential. ",
             "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0. ", POISSON_OPTIONS);
 
-    If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
-            CHECK_AND_TERMINATE, OPTIONAL,
-            "Magnitude of external electric field. ",
-            "electric_field_magnitude must be a postive value. ");
-
     Ri::ReadVector<double> def_tddft_qpos({{0.0,0.0,0.0}});
     Ri::ReadVector<double> tddft_qpos;
     If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
@@ -1360,11 +1381,26 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Gaussian parameter for point charge to Gaussian charge",
             "", TDDFT_OPTIONS);
 
-    Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
+    If.RegisterInputKey("BerryPhase", &lc.BerryPhase, false, 
+            "turn on/off Berry Phase calcualtion ", CONTROL_OPTIONS);
+    If.RegisterInputKey("BerryPhaseCycle", &lc.BerryPhaseCycle, 1, 10, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "Berry Phase loop without updating rho and potentials", 
+            "", CONTROL_OPTIONS);
+    If.RegisterInputKey("BerryPhaseDirection", &lc.BerryPhase_dir, 0, 2, 2,
+            CHECK_AND_FIX, OPTIONAL,
+            "Berry Phase direction: it will be efield direction when efield is non zero", 
+            "for 0 efield Berry Phase calculation, direction needs to be defined, default the third recip lattice", CONTROL_OPTIONS);
+    Ri::ReadVector<double> def_electric_field({{0.0,0.0,0.0}});
     Ri::ReadVector<double> electric_field;
-    If.RegisterInputKey("electric_field_vector", &electric_field, &def_electric_field, 3, OPTIONAL,
-            "Components of the electric field. ",
-            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
+    If.RegisterInputKey("electric_field", &electric_field, &def_electric_field, 3, OPTIONAL,
+            "Components of the electric field in reciprocal lattice direction and unit of Ha/bohr. ",
+            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
+
+    Ri::ReadVector<double> electric_field_tddft;
+    If.RegisterInputKey("electric_field_tddft", &electric_field_tddft, &def_electric_field, 3, OPTIONAL,
+            "the electric field for TDDFT in reciprocal lattice direction and unit of Ha/bohr ",
+            "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. only one can be non-zero ");
 
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -1402,8 +1438,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
             CHECK_AND_FIX, OPTIONAL,
-"This option affects kpoint parallelization. If there are M MPI procs then N = M/kpoint_distribution procs "
-" are assigned to each kpoint. M must be evenly divisible by kpoint_distribution.", 
+            "This option affects kpoint parallelization. If there are M MPI procs then N = M/kpoint_distribution procs "
+            " are assigned to each kpoint. M must be evenly divisible by kpoint_distribution.", 
             "", CELL_OPTIONS);
 
     If.RegisterInputKey("time_reversal", &lc.time_reversal, true,
@@ -1432,7 +1468,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_TERMINATE, OPTIONAL, tetra_method,
             "tetrahedron method to use ",
             "tetra_method must be one of  \"Bloechl\", \"Linear\", or \"Optimized\". Terminating. ",
-             OCCUPATION_OPTIONS);
+            OCCUPATION_OPTIONS);
 
     // Command line help request?
     bool cmdline = (std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end());
@@ -1444,12 +1480,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // documentation. If you change the documentation in the other location make sure to change it here as well.
         std::string KpointArray;
         If.RegisterInputKey("kpoints", &KpointArray, "",
-                         CHECK_AND_FIX, REQUIRED,
-                         "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n", "");
+                CHECK_AND_FIX, REQUIRED,
+                "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n", "");
 
         If.RegisterInputKey("kpoints_bandstructure", &KpointArray, "",
-                         CHECK_AND_FIX, OPTIONAL,
-                         "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
+                CHECK_AND_FIX, OPTIONAL,
+                "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
 
         if(pct.imgpe == 0 && cmdline) WriteInputOptions(InputMap, std::string("cmdline"));
         if(pct.imgpe == 0 && markdown) WriteInputOptions(InputMap, std::string("markdown"));
@@ -1539,6 +1575,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         for(int ix = 0;ix < 3;ix++) {
             lc.kpoint_mesh[ix] = kpoint_mesh.vals.at(ix);
             lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
+            lc.ldos_start_grid[ix] = ldos_start_grid.vals.at(ix);
+            lc.ldos_end_grid[ix] = ldos_end_grid.vals.at(ix);
         }
     }
     catch (const std::out_of_range& oor) {
@@ -1607,7 +1645,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         // Get celldm and set it up for later call to latgen
         for(int i=0;i < 6;i++) celldm[i] = Rmg_L.get_celldm(i);
-    // Set up the lattice vectors
+        // Set up the lattice vectors
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
         Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
         if(ct.verbose && pct.gridpe==0) printf("CELLDM0 = %f  %f  %f  %f  %f  %f\n",celldm[0],celldm[1],celldm[2],celldm[3],celldm[4],celldm[5]);
@@ -1673,14 +1711,70 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ct.tddft_qpos[2] = tddft_qpos.vals.at(2);
     /* read the electric field vector */
     try {
-        ct.x_field_0 = electric_field.vals.at(0);
-        ct.y_field_0 = electric_field.vals.at(1);
-        ct.z_field_0 = electric_field.vals.at(2);
+        ct.efield_xtal[0] = electric_field.vals.at(0);
+        ct.efield_xtal[1] = electric_field.vals.at(1);
+        ct.efield_xtal[2] = electric_field.vals.at(2);
+
+        if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
+                std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
+                std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+        {
+            throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+        }
+
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the electric field vector.\n";
     }
 
+    try {
+        ct.efield_tddft_xtal[0] = electric_field_tddft.vals.at(0);
+        ct.efield_tddft_xtal[1] = electric_field_tddft.vals.at(1);
+        ct.efield_tddft_xtal[2] = electric_field_tddft.vals.at(2);
+        if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
+                std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
+                std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+        {
+            throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+        }
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the TDDFT electric field vector.\n";
+    }
+
+    for(int i = 0; i < 3; i++)
+    {
+        double b0_length(0.0), b1_length(0.0), b2_length(0.0);
+        for(int j = 0; j <3; j++)
+        {
+            b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
+            b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
+            b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
+        }
+        b0_length = sqrt(b0_length);
+        b1_length = sqrt(b1_length);
+        b2_length = sqrt(b2_length);
+
+        if(ct.forceflag== TDDFT)
+        {
+            if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+            if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+            if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        }
+        else
+        {
+            if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+            if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+            if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+        }
+
+        ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
+        ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
+        ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
+        ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
+        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
+        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+    }
 
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
@@ -1692,7 +1786,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.background_charge = -lc.system_charge;
 
     lc.occ_width *= eV_Ha;
-    lc.e_field *= eV_Ha;
 
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
@@ -1777,6 +1870,19 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
         //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+    }
+
+    if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
+    {
+        auto K1 = InputMap["charge_mixing_type"];
+        K1->Readstr = "Pulay";
+        lc.potential_acceleration_constant_step = 0.0;
+    }
+    else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
+    {
+        auto K1 = InputMap["charge_mixing_type"];
+        K1->Readstr = "Broyden";
+        lc.potential_acceleration_constant_step = 0.0;
     }
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose

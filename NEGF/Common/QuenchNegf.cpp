@@ -191,7 +191,9 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgTimer *RT3 = new RmgTimer("2-Quench: set H and S first");
 
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
+#endif
 
     LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
     LO_x_LO(*LocalOrbital, *LocalOrbital, S_local, *Rmg_G);

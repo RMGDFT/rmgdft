@@ -52,6 +52,7 @@
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 #include "Tetrahedron.h"
+#include "BerryPhase.h"
 
 #if CUDA_ENABLED
     #include <cuda.h>
@@ -223,8 +224,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     }
 
-    if((ct.is_use_symmetry == 1) || (ct.is_use_symmetry == 2 && !ct.is_gamma))
-        Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
+    Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
 
 
     if(ct.forceflag == BAND_STRUCTURE)
@@ -241,6 +241,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
     {
         ReadKpoints(ct.cfile, ct, ControlMap);
+    }
+    else if(ct.BerryPhase)
+    {
+        Rmg_BP = new BerryPhase();
+        //init_kpoints_bp(ct.kpoint_mesh, ct.kpoint_is_shift);
+        // kpoint will be initialied in BerryPhase
     }
     else
     {
@@ -513,6 +519,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if HIP_ENABLED
             hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
             hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
+            hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
+//            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;
@@ -808,6 +816,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
 
+    if(ct.wannier90 && ct.BerryPhase)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+    }
+    if(ct.xc_is_hybrid && ct.BerryPhase)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+    }
 #if HIP_ENABLED || CUDA_ENABLED
     size_t factor = 2;
     if(ct.is_gamma) factor = 1;

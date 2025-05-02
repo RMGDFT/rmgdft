@@ -28,7 +28,7 @@
 cmake_minimum_required (VERSION 3.17) 
 
 set(RMG_VERSION_MAJOR "6")
-set(RMG_VERSION_MINOR "1")
+set(RMG_VERSION_MINOR "2")
 set(RMG_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
@@ -123,22 +123,22 @@ option(USE_ELPA_LIBS "Experimental." OFF)
 option(USE_ELEMENTAL_LIBS "Experimental." OFF)
 
 
-# RMG requires c++17 and C99
+# RMG requires c++20 and C99
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 
 
-# Check for c++17 and c99 support
-CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+# Check for c++20 and c99 support
+CHECK_CXX_COMPILER_FLAG("-std=c++20" COMPILER_SUPPORTS_CXX20)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX17)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    set(CMAKE_CXX_STANDARD 17)
+if(COMPILER_SUPPORTS_CXX20)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+    set(CMAKE_CXX_STANDARD 20)
 elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD 20)
 else()
-    message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++17 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
+    message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++20 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
 
 
@@ -304,7 +304,7 @@ if(RMG_HIP_ENABLED)
 
     if(NOT DEFINED HIP_PATH)
         if(NOT DEFINED ENV{HIP_PATH})
-            set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")
+            set(HIP_PATH "/opt/rocm-default/" CACHE PATH "Path to which HIP has been installed")
         else()
             set(HIP_PATH $ENV{HIP_PATH} CACHE PATH "Path to which HIP has been installed")
         endif()
@@ -319,7 +319,7 @@ if(RMG_HIP_ENABLED)
         if(DEFINED ENV{ROCM_PATH})
             set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
         else()
-            set(ROCM_PATH "/opt/rocm")
+            set(ROCM_PATH "/opt/rocm-default")
         endif()
         include_directories("${ROCM_PATH}/hsa/include")
         include_directories("${ROCM_PATH}")
@@ -354,6 +354,12 @@ if(RMG_HIP_ENABLED)
         message(STATUS "Found rocsolver: " ${rocsolver_VERSION})
         list(APPEND RMGLIBS ${rocsolver_LIBRARY})
         include_directories("${rocsolver_INCLUDE_DIR}")
+    endif()
+    find_package(rocblas REQUIRED)
+    if(rocblas_FOUND)
+        message(STATUS "Found rocblas: " ${rocblas_VERSION})
+        list(APPEND RMGLIBS ${rocblas_LIBRARY})
+        include_directories("${rocblas_INCLUDE_DIR}")
     endif()
     find_package(hipsolver REQUIRED)
     if(hipsolver_FOUND)
@@ -768,6 +774,7 @@ include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
 include_directories("${PROJECT_SOURCE_DIR}/spglib/src")
+include_directories("${PROJECT_SOURCE_DIR}/BerryPhase")
 
 
 if(QMCPACK_SUPPORT)
@@ -801,6 +808,7 @@ add_subdirectory (spglib EXCLUDE_FROM_ALL)
 add_subdirectory (dftd3 EXCLUDE_FROM_ALL) 
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 add_subdirectory (Diagonalization EXCLUDE_FROM_ALL) 
+add_subdirectory (BerryPhase EXCLUDE_FROM_ALL) 
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default
@@ -809,7 +817,7 @@ add_subdirectory (RMG/Common EXCLUDE_FROM_ALL)
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Subdiag EXCLUDE_FROM_ALL)
 
-add_subdirectory (ON EXCLUDE_FROM_ALL) 
+add_subdirectory (ON) 
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 

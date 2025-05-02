@@ -213,7 +213,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
 
         static double *rhodiff;
 
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        Quench (Kptr, true);
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
         tmp_mag = 0.0;

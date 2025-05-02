@@ -154,19 +154,10 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
     crystal[1] = cartesian[0] * b1[0] + cartesian[1] * b1[1] + cartesian[2] * b1[2];
     crystal[2] = cartesian[0] * b2[0] + cartesian[1] * b2[1] + cartesian[2] * b2[2];
 
-    if (crystal[0] < -1.0e-10)
-        crystal[0] += 1.0;
-    if (crystal[1] < -1.0e-10)
-        crystal[1] += 1.0;
-    if (crystal[2] < -1.0e-10)
-        crystal[2] += 1.0;
-    if (crystal[0] > 1.0)
-        crystal[0] -= 1.0;
-    if (crystal[1] > 1.0)
-        crystal[1] -= 1.0;
-    if (crystal[2] > 1.0)
-        crystal[2] -= 1.0;
-
+    // crystall coordinates [0,1)
+    crystal[0] = crystal[0] - std::floor(crystal[0]);
+    crystal[1] = crystal[1] - std::floor(crystal[1]);
+    crystal[2] = crystal[2] - std::floor(crystal[2]);
 
 }                               /* end to_crystal  */
 
@@ -186,18 +177,10 @@ void Lattice::to_crystal_half (double *crystal, double *cartesian)
     crystal[1] = cartesian[0] * b1[0] + cartesian[1] * b1[1] + cartesian[2] * b1[2];
     crystal[2] = cartesian[0] * b2[0] + cartesian[1] * b2[1] + cartesian[2] * b2[2];
 
-    if (crystal[0] < -0.5)
-        crystal[0] += 1.0;
-    if (crystal[1] < -0.5)
-        crystal[1] += 1.0;
-    if (crystal[2] < -0.5)
-        crystal[2] += 1.0;
-    if (crystal[0] > 0.5)
-        crystal[0] -= 1.0;
-    if (crystal[1] > 0.5)
-        crystal[1] -= 1.0;
-    if (crystal[2] > 0.5)
-        crystal[2] -= 1.0;
+    // crystall coordinates [-0.5, 0.5)
+    crystal[0] = crystal[0] - std::floor(crystal[0])-0.5;
+    crystal[1] = crystal[1] - std::floor(crystal[1])-0.5;
+    crystal[2] = crystal[2] - std::floor(crystal[2])-0.5;
 
 
 }                               /* end to_crystal  */

@@ -114,6 +114,7 @@ class Symmetry
         void symmetrize_grid_vector(double *mag_rho);
         void symmetrize_rho_AFM(double *rho, double *rho_oppo);
         void symm_vec(int isy, double *vec);
+        void symm_vec(double *vec);
         void symforce(void);
         void symmetrize_tensor(double *mat_tensor);
         void rotate_ylm();

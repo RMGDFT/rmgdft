@@ -6,7 +6,6 @@
  * COPYRIGHT
  *   Copyright (C) 2001  Vincent Meunier, Wenchang Lu, Jerzy Bernholc
  * FUNCTION
- *   void init_efield(double *vnuc)
  *   Set up the electric field (add it to vnuc already defined)
  *   sawtooth potential
  * INPUTS
@@ -32,7 +31,7 @@
 
 #define SMALL_EFIELD 1.0e-20
 
-void init_efield (double * vnuc)
+void init_efield (double * vnuc, double efield[3])
 {
 
     double norm_field_0;
@@ -51,23 +50,10 @@ void init_efield (double * vnuc)
 
 
     /* normalization of the electric field direction */
-    norm_field_0 = sqrt (pow (ct.x_field_0 + SMALL_EFIELD, 2) + pow (ct.y_field_0 + SMALL_EFIELD, 2) + pow (ct.z_field_0 + SMALL_EFIELD, 2));
-    ct.x_field_0 = ct.x_field_0 / norm_field_0;
-    ct.y_field_0 = ct.y_field_0 / norm_field_0;
-    ct.z_field_0 = ct.z_field_0 / norm_field_0;
-    if (pct.gridpe == 0)
-    {
-	if (ct.e_field > 1e-12) 
-	{
-	    printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
-	    printf ("\n ====================================== \n");
-	    printf ("\n E_field = %16.8f", ct.e_field);
-	    printf ("\n Electric Field Direction: (%12.8f, %12.8f, %12.8f)",
-		    ct.x_field_0, ct.y_field_0, ct.z_field_0);
-	    printf ("\n Potential Slope: %16.8f Hartree/a.u", ct.e_field);
-	    printf ("\n Potential Slope: %16.8f eV/A\n", ct.e_field * Ha_eV / a0_A);
-	}
-    }
+	    rmg_printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
+	    rmg_printf ("\n ====================================== \n");
+	    rmg_printf ("\n Electric Field: (%12.8f, %12.8f, %12.8f) Ha/bohr\n",
+		    efield[0], efield[1], efield[2]);
     /* find the cartesian coordinate of the corner */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
     xoff = ix * get_hxgrid() * get_xside() * get_PX0_GRID();
@@ -88,8 +74,7 @@ void init_efield (double * vnuc)
             {
                 idx = jx * incix + jy * inciy + jz;
                 rz = jz * hzzgrid * get_zside() + zoff;
-                d_field = rx * ct.x_field_0 + ry * ct.y_field_0 + rz * ct.z_field_0;
-                vnuc[idx] += ct.e_field * d_field;
+                vnuc[idx] += rx * efield[0] + ry * efield[1] + rz * efield[2];
             }
         }
     }

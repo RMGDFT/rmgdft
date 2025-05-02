@@ -130,7 +130,7 @@ double AtomicInterpolate(double *f, double r);
 void lbfgs (double *posion, double *force, int num_coeff);
 void Vdd(double * rho);
 void WriteChargeAnalysis(void);
-
+ssize_t rmg_write(int fd, const void *buf, size_t count);
 
 
 #if CUDA_ENABLED

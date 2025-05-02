@@ -61,6 +61,8 @@ public:
     int GetNumGroupsNext(void);
     int GetScalapackNpes(void);
     int GetGroupIndex(void);
+    int GetN(void);
+    int GetNB(void);
     int GetRows(void);
     int GetCols(void);
     int GetRow(void);

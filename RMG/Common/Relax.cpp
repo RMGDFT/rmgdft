@@ -39,35 +39,46 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "bfgs.h"
-
+#include "GridObject.h"
 
 // Instantiate gamma and non-gamma versions
-template void Relax<double>(int , double *, double *, double *,
-              double *, double *, double *, double *, Kpoint<double> **Kptr);
-template void Relax<std::complex<double> >(int , double *, double *, double *,
-              double *, double *, double *, double *, Kpoint<std::complex<double> >**Kptr);
+template void Relax<double>(int , 
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              Kpoint<double> **Kptr);
+template void Relax<std::complex<double> >(int ,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              spinobj<double> &, fgobj<double> &, fgobj<double> &,
+              Kpoint<std::complex<double>> **Kptr);
 
 
 
-template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
+template <typename OrbitalType> void Relax (
+                   int steps, 
+                   spinobj<double> &vxc, 
+                   fgobj<double> &vh, 
+                   fgobj<double> &vnuc,
+                   spinobj<double> &rho,
+                   fgobj<double> &rhocore, 
+                   fgobj<double> &rhoc, 
+                   Kpoint<OrbitalType> **Kptr)
 {
 
     int CONV_FORCE=false, MAX_STEPS;
     int DONE, rlx_steps = 0;
-    static double *rhodiff;
+    static int once;
 
     /* quench the electrons and calculate forces */
 //    if((ct.runflag != RESTART) || (ct.forceflag == MD_QUENCH))
     {
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        Quench (Kptr, true);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
     FILE *XDATCAR_fh = NULL;
     if(pct.imgpe == 0) 
     {
-        std::string filename = std::string(pct.image_path[pct.thisimg]) + std::string(ct.basename) + ".XDATCAR5";
+        std::string filename = std::string(ct.basename) + ".XDATCAR5";
 
         XDATCAR_fh = fopen(filename.c_str(), "w");
         WritePoscar(XDATCAR_fh, rlx_steps);
@@ -84,27 +95,19 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
             rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
         // Get atomic rho for this ionic configuration and subtract from current rho
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-        int factor = ct.noncoll_factor * ct.noncoll_factor;
-        double *arho = new double[FP0_BASIS * factor];
-        LcaoGetAtomicRho(arho);
+        spinobj<double> arho;
 
-        // If first step allocate rhodiff
-        for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] -= arho[idx];
+        LcaoGetAtomicRho(arho.data());
 
-        if(rhodiff == NULL)
+        rho -= arho;
+        static spinobj<double> rhodiff = rho;
+        if(once > 0)
         {
-            rhodiff = new double[FP0_BASIS * factor];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = rho[idx];
+            spinobj<double> trho = rho;
+            rho = 2.0*rho - rhodiff;
+            rhodiff = trho;
         }
-        else
-        {
-            double *trho = new double[FP0_BASIS * factor];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) trho[idx] = rho[idx];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
-            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = trho[idx];
-            delete [] trho;
-        }
+        once = 1; 
 
         /* not done yet ? => move atoms */
 		/* move the ions */
@@ -134,18 +137,16 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
         if(ct.cell_relax)
         {
-
-            Reinit (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr);
+            Reinit (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr);
         }
         // Get atomic rho for new configuration and add back to rho
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
-        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
         delete RT0;
 
-        LcaoGetAtomicRho(arho);
-         for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] += arho[idx];
-        delete [] arho;
+        LcaoGetAtomicRho(arho.data());
+        rho += arho;
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
@@ -154,12 +155,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ct.md_steps++;
 
         /* quench the electrons and calculate forces */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        Quench (Kptr, true);
 
         if(pct.imgpe == 0) WritePoscar(XDATCAR_fh, rlx_steps);
 
         /* save data to file for future restart */
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);
@@ -196,6 +197,9 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
     /* ---------- end relax loop --------- */
 
+    ct.forces_converged = CONV_FORCE;
+    ct.force_is_converging = true;
+
     if (ct.max_md_steps > 0 && steps > 0)
     {
 
@@ -211,7 +215,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
     if(ct.cell_relax)
         rmg_printf("        Final volume      = %12.6f\n", Rmg_L.omega);
-}                               /* end fastrlx */
+
+    // Write forcefield info
+    std::string ffield = std::string(pct.image_path[pct.thisimg]) + "forcefield.xml";
+    write_ffield (ffield);
+
+}   // end Relax
 
 
 /******/

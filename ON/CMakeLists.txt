@@ -3,8 +3,9 @@ list(APPEND RMGLIBS ON_Input)
 list(APPEND RMGLIBS ON_NEGF_share)
 list(APPEND RMGLIBS OnTddft)
 list(APPEND RMGLIBS IO_Tddft)
-list(APPEND RMGLIBS eldyn_mod)
 list(APPEND RMGLIBS Eldyn)
+list(APPEND RMGLIBS BerryPhase)
+
 if(QMCPACK_SUPPORT)
     list(APPEND RMGLIBS Interfaces)
 endif()
@@ -18,7 +19,7 @@ endif()
 
 
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
-add_executable(${rmg-on} EXCLUDE_FROM_ALL Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(${rmg-on} Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 set_target_properties(${rmg-on} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_include_directories(${rmg-on} PRIVATE "${PROJECT_SOURCE_DIR}/ON/Headers/")

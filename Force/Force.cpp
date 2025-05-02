@@ -85,9 +85,9 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
         Zi = Species[Atoms[ion].species].zvalence;
 
-        force_sum[ion *3 + 0] = ct.e_field * ct.x_field_0 * Zi;
-        force_sum[ion *3 + 1] = ct.e_field * ct.y_field_0 * Zi;
-        force_sum[ion *3 + 2] = ct.e_field * ct.z_field_0 * Zi;
+        force_sum[ion *3 + 0] =  ct.efield_crds[0] * Zi;
+        force_sum[ion *3 + 1] =  ct.efield_crds[1] * Zi;
+        force_sum[ion *3 + 2] =  ct.efield_crds[2] * Zi;
 
     }
 

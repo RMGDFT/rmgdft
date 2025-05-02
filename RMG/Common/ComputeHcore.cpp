@@ -62,7 +62,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
 {
     RmgTimer RT0("4-Hcore");
 
-    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
+    double vel = L->get_omega() / (double)G->get_GLOBAL_BASIS(1);
 
     bool potential_acceleration = false;
 

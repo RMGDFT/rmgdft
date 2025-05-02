@@ -36,6 +36,7 @@
 #include "RmgParallelFft.h"
 #include "RmgException.h"
 #include "transition.h"
+#include "RmgSumAll.h"
 #include "blas.h"
 #include "GlobalSums.h"
 #include "Functional.h"
@@ -51,6 +52,7 @@
 void mix_johnson(double *xm, double *fm, int NDIM, int ittot);
 
 
+
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset)
 {
     RmgTimer RT0("Mix rho");
@@ -58,7 +60,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
-
 
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
@@ -81,6 +82,12 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
     {
         RmgTimer RT1("Mix rho: Pulay");
+        if(reset && Pulay_rho) {
+            delete Pulay_rho;
+            Pulay_rho = NULL;
+            return;
+        }
+
         if(!Pulay_rho)
         {
             Pulay_rho = new PulayMixing(pbasis_noncoll, ct.charge_pulay_order, ct.charge_pulay_refresh,
@@ -89,10 +96,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
         }
 
-        if(reset) {
-            Pulay_rho->Refresh();
-            return;
-        }
 
         double mone = -1.0;
         int ione = 1;
@@ -323,4 +326,49 @@ void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
 }
 
 
+// Function to automatically adjust mixing parameter
+double AutoMix (void)
+{
+    static boost::circular_buffer<double> chist(20);
+    static boost::circular_buffer<double> xvals(20);
 
+    double ravg = 0.0;
+    int l = 10;
+    ravg = ct.scf_accuracy;
+    if(ct.scf_steps >= 1)
+    {
+        chist.push_back(log(ravg));
+        xvals.push_back((double)ct.scf_steps);
+        if(ct.verbose && pct.gridpe == 0) printf("\nravg = %16.8e\n", log(ravg));
+    }
+
+    int j = chist.size();
+    double newmix = ct.mix;
+    if(j > (l+1) && ct.scf_steps > 1)
+    {
+        int order = 1;
+        std::array<double, 4> coeffs;
+        std::vector<double> cvals, yvals;
+        for (auto it = xvals.begin(); it != xvals.end(); ++it) cvals.push_back(*it);
+        for (auto it = chist.begin(); it != chist.end(); ++it) yvals.push_back(*it);
+        SimplePolyFit(cvals.data(), yvals.data(), j, order, coeffs.data());
+
+        if(ct.verbose && pct.gridpe == 0)
+        {
+            printf("\nj = %d  coeff = %8.4f   %8.4f\n", j, coeffs[0], coeffs[1]);
+        }
+
+        if(coeffs[1] > 0.0)
+        {
+            newmix = ct.mix/2.0;
+            if(ct.verbose && pct.gridpe == 0)
+            {
+                printf("\nOldmix = %7.4f, Newmix = %7.4f", ct.mix, newmix);
+            }
+            chist.clear();
+            xvals.clear();
+        }
+
+    }
+    return newmix;
+}

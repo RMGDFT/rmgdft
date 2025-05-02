@@ -60,6 +60,11 @@ static double occupied_tol = 0.01;
 
 template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, double *vxc_psi, int &notconv)
 {
+    if(ct.verbose) {
+        printf("PE: %d  start Davidson \n", pct.gridpe);
+        fflush(NULL);
+    }
+
     RmgTimer RT0("6-Davidson"), *RT1;
 
     KpointType alpha(1.0);
@@ -101,7 +106,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         trans_a = trans_t;
     }
     double vel = this->L->get_omega() / 
-                 ((double)(this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1)));
+                 ((double)((size_t)this->G->get_NX_GRID(1) * (size_t)this->G->get_NY_GRID(1) * (size_t)this->G->get_NZ_GRID(1)));
     KpointType alphavel(vel);
 
     double avg_potential = 0.0;
@@ -236,6 +241,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         DavPreconditioner (this, &psi[nbase*pbasis_noncoll], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
+        if(ct.BerryPhase)
+        {
+            RT1 = new RmgTimer("6-Davidson: orthogonalization");
+            DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
+            delete RT1;
+        }
+
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
         // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the
         // diagonalizer roughly equal to improve stability.
@@ -250,8 +262,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
-             norms[st1] = 1.0 / sqrt(norms[st1]);
-             for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] *= norms[st1];
+            norms[st1] = 1.0 / sqrt(norms[st1]);
+            for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] *= norms[st1];
         }
         delete [] norms;
         delete RT1;
@@ -301,7 +313,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         // Asynchronously reduce Sij request
         MPI_Request MPI_reqSij;
         if(ct.use_async_allreduce)
-           MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+            MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
         else
             BlockAllreduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
@@ -340,17 +352,17 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);
-            #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-                GpuFreeHost(vr);
-                GpuFreeHost(sr);
-                GpuFreeHost(hr);
-                RmgFreeHost(h_psi);
-            #else
-                delete [] vr;
-                delete [] sr;
-                delete [] hr;
-                delete [] h_psi;
-            #endif
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+            GpuFreeHost(vr);
+            GpuFreeHost(sr);
+            GpuFreeHost(hr);
+            RmgFreeHost(h_psi);
+#else
+            delete [] vr;
+            delete [] sr;
+            delete [] hr;
+            delete [] h_psi;
+#endif
             // Not clear what is the best path forward here. Sometimes we can recover from this but
             // sometimes the calculation is hosed so for now print a warming.
             return;
@@ -484,6 +496,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Copy eigs from compact array back into state structure
     for(int st = 0;st < nstates;st++) this->Kstates[st].eig[0] = eigs[st];
 
+    //DavidsonOrtho(nstates, 1, pbasis_noncoll, psi, vr);
 
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
@@ -506,5 +519,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, weight);
     delete RT1;
 
+    if(ct.verbose) {
+        printf("PE: %d  done Davidson \n", pct.gridpe);
+        fflush(NULL);
+    }
 }
 

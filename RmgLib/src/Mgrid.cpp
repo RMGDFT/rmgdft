@@ -226,6 +226,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         check = (dimx >= offset) && (dimy >= offset) && (dimz >= offset) && (dimx*dimy*dimz < 16*16*16);
     } 
     if(!check) offset = 1;
+check=false;offset=1;
 
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);

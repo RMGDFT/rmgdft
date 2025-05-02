@@ -12,7 +12,7 @@
 #include "RmgTimer.h"
 
 
-void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe, int override_rank) {
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe, int override_rank, int tddft_steps) {
 
     int tid;
     size_t i, count, count1;
@@ -89,9 +89,14 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
 
             if(count == 0) logfile << std::endl;
 
+            double steps_count = (double)steps;
+            if(it->first.find("TDDFT") != std::string::npos)
+            {
+                steps_count = (double)tddft_steps;
+            }
             for(i = 0; i < count; i++) logfile << "  ";
             logfile << std::setw(41-count*2) << std::left << it->first << std::setw(15) << std::right  
-                << it->second << std::setw(20) << std::right << it->second/(double)steps << std::endl;
+                << it->second << std::setw(20) << std::right << it->second/(double)steps_count << std::endl;
 
             count1 = count;
         }
@@ -198,8 +203,11 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
 
 }
 
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe, int override_rank) {
+    RmgPrintTimings(comm, outfile, steps, num_ions_thispe, override_rank, 1);
+}
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe)
 {
-    RmgPrintTimings(comm, outfile, steps, num_ions_thispe, -1);
+    RmgPrintTimings(comm, outfile, steps, num_ions_thispe, -1, 1);
 }
 

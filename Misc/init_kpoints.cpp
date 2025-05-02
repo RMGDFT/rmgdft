@@ -118,108 +118,115 @@ int init_kpoints (int *kmesh, int *kshift)
                 ct.klist.k_all_xtal[idx][0] = xk[0];
                 ct.klist.k_all_xtal[idx][1] = xk[1];
                 ct.klist.k_all_xtal[idx][2] = xk[2];
-                bool find_eq (false);
-                for(int ik = 0; ik < (int)ct.kp.size(); ik++)
-                {
-                    int isym;
-                    for(isym = 0; isym < Rmg_Symm->nsym_full; isym++)
-                    {
-                        sym_qvec[0] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
-                        sym_qvec[1] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
-                        sym_qvec[2] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
-
-                        if(Rmg_Symm->time_rev[isym])
-                        {
-                            dk[0] = sym_qvec[0] + xk[0];
-                            dk[1] = sym_qvec[1] + xk[1];
-                            dk[2] = sym_qvec[2] + xk[2];
-                            dk[0] = dk[0] - std::round(dk[0]);
-                            dk[1] = dk[1] - std::round(dk[1]);
-                            dk[2] = dk[2] - std::round(dk[2]);
-                            if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
-                            {
-                                find_eq = true;
-                                ct.klist.k_map_index[idx] = ik;
-                                ct.klist.k_map_symm[idx] = -(isym+1);
-                                ct.klist.k_all_xtal[idx][0] = -sym_qvec[0];
-                                ct.klist.k_all_xtal[idx][1] = -sym_qvec[1];
-                                ct.klist.k_all_xtal[idx][2] = -sym_qvec[2];
-                                break;
-                            }
-
-                        }
-                        else 
-                        {
-                            dk[0] = sym_qvec[0] - xk[0];
-                            dk[1] = sym_qvec[1] - xk[1];
-                            dk[2] = sym_qvec[2] - xk[2];
-                            dk[0] = dk[0] - std::round(dk[0]);
-                            dk[1] = dk[1] - std::round(dk[1]);
-                            dk[2] = dk[2] - std::round(dk[2]);
-                            if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
-                            {
-                                find_eq = true;
-                                ct.klist.k_map_index[idx] = ik;
-                                ct.klist.k_map_symm[idx] = isym + 1;
-                                ct.klist.k_all_xtal[idx][0] =  sym_qvec[0];
-                                ct.klist.k_all_xtal[idx][1] =  sym_qvec[1];
-                                ct.klist.k_all_xtal[idx][2] =  sym_qvec[2];
-                                break;
-                            }
-
-                            if(Rmg_Symm->time_reversal  )
-                            {
-                                dk[0] = sym_qvec[0] + xk[0];
-                                dk[1] = sym_qvec[1] + xk[1];
-                                dk[2] = sym_qvec[2] + xk[2];
-                                dk[0] = dk[0] - std::round(dk[0]);
-                                dk[1] = dk[1] - std::round(dk[1]);
-                                dk[2] = dk[2] - std::round(dk[2]);
-                                if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
-                                {
-                                    find_eq = true;
-                                    ct.klist.k_map_index[idx] = ik;
-                                    ct.klist.k_map_symm[idx] = -(isym+1);
-                                    ct.klist.k_all_xtal[idx][0] = -sym_qvec[0];
-                                    ct.klist.k_all_xtal[idx][1] = -sym_qvec[1];
-                                    ct.klist.k_all_xtal[idx][2] = -sym_qvec[2];
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if(find_eq) 
-                    {
-                        ct.kp[ik].kweight += weight_one;
-                        break;
-                    }
-                }
-
-                if(!find_eq)
-                {
-                    KSTRUCT onekp;
-                    onekp.kpt[0] = xk[0];
-                    onekp.kpt[1] = xk[1];
-                    onekp.kpt[2] = xk[2];
-                    onekp.kweight = weight_one;
-                    ct.kp.push_back(onekp);
-                    ct.klist.k_map_index[idx] = ct.kp.size()-1;
-                    ct.klist.k_map_symm[idx] = 1; 
-                }
-
             }
-
         }
     }
+    
+    for(int idx = 0; idx < kmesh[0] * kmesh[1] * kmesh[2]; idx++)
+    {
+        xk[0] = ct.klist.k_all_xtal[idx][0] ;
+        xk[1] = ct.klist.k_all_xtal[idx][1] ;
+        xk[2] = ct.klist.k_all_xtal[idx][2] ;
+        bool find_eq (false);
+        for(int ik = 0; ik < (int)ct.kp.size(); ik++)
+        {
+            int isym;
+            for(isym = 0; isym < Rmg_Symm->nsym_full; isym++)
+            {
+                sym_qvec[0] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
+                sym_qvec[1] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
+                sym_qvec[2] = Rmg_Symm->full_sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
+                    Rmg_Symm->full_sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
 
-///////////////////////////////////////
+                if(Rmg_Symm->time_rev[isym])
+                {
+                    dk[0] = sym_qvec[0] + xk[0];
+                    dk[1] = sym_qvec[1] + xk[1];
+                    dk[2] = sym_qvec[2] + xk[2];
+                    dk[0] = dk[0] - std::round(dk[0]);
+                    dk[1] = dk[1] - std::round(dk[1]);
+                    dk[2] = dk[2] - std::round(dk[2]);
+                    if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
+                    {
+                        find_eq = true;
+                        ct.klist.k_map_index[idx] = ik;
+                        ct.klist.k_map_symm[idx] = -(isym+1);
+                        ct.klist.k_all_xtal[idx][0] = -sym_qvec[0];
+                        ct.klist.k_all_xtal[idx][1] = -sym_qvec[1];
+                        ct.klist.k_all_xtal[idx][2] = -sym_qvec[2];
+                        break;
+                    }
+
+                }
+                else 
+                {
+                    dk[0] = sym_qvec[0] - xk[0];
+                    dk[1] = sym_qvec[1] - xk[1];
+                    dk[2] = sym_qvec[2] - xk[2];
+                    dk[0] = dk[0] - std::round(dk[0]);
+                    dk[1] = dk[1] - std::round(dk[1]);
+                    dk[2] = dk[2] - std::round(dk[2]);
+                    if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
+                    {
+                        find_eq = true;
+                        ct.klist.k_map_index[idx] = ik;
+                        ct.klist.k_map_symm[idx] = isym + 1;
+                        ct.klist.k_all_xtal[idx][0] =  sym_qvec[0];
+                        ct.klist.k_all_xtal[idx][1] =  sym_qvec[1];
+                        ct.klist.k_all_xtal[idx][2] =  sym_qvec[2];
+                        break;
+                    }
+
+                    if(Rmg_Symm->time_reversal  )
+                    {
+                        dk[0] = sym_qvec[0] + xk[0];
+                        dk[1] = sym_qvec[1] + xk[1];
+                        dk[2] = sym_qvec[2] + xk[2];
+                        dk[0] = dk[0] - std::round(dk[0]);
+                        dk[1] = dk[1] - std::round(dk[1]);
+                        dk[2] = dk[2] - std::round(dk[2]);
+                        if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
+                        {
+                            find_eq = true;
+                            ct.klist.k_map_index[idx] = ik;
+                            ct.klist.k_map_symm[idx] = -(isym+1);
+                            ct.klist.k_all_xtal[idx][0] = -sym_qvec[0];
+                            ct.klist.k_all_xtal[idx][1] = -sym_qvec[1];
+                            ct.klist.k_all_xtal[idx][2] = -sym_qvec[2];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(find_eq) 
+            {
+                ct.kp[ik].kweight += weight_one;
+                break;
+            }
+        }
+
+        if(!find_eq)
+        {
+            KSTRUCT onekp;
+            onekp.kpt[0] = xk[0];
+            onekp.kpt[1] = xk[1];
+            onekp.kpt[2] = xk[2];
+            onekp.kweight = weight_one;
+            ct.kp.push_back(onekp);
+            ct.klist.k_map_index[idx] = ct.kp.size()-1;
+            ct.klist.k_map_symm[idx] = 1; 
+        }
+
+    }
+
+
+    ///////////////////////////////////////
     int nks = ct.kp.size();
     std::vector<double> xk1;
     int max_kpts = nks * Rmg_Symm->nsym_full;
@@ -251,8 +258,8 @@ int init_kpoints (int *kmesh, int *kshift)
         ioff++;
     }
     if(ct.verbose && pct.gridpe == 0) 
-       rmg_printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
-    
+        rmg_printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
+
     int nsym_full_k = 0;
     int nsym_k = 0;
     std::vector<int> full_sym_rotate_k;
@@ -286,7 +293,7 @@ int init_kpoints (int *kmesh, int *kshift)
     }
 
     if(ct.verbose && ct.AFM) 
-       rmg_printf("II2 nrot = %d nsym = %d  nks = %d\n",nsym_full_k, nsym_k, nks);
+        rmg_printf("II2 nrot = %d nsym = %d  nks = %d\n",nsym_full_k, nsym_k, nks);
     // irreducible_bz is cartesian
     irreducible_bz( &nsym_full_k,
             full_sym_rotate_k.data(),

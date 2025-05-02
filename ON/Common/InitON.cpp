@@ -203,9 +203,22 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     pct.loc_ions_list = new int[ct.num_ions];
     double *dum_array = NULL;
-    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
-    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
-    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+    if(ct.localize_localpp)
+    {
+        InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+        InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+        InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+    }
+    else
+    {
+        InitDelocalizedObject(vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+        InitDelocalizedObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+        // For delocalized rhoc is zero
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        for(int ix=0;ix < FP0_BASIS;ix++) rhoc[ix] = 0.0;
+    }
+
+
 
     if (pct.imgpe == 0)
     {
@@ -222,12 +235,12 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: get_proj");
-    
-   for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-   {
-       SPECIES *sp = &Species[Atoms[ion].species];
-       
-       if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
+
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+        SPECIES *sp = &Species[Atoms[ion].species];
+
+        if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
     }
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
@@ -252,9 +265,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             proj_per_ion[ion] = sp->num_projectors;
             for (int ip = 0; ip < sp->num_projectors; ip++)
             {
-               ixmin[proj_count] = iptr->ixstart;
-               iymin[proj_count] = iptr->iystart;
-               izmin[proj_count] = iptr->izstart;
+                ixmin[proj_count] = iptr->ixstart;
+                iymin[proj_count] = iptr->iystart;
+                izmin[proj_count] = iptr->izstart;
                 dimx[proj_count] = sp->nldim;
                 dimy[proj_count] = sp->nldim;
                 dimz[proj_count] = sp->nldim;
@@ -268,8 +281,10 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] ixmin;
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
-        
+
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         MemcpyHostDevice(LocalProj->storage_size, LocalProj->storage_cpu, LocalProj->storage_gpu);
+#endif
         delete [] proj_per_ion;
         Kbpsi_mat = (double *)RmgMallocHost(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
         Kbpsi_mat_local = (double *) RmgMallocHost(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
@@ -279,7 +294,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     }
 
     delete RTa;
-    
+
     if(ct.num_ldaU_ions > 0 )
     {
         ldaU_on = new LdaU_on(*LocalOrbital, *Rmg_G);
@@ -307,13 +322,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     get_qqq();
     delete(RT6);
     fflush(NULL);
-
-
-
-    if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
-    {
-        VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
-    }
 
 
     int FP0_BASIS = get_FP0_BASIS();

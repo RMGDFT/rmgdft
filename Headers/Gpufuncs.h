@@ -2,6 +2,9 @@
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
 
+#define RMG_Prolong_const_only 1
+#include "Prolong.h"
+
 #include <complex>
 template <typename T>
 struct fdparms_o8 {
@@ -108,6 +111,7 @@ struct fdparms_o8 {
 };
 
 int getThreadId(void);
+int getThreadNum(void);
 
 #if CUDA_ENABLED
 #include <cublas_v2.h>
@@ -116,6 +120,7 @@ void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
+void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
@@ -142,6 +147,7 @@ cudaStream_t getGpuStream(void);
 void init_hip_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);
 void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
+void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
@@ -154,6 +160,27 @@ void app8_del2_gpu(T * __restrict__ a,
                    const int dimz,
                    const fdparms_o8<T> &c);
 hipStream_t getGpuStream(void);
+template <typename T>
+void init_gpu_prolong(int dimx, int dimy, int dimz);
+
+template <typename T, int images>
+void prolong_ortho_gpu_internal(double *full,
+               T *half,
+               const int dimx,
+               const int dimy,
+               const int dimz,
+               double scale,
+               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+
+template <typename T, int images>
+void prolong_hex_gpu_internal(double *full,
+               T *half,
+               const int dimx,
+               const int dimy,
+               const int dimz,
+               const int type,
+               double scale,
+               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 #endif
 
 #if SYCL_ENABLED

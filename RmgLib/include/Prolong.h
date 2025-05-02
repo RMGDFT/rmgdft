@@ -27,16 +27,29 @@
  * 
 */
 
+// We have to do this wierdness since the clang compiler for gpu code
+// has issues on some platforms with the other include files.
+#ifdef RMG_Prolong_const_only
+#define MAX_PROLONG_RATIO 4
+#define MAX_PROLONG_ORDER 12
+
+#else
+
+#define MAX_PROLONG_RATIO 4
+#define MAX_PROLONG_ORDER 12
+
 #ifndef RMG_Prolong_H
 #define RMG_Prolong_H 1
 
 #include <vector>
+#include <stdint.h>
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "BaseGrid.h"
 #include "rmg_error.h"
 
-#define MAX_PROLONG_ORDER 12
+
+
 class coef_idx {
 
 public:
@@ -49,13 +62,10 @@ class Prolong {
 public:
     Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
     ~Prolong(void);
+
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
-    template<typename T>
-    void prolong_hex2 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
-    template<typename T>
-    void prolong_hex2a (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
     template<typename T>
     void prolong_bcc (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
     template<typename T>
@@ -65,21 +75,61 @@ public:
     template<typename T>
     void prolong_any (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
+    template <typename T, int ord>
+    void prolong (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template <typename T, int ord>
+    void prolong_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template<typename T, int ord>
+    void prolong_hex2 (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template<typename T, int ord>
+    void prolong_hex2a (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+    template <typename T, int ord, int htype>
+    void prolong_hex_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
+
+#if HIP_ENABLED
+    static inline std::vector<void *> abufs;
+    static inline std::vector<void *> hbufs;
+    static inline std::vector<double *> rbufs;
+
+    template <typename T, int ord>
+    void prolong_ortho_gpu(double *full,
+                   T *half,
+                   const int dimx,
+                   const int dimy,
+                   const int dimz,
+                   double scale);
+
+    template <typename T, int ord>
+    void prolong_hex_gpu(double *full,
+                   T *half,
+                   const int dimx,
+                   const int dimy,
+                   const int dimz,
+                   const int type,
+                   double scale);
+#endif
+
+    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+    float af[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
+    int ratio;
+    int order;
+
 private:
     void cgen_prolong (double *coef, double fraction);
     void cgen_dist_inverse(std::vector<coef_idx> &coef_index, std::vector<double> &fraction);
 
-    int ratio;
-    int order;
     double cmix;
     TradeImages &TR;
     Lattice &L;
     BaseGrid &BG;
     int ibrav;
-    double a[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
-    float af[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
     std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
 
 };
 
+#endif
 #endif

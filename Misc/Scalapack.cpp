@@ -38,15 +38,14 @@
 
 #if USE_ELPA
 #include <elpa/elpa.h>
+static int once;
 #endif
 
-static int once;
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
     this->ngroups = ngroups;
     this->N = N;
-    this->NB = NB;
     this->root_comm = rootcomm;
 
     MPI_Comm_size(rootcomm, &this->npes);
@@ -61,8 +60,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_pes < 1) 
         throw RmgFatalException() << "Too many Scalapack groups requested in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
-    int num_blocks = N / NB;
-    if(N % NB) num_blocks++;
 
 
     // Get 2-d grid dimensions for this group
@@ -77,6 +74,20 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_cols * this->group_rows > this->group_pes)
         throw RmgFatalException() << "Problem with processor distribution in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
+    this->NB = NB;
+    int num_blocks = N / NB;
+    if(N % NB) num_blocks++;
+
+    while (num_blocks < this->group_cols )
+    {
+        this->NB /=2;
+        num_blocks = (N + this->NB -1) / this->NB;
+    }
+
+    if(this->NB < 2)
+    {
+        rmg_printf("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+    }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
 //    if(num_blocks < this->group_cols) this->group_cols = num_blocks;
@@ -327,6 +338,16 @@ MPI_Comm Scalapack::GetComm(void)
     return this->comm;
 }
 
+int Scalapack::GetN(void)
+{
+    return this->N;
+}
+
+int Scalapack::GetNB(void)
+{
+    return this->NB;
+}
+
 int Scalapack::GetRows(void)
 {
     return this->group_rows;
@@ -498,12 +519,16 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
        rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
     }
 
-    // Get pdsyngst_ workspace
-    int lwork = -1;
-    double lwork_tmp;
-    pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
-            b, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-    lwork = 2*(int)lwork_tmp; 
+    // Get workspace required
+    int NN = std::max( N, this->NB);
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+    int lwork = 2*NP*this->NB + NQ*this->NB + this->NB*this->NB;
     double *work2 = new double[lwork];
     
     pdsyngst(&ibtype, uplo, &N, q, &ione, &ione, desca,
@@ -515,20 +540,13 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
        rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
     }
 
-    // Get workspace required
-    lwork = -1;
-    int liwork=-1;
-    int liwork_tmp;
-    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
-            ev, a, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-    lwork = 16*(int)lwork_tmp;
-    liwork = 16*N;
-    double *nwork = new double[lwork];
+
+    double *nwork = new double[lrwork];
     int *iwork = new int[liwork];
 
     // and now solve it 
     pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
-            ev, a, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+            ev, a, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
 
     if (info)
     {
@@ -576,37 +594,41 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
        rmg_error_handler (__FILE__, __LINE__, "pzhegst failed");
     }
 
-    // Get workspace required
-    int lwork = -1, liwork=-1, lrwork=-1;
-    double lwork_tmp[2], lrwork_tmp;
-    int liwork_tmp;
-    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
-                ev, (double *)a, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
 
-    lwork = (int)lwork_tmp[0]+1;
-    liwork = 16*N;
-    lrwork = 2*(int)lrwork_tmp;
+    // Get workspace required
+     int NN = std::max( N, this->NB);
+
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lwork = N + ( NP+NQ+this->NB )*this->NB;
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+
     double *rwork = new double[lrwork];
     double *nwork = new double[lwork*2];
     int *iwork = new int[liwork];
 
+
     // and now solve it
     pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
-                ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+            ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 
     if (info)
     {
-       rmg_printf ("\n pzheevd failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+        rmg_printf ("\n pzheevd failed, info is %d", info);
+        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
     }
 
     pztrsm("Left", uplo, "C", "N", &N, &N, rone, (double *)b, &ione, &ione, desca,
-                (double *)a, &ione, &ione, desca);
+            (double *)a, &ione, &ione, desca);
 
     if (info)
     {
-       rmg_printf ("\n pztrsm failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
+        rmg_printf ("\n pztrsm failed, info is %d", info);
+        rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
     }
 
     delete [] iwork;
@@ -619,8 +641,8 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 void Scalapack::generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q)
 {
     int error;
-//    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
-//    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AMD_GPU, error);
+    //    elpa_set((elpa_t)this->handle, "solver", ELPA_SOLVER_2STAGE, error);
+    //    elpa_set((elpa_t)this->handle, "real_kernel", ELPA_2STAGE_REAL_AMD_GPU, error);
     elpa_generalized_eigenvectors((elpa_t)this->elpa_handle, a, b, ev, q, false, &error);
     size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
     for(size_t i=0;i < dist_length;i++) a[i] = q[i];
@@ -637,32 +659,32 @@ void Scalapack::generalized_eigenvectors_elpa(std::complex<double> *a, std::comp
 #endif
 
 void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha, 
-                       double *A, int *IA, int *JA, int *desca, 
-                       double *B, int *IB, int *JB, int *descb, 
-                       double *beta, double *C, int *IC, int *JC, int *descc)
+        double *A, int *IA, int *JA, int *desca, 
+        double *B, int *IB, int *JB, int *descb, 
+        double *beta, double *C, int *IC, int *JC, int *descc)
 {
     if(!this->participates) return;
     pdgemm(transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
 }
 
 void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::complex<double> *alpha, 
-                       std::complex<double> *A, int *IA, int *JA, int*desca,
-                       std::complex<double> *B, int *IB, int *JB, int *descb,
-                       std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc)
+        std::complex<double> *A, int *IA, int *JA, int*desca,
+        std::complex<double> *B, int *IB, int *JB, int *descb,
+        std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc)
 {
     if(!this->participates) return;
     pzgemm(transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
 }
 
 void Scalapack::Pgesv (int *N, int *NRHS, double *A, int *IA, int *JA, int *desca, int *ipiv, double *B, int *IB,
-                            int *JB, int *descb, int *info)
+        int *JB, int *descb, int *info)
 {
     if(!this->participates) return;
     pdgesv(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
 }
 
 void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int *JA, int *desca, int *ipiv, std::complex<double> *B, int *IB,
-                            int *JB, int *descb, int *info)
+        int *JB, int *descb, int *info)
 {
     if(!this->participates) return;
     pzgesv(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
@@ -670,8 +692,8 @@ void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int 
 
 // Reduces within the group only
 void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op) {
-     if(!this->participates) return;
-     MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
+    if(!this->participates) return;
+    MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
 }
 
 // Block inplace double reduction within the group only
@@ -690,7 +712,7 @@ void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
 void Scalapack::BcastRoot(void *buffer, int count, MPI_Datatype datatype)
 {
     //if((this->group_index > this->ngroups) || this->root_rank == 0)
-//    MPI_Bcast(buffer, count, datatype, 0, this->broadcast_comm);
+    //    MPI_Bcast(buffer, count, datatype, 0, this->broadcast_comm);
     MPI_Bcast(buffer, count, datatype, 0, this->root_comm);
 }
 
@@ -882,14 +904,14 @@ template void Scalapack::matgather_t<double, double>(double *, double *, int, in
 template void Scalapack::matgather_t<double, float>(double *, float *, int, int, int, int *, bool);
 
 template<typename T1, typename T2> void Scalapack::matgather_t(T1 *globmat, T2 *dismat, int size,
-                              int myrow, int mycol, int *desca, bool isreal)
+        int myrow, int mycol, int *desca, bool isreal)
 {
     if(!this->participates) return;
     int i, j, ii, jj, iii, jjj, li, lj, maxcol, maxrow, jjstart, iistart;
     int limb, ljnb, izero = 0;
     int nprow, npcol;
     int mb = desca[4], nb = desca[5], mxllda = desca[8];
-//printf("SSSS  %d  %d  %d  %d\n",size,nb,mycol,this->group_cols);fflush(NULL);
+    //printf("SSSS  %d  %d  %d  %d\n",size,nb,mycol,this->group_cols);fflush(NULL);
     int mxlloc = numroc(&size, &nb, &mycol, &izero, &this->group_cols);
 
     nprow = this->group_rows;

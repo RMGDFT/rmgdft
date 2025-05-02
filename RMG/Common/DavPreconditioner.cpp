@@ -70,6 +70,11 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
                         double *vtot, int notconv, double avg_potential)
 {
 
+    if(ct.verbose) {
+        printf("PE: %d  start DavPreconditioner \n", pct.gridpe);
+        fflush(NULL);
+    }
+
     BaseThread *T = BaseThread::getBaseThread(0);
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -139,6 +144,10 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     if(pct.coalesce_factor > 1) delete [] tvtot;
     delete [] nvtot;
+    if(ct.verbose) {
+        printf("PE: %d  done DavPreconditioner \n", pct.gridpe);
+        fflush(NULL);
+    }
 }
 
 template <typename OrbitalType>

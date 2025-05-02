@@ -1,0 +1,20 @@
+This directory contains RMG input and log files for CO using the all electron
+potentials developed by Francois Gygi and described here.
+
+https://pubs.acs.org/doi/10.1021/acs.jctc.2c01191
+
+The pseudopotentials are generated internally and may be selected by specifying.
+
+internal_pseudo_type="all_electron"
+
+in the input file. As described in the paper the "hardness" of the pseudopotentials
+may be controlled by adjusting a paramter used in their generation. This is controlled
+by the input file parameter all_electron_parm as shown below. The default value is 4
+with larger values generating a potential which a smaller regularization radius.
+
+all_electron_parm = "4"
+
+Even for a simple molecule such as CO this is a large calculation because dense grids
+are required over the entire simulation volume. The equivalent cutoff in a plane wave
+calculation would be 12477 Rydbergs. The all electron support in RMG should be considered
+experimental and not all features of the code have been tested with it as of Dec 2024.

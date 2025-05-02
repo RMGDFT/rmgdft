@@ -277,10 +277,10 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
-        Pw *pwave = new Pw(*LG, Rmg_L, 1, false);
+        Pw *pwave = new Pw(*LG, Rmg_L, 1, false, false);
         double tpiba = 2.0*PI / Rmg_L.celldm[0];
         double crds[3], xtal[3];
-        int half_size = pwave->pbasis;
+        size_t half_size = pwave->pbasis;
         std::vector<int> index_sort(half_size);
         std::vector<int>gm(half_size);
 
@@ -299,7 +299,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
 
 
-        for(int idx = 0; idx < half_size; idx++) index_sort[idx] = idx;
+        for(size_t idx = 0; idx < half_size; idx++) index_sort[idx] = idx;
         std::stable_sort(index_sort.begin(), index_sort.end(), [&](int i1, int i2) { return pwave->gmags[i1] < pwave->gmags[i2]; } );   
 
         int xoff, yoff, zoff;
@@ -313,8 +313,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         for (int st = state_count; st < nstates; st+=ct.noncoll_factor)
         {
 
-            int idx = 0;
-            int idx_pwave = index_sort[st - state_count/ct.noncoll_factor  ];
+            size_t idx = 0;
+            size_t idx_pwave = index_sort[st - state_count/ct.noncoll_factor  ];
             for (int ix = 0; ix < PX0_GRID; ix++)
             {
 
@@ -353,6 +353,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
         }                           /* end for */
 
+        delete pwave;
+        delete LG;
     }
 
 

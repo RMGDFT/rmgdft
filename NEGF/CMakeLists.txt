@@ -4,6 +4,8 @@ list(APPEND RMGLIBS NEGF_Pois)
 #list(APPEND RMGLIBS NEGF_Lcurrent)
 list(APPEND RMGLIBS NEGF_Green)
 list(APPEND RMGLIBS ON_NEGF_share)
+list(APPEND RMGLIBS BerryPhase)
+
 
 if(RMG_HIP_ENABLED)
     list(APPEND RMGLIBS Gpufuncs)

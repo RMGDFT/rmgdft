@@ -111,6 +111,8 @@ private:
 
 public:
     Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
+    void pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
     void index_to_gvector(int *index, double *gvector);
     size_t count_filtered_gvectors(double filter_factor);
     void remask(void);
@@ -171,6 +173,7 @@ public:
     gvector *g;
     double *gmags;
     bool *gmask;
+    bool use_internal_buffers;
 
     std::vector<std::complex<double> *> host_bufs;
 

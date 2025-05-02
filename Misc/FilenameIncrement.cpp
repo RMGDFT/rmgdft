@@ -16,7 +16,7 @@ int FilenameIncrement(char *pathname)
 
     boost::filesystem::path current_path(pathname);
     std::string dirname  = current_path.parent_path().string(); 
-    std::string basename = boost::filesystem::basename(pathname);
+    std::string basename = current_path.stem().string();
     if(!dirname.length()) dirname = dirname + "./";
     // Does parent path exist?
     if( boost::filesystem::exists(dirname)) {

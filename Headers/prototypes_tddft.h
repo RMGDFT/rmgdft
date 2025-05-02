@@ -42,15 +42,18 @@ void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l);
 template <typename OrbitalType> 
 void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho_oppo,
      double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
+void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+
 template <typename KpointType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst);
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst);
 void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int *tot_steps, int n2);
@@ -58,7 +61,7 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
 template <typename OrbitalType> 
-void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, double *rho_matrix, int numst, int tddft_start_state);
+void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, OrbitalType *rho_matrix, int numst, int tddft_start_state);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);

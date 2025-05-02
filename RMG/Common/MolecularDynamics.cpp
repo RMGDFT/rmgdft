@@ -71,7 +71,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     // Prime the pump for extrapolations if this is an initial run.
     if(ct.runflag != RESTART)
     {
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+        Quench (Kptr, false);
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
     }
 
@@ -225,6 +225,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* Update the positions a full timestep */
         //posup ();
         move_ions (ct.iondt);
+        /* update nose thermostats */
+        if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN) nose_posup ();
+
 
         // Get atomic rho for new configuration and add back to rho
         LcaoGetAtomicRho(arho);
@@ -240,7 +243,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
 
         /* converge to the ground state at the final positions */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        Quench (Kptr, true);
 
 
         /* zero out the non-moving atoms */
@@ -285,7 +288,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         double vx, vy, vz;
         center_of_mass_velocity(vx, vy, vz);
 
-
         if (pct.gridpe == 0)
         {
             switch (ct.forceflag)
@@ -329,7 +331,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     // Final quench at these ionic positions without computing forces so the
     // final wavefunctions are converged. Write the restart file then compute
-    Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+    Quench (Kptr, false);
     WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
 
@@ -932,23 +934,27 @@ void nose_energy (double * nosekin, double * nosepot)
     /* calculate total nose energy */
     *nosekin = 0.5 * ct.nose.xq[0] * ct.nose.xv[0] * ct.nose.xv[0];
     *nosepot = 2.0 * ct.nose.k0 * ct.nose.xx[0];
-#if 0
-    if (pct.gridpe == 0)
-        rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
-                0, ct.nose.xx[0], ct.nose.xv[0], ct.nose.xf[ct.fpt[0]][0],
-                ct.nose.xf[ct.fpt[1]][0], ct.nose.xf[ct.fpt[2]][0], ct.nose.xf[ct.fpt[3]][0]);
-#endif
+
+    if(ct.verbose)
+    {
+        if (pct.gridpe == 0)
+            rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+                    0, ct.nose.xx[0], ct.nose.xv[0], ct.nose.xf[ct.fpt[0]][0],
+                    ct.nose.xf[ct.fpt[1]][0], ct.nose.xf[ct.fpt[2]][0], ct.nose.xf[ct.fpt[3]][0]);
+    }
+
     for (jc = 1; jc < ct.nose.m; jc++)
     {
         *nosekin += 0.5 * ct.nose.xq[jc] * ct.nose.xv[jc] * ct.nose.xv[jc];
         *nosepot += ct.nose.temp * kB * ct.nose.xx[jc];
-#if 0
-        if (pct.gridpe == 0)
-            rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
-                    jc, ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xf[ct.fpt[0]][jc],
-                    ct.nose.xf[ct.fpt[1]][jc],
-                    ct.nose.xf[ct.fpt[2]][jc], ct.nose.xf[ct.fpt[3]][jc]);
-#endif
+        if(ct.verbose)
+        {
+            if (pct.gridpe == 0)
+                rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+                        jc, ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xf[ct.fpt[0]][jc],
+                        ct.nose.xf[ct.fpt[1]][jc],
+                        ct.nose.xf[ct.fpt[2]][jc], ct.nose.xf[ct.fpt[3]][jc]);
+        }
 
     }
 

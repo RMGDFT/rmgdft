@@ -57,6 +57,11 @@
 #include "bfgs.h"
 #include "FDOpt.h"
 
+#if HIP_ENABLED
+template <typename T>
+void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz);
+#endif
+
 extern Scalapack *MainSp;
 
 
@@ -115,8 +120,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.total_scf_steps = 0;
     ct.md_steps = 0;
 
-    ct.psi_nbasis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
-    ct.psi_fnbasis = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    ct.psi_nbasis = (size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1);
+    ct.psi_fnbasis = (size_t)Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * (size_t)Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * (size_t)Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
 
 
     // Set ct.num_states to ct.init_states. After init it is set to ct.run_states
@@ -505,6 +510,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
+    if(ct.BerryPhase)
+    {
+        Rmg_BP->init(Kptr);
+    }
 
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
@@ -580,6 +589,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     ct.rms = 0.0;
+    ct.rms_vh = 0.0;
 
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
@@ -682,21 +692,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
     }
 
+    vtot = new double[FP0_BASIS];
+    for (int idx = 0; idx < FP0_BASIS; idx++)
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+    /*Generate the Dnm_I */
+    get_ddd (vtot, vxc, true);
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
     {
 
         /*dnmI has to be stup before calling subdiag */
-        vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
         double *vxc_psi = NULL;
-
-
-        for (int idx = 0; idx < FP0_BASIS; idx++)
-            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-
-        /*Generate the Dnm_I */
-        get_ddd (vtot, vxc, true);
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
@@ -714,14 +721,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
             Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
 
-            // Force reinit of MainSp in case initialzation matrices are
-            // not the same size
-#if SCALAPACK_LIBS
-            if(MainSp) {
-                if(MainSp->Participates()) delete MainSp;
-                MainSp = NULL;
-            }
-#endif
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
@@ -736,6 +735,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             delete RT3;
 
         }
+        // Force reinit of MainSp in case initialzation matrices are
+        // not the same size
+#if SCALAPACK_LIBS
+        if(MainSp) {
+            if(MainSp->Participates()) delete MainSp;
+            MainSp = NULL;
+        }
+#endif
 
         if (ct.nspin == 2 )
             GetOppositeEigvals (Kptr);
@@ -786,11 +793,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Release vtot memory */
         delete [] vtot_psi;
-        delete [] vtot;
         if(ct.noncoll) delete [] vxc_psi;
 
     }
 
+    delete [] vtot;
 
 
     ct.num_states = ct.run_states;
@@ -828,6 +835,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
                 &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
     }
+
 
 }                               /* end init */
 

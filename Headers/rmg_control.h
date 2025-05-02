@@ -146,7 +146,10 @@ public:
     char infile_tddft[2*MAX_PATH];
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
+    bool tddft_noscf;
+    bool tddft_gpu =1;
     int tddft_mode;
+    double tddft_frequency;
     double tddft_qpos[3];
     double tddft_qgau;
     
@@ -391,7 +394,7 @@ public:
     bool use_gpu_fd;
 
     /* This is the max of nldim for any species cubed */
-    int max_nlpoints;
+    size_t max_nlpoints;
     int max_lpoints;
     int max_Qpoints;
 
@@ -468,8 +471,8 @@ public:
 
 
     /* Total points for wavefunctions */
-    int psi_nbasis;
-    int psi_fnbasis;
+    size_t psi_nbasis;
+    size_t psi_fnbasis;
 
     /* Decoupled hartree potential */
     double *vh_ext;
@@ -602,6 +605,7 @@ public:
 
     /* Total energies */
     double ES;
+    double ES_rhoc;
     double NUC;
     double KE;
     double XC;
@@ -611,6 +615,7 @@ public:
     double II;
     double FOCK;
     double TOTAL;
+    double TOTAL_DIRECT;
 
     // EXX convergence measure
     double exx_delta;
@@ -623,6 +628,7 @@ public:
 
     /* fermi energy */
     double efermi;
+    double E_lowbound;
 
     /* Tetrahedron method. 0=Bloechl, 1=Linear, 2=Optimized */
     int tetra_method;
@@ -685,18 +691,21 @@ public:
     int interp_trade;
 
     /* the external electric field */
-    double e_field;
 
-    double x_field_0;
-
-    double y_field_0;
-
-    double z_field_0;
+    bool BerryPhase;
+    int BerryPhase_dir;
+    int BerryPhaseCycle;
+    double efield_xtal[3];
+    double efield_crds[3];
+    double efield_tddft_xtal[3];
+    double efield_tddft_crds[3];
 
     double neb_spring_constant;
 
+    bool adaptive_convergence;
     /*Current RMS value*/
     double rms;
+    double rms_vh;
 
     /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
     double scf_accuracy;
@@ -782,6 +791,7 @@ public:
     // Hip devices
     hipDevice_t hip_dev;
     hipDevice_t hip_devices[MAX_GPU_DEVICES];
+    int smemSize[MAX_GPU_DEVICES];
 
     // Hip device context
     hipCtx_t hip_context;
@@ -873,6 +883,8 @@ public:
     std::vector<int> cube_states_list;
     std::vector<double> stm_bias_list;
     std::vector<double> stm_height_list;
+    // starting and endiing grid points for ldos calculation
+    int ldos_start_grid[3], ldos_end_grid[3];
     
     std::vector<std::string> file_atomic_orbit;
 
@@ -1024,6 +1036,7 @@ public:
    bool cell_relax;
    int cell_movable[9];
    double ldaU_radius;
+   double stress_tensor[9];
 
    // Memory usage options
    size_t q_alloc[3];
@@ -1034,6 +1047,12 @@ public:
 
    std::string input_initial, input_final;
    double totale_initial, totale_final;
+
+   // Whether or not electrons, forces and stress have converged or not.
+   bool forces_converged;
+   bool scf_converged;
+   bool scf_is_converging;
+   bool force_is_converging;
 
    // bfgs options
    int bfgs_ndim = 1;

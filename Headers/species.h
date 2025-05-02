@@ -192,7 +192,7 @@ public:
     int rg_points;
 
     /* Log mesh parameter, where aa=exp(-aasf)/Z, bb=1.0/bbsf */
-    double aa, bb;
+//    double aa, bb;
 
     /** Non-linear core correction flag */
     int nlccflag;

@@ -191,8 +191,12 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
     size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) +8;
     this->storage_size = size;
     this->storage_cpu = (KpointType *) RmgMallocHost(size);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMalloc((void **)&this->storage_gpu, size);
-    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
+    this->storage_ptr = this->storage_gpu;
+#else
+    this->storage_ptr = this->storage_cpu;
+#endif
 
 }
 
@@ -207,7 +211,9 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
     delete [] this->dimy;
     delete [] this->dimz;
     RmgFreeHost(this->storage_cpu);
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     gpuFree(this->storage_gpu);
+#endif
 
 }
 
@@ -382,7 +388,9 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         delete [] beta;
     }
 
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(this->storage_size, this->storage_cpu, this->storage_gpu);
+#endif
 
 }
 
@@ -497,7 +505,9 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     fftw_free (gbptr);
     fftw_free (beptr);
 
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(this->storage_size, this->storage_cpu, this->storage_gpu);
+#endif
 }
 
 //localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
@@ -707,12 +717,18 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
     RmgFreeHost(this->storage_cpu);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuFree(this->storage_gpu);
+#endif
     size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) + 8;
     this->storage_size = size;
     this->storage_cpu = (KpointType *) RmgMallocHost(size);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMalloc((void **)&this->storage_gpu, size);
-    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
+    this->storage_ptr = this->storage_gpu;
+#else
+    this->storage_ptr = this->storage_cpu;
+#endif
 
     delete [] orbital_proj;
     delete [] onerow;
@@ -1089,8 +1105,12 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(const LocalObje
     size_t size = Old_LO.num_thispe * Old_LO.pbasis *sizeof(KpointType) +8;
     this->storage_size = size;
     this->storage_cpu = (KpointType *) RmgMallocHost(size);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMalloc( (void **)&this->storage_gpu, size);
-    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
+    this->storage_ptr = this->storage_gpu;
+#else
+    this->storage_ptr = this->storage_cpu;
+#endif
 }
 template void LocalObject<double>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);
 template void LocalObject<std::complex<double>>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);

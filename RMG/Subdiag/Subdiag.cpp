@@ -63,7 +63,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 {
     RmgTimer RT0("4-Diagonalization");
 
-    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
+    double vel = L->get_omega() / ((double)((size_t)G->get_NX_GRID(1) * (size_t)G->get_NY_GRID(1) * (size_t)G->get_NZ_GRID(1)));
 
     // For MPI routines
     int factor = 1;
@@ -79,7 +79,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Hpsi");
     KpointType *h_psi = (KpointType *)tmp_arrayT;
-    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
+       ApplyHamiltonianBlock<KpointType> (this, 0, nstates, h_psi, vtot_eig, vxc_psi);
+//    ComputeHpsi(vtot_eig, vxc_psi, h_psi);
     delete(RT1);
     DeviceSynchronize();
 

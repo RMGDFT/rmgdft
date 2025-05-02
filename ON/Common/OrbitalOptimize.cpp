@@ -392,8 +392,9 @@ void get_dnmpsi(STATE *states1)
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
                 Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
 
-        dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
-                work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
+        int max_nlpoints = (int)ct.max_nlpoints;
+        dgemm("N", "N", &max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &max_nlpoints, 
+                work_kbpsi, &num_prj, &zero, prj_sum, &max_nlpoints);
         int st0;
 #pragma omp parallel private(st0)
         {

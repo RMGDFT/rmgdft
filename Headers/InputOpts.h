@@ -23,7 +23,9 @@ static std::unordered_map<std::string, int> bravais_lattice_type = {
 
 static std::unordered_map<std::string, int> tddft_mode = {
         {"electric field", EFIELD},
-        {"point charge", POINT_CHARGE}};
+        {"point charge", POINT_CHARGE},
+        {"vector potential", VECTOR_POT}
+        };
 
 static std::unordered_map<std::string, int> atomic_orbital_type = {
         {"localized", LOCALIZED},
@@ -63,7 +65,8 @@ static std::unordered_map<std::string, int> lattice_units = {
 static std::unordered_map<std::string, int> charge_mixing_type = {
         {"Linear", 0},
         {"Pulay", 1},
-        {"Broyden", 2}};
+        {"Broyden", 2},
+        {"Auto", 3}};
 
 static std::unordered_map<std::string, int> charge_analysis = {
         {"None", 0},

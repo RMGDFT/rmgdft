@@ -189,6 +189,7 @@ std::string InputKey::Print(void) {
         for(size_t i = 0;i < this->count;i++)
             rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble.vals.at(i)) + " ";
 
+        return rstr;
     }
 
     return "Not done yet";

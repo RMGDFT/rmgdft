@@ -24,10 +24,13 @@
 #ifndef RMG_prototypes_rmg_H
 #define RMG_prototypes_rmg_H 1
 
+#undef RMG_Prolong_const_only
 #include "Kpoint.h"
 #include "PulayMixing.h"
 #include "LaplacianCoeff.h"
 #include "Prolong.h"
+#include "transition.h"
+#include "GridObject.h"
 
 
 extern PulayMixing *Pulay_rho;
@@ -36,6 +39,7 @@ extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
+
 
 template <typename KpointType>
 void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
@@ -46,19 +50,32 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
+#if HIP_ENABLED
+template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, double *rho);
+template <typename OrbitalType> void GetNewRhoGpuOne(State<OrbitalType> *sp, Prolong *P, double scale);
+#endif
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Reinit (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
+
+template <typename OrbitalType> void Relax (
+                   int steps,
+                   spinobj<double> &vxc,
+                   fgobj<double> &vh,
+                   fgobj<double> &vnuc,
+                   spinobj<double> &rho,
+                   fgobj<double> &rhocore,
+                   fgobj<double> &rhoc,
+                   Kpoint<OrbitalType> **Kptr);
+
 template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
-template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
-          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
+template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool compute_forces);
+template <typename OrbitalType> bool Scf (spinobj<double> &vxc_in, fgobj<double> &vh_in,
+                    double *vh_ext, int spin_flag, int boundaryflag, Kpoint<OrbitalType> **Kptr,
+                    std::vector<double>& RMSdV);
+
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states);
 template <typename KpointType> void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
@@ -97,7 +114,7 @@ template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec);
 void LcaoGetRho (double * arho_f);
 template <typename KpointType>
-void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
+void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, fgobj<double> &vh, spinobj<double> &vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>

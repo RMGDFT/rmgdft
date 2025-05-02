@@ -138,9 +138,7 @@ Functional::Functional (
 
     this->fd_order = ct.kohn_sham_fd_order;
     this->pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
-    this->N = G.get_NX_GRID(G.default_FG_RATIO) *
-              G.get_NY_GRID(G.default_FG_RATIO) *
-              G.get_NZ_GRID(G.default_FG_RATIO);
+    this->N = G.get_GLOBAL_BASIS(G.default_FG_RATIO);
 
     if(dft_set && dft_is_hybrid() && exx_started) start_exx();
     if(dft_set && dft_is_hybrid() && !exx_started) stop_exx();

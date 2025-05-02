@@ -40,6 +40,7 @@
 #include "LdaU.h"
 #include <mpi.h>
 #include <boost/pool/pool.hpp>
+#include "GridObject.h"
 
 //char *rmg_pool_malloc(const size_t bytes);
 // Used for kalloc
@@ -202,7 +203,30 @@ public:
 
     // For CUDA or HIP the TDDFT code leaves a copy of the wavefunctions on the GPUs so
     // we store a pointer to that here.
-    KpointType *psi_dev, *work_dev, *work_cpu;
+    KpointType *psi_dev = NULL, *work_dev, *work_cpu;
+
+    // Grid objects
+    fgobj<double> *vh;
+    fgobj<double> *vh_ext;
+    fgobj<double> *vnuc;
+    fgobj<double> *rhoc;
+    fgobj<double> *rhocore;
+    spinobj<double> *rho;
+    spinobj<double> *vxc;
+    KpointType *Hmatrix_cpu    ;
+    KpointType *Pn0_cpu        ;
+    KpointType *Pn1_cpu        ;
+    KpointType *Hmatrix_1_cpu ;
+    KpointType *Hmatrix_m1_cpu ;
+    KpointType *Hmatrix_0_cpu  ;
+    KpointType *Akick_cpu  ;
+    KpointType *Pxmatrix_cpu  ;
+    KpointType *Pymatrix_cpu  ;
+    KpointType *Pzmatrix_cpu  ;
+    // BP_matrix_cpu: S^-1(k, k+1) Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
+    KpointType *BP_matrix_cpu=NULL  ;
+    KpointType *BP_psi=NULL  ;
+    KpointType *BP_Gnk=NULL  ;
 
 private:
 

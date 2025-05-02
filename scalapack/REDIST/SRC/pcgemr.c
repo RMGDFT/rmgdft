@@ -342,7 +342,7 @@ Cpcgemr2d(m, n,
   assert((myprow1 < p1 && mypcol1 < q1) || (myprow1 == -1 && mypcol1 == -1));
   /* exchange the missing parameters among the processors: shape of grids and
    * location of the processors */
-  param = (Int *) mr2d_malloc(3 * (nprocs * 2 + NBPARAM) * sizeof(Int));
+  param = (Int *) mr2d_malloc(3 * ((size_t)nprocs * 2 + NBPARAM) * sizeof(Int));
   ra = param + nprocs * 2 + NBPARAM;
   ca = param + (nprocs * 2 + NBPARAM) * 2;
   for (i = 0; i < nprocs * 2 + NBPARAM; i++)
@@ -459,18 +459,18 @@ Cpcgemr2d(m, n,
   if (myprow0 >= 0 && mypcol0 >= 0) {
     /* Initialize pointer variables */
     setmemory(&ptrsendbuff, memoryblocksize(ma));
-  };	/* if (mypnum < p0 * q0) */
+  }	/* if (mypnum < p0 * q0) */
   if (myprow1 >= 0 && mypcol1 >= 0) {
     /* Initialize pointer variables */
     setmemory(&ptrrecvbuff, memoryblocksize(mb));
-  };	/* if (mypnum < p1 * q1) */
+  }	/* if (mypnum < p1 * q1) */
   /* allocing room for the tabs, alloc for the worst case,local_n or local_m
    * intervals, in fact the worst case should be less, perhaps half that,I
    * should think of that one day. */
-  h_inter = (IDESC *) mr2d_malloc(DIVUP(ma->n, q0 * ma->nbcol) *
-				  ma->nbcol * sizeof(IDESC));
-  v_inter = (IDESC *) mr2d_malloc(DIVUP(ma->m, p0 * ma->nbrow)
-				  * ma->nbrow * sizeof(IDESC));
+  h_inter = (IDESC *) mr2d_malloc((size_t)(DIVUP(ma->n, q0 * ma->nbcol)) *
+				  (size_t)ma->nbcol * sizeof(IDESC));
+  v_inter = (IDESC *) mr2d_malloc((size_t)(DIVUP(ma->m, p0 * ma->nbrow))
+				  * (size_t)ma->nbrow * sizeof(IDESC));
   /* We go for the scanning of indices. For each processor including mypnum,
    * we fill the sendbuff buffer (scanD0(SENDBUFF)) and when it is done send
    * it. Then for each processor, we compute the size of message to be
@@ -554,10 +554,10 @@ after_comm:
   /* don't forget to clean up things! */
   if (myprow1 >= 0 && mypcol1 >= 0) {
     freememory((char *) ptrrecvbuff);
-  };
+  }
   if (myprow0 >= 0 && mypcol0 >= 0) {
     freememory((char *) ptrsendbuff);
-  };
+  }
   if (nprow != 1)
     Cblacs_gridexit(gcontext);
   free(v_inter);
@@ -570,7 +570,7 @@ init_chenille(Int mypnum, Int nprocs, Int n0, Int *proc0, Int n1, Int *proc1, In
   Int   ns, nr, i, tot;
   Int  *sender, *recver, *g0, *g1;
   tot = max(n0, n1);
-  sender = (Int *) mr2d_malloc((nprocs + tot) * sizeof(Int) * 2);
+  sender = (Int *) mr2d_malloc((size_t)(nprocs + tot) * sizeof(Int) * 2);
   recver = sender + tot;
   *psend = sender;
   *precv = recver;
@@ -634,7 +634,7 @@ Int _m,_n,_lda,_ldb; \
       _b += _ldb; \
       _a += _lda; \
     } \
-}
+} (void)0
 static2 Int 
 block2buff(IDESC *vi, Int vinb, IDESC *hi, Int hinb, complex *ptra, MDESC *ma, complex *buff)
 {
@@ -706,7 +706,7 @@ gridreshape(Int *ctxtp)
   Int   i, j;
   ori = *ctxtp;
   Cblacs_gridinfo(ori, &nprow, &npcol, &myrow, &mycol);
-  usermap = mr2d_malloc(sizeof(Int) * nprow * npcol);
+  usermap = mr2d_malloc(sizeof(Int) * (size_t)nprow * (size_t)npcol);
   for (i = 0; i < nprow; i++)
     for (j = 0; j < npcol; j++) {
       usermap[i + j * nprow] = Cblacs_pnum(ori, i, j);

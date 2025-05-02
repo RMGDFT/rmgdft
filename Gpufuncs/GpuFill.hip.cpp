@@ -39,11 +39,16 @@ __global__ void FillMatrix(RmgType *matrix, int n, RmgType val)
 // Fills a device pointer with a floating point value
 void GpuFill(double *dptr, int n, double fillval)
 {
-    hipDeviceSynchronize();
+    hipStream_t stream = getGpuStream();
+
+    //hipDeviceSynchronize();
     int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / n;
-    hipLaunchKernelGGL(FillMatrix, dim3(numBlocks), dim3(blockSize), 0, 0, dptr, n, fillval);
-    hipDeviceSynchronize();
+    int numBlocks = n / blockSize;
+    if(n % blockSize) numBlocks++;
+    //hipLaunchKernelGGL(FillMatrix, dim3(numBlocks), dim3(blockSize), 0, 0, dptr, n, fillval);
+    FillMatrix<<<numBlocks, blockSize, 0, stream>>>(dptr, n, fillval);
+
+    //hipDeviceSynchronize();
 }
 
 #endif

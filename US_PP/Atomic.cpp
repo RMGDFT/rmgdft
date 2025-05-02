@@ -35,7 +35,7 @@
 
 
 std::vector<double *> J_roots;
-int NUM_BESSEL_ROOTS = 400;
+int NUM_BESSEL_ROOTS = 4000;
 
 // Sign copy function
 template <typename T> int sgn(T val) {

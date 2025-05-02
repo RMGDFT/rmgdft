@@ -7,6 +7,74 @@
 #include "transition.h"
 #include "MapElements.h"
 
+template void OutputCubeFile(double *array_3d, int NX, int NY, int NZ, std::string filename, bool global_data);
+template void OutputCubeFile(std::complex<double> *array_3d, int NX, int NY, int NZ, std::string filename, bool global_data);
+template <typename T> void OutputCubeFile(T *array_glob, int NX, int NY, int NZ, std::string filename, bool global_data)
+{
+
+    RmgTimer RT0("CubeFile output");
+
+
+    int ion;
+    SPECIES *sp;
+    ION *iptr;
+
+    int nval = sizeof(T)/sizeof(double);
+
+    double *array_ptr = (double *)array_glob;
+    /* 
+     *  the global array is required as input
+     * */
+
+    if(pct.gridpe == 0 )
+    {
+        FILE *fhand = fopen(filename.c_str(), "w");
+
+
+        fprintf(fhand, "#This is a Cube file to be viewed \n");
+        fprintf(fhand, "# Atomic coordinates lattice in bohr \n");
+        fprintf(fhand, " %d  0.0  0.0  0.0 %d \n", (int)Atoms.size(), nval);
+
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", NX, 
+                Rmg_L.get_a0(0) /NX, 
+                Rmg_L.get_a0(1) /NX, 
+                Rmg_L.get_a0(2) /NX);
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", NY, 
+                Rmg_L.get_a1(0) /NY, 
+                Rmg_L.get_a1(1) /NY, 
+                Rmg_L.get_a1(2) /NY);
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", NZ, 
+                Rmg_L.get_a2(0) /NZ, 
+                Rmg_L.get_a2(1) /NZ, 
+                Rmg_L.get_a2(2) /NZ);
+
+        for(ion = 0; ion < ct.num_ions; ion++)
+        {
+            iptr = &Atoms[ion];
+            sp = &Species[iptr->species];
+            int a_num = GetAtomicNumber(sp->atomic_symbol);
+            fprintf(fhand, " %d  %f %12.6e   %12.6e   %12.6e\n", a_num,
+                    iptr->partial_charge, iptr->crds[0] , 
+                    iptr->crds[1] ,   iptr->crds[2] );   
+        }
+
+        for(int i = 0; i < NX; i++) {
+            for(int j = 0; j < NY; j++) {
+                for(int k = 0; k < NZ * nval; k++) {
+                    int idx = i * NY * NZ * nval + j * NZ * nval + k;
+                     fprintf(fhand , "%12.3e", array_ptr[idx]);
+                     if(idx%6 == 5) fprintf(fhand, "\n");
+
+                }
+            }
+        }
+
+
+        fclose(fhand);
+    }
+
+}
+
 
 template void OutputCubeFile(double *array_3d, int grid, std::string filename);
 template void OutputCubeFile(std::complex<double> *array_3d, int grid, std::string filename);

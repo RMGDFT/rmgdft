@@ -284,7 +284,7 @@ void distribute_mat(int *desca, double *bigmat, double *dismat, int *size);
 void matinit(int *desca, double *dismat, double *globmat, int size);
 int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size);
 void reduce_and_dist_matrix(int n, double *global_matrix, double *dist_matrix, double *work);
-void init_efield (double * vnuc);
+void init_efield (double * vnuc, double efeild[3]);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, double ***hist, double ***rhist, int special_metric, double weight);
 int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count);

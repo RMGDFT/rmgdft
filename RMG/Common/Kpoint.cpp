@@ -571,7 +571,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
     RmgTimer RT("Orthogonalization");
 
-    double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
+    double vel = (double) ((size_t)this->G->get_NX_GRID(1) * (size_t)this->G->get_NY_GRID(1) * (size_t)this->G->get_NZ_GRID(1));
     vel = this->L->get_omega() / vel;
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
     int num_owned_ions = this->BetaProjector->get_num_owned_ions();
@@ -763,7 +763,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
     RmgTimer RT("Orthogonalization");
 
-    double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
+    double vel = (double) ((size_t)this->G->get_NX_GRID(1) * (size_t)this->G->get_NY_GRID(1) * (size_t)this->G->get_NZ_GRID(1));
     vel = this->L->get_omega() / vel;
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
     int num_owned_ions = this->BetaProjector->get_num_owned_ions();

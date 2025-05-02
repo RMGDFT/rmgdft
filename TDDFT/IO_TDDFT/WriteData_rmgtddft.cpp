@@ -44,7 +44,7 @@
 
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, 
-        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2,
+        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2, int n2_C,
         std::vector<double> &Eterms,double *Hcore_tddft, int numst)
 
 {
@@ -92,10 +92,10 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
    write (fhand, vxc, fgrid_size * sizeof(double));
    write (fhand, vh_corr, fgrid_size * sizeof(double));
 
-   write (fhand, Pn0, 2* n2 * sizeof(double));
-   write (fhand, Hmatrix, n2 * sizeof(double));
-   write (fhand, Hmatrix_m1, n2 * sizeof(double));
-   write (fhand, Hmatrix_0, n2 * sizeof(double));
+   write (fhand, Pn0, 2*n2 * sizeof(double));
+   write (fhand, Hmatrix, n2_C * sizeof(double));
+   write (fhand, Hmatrix_m1, n2_C * sizeof(double));
+   write (fhand, Hmatrix_0, n2_C * sizeof(double));
    write (fhand, &tot_steps, sizeof(int));
    write (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
    write (fhand, Hcore_tddft, numst * numst * sizeof(double));

@@ -48,23 +48,23 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 {
 
   double g2cut = c_pwaves.gcut;
-  int global_basis = pwaves.global_basis;
-  int pbasis = pwaves.pbasis;
-  int size = pbasis;
+  size_t global_basis = pwaves.global_basis;
+  size_t pbasis = pwaves.pbasis;
+  size_t size = pbasis;
   std::complex<double> *crho = new std::complex<double>[size];
 
-  for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
+  for(size_t i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pwaves.FftForward(crho, crho);
 
   if(filter_type == LOW_PASS) {
-      for(int ig=0;ig < pbasis;ig++) {
+      for(size_t ig=0;ig < pbasis;ig++) {
           if(pwaves.gmags[ig] >= g2cut) {
               crho[ig] = std::complex<double>(0.0, 0.0);
           }
       }
   }
   else {
-      for(int ig=0;ig < pbasis;ig++) {
+      for(size_t ig=0;ig < pbasis;ig++) {
           if((pwaves.gmags[ig] <= g2cut) || (pwaves.gmags[ig] > pwaves.gmax)) {
               crho[ig] = std::complex<double>(0.0, 0.0);
           }
@@ -72,7 +72,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   }
 
   pwaves.FftInverse(crho, crho);
-  for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
+  for(size_t i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
 
   delete [] crho;
 
@@ -85,22 +85,22 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 {
 
   double g2cut = factor*c_pwaves.gcut;
-  int global_basis = pwaves.global_basis;
-  int pbasis = pwaves.pbasis;
-  int size = pbasis;
+  size_t global_basis = pwaves.global_basis;
+  size_t pbasis = pwaves.pbasis;
+  size_t size = pbasis;
   std::complex<double> *crho = new std::complex<double>[size];
 
-  for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
+  for(size_t i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pwaves.FftForward(crho, crho);
 
-  for(int ig=0;ig < pbasis;ig++) {
+  for(size_t ig=0;ig < pbasis;ig++) {
       if(pwaves.gmags[ig] >= g2cut) {
           crho[ig] = std::complex<double>(0.0, 0.0);
       }
   }
 
   pwaves.FftInverse(crho, crho);
-  for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
+  for(size_t i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
 
   delete [] crho;
 
