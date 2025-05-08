@@ -390,6 +390,7 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     int order = MAX_PROLONG_ORDER;
     size_t rbufsize = 8*dimx*dimy*dimz*sizeof(double);
     size_t bufsize = (dimx + order)*(dimy + order)*(dimz + order)*sizeof(double)*factor;
+    size_t buf_max = std::max(bufsize, rbufsize);
     int max_threads = ct.MG_THREADS_PER_NODE;
 
     // Check if just clearing the accumulators
@@ -408,7 +409,7 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     for(int i=0;i < max_threads;i++)
     {
         hipMalloc((void **)&P.abufs[i], bufsize);
-        hipMallocHost((void **)&P.hbufs[i], rbufsize);
+        hipMallocHost((void **)&P.hbufs[i], buf_max);
         hipMalloc((void **)&P.rbufs[i], rbufsize);
     }
     for(int i=0;i < max_threads;i++)
