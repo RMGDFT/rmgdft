@@ -50,6 +50,7 @@
 #include "blas.h"
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
+#include "OrbitalProfile.h"
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
@@ -141,7 +142,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     struct
     {
         int n;
-        double occ;
+        double occ=0.0;
     } occ[nspin_occ * MAX_NOCC];
 
     int repeat_occ;
@@ -149,6 +150,11 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
     /* calculate total number of electrons in the system from pseudopotential information */
     ct.ionic_charge = 0.0;
+
+    // P holds orbital profile information which is computed in the constructor
+    // This info includes the maximum and the actual occupancies of each angular
+    // momentum channel summed over all atoms.
+    OrbitalProfile P;
 
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         ct.ionic_charge += Species[Atoms[ion].species].zvalence;
@@ -206,6 +212,12 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
+        int total_occ_states = std::round(ct.nel / (double)ct.nspin);
+        if(num_states_spf[0] < (total_occ_states + P.rec_unoccupied))
+        {
+            num_states_spf[0] = total_occ_states + P.rec_unoccupied;
+            num_states_spf[1] = total_occ_states + P.rec_unoccupied;
+        }
         ct.background_charge = ct.nel - ct.ionic_charge;
 
     }
@@ -216,6 +228,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         {
             // num of unocc states set to 10 or 10% which is larger
             ct.num_unocc_states = std::max(10, int(ct.nel * 0.5 * 0.1) );
+            ct.num_unocc_states = std::max(ct.num_unocc_states, P.rec_unoccupied);
         }
 
 
@@ -227,6 +240,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         }
 
     }
+
 
     if(nspin_occ == 1)
     {
