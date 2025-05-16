@@ -1015,7 +1015,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Grid coalescing factor.",
             "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
+    If.RegisterInputKey("charge_density_mixing", &lc.init_mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
             "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
@@ -1330,7 +1330,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The stress criteria ",
             "stress_convergence_criterion must lie in the range (1.0e-04,50). Resetting to default value of 0.5. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-10,
+    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-12,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the estimated change in the total energy per step where we assume self "
             "consistency has been achieved. ",
@@ -1887,4 +1887,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose
     if(lc.force_grad_order != lc.kohn_sham_fd_order) lc.force_grad_order = 0;
+
+    ct.mix = lc.init_mix;
 }

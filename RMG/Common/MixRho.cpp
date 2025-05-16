@@ -61,7 +61,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
 
-    if(reset) ct.mix = ct.init_mix;
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
