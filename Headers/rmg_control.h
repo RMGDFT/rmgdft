@@ -415,6 +415,7 @@ public:
 
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
     double mix;
+    double init_mix;
     double drho_q0;
     int drho_precond_type;
 
