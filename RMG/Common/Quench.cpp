@@ -181,6 +181,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
                     ct.scf_steps = 0;
+                    ct.exx_steps = 0;
                 }
                 if(ct.mix < 0.02)
                 {
