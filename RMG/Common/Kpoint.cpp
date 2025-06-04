@@ -290,6 +290,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.run_states = ct.num_states;
 
     if(ct.state_block_size > ct.num_states ) ct.state_block_size = ct.num_states;
+    ct.scalapack_block_factor = std::min(ct.scalapack_block_factor, ct.num_states);
     // Now figure out some buffer sizes
     ct.max_states = ct.run_states + 3 * ct.state_block_size;
     if (Verify ("kohn_sham_solver", "davidson", ControlMap)) 
