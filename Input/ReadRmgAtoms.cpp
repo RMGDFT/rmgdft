@@ -380,6 +380,8 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
             Atoms_read[ion].crds[0] *= A_a0;
             Atoms_read[ion].crds[1] *= A_a0;
             Atoms_read[ion].crds[2] *= A_a0;
+            Rmg_L.to_crystal(Atoms[ion].xtal, Atoms[ion].crds);
+            Rmg_L.to_cartesian(Atoms[ion].xtal, Atoms[ion].crds);
 
         }
 

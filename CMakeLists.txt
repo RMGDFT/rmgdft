@@ -28,7 +28,7 @@
 cmake_minimum_required (VERSION 3.17) 
 
 set(RMG_VERSION_MAJOR "6")
-set(RMG_VERSION_MINOR "1")
+set(RMG_VERSION_MINOR "2")
 set(RMG_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
@@ -817,7 +817,7 @@ add_subdirectory (RMG/Common EXCLUDE_FROM_ALL)
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Subdiag EXCLUDE_FROM_ALL)
 
-add_subdirectory (ON EXCLUDE_FROM_ALL) 
+add_subdirectory (ON) 
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 

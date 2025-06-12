@@ -114,7 +114,7 @@ void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc,
     MPI_File_close(&mpi_fhand);
 
     MPI_Barrier(pct.grid_comm);
-    newname = name + ".vxc";
+    newname = name + "_spin" + std::to_string(pct.spinpe) + ".vxc";
     MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
@@ -122,7 +122,7 @@ void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc,
     MPI_File_close(&mpi_fhand);
 
     MPI_Barrier(pct.grid_comm);
-    newname = name + ".rho";
+    newname = name + "_spin" + std::to_string(pct.spinpe) + ".rho";
     MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);

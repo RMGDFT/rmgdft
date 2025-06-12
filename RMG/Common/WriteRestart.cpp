@@ -210,21 +210,6 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	    fflush(NULL);
     }
 
-    if(ct.write_qmcpack_restart)
-    {
-#if QMCPACK_SUPPORT
-	    int rank;
-	    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	    if(rank == 0)
-	    {
-		    std::string qmcpack_file(name);
-		    WriteQmcpackRestart(qmcpack_file);
-	    }
-#else
-	    rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
-#endif
-    }
-
     write_time = my_crtc () - time0;
 
     rmg_printf ("WriteRestart: writing took %.1f seconds \n", write_time);

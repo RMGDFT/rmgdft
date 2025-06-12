@@ -65,8 +65,57 @@ double IonIonEnergy_Ewald ()
     int num_cell_z = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_zside()) + 1;
 
 
-    double ii_real_space = 0.0;
+    ct.ES_rhoc = 0.0;
+    if(ct.localize_localpp)
+    {
+        double ii_real_space = 0.0;
 
+        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
+        {
+
+            iptr1 = &Atoms[i];
+            double Zi = Species[iptr1->species].zvalence;
+
+            for (j = 0; j < ct.num_ions; j++)
+            {
+
+                iptr2 = &Atoms[j];
+                double Zj = Species[iptr2->species].zvalence;
+                t1 = sqrt (Species[iptr1->species].rc * Species[iptr1->species].rc +
+                        Species[iptr2->species].rc * Species[iptr2->species].rc);
+
+                for(int ix = -num_cell_x; ix<= num_cell_x; ix++)
+                    for(int iy = -num_cell_y; iy<= num_cell_y; iy++)
+                        for(int iz = -num_cell_z; iz<= num_cell_z; iz++)
+                        {
+                            x = iptr1->crds[0] - iptr2->crds[0] + ix * Rmg_L.a0[0] + iy * Rmg_L.a1[0] + iz * Rmg_L.a2[0];
+                            y = iptr1->crds[1] - iptr2->crds[1] + ix * Rmg_L.a0[1] + iy * Rmg_L.a1[1] + iz * Rmg_L.a2[1];
+                            z = iptr1->crds[2] - iptr2->crds[2] + ix * Rmg_L.a0[2] + iy * Rmg_L.a1[2] + iz * Rmg_L.a2[2];
+                            r = sqrt(x*x + y*y + z*z);
+
+                            // r= 0 means two atoms are the same one.
+                            if(r > 1.0e-5) ii_real_space += Zi * Zj/r * boost::math::erfc(r/t1);
+
+                        }
+            }
+
+        }
+
+        // term self 
+        double ii_self = 0.0;
+
+        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
+            ii_self -= Species[Atoms[i].species].zvalence *
+                Species[Atoms[i].species].zvalence / (sqrt (2.0 * PI) * Species[Atoms[i].species].rc);
+
+        total_ii =  0.5 * ii_real_space + ii_self;
+        MPI_Allreduce(MPI_IN_PLACE, &total_ii, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+        ct.ES_rhoc = total_ii; 
+    }
+
+    // calculate the true ion-ion energy
+    double ii_real_space = 0.0;
     for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
     {
 
@@ -79,86 +128,67 @@ double IonIonEnergy_Ewald ()
             iptr2 = &Atoms[j];
             double Zj = Species[iptr2->species].zvalence;
             t1 = sqrt (sigma);
-            if(ct.localize_localpp)
-                t1 = sqrt (Species[iptr1->species].rc * Species[iptr1->species].rc +
-                        Species[iptr2->species].rc * Species[iptr2->species].rc);
-            
             for(int ix = -num_cell_x; ix<= num_cell_x; ix++)
-            for(int iy = -num_cell_y; iy<= num_cell_y; iy++)
-            for(int iz = -num_cell_z; iz<= num_cell_z; iz++)
-            {
-                x = iptr1->crds[0] - iptr2->crds[0] + ix * Rmg_L.a0[0] + iy * Rmg_L.a1[0] + iz * Rmg_L.a2[0];
-                y = iptr1->crds[1] - iptr2->crds[1] + ix * Rmg_L.a0[1] + iy * Rmg_L.a1[1] + iz * Rmg_L.a2[1];
-                z = iptr1->crds[2] - iptr2->crds[2] + ix * Rmg_L.a0[2] + iy * Rmg_L.a1[2] + iz * Rmg_L.a2[2];
-                r = sqrt(x*x + y*y + z*z);
+                for(int iy = -num_cell_y; iy<= num_cell_y; iy++)
+                    for(int iz = -num_cell_z; iz<= num_cell_z; iz++)
+                    {
+                        x = iptr1->crds[0] - iptr2->crds[0] + ix * Rmg_L.a0[0] + iy * Rmg_L.a1[0] + iz * Rmg_L.a2[0];
+                        y = iptr1->crds[1] - iptr2->crds[1] + ix * Rmg_L.a0[1] + iy * Rmg_L.a1[1] + iz * Rmg_L.a2[1];
+                        z = iptr1->crds[2] - iptr2->crds[2] + ix * Rmg_L.a0[2] + iy * Rmg_L.a1[2] + iz * Rmg_L.a2[2];
+                        r = sqrt(x*x + y*y + z*z);
 
-                // r= 0 means two atoms are the same one.
-                if(ct.localize_localpp)
-                {
-                    if(r > 1.0e-5) ii_real_space += Zi * Zj/r * boost::math::erfc(r/t1);
-                }
-                else
-                {
-                    if(r > 1.0e-5) ii_real_space += Zi * Zj * boost::math::erfc(t1*r) / r;
-                }
+                        if(r > 1.0e-5) ii_real_space += Zi * Zj * boost::math::erfc(t1*r) / r;
 
-            }
+                    }
         }
 
     }
 
-//   reciprocal space term
+    //   reciprocal space term
     double ii_kspace = 0.0;
 
     // this term is included in rhoc and vh term ct.ES and EigSums
     // so it is not necessary to include it when using localized localpp
     // but when using delocalized rhoc does not exist so we need it
-    if(!ct.localize_localpp)
+    //
+    if(pct.gridpe == 0) ii_kspace = -ct.nel*ct.nel / sigma / 4.0;
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+    double gsquare, k[3];
+    std::complex<double> S;
+
+    for(size_t ig=0;ig < ewald_pwaves->pbasis;ig++)
     {
-        if(pct.gridpe == 0) ii_kspace = -ct.nel*ct.nel / sigma / 4.0;
-        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-        double tpiba2 = tpiba * tpiba;
-        double gsquare, k[3];
-        std::complex<double> S;
-
-        for(size_t ig=0;ig < ewald_pwaves->pbasis;ig++)
+        if(ewald_pwaves->gmags[ig] > 1.0e-6)
         {
-            if(ewald_pwaves->gmags[ig] > 1.0e-6)
-            {
-                gsquare = ewald_pwaves->gmags[ig] * tpiba2;
-                k[0] = ewald_pwaves->g[ig].a[0] * tpiba;
-                k[1] = ewald_pwaves->g[ig].a[1] * tpiba;
-                k[2] = ewald_pwaves->g[ig].a[2] * tpiba;
+            gsquare = ewald_pwaves->gmags[ig] * tpiba2;
+            k[0] = ewald_pwaves->g[ig].a[0] * tpiba;
+            k[1] = ewald_pwaves->g[ig].a[1] * tpiba;
+            k[2] = ewald_pwaves->g[ig].a[2] * tpiba;
 
-                S = structure_factor(k);
+            S = structure_factor(k);
 
-                ii_kspace += std::norm(S) * exp(-gsquare/sigma/4.0)/ ewald_pwaves->gmags[ig] / tpiba2;
-            }
-         }
-         ii_kspace = 4.0*PI/Rmg_L.omega * ii_kspace;
+            ii_kspace += std::norm(S) * exp(-gsquare/sigma/4.0)/ ewald_pwaves->gmags[ig] / tpiba2;
+        }
     }
+    ii_kspace = 4.0*PI/Rmg_L.omega * ii_kspace;
 
 
     // term self 
     double ii_self = 0.0;
 
-    if(ct.localize_localpp)
-    {
-        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
-            ii_self -= Species[Atoms[i].species].zvalence *
-                Species[Atoms[i].species].zvalence / (sqrt (2.0 * PI) * Species[Atoms[i].species].rc);
-    }
-    else
-    {
-        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
-            ii_self -= Species[Atoms[i].species].zvalence *
-                Species[Atoms[i].species].zvalence * sqrt (4.0 * sigma / PI);
-        ii_self *= 0.5;
-    }
+    for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
+        ii_self -= Species[Atoms[i].species].zvalence *
+            Species[Atoms[i].species].zvalence * sqrt (4.0 * sigma / PI);
+    ii_self *= 0.5;
 
     total_ii =  0.5 * ii_real_space + 0.5 * ii_kspace + ii_self;
     MPI_Allreduce(MPI_IN_PLACE, &total_ii, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
+    if(ct.localize_localpp)
+    {
+        ct.ES_rhoc -= total_ii;
+    }
     return total_ii;
 
 }
@@ -187,7 +217,7 @@ static std::complex<double> structure_factor(double *k)
 double  MadelungConstant()
 {
     double r, x, y, z;
-    
+
 
     // eq. 7 of PHYSICAL REVIEW B 78, 125106 2008
     double kappa = 1.0;

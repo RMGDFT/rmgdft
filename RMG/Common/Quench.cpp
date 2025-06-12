@@ -181,6 +181,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
                     ct.scf_steps = 0;
+                    ct.exx_steps = 0;
                 }
                 if(ct.mix < 0.02)
                 {
@@ -412,6 +413,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
         rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
+        ct.TOTAL_DIRECT = total_e;
 
         double Madelung = MadelungConstant();
         rmg_printf ("MadelungConstant      =  %16.8f \n", Madelung);

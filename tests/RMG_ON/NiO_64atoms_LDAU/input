@@ -12,9 +12,9 @@ charge_mixing_type = "Pulay"
 #charge_pulay_refresh = "110"
 charge_pulay_scale = "0.10000000"
 occupation_electron_temperature_eV = "0.1"
-AFM="True"
+#AFM="True"
 
-test_energy = "-5941.804253758"
+test_energy = "-5941.91635891"
 
 #write_pseudopotential_plots = "true"
 

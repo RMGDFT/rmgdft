@@ -146,6 +146,11 @@ public:
     }
     ~GridObject(void);
 
+    void set(T x)
+    {
+        for(int i=0;i < this->factor*this->pbasis_;i++) this->data_[i] = x;
+    }
+
     // Dimensions and offsets on each MPI task
     // These are public and read only external to the
     // class but reference the internally writeable data

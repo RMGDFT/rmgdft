@@ -68,6 +68,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
 
     const int maxit = 100;
     const double charge_tol = 1.0e-10;
+    ct.E_lowbound = *min_element(eigs.begin(), eigs.end());
 
     int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double mu = 0.0, dmu, mu1, mu2, f, fmid;
