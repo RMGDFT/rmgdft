@@ -83,6 +83,7 @@ public:
     bool dft_is_nonlocc_rmg(void);
     bool dft_has_finite_size_correction_rmg(void);
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int nspin);
+    void v_xc_meta(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, double *kedtau, int nspin);
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
     static void start_exx_rmg(void);
     static void stop_exx_rmg(void);
