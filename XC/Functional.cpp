@@ -55,6 +55,7 @@
 #define dft_is_hybrid           RMG_FC_MODULE(dft_setting_routines,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
 #define get_exx_fraction        RMG_FC_MODULE(dft_setting_routines,xclib_get_exx_fraction,mod_FUNCT,GET_EXX_FRACTION)
 #define set_exx_fraction        RMG_FC_MODULE(dft_setting_routines,xclib_set_exx_fraction,mod_FUNCT,SET_EXX_FRACTION)
+#define set_rmg_epsg_guard      RMG_FC_MODULE(dft_setting_routines,xclib_set_rmg_epsg_guard,mod_FUNCT,SET_RMG_EPSG_GUARD)
 #define igcc_is_lyp             RMG_FC_MODULE(dft_setting_routines,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
 #define dft_has_finite_size_correction RMG_FC_MODULE(dft_setting_routines,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
 #define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
@@ -85,6 +86,7 @@ extern "C" bool dft_is_meta(void);
 extern "C" bool dft_is_hybrid(void);
 extern "C" double get_exx_fraction(void);
 extern "C" void set_exx_fraction(double *frac);
+extern "C" void set_rmg_epsg_guard(double *epsg_guard);
 extern "C" bool igcc_is_lyp(void);
 extern "C" bool dft_has_finite_size_correction(void);
 extern "C" bool dft_is_nonlocc(void);
@@ -267,6 +269,10 @@ void Functional::set_exx_fraction_rmg(double frac)
     set_exx_fraction(&frac);
 }
 
+void Functional::set_epsg_guard(double epsg_guard)
+{
+    set_rmg_epsg_guard(&epsg_guard);
+}
 double Functional::get_gau_parameter_rmg(void)
 {
     return get_gau_parameter();
@@ -683,7 +689,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double vtxcgc = 0.0;
     bool gargs = false;
 
-    fgobj<double> rhoout, sx, sc, v1x, v2x, v1c, v2c, dh1, dh2, dh3, d2rho;
+    fgobj<double> rhoout, sx, sc, v1x, v2x, v1c, v2c, d2rho;
     double *grho = new double[3*this->pbasis]();
     double *gx = grho;
     double *gy = gx + this->pbasis;
@@ -751,13 +757,11 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                     h[ix+2*this->pbasis] * gz[ix] ) ;
             v[ix] -= gdot;
             v[ix] -= vxc2[ix] * d2rho[ix];
-            vtxcgc_1 -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
+            vtxcgc_1 -= rho[ix]*(gdot + vxc2[ix] * d2rho[ix]);
         }
     }
     vtxc = vtxc + vtxcgc + vtxcgc_1;
     etxc = etxc + etxcgc;
-
-
 
     delete [] grhof;
     delete [] grho;

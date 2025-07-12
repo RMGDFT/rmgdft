@@ -22,7 +22,7 @@ MODULE dft_setting_routines
   PUBLIC :: xclib_set_dft_from_name, xclib_set_dft_IDs,           &
             xclib_set_auxiliary_flags, xclib_set_threshold,       &
             xclib_set_exx_fraction, xclib_set_finite_size_volume, &
-            set_screening_parameter, set_gau_parameter
+            xclib_set_rmg_epsg_guard, set_screening_parameter, set_gau_parameter
   PUBLIC :: xclib_get_name, xclib_get_ID,             & 
             xclib_get_dft_short, xclib_get_dft_long,  &
             xclib_get_exx_fraction, xclib_get_finite_size_cell_volume, &
@@ -694,6 +694,16 @@ CONTAINS
     WRITE( stdout,'(5x,a,f6.2)') 'EXX fraction changed: ', exx_fraction
     RETURN
   END SUBROUTINE xclib_set_exx_fraction
+
+  ! epsg_guard value for rmg
+  SUBROUTINE set_rmg_epsg_guard( epsg_guard_ )
+    USE kind_l,             ONLY: DP
+    USE dft_setting_params, ONLY: rmg_epsg_guard
+    IMPLICIT NONE
+    REAL(DP), INTENT(IN) :: epsg_guard_
+    rmg_epsg_guard = epsg_guard_
+  END SUBROUTINE set_rmg_epsg_guard
+
   !-----------------------------------------------------------------------
   SUBROUTINE dft_force_hybrid( request )
     !! Impose hybrid condition.

@@ -90,6 +90,7 @@ public:
     static bool is_exx_active(void);
     double get_exx_fraction_rmg(void);
     void set_exx_fraction_rmg(double);
+    void set_epsg_guard(double);
     static double get_gau_parameter_rmg(void);
     static void set_gau_parameter_rmg(double p);
     static double get_screening_parameter_rmg(void);

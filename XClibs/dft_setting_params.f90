@@ -77,6 +77,7 @@ MODULE dft_setting_params
     !! Cell volume parameter for finite size correction
     REAL(DP) :: rho_threshold_lda = 1.E-10_DP
     !! Threshold value for the density in LDA
+    REAL(DP) :: rmg_epsg_guard = 0.e-10_DP
     !
     INTEGER  :: igcx = notset
     !! GGA exchange index
