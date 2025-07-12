@@ -59,13 +59,11 @@
 #define igcc_is_lyp             RMG_FC_MODULE(dft_setting_routines,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
 #define dft_has_finite_size_correction RMG_FC_MODULE(dft_setting_routines,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
 #define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
-//#define xc                      RMG_FC_MODULE(xc_lib,xc_,mod_FUNCT,XC_)
-#define xc xc_
 #define xc_metagcx xc_metagcx_
 #define xc_spin                 RMG_FC_MODULE(funct,xc_spin,mod_FUNCT,XC)
 #define nlc                     RMG_FC_MODULE(funct,nlc,mod_FUNCT,NLC)
-//#define gcxc                    RMG_FC_MODULE(qe_drivers_gga,gcxc,mod_FUNCT,GCXC)
-#define xc_gcx xc_gcx_
+#define xc_gcx                  RMG_FC_GLOBAL(xc_gcx, XC_GCX)
+#define xc                      RMG_FC_GLOBAL(xc, XC)
 #define gcx_spin                RMG_FC_MODULE(qe_drivers_gga,gcx_spin,mod_FUNCT,GCX_SPIN)
 #define gcc_spin_more           RMG_FC_MODULE(qe_drivers_gga,gcc_spin_more,mod_FUNCT,GCC_SPIN_MORE)
 #define gcc_spin                RMG_FC_MODULE(qe_drivers_gga,gcc_spin,mod_FUNCT,GCC_SPIN)
