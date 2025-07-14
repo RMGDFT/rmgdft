@@ -64,6 +64,7 @@
 #define nlc                     RMG_FC_MODULE(funct,nlc,mod_FUNCT,NLC)
 #define xc_gcx                  RMG_FC_GLOBAL(xc_gcx, XC_GCX)
 #define xc                      RMG_FC_GLOBAL(xc, XC)
+#define xc_lsda                 RMG_FC_MODULE(qe_drivers_lda_lsda,xc_lsda,mod_FUNCT,XC_LSDA)
 #define gcx_spin                RMG_FC_MODULE(qe_drivers_gga,gcx_spin,mod_FUNCT,GCX_SPIN)
 #define gcc_spin_more           RMG_FC_MODULE(qe_drivers_gga,gcc_spin_more,mod_FUNCT,GCC_SPIN_MORE)
 #define gcc_spin                RMG_FC_MODULE(qe_drivers_gga,gcc_spin,mod_FUNCT,GCC_SPIN)
@@ -89,6 +90,7 @@ extern "C" bool igcc_is_lyp(void);
 extern "C" bool dft_has_finite_size_correction(void);
 extern "C" bool dft_is_nonlocc(void);
 extern "C" void xc (int *length, int *i1, int *i2, double *rho, double *ex, double *ec, double *vx, double *vc, bool *gargs);
+extern "C" void xc_lsda (int *length, double *rho, double *zeta, double *ex, double *ec, double *vx, double *vc);
 extern "C" void tau_xc (int *length, double *arho, double *grho2, double *atau, double *ex,
                         double *ec, double *v1x, double *v2x, double *v3x,
                         double *v1c, double *v2c, double *v3c);
@@ -309,7 +311,16 @@ bool Functional::dft_is_nonlocc_rmg(void)
 extern Kpoint<double> **Kptr_g;
 void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v, int nspin)
 {
+    RmgTimer RT0("5-Functional");
+    RmgTimer RT1("5-Functional: vxc");
     int ione = 1;
+    int itwo = 2;
+    const double epsr=1.0e-6;
+    bool gargs=false;
+
+    etxc = 0.0;
+    vtxc = 0.0;
+    for(int ix = 0;ix < nspin*this->pbasis;ix++) v[ix] = 0.0;
 
     if(dft_is_meta())
     {
@@ -322,34 +333,13 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         return;
     }
 
-    RmgTimer RT0("5-Functional");
-    RmgTimer RT1("5-Functional: vxc");
-    const double epsr=1.0e-6;
     double rhoneg[2]{0.0,0.0};
     double *rho_up=NULL, *rho_down=NULL;
     double *v_up=NULL, *v_down=NULL;
     double *rho = new double[nspin*this->pbasis];
 
     for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
-    // for collinear case, spin up and down are in different processor groups.
-    if(nspin==2)
-    {
-        for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
-
-        if(pct.spinpe == 0) {
-            rho_up = rho;
-            rho_down = &rho[this->pbasis];
-            v_up = v;
-            v_down = &v[this->pbasis];
-        }
-        else {
-            rho_down = rho;
-            rho_up = &rho[this->pbasis];
-            v_down = v;
-            v_up = &v[this->pbasis];
-        }
-    }
-    else if(nspin == 4)
+    if(nspin == 4)
     {
         rho_up = rho;
         rho_down = &rho[this->pbasis];
@@ -369,12 +359,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 
     }
 
-    etxc = 0.0;
-    vtxc = 0.0;
-    for(int ix = 0;ix < this->pbasis;ix++) v[ix] = 0.0;
-    for(int ispin = 1; ispin < nspin; ispin++)
-        for(int ix = 0;ix < this->pbasis;ix++) v[ix + ispin * this->pbasis] = 0.0;
-
 
     // First get the local exchange and correlation
     RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
@@ -384,7 +368,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         // spin unpolarized  
         fgobj<double> ex, ec, vx, vc;
         int length = ex.pbasis;
-        bool gargs=false;
         fgobj<double> trho;
         for(int ix=0;ix < this->pbasis;ix++) trho[ix] = rho[ix] + rho_core[ix];
         xc ( &length, &ione, &ione, trho.data(), ex.data(), ec.data(), vx.data(), vc.data(), &gargs);
@@ -395,71 +378,49 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
             vtxc = vtxc + v[ir]*rho_in[ir];
             if(rho_in[ir] < 0.0) rhonegl = rhonegl-rho_in[ir];
         }
-
-
-#if 0
-        for(int ix=0;ix < this->pbasis;ix++) {
-
-            double trho = rho[ix] + rho_core[ix];
-            double atrho = fabs(trho);
-            double ex, ec, vx, vc;
-            if(atrho > SMALL_CHARGE) {
-
-                xc( &trho, &ex, &ec, &vx, &vc);
-                v[ix] = vx + vc;
-                etxcl = etxcl + ( ex + ec ) * trho;
-                vtxcl = vtxcl + v[ix] * rho[ix];
-
-            }
-
-            else {
-                double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
-                xc( &rhotem, &ex, &ec, &vx, &vc );
-                double frac = std::cbrt(atrho/SMALL_CHARGE);
-                v[ix] = (vx + vc) * frac;
-                etxcl = etxcl + ( ex + ec ) * trho * frac;
-                vtxcl = vtxcl + v[ix] * rho[ix];
-
-            }
-
-            if(rho[ix] < 0.0) rhonegl = rhonegl - rho[ix];
-
-        } 
-        etxc += etxcl;
-        vtxc += vtxcl;
-        rhoneg[0] += rhonegl;
-#endif
     } 
-    else {
-
+    else if(nspin == 2)
+    {
         // spin polarized
+        fgobj<double> ex, ec;
+        spinobj<double> vx, vc, trho;
+
+        vx.set(0.0);
+        vc.set(0.0);
+        ex.set(0.0);
+        ec.set(0.0);
+
+        // QE routines expect total charge + magnetization stored sequentially.
+        for(int ix=0;ix < this->pbasis;ix++)
+            trho.up[ix] = rho_in[ix] + rho_in[ix+this->pbasis] + rho_core[ix];
+
+        // for collinear case, spin up and down are in different processor groups.
+        if(pct.spinpe == 0) {
+            for(int ix=0;ix < this->pbasis;ix++) trho.dw[ix] = rho_in[ix] - rho_in[ix+this->pbasis];
+            v_up = v;
+            v_down = &v[this->pbasis];
+        }
+        else {
+            for(int ix=0;ix < this->pbasis;ix++) trho.dw[ix] = rho_in[ix+this->pbasis] - rho_in[ix];
+            v_down = v;
+            v_up = &v[this->pbasis];
+        }
+
+        int length = this->pbasis;
+        xc ( &length, &itwo, &itwo, trho.data(), ex.data(), ec.data(), vx.data(), vc.data(), &gargs);
         double etxcl=0.0, vtxcl=0.0;
-#pragma omp parallel for reduction(+:etxcl,vtxcl)
-        for(int ix=0;ix < this->pbasis;ix++) {
-
-            double trho = rho_up[ix] + rho_down[ix] + rho_core[ix];
-            double atrho = fabs(trho);
-            double vx0, vx1, vc0, vc1;
-            double ex, ec;
-            if(atrho > SMALL_CHARGE) {
-
-                double zeta = (rho_up[ix] - rho_down[ix]) / atrho;
-                if( fabs( zeta ) > 1.0 ) {
-                    double tzeta = 1.0;
-                    if(zeta < 0.0) tzeta = -1.0;
-                    zeta = tzeta;
-                }
-// FIX!                xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
-                v_up[ix] = vx0 + vc0;
-                v_down[ix] = vx1 + vc1;
-                etxcl = etxcl + ( ex + ec ) * trho;
-                vtxcl = vtxcl + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
-
+        for(int ix=0;ix < this->pbasis;ix++)
+        {
+            double atrho = fabs(trho[ix]);
+            if(atrho > SMALL_CHARGE)
+            {
+                v_up[ix] = vx.up[ix] + vc.up[ix];
+                v_down[ix] = vx.dw[ix] + vc.dw[ix];
+                etxcl += (ex[ix] + ec[ix])*trho.up[ix];
+                trho.up[ix] -= rho_core[ix];
+                vtxcl += ((v_up[ix] + v_down[ix])*trho.up[ix] +
+                          (v_up[ix] - v_down[ix])*trho.dw[ix] )*0.5;
             }
-            else {
-
-            }
-
         }
         etxc += etxcl;
         vtxc += vtxcl;
