@@ -76,11 +76,14 @@ void write_force (void)
     if (ct.charge_analysis_type == CHARGE_ANALYSIS_NONE)
     {
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-	    Atoms[ion].partial_charge = 0.0;
+        {
+            Atoms[ion].partial_charge = 0.0;
+            Atoms[ion].mag = 0.0;
+        }
     }
 
     if(pct.imgpe==0)fprintf
-        (ct.logfile, "@ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ      Movable\n");
+        (ct.logfile, "@ION  Ion  Species       X           Y           Z       Charge  Mag       FX          FY         FZ      Movable\n");
 
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
@@ -94,14 +97,14 @@ void write_force (void)
         Rmg_L.to_cartesian_input (xfp, fp);
         Rmg_L.to_cartesian_input (Atom.xtal, crds);
 
-//        fp = Atom.force[ct.fpt[0]];
+        //        fp = Atom.force[ct.fpt[0]];
 
-        if(pct.imgpe==0)fprintf(ct.logfile,"@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %1d %1d %1d\n",
+        if(pct.imgpe==0)fprintf(ct.logfile,"@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f %6.3f  %10.7f  %10.7f  %10.7f  %1d %1d %1d\n",
                 ion + 1,
                 AtomType.atomic_symbol,
                 crds[0], crds[1], crds[2], 
-                 Atom.partial_charge,
-		 efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable[0], Atom.movable[1], Atom.movable[2]);
+                Atom.partial_charge, Atom.mag,
+                efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable[0], Atom.movable[1], Atom.movable[2]);
 
         f2 = 0.0;
         if (Atom.movable[0])

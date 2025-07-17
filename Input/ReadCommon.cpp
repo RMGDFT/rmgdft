@@ -375,7 +375,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Type of charge analysis to use. Only Voronoi deformation density is currently available. ", 
                      "charge_analysis must be either \"Voronoi\" or \"None\". Terminating. ");
     
-    If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
+    If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 10,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to  perform and write out charge analysis.",
                      "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0. ", OUTPUT_OPTIONS);
