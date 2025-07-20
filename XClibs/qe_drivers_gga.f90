@@ -18,7 +18,7 @@ MODULE qe_drivers_gga
   USE dft_setting_params,   ONLY: igcx, igcc, rho_threshold_gga,     &
                                   grho_threshold_gga, exx_started,   &
                                   exx_fraction, screening_parameter, &
-                                  gau_parameter
+                                  gau_parameter, rmg_epsg_guard
   !
   IMPLICIT NONE
   !
@@ -40,6 +40,7 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
   !
   USE exch_gga
   USE corr_gga
+  USE dft_setting_params,   ONLY: rmg_epsg_guard
 !! EMIL  USE beef_interface, ONLY: beefx, beeflocalcorr
   !
   IMPLICIT NONE
@@ -99,7 +100,7 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
 !$omp shared( rho_in, grho_in, length, igcx, exx_started, &
 !$omp         grho_threshold_gga, rho_threshold_gga, gau_parameter, &
 !$omp         screening_parameter, exx_fraction, igcc, v1x_out, v2x_out, &
-!$omp         v1c_out, v2c_out, sx_out, sc_out, err_out )
+!$omp         v1c_out, v2c_out, sx_out, sc_out, err_out, rmg_epsg_guard )
 !$omp do
 #endif
   DO ir = 1, length  
@@ -114,6 +115,7 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
         CYCLE
      ENDIF
      !
+     grho = grho + rmg_epsg_guard
      rho  = ABS(rho_in(ir))
      !
      ! ... EXCHANGE
@@ -527,7 +529,7 @@ SUBROUTINE gcx_spin( length, rho_in, grho2_in, sx_tot, v1x_out, v2x_out, err_out
 !$omp          iflag, in_err ) &
 !$omp  shared( rho_in, length, grho2_in, sx_tot, v1x_out, v2x_out,  &
 !$omp          igcx, exx_started, exx_fraction, screening_parameter,&
-!$omp          gau_parameter, err_out )
+!$omp          gau_parameter, err_out, rmg_epsg_guard )
 !$omp do
 #endif
   DO ir = 1, length  
@@ -553,11 +555,15 @@ SUBROUTINE gcx_spin( length, rho_in, grho2_in, sx_tot, v1x_out, v2x_out, err_out
           rho_up = rho_trash
           grho2_up = grho2_trash
           rnull_up = 0.0_DP
+        ELSE
+          grho2_up = grho2_up + rmg_epsg_guard
         ENDIF
         IF ( rho_dw<=small .OR. SQRT(ABS(grho2_dw))<=small ) THEN
           rho_dw = rho_trash
           grho2_dw = grho2_trash
           rnull_dw = 0.0_DP
+        ELSE
+          grho2_dw = grho2_dw + rmg_epsg_guard
         ENDIF
      ENDIF
      !
@@ -1075,6 +1081,7 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
     !
     rho  = rho_in(ir)
     grho = grho_in(ir)
+    grho = grho + 1.0e-7
     IF ( ABS(zeta_io(ir))<=1.0_DP ) zeta_io(ir) = SIGN( MIN(ABS(zeta_io(ir)), &
                                     (1.0_DP-rho_threshold_gga)), zeta_io(ir) )
     zeta = zeta_io(ir)

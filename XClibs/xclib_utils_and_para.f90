@@ -29,7 +29,7 @@ MODULE xclib_utils_and_para
         INTEGER, PARAMETER :: stdout = 6
         !! standard output unit
         !
-        LOGICAL :: nowarning = .FALSE.
+        LOGICAL :: nowarning = .TRUE.
         !! switch for warning messages
         !
         CHARACTER(LEN=35) :: error_msg(5)

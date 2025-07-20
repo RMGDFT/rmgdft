@@ -97,14 +97,14 @@ SUBROUTINE xc_gcx_( length, ns, rho, grho, ex, ec, v1x, v2x, v1c, v2c, v2c_ud )
 #if defined(__LIBXC)
 #include "xc_version.h"
   USE xc_f03_lib_m
-  USE dft_setting_params,   ONLY: xc_func, xc_info, libxc_flags, rmg_epsg_guard
+  USE dft_setting_params,   ONLY: xc_func, xc_info, libxc_flags
 #endif
   !
   USE kind_l,               ONLY: DP
   USE xclib_utils_and_para, ONLY: error_msg, nowarning
   USE dft_setting_params,   ONLY: igcx, igcc, is_libxc, rho_threshold_gga, &
                                   grho_threshold_gga, rho_threshold_lda,   &
-                                  ishybrid, exx_started, exx_fraction, rmg_epsg_guard
+                                  ishybrid, exx_started, exx_fraction
   USE qe_drivers_gga
   !
   IMPLICIT NONE
@@ -217,7 +217,7 @@ SUBROUTINE xc_gcx_( length, ns, rho, grho, ex, ec, v1x, v2x, v1c, v2c, v2c_ud )
     !$acc parallel loop
     DO k = 1, length
        rh(k) = ABS(rho(k,1))
-       grho2(k,1) = grho(1,k,1)**2 + grho(2,k,1)**2 + grho(3,k,1)**2 + rmg_epsg_guard
+       grho2(k,1) = grho(1,k,1)**2 + grho(2,k,1)**2 + grho(3,k,1)**2
     ENDDO
     !
     IF ( ns==1 ) THEN
