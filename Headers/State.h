@@ -56,6 +56,7 @@ public:
     double *vnuc;
     double *vnuc_f;   // Ephemeral object that only exists in GetNewRho
     double *vnuc_c;   // Ephemeral object that only exists in GetNewRho
+    double e_meta_xc; // energy correction term for MetaGGA
 
     /** Nuclear potential energy correction term */
     double vnuc_correction;

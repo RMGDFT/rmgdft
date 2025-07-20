@@ -810,6 +810,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         F.set_dft_from_name_rmg(xc_type);
     }
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
+    ct.xc_is_meta = F.dft_is_meta_rmg();
     if(ct.exx_fraction < 0.0)
         ct.exx_fraction = F.get_exx_fraction_rmg();
     else

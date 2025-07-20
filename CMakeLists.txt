@@ -784,6 +784,7 @@ endif()
 # Set common libs. Target specific libs set in subdirectories.
 list(APPEND RMGLIBS RmgLib)
 list(APPEND RMGLIBS Misc)
+list(APPEND RMGLIBS XClibs)
 list(APPEND RMGLIBS XC)
 list(APPEND RMGLIBS dftd3)
 list(APPEND RMGLIBS MG)
@@ -794,7 +795,6 @@ list(APPEND RMGLIBS US_PP)
 list(APPEND RMGLIBS zfp)
 list(APPEND RMGLIBS symspg_static)
 list(APPEND RMGLIBS Diagonalization)
-list(APPEND RMGLIBS XClibs)
 
 
 
@@ -832,6 +832,7 @@ add_subdirectory (Finite_diff EXCLUDE_FROM_ALL)
 add_subdirectory (Force EXCLUDE_FROM_ALL) 
 add_subdirectory (Input EXCLUDE_FROM_ALL) 
 add_subdirectory (MG EXCLUDE_FROM_ALL) 
+add_subdirectory (XClibs EXCLUDE_FROM_ALL) 
 add_subdirectory (XC EXCLUDE_FROM_ALL) 
 add_subdirectory (Misc EXCLUDE_FROM_ALL) 
 add_subdirectory (US_PP EXCLUDE_FROM_ALL) 
@@ -841,7 +842,6 @@ add_subdirectory (dftd3 EXCLUDE_FROM_ALL)
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 add_subdirectory (Diagonalization EXCLUDE_FROM_ALL) 
 add_subdirectory (BerryPhase EXCLUDE_FROM_ALL) 
-add_subdirectory (XClibs EXCLUDE_FROM_ALL) 
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default

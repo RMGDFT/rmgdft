@@ -166,8 +166,9 @@ public:
     /* number of state to output */
     int plot_state;
 
-    /* Exchage-Correlation flag */
+    /* Exchage-Correlation flags */
     int xctype;
+    bool xc_is_meta;
 
     /* Hybrid EXC flag */
     int xc_is_hybrid;

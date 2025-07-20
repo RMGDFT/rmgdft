@@ -44,8 +44,11 @@
 #include "RmgThread.h"
 #include "Symmetry.h"
 #include "Voronoi.h"
+#include "Functional.h"
 
-
+extern double *Functional::ke_density;
+extern double *Functional::ke_taur;
+extern double *Functional::ke_taur_wf;
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -143,6 +146,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
+
+    Functional F(*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(ct.xc_is_meta)
+    {
+        if(!F.ke_density) F.ke_density = new double[FP0_BASIS]();
+        if(!F.ke_taur) F.ke_taur = new double[ct.nspin*FP0_BASIS]();
+        if(!F.ke_taur_wf) F.ke_taur = new double[ct.nspin*P0_BASIS]();
+    }
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[FP0_BASIS * factor]();
@@ -258,6 +269,19 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
+    Functional F(*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(ct.xc_is_meta)
+    {
+        fgobj<OrbitalType> gx, gy, gz;
+        ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
+        for(int idx = 0;idx < FP0_BASIS;idx++)
+        {
+            double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
+                                  gy[idx]*std::conj(gy[idx]) + 
+                                  gz[idx]*std::conj(gz[idx]));
+            F.ke_density[idx] += 0.5*scale*t1;
+        }
+    }
     rhomutex.unlock();
 
     delete [] psi_f;

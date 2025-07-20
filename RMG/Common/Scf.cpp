@@ -364,8 +364,10 @@ template <typename OrbitalType> bool Scf (
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code
         // will give us a variational energy.
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll 
-                && ct.potential_acceleration_constant_step > 1.0e-5)
+        if ((Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && (!ct.noncoll 
+                && ct.potential_acceleration_constant_step > 1.0e-5)) ||
+            (Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)))
+
         {
             ct.scf_correction = 0.0;
             for (int idx = 0; idx < vtot.pbasis; idx++)
