@@ -22,7 +22,7 @@ MODULE dft_setting_routines
   PUBLIC :: xclib_set_dft_from_name, xclib_set_dft_IDs,           &
             xclib_set_auxiliary_flags, xclib_set_threshold,       &
             xclib_set_exx_fraction, xclib_set_finite_size_volume, &
-            xclib_set_rmg_epsg_guard, set_screening_parameter, set_gau_parameter
+            set_rmg_epsg_guard, set_screening_parameter, set_gau_parameter
   PUBLIC :: xclib_get_name, xclib_get_ID,             & 
             xclib_get_dft_short, xclib_get_dft_long,  &
             xclib_get_exx_fraction, xclib_get_finite_size_cell_volume, &

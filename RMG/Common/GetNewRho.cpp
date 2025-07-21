@@ -269,9 +269,12 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
-    Functional F(*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+#if 0
+//  Computing the kinetic energy density on the fine grid may help in some cases but
+//  that's not clear yet
     if(ct.xc_is_meta)
     {
+        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         fgobj<OrbitalType> gx, gy, gz;
         ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
         for(int idx = 0;idx < FP0_BASIS;idx++)
@@ -282,6 +285,7 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
             F.ke_density[idx] += 0.5*scale*t1;
         }
     }
+#endif
     rhomutex.unlock();
 
     delete [] psi_f;

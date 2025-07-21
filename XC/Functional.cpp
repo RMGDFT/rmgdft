@@ -54,7 +54,7 @@
 #define dft_is_hybrid           RMG_FC_MODULE(dft_setting_routines,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
 #define get_exx_fraction        RMG_FC_MODULE(dft_setting_routines,xclib_get_exx_fraction,mod_FUNCT,GET_EXX_FRACTION)
 #define set_exx_fraction        RMG_FC_MODULE(dft_setting_routines,xclib_set_exx_fraction,mod_FUNCT,SET_EXX_FRACTION)
-#define set_rmg_epsg_guard      RMG_FC_MODULE(dft_setting_routines,xclib_set_rmg_epsg_guard,mod_FUNCT,SET_RMG_EPSG_GUARD)
+#define set_rmg_epsg_guard      RMG_FC_MODULE(dft_setting_routines,set_rmg_epsg_guard,mod_FUNCT,SET_RMG_EPSG_GUARD)
 #define igcc_is_lyp             RMG_FC_MODULE(dft_setting_routines,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
 #define dft_has_finite_size_correction RMG_FC_MODULE(dft_setting_routines,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
 #define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
@@ -346,8 +346,19 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         if(ct.scf_steps >= 0)
         {
             for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
-            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
+//            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
+            int ratio = Rmg_G->default_FG_RATIO;
+            Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
+            int dimx = Rmg_G->get_PX0_GRID(ratio);
+            int dimy = Rmg_G->get_PY0_GRID(ratio);
+            int dimz = Rmg_G->get_PZ0_GRID(ratio);
+            int half_dimx = Rmg_G->get_PX0_GRID(1);
+            int half_dimy = Rmg_G->get_PY0_GRID(1);
+            int half_dimz = Rmg_G->get_PZ0_GRID(1);
+            P.prolong(kdetau_f.data(), kdetau_c.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
         }
+//  Need to update GetNewRho if we want to compute this on fine grid but not clear if it's necessary
         else
         {
             for(int ix=0;ix < this->pbasis;ix++) kdetau_f[ix] = this->ke_density[ix];

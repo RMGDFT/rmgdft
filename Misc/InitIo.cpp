@@ -809,6 +809,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         std::string xc_type = reordered_xc_type[*ik->Readintval];
         F.set_dft_from_name_rmg(xc_type);
     }
+    F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
     ct.xc_is_meta = F.dft_is_meta_rmg();
     if(ct.exx_fraction < 0.0)
