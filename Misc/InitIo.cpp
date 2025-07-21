@@ -817,6 +817,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
+    if(F.dft_is_meta_rmg())
+    {
+        int dimx = pct.coalesce_factor * Rmg_G->get_PX0_GRID(1);
+        int dimy = Rmg_G->get_PY0_GRID(1);
+        int dimz = Rmg_G->get_PZ0_GRID(1);
+        F.ke_taur_wf = new double[ct.nspin*dimx*dimy*dimz]();
+        F.ke_density = new double[get_FP0_BASIS()]();
+        F.ke_taur = new double[ct.nspin*get_FP0_BASIS()]();
+    }
 
     if(ct.wannier90 && ct.BerryPhase)
     {

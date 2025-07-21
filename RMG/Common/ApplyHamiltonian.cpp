@@ -93,16 +93,16 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
     }
 
 #if 1
-    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+//    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
     {
         wfobj<CalcType> gx, gy, gz, h, htmp; 
         htmp.set(0.0);
         ApplyGradient<CalcType> (psi, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Coarse");
     
-        for(int ix=0;ix < pbasis;ix++) gx[ix] *= F.ke_taur_wf[ix];
-        for(int ix=0;ix < pbasis;ix++) gy[ix] *= F.ke_taur_wf[ix];
-        for(int ix=0;ix < pbasis;ix++) gz[ix] *= F.ke_taur_wf[ix];
+        for(int ix=0;ix < pbasis;ix++) gx[ix] *= Functional::ke_taur_wf[ix];
+        for(int ix=0;ix < pbasis;ix++) gy[ix] *= Functional::ke_taur_wf[ix];
+        for(int ix=0;ix < pbasis;ix++) gz[ix] *= Functional::ke_taur_wf[ix];
 
         ApplyGradient<CalcType> (gx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
         for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];

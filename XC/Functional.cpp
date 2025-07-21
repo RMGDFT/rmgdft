@@ -75,6 +75,10 @@
 #define get_screening_parameter       RMG_FC_MODULE(dft_setting_routines,get_screening_parameter,mod_FUNCT,GET_SCREENING_PARAMETER)
 #define set_screening_parameter       RMG_FC_MODULE(dft_setting_routines,set_screening_parameter,mod_FUNCT,SET_SCREENING_PARAMETER)
 
+double *Functional::ke_density;
+double *Functional::ke_taur;
+double *Functional::ke_taur_wf;
+
 extern "C" void set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *get_dft_name(void);
 extern "C" void start_exx(void);
@@ -202,6 +206,8 @@ Functional::~Functional(void)
     {
         if(vxc2) delete [] vxc2;
         if(v2cud) delete [] v2cud;
+        vxc2 = NULL;
+        v2cud = NULL;
     }
 
 }
@@ -340,9 +346,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         wfobj<double> kdetau_c;
         fgobj<double> kdetau_f;
         kdetau_c.set(0.0);
-        if(!this->ke_density) this->ke_density = new double[this->pbasis]();
-        if(!this->ke_taur) this->ke_taur = new double[ct.nspin*this->pbasis]();
-        if(!this->ke_taur_wf) this->ke_taur_wf = new double[ct.nspin*wf_pbasis]();
         if(ct.scf_steps >= 0)
         {
             for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
