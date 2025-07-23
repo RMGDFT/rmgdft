@@ -218,8 +218,16 @@ template<typename T>
 spinobj<T>::spinobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin);
-    up = std::span(this->data_, this->pbasis);
-    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
     // We don't define the 4 component names for the spin polarized case. This
     // will cause an error if someone tries to use them like this which is fine.
     if(this->factor == 4)
@@ -234,8 +242,25 @@ template<typename T>
 spinobj<T>::spinobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin, data_ptr);
-    up = std::span(this->data_, this->pbasis);
-    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
+    // We don't define the 4 component names for the spin polarized case. This
+    // will cause an error if someone tries to use them like this which is fine.
+    if(this->factor == 4)
+    {
+        c0 = std::span(this->data_, this->pbasis);
+        cx = std::span(this->data_ + this->pbasis, this->pbasis);
+        cy = std::span(this->data_ + 2*this->pbasis, this->pbasis);
+        cz = std::span(this->data_ + 3*this->pbasis, this->pbasis);
+    }
 }
 template<typename T>
 spinobj<T>::~spinobj(void)
