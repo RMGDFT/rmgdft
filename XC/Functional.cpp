@@ -511,6 +511,38 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     else if(nspin == 2) {
         this->gradcorr_spin(rho_up, rho_down, rho_core, etxc, vtxc, v_up, v_down);
     }
+    else if(nspin == 4)
+    {
+        spinobj<double> trho, rho(rho_in), v(v_out), vtmp;
+        double mrho;
+        vtmp.set(0.0);
+        for(int ix = 0; ix < this->pbasis; ix++)
+        {
+            mrho = rho.cx[ix]*rho.cx[ix] + rho.cy[ix]*rho.cy[ix] + rho.cz[ix]*rho.cz[ix];
+            mrho = std::sqrt(mrho);
+            trho.up[ix] = 0.5*(rho.c0[ix] + mrho);
+            trho.dw[ix] = 0.5*(rho.c0[ix] - mrho);
+        }
+        this->gradcorr_spin(trho.up.data(), trho.dw.data(), rho_core, etxc, vtxc, vtmp.up.data(), vtmp.dw.data());
+        for(int ix = 0; ix < this->pbasis; ix++)
+        {
+            double vt = 0.5 * (vtmp.up[ix] + vtmp.dw[ix]);
+            double vd = 0.5 * (vtmp.up[ix] - vtmp.dw[ix]);
+
+            mrho = rho.cx[ix]*rho.cx[ix] + rho.cy[ix]*rho.cy[ix] + rho.cz[ix]*rho.cz[ix];
+            mrho = std::sqrt(mrho);
+
+            v[ix] += vt;
+
+            if(mrho > epsr)
+            {
+                v.cx[ix] += vd * rho.cx[ix] / mrho;
+                v.cy[ix] += vd * rho.cy[ix] / mrho;
+                v.cz[ix] += vd * rho.cz[ix] / mrho;
+            }
+        }
+
+    }
     delete RT3;
 
     // And finally any non-local corrections
