@@ -167,7 +167,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             else
             {
                 double tmix = AutoMix();
-                if(tmix != ct.mix)
+                if(tmix != ct.mix && ct.mix > 0.02)
                 {
                     bool reset = true;
                     if(ct.scf_accuracy > 1.0e-3)
@@ -185,15 +185,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 }
                 if(ct.mix < 0.02)
                 {
-                    ct.scf_is_converging = false;
-                    // Write forcefield info
-                    std::string ffield = std::string(pct.image_path[pct.thisimg]) + 
-                        "forcefield.xml";
-                    write_ffield (ffield);
-
-                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
+                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", ct.mix);
                     rmg_printf ("and usually means something is wrong with the job.\n");
-                    rmg_error_handler(__FILE__, __LINE__, "Terminating.");
                 }
 
                 // Should add a check here for a minimum density mixing to trigger an error
