@@ -1445,7 +1445,7 @@ Pw::~Pw(void)
       }
 
       // Gpu streams and plans
-      if(numstreams > 1)
+      if(num_streams > 1)
       {
           for (int i = 0; i < num_streams; i++)
               RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
