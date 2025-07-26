@@ -199,6 +199,8 @@ protected:
 #define		pztranc		RMG_FC_GLOBAL(pztranc, PZTRANC)
 #define		pzhegvx		RMG_FC_GLOBAL(pzhegvx, PZHEGVX)
 #define		pdsyevd		RMG_FC_GLOBAL(pdsyevd, PDSYEVD)
+#define		pdsyevr		RMG_FC_GLOBAL(pdsyevr, PDSYEVR)
+#define		pzheevr		RMG_FC_GLOBAL(pzheevr, PZHEEVR)
 #define		psgeadd		RMG_FC_GLOBAL(psgeadd, PSGEADD)
 #define		pdgeadd		RMG_FC_GLOBAL(pdgeadd, PDGEADD)
 #define		pcgeadd		RMG_FC_GLOBAL(pcgeadd, PCGEADD)
@@ -304,6 +306,13 @@ void pdgetri(int *, double *, int *, int *, int *, int *, double*, int *, int *,
 void pzgetrf(int *, int *, std::complex<double> *, int *, int *, int *, int *, int *);
 void pzgeqpf(int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *, int*);
 void pdgeqpf(int *, int *, double *, int *, int *, int *, int *, double *, double *, int *, int*);
+void pdsyevr(char *, char *, char *, int *, double *, int *, int *, int *, double *,
+             double *, int *, int *, int *, int *, double *, double *, int *, int *,
+             int *, double *, int *, int *, int *, int *);
+void pzheevr(char *, char *, char *, int *, std::complex<double> *, int *, int *, 
+             int *, double *, double *, int *, int *, int *, int *, double *,
+             std::complex<double> *, int *, int *, int *, std::complex<double> *,
+             int *, double *, int *, int *, int *, int *);
 #ifdef __cplusplus
 }
 #endif
