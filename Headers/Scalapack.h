@@ -194,6 +194,7 @@ protected:
 #define		pdsyevx		RMG_FC_GLOBAL(pdsyevx, PDSYEVX)
 #define		pdpotrf		RMG_FC_GLOBAL(pdpotrf, PDPOTRF)
 #define		pdsyngst	RMG_FC_GLOBAL(pdsyngst, PDSYNGST)
+#define		pzhengst	RMG_FC_GLOBAL(pzhengst, PZHENGST)
 #define		pdtrsm		RMG_FC_GLOBAL(pdtrsm, PDTRSM)
 #define		pdtran		RMG_FC_GLOBAL(pdtran, PDTRAN)
 #define		pztranc		RMG_FC_GLOBAL(pztranc, PZTRANC)
@@ -259,9 +260,10 @@ void pdsygst(int *, char *, int *, double *, int *, int *, int *, double *, int 
               int *, int *, double *, int *);
 void pdsyngst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, double *, int *, int *);
-
 void pzhegst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, int *);
+void pzhengst(int *, char *, int *, std::complex<double> *, int *, int *, int *, std::complex<double> *,
+              int *, int*, int*, double *, std::complex<double> *, int *, int *);
 void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
 void pdpocon(char *, int*, double*, int*, int*, int*, double *, double *, double *, int *, int *, int *, int *);
 void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
