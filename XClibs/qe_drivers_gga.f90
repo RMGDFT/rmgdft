@@ -1033,6 +1033,7 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
   !! Implemented: Perdew86, GGA (PW91), PBE
   !
   USE corr_gga
+  USE dft_setting_params,       ONLY: rmg_epsg_guard
 !! EMIL  USE beef_interface, ONLY: beeflocalcorrspin
   !
   IMPLICIT NONE
@@ -1074,14 +1075,14 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
 !$omp private( rho, zeta, grho, sc, v1c_up, v1c_dw, v2c ) &
 !$omp shared( igcc, sc_out, v1c_out, v2c_out, &
 !$omp         rho_threshold_gga, zeta_io, length, &
-!$omp         grho_in, rho_in )
+!$omp         grho_in, rho_in, rmg_epsg_guard)
 !$omp do
 #endif
   DO ir = 1, length
     !
     rho  = rho_in(ir)
     grho = grho_in(ir)
-    grho = grho + 1.0e-7
+    grho = grho + rmg_epsg_guard
     IF ( ABS(zeta_io(ir))<=1.0_DP ) zeta_io(ir) = SIGN( MIN(ABS(zeta_io(ir)), &
                                     (1.0_DP-rho_threshold_gga)), zeta_io(ir) )
     zeta = zeta_io(ir)
