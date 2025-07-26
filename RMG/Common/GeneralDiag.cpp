@@ -343,17 +343,12 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             int NP = numroc( &NN, &NB, &izero, &izero, &nprow );
             int lrwork = 1 + 9*N + 3*NP*NQ;
             int liwork = 7*N + 8* npcol + 2;
-// Need to fix these for pdsyevr instead of just making them huge
-liwork = 14*N;
-lrwork = 240*N;
             int lwork = 2*NP*NB + NQ*NB + NB*NB;
             double *work2 = new double[lwork];
 
             pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                     (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
-            double *nwork = new double[lrwork];
-            int *iwork = new int[liwork];
 
             // and now solve it 
 #if 0
@@ -362,9 +357,23 @@ lrwork = 240*N;
 #else
             double vl = 0.0, vu = 0.0;
             int il = 0, iu = 0, eigs_found, eigsv_found;
+            lwork = -1;
+            double *nwork = new double[10];
+            int *iwork = new int[10];
             pdsyevr("V", "A", "L", &N, (double *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
                     &eigs_found, &eigsv_found, eigs, (double *)distV, 
-                    &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
+                    &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+
+            liwork = iwork[0];
+            lwork = std::round(std::real(nwork[0]));
+            delete [] iwork;
+            delete [] nwork;
+            nwork = new double[lwork];
+            iwork = new int[liwork];
+
+            pdsyevr("V", "A", "L", &N, (double *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
+                    &eigs_found, &eigsv_found, eigs, (double *)distV, 
+                    &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 #endif
             pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
                     (double *)distV, &ione, &ione, desca);
@@ -384,6 +393,7 @@ lrwork = 240*N;
 
             if(info) return info;
 
+#if 0
             int NB = MainSp->GetNB();
             int NN = std::max( N, NB);
 
@@ -395,7 +405,6 @@ lrwork = 240*N;
             int lwork = N + ( NP+NQ+NB )*NB;
             int lrwork = 1 + 9*N + 3*NP*NQ;
             int liwork = 7*N + 8* npcol + 2;
-
             double *rwork = new double[lrwork];
             double *nwork = new double[lwork*2];
             int *iwork = new int[liwork];
@@ -403,6 +412,32 @@ lrwork = 240*N;
             // and now solve it
             pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                     eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+#else
+            int lwork = -1, liwork, lrwork;
+            double vl = 0.0, vu = 0.0;
+            std::complex<double> *nwork = new std::complex<double>[10];
+            int *iwork = new int[10];
+            double *rwork = new double[10];
+
+            int il = 0, iu = 0, eigs_found, eigsv_found;
+            // workspace query
+            pzheevr("V", "A", "L", &N, (std::complex<double> *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
+                    &eigs_found, &eigsv_found, eigs, (std::complex<double> *)distV, &ione, &ione,
+                    desca, (std::complex<double> *)nwork, &lwork, rwork, &lrwork, iwork, &liwork, &info);
+            liwork = iwork[0];
+            lrwork = std::round(rwork[0]);
+            lwork = std::round(std::real(nwork[0]));
+            delete [] rwork;
+            delete [] iwork;
+            delete [] nwork;
+            nwork = new std::complex<double>[lwork];
+            rwork = new double[lrwork];
+            iwork = new int[liwork];
+            pzheevr("V", "A", "L", &N, (std::complex<double> *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
+                    &eigs_found, &eigsv_found, eigs, (std::complex<double> *)distV, &ione, &ione,
+                    desca, (std::complex<double> *)nwork, &lwork, rwork, &lrwork, iwork, &liwork, &info);
+
+#endif
             if(info) return info;
 
             pztrsm("Left", "L", "C", "N", &N, &N, rone, (double *)distB, &ione, &ione, desca,
