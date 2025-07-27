@@ -34,6 +34,7 @@
 #include "Gpufuncs.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "RmgException.h"
 
 
 
@@ -85,6 +86,88 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
 
+    // On first step use Wilson algorithm over full set (nbase+notcon)
+    if(ct.is_gamma && (nbase==notcon)){
+        int numstates = nbase + notcon;
+        int st, st1, length, idx, omp_tid;
+        KpointType *sarr;
+        char *transt = "t";
+        char *uplo = "l";
+
+        KpointType *tarr = new KpointType[numstates];
+
+        if (typeid(KpointType) == typeid(double))
+        {
+            double rone = 1.0, rzero = 0.0;
+            dsyrk( uplo, transt, &numstates, &pbasis_noncoll, &rone, (double *)psi, &pbasis_noncoll,
+                &rzero, (double *)mat, &numstates);
+        }
+
+        /* get the global part */
+        length = numstates * numstates;
+        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+
+        /* compute the cholesky factor of the overlap matrix */
+        int info;
+        if (typeid(KpointType) == typeid(double))
+        {
+            dpotrf(uplo, &numstates, (double *)mat, &numstates, &info);
+        }
+        if (info != 0)
+            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+
+
+        // Get inverse of diagonal elements
+        for(st = 0;st < numstates;st++) tarr[st] = 1.0 / mat[st + numstates * st];
+
+
+        // This code may look crazy but there is a method to the madness. We copy a slice
+        // of the wavefunction array consisting of the values for all orbitals of a given
+        // basis point into a temporary array. Then we do the updates on each slice and
+        // parallelize over slices with OpenMP. This produces good cache behavior
+        // and excellent parformance on the XK6.
+
+        KpointType *darr;
+    #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+        {
+            omp_tid = omp_get_thread_num();
+            if(omp_tid == 0) darr = new KpointType[numstates * omp_get_num_threads()];
+    #pragma omp barrier
+
+    #pragma omp for schedule(static, 1) nowait
+            for(idx = 0;idx < pbasis_noncoll;idx++) {
+
+                sarr = &darr[omp_tid*numstates];
+
+                for (st = 0; st < numstates; st++) sarr[st] = psi[st*pbasis_noncoll + idx];
+
+                for (st = 0; st < numstates; st++) {
+
+                    sarr[st] *= tarr[st];
+
+                    for (st1 = st+1; st1 < numstates; st1++) {
+                        sarr[st1] -= mat[st1 + numstates*st] * sarr[st];
+                    }
+
+                }
+
+                for (st = 0; st < numstates; st++) psi[st*pbasis_noncoll + idx] = sarr[st];
+
+            }
+        }
+        delete [] darr;
+
+        double tmp = 1.0 / sqrt(vel);
+        idx = numstates * pbasis_noncoll;
+        for(int idx = 0;idx < numstates * pbasis_noncoll;idx++) {
+            psi[idx] *= tmp;
+        }
+
+        delete [] tarr;
+        return;
+    }
+
     // ortho to the first nbase states
     RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
     BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
@@ -111,7 +194,6 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         norm = 1.0/sqrt(norm * vel);
         dscal(&pbasis_c, &norm, (double *)&psi_extra[st*pbasis_noncoll], &ione);
     }
-
 
     /*
     RmgGemm(trans_a, trans_n, nbase+notcon, nbase+notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nbase+notcon);
