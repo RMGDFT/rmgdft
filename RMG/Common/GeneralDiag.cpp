@@ -388,18 +388,9 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             pzpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
             if(info) return info;
 
-//            pzhegst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
-//                    (double *)distB, &ione, &ione, desca, &scale, &info);
+            pzhegst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+                    (double *)distB, &ione, &ione, desca, &scale, &info);
 
-            std::complex<double> twork2[10];
-            int lwork = -1;
-            pzhengst(&ibtype, "L", &N, (std::complex<double> *)distA, &ione, &ione, desca,
-                    (std::complex<double> *)distB, &ione, &ione, desca, &scale, twork2, &lwork, &info);
-            lwork = std::round(std::real(twork2[0])); 
-            std::complex<double> *work2 = new std::complex<double>[lwork];
-            pzhengst(&ibtype, "L", &N, (std::complex<double> *)distA, &ione, &ione, desca,
-                    (std::complex<double> *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
-            delete [] work2;
             if(info) return info;
 
 #if 0
@@ -422,7 +413,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                     eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 #else
-            lwork = -1;
+            int lwork = -1;
             int liwork, lrwork;
             double vl = 0.0, vu = 0.0;
             std::complex<double> *nwork = new std::complex<double>[10];
