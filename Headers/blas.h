@@ -123,6 +123,9 @@
 #define		dimatcopy	RMG_FC_GLOBAL(dimatcopy, DIMATCOPY)
 #define		cimatcopy	RMG_FC_GLOBAL(cimatcopy, CIMATCOPY)
 #define		zimatcopy	RMG_FC_GLOBAL(zimatcopy, ZIMATCOPY)
+#define		ztrtri  	RMG_FC_GLOBAL(ztrtri, ZTRTRI)
+#define		dtrmm  	    RMG_FC_GLOBAL(dtrmm, DTRMM)
+#define		ztrmm  	    RMG_FC_GLOBAL(ztrmm, ZTRMM)
 
 #if __cplusplus
 extern "C" {
@@ -144,6 +147,11 @@ void ctrttp(const char *, int *, std::complex<float> *, int *, std::complex<floa
 void ctpttr( const char *, int *, std::complex<float> *, std::complex<float> *, int *, int *);
 
 void dtrtri(const char *UPLO, const char *DIAG, int *N, double *A, int *LDA, int *INFO );
+void ztrtri(const char *UPLO, const char *DIAG, int *N, std::complex<double> *A, int *LDA, int *INFO );
+void dtrmm(const char *side, const char *UPLO, const char *transa, const char *diag,
+        int *m, int *N, double *alpha, double *A, int *LDA, double *B, int *LDB);
+void ztrmm(const char *side, const char *UPLO, const char *transa, const char *diag,
+        int *m, int *N, std::complex<double> *alpha, std::complex<double> *A, int *LDA, std::complex<double> *B, int *LDB);
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);

@@ -91,9 +91,63 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
     RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
 
-    return;
 
-    if(1)   // if 0 switches to old method
+    //return;
+    if(0)   // if 0 switches to old method
+    {
+        int st, st1, length, idx, omp_tid;
+        KpointType *sarr;
+        char *transt = "t";
+        char *uplo = "u";
+        char *diag = "N";
+        char *side = "R";
+
+        KpointType *tarr = new KpointType[notcon];
+
+        if (typeid(KpointType) == typeid(double))
+        {
+            double rone = 1.0, rzero = 0.0;
+            dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
+                &rzero, (double *)mat, &notcon);
+        }
+        else
+        {
+            KpointType cone(1.0), czero(0.0);
+            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
+                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
+        }
+
+        /* get the global part */
+        length = factor * notcon * notcon;
+        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+
+        /* compute the cholesky factor of the overlap matrix */
+        int info, info_trtri;
+        if (typeid(KpointType) == typeid(double))
+        {
+            double rone = 1.0/sqrt(vel);
+            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
+            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
+            dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
+
+        }
+        else
+        {
+            std::complex<double> cone = 1.0/sqrt(vel);
+            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
+            ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
+            ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
+        }
+        if (info != 0)
+            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+
+        if (info_trtri != 0)
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
+
+    }
+
+    else   // if 0 switches to old method
     {
         int st, st1, length, idx, omp_tid;
         KpointType *sarr;
@@ -106,7 +160,7 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         {
             double rone = 1.0, rzero = 0.0;
             dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-                &rzero, (double *)mat, &notcon);
+                    &rzero, (double *)mat, &notcon);
         }
         else
         {
@@ -145,13 +199,13 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         // and excellent parformance on the XK6.
 
         KpointType *darr=NULL;
-    #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
         {
             omp_tid = omp_get_thread_num();
             if(omp_tid == 0) darr = new KpointType[notcon * omp_get_num_threads()];
-    #pragma omp barrier
+#pragma omp barrier
 
-    #pragma omp for schedule(static, 1) nowait
+#pragma omp for schedule(static, 1) nowait
             for(idx = 0;idx < pbasis_noncoll;idx++) {
 
                 sarr = &darr[omp_tid*notcon];
@@ -181,28 +235,5 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         }
 
         delete [] tarr;
-    }
-    else
-    {
-        // ortho for the remainl noncon states
-        double norm;
-        int pbasis_c = pbasis_noncoll * factor;
-        int ione = 1;
-        norm =  ddot(&pbasis_c, (double *)psi_extra, &ione, (double *)psi_extra, &ione);
-        MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        norm = 1.0/sqrt(norm * vel);
-        dscal(&pbasis_c, &norm, (double *)psi_extra, &ione);
-
-        for (int st = 1; st < notcon; st++)
-        {
-            // mat = <psi_extra[0:st-1] |psi_extr[st]>
-            RmgGemm(trans_a, trans_n, st, ione, pbasis_noncoll, alphavel, psi_extra, pbasis_noncoll, &psi_extra[st*pbasis_noncoll], pbasis_noncoll, zero, mat, st);
-            BlockAllreduce((double *)mat, (size_t)st * (size_t)factor, pct.grid_comm);
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, ione, st, mone, psi_extra, pbasis_noncoll, mat, st, one, &psi_extra[st*pbasis_noncoll], pbasis_noncoll);
-            norm =  ddot(&pbasis_c, (double *)&psi_extra[st*pbasis_noncoll], &ione, (double *)&psi_extra[st*pbasis_noncoll], &ione);
-            MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-            norm = 1.0/sqrt(norm * vel);
-            dscal(&pbasis_c, &norm, (double *)&psi_extra[st*pbasis_noncoll], &ione);
-        }
     }
 }
