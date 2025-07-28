@@ -91,7 +91,8 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
     RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
 
-//    if(ct.is_gamma)
+    return;
+
     if(1)   // if 0 switches to old method
     {
         int st, st1, length, idx, omp_tid;
@@ -110,12 +111,8 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         else
         {
             KpointType cone(1.0), czero(0.0);
-            //std::complex<double> cone(1.0), czero(0.0);
             RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
                     pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
-//zherk(uplo, trans_a, &notcon, &pbasis_noncoll, (std::complex<double> *)&cone, (std::complex<double> *)psi_extra,
-//     &pbasis_noncoll, (std::complex<double> *)&czero, (std::complex<double> *)mat, &notcon);
-
         }
 
         /* get the global part */
