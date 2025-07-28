@@ -313,6 +313,9 @@ public:
     /** Davidson pre multigrid steps */
     int davidson_premg;
 
+    /** Use davidson 2 stage ortho */
+    bool davidson_2stage_ortho;
+
     /** Number of states to allocate memory for */
     int alloc_states;
     int state_block_size;
