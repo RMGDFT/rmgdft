@@ -346,15 +346,10 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             int lwork = 2*NP*NB + NQ*NB + NB*NB;
             double *work2 = new double[lwork];
 
-            pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
-                    (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
-
+            pdsygst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+                    (double *)distB, &ione, &ione, desca, &scale, &info);
 
             // and now solve it 
-#if 0
-            pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
-#else
             double vl = 0.0, vu = 0.0;
             int il = 0, iu = 0, eigs_found, eigsv_found;
             lwork = -1;
@@ -374,7 +369,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             pdsyevr("V", "A", "L", &N, (double *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
                     &eigs_found, &eigsv_found, eigs, (double *)distV, 
                     &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
-#endif
+
             pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
                     (double *)distV, &ione, &ione, desca);
             delete [] iwork;
@@ -393,26 +388,6 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 
             if(info) return info;
 
-#if 0
-            int NB = MainSp->GetNB();
-            int NN = std::max( N, NB);
-
-            int izero = 0;
-            int nprow = MainSp->GetRows();
-            int npcol = MainSp->GetCols();
-            int NQ = numroc( &NN, &NB, &izero, &izero, &npcol );
-            int NP = numroc( &NN, &NB, &izero, &izero, &nprow );
-            int lwork = N + ( NP+NQ+NB )*NB;
-            int lrwork = 1 + 9*N + 3*NP*NQ;
-            int liwork = 7*N + 8* npcol + 2;
-            double *rwork = new double[lrwork];
-            double *nwork = new double[lwork*2];
-            int *iwork = new int[liwork];
-
-            // and now solve it
-            pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
-#else
             int lwork = -1;
             int liwork, lrwork;
             double vl = 0.0, vu = 0.0;
@@ -438,7 +413,6 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
                     &eigs_found, &eigsv_found, eigs, (std::complex<double> *)distV, &ione, &ione,
                     desca, (std::complex<double> *)nwork, &lwork, rwork, &lrwork, iwork, &liwork, &info);
 
-#endif
             if(info) return info;
 
             pztrsm("Left", "L", "C", "N", &N, &N, rone, (double *)distB, &ione, &ione, desca,
