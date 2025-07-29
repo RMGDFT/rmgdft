@@ -331,40 +331,29 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
             double scale=1.0, rone = 1.0;
             pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
 
-            // Get pdsyngst_ workspace
-            //
-              // Get workspace required
-            int NB = MainSp->GetNB();
-            int NN = std::max( N, NB);
-            int izero = 0;
-            int nprow = MainSp->GetRows();
-            int npcol = MainSp->GetCols();
-            int NQ = numroc( &NN, &NB, &izero, &izero, &npcol );
-            int NP = numroc( &NN, &NB, &izero, &izero, &nprow );
-            int lrwork = 1 + 9*N + 3*NP*NQ;
-            int liwork = 7*N + 8* npcol + 2;
-            int lwork = 2*NP*NB + NQ*NB + NB*NB;
-            double *work2 = new double[lwork];
-
             pdsygst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                     (double *)distB, &ione, &ione, desca, &scale, &info);
 
+            // Get workspace required
+            int izero = 0;
+            int nprow = MainSp->GetRows();
+            int npcol = MainSp->GetCols();
+            int NB = MainSp->GetNB();
+            int NN = std::max( N, NB);
+            int NP00 = numroc( &NN, &NB, &izero, &izero, &nprow );
+            int NNBmax = std::max(std::max(N, NB), 2);
+            int MQ00 = numroc( &NNBmax, &NB, &izero, &izero, &npcol);
+            int NNP = std::max(N, std::max(nprow+npcol + 1, 4));
+            int lwork = 2 + 5*N + std::max(18*NN, NP00*MQ00 + 2*NB*NB) 
+                       + (2 + std::ceil((double)N)/(double)(nprow*npcol))*NN;
+            lwork *= 2;
+            int liwork = 12*NNP + 2*N;
+            liwork *= 2;
             // and now solve it 
             double vl = 0.0, vu = 0.0;
             int il = 0, iu = 0, eigs_found, eigsv_found;
-            lwork = -1;
-            double *nwork = new double[10];
-            int *iwork = new int[10];
-            pdsyevr("V", "A", "L", &N, (double *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
-                    &eigs_found, &eigsv_found, eigs, (double *)distV, 
-                    &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
-
-            liwork = iwork[0];
-            lwork = std::round(std::real(nwork[0]));
-            delete [] iwork;
-            delete [] nwork;
-            nwork = new double[lwork];
-            iwork = new int[liwork];
+            double *nwork = new double[lwork];
+            int *iwork = new int[liwork];
 
             pdsyevr("V", "A", "L", &N, (double *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
                     &eigs_found, &eigsv_found, eigs, (double *)distV, 
@@ -374,7 +363,6 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
                     (double *)distV, &ione, &ione, desca);
             delete [] iwork;
             delete [] nwork;
-            delete [] work2;
 
         }
         else if(typeid(KpointType) == typeid(std::complex<double>))
@@ -388,27 +376,26 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 
             if(info) return info;
 
-            int lwork = -1;
-            int liwork, lrwork;
             double vl = 0.0, vu = 0.0;
-            std::complex<double> *nwork = new std::complex<double>[10];
-            int *iwork = new int[10];
-            double *rwork = new double[10];
+            int il = 0, iu = 0, izero = 0, eigs_found, eigsv_found;
+            int nprow = MainSp->GetRows();
+            int npcol = MainSp->GetCols();
+            int NB = MainSp->GetNB();
+            int NN = std::max( N, NB);
+            int NP00 = numroc( &NN, &NB, &izero, &izero, &nprow );
+            int NNBmax = std::max(std::max(N, NB), 2);
+            int MQ00 = numroc( &NNBmax, &NB, &izero, &izero, &npcol);
+            int NNP = std::max(N, std::max(nprow+npcol + 1, 4));
+            int lwork = N + ( NP00 + MQ00 + NB ) * NB;
+            lwork *= 2;
+            int lrwork = 2 + 5 * N + std::max(18*N, NP00*MQ00 + 2*NB*NB) +
+                     (2 + std::ceil( ((double)N)/(double)(nprow*npcol)))*N;
+            lrwork *= 2;
+            int liwork = 12*NNP + 2*N;
+            std::complex<double> *nwork = new std::complex<double>[lwork];
+            double *rwork = new double[lrwork];
+            int *iwork = new int[liwork];
 
-            int il = 0, iu = 0, eigs_found, eigsv_found;
-            // workspace query
-            pzheevr("V", "A", "L", &N, (std::complex<double> *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
-                    &eigs_found, &eigsv_found, eigs, (std::complex<double> *)distV, &ione, &ione,
-                    desca, (std::complex<double> *)nwork, &lwork, rwork, &lrwork, iwork, &liwork, &info);
-            liwork = iwork[0];
-            lrwork = std::round(rwork[0]);
-            lwork = std::round(std::real(nwork[0]));
-            delete [] rwork;
-            delete [] iwork;
-            delete [] nwork;
-            nwork = new std::complex<double>[lwork];
-            rwork = new double[lrwork];
-            iwork = new int[liwork];
             pzheevr("V", "A", "L", &N, (std::complex<double> *)distA, &ione, &ione, desca, &vl, &vu, &il, &iu,
                     &eigs_found, &eigsv_found, eigs, (std::complex<double> *)distV, &ione, &ione,
                     desca, (std::complex<double> *)nwork, &lwork, rwork, &lrwork, iwork, &liwork, &info);
