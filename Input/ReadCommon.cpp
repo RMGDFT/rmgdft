@@ -1336,7 +1336,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The stress criteria ",
             "stress_convergence_criterion must lie in the range (1.0e-04,50). Resetting to default value of 0.5. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-12,
+    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-10,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the estimated change in the total energy per step where we assume self "
             "consistency has been achieved. ",
