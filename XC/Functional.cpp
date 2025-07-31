@@ -342,36 +342,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     vtxc = 0.0;
     for(int ix = 0;ix < nspin*this->pbasis;ix++) v_out[ix] = 0.0;
 
-    if(dft_is_meta())
-    {
-        int wf_pbasis = Rmg_G->get_P0_BASIS(1);
-        wfobj<double> kdetau_c;
-        fgobj<double> kdetau_f;
-        kdetau_c.set(0.0);
-        if(ct.scf_steps >= 0)
-        {
-            for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
-//            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
-            int ratio = Rmg_G->default_FG_RATIO;
-            Prolong P(2, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
-            int dimx = Rmg_G->get_PX0_GRID(ratio);
-            int dimy = Rmg_G->get_PY0_GRID(ratio);
-            int dimz = Rmg_G->get_PZ0_GRID(ratio);
-            int half_dimx = Rmg_G->get_PX0_GRID(1);
-            int half_dimy = Rmg_G->get_PY0_GRID(1);
-            int half_dimz = Rmg_G->get_PZ0_GRID(1);
-            P.prolong(kdetau_f.data(), kdetau_c.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-
-        }
-//  Need to update GetNewRho if we want to compute this on fine grid but not clear if it's necessary
-        else
-        {
-            for(int ix=0;ix < this->pbasis;ix++) kdetau_f[ix] = this->ke_density[ix];
-        }
-        v_xc_meta(rho_in, rho_core, etxc, vtxc, v_out, kdetau_f.data(), nspin);
-        return;
-    }
-
     double rhoneg[2]{0.0,0.0};
     double *rho_up=NULL, *rho_down=NULL;
     double *v_up=NULL, *v_down=NULL;

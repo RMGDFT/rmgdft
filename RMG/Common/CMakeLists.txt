@@ -1,5 +1,6 @@
 add_library (RMG_Common
 #GetFdFactor.cpp
+compute_vxc.cpp
 STM_calc.cpp
 ComputeHcore.cpp
 OutputDos.cpp

@@ -548,7 +548,8 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     double malpha = -alpha;
     int ione = 1;
 
-    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
+    compute_vxc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin);
+
     // How do we filter here for the noncollinear case?
     if(Rmg_G->default_FG_RATIO > 1 && 0)
     {
