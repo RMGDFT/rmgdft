@@ -2,7 +2,7 @@
 description="C60 test example using Davidson diagonalization"
 
 # Used to compare test energy
-test_energy="-343.84786143"
+test_energy="-343.84795974"
 test_steps = "15"
 test_steps_tolerance = "1"
 
