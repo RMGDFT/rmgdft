@@ -80,101 +80,6 @@ GridObject<T>::~GridObject(void)
 }
 
 template<typename T>
-void GridObject<T>::increment(const GridObject<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < this->factor*this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::increment(const fgobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < this->factor*this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::increment(const wfobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < this->factor*this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::increment(const spinobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < this->factor*this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::decrement(const GridObject<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < factor*this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::decrement(const fgobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < factor*this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::decrement(const wfobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < factor*this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::decrement(const spinobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < factor*this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-template<typename T>
-void GridObject<T>::multiply(const T& b) {
-    for (int i = 0; i < factor * this->pbasis; i++) {
-        data_[i] *= b;
-    }
-}
-
-template<typename T>
 wfobj<T>::wfobj(void) : GridObject<T>(1)
 {   
     // For wfobj factor is 1 or 2 so for 1 up=dw
@@ -218,8 +123,16 @@ template<typename T>
 spinobj<T>::spinobj(void) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin);
-    up = std::span(this->data_, this->pbasis);
-    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
     // We don't define the 4 component names for the spin polarized case. This
     // will cause an error if someone tries to use them like this which is fine.
     if(this->factor == 4)
@@ -234,8 +147,25 @@ template<typename T>
 spinobj<T>::spinobj(T *data_ptr) : GridObject<T>(Rmg_G->default_FG_RATIO)
 {
     this->allocate(ct.nspin, data_ptr);
-    up = std::span(this->data_, this->pbasis);
-    dw = std::span(this->data_ + (this->factor-1)*this->pbasis, this->pbasis);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
+    // We don't define the 4 component names for the spin polarized case. This
+    // will cause an error if someone tries to use them like this which is fine.
+    if(this->factor == 4)
+    {
+        c0 = std::span(this->data_, this->pbasis);
+        cx = std::span(this->data_ + this->pbasis, this->pbasis);
+        cy = std::span(this->data_ + 2*this->pbasis, this->pbasis);
+        cz = std::span(this->data_ + 3*this->pbasis, this->pbasis);
+    }
 }
 template<typename T>
 spinobj<T>::~spinobj(void)

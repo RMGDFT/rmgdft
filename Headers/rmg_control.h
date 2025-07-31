@@ -166,8 +166,9 @@ public:
     /* number of state to output */
     int plot_state;
 
-    /* Exchage-Correlation flag */
+    /* Exchage-Correlation flags */
     int xctype;
+    bool xc_is_meta;
 
     /* Hybrid EXC flag */
     int xc_is_hybrid;
@@ -311,6 +312,10 @@ public:
 
     /** Davidson pre multigrid steps */
     int davidson_premg;
+
+    /** Use davidson 1 and 2 stage ortho flags */
+    bool davidson_1stage_ortho;
+    bool davidson_2stage_ortho;
 
     /** Number of states to allocate memory for */
     int alloc_states;

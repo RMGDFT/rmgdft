@@ -174,7 +174,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
             first_nls = 0;
             delete RT3;
         }
-        ApplyHamiltonian<KpointType, KpointType> (this, st1, Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
+        ApplyHamiltonian<KpointType, KpointType> (this, &Kstates[st1], st1, Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
 
         first_nls++;
     }

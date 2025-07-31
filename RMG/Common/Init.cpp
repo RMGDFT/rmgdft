@@ -601,9 +601,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         //get_vxc (rho, rho_oppo, rhocore, vxc);
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
-        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
+        compute_vxc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
@@ -614,7 +613,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         }
-        delete F;
         delete RT1;
 
         RmgTimer *RT1 = new RmgTimer("2-Init: hartree");

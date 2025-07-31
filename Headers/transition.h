@@ -214,6 +214,8 @@ void DipoleCorrection(double *dipole,  double *vh_dipole);
 void write_ffield (std::string &filename);
 template <typename KpointType>
 void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat);
+void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double *v_xc, int nspin);
+
 
 #endif
 #endif

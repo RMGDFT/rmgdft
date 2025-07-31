@@ -55,6 +55,8 @@
 #define		dscal		RMG_FC_GLOBAL(dscal, DSCAL)
 #define		zscal		RMG_FC_GLOBAL(zscal, ZSCAL)
 #define		dsyrk		RMG_FC_GLOBAL(dsyrk, DSYRK)
+#define		zsyrk		RMG_FC_GLOBAL(zsyrk, ZSYRK)
+#define		zherk		RMG_FC_GLOBAL(zherk, ZHERK)
 #define		dsyr2k		RMG_FC_GLOBAL(dsyr2k, DSYR2K)
 #define		zsyr2k		RMG_FC_GLOBAL(zsyr2k, ZSYR2K)
 #define		dpotrf		RMG_FC_GLOBAL(dpotrf, DPOTRF)
@@ -121,6 +123,9 @@
 #define		dimatcopy	RMG_FC_GLOBAL(dimatcopy, DIMATCOPY)
 #define		cimatcopy	RMG_FC_GLOBAL(cimatcopy, CIMATCOPY)
 #define		zimatcopy	RMG_FC_GLOBAL(zimatcopy, ZIMATCOPY)
+#define		ztrtri  	RMG_FC_GLOBAL(ztrtri, ZTRTRI)
+#define		dtrmm  	    RMG_FC_GLOBAL(dtrmm, DTRMM)
+#define		ztrmm  	    RMG_FC_GLOBAL(ztrmm, ZTRMM)
 
 #if __cplusplus
 extern "C" {
@@ -142,6 +147,11 @@ void ctrttp(const char *, int *, std::complex<float> *, int *, std::complex<floa
 void ctpttr( const char *, int *, std::complex<float> *, std::complex<float> *, int *, int *);
 
 void dtrtri(const char *UPLO, const char *DIAG, int *N, double *A, int *LDA, int *INFO );
+void ztrtri(const char *UPLO, const char *DIAG, int *N, std::complex<double> *A, int *LDA, int *INFO );
+void dtrmm(const char *side, const char *UPLO, const char *transa, const char *diag,
+        int *m, int *N, double *alpha, double *A, int *LDA, double *B, int *LDB);
+void ztrmm(const char *side, const char *UPLO, const char *transa, const char *diag,
+        int *m, int *N, std::complex<double> *alpha, std::complex<double> *A, int *LDA, std::complex<double> *B, int *LDB);
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
@@ -155,6 +165,11 @@ double ddot (int *n, double * x, int *incx, double * y, int *incy);
 double dnrm2 (int *n, double * x, int *incx);
 void dsyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
             int *lda, double * beta, double * c, int *ldc);
+void zsyrk (const char *uplo, const char *trans, int *n, int *k, std::complex<double> * alpha, std::complex<double> * A,
+            int *lda, std::complex<double> * beta, std::complex<double> * c, int *ldc);
+
+void zherk(char	*uplo, const char *trans, int *n, int *k, std::complex<double> *alpha,
+           std::complex<double> *a, int *lda, std::complex<double> *beta, std::complex<double> *c, int *ldc);
 void dsyr2k (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
             int *lda, double *b, int *ldb, double * beta, double * c, int *ldc);
 void dswap (int *n, double * x, int *incx, double * y, int *incy);
@@ -173,7 +188,7 @@ void corpbe (double * rs, double * zet, double * t, double * uu, double * vv, do
              double * h, double * dvcup, double * DVCDN);
 void cpotrf (char *uplo, int *n, double * a, int *lda, int *info);
 void dpotrf (char *uplo, int *n, double * a, int *lda, int *info);
-void zpotrf (char *uplo, int *n, double * a, int *lda, int *info);
+void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
 void exch (double * d, double * s, double * u, double * v, double * ex, double * vx);
 void exchpbe (double * d, double * s, double * u, double * v, int *lgga, int *lpot,
               double * ex, double * vx);

@@ -259,6 +259,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("cell_relax", &lc.cell_relax, false, 
                         "flag to control unit cell relaxation", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("davidson_1stage_ortho", &lc.davidson_1stage_ortho, true, 
+            "Flag that improves davidson convergence for hard cases. Defaults to true but can be disabled for well behaved systems enabling higher performance.", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("davidson_2stage_ortho", &lc.davidson_2stage_ortho, false, 
+            "Flag to futher improve davidson convergence for hard cases. Experimental. ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes. ", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid. ", CELL_OPTIONS);

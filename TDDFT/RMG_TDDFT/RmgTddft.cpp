@@ -63,7 +63,7 @@ void eldyn_ort(int *desca, int Mdim, int Ndim, std::complex<double> *F,std::comp
 void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
 void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm);
 
-
+void CalculatePrho(double *, double *);
 
 void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
     /*    
@@ -580,6 +580,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     }
 
     double current[3];
+    double prho_t0[3];
+    double prho_t1[3];
+    // calculate  \nabla ^2 u = rho, prho_t0 = \nabla . u 
+    // current = [prho_t1 - prho_t0 ] /dt    
+    CalculatePrho(rho, prho_t0);
     //  run rt-td-dft
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -702,9 +707,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             //get_vxc(rho, rho_oppo, rhocore, vxc);
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
-            Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
-            delete F;
+            compute_vxc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
             delete RT1;
 
             RT1 = new RmgTimer("2-TDDFT: Vh");
@@ -810,6 +813,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
+        CalculatePrho(rho, prho_t1);
+        for(int idx =0; idx < 3; idx++)
+        {
+            current[i] = (prho_t1[idx] - prho_t0[idx])/time_step;
+            prho_t0[idx] = prho_t1[idx];
+        }
         Rmg_Symm->symm_vec(current);
 
         if(pct.imgpe == 0)

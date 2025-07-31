@@ -809,12 +809,23 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         std::string xc_type = reordered_xc_type[*ik->Readintval];
         F.set_dft_from_name_rmg(xc_type);
     }
+    F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
+    ct.xc_is_meta = F.dft_is_meta_rmg();
     if(ct.exx_fraction < 0.0)
         ct.exx_fraction = F.get_exx_fraction_rmg();
     else
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
+    if(F.dft_is_meta_rmg())
+    {
+        int dimx = pct.coalesce_factor * Rmg_G->get_PX0_GRID(1);
+        int dimy = Rmg_G->get_PY0_GRID(1);
+        int dimz = Rmg_G->get_PZ0_GRID(1);
+        F.ke_taur_wf = new double[ct.nspin*dimx*dimy*dimz]();
+        F.ke_density = new double[get_FP0_BASIS()]();
+        F.ke_taur = new double[ct.nspin*get_FP0_BASIS()]();
+    }
 
     if(ct.wannier90 && ct.BerryPhase)
     {

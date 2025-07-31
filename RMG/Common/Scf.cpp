@@ -96,10 +96,8 @@ template <typename OrbitalType> bool Scf (
 
     /* Evaluate XC energy and potential */
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+    compute_vxc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
-    delete F;
     delete RT1;
 
     double rms_target = std::min(std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12), 1.0e-6);
@@ -364,8 +362,10 @@ template <typename OrbitalType> bool Scf (
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code
         // will give us a variational energy.
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll 
-                && ct.potential_acceleration_constant_step > 1.0e-5)
+        if ((Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && (!ct.noncoll 
+                && ct.potential_acceleration_constant_step > 1.0e-5)) ||
+            (Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)))
+
         {
             ct.scf_correction = 0.0;
             for (int idx = 0; idx < vtot.pbasis; idx++)
@@ -450,9 +450,7 @@ template <typename OrbitalType> bool Scf (
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
         vxc_in = vxc;
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
-        delete F;
+        compute_vxc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
         delete RT1;
 
     }

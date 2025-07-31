@@ -336,8 +336,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+        compute_vxc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
 
         GetNewRho(Kptr, rho.data());
         rho.get_oppo();

@@ -31,20 +31,23 @@
 #include "Solvers.h"
 #include "transition.h"
 #include "rmg_complex.h"
+#include "Functional.h"
+#include "RmgSumAll.h"
 
 
-template double ApplyHamiltonian<double,float>(Kpoint<double> *, int, float *, float *, double *, double *, double *, bool);
-template double ApplyHamiltonian<double,double>(Kpoint<double> *, int, double *, double *, double *, double *, double *, bool);
+template double ApplyHamiltonian<double,float>(Kpoint<double> *, State<double> *, int, float *, float *, double *, double *, double *, bool);
+template double ApplyHamiltonian<double,double>(Kpoint<double> *, State<double> *, int, double *, double *, double *, double *, double *, bool);
 
-template double ApplyHamiltonian<std::complex<double>,std::complex<float>>(Kpoint<std::complex<double>> *, int, std::complex<float> *, 
+template double ApplyHamiltonian<std::complex<double>,std::complex<float>>(Kpoint<std::complex<double>> *, State<std::complex<double>> *, int, std::complex<float> *, 
                              std::complex<float> *, double *, double *, std::complex<double> *, bool);
-template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoint<std::complex<double>> *, int, std::complex<double> *, 
+template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoint<std::complex<double>> *, State<std::complex<double>> *, int, std::complex<double> *, 
                              std::complex<double> *, double *, double *, std::complex<double> *, bool);
 
 // Applies Hamiltonian operator to one orbital
 //
 //  INPUT
 //    kptr   = kpoint object
+//    sp     = state pointer
 //    psi    = the orbital
 //    vtot   = total local potential on wavefunction grid
 //    nv     = Non-local potential applied to this orbital
@@ -52,7 +55,7 @@ template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoi
 //    h_psi  = H|psi>
 //
 template <typename KpointType, typename CalcType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv, bool potential_acceleration)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int istate, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv, bool potential_acceleration)
 {
     double fd_diag;
     double *veff = NULL;
@@ -89,6 +92,30 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __rest
         h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (veff[idx] + tmag)*psi[idx];
     }
 
+#if 1
+//    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(ct.xc_is_meta)
+    {
+        wfobj<CalcType> gx, gy, gz, h, htmp; 
+        htmp.set(0.0);
+        ApplyGradient<CalcType> (psi, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Coarse");
+    
+        for(int ix=0;ix < pbasis;ix++) gx[ix] *= Functional::ke_taur_wf[ix];
+        for(int ix=0;ix < pbasis;ix++) gy[ix] *= Functional::ke_taur_wf[ix];
+        for(int ix=0;ix < pbasis;ix++) gz[ix] *= Functional::ke_taur_wf[ix];
+
+        ApplyGradient<CalcType> (gx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        ApplyGradient<CalcType> (gy.data(), NULL, h.data(), NULL, ct.kohn_sham_fd_order, "Coarse");
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        ApplyGradient<CalcType> (gz.data(), NULL, NULL, h.data(), ct.kohn_sham_fd_order, "Coarse");
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        double msum = 0.0;
+        for(int ix=0;ix < pbasis;ix++) msum += std::real(std::conj(htmp[ix])*psi[ix]);
+        sp->e_meta_xc = msum;
+        for(int ix=0;ix < pbasis;ix++) h_psi[ix] += htmp[ix];
+   } 
+#endif
 
     if(ct.noncoll)
     {

@@ -241,12 +241,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         DavPreconditioner (this, &psi[nbase*pbasis_noncoll], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
-        if(ct.BerryPhase)
-        {
-            RT1 = new RmgTimer("6-Davidson: orthogonalization");
-            DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
-            delete RT1;
-        }
+        RT1 = new RmgTimer("6-Davidson: orthogonalization");
+        if(ct.davidson_1stage_ortho) DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
+        delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
         // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the

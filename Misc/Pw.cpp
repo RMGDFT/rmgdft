@@ -1445,8 +1445,11 @@ Pw::~Pw(void)
       }
 
       // Gpu streams and plans
-      for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+      if(num_streams > 1)
+      {
+          for (int i = 0; i < num_streams; i++)
+              RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+      }
 
 #else
       fftw_destroy_plan(fftw_r2c_backward_plan_inplace);

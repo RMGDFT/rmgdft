@@ -185,7 +185,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* Apply Hamiltonian */
         {
             RmgTimer RT1("Mg_eig: apply hamiltonian");
-            diag=ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp->istate, tmp_psi_t, work1_t, vtot_psi, vxc_psi, nv_t, false);
+            diag=ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, tmp_psi_t, work1_t, vtot_psi, vxc_psi, nv_t, false);
         }
 
         // Copy saved application to ns to res

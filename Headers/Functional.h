@@ -30,6 +30,7 @@
 #include "TradeImages.h"
 #include "vdW.h"
 #include "rmg_mangling.h"
+#include "GridObject.h"
 
 #if USE_LIBXC
 #include "xc.h"
@@ -77,24 +78,29 @@ public:
     static const std::string & get_dft_name_rmg(void);
     void set_dft_from_name_rmg(std::string newdft_name);
     bool dft_is_gradient_rmg(void);
-    bool dft_is_meta_rmg(void);
+    static bool dft_is_meta_rmg(void);
     bool dft_is_hybrid_rmg(void);
     bool igcc_is_lyp_rmg(void);
     bool dft_is_nonlocc_rmg(void);
     bool dft_has_finite_size_correction_rmg(void);
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int nspin);
+    void v_xc_meta(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, double *ked, int nspin);
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
     static void start_exx_rmg(void);
     static void stop_exx_rmg(void);
     static bool is_exx_active(void);
     double get_exx_fraction_rmg(void);
     void set_exx_fraction_rmg(double);
+    void set_epsg_guard(double);
     static double get_gau_parameter_rmg(void);
     static void set_gau_parameter_rmg(double p);
     static double get_screening_parameter_rmg(void);
     static void set_screening_parameter_rmg(double p);
 
     static std::string saved_dft_name;
+    static double *ke_density;
+    static double *ke_taur;
+    static double *ke_taur_wf;
     void stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma);
 
 };
