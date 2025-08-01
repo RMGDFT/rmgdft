@@ -63,12 +63,12 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
 //            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
             int ratio = Rmg_G->default_FG_RATIO;
             Prolong P(2, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
-            int dimx = Rmg_G->get_PX0_GRID(ratio);
-            int dimy = Rmg_G->get_PY0_GRID(ratio);
-            int dimz = Rmg_G->get_PZ0_GRID(ratio);
-            int half_dimx = Rmg_G->get_PX0_GRID(1);
-            int half_dimy = Rmg_G->get_PY0_GRID(1);
-            int half_dimz = Rmg_G->get_PZ0_GRID(1);
+            int dimx = kdetau_f.dimx;
+            int dimy = kdetau_f.dimy;
+            int dimz = kdetau_f.dimz;
+            int half_dimx = kdetau_c.dimx;
+            int half_dimy = kdetau_c.dimy;
+            int half_dimz = kdetau_c.dimz;
             P.prolong(kdetau_f.data(), kdetau_c.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
         }
