@@ -78,6 +78,14 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
 }
 
+void FftFilter(fgobj<double> &x,
+               Pw &pwaves,
+               Pw &c_pwaves,
+               int filter_type)
+{
+    FftFilter(x.data(), pwaves, c_pwaves, filter_type);
+}
+
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
                Pw &c_pwaves, // IN: Plane wave structure for the coarse grid.
@@ -104,5 +112,13 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   delete [] crho;
 
+}
+
+void FftFilter(fgobj<double> &x,
+               Pw &pwaves,
+               Pw &c_pwaves,
+               double factor)
+{
+    FftFilter(x.data(), pwaves, c_pwaves, factor);
 }
 
