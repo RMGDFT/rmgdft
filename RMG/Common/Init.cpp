@@ -65,15 +65,14 @@ void init_orthorhombic_gpu_prolong(int dimx, int dimy, int dimz);
 extern Scalapack *MainSp;
 
 
-template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-        double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
-
 // Instantiate gamma and non-gamma versions
-template void Init<double>(double*, double*, double*, double*, double*, double*, double*, Kpoint<double>**);
-template void Init<std::complex<double> >(double*, double*, double*, double*, double*, double*, double*, Kpoint<std::complex <double> >**);
+template void Init<double>(fgobj<double> &, spinobj<double> &, fgobj<double> &,
+           fgobj<double> &, fgobj<double> &, spinobj<double> &, Kpoint<double>**);
+template void Init<std::complex<double> >(fgobj<double> &, spinobj<double> &, fgobj<double> &,
+           fgobj<double> &, fgobj<double> &, spinobj<double> &, Kpoint<std::complex <double> >**);
 
-template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-        double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
+template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &rho, fgobj<double> &rhocore,
+           fgobj<double> &rhoc, fgobj<double> &vnuc, spinobj<double> &vxc, Kpoint<OrbitalType> **Kptr)
 {
 
     RmgTimer RT0("Init");
@@ -168,7 +167,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
     ct.vh_ext = new double[ct.vh_pbasis]();
 
-    std::fill(vh, vh + FP0_BASIS, 0.0);
+    vh.set(0.0);
 
 
     ct.hmaxgrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
@@ -342,9 +341,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             Kptr[kpt]->Kstates[st1].kidx = kpt;
             Kptr[kpt]->Kstates[st1].psi = rptr_k;
-            Kptr[kpt]->Kstates[st1].vxc = vxc;
-            Kptr[kpt]->Kstates[st1].vh = vh;
-            Kptr[kpt]->Kstates[st1].vnuc = vnuc;
+            Kptr[kpt]->Kstates[st1].vxc = vxc.data();
+            Kptr[kpt]->Kstates[st1].vh = vh.data();
+            Kptr[kpt]->Kstates[st1].vnuc = vnuc.data();
             Kptr[kpt]->Kstates[st1].vxc_correction = 0.0;
             Kptr[kpt]->Kstates[st1].vh_correction = 0.0;
             Kptr[kpt]->Kstates[st1].vnuc_correction = 0.0;
@@ -364,15 +363,15 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.num_states = ct.run_states;
         std::string serial_name(ct.infile);
         if(ct.read_serial_restart)
-            ReadSerialData (serial_name, vh, rho, vxc, Kptr);
+            ReadSerialData (serial_name, vh.data(), rho.data(), vxc.data(), Kptr);
         else
-            ReadData (ct.infile, vh, rho, vxc, Kptr);
+            ReadData (ct.infile, vh.data(), rho.data(), vxc.data(), Kptr);
 
 
         /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
         if (ct.nspin == 2 )
         {
-            get_rho_oppo (rho, rho_oppo);
+            rho.get_oppo();
             GetOppositeEigvals (Kptr);
             GetOppositeOccupancies (Kptr);
         }
@@ -380,7 +379,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else 
     {
         /* Set the initial hartree potential to a constant */
-        std::fill(vh, vh + FP0_BASIS, 0.0);
+        vh.set(0.0);
     }
 
     //Dprintf ("Initialize the radial potential stuff");
@@ -456,7 +455,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Update items that change when the ionic coordinates change */
     RT1 = new RmgTimer("2-Init: ReinitIonicPotentials");
-    ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+    ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
     delete(RT1);
 
     /* Initialize orbitals */
@@ -554,35 +553,35 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if (ct.nspin == 2)
         {   
             fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
-            for (int idx = 0; idx < FP0_BASIS; idx++)
+            for (int idx = 0; idx < rho.pbasis; idx++)
             {
 
                 if (pct.spinpe == 0)
                 {				    
-                    rho[idx] = rhoc[idx] * fac;
-                    rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
+                    rho.up[idx] = rhoc[idx] * fac;
+                    rho.dw[idx] = rhoc[idx] * (1.0 - fac);
                 }
                 else         /* if pct.spinpe = 1  */
                 {
-                    rho_oppo[idx] = rhoc[idx] * fac;
-                    rho[idx] = rhoc[idx] * (1.0 - fac);
+                    rho.dw[idx] = rhoc[idx] * fac;
+                    rho.up[idx] = rhoc[idx] * (1.0 - fac);
                 }
             }
 
         }
         else
         {
-            for (int idx = 0; idx < FP0_BASIS; idx++)
+            for (int idx = 0; idx < rho.pbasis; idx++)
                 rho[idx] = rhoc[idx];
         }
     }
 
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE)) {
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
-        InitLocalObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
+        InitLocalObject (rho.data(), pct.localatomicrho, ATOMIC_RHO, false);
 
         if(ct.nspin == 2) {
-            get_rho_oppo (rho,  rho_oppo);
+            rho.get_oppo();
         }
 
         delete RT1;
@@ -592,7 +591,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.rms_vh = 0.0;
 
     //Dprintf ("Generate initial vxc potential and hartree potential");
-    pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
+    pack_vhstod (vh.data(), ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
@@ -604,20 +603,20 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         compute_vxc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
-        FftFilter(vxc, *fine_pwaves, *coarse_pwaves, LOW_PASS);
+        FftFilter(vxc.up.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         if(ct.noncoll)
         {
-            FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
-            FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
-            FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+            FftFilter(vxc.cx.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
+            FftFilter(vxc.cy.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
+            FftFilter(vxc.cz.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
         }
         delete RT1;
 
         RmgTimer *RT1 = new RmgTimer("2-Init: hartree");
         double rms_target = 1.0e-10;
-        VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
+        VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, rms_target);
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
         delete RT1;
 
@@ -694,7 +693,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     for (int idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     /*Generate the Dnm_I */
-    get_ddd (vtot, vxc, true);
+    get_ddd (vtot, vxc.data(), true);
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
     {

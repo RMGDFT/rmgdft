@@ -224,10 +224,10 @@ int main (int argc, char **argv)
 
         /* Perform any necessary initializations */
         if(ct.is_gamma) {
-            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_g);
+            Init (vh, rho, rhocore, rhoc, vnuc, vxc, Kptr_g);
         }
         else {
-            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_c);
+            Init (vh, rho, rhocore, rhoc, vnuc, vxc, Kptr_c);
         }
 
         if(ct.verbose) {

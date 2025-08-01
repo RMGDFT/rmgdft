@@ -48,6 +48,11 @@
 
 extern Kpoint<double> **Kptr_g;
 
+void compute_vxc(spinobj<double> &rho, fgobj<double> &rhocore, double &XC, double &vtxc, spinobj<double> &v_xc, int nspin)
+{
+    compute_vxc(rho.data(), rhocore.data(), XC, vtxc, v_xc.data(), nspin);
+}
+
 void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double *v_xc, int nspin)
 {
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
