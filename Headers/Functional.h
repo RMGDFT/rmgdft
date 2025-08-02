@@ -72,7 +72,7 @@ public:
 
     ~Functional(void);
 
-    double *vxc2, *v2cud;
+    static double *vxc2, *v2cud;
 
     void set_dft_from_name_rmg(char *newdft_name);
     static const std::string & get_dft_name_rmg(void);

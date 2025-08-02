@@ -55,7 +55,7 @@ void compute_vxc(spinobj<double> &rho, fgobj<double> &rhocore, double &XC, doubl
 
 void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double *v_xc, int nspin)
 {
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
 
     if(F->dft_is_meta_rmg())
     {

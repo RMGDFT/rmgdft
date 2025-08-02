@@ -507,8 +507,8 @@ template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, in
     double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
                 Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
 
+    if(!ct.xc_is_nonlocc) return;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    if(!F->dft_is_nonlocc_rmg() ) return;
     F->stress_vdW_DF (rho, rhocore, nspin, stress_tensor_vdW_DF);
 
     for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] *= vel /Rmg_L.omega;
@@ -527,8 +527,8 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
 {
     double stress_tensor_xcgrad[9];
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] = 0.0;
+    if(!ct.xc_is_gradient) return;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    if(!F->dft_is_gradient_rmg() ) return;
 
     int grid_ratio = Rmg_G->default_FG_RATIO;
     int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);

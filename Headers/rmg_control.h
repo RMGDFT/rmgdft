@@ -169,6 +169,8 @@ public:
     /* Exchage-Correlation flags */
     int xctype;
     bool xc_is_meta;
+    bool xc_is_gradient;
+    bool xc_is_nonlocc;
 
     /* Hybrid EXC flag */
     int xc_is_hybrid;

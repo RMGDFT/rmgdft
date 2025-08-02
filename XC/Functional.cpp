@@ -126,6 +126,8 @@ extern "C" void xclib_init_libxc(int *nspin, bool *domag);
 bool Functional::dft_set=false;
 bool Functional::exx_started=false;
 std::string Functional::saved_dft_name;
+double *Functional::vxc2;
+double *Functional::v2cud;
 
 double SMALL_CHARGE=1.0e-10;
 double SMALL_MAG=1.0e-20;
@@ -189,12 +191,6 @@ Functional::Functional (
         vxc2 = new double[2 * this->pbasis]();
         v2cud = new double[this->pbasis]();
     }
-    else
-    {
-        vxc2 = NULL;
-        v2cud = NULL;
-    }
-    
 }
 
 
@@ -203,13 +199,6 @@ Functional::Functional (
 Functional::~Functional(void)
 {
 
-    if(this->dft_is_gradient_rmg()) 
-    {
-        if(vxc2) delete [] vxc2;
-        if(v2cud) delete [] v2cud;
-        vxc2 = NULL;
-        v2cud = NULL;
-    }
 
 }
 

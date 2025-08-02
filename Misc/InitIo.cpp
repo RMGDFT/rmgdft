@@ -812,6 +812,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
     ct.xc_is_meta = F.dft_is_meta_rmg();
+    ct.xc_is_gradient = F.dft_is_gradient_rmg();
+    ct.xc_is_nonlocc = F.dft_is_nonlocc_rmg();
     if(ct.exx_fraction < 0.0)
         ct.exx_fraction = F.get_exx_fraction_rmg();
     else
