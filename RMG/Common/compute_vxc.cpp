@@ -55,7 +55,8 @@ void compute_vxc(spinobj<double> &rho, fgobj<double> &rhocore, double &XC, doubl
 
 void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double *v_xc, int nspin)
 {
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
+    static Functional *F = NULL;
+    if(F == NULL) F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
 
     if(F->dft_is_meta_rmg())
     {
@@ -88,5 +89,5 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
     }
 
     F->v_xc(rho, rhocore, XC, vtxc, v_xc, nspin );
-    delete F;
+//    delete F;
 }

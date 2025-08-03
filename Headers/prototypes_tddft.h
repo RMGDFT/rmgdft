@@ -44,6 +44,8 @@ void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho
      double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
 void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
+void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 
 template <typename KpointType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
