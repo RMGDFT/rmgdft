@@ -144,7 +144,7 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
         // this_block_size will be nb for the first num_blocks-1 block, the last block could be smaller than nb
 
         int this_block_size, length_block;
-        length_block = num_states;
+        length_block = num_states - ib * nb;
         this_block_size = std::min(nb, length_block);
         int st_start = ib *nb + tddft_start_state;
         int st_end   = st_start + this_block_size;
@@ -184,17 +184,17 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
 
         }
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_x, this_block_size);
-        BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_y, this_block_size);
-        BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_z, this_block_size);
-        BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
         //block_matrix to distHij;
         if(myrow == ib%nprow)
@@ -234,9 +234,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + (jb-ib) * mb ) * this_block_size + i]);
-                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + (jb-ib) * mb ) * this_block_size + i]);
-                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + (jb-ib) * mb ) * this_block_size + i]);
+                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
+                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
+                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
                         }
                     }
                 }
