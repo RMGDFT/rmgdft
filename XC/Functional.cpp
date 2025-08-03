@@ -171,7 +171,7 @@ Functional::Functional (
     if(!initialized)
     {
         xclib_init_libxc(&ct.nspin, &domag);
-        initialized = false;
+        initialized = true;
     }
 #endif
     this->Grid = &G;
