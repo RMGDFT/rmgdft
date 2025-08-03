@@ -188,8 +188,9 @@ Functional::Functional (
 
     if(this->dft_is_gradient_rmg()) 
     {
-        vxc2 = new double[2 * this->pbasis]();
-        v2cud = new double[this->pbasis]();
+        // These are static members so only allocated once
+        if(!vxc2) vxc2 = new double[2 * this->pbasis]();
+        if(!v2cud) v2cud = new double[this->pbasis]();
     }
 }
 
