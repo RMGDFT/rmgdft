@@ -719,6 +719,9 @@ public:
     double scf_accuracy;
     double ns_occ_rms;
 
+    /* (rho_new - rho)^2 */
+    double dr2;
+
     /* variational correction term for potential convergence */
     double scf_correction;
 

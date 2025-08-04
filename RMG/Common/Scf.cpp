@@ -122,8 +122,8 @@ template <typename OrbitalType> bool Scf (
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
-    t[0] *= rho.vel;
-    t[2] *= vh.vel;
+    t[0] *= rho.vel();
+    t[2] *= vh.vel();
 
     /* get the averaged value over each spin and each fine grid */
     if(ct.AFM)
@@ -335,22 +335,29 @@ template <typename OrbitalType> bool Scf (
     delete RT1;
 
     // Compute convergence measure (2nd order variational term) and average by nspin
-    double sum = 0.0;
-    for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
+    spinobj<double> rho_diff;
+    rho_diff = new_rho;
+    rho_diff -= rho;
+
+    double sum[2] = {0.0, 0.0};
+    for(int i = 0;i < rho.pbasis;i++) sum[0] += (vh_out[i] - vh[i]) * rho_diff[i];
+    for(int i = 0;i < rho.pbasis;i++) sum[1] += rho_diff[i] * rho_diff[i];
     if(ct.AFM) 
     {
-        for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
+        for(int i = 0;i < rho.pbasis;i++) sum[0] += (vh_out[i] - vh[i]) * rho_diff.dw[i];
+        for(int i = 0;i < rho.pbasis;i++) sum[0] += rho_diff.dw[i] * rho_diff.dw[i];
     }
-    sum = 0.5 * rho.vel * sum;
+    sum[0] = 0.5 * rho.vel() * sum[0];
+    sum[1] = rho.vel() * sum[1];
 
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_MAX, pct.img_comm);
-    ct.scf_accuracy = sum;
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_MAX, pct.img_comm);
+    ct.scf_accuracy = sum[0];
+//    ct.dr2 = sum[1];
 
     // Compute variational energy correction term if any
-    sum = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
-    ct.scf_correction = sum;
+    ct.scf_correction = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {

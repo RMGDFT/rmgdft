@@ -40,37 +40,39 @@
 #include "GridObject.h"
 
 template<typename T>
-GridObject<T>::GridObject(int density)
+GridObject<T>::GridObject(int density_in)
 {
-    dimx_ = Rmg_G->get_PX0_GRID(density);
-    dimy_ = Rmg_G->get_PY0_GRID(density);
-    dimz_ = Rmg_G->get_PZ0_GRID(density);
-    offsetx_ = Rmg_G->get_PX_OFFSET(density);
-    offsety_ = Rmg_G->get_PY_OFFSET(density);
-    offsetz_ = Rmg_G->get_PZ_OFFSET(density);
+    density_ = density_in;
+    dimx_ = Rmg_G->get_PX0_GRID(density_);
+    dimy_ = Rmg_G->get_PY0_GRID(density_);
+    dimz_ = Rmg_G->get_PZ0_GRID(density_);
+    offsetx_ = Rmg_G->get_PX_OFFSET(density_);
+    offsety_ = Rmg_G->get_PY_OFFSET(density_);
+    offsetz_ = Rmg_G->get_PZ_OFFSET(density_);
     incz_ = 1;
     incy_ = dimz_;
     incx_ = dimy_*dimz_;
     pbasis_ = dimx_ * dimy_ * dimz_;
-    vel_ = Rmg_L.get_omega() /
-    ((double)((size_t)Rmg_G->get_NX_GRID(density) * (size_t)Rmg_G->get_NY_GRID(density) * (size_t)Rmg_G->get_NZ_GRID(density)));
+    L = &Rmg_L;
+    G = Rmg_G;
 }
 
 template<typename T>
-GridObject<T>::GridObject(int density, T *data_ptr)
+GridObject<T>::GridObject(int density_in, T *data_ptr)
 {
-    dimx_ = Rmg_G->get_PX0_GRID(density);
-    dimy_ = Rmg_G->get_PY0_GRID(density);
-    dimz_ = Rmg_G->get_PZ0_GRID(density);
+    density_ = density_in;
+    dimx_ = Rmg_G->get_PX0_GRID(density_);
+    dimy_ = Rmg_G->get_PY0_GRID(density_);
+    dimz_ = Rmg_G->get_PZ0_GRID(density_);
     incz_ = 1;
     incy_ = dimz_;
     incx_ = dimy_*dimz_;
-    offsetx_ = Rmg_G->get_PX_OFFSET(density);
-    offsety_ = Rmg_G->get_PY_OFFSET(density);
-    offsetz_ = Rmg_G->get_PZ_OFFSET(density);
+    offsetx_ = Rmg_G->get_PX_OFFSET(density_);
+    offsety_ = Rmg_G->get_PY_OFFSET(density_);
+    offsetz_ = Rmg_G->get_PZ_OFFSET(density_);
     pbasis_ = dimx_ * dimy_ * dimz_;
-    vel_ = Rmg_L.get_omega() /
-    ((double)((size_t)Rmg_G->get_NX_GRID(density) * (size_t)Rmg_G->get_NY_GRID(density) * (size_t)Rmg_G->get_NZ_GRID(density)));
+    L = &Rmg_L;
+    G = Rmg_G;
 }
 
 template<typename T>
