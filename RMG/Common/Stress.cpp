@@ -67,28 +67,35 @@ template <class T> Stress<T>::~Stress(void)
 }
 
 template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
+        spinobj<double> &vxc,
+        spinobj<double> &rho,
+        fgobj<double> &rhocore,
+        fgobj<double> &veff);
 
 template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
+        spinobj<double> &vxc,
+        spinobj<double> &rho,
+        fgobj<double> &rhocore,
+        fgobj<double> &veff);
+ 
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
+        spinobj<double> &vxc,
+        spinobj<double> &rho,
+        fgobj<double> &rhocore,
+        fgobj<double> &veff)
 {
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    double *rho_tot = new double[FP0_BASIS];
-
-    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] = rho[i];
-    if(ct.spin_flag) {
-        // opposite spin array is stored sequentially
-        for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] += rho[i + FP0_BASIS];
-    }
-
+    spinobj<double> rho_tot;
+    rho_tot = rho;
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
     for(int i = 0; i < 9; i++) stress_tensor[i] = 0.0;
     RT2 = new RmgTimer("2-Stress: kinetic");
     Kinetic_term_FFT(Kpin, BG, L);
+
 #if 0
     if(ct.fast_density)
     {
@@ -179,8 +186,6 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
 
     double alpha = Rmg_L.omega;
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
-
-    delete [] rho_tot;
 
     // Save stress tensor
     for(int i=0;i < 9;i++) ct.stress_tensor[i] = stress_tensor[i];
@@ -431,9 +436,9 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid 
     RmgFreeHost(psi_f);
 }
 
-template void Stress<double>::Hartree_term(double *rho, Pw &pwaves);
-template void Stress<std::complex<double>>::Hartree_term(double *rho, Pw &pwaves);
-template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
+template void Stress<double>::Hartree_term(spinobj<double> &rho, Pw &pwaves);
+template void Stress<std::complex<double>>::Hartree_term(spinobj<double> &rho, Pw &pwaves);
+template <class T> void Stress<T>::Hartree_term(spinobj<double> &rho, Pw &pwaves)
 {
     int pbasis = pwaves.pbasis;
     std::complex<double> ZERO_t(0.0, 0.0);
@@ -482,9 +487,9 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
     delete [] crho;
 }
 
-template void Stress<double>::Exc_term(double Exc, double *vxc, double *rho);
-template void Stress<std::complex<double>>::Exc_term(double Exc, double *vxc, double *rho);
-template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho)
+template void Stress<double>::Exc_term(double Exc, spinobj<double> &vxc, spinobj<double> &rho);
+template void Stress<std::complex<double>>::Exc_term(double Exc, spinobj<double> &vxc, spinobj<double> &rho);
+template <class T> void Stress<T>::Exc_term(double Exc, spinobj<double> &vxc, spinobj<double> &rho)
 {
     double stress_tensor_x[9];
     for(int i = 0; i < 9; i++) stress_tensor_x[i] = 0.0;
@@ -496,9 +501,10 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
     if(ct.verbose) print_stress("XC term", stress_tensor_x);
 }
 
-template void Stress<double>::vdW_DF_term (double *rho, double *rhocore, int nspin);
-template void Stress<std::complex<double>>::vdW_DF_term (double *rho, double *rhocore, int nspin);
-template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, int nspin)
+
+template void Stress<double>::vdW_DF_term (spinobj<double> &rho, fgobj<double> &rhocore, int nspin);
+template void Stress<std::complex<double>>::vdW_DF_term (spinobj<double> &rho, fgobj<double> &rhocore, int nspin);
+template <class T> void Stress<T>::vdW_DF_term (spinobj<double> &rho, fgobj<double> &rhocore, int nspin)
 {   
     double stress_tensor_vdW_DF[9];
     for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] = 0.0;
@@ -509,7 +515,7 @@ template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, in
 
     if(!ct.xc_is_nonlocc) return;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->stress_vdW_DF (rho, rhocore, nspin, stress_tensor_vdW_DF);
+    F->stress_vdW_DF (rho.data(), rhocore.data(), nspin, stress_tensor_vdW_DF);
 
     for(int i = 0; i < 9; i++) stress_tensor_vdW_DF[i] *= vel /Rmg_L.omega;
     //  sum over grid communicator and spin communicator  but no kpoint communicator
@@ -521,17 +527,17 @@ template <class T> void Stress<T>::vdW_DF_term (double *rho, double *rhocore, in
     delete F;
 }
 
-template void Stress<double>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
-template void Stress<std::complex<double>>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
-template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore)
+template void Stress<double>::Exc_gradcorr(double Exc, spinobj<double> &vxc, spinobj<double> &rho, fgobj<double> &rhocore);
+template void Stress<std::complex<double>>::Exc_gradcorr(double Exc, spinobj<double> &vxc, spinobj<double> &rho, fgobj<double> &rhocore);
+template <class T> void Stress<T>::Exc_gradcorr(double Exc, spinobj<double> &vxc, spinobj<double> &rho, fgobj<double> &rhocore)
 {
     double stress_tensor_xcgrad[9];
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] = 0.0;
     if(!ct.xc_is_gradient) return;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
-    int grid_ratio = Rmg_G->default_FG_RATIO;
-    int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);
+    int pbasis = rho.pbasis;
+    double vel = rho.vel();
 
     int fac = 1;
     if(ct.nspin == 2 ) fac = 2;
@@ -539,9 +545,6 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     double *rho_gx = rho_grad;
     double *rho_gy = rho_grad + pbasis ;
     double *rho_gz = rho_grad + 2 * pbasis;
-
-    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
-                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
 
     double alpha = 1.0;
     if(ct.nspin == 2) alpha = 0.5;
@@ -558,9 +561,9 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     }
 
     // get gradient of rho+rhocore
-    daxpy (&pbasis, &alpha, rhocore, &ione, rho, &ione);
-    ApplyGradient(rho, rho_gx, rho_gy, rho_gz, ct.force_grad_order, "Fine");
-    daxpy (&pbasis, &malpha, rhocore, &ione, rho, &ione);
+    daxpy (&pbasis, &alpha, rhocore.data(), &ione, rho.data(), &ione);
+    ApplyGradient(rho.data(), rho_gx, rho_gy, rho_gz, ct.force_grad_order, "Fine");
+    daxpy (&pbasis, &malpha, rhocore.data(), &ione, rho.data(), &ione);
 
     for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
@@ -572,12 +575,12 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     if(ct.nspin == 2)
     {
         //opposite spin's rho is stored in &rho[pbasis];
-        daxpy (&pbasis, &alpha, rhocore, &ione, &rho[pbasis], &ione);
+        daxpy (&pbasis, &alpha, rhocore.data(), &ione, &rho[pbasis], &ione);
         double *rho_gx1 = &rho_grad[3*pbasis];
         double *rho_gy1 = &rho_grad[4*pbasis];
         double *rho_gz1 = &rho_grad[5*pbasis];
         ApplyGradient(&rho[pbasis], rho_gx1, rho_gy1, rho_gz1, ct.force_grad_order, "Fine");
-        daxpy (&pbasis, &malpha, rhocore, &ione, &rho[pbasis], &ione);
+        daxpy (&pbasis, &malpha, rhocore.data(), &ione, &rho[pbasis], &ione);
 
         for(int i = 0; i < 3; i++)
             for(int j = 0; j < 3; j++)
@@ -604,11 +607,11 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
 }
 
 template void Stress<double>::Local_term(std::vector<ION> &atoms, 
-        std::vector<SPECIES> &speices, double *rho, Pw &pwaves);
+        std::vector<SPECIES> &speices, spinobj<double> &rho, Pw &pwaves);
 template void Stress<std::complex<double>>::Local_term(std::vector<ION> &atoms, 
-        std::vector<SPECIES> &speices, double *rho, Pw &pwaves);
+        std::vector<SPECIES> &speices, spinobj<double> &rho, Pw &pwaves);
 template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms, 
-        std::vector<SPECIES> &speices, double *rho, Pw &pwaves)
+        std::vector<SPECIES> &speices, spinobj<double> &rho, Pw &pwaves)
 {
 
     int pbasis = pwaves.pbasis;
@@ -1060,11 +1063,11 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
 
 template void Stress<double>::NonLocalQfunc_term(Kpoint<double> **Kpin,
-        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff, double *vxc);
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, fgobj<double> &veff, spinobj<double> &vxc);
 template void Stress<std::complex<double>>::NonLocalQfunc_term(Kpoint<std::complex<double>> **Kpin,
-        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff, double *vxc);
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, fgobj<double> &veff, spinobj<double> &vxc);
 template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff, double *vxc)
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, fgobj<double> &veff, spinobj<double> &vxc)
 {
 
 
@@ -1173,7 +1176,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
         ApplyGradient(&vxc[3*FP0_BASIS], vxc_gx+2*FP0_BASIS, vxc_gy+2*FP0_BASIS, vxc_gz+2*FP0_BASIS, ct.force_grad_order, "Fine");
     }
 
-    ApplyGradient(veff, veff_gx, veff_gy, veff_gz, ct.force_grad_order, "Fine");
+    ApplyGradient(veff.data(), veff_gx, veff_gy, veff_gz, ct.force_grad_order, "Fine");
     for(int id1 = 0; id1 < 3; id1++)
         for(int id2 = 0; id2 < 3; id2++)
         {
@@ -1324,15 +1327,15 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
 }
 
-template void Stress<double>::Exc_Nlcc(double *vxc, double *rhocore);
-template void Stress<std::complex<double>>::Exc_Nlcc(double *vxc, double *rhocore);
-template <class T> void Stress<T>::Exc_Nlcc(double *vxc, double *rhocore)
+template void Stress<double>::Exc_Nlcc(spinobj<double> &vxc, fgobj<double> &rhocore);
+template void Stress<std::complex<double>>::Exc_Nlcc(spinobj<double> &vxc, fgobj<double> &rhocore);
+template <class T> void Stress<T>::Exc_Nlcc(spinobj<double> &vxc, fgobj<double> &rhocore)
 {
     double stress_tensor_xcc[9];
     for(int i = 0; i < 9; i++) stress_tensor_xcc[i] = 0.0;
 
-    int grid_ratio = Rmg_G->default_FG_RATIO;
-    int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);
+    int pbasis = vxc.pbasis;
+    double vel = vxc.vel();
 
     int fac = 1.0;
     if(ct.spin_flag ) fac = 2;
@@ -1342,9 +1345,6 @@ template <class T> void Stress<T>::Exc_Nlcc(double *vxc, double *rhocore)
     double *vxc_gz = vxc_grad + 2 * pbasis;
     double *rhocore_stress = new double[fac*3*pbasis];
 
-    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
-                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
-
     double *dummy = NULL;
     InitLocalObject(rhocore_stress,dummy, ATOMIC_RHOCORE_STRESS, false); 
     double alpha = vel;
@@ -1352,7 +1352,7 @@ template <class T> void Stress<T>::Exc_Nlcc(double *vxc, double *rhocore)
     if(ct.spin_flag) alpha = 0.5 * vel;
     double zero = 0.0;
 
-    ApplyGradient(vxc, vxc_gx, vxc_gy, vxc_gz, ct.force_grad_order, "Fine");
+    ApplyGradient(vxc.data(), vxc_gx, vxc_gy, vxc_gz, ct.force_grad_order, "Fine");
 
     int ithree = 3;
     dgemm("T","N", &ithree, &ithree, &pbasis, &alpha, vxc_grad, &pbasis, rhocore_stress, &pbasis, &zero, stress_tensor_xcc, &ithree);

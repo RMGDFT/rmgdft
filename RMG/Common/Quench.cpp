@@ -479,7 +479,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         fgobj<double> vtot;
         for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
         Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
-                ct.XC, vxc.data(), rho.data(), rhocore.data(), vtot.data());
+                ct.XC, vxc, rho, rhocore, vtot);
     }
 
 
