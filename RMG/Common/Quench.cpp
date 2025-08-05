@@ -85,6 +85,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
     static std::vector<double> etot;
+    static std::vector<double> dStress;
 
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave = std::string(ct.outfile) + "_serial";
@@ -142,6 +143,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     { 
         exx_step_time = my_crtc ();
         RMSdV.clear();
+        dStress.clear();
 
         ct.total_scf_steps = 0;
         // Adjust exx convergence threshold
@@ -180,6 +182,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     ct.mix /= 2.0;
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
+                    dStress.clear();
                     ct.scf_steps = 0;
                     ct.exx_steps = 0;
                 }
@@ -476,10 +479,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     if(ct.stress)
     {
+        bool local_only = false;
         fgobj<double> vtot;
         for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
         Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
-                ct.XC, vxc, rho, rhocore, vtot);
+                ct.XC, vxc, rho, rhocore, vtot, ct.stress_tensor, local_only);
     }
 
 

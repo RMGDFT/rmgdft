@@ -58,7 +58,6 @@ extern "C" int get_inlc(void);
 
 void  vdw_d2_stress(Lattice &, std::vector<ION> &atoms, double *stress_d2);
 std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp);
-static void print_stress(char *w, double *stress_term);
 
 template Stress<double>::~Stress(void);
 template Stress<std::complex<double>>::~Stress(void);
@@ -71,28 +70,47 @@ template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG,
         spinobj<double> &vxc,
         spinobj<double> &rho,
         fgobj<double> &rhocore,
-        fgobj<double> &veff);
+        fgobj<double> &veff,
+        double *stress_tensor_out,
+        bool local_only);
 
 template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
         spinobj<double> &vxc,
         spinobj<double> &rho,
         fgobj<double> &rhocore,
-        fgobj<double> &veff);
+        fgobj<double> &veff,
+        double *stress_tensor_out,
+        bool local_only);
  
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
         spinobj<double> &vxc,
         spinobj<double> &rho,
         fgobj<double> &rhocore,
-        fgobj<double> &veff)
+        fgobj<double> &veff,
+        double *stress_tensor_out,
+        bool local_only)
 {
     spinobj<double> rho_tot;
     rho_tot = rho;
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
+
     for(int i = 0; i < 9; i++) stress_tensor[i] = 0.0;
+    RT2 = new RmgTimer("2-Stress: Loc");
+    Local_term(atoms, species, rho_tot, pwaves);
+    delete RT2;
+
+    // This is here so that we can compute just the local component for use
+    // in convergence measurement and decision making.
+    if(local_only)
+    {
+        for(int i=0;i < 9;i++) stress_tensor_out[i] = stress_tensor[i];
+        delete RT1;
+        return;
+    }
     RT2 = new RmgTimer("2-Stress: kinetic");
     Kinetic_term_FFT(Kpin, BG, L);
 
@@ -106,9 +124,6 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         Kinetic_term_fine(Kpin, BG, L);
     }
 #endif
-    delete RT2;
-    RT2 = new RmgTimer("2-Stress: Loc");
-    Local_term(atoms, species, rho_tot, pwaves);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Non-loc");
     NonLocal_term(Kpin, atoms, species);
@@ -188,7 +203,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
 
     // Save stress tensor
-    for(int i=0;i < 9;i++) ct.stress_tensor[i] = stress_tensor[i];
+    for(int i=0;i < 9;i++) stress_tensor_out[i] = stress_tensor[i];
 }
 
 template void Stress<double>::Kinetic_term_FFT(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
@@ -1373,7 +1388,7 @@ template <class T> void Stress<T>::Exc_Nlcc(spinobj<double> &vxc, fgobj<double> 
     delete [] rhocore_stress;
 }
 
-static void print_stress(char *w, double *stress_term)
+void print_stress(char *w, double *stress_term)
 {
     if(pct.imgpe == 0)
     {

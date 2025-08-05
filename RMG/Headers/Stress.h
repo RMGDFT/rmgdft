@@ -32,6 +32,7 @@
 //#include "Pw.h"
 #include "GridObject.h"
 
+void print_stress(char *w, double *stress_term);
 
 template <typename T> class Stress 
 {
@@ -45,7 +46,9 @@ public:
             spinobj<double> &vxc,
             spinobj<double> &rho,
             fgobj<double> &rhocore,
-            fgobj<double> &vtot);
+            fgobj<double> &vtot,
+            double *stress_tensor_out,
+            bool local_only);
 
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
     void Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
