@@ -211,9 +211,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_x[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_y[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] -= block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] -= block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] -= block_matrix_z[ (j + jb * mb ) * this_block_size + i];
                         }
                     }
                 }
@@ -234,9 +234,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
-                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
-                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
+                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] -= MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
+                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] -= MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
+                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] -= MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
                         }
                     }
                 }
