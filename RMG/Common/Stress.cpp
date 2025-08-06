@@ -95,6 +95,11 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     spinobj<double> rho_tot;
     rho_tot = rho;
 
+    if(ct.spin_flag)
+    {
+        for(int ix = 0;ix < rho_tot.pbasis;ix++) rho_tot[ix] += rho_tot.dw[ix];
+    }
+
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
 
