@@ -289,6 +289,7 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
     if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    if(ct.AFM) for(int i = 0; i < 9; i++) stress_tensor_R[i] *= 2.0;
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
@@ -515,7 +516,6 @@ template <class T> void Stress<T>::Exc_term(double Exc, spinobj<double> &vxc, sp
     for(int i = 0; i < 9; i++) stress_tensor_x[i] = 0.0;
     for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.xcstate)/Rmg_L.omega;
     //    for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
-
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
     if(ct.verbose) print_stress("XC term", stress_tensor_x);
@@ -949,6 +949,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
 
     if(Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
+    if(ct.AFM) for(int i = 0; i < 9; i++) stress_tensor_nl[i] *= 2.0;
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
 
