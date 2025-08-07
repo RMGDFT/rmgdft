@@ -339,7 +339,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
-        compute_vxc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+        compute_vxc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
         GetNewRho(Kptr, rho.data());
         rho.get_oppo();
@@ -617,10 +617,7 @@ void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputK
 
                     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
                     {
-                        ION &Atom = Atoms[ion];
-                        SPECIES &AtomType = Species[Atom.species];
-
-                                Atoms[ion].mag = localrho_up[ion]-localrho_dn[ion];
+                        Atoms[ion].mag = localrho_up[ion]-localrho_dn[ion];
                     }
                     for(size_t ion = 0; ion < Atoms.size(); ion++)
                         Atoms[ion].partial_charge = Voronoi_charge.localrho_atomic[ion] - localrho_up[ion] - localrho_dn[ion];

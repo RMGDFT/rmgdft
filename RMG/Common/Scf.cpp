@@ -458,7 +458,7 @@ template <typename OrbitalType> bool Scf (
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
         vxc_in = vxc;
-        compute_vxc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+        compute_vxc(new_rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
         delete RT1;
 
     }
