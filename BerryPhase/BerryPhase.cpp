@@ -29,6 +29,8 @@
 #include "RmgGemm.h"
 #include "GlobalSums.h"
 #include "blas.h"
+#include "blas_driver.h"
+#include "Scalapack.h"
 
 BerryPhase *Rmg_BP;
 
@@ -45,12 +47,13 @@ BerryPhase::BerryPhase(void)
         rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp now\n");
     }
 
+    this->efield_mag = 0.0;
     if(ct.forceflag== TDDFT)
     {
-        if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
-        if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
-        if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
-        this->efield_mag = ct.efield_tddft_xtal[ct.BerryPhase_dir];
+    //    if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+    //    if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+    //    if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+    //    this->efield_mag = ct.efield_tddft_xtal[ct.BerryPhase_dir];
     }
     else
     {
@@ -213,7 +216,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         memcpy(psi_k0, Kptr[iort*num_kpp]->orbital_storage, wfc_size);
 
         RmgTimer *RT1 = new RmgTimer("Berry Phase: psi0 * exp(-igr)");
-        psi_x_phase(psi_k0, gr);
+        psi_x_phase(psi_k0, gr, nband_occ);
         delete RT1;
         RT1 = new RmgTimer("Berry Phase: phase calculation");
         for(int jpp = 0; jpp < num_kpp; jpp++)
@@ -420,7 +423,7 @@ void BerryPhase::Calc_Gnk (Kpoint<std::complex<double>> **Kptr)
                 BP_matrix_m1 = Kptr[iort * num_kpp + num_kpp-1]->BP_matrix_cpu;
                 memcpy(psi_k0, Kptr[iort*num_kpp + num_kpp-1]->orbital_storage, wfc_size);
                 gr[BerryPhase_dir] = 1.0;
-                psi_x_phase(psi_k0, gr);
+                psi_x_phase(psi_k0, gr, nband_occ);
                 psi_km1 = psi_k0;
                 psi_kp1 = Kptr[iort*num_kpp + + jpp +1 ]->orbital_storage;
             }
@@ -429,7 +432,7 @@ void BerryPhase::Calc_Gnk (Kpoint<std::complex<double>> **Kptr)
                 BP_matrix_m1 = Kptr[iort * num_kpp + jpp-1]->BP_matrix_cpu;
                 memcpy(psi_k0, Kptr[iort*num_kpp ]->orbital_storage, wfc_size);
                 gr[BerryPhase_dir] = -1.0;
-                psi_x_phase(psi_k0, gr);
+                psi_x_phase(psi_k0, gr, nband_occ);
                 psi_km1 = Kptr[iort*num_kpp + + jpp -1 ]->orbital_storage;
                 psi_kp1 = psi_k0;
             }
@@ -478,7 +481,7 @@ void BerryPhase::Apply_BP_Hpsi(Kpoint<std::complex<double>> *kptr, int num_state
 BerryPhase::~BerryPhase(void)
 {
 }
-void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3])
+void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nband)
 {
 
     // psi_k0 = psi_k0 * exp(i gr )
@@ -494,7 +497,7 @@ void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3])
     int Ny = Rmg_G->get_NY_GRID(1);
     int Nz = Rmg_G->get_NZ_GRID(1);
 
-    for(int st = 0; st < nband_occ; st++)
+    for(int st = 0; st < nband; st++)
     {
         for (int ix = 0; ix < px0_grid; ix++)
         {
@@ -513,3 +516,298 @@ void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3])
 
     }
 }
+
+void BerryPhase::CalcBP_Skk1 (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
+{
+    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+}
+void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
+{
+
+    //calculating <Psi_k | Psi_k+1>
+    std::complex<double> beta(0.0);
+
+    std::complex<double> *psi_k, *psi_k1;
+
+    double gr[3]{0.0,0.0,0.0};
+    gr[BerryPhase_dir] = -1.0;
+    std::complex<double> phase;
+
+    int numst = ct.num_states - tddft_start_state;
+    if(numst != Sp.GetN())
+    {
+        rmg_printf("\n Scalpapack wrong !! numst = %d  N = %d \n", numst, Sp.GetN() );
+        rmg_error_handler(__FILE__, __LINE__," scalapack wrong\n");
+    }
+
+    wfc_size = numst * pbasis_noncoll * sizeof(std::complex<double>);
+    if(psi_k0 != NULL) RmgFreeHost(psi_k0);
+    psi_k0 = (std::complex<double> *)RmgMallocHost(wfc_size);
+
+    int Mdim = Sp.GetDistMdim();
+    int Ndim = Sp.GetDistNdim();
+    int n2 = Mdim * Ndim;
+    int *desca = Sp.GetDistDesca();
+
+    if(Kptr[0]->BP_Skk1_cpu == NULL)
+    {
+        for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            Kptr[ik]->BP_Skk1_cpu
+                 = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
+
+        }
+    }
+
+    
+    RmgTimer *RT1 = new RmgTimer("Berry Phase: tddft Skk1");
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        //psi_k0: the first k point in a string
+        // psi_k0 * exp(i b r) for the k+1 of the last k point in a string
+        // b: reciprocal lattice vector along Berry phase direction
+        // if BerryPhase direction along b0, only real space along a0 direction needed
+        // exp(i ix/Nx * 2PI) or exp( i iy/Ny * 2Pi), ..
+        memcpy(psi_k0, Kptr[iort*num_kpp]->orbital_storage + tddft_start_state * pbasis_noncoll, wfc_size);
+
+        psi_x_phase(psi_k0, gr, numst);
+        for(int jpp = 0; jpp < num_kpp; jpp++)
+        {
+            int ik_index = iort * num_kpp + jpp;
+            psi_k = Kptr[ik_index]->orbital_storage + tddft_start_state * pbasis_noncoll;
+            if(jpp == num_kpp-1)
+            {
+                psi_k1 = psi_k0;
+            }
+            else
+            {
+                psi_k1 = Kptr[ik_index+1]->orbital_storage;
+            }
+
+            RmgGemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat_glob, numst);
+            BlockAllreduce(mat_glob, numst * numst, pct.grid_comm);
+
+            Sp.CopySquareMatrixToDistArray(mat_glob, Kptr[ik_index]->BP_Skk1_cpu, numst, desca);
+
+        }
+    }
+    delete RT1;
+
+}
+void BerryPhase::CalcBP_tddft (Kpoint<double> **Kptr, double &tot_bp_pol, double *mat_glob, Scalapack &Sp)
+{
+    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+}
+void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &Sp)
+{
+
+
+
+    std::complex<double> det, zeta;
+    std::vector<double> phik(num_kort);
+    std::vector<double> pdl_elec(num_kort);
+    double pdl_elec_tot;
+    std::vector<std::complex<double>> cphik(num_kort);
+    int info, *ipiv;
+    ipiv = new int[nband_occ];
+
+    int nprow = Sp.GetRows();
+    int npcol = Sp.GetCols();
+    int NB = Sp.GetNB();
+    int *desca = Sp.GetDistDesca();
+    int numst = Sp.GetN();
+    int ione = 1;
+
+    int Mdim = Sp.GetDistMdim();
+    int Ndim = Sp.GetDistNdim();
+    int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
+
+
+    double *eigs = new double[numst];
+    std::complex<double> *Cmat = new std::complex<double>[n2];
+    std::complex<double> *CijSkk1 = new std::complex<double>[n2];
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        // Pn1_cpu will store the eigenvectors
+        // new psi = Pn1_cpu * psi
+        Eigen(Kptr[kpt]->Hmatrix_1_cpu, eigs, Kptr[kpt]->Pn1_cpu, numst, numst, Sp);  
+
+    }
+
+    std::complex<double> alpha(1.0), beta(0.0);
+    RmgTimer  *RT1 = new RmgTimer("Berry Phase: tddft phase calculation");
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        // for each string, calculate the Berry Phase
+        // BP_Skk1 = <psi_k |psi_k1>
+        zeta = 1.0;
+
+        for(int jpp = 0; jpp < num_kpp; jpp++)
+        {
+            int ik_index = iort * num_kpp + jpp;
+
+            std::complex<double> *Cij_k = Kptr[ik_index]->Pn1_cpu;
+            std::complex<double> *Cij_k1 = NULL;
+            if(jpp == num_kpp-1)
+            {
+                Cij_k1= Kptr[iort * num_kpp]->Pn1_cpu;
+            }
+            else
+            {
+                Cij_k1= Kptr[ik_index+1]->Pn1_cpu;
+            } 
+            std::complex<double> *Skk1 = Kptr[ik_index]->BP_Skk1_cpu;
+            zgemm_driver ("C", "N", numst, numst, numst, alpha, Cij_k, ione, ione, desca,
+                    Skk1, ione, ione, desca, beta, CijSkk1, ione, ione, desca);
+            zgemm_driver ("N", "N", numst, numst, numst, alpha, CijSkk1, ione, ione, desca,
+                    Cij_k1, ione, ione, desca, beta, Cmat, ione, ione, desca);
+
+            Sp.GatherEigvectors(mat_glob, Cmat);
+
+            zgetrf(&nband_occ, &nband_occ, (double *)mat_glob, &numst, ipiv, &info);
+            if (info != 0)
+            {
+                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                fflush (NULL);
+                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+            }
+
+            det = 1.0;
+            for (int i = 0; i < nband_occ; i++)
+            {
+                det = det * mat_glob[i * numst +i];
+                if(i != ipiv[i]) det = -det;
+            }
+
+
+            if(ct.verbose)
+            {
+                rmg_printf("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
+            }
+            zeta = zeta * det;
+
+        }
+        if(std::abs(zeta) < eps)
+        {
+
+            phik[iort] = 0.0;
+            cphik[iort] = 1.0;
+        }
+        else
+        {
+            phik[iort] = std::imag( log(zeta) );
+            cphik[iort] = std::complex<double>(cos(phik[iort]), sin(phik[iort]));
+            if(ct.verbose)
+            {
+                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort], zeta);
+            }
+        }
+    }
+    delete RT1;
+
+    //  -------------------------------------------------------------------------   !
+    //                    electronic polarization: phase average                    !
+    //  -------------------------------------------------------------------------   !
+
+    //  --- Initialize average of phases as complex numbers ---
+    std::complex<double> cave(0.0);
+    double  phik_ave(0.0);
+
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        cave += kweight_string[iort] * cphik[iort];
+    }
+
+    //     --- Get the angle corresponding to the complex numbers average ---
+    double theta0=atan2(std::imag(cave), std::real(cave));
+    //     --- Put the phases in an around theta0 ---
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        cphik[iort] = cphik[iort]/cave;
+        double dtheta=atan2(std::imag(cphik[iort]), std::real(cphik[iort]));
+        phik[iort]=theta0+dtheta;
+        //rmg_printf("kort %d phik after ave %f %f\n", iort,  phik[iort]);
+        // take mod so phase is -Pi to Pi
+        phik[iort] = phik[iort] - PI * std::round(phik[iort]/PI); 
+    }
+
+    // you need to fix jumps before you take average
+    double t1=phik[0]/PI;
+    for(int iort = 0; iort < num_kort; iort++)
+    {
+        double t = phik[iort]/PI;
+        if(abs(t+1.0-t1) < abs(t-t1))phik[iort]=phik[iort]+PI;
+        if(abs(t-1.0-t1) < abs(t-t1))phik[iort]=phik[iort]-PI;
+        pdl_elec[iort] = phik[iort]/PI ;
+        phik_ave=phik_ave+kweight_string[iort]*phik[iort];
+        if(ct.verbose)
+        {
+            rmg_printf("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
+        }
+    }
+
+    pdl_elec_tot = phik_ave/twoPI;
+    if(ct.nspin == 1) pdl_elec_tot *=2.0;
+    // spin sum 
+    pdl_elec_tot = pdl_elec_tot - 2.0*std::round(pdl_elec_tot/2.0);
+    // pdl_elec_tot is [-1.0, 1.0] 
+
+    // ionic phase  z * r_ion * b_berryPhaseDir
+
+    double pdl_ion_tot = 0.0;
+    for(int ion = 0; ion < ct.num_ions; ion++)
+    {
+        ION *iptr = &Atoms[ion];
+        double Zj = Species[iptr->species].zvalence;
+        pdl_ion_tot += Zj * iptr->xtal[BerryPhase_dir];
+    }
+    pdl_ion_tot = pdl_ion_tot - 2.0 * std::round(pdl_ion_tot/2.0);
+    double pdl_tot = pdl_elec_tot + pdl_ion_tot;
+    pdl_tot = pdl_tot - 2.0 * std::round(pdl_tot/2.0);
+
+    if(ct.verbose)
+    {
+        rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
+        rmg_printf("\n  Ionic      phase %f ", pdl_ion_tot);
+        rmg_printf("\n  Total      phase %f ", pdl_tot);
+    }
+
+    //  Polarization 
+
+    // adapted from QE 
+    //    Calculate direction of polarization and modulus of lattice vector ---
+    //    lattice vector or reciprocal lattice vector with direction
+    double rmod(1.0);
+    if(BerryPhase_dir == 0)
+    {
+        rmod = Rmg_L.get_xside();
+    }
+    if(BerryPhase_dir == 1)
+    {
+        rmod = Rmg_L.get_yside();
+    }
+    if(BerryPhase_dir == 2)
+    {
+        rmod = Rmg_L.get_zside();
+    }
+    this->eai = rmod * this->efield_mag;
+    //  --- Give polarization in units of (e/Omega).bohr ---
+    pol_elec = pdl_elec_tot * rmod;
+    pol_ion = pdl_ion_tot * rmod;  
+    pol_tot = pdl_tot * rmod;
+    if(ct.verbose)
+    {
+        rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
+        rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
+        rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
+    }
+
+    tot_bp_pol = pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI);
+    delete [] ipiv;
+    delete [] eigs;
+    delete [] Cmat;
+    delete [] CijSkk1;
+
+
+}
+

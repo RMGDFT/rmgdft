@@ -42,7 +42,7 @@ public:
     int pbasis, pbasis_noncoll;
     size_t wfc_size;
     std::vector<double> kweight_string;
-    std::complex<double> *mat, *psi_k0;
+    std::complex<double> *mat, *psi_k0 = NULL;
     BerryPhase();
 
     ~BerryPhase(void);
@@ -55,7 +55,11 @@ public:
     void Apply_BP_Hpsi(Kpoint<double> *kptr, int num_states, double *psi, double *h_psi);
     void CalcBP(Kpoint<std::complex<double>> **Kptr);
     void CalcBP(Kpoint<double> **Kptr);
-    void psi_x_phase(std::complex<double> *psi_k0, double gr[3]);
+    void psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nband);
+    void CalcBP_Skk1(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
+    void CalcBP_Skk1(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
+    void CalcBP_tddft(Kpoint<double> **Kptr, double &tot_bp_pol, double *, Scalapack &);
+    void CalcBP_tddft(Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &);
 
 };
 
