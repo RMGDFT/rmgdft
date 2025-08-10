@@ -480,9 +480,9 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         symm_vec(isym, tem);
         if(inv_type[isym]) 
         {
-            tem[0] = -tem[0];
-            tem[1] = -tem[1];
-            tem[2] = -tem[2];
+            //tem[0] = -tem[0];
+            //tem[1] = -tem[1];
+            //tem[2] = -tem[2];
         }
 
         if( (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
