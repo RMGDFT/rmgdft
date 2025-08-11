@@ -38,10 +38,6 @@ BerryPhase *Rmg_BP;
 BerryPhase::BerryPhase(void)
 {
 
-    if(pct.pe_kpoint != 1) 
-    {
-        rmg_error_handler(__FILE__, __LINE__,"no kpoint parallel now\n");
-    }
     if(!ct.norm_conserving_pp)
     {
         rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp now\n");
@@ -134,7 +130,7 @@ BerryPhase::BerryPhase(void)
 
     if (ct.verbose)
     {
-        rmg_printf("\n num_k %d num_string %d k_in_string %d in unit of reciprocal lattice", ct.num_kpts, num_kort, num_kpp);
+        rmg_printf("\n num_k %d num_string(pe) %d(%d) k_in_string %d in unit of reciprocal lattice", ct.num_kpts, num_kort, num_kort_pe, num_kpp);
         for(int kpt = 0; kpt < ct.num_kpts; kpt++)
             rmg_printf("\n kvec %d  %f %f %f %f \n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }
@@ -204,8 +200,13 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     double gr[3]{0.0,0.0,0.0};
     gr[BerryPhase_dir] = -1.0;
     std::complex<double> phase;
-    for(int iort = 0; iort < num_kort; iort++)
+
+
+    std::fill(phik.begin(), phik.end(), 0.0);
+    std::fill(cphik.begin(), cphik.end(), 0.0);
+    for(int iort = 0; iort < num_kort_pe; iort++)
     {
+        int iort_gl = kort_start + iort;
         // for each string, calculate the Berry Phase
         zeta = 1.0;
         //psi_k0: the first k point in a string
@@ -279,20 +280,23 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         if(std::abs(zeta) < eps)
         {
 
-            phik[iort] = 0.0;
-            cphik[iort] = 1.0;
+            phik[iort_gl] = 0.0;
+            cphik[iort_gl] = 1.0;
         }
         else
         {
-            phik[iort] = std::imag( log(zeta) );
-            cphik[iort] = std::complex<double>(cos(phik[iort]), sin(phik[iort]));
+            phik[iort_gl] = std::imag( log(zeta) );
+            cphik[iort_gl] = std::complex<double>(cos(phik[iort_gl]), sin(phik[iort_gl]));
             if(ct.verbose)
             {
-                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort], zeta);
+                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
             }
         }
         delete RT1;
     }
+
+    MPI_Allreduce(MPI_IN_PLACE, phik.data(), num_kort, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, cphik.data(), num_kort, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.kpsub_comm);
 
     //  -------------------------------------------------------------------------   !
     //                    electronic polarization: phase average                    !
@@ -409,7 +413,7 @@ void BerryPhase::Calc_Gnk (Kpoint<std::complex<double>> **Kptr)
     std::complex<double> *BP_matrix_p1 =NULL, *BP_matrix_m1;
     std::complex<double> *Gnk =NULL;
     double gr[3]{0.0, 0.0, 0.0};
-    for(int iort = 0; iort < num_kort; iort++)
+    for(int iort = 0; iort < num_kort_pe; iort++)
     {
         for(int jpp = 0; jpp < num_kpp; jpp++)
         {
@@ -561,7 +565,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
 
     
     RmgTimer *RT1 = new RmgTimer("Berry Phase: tddft Skk1");
-    for(int iort = 0; iort < num_kort; iort++)
+    for(int iort = 0; iort < num_kort_pe; iort++)
     {
         //psi_k0: the first k point in a string
         // psi_k0 * exp(i b r) for the k+1 of the last k point in a string
@@ -636,8 +640,11 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
     std::complex<double> alpha(1.0), beta(0.0);
     RmgTimer  *RT1 = new RmgTimer("Berry Phase: tddft phase calculation");
-    for(int iort = 0; iort < num_kort; iort++)
+    std::fill(phik.begin(), phik.end(), 0.0);
+    std::fill(cphik.begin(), cphik.end(), 0.0);
+    for(int iort = 0; iort < num_kort_pe; iort++)
     {
+        int iort_gl = kort_start + iort;
         // for each string, calculate the Berry Phase
         // BP_Skk1 = <psi_k |psi_k1>
         zeta = 1.0;
@@ -690,20 +697,23 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
         if(std::abs(zeta) < eps)
         {
 
-            phik[iort] = 0.0;
-            cphik[iort] = 1.0;
+            phik[iort_gl] = 0.0;
+            cphik[iort_gl] = 1.0;
         }
         else
         {
-            phik[iort] = std::imag( log(zeta) );
-            cphik[iort] = std::complex<double>(cos(phik[iort]), sin(phik[iort]));
+            phik[iort_gl] = std::imag( log(zeta) );
+            cphik[iort_gl] = std::complex<double>(cos(phik[iort_gl]), sin(phik[iort_gl]));
             if(ct.verbose)
             {
-                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort], zeta);
+                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
             }
         }
     }
     delete RT1;
+
+    MPI_Allreduce(MPI_IN_PLACE, phik.data(), num_kort, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, cphik.data(), num_kort, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.kpsub_comm);
 
     //  -------------------------------------------------------------------------   !
     //                    electronic polarization: phase average                    !

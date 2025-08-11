@@ -500,6 +500,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
 
             Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
 

@@ -31,6 +31,7 @@ private:
     
 public:
     int num_kort, num_kort_pe, num_kpp;
+    int kort_start;
     int BerryPhase_dir;
     double efield_mag=0.0;
     double eps = 1.0e-10;
