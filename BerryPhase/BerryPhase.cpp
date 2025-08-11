@@ -35,6 +35,9 @@
 BerryPhase *Rmg_BP;
 
 
+template <typename KpointType>
+void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp);
+
 BerryPhase::BerryPhase(void)
 {
 
