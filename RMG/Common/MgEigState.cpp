@@ -65,6 +65,7 @@ double ComputeEig(int n, T *A, T *B, T *D)
 
 }
 
+std::atomic<bool> reduce_it = false;
 
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
 template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
@@ -102,12 +103,16 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, diag, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 0, 4, 4, 4, 4, 4, 4 };
-
+    int eig_post[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
-    int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
+    // Once the SCF error gets small increase this to remove
+    // interpolation errors from coarse to fine.
+    int gl_pst = ct.eig_parm.gl_pst;
+    if(ct.scf_accuracy < 1.0e-9) gl_pst=3;
+
+    int nits = ct.eig_parm.gl_pre + gl_pst;
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
@@ -120,6 +125,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
     bool do_mgrid = true;
+    double mg_step = ct.eig_parm.sb_step;
+    double fg_step = ct.eig_parm.mg_timestep;
+
+    if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
+
+    double gl_step = ct.eig_parm.gl_step;
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
@@ -173,11 +184,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     for(int ix=0;ix < pbasis_noncoll;ix++) res2_t[ix] = work1_t[ix];
 
     // Setup some potential acceleration stuff
+        for(int idx = 0;idx <pbasis_noncoll;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
     potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(potential_acceleration) {
-        for(int idx = 0;idx <pbasis_noncoll;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
         PotentialAccelerationWait(sp->istate, kptr->nstates, kptr->dvh_skip);
     }
+
 
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
@@ -224,7 +236,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 if(potential_acceleration) {
                     t1 = eig;
-                    eig = 0.3 * eig + 0.7 * sp->oldeig[0];
+                    double s1 = std::pow(0.5, cycles+1);
+                    eig = s1 * eig + (1-s1) * sp->oldeig[0];
                     sp->oldeig[0] = t1;
                 }
             }
@@ -233,13 +246,24 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             }
 
         }
-
         // Get the residual
         CalcType f1(2.0*eig);
         for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - 2.0*work1_t[idx];
-        sp->res = 0.0;
-        for (int idx = 0; idx <pbasis_noncoll; idx++) sp->res += std::real(res_t[idx] * std::conj(res_t[idx]));
+        sp->res[cycles] = 0.0;
+        for (int idx = 0; idx <pbasis_noncoll; idx++) sp->res[cycles] += std::real(res_t[idx] * std::conj(res_t[idx]));
+        GlobalSums (&sp->res[cycles], 1, pct.coalesced_grid_comm);
+        sp->res[cycles] *= get_vel();
 
+        if(cycles > 0 && sp->res[cycles] > sp->res[cycles-1] && cycles < ct.eig_parm.gl_pre)
+        {
+            if(ct.verbose && pct.gridpe==0)
+                printf("\nResidual increasing  %d   %12.8e  %12.8e.\n",sp->istate, sp->res[cycles-1], sp->res[cycles]);
+            fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
+            reduce_it = true;
+            if(ct.verbose && pct.gridpe==0) printf("\nNot smoothing! Resetting state %d\n", sp->istate);
+            for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
+            break;
+        }
         for(int is = 0; is < ct.noncoll_factor; is++)
         {
             /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -293,7 +317,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     MG.mgrid_solv (v_mat, f_mat, work2_tf,
                             dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                             1, levels, eig_pre, eig_post, 1, 
-                            ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                            mg_step, 2.0*Zfac, 0.0, NULL,
                             //ct.eig_parm.sb_step, Zfac, 0.0, c_vtot,
                             NX_GRID, NY_GRID, NZ_GRID,
                             G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
@@ -308,21 +332,16 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                  * routine to update the orbital which is stored in a physical grid.
                  */
 
-                t1 = -ct.eig_parm.mg_timestep;
+                t1 = -fg_step;
                 CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
 
             }
             else
             {
-
-                t1 = eig;
-                double t5 = diag - Zfac;
-                t5 = -1.0 / t5;
-                double t4 = ct.eig_parm.gl_step * t5;
                 for (int idx = 0; idx <pbasis; idx++)
                 {
-                    OrbitalType t5 = t4 * (OrbitalType)res_t[idx + is * pbasis];
-                    tmp_psi_t[idx + is * pbasis] += t5;
+                    OrbitalType t5 = gl_step / (std::abs(diag) + std::abs(vtot_psi[idx]) + 0.5*kptr->kp.kmag);
+                    tmp_psi_t[idx + is * pbasis] += t5 * (OrbitalType)res_t[idx + is * pbasis];
                 }
 
                 if (cycles == 0)

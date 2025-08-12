@@ -131,6 +131,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     int irem = mstates % block_size;
     if(irem) nblocks++;
 
+
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
@@ -210,6 +211,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
+
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
@@ -234,27 +236,29 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         this->min_unocc_res = DBL_MAX;
         this->max_unocc_res = 0.0;
         this->highest_occupied = 0;
+
         for(int istate = 0;istate < this->nstates;istate++) {
             if(this->Kstates[istate].occupation[0] > 0.0) {
-                this->mean_occ_res += this->Kstates[istate].res;
-                mean_occ_res += this->Kstates[istate].res;
-                if(this->Kstates[istate].res >  this->max_occ_res)  this->max_occ_res = this->Kstates[istate].res;
-                if(this->Kstates[istate].res <  this->min_occ_res)  this->min_occ_res = this->Kstates[istate].res;
-                if(this->Kstates[istate].res >  max_occ_res)  max_occ_res = this->Kstates[istate].res;
-                if(this->Kstates[istate].res <  min_occ_res)  min_occ_res = this->Kstates[istate].res;
+                this->mean_occ_res += this->Kstates[istate].res[0];
+                mean_occ_res += this->Kstates[istate].res[0];
+                if(this->Kstates[istate].res[0] >  this->max_occ_res)  this->max_occ_res = this->Kstates[istate].res[0];
+                if(this->Kstates[istate].res[0] <  this->min_occ_res)  this->min_occ_res = this->Kstates[istate].res[0];
+                if(this->Kstates[istate].res[0] >  max_occ_res)  max_occ_res = this->Kstates[istate].res[0];
+                if(this->Kstates[istate].res[0] <  min_occ_res)  min_occ_res = this->Kstates[istate].res[0];
                 this->highest_occupied = istate;
             }
             else {
                 if(istate <= this->max_unocc_res_index) {
-                    this->mean_unocc_res += this->Kstates[istate].res;
-                    mean_unocc_res += this->Kstates[istate].res;
-                    if(this->Kstates[istate].res >  this->max_unocc_res)  this->max_unocc_res = this->Kstates[istate].res;
-                    if(this->Kstates[istate].res <  this->min_unocc_res)  this->min_unocc_res = this->Kstates[istate].res;
-                    if(this->Kstates[istate].res >  max_unocc_res)  max_unocc_res = this->Kstates[istate].res;
-                    if(this->Kstates[istate].res <  min_unocc_res)  min_unocc_res = this->Kstates[istate].res;
+                    this->mean_unocc_res += this->Kstates[istate].res[0];
+                    mean_unocc_res += this->Kstates[istate].res[0];
+                    if(this->Kstates[istate].res[0] >  this->max_unocc_res)  this->max_unocc_res = this->Kstates[istate].res[0];
+                    if(this->Kstates[istate].res[0] <  this->min_unocc_res)  this->min_unocc_res = this->Kstates[istate].res[0];
+                    if(this->Kstates[istate].res[0] >  max_unocc_res)  max_unocc_res = this->Kstates[istate].res[0];
+                    if(this->Kstates[istate].res[0] <  min_unocc_res)  min_unocc_res = this->Kstates[istate].res[0];
                 }
             }
         }
+
         this->mean_occ_res = this->mean_occ_res / (double)(this->highest_occupied + 1);
         this->mean_unocc_res = this->mean_unocc_res / (double)(this->max_unocc_res_index -(this->highest_occupied + 1));
         mean_occ_res = mean_occ_res / (double)(ct.num_kpts*(this->highest_occupied + 1));

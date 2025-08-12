@@ -83,8 +83,8 @@ public:
     /** Total basis size on each processor (dimx*dimy*dimz) */
     int pbasis;
 
-    /** Wavefunction residual error computed by multigrid solver */
-    double res;
+    /** Wavefunction residual errors computed by multigrid solver */
+    double res[8];
 
     // Last two eigenvalues
     double eig[2];

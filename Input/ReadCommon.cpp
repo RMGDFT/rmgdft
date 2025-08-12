@@ -876,11 +876,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid preconditioner iteration. ",
             "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
+    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 0, 5, 1,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid post-smoothing steps to perform after a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 1. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
             CHECK_AND_FIX, OPTIONAL,
@@ -925,10 +925,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner. ",
             "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 0.6666666666666,
+    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "timestep for multigrid correction. ",
-            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 1.0 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
             CHECK_AND_FIX, OPTIONAL,
