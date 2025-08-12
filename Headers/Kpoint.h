@@ -184,11 +184,6 @@ public:
 
     // Pointer to potential acceleration arrays and size
     double *dvh;
-    size_t dvh_size;
-
-    // Number of potential acceleration arrays and the skip factor
-    int ndvh;
-    int dvh_skip;
 
     // Number of points in orbital basis
     int pbasis;

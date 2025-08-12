@@ -76,7 +76,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
     if(potential_acceleration) {
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
-        int offset = (istate / kptr->dvh_skip) * pbasis;
+        int offset = (istate / ct.dvh_skip) * pbasis;
         int my_pe_x, my_pe_y, my_pe_z;
         kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
         int my_pe_offset = my_pe_x % pct.coalesce_factor;

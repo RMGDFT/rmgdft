@@ -183,7 +183,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
             for (int is = 0; is < ct.num_states; is++)
             {
-                int offset = (is / kptr->dvh_skip) * kptr->pbasis;
+                int offset = (is / ct.dvh_skip) * kptr->pbasis;
                 double *veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*kptr->pbasis];
                 KpointType *psi = kptr->Kstates[is].psi;
                 for(int ix = 0;ix < kptr->pbasis;ix++)

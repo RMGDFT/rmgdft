@@ -228,7 +228,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
-            int stop = Kptr[kpt]->ndvh * Kptr[kpt]->pbasis * pct.coalesce_factor;
+            int stop = ct.ndvh * Kptr[kpt]->pbasis * pct.coalesce_factor;
             for(int i=0;i < stop;i++) Kptr[kpt]->dvh[i] = 0.0;
         }
     }

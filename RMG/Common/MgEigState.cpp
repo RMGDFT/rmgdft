@@ -187,9 +187,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         for(int idx = 0;idx <pbasis_noncoll;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
     potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(potential_acceleration) {
-        PotentialAccelerationWait(sp->istate, kptr->nstates, kptr->dvh_skip);
+        PotentialAccelerationWait(sp->istate, kptr->nstates, ct.dvh_skip);
     }
-
 
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
@@ -340,7 +339,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             {
                 for (int idx = 0; idx <pbasis; idx++)
                 {
-                    OrbitalType t5 = gl_step / (std::abs(diag) + std::abs(vtot_psi[idx]) + 0.5*kptr->kp.kmag);
+                    OrbitalType t5 = gl_step / std::abs(diag + vtot_psi[idx] + 0.5*kptr->kp.kmag);
                     tmp_psi_t[idx + is * pbasis] += t5 * (OrbitalType)res_t[idx + is * pbasis];
                 }
 

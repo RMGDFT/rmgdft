@@ -798,28 +798,29 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
 
     ct.num_states = ct.run_states;
+    ct.dvh_skip = 8;
+    ct.dvh_size = 0;
+    if(potential_acceleration)
+    {
+        if(ct.run_states <= 256) ct.dvh_skip = 4;
+        if(ct.run_states <= 128) ct.dvh_skip = 2;
+        if(ct.run_states <= 64) ct.dvh_skip = 1;
+        if(ct.coalesce_states)
+        {
+            int active_threads = ct.MG_THREADS_PER_NODE;
+            if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+            ct.dvh_skip = active_threads * pct.coalesce_factor;
+        }
+        ct.ndvh = ct.run_states / ct.dvh_skip + 1;
+        ct.dvh_size = (size_t)ct.ndvh * P0_BASIS * pct.coalesce_factor;
+    }
+
     for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         Kptr[kpt]->nstates = ct.run_states;
-        Kptr[kpt]->dvh_skip = 8;
-        Kptr[kpt]->dvh_size = 0;
         // Set up potential acceleration arrays if required
         if(potential_acceleration) {
-            if(ct.run_states <= 256) Kptr[kpt]->dvh_skip = 4;
-            if(ct.run_states <= 128) Kptr[kpt]->dvh_skip = 2;
-            if(ct.run_states <= 64) Kptr[kpt]->dvh_skip = 1;
-            if(ct.coalesce_states)
-            {
-                int active_threads = ct.MG_THREADS_PER_NODE;
-                if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
-                Kptr[kpt]->dvh_skip = active_threads * pct.coalesce_factor;
-            }
-
-            Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
-            Kptr[kpt]->dvh_size = (size_t)Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor;
-            MPI_Alloc_mem(Kptr[kpt]->dvh_size * sizeof(double), MPI_INFO_NULL, &Kptr[kpt]->dvh);
-
-
+            MPI_Alloc_mem(ct.dvh_size * sizeof(double), MPI_INFO_NULL, &Kptr[kpt]->dvh);
         }
     }
 

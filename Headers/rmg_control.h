@@ -737,6 +737,11 @@ public:
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;
 
+    /* Potential acceleratoin skip and size factors */
+    int ndvh;
+    int dvh_skip;
+    size_t dvh_size;
+
     // Some GPU information.
     // Total number of gpu devices present in the node
     int num_gpu_devices;

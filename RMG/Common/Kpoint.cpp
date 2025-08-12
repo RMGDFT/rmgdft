@@ -1353,7 +1353,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 
 template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)
 {
-    for(size_t idx=0;idx < this->dvh_size;idx++)
+    for(size_t idx=0;idx < ct.dvh_size;idx++)
     {
         this->dvh[idx] = 0.0;
     }

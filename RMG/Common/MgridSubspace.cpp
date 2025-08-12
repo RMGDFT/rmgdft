@@ -138,9 +138,9 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         // Zero out dvh array if potential acceleration is enabled
         if(potential_acceleration)
         {
-           int stop = this->ndvh * pbasis * pct.coalesce_factor;
+           int stop = ct.ndvh * pbasis * pct.coalesce_factor;
            for(int i=0;i < stop;i++) this->dvh[i] = 0.0;
-           PotentialAccelerationReset(my_pe_offset*active_threads + this->dvh_skip/pct.coalesce_factor);
+           PotentialAccelerationReset(my_pe_offset*active_threads + ct.dvh_skip/pct.coalesce_factor);
         }
 
         // Update betaxpsi        
@@ -212,6 +212,18 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
 
+    }
+
+    // Scan state residuals and see which ones (if any) multigrid iterations did not work on
+    int notconv = 0;
+    for(int is=0;is < this->nstates;is++)
+    {
+        if(this->Kstates[is].res[0] < this->Kstates[is].res[1])
+        {
+            notconv++;
+            if(ct.verbose && pct.gridpe==0)
+                printf("\nMultigrid smoothing failed for state %d\n",is);
+        }
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
