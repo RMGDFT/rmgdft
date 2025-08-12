@@ -35,8 +35,6 @@ void InitPe4kpspin()
 {
 
  // Get the prime factors of kpt
-    std::vector<int> kpt_factors = {1};
-    GetPrimeFactors(kpt_factors, ct.num_kpts, ct.num_kpts);
     int nspin = 1+ct.spin_flag;
     if(ct.AFM) nspin = 1;
     if(pct.image_npes[pct.thisimg] % nspin !=0)
@@ -48,21 +46,38 @@ void InitPe4kpspin()
     int npes;
     npes = pct.image_npes[pct.thisimg]/nspin;
 
-    while(pct.pe_kpoint > ct.num_kpts)
+    if(ct.BerryPhase)
     {
-        pct.pe_kpoint /=2;
-    }
+        std::vector<int> kpt_factors = {1};
+        GetPrimeFactors(kpt_factors, Rmg_BP->num_kort, Rmg_BP->num_kort);
+        if(pct.pe_kpoint <1 || pct.pe_kpoint > npes  || pct.pe_kpoint > Rmg_BP->num_kort)
+        {
+            pct.pe_kpoint = 1;
 
-    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes )
-    {
-        pct.pe_kpoint = 1;
-
-        while(kpt_factors.size()) {
-            if(npes % kpt_factors.back() == 0) {
-                pct.pe_kpoint *= kpt_factors.back();
-                npes /= kpt_factors.back();
+            while(kpt_factors.size()) {
+                if(npes % kpt_factors.back() == 0) {
+                    pct.pe_kpoint *= kpt_factors.back();
+                    npes /= kpt_factors.back();
+                }
+                kpt_factors.pop_back();
             }
-            kpt_factors.pop_back();
+        }
+    }
+    else
+    {
+        std::vector<int> kpt_factors = {1};
+        GetPrimeFactors(kpt_factors, ct.num_kpts, ct.num_kpts);
+        if(pct.pe_kpoint <1 || pct.pe_kpoint > npes  || pct.pe_kpoint > ct.num_kpts)
+        {
+            pct.pe_kpoint = 1;
+
+            while(kpt_factors.size()) {
+                if(npes % kpt_factors.back() == 0) {
+                    pct.pe_kpoint *= kpt_factors.back();
+                    npes /= kpt_factors.back();
+                }
+                kpt_factors.pop_back();
+            }
         }
     }
 
@@ -106,20 +121,48 @@ void InitPe4kpspin()
     MPI_Comm_rank (pct.kpsub_comm, &kpsub_rank);
     MPI_Comm_size (pct.grid_comm, &pct.grid_npes);
 
-    ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
-    pct.kstart = ct.num_kpts_pe * kpsub_rank;
-
-    int kpt_mode = ct.num_kpts % pct.pe_kpoint;
-    if( kpt_mode > 0) 
+    if(ct.BerryPhase)
     {
-        if(kpsub_rank < kpt_mode) 
+        Rmg_BP->num_kort_pe = Rmg_BP->num_kort / pct.pe_kpoint;
+        Rmg_BP->kort_start = Rmg_BP->num_kort_pe * kpsub_rank;
+        pct.kstart = Rmg_BP->kort_start * Rmg_BP->num_kpp;
+        ct.num_kpts_pe  = Rmg_BP->num_kort_pe * Rmg_BP->num_kpp;
+
+        int kpt_mode = Rmg_BP->num_kort % pct.pe_kpoint;
+        if( kpt_mode > 0) 
         {
-            ct.num_kpts_pe++;
-            pct.kstart = ct.num_kpts_pe * kpsub_rank;
+            if(kpsub_rank < kpt_mode) 
+            {
+                Rmg_BP->num_kort_pe++;
+                Rmg_BP->kort_start = Rmg_BP->num_kort_pe * kpsub_rank;
+
+                ct.num_kpts_pe = Rmg_BP->num_kort_pe * Rmg_BP->num_kpp;
+                pct.kstart = ct.num_kpts_pe * kpsub_rank;
+            }
+            else
+            {
+                Rmg_BP->kort_start = Rmg_BP->num_kort_pe * kpsub_rank + kpt_mode;
+                pct.kstart = ct.num_kpts_pe * kpsub_rank + kpt_mode * Rmg_BP->num_kpp;
+            }
         }
-        else
+    }
+    else
+    {
+        ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
+        pct.kstart = ct.num_kpts_pe * kpsub_rank;
+
+        int kpt_mode = ct.num_kpts % pct.pe_kpoint;
+        if( kpt_mode > 0) 
         {
-            pct.kstart = ct.num_kpts_pe * kpsub_rank + kpt_mode;
+            if(kpsub_rank < kpt_mode) 
+            {
+                ct.num_kpts_pe++;
+                pct.kstart = ct.num_kpts_pe * kpsub_rank;
+            }
+            else
+            {
+                pct.kstart = ct.num_kpts_pe * kpsub_rank + kpt_mode;
+            }
         }
     }
 

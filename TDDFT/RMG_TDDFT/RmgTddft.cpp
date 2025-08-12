@@ -214,7 +214,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int FP0_BASIS = dimx * dimy * dimz;
 
-    FILE *dfi = NULL, *efi = NULL, *current_fi = NULL;
+    FILE *dfi = NULL, *efi = NULL, *current_fi = NULL, *dbp_fi = NULL;
     double vel = get_vel_f();
     std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
@@ -278,6 +278,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             Kptr[kpt]->Pxmatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
             Kptr[kpt]->Pymatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
             Kptr[kpt]->Pzmatrix_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+
         }
         else
         {
@@ -332,8 +333,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     //    double *vh_z = new double[FP0_BASIS];
 
 
-    get_dipole(rho, dipole_ele);
-    DipoleCorrection(dipole_ele,  vh_dipole);
+    {
+        get_dipole(rho, dipole_ele);
+        DipoleCorrection(dipole_ele,  vh_dipole);
+    }
 
     double *Hcore_tddft = new double[(size_t)numst * (size_t)numst];
     double ES = 0.0, E_downfold = 0.0, EkinPseudo = 0.0, totalE=0.0;
@@ -372,7 +375,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         dfi = fopen(filename.c_str(), "w");
 
         fprintf(dfi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
-        fprintf(dfi, "\n  &&electric field in crystal unit:  %e  %e  %e ",ct.efield_tddft_xtal[0], ct.efield_tddft_xtal[1], ct.efield_tddft_xtal[2]);
         filename = std::string(ct.basename) + "_totalE";
         efi = fopen(filename.c_str(), "w");
 
@@ -382,7 +384,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             filename = std::string(ct.basename) + "_current.dat";
             current_fi = fopen(filename.c_str(), "w");
             fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
-            fprintf(current_fi, "\n  &&electric field in crystal unit:  %e  %e  %e ",ct.efield_tddft_xtal[0], ct.efield_tddft_xtal[1], ct.efield_tddft_xtal[2]);
+
+            filename = std::string(ct.basename) + "_bp_dipole.dat";
+            dbp_fi = fopen(filename.c_str(), "w");
+            fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
         }
     }
 
@@ -495,6 +500,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
 
             Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
 
@@ -513,11 +519,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Pn0_cpu, numst, desca);
         }
 
-        if(pct.imgpe == 0)
-        {
-            fprintf(dfi, "\n  &&dipole at groud state:  %18.10e  %18.10e  %18.10e ",
-                    dipole_ele[0], dipole_ele[1], dipole_ele[2]);
-        }
         rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f \n", dipole_ele[2]);
@@ -577,14 +578,44 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             CurrentNlpp(Kptr[kpt], desca, ct.tddft_start_state);
         }
+
     }
 
     double current[3];
-    double prho_t0[3];
-    double prho_t1[3];
-    // calculate  \nabla ^2 u = rho, prho_t0 = \nabla . u 
-    // current = [prho_t1 - prho_t0 ] /dt    
-    // CalculatePrho(rho, prho_t0);
+    current[0] = 0.0;
+    current[1] = 0.0;
+    current[2] = 0.0;
+    double tot_bp_pol = 0.0;
+    if(ct.tddft_mode == VECTOR_POT )
+    {
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+            current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
+            std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+            current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
+            std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+            current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
+        }
+        if(ct.BerryPhase)
+        {
+            Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
+            Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+        }
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    Sp->ScalapackBlockAllreduce(current, 3);
+    Rmg_Symm->symm_vec(current);
+
+    if(pct.imgpe == 0)
+    {
+        fprintf(dfi, "\n  &&dipole at groud state:  %18.10e  %18.10e  %18.10e ",
+                dipole_ele[0], dipole_ele[1], dipole_ele[2]);
+        fprintf(current_fi, "\n  &&current at groud state:  %18.10e  %18.10e  %18.10e ",
+                current[0], current[1], current[2]);
+        fprintf(dbp_fi, "\n  &&dipole at groud state BeryPhase (C/m^2):  %18.10e  %18.10e  %18.10e ",
+                tot_bp_pol, 0.0,0.0);
+    }
     //  run rt-td-dft
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -813,13 +844,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
-//        CalculatePrho(rho, prho_t1);
-//        for(int idx =0; idx < 3; idx++)
-//        {
-//            current[idx] = (prho_t1[idx] - prho_t0[idx])/time_step;
-//            prho_t0[idx] = prho_t1[idx];
-//        }
         Rmg_Symm->symm_vec(current);
+
+        if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)
+        {
+            Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+        }
 
         if(pct.imgpe == 0)
         {
@@ -841,8 +871,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                     tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
             if(ct.tddft_mode == VECTOR_POT )
+            {
                 fprintf(current_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                         tot_steps*time_step, current[0], current[1], current[2]);
+                fprintf(dbp_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
+                        tot_steps*time_step, tot_bp_pol, 0.0,0.0);
+            }
         }
 
         if((tddft_steps +1) % ct.checkpoint == 0)
@@ -859,10 +893,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 WriteData_rmgtddft(newname, vh, vxc, vh_dipole, (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
                         (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, Eterms, Hcore_tddft, numst);
             }
-            if(pct.imgpe == 0)fflush(dfi);
-            if(pct.imgpe == 0)fflush(efi);
-            if(ct.tddft_mode == VECTOR_POT )
-                if(pct.imgpe == 0)fflush(current_fi);
+
+            if(pct.imgpe == 0)
+            {
+                fflush(dfi);
+                fflush(efi);
+                if(ct.tddft_mode == VECTOR_POT )
+                    fflush(current_fi);
+                if(ct.BerryPhase)
+                    fflush(dbp_fi);
+            }
         }
 
 
@@ -878,6 +918,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         fclose(efi);
         if(ct.tddft_mode == VECTOR_POT )
             fclose(current_fi);
+        if(ct.BerryPhase)
+            fclose(dbp_fi);
     }
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
