@@ -202,8 +202,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     for(int ix=0;ix < dinv.pbasis;ix++)
         dinv[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
 
-    //bool is_jacobi = false;
     bool is_jacobi = true;
+    //if(ct.norm_conserving_pp) is_jacobi = false;
 
     Smoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t,
@@ -368,8 +368,10 @@ void Smoother (Kpoint<OrbitalType> *kptr,
     double rsum = 0.0;
     for(int i=0;i < pbasis;i++)
     {
-        //r[i] = f1*ns[i] - 2.0*Hu[i];
-        r[i] = f1*u[i] - 2.0*Hu[i];
+        if(ct.norm_conserving_pp)
+            r[i] = f1*u[i] - 2.0*Hu[i];
+        else
+            r[i] = f1*ns[i] - 2.0*Hu[i];
         p[i] = dinv[i] * r[i];
         rsum += std::real(r[i] * std::conj(r[i]));
     }
@@ -412,8 +414,10 @@ void Smoother (Kpoint<OrbitalType> *kptr,
         rsum = 0.0;
         for (int i=0;i<pbasis;i++)
         {
-            //r[i] = f1*ns[i] - 2.0*Hu[i];
-            r[i] = f1*u[i] - 2.0*Hu[i];
+            if(ct.norm_conserving_pp)
+                r[i] = f1*u[i] - 2.0*Hu[i];
+            else
+                r[i] = f1*ns[i] - 2.0*Hu[i];
             p[i] = dinv[i]*r[i] + b * p[i];
             rsum += std::real(r[i] * std::conj(r[i]));
         }
