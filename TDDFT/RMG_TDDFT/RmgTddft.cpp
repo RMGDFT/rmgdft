@@ -617,6 +617,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 tot_bp_pol, 0.0,0.0);
     }
     //  run rt-td-dft
+    RmgTimer *RT2a ;    // timer type  declaration
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
@@ -629,6 +630,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         current[1] = 0.0;
         current[2] = 0.0;
 
+        RT2a = new RmgTimer("2-TDDFT: extrapolate");
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             if(ct.tddft_mode == VECTOR_POT && tot_steps == 0)
             {
@@ -644,7 +646,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }   
 
         my_sync_device();
-        //  SCF loop 
+        delete RT2a;
+
+
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
 
@@ -653,14 +657,13 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         double  errmax_bch ;
         int     niter_bch ;
 
-        RmgTimer *RT2a ;    // timer type  declaration
 
         //-----   SCF loop  starts here: 
         while (err > thrs_dHmat &&  iter_scf <  Max_iter_scf)  {
 
             for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] = 0.0;
-            //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+                RT2a = new RmgTimer("2-TDDFT: memcpy");
                 if(ct.tddft_gpu)
                 {
                     RmgMemcpy(Hmatrix, Kptr[kpt]->Hmatrix_cpu, matrix_size);
@@ -679,6 +682,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                     Pn1 = Kptr[kpt]->Pn1_cpu;
                 }
                 my_sync_device();
+                delete RT2a;
                 RT2a = new RmgTimer("2-TDDFT: ELDYN");
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
                 /* --- C++  version:  --*/
@@ -789,6 +793,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 }
                 delete(RT2a);
 
+                RT2a = new RmgTimer("2-TDDFT: conv check");
                 my_sync_device();
                 double one = 1.0, mone = -1.0;
                 daxpy( &n2_C ,  &one, (double *)Kptr[kpt]->Hmatrix_m1_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_cpu,  &ione) ;
@@ -804,6 +809,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 bool tConv;
                 tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, Sp->GetComm());
                 memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+                delete(RT2a);
             }
 
             MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
@@ -818,6 +824,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         } //---- end of  SCF/while loop 
 
 
+        RT2a = new RmgTimer("2-TDDFT: current and dipole");
         //  extract dipole from rho(Pn1)
         get_dipole(rho, dipole_ele);
         /*  done with propagation,  save Pn1 ->  Pn0 */
@@ -879,6 +886,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
         }
 
+        delete RT2a;
+
         if((tddft_steps +1) % ct.checkpoint == 0)
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
@@ -903,6 +912,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 if(ct.BerryPhase)
                     fflush(dbp_fi);
             }
+            delete RT2a;
         }
 
 
@@ -922,7 +932,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             fclose(dbp_fi);
     }
 
-    RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
+    RT2a = new RmgTimer("2-TDDFT: Write");
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         int kpt_glob = kpt + pct.kstart;

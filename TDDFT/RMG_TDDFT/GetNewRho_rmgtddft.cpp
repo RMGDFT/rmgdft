@@ -86,19 +86,24 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
         GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
         gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
 #else
+        RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
         KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
         KpointType *xpsi = kptr->work_cpu;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
+        delete RT;
+        RT = new RmgTimer("TDDFT: rho: dot");
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
+        delete RT;
 #endif
     }
 
 
     /* Interpolate onto fine grid, result will be stored in rho*/
+        RmgTimer *RT1 = new RmgTimer("TDDFT: rho: interp");
     switch (ct.interp_flag)
     {
         case CUBIC_POLYNOMIAL_INTERPOLATION:
@@ -120,6 +125,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
     }
 
 
+    delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED 
     gpuFree(rho_temp_dev);

@@ -845,7 +845,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "When using localized projectors the radius can be adjusted with this parameter. ",
             "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50000, 5,
+    If.RegisterInputKey("write_data_period", &lc.checkpoint, -5, 50000, -1,
             CHECK_AND_FIX, OPTIONAL,
             "How often to write checkpoint files during the initial quench in units of SCF steps. During structural relaxations of molecular dynamics checkpoints are written each ionic step.",
             "", CONTROL_OPTIONS);
