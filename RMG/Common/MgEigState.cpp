@@ -211,6 +211,18 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, lambda_max, lambda_min);
 
+    // Check if residuals were decreasing and if not abort smoothing for
+    // this state.
+    bool smooth_status = (sp->res[0] > sp->res[1]);
+    if(!smooth_status)
+    {
+        //if(pct.gridpe==0)printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
+        reduce_it = true;
+        do_mgrid = false;
+        for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
+    }
+
+
     /* Now do a multigrid cycle */
     if (do_mgrid )
     {
@@ -284,21 +296,22 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
 
         }
-    }
 
-    // Post smoothing
-    // Once the SCF error gets small increase this to remove
-    // interpolation errors from coarse to fine.
-    int gl_pst = 0;
-    if(ct.scf_accuracy < 1.0e-8) gl_pst=1;
-    is_jacobi = true;
-    for(int its=0;its < gl_pst;its++)
-    {
-        Smoother<OrbitalType,CalcType>(kptr, sp,
-                  tmp_psi_t, work1_t, res_t,
-                  vtot_psi, vxc_psi, dinv.data(),
-                  nv_t, res2_t,
-                  sp->eig[0], 0, is_jacobi, lambda_max, lambda_min);
+        // Post smoothing just use jacobi
+        // Once the SCF error gets small increase this to remove
+        // interpolation errors from coarse to fine.
+        int gl_pst = 0;
+        if(ct.scf_accuracy < 1.0e-8) gl_pst=1;
+        is_jacobi = true;
+        for(int its=0;its < gl_pst;its++)
+        {
+            Smoother<OrbitalType,CalcType>(kptr, sp,
+                      tmp_psi_t, work1_t, res_t,
+                      vtot_psi, vxc_psi, dinv.data(),
+                      nv_t, res2_t,
+                      sp->eig[0], 0, is_jacobi, lambda_max, lambda_min);
+        }
+
     }
 
     if(potential_acceleration)
@@ -340,7 +353,7 @@ void Smoother (Kpoint<OrbitalType> *kptr,
     const double sigma = theta / delta;
 
     wfobj<CalcType> p;
-    CalcType f1;
+    int pbasis = p.pbasis * ct.noncoll_factor;
 
     /* Apply Hamiltonian */
     {
@@ -348,16 +361,20 @@ void Smoother (Kpoint<OrbitalType> *kptr,
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
     }
 
-    double eig1 = ComputeEig(p.pbasis, u, Hu, ns);
+    double eig1 = ComputeEig(pbasis, u, Hu, ns);
     eig = 0.7*eig1 + 0.3*eig;
-    f1 = 2.0*eig;
+    CalcType f1 = 2.0*eig;
 
-    for(int i=0;i < p.pbasis;i++)
+    double rsum = 0.0;
+    for(int i=0;i < pbasis;i++)
     {
         //r[i] = f1*ns[i] - 2.0*Hu[i];
         r[i] = f1*u[i] - 2.0*Hu[i];
         p[i] = dinv[i] * r[i];
+        rsum += std::real(r[i] * std::conj(r[i]));
     }
+    GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
+    sp->res[0] = rsum*get_vel();
 
     double a=0.0, b=0;
     for(int k=0;k < order;k++)
@@ -386,14 +403,14 @@ void Smoother (Kpoint<OrbitalType> *kptr,
 
         //if(pct.gridpe==0 && sp->istate==0)printf("QQQQ  %f  %f\n",a, b);
 
-        for(int i=0;i < p.pbasis;i++) u[i] += a*p[i];
+        for(int i=0;i < pbasis;i++) u[i] += a*p[i];
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
-        eig1 = ComputeEig(p.pbasis, u, Hu, ns);
+        eig1 = ComputeEig(pbasis, u, Hu, ns);
         eig = 0.7*eig1 + 0.3*eig;
         f1 = 2.0*eig;
 
-        double rsum = 0.0;
-        for (int i=0;i<p.pbasis;i++)
+        rsum = 0.0;
+        for (int i=0;i<pbasis;i++)
         {
             //r[i] = f1*ns[i] - 2.0*Hu[i];
             r[i] = f1*u[i] - 2.0*Hu[i];
@@ -401,7 +418,8 @@ void Smoother (Kpoint<OrbitalType> *kptr,
             rsum += std::real(r[i] * std::conj(r[i]));
         }
         GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
-        rsum *= get_vel();
+        sp->res[k+1] = rsum*get_vel();
+        //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate,sp->res[k],sp->res[k+1]);
     }
 }
 template void Smoother<double,float>(
