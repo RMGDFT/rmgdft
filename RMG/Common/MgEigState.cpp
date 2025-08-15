@@ -86,7 +86,8 @@ template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
-    double lambda_max=6.0, lambda_min=0.7;   // Non-ideal placeholders for now
+    //double lambda_max=6.0, lambda_min=0.7;   // Non-ideal placeholders for now
+    double lambda_max=2.0*2.2835, lambda_min=0.4567;   // Non-ideal placeholders for now
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
 
@@ -200,10 +201,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     wfobj<double> dinv;
     for(int ix=0;ix < dinv.pbasis;ix++)
-        dinv[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
+    {
+        dinv.up[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
+        if(ct.noncoll_factor)
+            dinv.dw[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
+    }
 
     bool is_jacobi = true;
-    //if(ct.norm_conserving_pp) is_jacobi = false;
+    if(ct.norm_conserving_pp) is_jacobi = false;
 
     Smoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t,
