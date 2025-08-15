@@ -185,9 +185,12 @@ void CheckSetDefault(void)
 
     if(ct.forceflag== TDDFT)
     {
+        if(ct.checkpoint <= 0) ct.checkpoint = 500;
         ct.potential_acceleration_constant_step = 0.0;
+        ct.interp_flag = PROLONG_INTERPOLATION;
 
     }
+    if(ct.checkpoint <= 0) ct.checkpoint = 5;
     if(ct.wannier90) {
         ct.frac_symm = false;
         ct.time_reversal = false;
