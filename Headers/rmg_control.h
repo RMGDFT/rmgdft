@@ -1087,6 +1087,9 @@ public:
    int test_steps_tolerance=0;
    int kpoint_units = 0;
 
+   // Parameters for Chebyshev smoothing.
+   double lambda_max;
+   double lambda_min;
 };
 
 

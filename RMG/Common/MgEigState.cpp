@@ -86,8 +86,8 @@ template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
-    //double lambda_max=6.0, lambda_min=0.7;   // Non-ideal placeholders for now
-    double lambda_max=2.0*2.2835, lambda_min=0.4567;   // Non-ideal placeholders for now
+    double lambda_max = ct.lambda_max;
+    double lambda_min = ct.lambda_min;
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
 
@@ -115,7 +115,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -221,7 +221,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     bool smooth_status = (sp->res[0] > sp->res[1]);
     if(!smooth_status)
     {
-        //if(pct.gridpe==0)printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
+        if(pct.gridpe==0)printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
         reduce_it = true;
         do_mgrid = false;
         for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
@@ -306,8 +306,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         // Once the SCF error gets small increase this to remove
         // interpolation errors from coarse to fine.
         int gl_pst = 0;
-        if(ct.scf_accuracy < 1.0e-8) gl_pst=1;
-        is_jacobi = true;
+//        if(ct.scf_accuracy < 1.0e-8) gl_pst=1;
+        //is_jacobi = true;
         for(int its=0;its < gl_pst;its++)
         {
             Smoother<OrbitalType,CalcType>(kptr, sp,
