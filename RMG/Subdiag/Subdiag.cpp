@@ -56,10 +56,10 @@ template <typename KpointType>
 char * Subdiag_Scalapack1 (Kpoint<KpointType> *kptr, KpointType *hpsi);
 
 
-template void Kpoint<double>::Subdiag(double *, double *, int, int, int);
-template void Kpoint<std::complex<double>>::Subdiag(double *, double *, int, int, int);
+template void Kpoint<double>::Subdiag(double *, double *, int);
+template void Kpoint<std::complex<double>>::Subdiag(double *, double *, int);
 
-template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, double *vxc_psi, int first, int N, int subdiag_driver)
+template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver)
 {
     RmgTimer RT0("4-Diagonalization");
 
