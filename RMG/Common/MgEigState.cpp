@@ -104,7 +104,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // be possible to fix this at a higher level at some point though so unneccessary work is not done.
     if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
 
-    if(Verify ("calculation_mode", "Band Structure Only", kptr->ControlMap) )
+
         freeze_occupied = true;
 
     bool using_davidson = Verify ("kohn_sham_solver","davidson", kptr->ControlMap);
@@ -115,7 +115,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 2, 4, 4, 4, 4, 4, 4 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -209,7 +209,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     bool is_jacobi = true;
     if(ct.norm_conserving_pp) is_jacobi = false;
-
     Smoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t,
               vtot_psi, vxc_psi, dinv.data(),
@@ -221,10 +220,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     bool smooth_status = (sp->res[0] > sp->res[1]);
     if(!smooth_status)
     {
-        if(pct.gridpe==0)printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
+        if(ct.verbose && pct.gridpe==0)
+            printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
         reduce_it = true;
         do_mgrid = false;
-        for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
+        // This is still a little tricky since if it happens to too many states you can
+        // converge to a wrong answer so maybe just leave it off for now so that it won't
+        // converge at all.
+        //for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
     }
 
 
@@ -316,8 +319,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                       nv_t, res2_t,
                       sp->eig[0], 0, is_jacobi, lambda_max, lambda_min);
         }
-
     }
+
+    // Skip mark
 
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
@@ -356,7 +360,6 @@ void Smoother (Kpoint<OrbitalType> *kptr,
     const double theta = 0.5*(lmax + lmin);
     const double delta = 0.5*(lmax - lmin);
     const double sigma = theta / delta;
-
     wfobj<CalcType> p;
     int pbasis = p.pbasis * ct.noncoll_factor;
 
@@ -382,6 +385,7 @@ void Smoother (Kpoint<OrbitalType> *kptr,
     }
     GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
     sp->res[0] = rsum*get_vel();
+//if(pct.gridpe==0 && pct.spinpe==0)printf("ZZZZ  %14.8e\n",sp->res[0]);
 
     double a=0.0, b=0;
     for(int k=0;k < order;k++)
@@ -428,6 +432,7 @@ void Smoother (Kpoint<OrbitalType> *kptr,
         }
         GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
         sp->res[k+1] = rsum*get_vel();
+//if(pct.gridpe==0 && pct.spinpe==0)printf("ZZZZ  %14.8e\n",sp->res[k+1]);
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate,sp->res[k],sp->res[k+1]);
     }
 }

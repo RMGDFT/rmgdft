@@ -136,8 +136,9 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     KpointType *wbuf;
     wbuf = new KpointType[this->nstates*this->nstates];
 
-    std::vector<double> deig(10);
+    std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
+    for(int is=0;is < this->nstates;is++) Kstates[is].skip = false;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -219,7 +220,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
 
-        //if(vcycle > 0)
+        if(vcycle > 0)
         {
             double deig_min = DBL_MAX, deig_max = 0.0, deig_avg = 0.0;
             int count = 0;
@@ -228,6 +229,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 if(Kstates[is].occupation[0] > 0.0001)
                 {
                     double diff = std::abs(Kstates[is].eig[1] - Kstates[is].eig[0]);
+                    if(diff < ct.scf_accuracy/10000) Kstates[is].skip = true;
                     deig_avg += diff;
                     deig_min = std::min(deig_min, diff);
                     deig_max = std::max(deig_max, diff);
@@ -243,12 +245,11 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         {
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
-        if(vcycle >= 2)
-        {
-        //    if(pct.gridpe==0)printf("ORTHO!\n");
-            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage, wbuf);
-        }
-
+        // Seems to be necessary for Broyden mixing in some cases.
+        //if(vcycle != (ct.eig_parm.mucycles-1))
+        //{
+            //MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage, wbuf);
+        //}
     }
 
     // Scan state residuals and see which ones (if any) multigrid iterations did not work on

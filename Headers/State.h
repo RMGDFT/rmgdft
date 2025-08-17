@@ -84,7 +84,7 @@ public:
     int pbasis;
 
     /** Wavefunction residual errors computed by multigrid solver */
-    double res[8];
+    double res[20];
 
     // Last two eigenvalues
     double eig[2];
@@ -99,6 +99,7 @@ public:
     // Occupation of the orbital
     double occupation[2];
 
+    bool skip;
 
 };
 
