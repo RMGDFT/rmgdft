@@ -835,7 +835,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "ldau pulay mixing reset steps",
             "", MIXING_OPTIONS);
 
-    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 10,
+    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Broyden mixing is used to update the charge density.",
             "", MIXING_OPTIONS);

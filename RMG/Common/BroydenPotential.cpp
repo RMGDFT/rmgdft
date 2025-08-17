@@ -52,8 +52,8 @@
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset)
 {
 
-   static boost::circular_buffer<double *> df(MAX_BROYDEN_ITER);
-   static boost::circular_buffer<double *> dv(MAX_BROYDEN_ITER);
+   static boost::circular_buffer<double *> dr_out(MAX_BROYDEN_ITER);
+   static boost::circular_buffer<double *> dr_in(MAX_BROYDEN_ITER);
    static boost::circular_buffer<double *> dvh(MAX_BROYDEN_ITER);
    static int iter;
    double betamix[MAX_BROYDEN_ITER][MAX_BROYDEN_ITER];
@@ -64,13 +64,13 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    // Check if this is a reset request
    if(reset) {
        // Clear any old allocations
-       while(df.size()) {
-           delete [] df[0];
-           df.pop_front();
+       while(dr_out.size()) {
+           delete [] dr_out[0];
+           dr_out.pop_front();
        }
-       while(dv.size()) {
-           delete [] dv[0];
-           dv.pop_front();
+       while(dr_in.size()) {
+           delete [] dr_in[0];
+           dr_in.pop_front();
        }
        while(dvh.size()) {
            delete [] dvh[0];
@@ -88,39 +88,37 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    for(int i = 0;i < pbasis_noncoll;i++) rhout[i] = new_rho[i];
    for(int i = 0;i < pbasis_noncoll;i++) rhout[i] -= rhoin[i]; 
 
-
    // Check if it's time to remove old entries
-   if(df.size() == (size_t)max_iter) {
-       delete [] df[0];
-       delete [] dv[0];
+   if(dr_out.size() == (size_t)max_iter) {
+       delete [] dr_out[0];
+       delete [] dr_in[0];
        delete [] dvh[0];
-       df.pop_front();
-       dv.pop_front();
+       dr_out.pop_front();
+       dr_in.pop_front();
        dvh.pop_front();
    }
 
 
    if(iter > 0) {
-       for(int i = 0;i < pbasis_noncoll;i++) df[df.size() - 1][i] -= rhout[i];
-       for(int i = 0;i < pbasis_noncoll;i++) dv[df.size() - 1][i] -= rhoin[i];
-       for(int i = 0;i < pbasis;i++) dvh[df.size() - 1][i] -= (vh_out[i] - vh_in[i]);
+       for(int i = 0;i < pbasis_noncoll;i++) dr_out[dr_out.size() - 1][i] -= rhout[i];
+       for(int i = 0;i < pbasis_noncoll;i++) dr_in[dr_out.size() - 1][i] -= rhoin[i];
+       for(int i = 0;i < pbasis;i++) dvh[dr_out.size() - 1][i] -= (vh_out[i] - vh_in[i]);
    }
 
-   int iter_used = df.size();
+   int iter_used = dr_out.size();
 
    // Create new entries
-   double *df1 = new double[pbasis_noncoll];
-   for(int i = 0;i < pbasis_noncoll;i++) df1[i] = rhout[i];
-   df.push_back(df1);
+   double *dr_out1 = new double[pbasis_noncoll];
+   for(int i = 0;i < pbasis_noncoll;i++) dr_out1[i] = rhout[i];
+   dr_out.push_back(dr_out1);
 
-   double *dv1 = new double[pbasis_noncoll];
-   for(int i = 0;i < pbasis_noncoll;i++) dv1[i] = rhoin[i];
-   dv.push_back(dv1);
+   double *dr1 = new double[pbasis_noncoll];
+   for(int i = 0;i < pbasis_noncoll;i++) dr1[i] = rhoin[i];
+   dr_in.push_back(dr1);
 
    double *dvh1 = new double[pbasis];
    for(int i = 0;i < pbasis;i++) dvh1[i] = vh_out[i] - vh_in[i];
    dvh.push_back(dvh1);
-
 
    if(iter_used > 0) {
 
@@ -128,7 +126,12 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
            for(int j = 0;j < iter_used;j++) {
                betamix[j][i] = 0.0;
                for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
-                   for(int k = 0;k < pbasis;k++) betamix[j][i] += df[i][k + is * pbasis] * dvh[j][k];
+               {
+                   for(int k = 0;k < pbasis;k++)
+                   {
+                       betamix[j][i] += dr_out[i][k + is * pbasis] * dvh[j][k];
+                   }
+               }
            }
        }
 
@@ -161,8 +164,8 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
            double gamma = 0.0;
            for(int j=0;j < iter_used;j++) gamma += work[j] * betamix[i][j];
 
-           for(int k=0;k < pbasis_noncoll;k++) rhout[k] -= gamma * df[i][k];
-           for(int k=0;k < pbasis_noncoll;k++) rhoin[k] -= gamma * dv[i][k];
+           for(int k=0;k < pbasis_noncoll;k++) rhout[k] -= gamma * dr_out[i][k];
+           for(int k=0;k < pbasis_noncoll;k++) rhoin[k] -= gamma * dr_in[i][k];
 
        }
 
