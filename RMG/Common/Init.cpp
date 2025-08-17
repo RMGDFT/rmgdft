@@ -716,7 +716,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         {
 
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
-            Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
+            Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, 0, ct.init_states, ct.subdiag_driver);
 
             delete RT2;
 
