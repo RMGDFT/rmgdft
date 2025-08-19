@@ -238,7 +238,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             }
             deig_avg /= (double)count;
             deig[vcycle] = deig_avg;
-            if(pct.gridpe==0) 
+            if(ct.verbose && pct.gridpe==0) 
                 printf("Delta eig avg = %14.8e, min = %14.8e, max = %14.8e\n",deig_avg, deig_min, deig_max);
         }
         for(int is=0;is < this->nstates;is++)

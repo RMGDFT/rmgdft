@@ -83,8 +83,6 @@ template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
-    double lambda_max = ct.lambda_max;
-    double lambda_min = ct.lambda_min;
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
 
@@ -210,7 +208,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               tmp_psi_t, work1_t, res_t,
               vtot_psi, vxc_psi, dinv.data(),
               nv_t, res2_t,
-              sp->eig[0], 3, is_jacobi, lambda_max, lambda_min);
+              sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min);
 
     // Check if residuals were decreasing and if not abort smoothing for
     // this state.
@@ -314,7 +312,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                       tmp_psi_t, work1_t, res_t,
                       vtot_psi, vxc_psi, dinv.data(),
                       nv_t, res2_t,
-                      sp->eig[0], 0, is_jacobi, lambda_max, lambda_min);
+                      sp->eig[0], 0, is_jacobi, ct.lambda_max, ct.lambda_min);
         }
     }
 
