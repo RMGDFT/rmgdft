@@ -133,8 +133,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
     for(int is=0;is < this->nstates;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
     if(pct.gridpe==0) printf("\n");
-    KpointType *wbuf;
-    wbuf = new KpointType[this->nstates*this->nstates];
 
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
@@ -246,10 +244,10 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
         // Seems to be necessary for Broyden mixing in some cases.
-        //if(vcycle != (ct.eig_parm.mucycles-1))
-        //{
-            //MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage, wbuf);
-        //}
+        if(vcycle != (ct.eig_parm.mucycles-1))
+        {
+            //MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
+        }
     }
 
     // Scan state residuals and see which ones (if any) multigrid iterations did not work on
@@ -263,7 +261,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 printf("\nMultigrid smoothing failed for state %d\n",is);
         }
     }
-    delete [] wbuf;
 
     // Set trade images coalesce factor back to 1 for other routines.
     this->T->set_coalesce_factor(1);
