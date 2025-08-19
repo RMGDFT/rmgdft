@@ -100,13 +100,12 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 
         if (typeid(KpointType) == typeid(double))
         {
-            double rone = 1.0, rzero = 0.0;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
+            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, one, psi_extra,
+                    pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, notcon);
 #else
-            dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-                &rzero, (double *)mat, &notcon);
+            RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
+                zero, mat, notcon);
 #endif
         }
         else

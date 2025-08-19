@@ -75,6 +75,7 @@ RmgGemm.cpp
 RmgGemmStridedBatched.cpp
 RmgSymm.cpp
 RmgSyrkx.cpp
+RmgSyrk.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
 GpuStreams.cpp
