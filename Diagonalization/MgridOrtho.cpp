@@ -50,17 +50,23 @@
 // mat: matrix to hold <Psi|psi>, need to be allocated nbase * notconv at least
 //
 
-template void MgridOrtho (int, int, int pbasis_noncoll, double *, double *);
-template void MgridOrtho(int, int, int pbasis_noncoll, std::complex<double> *, std::complex<double> *);
+template void MgridOrtho (int, int, int pbasis_noncoll, double *);
+template void MgridOrtho(int, int, int pbasis_noncoll, std::complex<double> *);
 
 template <typename KpointType>
-void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat)
+void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 {
 
     if(!ct.norm_conserving_pp)
     {
         return;
     }
+
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
+    if(!ct.gmatrix) gpuMallocHost((void **)&ct.gmatrix, notcon * notcon * sizeof(KpointType));
+#else
+    if(!ct.gmatrix) ct.gmatrix = new KpointType[notcon * notcon];
+#endif
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -80,7 +86,7 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, Kpoi
     KpointType one(1.0);
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
-
+    KpointType *mat = (KpointType *)ct.gmatrix;
     if(1)   // if 0 switches to old method
     {
         int st, st1, length, idx, omp_tid;
@@ -95,8 +101,13 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, Kpoi
         if (typeid(KpointType) == typeid(double))
         {
             double rone = 1.0, rzero = 0.0;
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
+            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
+                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
+#else
             dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
                 &rzero, (double *)mat, &notcon);
+#endif
         }
         else
         {
