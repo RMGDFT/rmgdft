@@ -246,7 +246,8 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         // Seems to be necessary for Broyden mixing in some cases.
         if(vcycle != (ct.eig_parm.mucycles-1))
         {
-            //MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
+            RmgTimer RTO("3-MgridSubspace: ortho");
+            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
         }
     }
 

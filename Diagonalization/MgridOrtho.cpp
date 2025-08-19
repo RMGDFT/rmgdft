@@ -96,17 +96,13 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
         char *diag = "N";
         char *side = "R";
 
+        RmgTimer *RT1 = new RmgTimer("MgridOrtho: overlaps");
         KpointType *tarr = new KpointType[notcon];
 
         if (typeid(KpointType) == typeid(double))
         {
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, one, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, notcon);
-#else
             RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
                 zero, mat, notcon);
-#endif
         }
         else
         {
@@ -114,21 +110,45 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
             RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
                     pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
         }
+        delete RT1;
 
         /* get the global part */
         length = factor * notcon * notcon;
+        RT1 = new RmgTimer("MgridOrtho: allreduce");
         MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
+        delete RT1;
 
         /* compute the cholesky factor of the overlap matrix */
         int info, info_trtri;
         if (typeid(KpointType) == typeid(double))
         {
             double rone = 1.0/sqrt(vel);
+            RT1 = new RmgTimer("MgridOrtho: potrf");
             dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
-            dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
+            delete RT1;
+            RT1 = new RmgTimer("MgridOrtho: update");
+#if HIP_ENABLED
+            double *invmat;
+            gpuMalloc((void **)&invmat, notcon * notcon * sizeof(double));
 
+            hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
+            hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
+            hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
+            hipblasOperation_t hip_trans = HIPBLAS_OP_N;
+            hipblasDtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (double *)mat, notcon,
+            invmat, notcon);
+            hipblasDtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
+                         hip_diag, pbasis_noncoll, notcon, &rone, 
+                         invmat, notcon, (double *)psi_extra, pbasis_noncoll,
+                         (double *)psi_extra, pbasis_noncoll); 
+            gpuFree(invmat);
+
+#else
+            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
+            dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, 
+                 (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
+#endif
+            delete RT1;
         }
         else
         {
@@ -156,9 +176,8 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 
         if (typeid(KpointType) == typeid(double))
         {
-            double rone = 1.0, rzero = 0.0;
-            dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-                    &rzero, (double *)mat, &notcon);
+            RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
+                zero, mat, notcon);
         }
         else
         {
