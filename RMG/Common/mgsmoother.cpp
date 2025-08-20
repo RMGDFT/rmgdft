@@ -106,7 +106,8 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     sp->res[0] = rsum[0]*get_vel();
     double norm = rsum[1]*get_vel();
     norm = 1.0 / sqrt(norm);
-    for(int i=0;i < pbasis;i++) u[i] *= norm;
+    if(ct.norm_conserving_pp)
+        for(int i=0;i < pbasis;i++) u[i] *= norm;
 
     //if(pct.gridpe==0 && pct.spinpe==0)
     //    printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate, rsum[1]*get_vel(), sp->res[0]);
@@ -159,7 +160,8 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         sp->res[k+1] = rsum[0]*get_vel();
         norm = rsum[1]*get_vel();
         norm = 1.0 / sqrt(norm);
-        for(int i=0;i < pbasis;i++) u[i] *= norm;
+        if(ct.norm_conserving_pp)
+            for(int i=0;i < pbasis;i++) u[i] *= norm;
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }
 }
