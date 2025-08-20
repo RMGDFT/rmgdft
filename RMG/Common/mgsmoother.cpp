@@ -88,7 +88,13 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     }
 
     double eig1 = ComputeEig(pbasis, u, Hu, ns);
-    eig = 0.7*eig1 + 0.3*eig;
+    auto mixeig = [](double &eig, double &eig1) {
+        if(ct.scf_steps && ct.scf_accuracy < 1.0e-4)
+            eig = eig1;
+        else
+            eig = 0.7*eig1 + 0.3*eig;
+    };
+    mixeig(eig, eig1);
     CalcType f1 = 2.0*eig;
 
     double rsum[2] = {0.0, 0.0};
@@ -142,7 +148,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         for(int i=0;i < pbasis;i++) u[i] += a*p[i];
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
         eig1 = ComputeEig(pbasis, u, Hu, ns);
-        eig = 0.7*eig1 + 0.3*eig;
+        mixeig(eig, eig1);
         f1 = 2.0*eig;
 
         rsum[0] = 0.0, rsum[1] = 0.0;

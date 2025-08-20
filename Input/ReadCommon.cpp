@@ -882,7 +882,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid preconditioner iteration. ",
             "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 1. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
+    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 3,
             CHECK_AND_FIX, OPTIONAL,
             "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
             "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
