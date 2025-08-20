@@ -1090,6 +1090,12 @@ public:
    // Parameters for Chebyshev smoothing.
    double lambda_max;
    double lambda_min;
+
+   // Global matrix used for diag and ortho routines. We use a global here that is
+   // only allocated once since allocation on GPU architectures can be so slow.
+   void *gmatrix;
+   size_t gmatrix_size;
+
 };
 
 

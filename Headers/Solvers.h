@@ -45,5 +45,14 @@ template <typename OrbitalType>
 void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                         double fd_diag, double eig, double *vtot, double avg_potential);
 
+template <typename T>
+double ComputeEig(int n, T *A, T *B, T *D);
+
+template <typename OrbitalType, typename CalcType> void mgsmoother(
+              Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
+              CalcType *u, CalcType *Hu, CalcType *r,
+              double *v, double *vxc, double *dinv,
+              OrbitalType *nv, CalcType *ns,
+              double &eig, int order, bool is_jacobi, double lmax, double lmin);
 
 #endif

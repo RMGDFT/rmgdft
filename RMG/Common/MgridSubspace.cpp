@@ -133,11 +133,10 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
     for(int is=0;is < this->nstates;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
     if(pct.gridpe==0) printf("\n");
-    KpointType *wbuf;
-    wbuf = new KpointType[this->nstates*this->nstates];
 
-    std::vector<double> deig(10);
+    std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
+    for(int is=0;is < this->nstates;is++) Kstates[is].skip = false;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -219,7 +218,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
 
-        //if(vcycle > 0)
+        if(vcycle > 0)
         {
             double deig_min = DBL_MAX, deig_max = 0.0, deig_avg = 0.0;
             int count = 0;
@@ -228,6 +227,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 if(Kstates[is].occupation[0] > 0.0001)
                 {
                     double diff = std::abs(Kstates[is].eig[1] - Kstates[is].eig[0]);
+                    if(diff < ct.scf_accuracy/10000) Kstates[is].skip = true;
                     deig_avg += diff;
                     deig_min = std::min(deig_min, diff);
                     deig_max = std::max(deig_max, diff);
@@ -236,19 +236,19 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             }
             deig_avg /= (double)count;
             deig[vcycle] = deig_avg;
-            if(pct.gridpe==0) 
+            if(ct.verbose && pct.gridpe==0) 
                 printf("Delta eig avg = %14.8e, min = %14.8e, max = %14.8e\n",deig_avg, deig_min, deig_max);
         }
         for(int is=0;is < this->nstates;is++)
         {
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
-        if(vcycle >= 2)
+        // Seems to be necessary for Broyden mixing in some cases.
+        if(vcycle != (ct.eig_parm.mucycles-1))
         {
-        //    if(pct.gridpe==0)printf("ORTHO!\n");
-            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage, wbuf);
+            RmgTimer RTO("3-MgridSubspace: ortho");
+            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
         }
-
     }
 
     // Scan state residuals and see which ones (if any) multigrid iterations did not work on
@@ -262,7 +262,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 printf("\nMultigrid smoothing failed for state %d\n",is);
         }
     }
-    delete [] wbuf;
 
     // Set trade images coalesce factor back to 1 for other routines.
     this->T->set_coalesce_factor(1);

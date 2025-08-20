@@ -45,14 +45,6 @@
 #include "rmg_complex.h"
 
 
-template <typename OrbitalType, typename CalcType> void Smoother(
-              Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
-              CalcType *u, CalcType *Hu, CalcType *r,
-              double *v, double *vxc, double *dinv,
-              OrbitalType *nv, CalcType *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
-
-
 template <typename T>
 double ComputeEig(int n, T *A, T *B, T *D)
 {
@@ -72,6 +64,11 @@ double ComputeEig(int n, T *A, T *B, T *D)
 
 }
 
+template double ComputeEig<double>(int n, double *A, double *B, double *D);
+template double ComputeEig<std::complex<double>>(int n, std::complex<double> *A, std::complex<double> *B, std::complex<double> *D);
+template double ComputeEig<float>(int n, float *A, float *B, float *D);
+template double ComputeEig<std::complex<float>>(int n, std::complex<float> *A, std::complex<float> *B, std::complex<float> *D);
+
 std::atomic<bool> reduce_it = false;
 
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
@@ -86,8 +83,6 @@ template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
-    double lambda_max = ct.lambda_max;
-    double lambda_min = ct.lambda_min;
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
 
@@ -104,7 +99,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // be possible to fix this at a higher level at some point though so unneccessary work is not done.
     if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
 
-    if(Verify ("calculation_mode", "Band Structure Only", kptr->ControlMap) )
+
         freeze_occupied = true;
 
     bool using_davidson = Verify ("kohn_sham_solver","davidson", kptr->ControlMap);
@@ -115,7 +110,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 2, 4, 4, 4, 4, 4, 4 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -209,22 +204,25 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     bool is_jacobi = true;
     if(ct.norm_conserving_pp) is_jacobi = false;
-
-    Smoother<OrbitalType,CalcType>(kptr, sp,
+    mgsmoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t,
               vtot_psi, vxc_psi, dinv.data(),
               nv_t, res2_t,
-              sp->eig[0], 3, is_jacobi, lambda_max, lambda_min);
+              sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min);
 
     // Check if residuals were decreasing and if not abort smoothing for
     // this state.
     bool smooth_status = (sp->res[0] > sp->res[1]);
     if(!smooth_status)
     {
-        if(pct.gridpe==0)printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
+        if(ct.verbose && pct.gridpe==0)
+            printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
         reduce_it = true;
         do_mgrid = false;
-        for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
+        // This is still a little tricky since if it happens to too many states you can
+        // converge to a wrong answer so maybe just leave it off for now so that it won't
+        // converge at all.
+        //for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
     }
 
 
@@ -310,14 +308,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         //is_jacobi = true;
         for(int its=0;its < gl_pst;its++)
         {
-            Smoother<OrbitalType,CalcType>(kptr, sp,
+            mgsmoother<OrbitalType,CalcType>(kptr, sp,
                       tmp_psi_t, work1_t, res_t,
                       vtot_psi, vxc_psi, dinv.data(),
                       nv_t, res2_t,
-                      sp->eig[0], 0, is_jacobi, lambda_max, lambda_min);
+                      sp->eig[0], 0, is_jacobi, ct.lambda_max, ct.lambda_min);
         }
-
     }
+
+    // Skip mark
 
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
@@ -330,132 +329,4 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 } // end MgEigState
 
-
-// Multigrid fine grid smoothing routine. If is_jacobi is true
-// it performs order iterations of relaxed Jacobi with omega = 2/3.
-// If is_jacobi is false it performs Chebyshev of the requested order.
-// If order is zero it does jacobi without a residual calculation on exit.
-template <typename OrbitalType, typename CalcType>
-void Smoother (Kpoint<OrbitalType> *kptr,
-               State<OrbitalType> *sp,
-               CalcType *u,        // wavefunction being smoothed
-               CalcType *Hu,       // if order>0 on exit holds last Hu
-               CalcType *r,        // workspace passed in from caller
-               double *v,
-               double *vxc,
-               double *dinv,
-               OrbitalType *nv,
-               CalcType *ns,       // only used for USPP
-               double &eig, 
-               int order,
-               bool is_jacobi,
-               double lmax,
-               double lmin)
-{
-
-    const double theta = 0.5*(lmax + lmin);
-    const double delta = 0.5*(lmax - lmin);
-    const double sigma = theta / delta;
-
-    wfobj<CalcType> p;
-    int pbasis = p.pbasis * ct.noncoll_factor;
-
-    /* Apply Hamiltonian */
-    {
-        RmgTimer RT1("Mg_eig: apply hamiltonian");
-        ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
-    }
-
-    double eig1 = ComputeEig(pbasis, u, Hu, ns);
-    eig = 0.7*eig1 + 0.3*eig;
-    CalcType f1 = 2.0*eig;
-
-    double rsum = 0.0;
-    for(int i=0;i < pbasis;i++)
-    {
-        if(ct.norm_conserving_pp)
-            r[i] = f1*u[i] - 2.0*Hu[i];
-        else
-            r[i] = f1*ns[i] - 2.0*Hu[i];
-        p[i] = dinv[i] * r[i];
-        rsum += std::real(r[i] * std::conj(r[i]));
-    }
-    GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
-    sp->res[0] = rsum*get_vel();
-
-    double a=0.0, b=0;
-    for(int k=0;k < order;k++)
-    {
-        if (k==0)
-        {
-            a = 2.0 / theta; b = 0.0;
-        }
-        else if (k==1)
-        {
-            a = 2.0 / theta;
-            b  = (a * delta * delta) / 4.0;
-        }
-        else
-        {
-            const double beta_new = 1.0 / (2.0*sigma - b);
-            b = beta_new;
-            a = 2.0 * beta_new / delta;
-        }
-
-        if(is_jacobi)
-        {
-            a = 2.0/3.0;
-            b = 0.0;
-        }
-
-        //if(pct.gridpe==0 && sp->istate==0)printf("QQQQ  %f  %f\n",a, b);
-
-        for(int i=0;i < pbasis;i++) u[i] += a*p[i];
-        ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
-        eig1 = ComputeEig(pbasis, u, Hu, ns);
-        eig = 0.7*eig1 + 0.3*eig;
-        f1 = 2.0*eig;
-
-        rsum = 0.0;
-        for (int i=0;i<pbasis;i++)
-        {
-            if(ct.norm_conserving_pp)
-                r[i] = f1*u[i] - 2.0*Hu[i];
-            else
-                r[i] = f1*ns[i] - 2.0*Hu[i];
-            p[i] = dinv[i]*r[i] + b * p[i];
-            rsum += std::real(r[i] * std::conj(r[i]));
-        }
-        GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
-        sp->res[k+1] = rsum*get_vel();
-        //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate,sp->res[k],sp->res[k+1]);
-    }
-}
-template void Smoother<double,float>(
-              Kpoint<double> *kp, State<double> *sp,
-              float *u, float *Hu, float *r,
-              double *v, double *vxc, double *dinv,
-              double *nv, float *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
-
-template void Smoother<double,double>(
-              Kpoint<double> *kp, State<double> *sp,
-              double *u, double *Hu, double *r,
-              double *v, double *vxc, double *dinv,
-              double *nv, double *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
-
-template void Smoother<std::complex<double>,std::complex<float>>(
-              Kpoint<std::complex<double>> *kp, State<std::complex<double>> *sp,
-              std::complex<float> *u, std::complex<float> *Hu, std::complex<float> *r,
-              double *v, double *vxc, double *dinv,
-              std::complex<double> *nv, std::complex<float> *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
-
-template void Smoother<std::complex<double>,std::complex<double>>(
-              Kpoint<std::complex<double>> *kp, State<std::complex<double>> *sp,
-              std::complex<double> *u, std::complex<double> *Hu, std::complex<double> *r,
-              double *v, double *vxc, double *dinv,
-              std::complex<double> *nv, std::complex<double> *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
 
