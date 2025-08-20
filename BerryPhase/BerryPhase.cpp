@@ -163,7 +163,7 @@ void BerryPhase::init(Kpoint<std::complex<double>> **Kptr)
     // mat = <psi_k | psi_(k+1)>
     // BP_matrix_cpu: <psi_k |psi_(k+1)> ^-1
 
-    if(std::abs(efield_mag) > eps )
+    if(std::abs(efield_mag) > eps  || (ct.forceflag== TDDFT))
     {
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
@@ -822,5 +822,197 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
     delete [] CijSkk1;
 
 
+}
+
+void BerryPhase::tddft_Xml (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
+{
+    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+}
+void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
+{
+
+
+    std::complex<double> beta(0.0);
+
+    int info, *ipiv;
+    ipiv = new int[nband_occ];
+    std::complex<double> *psi_k, *psi_k1;
+
+    double gr[3]{0.0,0.0,0.0};
+    gr[BerryPhase_dir] = -1.0;
+    std::complex<double> phase;
+
+    int numst = ct.num_states - tddft_start_state;
+
+    for(int iort = 0; iort < num_kort_pe; iort++)
+    {
+        int iort_gl = kort_start + iort;
+        // for each string, calculate the Berry Phase
+        //psi_k0: the first k point in a string
+        // psi_k0 * exp(i b r) for the k+1 of the last k point in a string
+        // b: reciprocal lattice vector along Berry phase direction
+        // if BerryPhase direction along b0, only real space along a0 direction needed
+        // exp(i ix/Nx * 2PI) or exp( i iy/Ny * 2Pi), ..
+        memcpy(psi_k0, Kptr[iort*num_kpp]->orbital_storage, wfc_size);
+
+        RmgTimer *RT1 = new RmgTimer("Berry Phase: psi0 * exp(-igr)");
+        psi_x_phase(psi_k0, gr, nband_occ);
+        delete RT1;
+        RT1 = new RmgTimer("Berry Phase: phase calculation");
+        for(int jpp = 0; jpp < num_kpp; jpp++)
+        {
+            int ik_index = iort * num_kpp + jpp;
+            psi_k = Kptr[ik_index]->orbital_storage;
+            memcpy(Kptr[ik_index]->BP_psi, psi_k, wfc_size);
+            std::complex<double> *BP_matrix_cpu = Kptr[ik_index]->BP_matrix_cpu;
+            if(jpp == num_kpp-1)
+            {
+                psi_k1 = psi_k0;
+            }
+            else
+            {
+                psi_k1 = Kptr[ik_index+1]->orbital_storage;
+            }
+
+            RmgGemm("c", "n", nband_occ, nband_occ, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat, nband_occ);
+            BlockAllreduce(mat, nband_occ * nband_occ, pct.grid_comm);
+
+            //calculate determinant of mat <psi_k |psi_(k+1)>
+
+            zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
+            if (info != 0)
+            {
+                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                fflush (NULL);
+                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+            }
+
+            {
+                int lwork = nband_occ * nband_occ;
+                zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
+                if (info != 0)
+                {
+                    rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
+                    fflush (NULL);
+                    rmg_error_handler(__FILE__, __LINE__,"zgetri failed\n");
+                }
+                memcpy(BP_matrix_cpu, mat, nband_occ * nband_occ * sizeof(std::complex<double>));
+            }
+        }
+    }
+
+
+    // calculate second part of eq. 4  
+    //  Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
+    // S^-1(k, k+1) psi_(k+1) - S^1(k, k-1) psi_(k-1)
+    // S^-1(k, k-1) = [S^-1(k-1,k)]^+ hermitian
+    //
+
+    std::complex<double> alpha = std::complex<double>(0.0, -1.0/twoPI/2.0 * num_kpp);
+    //rmg_printf("\n eai alpha %f %f", alpha);
+    std::complex<double> zero(0.0), mone(-1.0);
+    std::complex<double> *psi_kp1=NULL, *psi_km1=NULL;
+    std::complex<double> *psi=NULL;
+    std::complex<double> *BP_matrix_p1 =NULL, *BP_matrix_m1;
+    std::complex<double> *Gnk =NULL;
+    for(int iort = 0; iort < num_kort_pe; iort++)
+    {
+        for(int jpp = 0; jpp < num_kpp; jpp++)
+        {
+            int ik_index = iort * num_kpp + jpp;
+            BP_matrix_p1 = Kptr[ik_index]->BP_matrix_cpu;
+            Gnk = Kptr[ik_index]->BP_Gnk;
+
+            BP_matrix_p1 = Kptr[iort * num_kpp + jpp]->BP_matrix_cpu;
+            if(jpp == 0 )
+            {
+                BP_matrix_m1 = Kptr[iort * num_kpp + num_kpp-1]->BP_matrix_cpu;
+                memcpy(psi_k0, Kptr[iort*num_kpp + num_kpp-1]->orbital_storage, wfc_size);
+                gr[BerryPhase_dir] = 1.0;
+                psi_x_phase(psi_k0, gr, nband_occ);
+                psi_km1 = psi_k0;
+                psi_kp1 = Kptr[iort*num_kpp + + jpp +1 ]->orbital_storage;
+            }
+            else if(jpp == num_kpp -1)
+            {
+                BP_matrix_m1 = Kptr[iort * num_kpp + jpp-1]->BP_matrix_cpu;
+                memcpy(psi_k0, Kptr[iort*num_kpp ]->orbital_storage, wfc_size);
+                gr[BerryPhase_dir] = -1.0;
+                psi_x_phase(psi_k0, gr, nband_occ);
+                psi_km1 = Kptr[iort*num_kpp + + jpp -1 ]->orbital_storage;
+                psi_kp1 = psi_k0;
+            }
+            else
+            {
+                BP_matrix_m1 = Kptr[iort * num_kpp + jpp-1]->BP_matrix_cpu;
+                psi_km1 = Kptr[iort*num_kpp + + jpp -1 ]->orbital_storage;
+                psi_kp1 = Kptr[iort*num_kpp + + jpp +1 ]->orbital_storage;
+            }
+
+            RmgGemm("N", "N", pbasis_noncoll, nband_occ, nband_occ, alpha,
+                    psi_kp1, pbasis_noncoll, BP_matrix_p1, nband_occ, 
+                    zero, Gnk, pbasis_noncoll);
+            RmgGemm("N", "C", pbasis_noncoll, nband_occ, nband_occ, alpha,
+                    psi_km1, pbasis_noncoll, BP_matrix_m1, nband_occ, 
+                    mone, Gnk, pbasis_noncoll);
+
+        }
+    }
+
+
+
+    // extra Hamiltonian operator |Gnk ><psi_bp| + |psi_bp >< Gnk|, applied to all states including unoccupied 
+    // BP_Hpsi =     |Gnk > <psi_bp | psi current> 
+    std::complex<double> one(1.0);
+
+    int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
+    if(Kptr[0]->BP_Xml == NULL)
+    {
+        for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            Kptr[ik]->BP_Xml
+                 = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
+
+        }
+    }
+    std::complex<double> *h_psi = (std::complex<double> *)RmgMallocHost((size_t)numst * pbasis_noncoll*sizeof(std::complex<double>));
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+
+        psi = Kptr[kpt]->orbital_storage;
+        
+        RmgGemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+        BlockAllreduce(mat, (size_t)nband_occ * numst, pct.grid_comm);
+        RmgGemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
+                Kptr[kpt]->BP_Gnk, pbasis_noncoll, mat, nband_occ, 
+                zero, h_psi, pbasis_noncoll);
+        // BP_Hpsi +=     |psi_bp > <Gnk | psi current> 
+        RmgGemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, Kptr[kpt]->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+        BlockAllreduce(mat, (size_t)nband_occ * numst, pct.grid_comm);
+        RmgGemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
+                psi, pbasis_noncoll, mat, nband_occ, 
+                one, h_psi, pbasis_noncoll);
+        RmgGemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob, numst);
+
+        BlockAllreduce(mat_glob, (size_t)numst * numst, pct.grid_comm);
+        Sp.DistributeMatrix(mat_glob,  Kptr[kpt]->BP_Xml);
+        /*
+        rmg_printf("\n kpt %d ", kpt);
+        for(int i=0; i < 5; i++)
+        {
+            rmg_printf("\n aaa ");
+            for(int j=0; j < 5; j++) rmg_printf(" %e ", std::real(mat_glob[i*numst + j]));
+        }
+
+        rmg_printf("\n");
+        for(int i=0; i < 5; i++)
+        {
+            rmg_printf("\n bbb ");
+            for(int j=0; j < 5; j++) rmg_printf(" %e ", std::imag(mat_glob[i*numst + j]));
+        }
+        */
+
+    }
+    delete [] h_psi;
 }
 

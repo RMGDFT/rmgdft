@@ -598,8 +598,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
         if(ct.BerryPhase)
         {
-            Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
-            Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+           // Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
+           // Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+            Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
+            tot_bp_pol = 0.0;
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
+            }
+            MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+            Sp->ScalapackBlockAllreduce(&tot_bp_pol, 1);
         }
     }
 
@@ -855,7 +863,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)
         {
-            Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+            tot_bp_pol = 0.0;
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
+            }
+            MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+            Sp->ScalapackBlockAllreduce(&tot_bp_pol, 1);
+            //Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
         }
 
         if(pct.imgpe == 0)
