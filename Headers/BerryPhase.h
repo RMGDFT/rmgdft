@@ -61,6 +61,8 @@ public:
     void CalcBP_Skk1(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
     void CalcBP_tddft(Kpoint<double> **Kptr, double &tot_bp_pol, double *, Scalapack &);
     void CalcBP_tddft(Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &);
+    void tddft_Xml(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
+    void tddft_Xml(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
 
 };
 
