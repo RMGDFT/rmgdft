@@ -91,7 +91,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     eig = 0.7*eig1 + 0.3*eig;
     CalcType f1 = 2.0*eig;
 
-    double rsum = 0.0;
+    double rsum[2] = {0.0, 0.0};
     for(int i=0;i < pbasis;i++)
     {
         if(ct.norm_conserving_pp)
@@ -99,11 +99,17 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         else
             r[i] = f1*ns[i] - 2.0*Hu[i];
         p[i] = dinv[i] * r[i];
-        rsum += std::real(r[i] * std::conj(r[i]));
+        rsum[0] += std::norm(r[i]);
+        rsum[1] += std::norm(u[i]);
     }
-    GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
-    sp->res[0] = rsum*get_vel();
-//if(pct.gridpe==0 && pct.spinpe==0)printf("ZZZZ  %14.8e\n",sp->res[0]);
+    GlobalSums (rsum, 2, pct.coalesced_grid_comm);
+    sp->res[0] = rsum[0]*get_vel();
+    double norm = rsum[1]*get_vel();
+    norm = 1.0 / sqrt(norm);
+    for(int i=0;i < pbasis;i++) u[i] *= norm;
+
+    //if(pct.gridpe==0 && pct.spinpe==0)
+    //    printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate, rsum[1]*get_vel(), sp->res[0]);
 
     double a=0.0, b=0;
     for(int k=0;k < order;k++)
@@ -138,7 +144,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         eig = 0.7*eig1 + 0.3*eig;
         f1 = 2.0*eig;
 
-        rsum = 0.0;
+        rsum[0] = 0.0, rsum[1] = 0.0;
         for (int i=0;i<pbasis;i++)
         {
             if(ct.norm_conserving_pp)
@@ -146,12 +152,15 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             else
                 r[i] = f1*ns[i] - 2.0*Hu[i];
             p[i] = dinv[i]*r[i] + b * p[i];
-            rsum += std::real(r[i] * std::conj(r[i]));
+            rsum[0] += std::norm(r[i]);
+            rsum[1] += std::norm(u[i]);
         }
-        GlobalSums (&rsum, 1, pct.coalesced_grid_comm);
-        sp->res[k+1] = rsum*get_vel();
-//if(pct.gridpe==0 && pct.spinpe==0)printf("ZZZZ  %14.8e\n",sp->res[k+1]);
-        //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  %14.8e\n",sp->istate,sp->res[k],sp->res[k+1]);
+        GlobalSums (rsum, 2, pct.coalesced_grid_comm);
+        sp->res[k+1] = rsum[0]*get_vel();
+        norm = rsum[1]*get_vel();
+        norm = 1.0 / sqrt(norm);
+        for(int i=0;i < pbasis;i++) u[i] *= norm;
+        //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }
 }
 template void mgsmoother<double,float>(
