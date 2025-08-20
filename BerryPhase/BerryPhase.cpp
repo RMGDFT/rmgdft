@@ -995,7 +995,8 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
         RmgGemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob, numst);
 
         BlockAllreduce(mat_glob, (size_t)numst * numst, pct.grid_comm);
-        Sp.DistributeMatrix(mat_glob,  Kptr[kpt]->BP_Xml);
+        Sp.CopySquareMatrixToDistArray(mat_glob,  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
+
         /*
         rmg_printf("\n kpt %d ", kpt);
         for(int i=0; i < 5; i++)
