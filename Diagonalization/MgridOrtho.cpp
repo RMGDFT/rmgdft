@@ -152,10 +152,32 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
         }
         else
         {
-            std::complex<double> cone = 1.0/sqrt(vel);
+            RT1 = new RmgTimer("MgridOrtho: potrf");
             zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
+            delete RT1;
+            RT1 = new RmgTimer("MgridOrtho: update");
+#if HIP_ENABLED
+            hipblasDoubleComplex cone = 1.0/sqrt(vel);
+            std::complex<double> *invmat;
+            gpuMalloc((void **)&invmat, notcon * notcon * sizeof(std::complex<double>));
+            hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
+            hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
+            hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
+            hipblasOperation_t hip_trans = HIPBLAS_OP_N;
+            hipblasZtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (hipblasDoubleComplex *)mat,
+                          notcon, (hipblasDoubleComplex *)invmat, notcon);
+            hipblasZtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
+                         hip_diag, pbasis_noncoll, notcon, &cone, 
+                         (hipblasDoubleComplex *)invmat, notcon,
+                         (hipblasDoubleComplex *)psi_extra, pbasis_noncoll,
+                         (hipblasDoubleComplex *)psi_extra, pbasis_noncoll); 
+            gpuFree(invmat);
+#else
+            std::complex<double> cone = 1.0/sqrt(vel);
             ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
             ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
+#endif
+            delete RT1;
         }
         if (info != 0)
             throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
