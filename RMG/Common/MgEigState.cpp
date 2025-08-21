@@ -218,7 +218,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         if(ct.verbose && pct.gridpe==0)
             printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
         reduce_it = true;
-        do_mgrid = false;
+        //do_mgrid = false;  causes hang with some kpoint distributions
         // This is still a little tricky since if it happens to too many states you can
         // converge to a wrong answer so maybe just leave it off for now so that it won't
         // converge at all.
