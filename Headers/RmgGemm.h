@@ -56,6 +56,8 @@ void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<doubl
 template <typename DataType> void RmgGemmStridedBatched(char *transa, char *transb, int m, int n, int k,
                              DataType alpha, DataType *A, int lda, size_t strdedA, DataType *B, int ldb, size_t strideB, DataType beta,
                              DataType *C, int ldc, size_t strideC, int batchCount);
+
+template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info);
 #endif
 #endif
 

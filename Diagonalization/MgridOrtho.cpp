@@ -87,192 +87,98 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
     KpointType *mat = (KpointType *)ct.gmatrix;
-    if(1)   // if 0 switches to old method
+
+    int st, st1, length, idx, omp_tid;
+    KpointType *sarr;
+    char *transt = "t";
+    char *uplo = "u";
+    char *diag = "N";
+    char *side = "R";
+
+    RmgTimer *RT1 = new RmgTimer("MgridOrtho: overlaps");
+    KpointType *tarr = new KpointType[notcon];
+
+    if (typeid(KpointType) == typeid(double))
     {
-        int st, st1, length, idx, omp_tid;
-        KpointType *sarr;
-        char *transt = "t";
-        char *uplo = "u";
-        char *diag = "N";
-        char *side = "R";
+        RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
+            zero, mat, notcon);
+    }
+    else
+    {
+        KpointType cone(1.0), czero(0.0);
+        RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
+                pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
+    }
+    delete RT1;
 
-        RmgTimer *RT1 = new RmgTimer("MgridOrtho: overlaps");
-        KpointType *tarr = new KpointType[notcon];
+    /* get the global part */
+    length = factor * notcon * notcon;
+    RT1 = new RmgTimer("MgridOrtho: allreduce");
+    MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    delete RT1;
 
-        if (typeid(KpointType) == typeid(double))
-        {
-            RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
-                zero, mat, notcon);
-        }
-        else
-        {
-            KpointType cone(1.0), czero(0.0);
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
-        }
-        delete RT1;
-
-        /* get the global part */
-        length = factor * notcon * notcon;
-        RT1 = new RmgTimer("MgridOrtho: allreduce");
-        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        delete RT1;
-
-        /* compute the cholesky factor of the overlap matrix */
-        int info, info_trtri;
-        if (typeid(KpointType) == typeid(double))
-        {
-            double rone = 1.0/sqrt(vel);
-            RT1 = new RmgTimer("MgridOrtho: potrf");
-            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-            delete RT1;
-            RT1 = new RmgTimer("MgridOrtho: update");
+    /* compute the cholesky factor of the overlap matrix */
+    int info, info_trtri;
+    RT1 = new RmgTimer("MgridOrtho: potrf");
+    rmg_potrf(uplo, notcon, mat, notcon, &info);
+    delete RT1;
+    if (typeid(KpointType) == typeid(double))
+    {
+        double rone = 1.0/sqrt(vel);
+        RT1 = new RmgTimer("MgridOrtho: update");
 #if HIP_ENABLED
-            double *invmat;
-            gpuMalloc((void **)&invmat, notcon * notcon * sizeof(double));
+        double *invmat;
+        gpuMalloc((void **)&invmat, notcon * notcon * sizeof(double));
 
-            hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
-            hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
-            hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
-            hipblasOperation_t hip_trans = HIPBLAS_OP_N;
-            hipblasDtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (double *)mat, notcon,
-            invmat, notcon);
-            hipblasDtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
-                         hip_diag, pbasis_noncoll, notcon, &rone, 
-                         invmat, notcon, (double *)psi_extra, pbasis_noncoll,
-                         (double *)psi_extra, pbasis_noncoll); 
-            gpuFree(invmat);
+        hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
+        hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
+        hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
+        hipblasOperation_t hip_trans = HIPBLAS_OP_N;
+        hipblasDtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (double *)mat, notcon,
+        invmat, notcon);
+        hipblasDtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
+                     hip_diag, pbasis_noncoll, notcon, &rone, 
+                     invmat, notcon, (double *)psi_extra, pbasis_noncoll,
+                     (double *)psi_extra, pbasis_noncoll); 
+        gpuFree(invmat);
 
 #else
-            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
-            dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, 
-                 (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
+        dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
+        dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, 
+             (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
 #endif
-            delete RT1;
-        }
-        else
-        {
-            RT1 = new RmgTimer("MgridOrtho: potrf");
-            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
-            delete RT1;
-            RT1 = new RmgTimer("MgridOrtho: update");
-#if HIP_ENABLED
-            hipblasDoubleComplex cone = 1.0/sqrt(vel);
-            std::complex<double> *invmat;
-            gpuMalloc((void **)&invmat, notcon * notcon * sizeof(std::complex<double>));
-            hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
-            hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
-            hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
-            hipblasOperation_t hip_trans = HIPBLAS_OP_N;
-            hipblasZtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (hipblasDoubleComplex *)mat,
-                          notcon, (hipblasDoubleComplex *)invmat, notcon);
-            hipblasZtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
-                         hip_diag, pbasis_noncoll, notcon, &cone, 
-                         (hipblasDoubleComplex *)invmat, notcon,
-                         (hipblasDoubleComplex *)psi_extra, pbasis_noncoll,
-                         (hipblasDoubleComplex *)psi_extra, pbasis_noncoll); 
-            gpuFree(invmat);
-#else
-            std::complex<double> cone = 1.0/sqrt(vel);
-            ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
-            ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
-#endif
-            delete RT1;
-        }
-        if (info != 0)
-            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
-
-        if (info_trtri != 0)
-        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
-
+        delete RT1;
     }
-
-    else   // if 0 switches to old method
+    else
     {
-        int st, st1, length, idx, omp_tid;
-        KpointType *sarr;
-        char *transt = "t";
-        char *uplo = "l";
-
-        KpointType *tarr = new KpointType[notcon];
-
-        if (typeid(KpointType) == typeid(double))
-        {
-            RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
-                zero, mat, notcon);
-        }
-        else
-        {
-            KpointType cone(1.0), czero(0.0);
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
-        }
-
-        /* get the global part */
-        length = factor * notcon * notcon;
-        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
-
-        /* compute the cholesky factor of the overlap matrix */
-        int info;
-        if (typeid(KpointType) == typeid(double))
-        {
-            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-        }
-        else
-        {
-            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
-        }
-        if (info != 0)
-            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
-
-
-        // Get inverse of diagonal elements
-        for(st = 0;st < notcon;st++) tarr[st] = 1.0 / std::real(mat[st + notcon * st]);
-
-
-        // This code may look crazy but there is a method to the madness. We copy a slice
-        // of the wavefunction array consisting of the values for all orbitals of a given
-        // basis point into a temporary array. Then we do the updates on each slice and
-        // parallelize over slices with OpenMP. This produces good cache behavior
-        // and excellent parformance on the XK6.
-
-        KpointType *darr=NULL;
-#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
-        {
-            omp_tid = omp_get_thread_num();
-            if(omp_tid == 0) darr = new KpointType[notcon * omp_get_num_threads()];
-#pragma omp barrier
-
-#pragma omp for schedule(static, 1) nowait
-            for(idx = 0;idx < pbasis_noncoll;idx++) {
-
-                sarr = &darr[omp_tid*notcon];
-
-                for (st = 0; st < notcon; st++) sarr[st] = psi_extra[st*pbasis_noncoll + idx];
-
-                for (st = 0; st < notcon; st++) {
-
-                    sarr[st] *= tarr[st];
-
-                    for (st1 = st+1; st1 < notcon; st1++) {
-                        sarr[st1] -= mat[st1 + notcon*st] * sarr[st];
-                    }
-
-                }
-
-                for (st = 0; st < notcon; st++) psi_extra[st*pbasis_noncoll + idx] = sarr[st];
-
-            }
-        }
-        if(darr) delete [] darr;
-
-        double tmp = 1.0 / sqrt(vel);
-        idx = notcon * pbasis_noncoll;
-        for(int idx = 0;idx < notcon * pbasis_noncoll;idx++) {
-            psi_extra[idx] *= tmp;
-        }
-
-        delete [] tarr;
+        RT1 = new RmgTimer("MgridOrtho: update");
+#if HIP_ENABLED
+        hipblasDoubleComplex cone = 1.0/sqrt(vel);
+        std::complex<double> *invmat;
+        gpuMalloc((void **)&invmat, notcon * notcon * sizeof(std::complex<double>));
+        hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
+        hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
+        hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
+        hipblasOperation_t hip_trans = HIPBLAS_OP_N;
+        hipblasZtrtri(ct.hipblas_handle, hip_fill, hip_diag, notcon, (hipblasDoubleComplex *)mat,
+                      notcon, (hipblasDoubleComplex *)invmat, notcon);
+        hipblasZtrmm(ct.hipblas_handle, hip_side, hip_fill, hip_trans, 
+                     hip_diag, pbasis_noncoll, notcon, &cone, 
+                     (hipblasDoubleComplex *)invmat, notcon,
+                     (hipblasDoubleComplex *)psi_extra, pbasis_noncoll,
+                     (hipblasDoubleComplex *)psi_extra, pbasis_noncoll); 
+        gpuFree(invmat);
+#else
+        std::complex<double> cone = 1.0/sqrt(vel);
+        ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
+        ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
+#endif
+        delete RT1;
     }
+    if (info != 0)
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+
+    if (info_trtri != 0)
+    throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
+
 }
