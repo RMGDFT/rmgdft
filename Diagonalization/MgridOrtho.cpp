@@ -87,7 +87,7 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
     KpointType *mat = (KpointType *)ct.gmatrix;
-
+    
     int st, st1, length, idx, omp_tid;
     KpointType *sarr;
     char *transt = "t";
@@ -119,12 +119,12 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 
     /* compute the cholesky factor of the overlap matrix */
     int info, info_trtri;
-    RT1 = new RmgTimer("MgridOrtho: potrf");
-    rmg_potrf(uplo, notcon, mat, notcon, &info);
-    delete RT1;
     if (typeid(KpointType) == typeid(double))
     {
         double rone = 1.0/sqrt(vel);
+        RT1 = new RmgTimer("MgridOrtho: potrf");
+        rmg_potrf(uplo, notcon, mat, notcon, &info);
+        delete RT1;
         RT1 = new RmgTimer("MgridOrtho: update");
 #if HIP_ENABLED
         double *invmat;
@@ -151,6 +151,9 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     }
     else
     {
+        RT1 = new RmgTimer("MgridOrtho: potrf");
+        rmg_potrf(uplo, notcon, mat, notcon, &info);
+        delete RT1;
         RT1 = new RmgTimer("MgridOrtho: update");
 #if HIP_ENABLED
         hipblasDoubleComplex cone = 1.0/sqrt(vel);

@@ -109,17 +109,11 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
     bool a_dev = false;
 #if (CUDA_VERSION_MAJOR > 10)
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, B);
-    bool b_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #else
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, B);
-    bool b_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
