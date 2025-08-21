@@ -18,51 +18,33 @@
 #include <cublas_v2.h>
 #endif
 
+#define         dpotrf          RMG_FC_GLOBAL(dpotrf, DPOTRF)
+#define         zpotrf          RMG_FC_GLOBAL(zpotrf, ZPOTRF)
+
+extern "C" {
+void dpotrf (char *uplo, int *n, double * a, int *lda, int *info);
+void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
+};
+
 
 /*
-  These functions are used to hide the details of the matrix multiplication data types and GPU 
-  utilization from the higher level routines.
+  These functions are used to hide the details of the choleski decomposition and GPU
+  interface from the higher level routines.
 
 */
-
-#define         dsyrk           RMG_FC_GLOBAL(dsyrk, DSYRK)
-#define         zsyrk           RMG_FC_GLOBAL(zsyrk, ZSYRK)
-
-
 
 #if SYCL_ENABLED
     #include <CL/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
-#else
-extern "C" {
-void dsyrk(const char *, const char *, int *, int *, double *, double *, int *, double *, double *, int *);
-void zsyrk(const char *, const char *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
-}
 #endif
 
-template void RmgSyrk<double>(char *, char *, int, int, double, double *, int,
-                             double, double *, int);
-
-template void RmgSyrk<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
-                    std::complex<double> *, int, std::complex<double>, std::complex<double> *, int);
+template void rmg_potrf<double>(char *, int, double *, int, int *);
+template void rmg_potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
 
 
-template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k, 
-                             DataType alpha, DataType *A, int lda, DataType beta, 
-                             DataType *C, int ldc)
+template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info)
 {
-
-#if BLAS_PROFILE
-    if(typeid(DataType) == typeid(std::complex<double>))
-    {
-        if(pct.gridpe==0) printf("ZSYRK CALL n=%d k=%d\n",n,k);
-    }
-    else
-    {
-        if(pct.gridpe==0) printf("DSYRK CALL n=%d k=%d\n",n,k);
-    }
-#endif
 
 #if CUDA_ENABLED
 
@@ -100,8 +82,6 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
     }
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t b_size = (size_t)ldb * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
 
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
@@ -109,110 +89,79 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
     bool a_dev = false;
 #if (CUDA_VERSION_MAJOR > 10)
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #else
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
 #endif
 
     DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        std::complex<double> *dA=(std::complex<double> *)A, *dC=(std::complex<double> *)C;
+        std::complex<double> *dA=(std::complex<double> *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         custat = cublasZsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
+        if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
     else {
-        double *dA=(double *)A, *dC=(double *)C;
+        double *dA=(double *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
         custat = cublasDsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)&beta, (double*)dC, ldc );
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
+        if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
     DeviceSynchronize();
     return;
 
 #elif HIP_ENABLED
-    hipblasStatus_t hipstat;
-    hipblasOperation_t hip_trans = HIPBLAS_OP_N;
-    hipblasFillMode_t fill_mode = HIPBLAS_FILL_MODE_LOWER;
+    rocblas_status rocstat;
+    rocblas_fill fill_mode = rocblas_fill_lower;
 
-    if(!strcmp(uplo, "u")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
-
-    if(!strcmp(trans, "t")) hip_trans = HIPBLAS_OP_T;
-    if(!strcmp(trans, "T")) hip_trans = HIPBLAS_OP_T;
-    if(!strcmp(trans, "c")) hip_trans = HIPBLAS_OP_C;
-    if(!strcmp(trans, "C")) hip_trans = HIPBLAS_OP_C;
+    if(!strcmp(uplo, "u")) fill_mode = rocblas_fill_upper;
+    if(!strcmp(uplo, "U")) fill_mode = rocblas_fill_upper;
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
 
     hipPointerAttribute_t attr;
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
+    int *dev_info;
+    gpuMalloc((void **)&dev_info, sizeof(int));
     if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
-    hiperr = hipPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        std::complex<double> *dA=(std::complex<double> *)A, *dC=(std::complex<double> *)C;
+        std::complex<double> *dA=(std::complex<double> *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
-        hipstat = hipblasZsyrk(ct.hipblas_handle, fill_mode, hip_trans, n, k,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZsyrkx");
-        if(!c_dev) hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuFree(dC);
+        rocstat = rocsolver_zpotrf(ct.roc_handle, fill_mode, n, (rocblas_double_complex *)dA, lda, dev_info);
+        if (rocstat != rocblas_status_success) 
+            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_zpotrf");
+        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>));
         if(!a_dev) gpuFree(dA);
     }
     else {
-        double *dA=(double *)A, *dC=(double *)C;
+        double *dA=(double *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
-        hipstat = hipblasDsyrk(ct.hipblas_handle, fill_mode, hip_trans, n, k,
-                            (double*)&alpha,
-                            (double*)dA, lda,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDsyrkx");
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
-        if(!c_dev) gpuFree(dC);
+        rocstat = rocsolver_dpotrf(ct.roc_handle, fill_mode, n, dA, lda, dev_info);
+        if (rocstat != rocblas_status_success) 
+            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_dpotrf");
+        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(double));
         if(!a_dev) gpuFree(dA);
-
     }
+    hipMemcpyDtoH(info, dev_info, sizeof(int));
+    gpuFree(dev_info);
 #elif SYCL_ENABLED
 
 this should cause a compile error since as I have no access to a machine to test this on right now
@@ -273,12 +222,10 @@ this should cause a compile error since as I have no access to a machine to test
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        zsyrk(uplo, trans, &n, &k, (std::complex<double> *)&alpha, (std::complex<double> *)A, &lda,
-             (std::complex<double> *)&beta, (std::complex<double> *)C, &ldc);
+        zpotrf(uplo, &n, (std::complex<double> *)A, &n, info);
     }
     else {
-        dsyrk(uplo, trans, &n, &k, (double *)&alpha, (double *)A, &lda,
-              (double *)&beta, (double *)C, &ldc);
+        dpotrf(uplo, &n, (double *)A, &n, info);
     }
 
 #endif
