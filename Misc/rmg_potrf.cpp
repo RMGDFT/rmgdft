@@ -47,42 +47,15 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
 {
 
 #if CUDA_ENABLED
-
-    cublasStatus_t custat;
-    cublasOperation_t cu_trans = CUBLAS_OP_N;
+    int *dev_info, lwork;
+    cusolverStatus_t custat;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
 
     if(!strcmp(uplo, "u")) fill_mode = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) fill_mode = CUBLAS_FILL_MODE_UPPER;
 
-    if(!strcmp(trans, "t")) cu_trans = CUBLAS_OP_T;
-    if(!strcmp(trans, "T")) cu_trans = CUBLAS_OP_T;
-    if(!strcmp(trans, "c")) cu_trans = CUBLAS_OP_C;
-    if(!strcmp(trans, "C")) cu_trans = CUBLAS_OP_C;
-
-    if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
-    {
-        custat = cublasXtZsyrk(ct.cublasxt_handle, fill_mode, cu_trans, n, k,
-                            (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex*)A, lda,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZsyrkx");
-        return;
-    }
-    if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
-    {
-        custat = cublasXtDsyrk(ct.cublasxt_handle, fill_mode, cu_trans, (size_t)n, (size_t)k,
-                            (double*)&alpha,
-                            (double*)A, (size_t)lda,
-                            (double*)&beta, (double*)C, (size_t)ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDsyrkx");
-        return;
-    }
-
     size_t a_size = (size_t)lda * (size_t)n;
-
+    gpuMalloc((void **)&dev_info, sizeof(int));
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
     cudaerr = cudaPointerGetAttributes(&attr, A);
@@ -95,32 +68,36 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
 
     DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        std::complex<double> *dA=(std::complex<double> *)A;
+        std::complex<double> *dA=(std::complex<double> *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
-                            (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex*)dA, lda,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
+        custat = cusolverDnZpotrf_bufferSize(ct.cusolver_handle, fill_mode, n,
+			          (cuDoubleComplex *)dA, lda, &lwork);
+        gpuMalloc((void **)&work, lwork * sizeof(std::complex<double>));
+        custat = cusolverDnZpotrf(ct.cusolver_handle, fill_mode, n, (cuDoubleComplex *)dA, lda,
+			          (cuDoubleComplex *)work, lwork, dev_info);
+	if(custat != CUSOLVER_STATUS_SUCCESS)
+            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZpotrf failed.");
+	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
     else {
-        double *dA=(double *)A;
+        double *dA=(double *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
-                            (double*)&alpha,
-                            (double*)dA, lda,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
+        custat = cusolverDnDpotrf_bufferSize(ct.cusolver_handle, fill_mode, n, dA, lda, &lwork);
+        gpuMalloc((void **)&work, lwork * sizeof(double));
+        custat = cusolverDnDpotrf(ct.cusolver_handle, fill_mode, n, dA, lda, work, lwork, dev_info);
+	if(custat != CUSOLVER_STATUS_SUCCESS)
+            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
+	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
+    cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
     DeviceSynchronize();
+    gpuFree(dev_info);
     return;
 
 #elif HIP_ENABLED

@@ -100,7 +100,6 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
     }
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t b_size = (size_t)ldb * (size_t)n;
     size_t c_size = (size_t)ldc * (size_t)n;
 
     cudaPointerAttributes attr;
