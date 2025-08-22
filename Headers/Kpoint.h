@@ -151,7 +151,7 @@ public:
     KpointType *prev_orbitals;
 
     // The orbital structure for this k-point
-    State<KpointType> *Kstates;
+    std::vector<State<KpointType>> Kstates;
 
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;

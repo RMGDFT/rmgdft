@@ -311,7 +311,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
 
     /* Allocate memory for the state structures */
-    this->Kstates = new State<KpointType>[ct.max_states];
+    this->Kstates.resize(2*ct.max_states);
     this->nstates = ct.init_states;
 
     // Set the size of the wavefunction array to allocate. This needs to be 4 times
