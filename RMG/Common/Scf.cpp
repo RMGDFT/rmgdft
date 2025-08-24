@@ -187,7 +187,7 @@ template <typename OrbitalType> bool Scf (
                     ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-                Kptr[kpt]->MgridSubspace(vtot_psi.data(), vxc_psi);
+                Kptr[kpt]->MgridSubspace(0, Kptr[kpt]->nstates, vtot_psi.data(), vxc_psi);
                 delete RT1;
             }
             else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
@@ -468,6 +468,7 @@ template <typename OrbitalType> bool Scf (
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("2-Scf steps: MixRho");
     MixRho(new_rho.data(), rho.data(), rhocore.data(), vh.data(), vh_out.data(), rhoc.data(), Kptr[0]->ControlMap, false);
+
     delete RT1;
 
     rho.get_oppo();

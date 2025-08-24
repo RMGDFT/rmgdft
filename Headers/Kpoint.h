@@ -101,6 +101,7 @@ public:
     void ComputeHpsi (double *vtot_eig, double *vxc_psi, KpointType *h_psi);
     void ComputeHcore (double *vtot_eig, double *vxc_psi, KpointType *Hcore, KpointType *Hcore_kin, KpointType *Hij_localpp);
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
+    void MgridSubspace (int istart, int N, double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, double *vxc_psi, int &notconv);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);

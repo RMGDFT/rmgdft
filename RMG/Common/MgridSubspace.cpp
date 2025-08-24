@@ -52,9 +52,16 @@
 
 template void Kpoint<double>::MgridSubspace(double *, double *vxc_psi);
 template void Kpoint<std::complex<double>>::MgridSubspace(double *, double *vxc_psi);
-
+template void Kpoint<double>::MgridSubspace(int, int, double *, double *vxc_psi);
+template void Kpoint<std::complex<double>>::MgridSubspace(int, int, double *, double *vxc_psi);
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot_psi, double *vxc_psi)
+{
+    MgridSubspace (0, this->nstates, vtot_psi, vxc_psi);
+}
+
+template <class KpointType>
+void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, double *vxc_psi)
 {
     RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -66,12 +73,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 #if HIP_ENABLED || CUDA_ENABLED
     weight = this->nl_weight_gpu;
 #endif
-    double mean_occ_res = DBL_MAX;
-    double mean_unocc_res = DBL_MAX;
-    double max_occ_res = 0.0;
-    double max_unocc_res = 0.0;
-    double min_occ_res = DBL_MAX;
-    double min_unocc_res = DBL_MAX;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -91,27 +92,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     // Set trade images coalesce_factor
     this->T->set_coalesce_factor(pct.coalesce_factor);
 
-    // Restrict coarse vtot
-    {
-        Mgrid MG(this->L, this->T);
-        int ixoff, iyoff, izoff;
-        int dimx = pct.coalesce_factor * G->get_PX0_GRID(1);
-        int dimy = G->get_PY0_GRID(1);
-        int dimz = G->get_PZ0_GRID(1);
-        int NX_GRID = G->get_NX_GRID(1);
-        int NY_GRID = G->get_NY_GRID(1);
-        int NZ_GRID = G->get_NZ_GRID(1);
-        int sbasis = (dimx + 2)*(dimy + 2)*(dimz + 2);
-        int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
-        int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
-        int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
-        double *work = new double[sbasis]();
-        CPP_pack_ptos_convert (work, nvtot_psi, dimx, dimy, dimz);
-        this->T->trade_images (work, dimx, dimy, dimz, FULL_TRADE);
-        MG.mg_restrict (work, coarse_vtot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-        delete [] work;
-    }
- 
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
@@ -119,8 +99,8 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     // multiple of (active_threads * pct.coalesce_factor) in order for the
     // coalescing routines to work correctly. So we pad nstates to satisfy
     // that condition where required (stored in mstates).
-    int mstates = this->nstates / (active_threads * pct.coalesce_factor);
-    if(this->nstates % (active_threads * pct.coalesce_factor)) mstates++;
+    int mstates = N / (active_threads * pct.coalesce_factor);
+    if(N % (active_threads * pct.coalesce_factor)) mstates++;
     mstates = mstates * (active_threads * pct.coalesce_factor);
 
     // We adjust the block size here for threading and coalescing
@@ -131,12 +111,11 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     int irem = mstates % block_size;
     if(irem) nblocks++;
 
-    for(int is=0;is < this->nstates;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
-    if(pct.gridpe==0) printf("\n");
+    for(int is=first;is < N+first;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
 
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
-    for(int is=0;is < this->nstates;is++) Kstates[is].skip = false;
+    for(int is=first;is < N+first;is++) Kstates[is].skip = false;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -222,7 +201,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         {
             double deig_min = DBL_MAX, deig_max = 0.0, deig_avg = 0.0;
             int count = 0;
-            for(int is=0;is < this->nstates;is++)
+            for(int is=first;is < N+first;is++)
             {
                 if(Kstates[is].occupation[0] > 0.0001)
                 {
@@ -239,7 +218,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             if(ct.verbose && pct.gridpe==0) 
                 printf("Delta eig avg = %14.8e, min = %14.8e, max = %14.8e\n",deig_avg, deig_min, deig_max);
         }
-        for(int is=0;is < this->nstates;is++)
+        for(int is=first;is < N+first;is++)
         {
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
@@ -247,13 +226,13 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(vcycle != (ct.eig_parm.mucycles-1))
         {
             RmgTimer RTO("3-MgridSubspace: ortho");
-            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
+            MgridOrtho(0, N, pbasis_noncoll, this->orbital_storage);
         }
     }
 
     // Scan state residuals and see which ones (if any) multigrid iterations did not work on
     int notconv = 0;
-    for(int is=0;is < this->nstates;is++)
+    for(int is=first;is < N+first;is++)
     {
         if(this->Kstates[is].res[0] < this->Kstates[is].res[1])
         {
@@ -272,51 +251,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         // Eigenvalues are not copied to all nodes in MgEigState when using coalesced grids.
         GatherEigs(this);
     }
-    delete [] coarse_vtot;
-
-    if(Verify ("freeze_occupied", true, this->ControlMap)) {
-
-        // Orbital residual measures (used for some types of calculations
-        this->max_unocc_res_index = (int)(ct.gw_residual_fraction * (double)this->nstates);
-        this->mean_occ_res = 0.0;
-        this->min_occ_res = DBL_MAX;
-        this->max_occ_res = 0.0;
-        this->mean_unocc_res = 0.0;
-        this->min_unocc_res = DBL_MAX;
-        this->max_unocc_res = 0.0;
-        this->highest_occupied = 0;
-
-        for(int istate = 0;istate < this->nstates;istate++) {
-            if(this->Kstates[istate].occupation[0] > 0.0) {
-                this->mean_occ_res += this->Kstates[istate].res[0];
-                mean_occ_res += this->Kstates[istate].res[0];
-                if(this->Kstates[istate].res[0] >  this->max_occ_res)  this->max_occ_res = this->Kstates[istate].res[0];
-                if(this->Kstates[istate].res[0] <  this->min_occ_res)  this->min_occ_res = this->Kstates[istate].res[0];
-                if(this->Kstates[istate].res[0] >  max_occ_res)  max_occ_res = this->Kstates[istate].res[0];
-                if(this->Kstates[istate].res[0] <  min_occ_res)  min_occ_res = this->Kstates[istate].res[0];
-                this->highest_occupied = istate;
-            }
-            else {
-                if(istate <= this->max_unocc_res_index) {
-                    this->mean_unocc_res += this->Kstates[istate].res[0];
-                    mean_unocc_res += this->Kstates[istate].res[0];
-                    if(this->Kstates[istate].res[0] >  this->max_unocc_res)  this->max_unocc_res = this->Kstates[istate].res[0];
-                    if(this->Kstates[istate].res[0] <  this->min_unocc_res)  this->min_unocc_res = this->Kstates[istate].res[0];
-                    if(this->Kstates[istate].res[0] >  max_unocc_res)  max_unocc_res = this->Kstates[istate].res[0];
-                    if(this->Kstates[istate].res[0] <  min_unocc_res)  min_unocc_res = this->Kstates[istate].res[0];
-                }
-            }
-        }
-
-        this->mean_occ_res = this->mean_occ_res / (double)(this->highest_occupied + 1);
-        this->mean_unocc_res = this->mean_unocc_res / (double)(this->max_unocc_res_index -(this->highest_occupied + 1));
-        mean_occ_res = mean_occ_res / (double)(ct.num_kpts*(this->highest_occupied + 1));
-        mean_unocc_res = mean_unocc_res / (double)(ct.num_kpts*this->max_unocc_res_index -(this->highest_occupied + 1));
-
-        rmg_printf("Mean/Min/Max unoccupied wavefunction residual for kpoint %d  =  %10.5e  %10.5e  %10.5e\n", this->kidx, this->mean_unocc_res, this->min_unocc_res, this->max_unocc_res);
-
-    }
-
 
     /* wavefunctions have changed, projectors have to be recalculated
      * but if we are using potential acceleration and not well converged yet
