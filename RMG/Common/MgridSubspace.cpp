@@ -77,16 +77,10 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
     double *nvtot_psi = vtot_psi;;
-    double *coarse_vtot;
     if(pct.coalesce_factor > 1)
     {
         nvtot_psi = new double[pbasis * pct.coalesce_factor];
-        coarse_vtot = new double[pbasis * pct.coalesce_factor];
         GatherGrid(this->G, pbasis, vtot_psi, nvtot_psi);
-    }
-    else
-    {
-        coarse_vtot = new double[pbasis];
     }
 
     // Set trade images coalesce_factor
@@ -166,7 +160,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                         thread_control.job = HYBRID_EIG;
                         thread_control.vtot = nvtot_psi;
                         thread_control.vxc_psi = vxc_psi;
-                        thread_control.coarse_vtot = coarse_vtot;
+                        thread_control.coarse_vtot = NULL;
                         thread_control.vcycle = vcycle;
                         thread_control.sp = &this->Kstates[sindex];
                         thread_control.p3 = (void *)this;
