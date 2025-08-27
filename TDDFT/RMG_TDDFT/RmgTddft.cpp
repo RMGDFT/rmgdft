@@ -589,11 +589,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(ct.tddft_mode == VECTOR_POT )
     {
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+            std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
             current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+            std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
             current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+            std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
             current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
         }
         if(ct.BerryPhase)
@@ -603,7 +603,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -848,11 +848,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             if(ct.tddft_mode == VECTOR_POT )
             {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
                 current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
                 current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
                 current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
             }
         }
@@ -865,7 +865,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         {
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
