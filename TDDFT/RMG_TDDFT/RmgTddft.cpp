@@ -385,9 +385,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             current_fi = fopen(filename.c_str(), "w");
             fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
 
-            filename = std::string(ct.basename) + "_bp_dipole.dat";
-            dbp_fi = fopen(filename.c_str(), "w");
-            fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
+            if(ct.BerryPhase)
+            {
+                filename = std::string(ct.basename) + "_bp_dipole.dat";
+                dbp_fi = fopen(filename.c_str(), "w");
+                fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
+            }
         }
     }
 
@@ -574,6 +577,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
                 daxpy ( &n2_C ,  &ct.efield_tddft_crds[0], (double *)Kptr[kpt]->Pxmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
                 daxpy ( &n2_C ,  &ct.efield_tddft_crds[1], (double *)Kptr[kpt]->Pymatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
                 daxpy ( &n2_C ,  &ct.efield_tddft_crds[2], (double *)Kptr[kpt]->Pzmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
+                memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_m1_cpu, matrix_size);
             }
 
             CurrentNlpp(Kptr[kpt], desca, ct.tddft_start_state);
@@ -581,29 +585,32 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     }
 
-    double current[3];
+    double current[3], current0[3];
     current[0] = 0.0;
     current[1] = 0.0;
     current[2] = 0.0;
+    current0[0] = 0.0;
+    current0[1] = 0.0;
+    current0[2] = 0.0;
     double tot_bp_pol = 0.0;
     if(ct.tddft_mode == VECTOR_POT )
     {
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
-            current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
-            current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
-            current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
+            std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+            current0[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
+            std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+            current0[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
+            std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+            current0[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
         }
         if(ct.BerryPhase)
         {
-           // Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
-           // Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
+            // Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
+            // Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
             Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -611,18 +618,21 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    Sp->ScalapackBlockAllreduce(current, 3);
-    Rmg_Symm->symm_vec(current);
+    MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    Sp->ScalapackBlockAllreduce(current0, 3);
+    Rmg_Symm->symm_vec(current0);
 
     if(pct.imgpe == 0)
     {
         fprintf(dfi, "\n  &&dipole at groud state:  %18.10e  %18.10e  %18.10e ",
                 dipole_ele[0], dipole_ele[1], dipole_ele[2]);
-        fprintf(current_fi, "\n  &&current at groud state:  %18.10e  %18.10e  %18.10e ",
-                current[0], current[1], current[2]);
-        fprintf(dbp_fi, "\n  &&dipole at groud state BeryPhase (C/m^2):  %18.10e  %18.10e  %18.10e ",
-                tot_bp_pol, 0.0,0.0);
+        fprintf(current_fi, "\n  &&current at groud state:  %18.10e  %18.10e  %18.10e nonzero due to kpoint sampling",
+                current0[0], current0[1], current0[2]);
+        if(ct.BerryPhase)
+        {
+            fprintf(dbp_fi, "\n  &&dipole at groud state BeryPhase (C/m^2):  %18.10e  %18.10e  %18.10e ",
+                    tot_bp_pol, 0.0,0.0);
+        }
     }
     //  run rt-td-dft
     RmgTimer *RT2a ;    // timer type  declaration
@@ -640,16 +650,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         RT2a = new RmgTimer("2-TDDFT: extrapolate");
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            if(ct.tddft_mode == VECTOR_POT && tot_steps == 0)
-            {
-                double coswt = cos(ct.tddft_frequency * tot_steps * time_step);
-                double coswtx = coswt * ct.efield_tddft_crds[0];
-                double coswty = coswt * ct.efield_tddft_crds[1];
-                double coswtz = coswt * ct.efield_tddft_crds[2];
-                daxpy ( &n2_C ,  &coswtx, (double *)Kptr[kpt]->Pxmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
-                daxpy ( &n2_C ,  &coswty, (double *)Kptr[kpt]->Pymatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
-                daxpy ( &n2_C ,  &coswtz, (double *)Kptr[kpt]->Pzmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
-            }
+            //if(ct.tddft_mode == VECTOR_POT && tot_steps == 0)
+            //{
+            //    double coswt = cos(ct.tddft_frequency * tot_steps * time_step);
+            //    double coswtx = coswt * ct.efield_tddft_crds[0];
+            //    double coswty = coswt * ct.efield_tddft_crds[1];
+            //    double coswtz = coswt * ct.efield_tddft_crds[2];
+            //    daxpy ( &n2_C ,  &coswtx, (double *)Kptr[kpt]->Pxmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
+            //    daxpy ( &n2_C ,  &coswty, (double *)Kptr[kpt]->Pymatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
+            //    daxpy ( &n2_C ,  &coswtz, (double *)Kptr[kpt]->Pzmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
+            //}
             extrapolate_Hmatrix ((double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, (double *)Kptr[kpt]->Hmatrix_1_cpu, n2_C) ;
         }   
 
@@ -848,11 +858,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             if(ct.tddft_mode == VECTOR_POT )
             {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
                 current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_y = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
                 current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_z = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
                 current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
             }
         }
@@ -865,7 +875,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         {
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotu(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -895,8 +905,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             if(ct.tddft_mode == VECTOR_POT )
             {
                 fprintf(current_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                        tot_steps*time_step, current[0], current[1], current[2]);
-                fprintf(dbp_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
+                        tot_steps*time_step, current[0]-current0[0], current[1]-current0[1], current[2]-current0[2]);
+                if(ct.BerryPhase) fprintf(dbp_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                         tot_steps*time_step, tot_bp_pol, 0.0,0.0);
             }
         }
