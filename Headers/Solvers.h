@@ -53,6 +53,7 @@ template <typename OrbitalType, typename CalcType> void mgsmoother(
               CalcType *u, CalcType *Hu, CalcType *r,
               double *v, double *vxc, double *dinv,
               OrbitalType *nv, CalcType *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin);
+              double &eig, int order, bool is_jacobi,
+              double lmax, double lmin, int vcycle);
 
 #endif

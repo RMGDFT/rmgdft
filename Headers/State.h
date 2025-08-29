@@ -31,6 +31,8 @@
 #define RMG_State_H 1
 
 #include <mpi.h>
+#include "diis.h"
+
 template <typename T> class Kpoint;
 template <typename StateType> class State {
 
@@ -43,6 +45,9 @@ public:
 
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;
+
+    // diis class instance for this state
+    diis<StateType> *dptr;
 
     /** Index showing which k-point this orbital is associated with */
     int kidx;
