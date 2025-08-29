@@ -69,6 +69,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
     this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
     int my_pe_offset = my_pe_x % pct.coalesce_factor;
 
+
     KpointType *weight = this->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
     weight = this->nl_weight_gpu;
@@ -110,6 +111,8 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
     for(int is=first;is < N+first;is++) Kstates[is].skip = false;
+    for(int is=first;is < N+first;is++) 
+        Kstates[is].dptr = new diis<KpointType>(ct.eig_parm.mucycles, pbasis_noncoll);
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -124,7 +127,10 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, mstates * ct.noncoll_factor, weight);
+        KpointType *newsint = this->newsint_local + first * this->BetaProjector->get_num_nonloc_ions() *
+                    ct.max_nl * ct.noncoll_factor;
+        this->BetaProjector->project(this, newsint,
+              first*ct.noncoll_factor, mstates * ct.noncoll_factor, weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -137,7 +143,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
         {
             int bofs = ib * block_size;
             RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-            AppNls(this, this->newsint_local, this->Kstates[bofs].psi, this->nv, 
+            AppNls(this, newsint, this->Kstates[first + bofs].psi, this->nv, 
                    &this->ns[bofs * pbasis_noncoll],
                    bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
@@ -215,14 +221,17 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
         for(int is=first;is < N+first;is++)
         {
             Kstates[is].eig[1] = Kstates[is].eig[0];
+
         }
+
         // Seems to be necessary for Broyden mixing in some cases.
         if(vcycle != (ct.eig_parm.mucycles-1))
         {
             RmgTimer RTO("3-MgridSubspace: ortho");
-            MgridOrtho(0, N, pbasis_noncoll, this->orbital_storage);
+            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
         }
     }
+
 
     // Scan state residuals and see which ones (if any) multigrid iterations did not work on
     int notconv = 0;
@@ -262,6 +271,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
         }
     }
 
+    for(int is=first;is < N+first;is++) delete Kstates[is].dptr;
 
     RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
     this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
