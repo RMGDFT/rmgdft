@@ -110,7 +110,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 2, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -204,7 +204,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               tmp_psi_t, work1_t, res_t,
               vtot_psi, vxc_psi, dinv.data(),
               nv_t, res2_t,
-              sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min);
+              sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
+
+//    Uncomment to enable RMM-DIIS
+//    sp->dptr->addfunc(saved_psi);
+//    sp->dptr->addres(res_t);
 
     // Check if residuals were decreasing and if not abort smoothing for
     // this state.
@@ -289,26 +293,31 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
              */
-
             t1 = -fg_step;
-            CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
+// Get rid of the 0 to enable RMM-DIIS
+            if(0 && vcycle > 0)
+            {
+                CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                std::vector<OrbitalType> next;
+                next = sp->dptr->compute_estimate(); 
+                if(next.size() > 0)
+                {
+                    for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] =
+                       (CalcType)next[is*pbasis + i] + t1*work2_t[is*pbasis + i];
+                }
+                else
+                {
+                    for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] += t1*work2_t[is*pbasis + i];
+                }
+            }
+            else
+            {
+                CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
+                //for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] += t1*work2_t[is*pbasis + i];
+            }
 
         }
 
-        // Post smoothing just use jacobi
-        // Once the SCF error gets small increase this to remove
-        // interpolation errors from coarse to fine.
-        int gl_pst = 0;
-//        if(ct.scf_accuracy < 1.0e-8) gl_pst=1;
-        //is_jacobi = true;
-        for(int its=0;its < gl_pst;its++)
-        {
-            mgsmoother<OrbitalType,CalcType>(kptr, sp,
-                      tmp_psi_t, work1_t, res_t,
-                      vtot_psi, vxc_psi, dinv.data(),
-                      nv_t, res2_t,
-                      sp->eig[0], 0, is_jacobi, ct.lambda_max, ct.lambda_min);
-        }
     }
 
     // Skip mark
