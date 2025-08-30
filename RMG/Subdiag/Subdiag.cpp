@@ -341,7 +341,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // After the first step this matrix does not need to be as large
-    if(ct.scf_steps == 0) {gpuFreeHost(gmatrix);gmatrix = NULL;}
+    if(ct.scf_steps == 0) {gpuFreeHost(ct.gmatrix);ct.gmatrix = NULL;}
 #endif
 
 }
