@@ -206,9 +206,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
-//    Uncomment to enable RMM-DIIS
-//    sp->dptr->addfunc(saved_psi);
-//    sp->dptr->addres(res_t);
+    if(ct.use_rmm_diis)
+    {
+        sp->dptr->addfunc(saved_psi);
+        sp->dptr->addres(res_t);
+    }
 
     // Check if residuals were decreasing and if not abort smoothing for
     // this state.
@@ -295,7 +297,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
              */
             t1 = -fg_step;
 // Get rid of the 0 to enable RMM-DIIS
-            if(0 && vcycle > 0)
+            if(ct.use_rmm_diis && vcycle > 0)
             {
                 CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
                 std::vector<OrbitalType> next;

@@ -547,6 +547,9 @@ public:
     /* Kohn sham solver type */
     int kohn_sham_solver;
 
+    /* Use RMM-DIIS? */
+    bool use_rmm_diis;
+
     /*Charge Mixing type*/
     int charge_mixing_type;
 

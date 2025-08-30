@@ -34,7 +34,7 @@
 #include "rmg_control.h"
 #include "blas.h"
 #include "diis.h"
- 
+
 template <class T> diis<T>::diis(int max_Min, int N_in)
 {
     max_M = max_Min;      // Maximum number of past iterates to use
@@ -148,7 +148,8 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     double maxdiag = 0.0;
     for (int i = 0; i < m; ++i) {
         maxdiag = std::max(maxdiag, std::abs(A[i*M+i]));
-        A[i*M + i] += eps;
+// May be better to just bail if diagonal entries are smaller than eps
+//        A[i*M + i] += eps;
         A[i * M + m] = 1.0;
         A[m * M + i] = 1.0;
     }
@@ -156,7 +157,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
 
     // bail if matrix becomes singular?
     // use zero length return vector if so
-    if(0 && maxdiag < eps*100.0) {
+    if(maxdiag < eps) {
         std::vector<T> rm;
         rm.clear();
         //if(pct.gridpe==0)printf("CLEARED\n");
@@ -169,7 +170,22 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     int ione = 1, info;
     if(typeid(T) == typeid(double))
     {
+#if 0
         dgesv(&M, &ione, (double *)A.data(), &M, ipvt.data(), (double *)b.data(), &M, &info);
+#else
+    // dgelss better for nearly singular matrices?
+    int ione = 1, rank, info;
+    int lwork=100;
+    double work[100];
+    std::vector<double> S(M);    // singular values
+    double rcond = -1.0;
+    dgelss(&M, &M, &ione, (double *)A.data(), &M,
+                     (double *)b.data(), &M,
+                     (double *)S.data(), &rcond,
+                     &rank,
+                     (double *)work, &lwork,
+                     &info);
+#endif
     }
     else
     {

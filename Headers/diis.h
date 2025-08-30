@@ -38,7 +38,7 @@ public:
     diis(int max_Min, int N_in);
     int max_M;
     int N;
-    double eps = 1.0e-12;           // epsilon added to B_ii for stability
+    double eps = 1.0e-11;           // epsilon added to B_ii for stability
     void addfunc(T *f);
     void addres(T *r);
     void addres(float *r);
