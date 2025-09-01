@@ -55,6 +55,37 @@ template <class T> void diis<T>::addfunc(T *f)
     }
 }
 
+template <class T> void diis<T>::addfunc(float *f)
+{
+    if constexpr (std::is_same_v<T, double>)
+    {
+        std::vector<T> ftmp(N);
+        for(int i=0;i < N;i++) ftmp[i] = f[i];
+        funcs.push_back(ftmp);
+
+        // Remove oldest entry if needed
+        if (funcs.size() > max_M) {
+            funcs.erase(funcs.begin());
+        }
+    }
+}
+
+template <class T> void diis<T>::addfunc(std::complex<float> *f)
+{
+    if constexpr (std::is_same_v<T, std::complex<double>>)
+    {
+        std::vector<T> ftmp(N);
+        for(int i=0;i < N;i++) ftmp[i] = f[i];
+        funcs.push_back(ftmp);
+
+        // Remove oldest entry if needed
+        if (funcs.size() > max_M) {
+            funcs.erase(funcs.begin());
+        }
+    }
+}
+
+// Adds a double or std::complex<double> residual
 // Adds a double or std::complex<double> residual
 template <class T> void diis<T>::addres(T *r)
 {
@@ -131,7 +162,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
            else
                for (int k = 0; k < N; ++k) val = val + std::conj(res[i][k]) * res[j][k];
 
-            GlobalSums(&val, factor, pct.grid_comm);
+            GlobalSums(&val, factor, pct.coalesced_grid_comm);
             A[i * M + j] = val;
             A[j * M + i] = val;
         }
@@ -149,7 +180,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     for (int i = 0; i < m; ++i) {
         maxdiag = std::max(maxdiag, std::abs(A[i*M+i]));
 // May be better to just bail if diagonal entries are smaller than eps
-//        A[i*M + i] += eps;
+        A[i*M + i] += eps;
         A[i * M + m] = 1.0;
         A[m * M + i] = 1.0;
     }
@@ -157,10 +188,12 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
 
     // bail if matrix becomes singular?
     // use zero length return vector if so
-    if(maxdiag < eps) {
+//    eps = std::min(1.0e-12, ct.scf_accuracy/100000.0);
+    if(cleared || (maxdiag < eps)) {
         std::vector<T> rm;
         rm.clear();
-        //if(pct.gridpe==0)printf("CLEARED\n");
+        cleared = true;
+        //if(pct.gridpe==0)printf("CLEARED 0\n");
         return rm;
     }
 
@@ -196,12 +229,23 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     // Form the new estimate using the coefficients c_i
     std::vector<T> mixed = funcs.back();
     std::fill(mixed.begin(), mixed.end(), 0.0);
+    double maxci = 0.0;
     for (int i = 0; i < m; i++)
     {
         T c = b[i];
+        maxci = std::max(maxci, std::abs(c));
         const auto& t = funcs[i];
         for (int k = 0; k < N; k++) mixed[k] += c * t[k];
     }
+    if(cleared || maxci > 2.0*m)
+    {
+        std::vector<T> rm;
+        rm.clear();
+        cleared = true;
+        //if(pct.gridpe==0)printf("CLEARED 1\n");
+        return rm;
+    }
+
     // Make sure the new wavefunction is normalized
     double n = std::sqrt(get_vel()*std::real(dot(mixed, mixed)));
     double invm = 1.0/(n + 1.0e-30);
@@ -218,7 +262,7 @@ template <class T> T diis<T>::dot(std::vector<T>& a, std::vector<T>& b)
         for (int i = 0; i < N; ++i) sum += std::conj(a[i]) * b[i];
     else
         for (int i = 0; i < N; ++i) sum += a[i] * b[i];
-    GlobalSums((double *)&sum, factor, pct.grid_comm);
+    GlobalSums((double *)&sum, factor, pct.coalesced_grid_comm);
     return sum;
 }
 
@@ -226,10 +270,13 @@ template <class T> T diis<T>::dot(std::vector<T>& a, std::vector<T>& b)
 template diis<double>::diis(int max_Nin, int N_in);
 template diis<std::complex<double>>::diis(int max_Nin, int N_in);
 template void diis<double>::addfunc(double *f);
+template void diis<double>::addfunc(float *f);
 template void diis<std::complex<double>>::addfunc(std::complex<double> *f);
+template void diis<std::complex<double>>::addfunc(std::complex<float> *f);
 template void diis<double>::addres(double *f);
 template void diis<double>::addres(float *f);
 template void diis<std::complex<double>>::addres(std::complex<double> *f);
 template void diis<std::complex<double>>::addres(std::complex<float> *f);
 template std::vector<double> diis<double>::compute_estimate(void);
 template std::vector<std::complex<double>> diis<std::complex<double>>::compute_estimate(void);
+

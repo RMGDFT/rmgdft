@@ -38,11 +38,16 @@ public:
     diis(int max_Min, int N_in);
     int max_M;
     int N;
+    double lambda;
     double eps = 1.0e-11;           // epsilon added to B_ii for stability
+    bool cleared = false;
     void addfunc(T *f);
+    void addfunc(float *f);
+    void addfunc(std::complex<float> *f);
     void addres(T *r);
     void addres(float *r);
     void addres(std::complex<float> *r);
+    double compute_lambda(void);
 
     std::vector<T> compute_estimate();
 
