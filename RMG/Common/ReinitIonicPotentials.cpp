@@ -111,7 +111,8 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     delete RT1;
 
-    init_efield(vnuc, ct.efield_crds);
+    if(!ct.BerryPhase)
+        init_efield(vnuc, ct.efield_crds);
 
 }                               /* end ReinitIonicPotentials */
 

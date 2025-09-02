@@ -351,13 +351,27 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     // ionic phase  z * r_ion * b_berryPhaseDir
 
     double pdl_ion_tot = 0.0;
+    int mod_ion = 2;
     for(int ion = 0; ion < ct.num_ions; ion++)
     {
         ION *iptr = &Atoms[ion];
         double Zj = Species[iptr->species].zvalence;
-        pdl_ion_tot += Zj * iptr->xtal[BerryPhase_dir];
+        double pdl_ion = 0;
+        if(int(Zj+0.01) %2)   // Zj is odd
+        {
+            mod_ion = 1;
+            pdl_ion = Zj * iptr->xtal[BerryPhase_dir];
+            pdl_ion = pdl_ion - std::round(pdl_ion);
+        }
+        else
+        {
+            pdl_ion = Zj * iptr->xtal[BerryPhase_dir];
+            pdl_ion = pdl_ion - 2.0*std::round(pdl_ion/2.0);
+        }
+            
+        pdl_ion_tot += pdl_ion;
     }
-    pdl_ion_tot = pdl_ion_tot - 2.0 * std::round(pdl_ion_tot/2.0);
+    pdl_ion_tot = pdl_ion_tot - mod_ion * std::round(pdl_ion_tot/mod_ion);
     double pdl_tot = pdl_elec_tot + pdl_ion_tot;
     pdl_tot = pdl_tot - 2.0 * std::round(pdl_tot/2.0);
 
