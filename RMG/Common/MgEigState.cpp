@@ -84,8 +84,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 {
     RmgTimer RT("Mg_eig");
     BaseThread *Thread = BaseThread::getBaseThread(0);
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
     int tid = Thread->get_thread_tid();
-
+    int diis_stop = active_threads*(kptr->nstates / active_threads);
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
 
@@ -206,10 +208,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
-    if(ct.use_rmm_diis)
+//    if(ct.use_rmm_diis && sp->istate < diis_stop && ct.scf_steps > 2)
+    if(ct.use_rmm_diis && sp->istate < diis_stop)
     {
         sp->dptr->addfunc(saved_psi);
-        sp->dptr->addres(res_t);
     }
 
     // Check if residuals were decreasing and if not abort smoothing for
@@ -296,14 +298,20 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
              * routine to update the orbital which is stored in a physical grid.
              */
             t1 = -fg_step;
-// Get rid of the 0 to enable RMM-DIIS
-            if(ct.use_rmm_diis && vcycle > 0)
+            //if(ct.use_rmm_diis && vcycle > 0 && sp->istate < diis_stop && ct.scf_steps > 2)
+if(ct.use_rmm_diis && sp->istate < diis_stop)
+{
+CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+sp->dptr->addres(work2_t);
+}
+            if(ct.use_rmm_diis && vcycle > 0 && sp->istate < diis_stop)
             {
-                CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                //CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
                 std::vector<OrbitalType> next;
                 next = sp->dptr->compute_estimate(); 
                 if(next.size() > 0)
                 {
+//t1 = 0.6666666*t1;
                     for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] =
                        (CalcType)next[is*pbasis + i] + t1*work2_t[is*pbasis + i];
                 }
