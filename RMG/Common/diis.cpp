@@ -209,15 +209,15 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
            else
                for (int k = 0; k < N; ++k) val = val + std::conj(res[i][k]) * res[j][k];
 
-            GlobalSums(&val, factor, pct.coalesced_grid_comm);
+            //GlobalSums(&val, factor, pct.coalesced_grid_comm);
             A[i * M + j] = val;
             A[j * M + i] = val;
         }
     }
-//        GlobalSums((double *)A.data(), factor*m*m, pct.grid_comm);
+
+    GlobalSums((double *)A.data(), factor*M*M, pct.coalesced_grid_comm);
     double maxdiag = 0.0;
     for (int i = 0; i < m; ++i) maxdiag = std::max(maxdiag, std::abs(A[i*M+i]));
-    MPI_Allreduce(MPI_IN_PLACE, &maxdiag, 1, MPI_DOUBLE, MPI_MAX, pct.coalesced_grid_comm);
  
     double scale = 1.0/maxdiag;
     for (int i = 0; i < m; ++i) {
