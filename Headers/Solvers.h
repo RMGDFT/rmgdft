@@ -50,7 +50,8 @@ double ComputeEig(int n, T *A, T *B, T *D);
 
 template <typename OrbitalType, typename CalcType> void mgsmoother(
               Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
-              CalcType *u, CalcType *Hu, CalcType *r,
+              CalcType *u, CalcType *Hu, CalcType *r, 
+              CalcType *ihu, CalcType *ir,
               double *v, double *vxc, double *dinv,
               OrbitalType *nv, CalcType *ns,
               double &eig, int order, bool is_jacobi,

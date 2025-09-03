@@ -88,6 +88,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
     int tid = Thread->get_thread_tid();
     int diis_stop = active_threads*(kptr->nstates / active_threads);
+
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
 
@@ -112,7 +113,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -159,6 +160,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double *dvtot_psi = (double *)p->ordered_malloc(aratio);pool_blocks+=aratio;
     CalcType *tmp_psi_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *res_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *ihu_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *r0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *hr0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
 
@@ -186,7 +190,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     for(int ix=0;ix < pbasis_noncoll;ix++) res2_t[ix] = work1_t[ix];
 
     // Setup some potential acceleration stuff
-    for(int idx = 0;idx <pbasis_noncoll;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
+    for(int idx = 0;idx <pbasis_noncoll;idx++)
+        saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
+
     potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(potential_acceleration) {
         PotentialAccelerationWait(sp->istate, kptr->nstates, ct.dvh_skip);
@@ -203,16 +209,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     bool is_jacobi = true;
     if(ct.norm_conserving_pp) is_jacobi = false;
     mgsmoother<OrbitalType,CalcType>(kptr, sp,
-              tmp_psi_t, work1_t, res_t,
+              tmp_psi_t, work1_t, res_t, ihu_t, r0_t,
               vtot_psi, vxc_psi, dinv.data(),
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
-//    if(ct.use_rmm_diis && sp->istate < diis_stop && ct.scf_steps > 2)
     if(ct.use_rmm_diis && sp->istate < diis_stop)
-    {
         sp->dptr->addfunc(saved_psi);
-    }
 
     // Check if residuals were decreasing and if not abort smoothing for
     // this state.
@@ -297,40 +300,56 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
              */
-            t1 = -fg_step;
-            //if(ct.use_rmm_diis && vcycle > 0 && sp->istate < diis_stop && ct.scf_steps > 2)
-if(ct.use_rmm_diis && sp->istate < diis_stop)
-{
-CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
-sp->dptr->addres(work2_t);
-}
-            if(ct.use_rmm_diis && vcycle > 0 && sp->istate < diis_stop)
+            if(ct.use_rmm_diis && sp->istate < diis_stop)
             {
-                //CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                for(int i=0;i < pbasis_noncoll;i++) work2_t[i] = (saved_psi[i] - tmp_psi_t[i] + work2_t[i]);
+                sp->dptr->addres(work2_t);  // Preconditioned residual
+
+                // If first vcycle use gradient step
+                if(vcycle == 0) sp->dptr->lambda = -fg_step;
+                // Compute optimized for second vcycle
+                if(vcycle > 1)
+                {
+                    // line minimization to compute RMM-DIIS lambda
+                    ApplyHamiltonian<OrbitalType,CalcType> (
+                          kptr, sp,
+                          sp->istate,
+                          work2_t,   //  |KR0>
+                          hr0_t,     // H|KRo>
+                          vtot_psi,
+                          vxc_psi,
+                          nv_t,
+                          false);
+
+                    sp->dptr->compute_lambda(sp->eig[0], ihu_t, work2_t, hr0_t);
+                }
+
                 std::vector<OrbitalType> next;
                 next = sp->dptr->compute_estimate(); 
                 if(next.size() > 0)
                 {
-//t1 = 0.6666666*t1;
-                    for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] =
-                       (CalcType)next[is*pbasis + i] + t1*work2_t[is*pbasis + i];
+                    for(int i=0;i < pbasis;i++)
+                        tmp_psi_t[is*pbasis+i] =
+                        (CalcType)next[is*pbasis + i] + saved_psi[is+pbasis+i]+
+                        sp->dptr->lambda*work2_t[is*pbasis + i];
                 }
                 else
                 {
-                    for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] += t1*work2_t[is*pbasis + i];
+                    // Fall back to gradient step
+                    for(int i=0;i < pbasis;i++)
+                        tmp_psi_t[is*pbasis+i] = saved_psi[is*pbasis+i] -
+                        fg_step*work2_t[is*pbasis + i];
                 }
             }
             else
             {
-                CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
-                //for(int i=0;i < pbasis;i++) tmp_psi_t[is*pbasis+i] += t1*work2_t[is*pbasis + i];
+                // Gradient step
+                CPP_pack_stop_axpy<CalcType>(sg_twovpsi_t, &tmp_psi_t[is*pbasis], -fg_step, dimx, dimy, dimz);
             }
-
         }
 
     }
-
-    // Skip mark
 
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);

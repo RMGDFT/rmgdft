@@ -47,7 +47,9 @@ public:
     void addres(T *r);
     void addres(float *r);
     void addres(std::complex<float> *r);
-    double compute_lambda(void);
+    void compute_lambda(double eig, T *iHu, T *r0, T *Hr0);
+    void compute_lambda(double eig, float *iHu, float *r0, float *Hr0);
+    void compute_lambda(double eig, std::complex<float> *iHu, std::complex<float> *r0, std::complex<float> *Hr0);
 
     std::vector<T> compute_estimate();
 

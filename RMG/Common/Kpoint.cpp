@@ -111,7 +111,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     // This is a boost pool per thread allocator used in MgEigState. It makes it easy
     // to change the type of the underlying memory (cpu, cuda, hip) by modifying
     // rmg_user_allocator as well as the fixed pool performance advantage. Initial
-    // size is 24 blocks with max size of 32.
+    // size is 27 blocks with max size of 35.
     if(kalloc.size() == 0)
     {
         kalloc.resize(ct.MG_THREADS_PER_NODE);
@@ -122,7 +122,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
         int sbasis_noncoll = sbasis * ct.noncoll_factor;
 
         for(int tid=0;tid < ct.MG_THREADS_PER_NODE;tid++)
-            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 24, 32);
+            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 27, 35);
 
     }
     this->init_states();

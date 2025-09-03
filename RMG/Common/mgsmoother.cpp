@@ -47,7 +47,8 @@
 
 template <typename OrbitalType, typename CalcType> void mgsmoother(
               Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
-              CalcType *u, CalcType *Hu, CalcType *r,
+              CalcType *u, CalcType *Hu, CalcType *r, 
+              CalcType *iHu, CalcType *ir,
               double *v, double *vxc, double *dinv,
               OrbitalType *nv, CalcType *ns,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
@@ -63,6 +64,8 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
                CalcType *u,        // wavefunction being smoothed
                CalcType *Hu,       // if order>0 on exit holds last Hu
                CalcType *r,        // on exit holds last residual
+               CalcType *iHu,      // on exit holds first Hu
+               CalcType *ir,       // on exit holds first residual
                double *v,
                double *vxc,
                double *dinv,
@@ -87,10 +90,11 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         RmgTimer RT1("Mg_eig: apply hamiltonian");
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
     }
+    for (int i=0;i<pbasis;i++) iHu[i] = Hu[i];
 
     double eig1 = ComputeEig(pbasis, u, Hu, ns);
     auto mixeig = [](double &eig, double &eig1) {
-        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)) || ct.use_rmm_diis)
+        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)))
             eig = eig1;
         else
             eig = 0.7*eig1 + 0.3*eig;
@@ -105,6 +109,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             r[i] = f1*u[i] - 2.0*Hu[i];
         else
             r[i] = f1*ns[i] - 2.0*Hu[i];
+        ir[i] = r[i];
         p[i] = dinv[i] * r[i];
         rsum[0] += std::norm(r[i]);
         rsum[1] += std::norm(u[i]);
@@ -146,7 +151,18 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
 
         //if(pct.gridpe==0 && sp->istate==0)printf("QQQQ  %f  %f\n",a, b);
 
-        for(int i=0;i < pbasis;i++) u[i] += a*p[i];
+        rsum[0] = 0.0;
+        for(int i=0;i < pbasis;i++)
+        {
+            u[i] += a*p[i];
+            rsum[0] += std::norm(u[i]);
+        }
+        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
+        norm = rsum[0]*get_vel();
+        norm = 1.0 / sqrt(norm);
+        if(ct.norm_conserving_pp)
+            for(int i=0;i < pbasis;i++) u[i] *= norm;
+
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
         eig1 = ComputeEig(pbasis, u, Hu, ns);
         mixeig(eig, eig1);
@@ -161,42 +177,40 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
                 r[i] = f1*ns[i] - 2.0*Hu[i];
             p[i] = dinv[i]*r[i] + b * p[i];
             rsum[0] += std::norm(r[i]);
-            rsum[1] += std::norm(u[i]);
         }
 
-        GlobalSums (rsum, 2, pct.coalesced_grid_comm);
+        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
         sp->res[k+1] = rsum[0]*get_vel();
-        norm = rsum[1]*get_vel();
-        norm = 1.0 / sqrt(norm);
-        if(ct.norm_conserving_pp)
-            for(int i=0;i < pbasis;i++) u[i] *= norm;
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }
 }
+
 template void mgsmoother<double,float>(
               Kpoint<double> *kp, State<double> *sp,
-              float *u, float *Hu, float *r,
+              float *u, float *Hu, float *r, float *iHu, float *ir,
               double *v, double *vxc, double *dinv,
               double *nv, float *ns,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<double,double>(
               Kpoint<double> *kp, State<double> *sp,
-              double *u, double *Hu, double *r,
+              double *u, double *Hu, double *r, double *iHu, double *ir,
               double *v, double *vxc, double *dinv,
               double *nv, double *ns,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<float>>(
               Kpoint<std::complex<double>> *kp, State<std::complex<double>> *sp,
-              std::complex<float> *u, std::complex<float> *Hu, std::complex<float> *r,
+              std::complex<float> *u, std::complex<float> *Hu,
+              std::complex<float> *r, std::complex<float> *iHu, std::complex<float> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<float> *ns,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<double>>(
               Kpoint<std::complex<double>> *kp, State<std::complex<double>> *sp,
-              std::complex<double> *u, std::complex<double> *Hu, std::complex<double> *r,
+              std::complex<double> *u, std::complex<double> *Hu,
+              std::complex<double> *r, std::complex<double> *iHu, std::complex<double> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<double> *ns,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
