@@ -113,7 +113,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
     for(int is=first;is < N+first;is++) Kstates[is].skip = false;
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) 
-            Kstates[is].dptr = new diis<KpointType>(ct.eig_parm.mucycles, pbasis_noncoll);
+            Kstates[is].dptr = new diis<KpointType>(4, pbasis_noncoll);
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {

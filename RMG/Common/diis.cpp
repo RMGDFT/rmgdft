@@ -23,13 +23,10 @@
 #include <vector>
 #include <stdexcept>
 #include <limits>
-#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <typeinfo>
-#include <boost/math/tools/minima.hpp>
-#include <functional>
-#include <boost/bind/bind.hpp>
+#include <omp.h>
 #include "transition.h"
 #include "const.h"
 #include "GlobalSums.h"
@@ -39,9 +36,7 @@
 #include "diis.h"
 #include "Solvers.h"
 
-using boost::math::tools::brent_find_minima;
 
-double eval_poly(double x, int order, std::array<double, 8> &coeffs);
 
 template <class T> diis<T>::diis(int max_Min, int N_in)
 {
@@ -94,7 +89,6 @@ template <class T> void diis<T>::addfunc(std::complex<float> *f)
 }
 
 // Adds a double or std::complex<double> residual
-// Adds a double or std::complex<double> residual
 template <class T> void diis<T>::addres(T *r)
 {
     if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
@@ -142,7 +136,7 @@ template <class T> void diis<T>::addres(std::complex<float> *r)
     } 
 }
 
-// Performs a line minimization to compute the value of lambad that
+// Performs a line minimization to compute the value of lambda that
 // minimizes R1.
 template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *r0, T *Hr0)
 {
@@ -217,7 +211,6 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
 
-    T vel = get_vel();
     for (int i = 0; i < m; i++) {
         for (int j = 0; j <= i; j++) {
            T val = 0.0;
@@ -252,31 +245,47 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     // Solve A*x = b with lapack
     std::vector<T> x = b;
     std::vector<int> ipvt(N);
-    int ione = 1, info;
-    if(typeid(T) == typeid(double))
+    int ione = 1, rank, info;
+    double rcond = -1.0;
+    omp_set_num_threads(1);
+    if constexpr (std::is_same_v<T, double>)
     {
 #if 0
         dgesv(&M, &ione, (double *)A.data(), &M, ipvt.data(), (double *)b.data(), &M, &info);
 #else
-    // dgelss better for nearly singular matrices?
-    int ione = 1, rank, info;
-    int lwork=100;
-    double work[100];
-    std::vector<double> S(M);    // singular values
-    double rcond = -1.0;
-    dgelss(&M, &M, &ione, (double *)A.data(), &M,
-                     (double *)b.data(), &M,
-                     (double *)S.data(), &rcond,
-                     &rank,
-                     (double *)work, &lwork,
-                     &info);
+        // dgelss better for nearly singular matrices?
+        int lwork=100;
+        double work[100];
+        std::vector<double> S(M);    // singular values
+        dgelss(&M, &M, &ione, A.data(), &M,
+                         b.data(), &M,
+                         S.data(), &rcond,
+                         &rank,
+                         work, &lwork,
+                         &info);
 #endif
     }
     else
     {
+#if 0
         zgesv(&M, &ione, (double *)A.data(), &M, ipvt.data(),
              (double *)b.data(), &M, &info);
+#else
+        int lwork=100;
+        std::complex<double> work[100];
+        double rwork[100];
+        std::vector<double> S(M);    // singular values
+        zgelss(&M, &M, &ione,
+               A.data(), &M,
+               b.data(), &M,
+               S.data(), &rcond,
+               &rank,
+               work, &lwork,
+               rwork,
+               &info);
+#endif
     }
+    omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 
     // Form the new estimate using the coefficients c_i
     std::vector<T> mixed = funcs.back();

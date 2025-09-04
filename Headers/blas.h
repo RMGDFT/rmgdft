@@ -124,9 +124,10 @@
 #define		cimatcopy	RMG_FC_GLOBAL(cimatcopy, CIMATCOPY)
 #define		zimatcopy	RMG_FC_GLOBAL(zimatcopy, ZIMATCOPY)
 #define		ztrtri  	RMG_FC_GLOBAL(ztrtri, ZTRTRI)
-#define		dtrmm  	    RMG_FC_GLOBAL(dtrmm, DTRMM)
-#define		ztrmm  	    RMG_FC_GLOBAL(ztrmm, ZTRMM)
+#define		dtrmm  	        RMG_FC_GLOBAL(dtrmm, DTRMM)
+#define		ztrmm  	        RMG_FC_GLOBAL(ztrmm, ZTRMM)
 #define         dgelss          RMG_FC_GLOBAL(dgelss, DGELSS)
+#define         zgelss          RMG_FC_GLOBAL(zgelss, ZGELSS)
 
 #if __cplusplus
 extern "C" {
@@ -258,7 +259,7 @@ void simatcopy(char *, char *, int *, int *, float  *, float  *, int *, int *);
 void dimatcopy(char *, char *, int *, int *, double  *, double  *, int *, int *);
 void cimatcopy(char *, char *, int *, int *, float  *, float  *, int *, int *);
 void zimatcopy(char *, char *, int *, int *, double  *, double  *, int *, int *);
-#define         dgelss          RMG_FC_GLOBAL(dgelss, DGELSS)
+
 void dgelss(const int* m, const int* n, const int* nrhs,
                  double* a, const int* lda,
                  double* b, const int* ldb,
@@ -267,6 +268,15 @@ void dgelss(const int* m, const int* n, const int* nrhs,
                  double* work, const int* lwork,
                  int* info);
 
+void zgelss(
+    const int* m, const int* n, const int* nrhs,
+    std::complex<double>* a, const int* lda,
+    std::complex<double>* b, const int* ldb,
+    double* S, const double* rcond,
+    int* rank, 
+    std::complex<double>* work, const int* lwork,
+    double* rwork,
+    int* info);
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 DoubleC zdotu(int*, DoubleC *, int*, DoubleC *, int*);
