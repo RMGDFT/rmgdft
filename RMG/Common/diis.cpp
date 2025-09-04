@@ -159,9 +159,22 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *r0, T *Hr
             ss[1] += (Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]);
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
-//        if(pct.gridpe==0)printf("FF  %14.8f\n", ss[0]/ss[1]);
         lambda = ss[0]/ss[1];
      }
+
+    if constexpr (std::is_same_v<T, std::complex<double>>)
+    {
+        double eig = ComputeEig(N, u0.data(), iHu, u0.data());
+        double ss[2] = {0.0, 0.0};
+        for(int i=0;i < N;i++)
+        {
+            ss[0] += std::real((Hr0[i] - eig*r0[i])*(iHu[i] - eig*u0[i]));
+            ss[1] += std::real((Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]));
+        }
+        GlobalSums(ss, 2, pct.coalesced_grid_comm);
+        lambda = ss[0]/ss[1];
+     }
+
 }
 
 template <class T> void diis<T>::compute_lambda(double eig, float *iHu, float *r0, float *Hr0)
@@ -175,6 +188,11 @@ template <class T> void diis<T>::compute_lambda(double eig, float *iHu, float *r
 
 template <class T> void diis<T>::compute_lambda(double eig, std::complex<float> *iHu, std::complex<float> *r0, std::complex<float> *Hr0)
 {
+    std::vector<std::complex<double>> t_iHu(N), t_Hr0(N), t_r0(N);
+    for(int i=0;i < N;i++) t_iHu[i] = iHu[i];
+    for(int i=0;i < N;i++) t_Hr0[i] = Hr0[i];
+    for(int i=0;i < N;i++) t_r0[i] = r0[i];
+    compute_lambda(eig, t_iHu.data(), t_r0.data(), t_Hr0.data());
 }
 
 // Compute the DIIS estimated state. Requires at least 2 history entries
@@ -202,23 +220,21 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     T vel = get_vel();
     for (int i = 0; i < m; i++) {
         for (int j = 0; j <= i; j++) {
-            //T val = dot(res[i], res[j]);
            T val = 0.0;
            if constexpr (std::is_same_v<T, double>)
                for (int k = 0; k < N; ++k) val = val + res[i][k] * res[j][k];
            else
                for (int k = 0; k < N; ++k) val = val + std::conj(res[i][k]) * res[j][k];
-
-            //GlobalSums(&val, factor, pct.coalesced_grid_comm);
             A[i * M + j] = val;
             A[j * M + i] = val;
         }
     }
 
     GlobalSums((double *)A.data(), factor*M*M, pct.coalesced_grid_comm);
+
+    // Rescale residual entries for numerical stability
     double maxdiag = 0.0;
     for (int i = 0; i < m; ++i) maxdiag = std::max(maxdiag, std::abs(A[i*M+i]));
- 
     double scale = 1.0/maxdiag;
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < m; ++j) {
@@ -226,10 +242,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
         }
     }
 
-    // Find maxdiag as a proxy for a singular matrix
-    // and add eps to diagonal entries except the last
     for (int i = 0; i < m; ++i) {
-// May be better to just bail if diagonal entries are smaller than eps
         A[i*M + i] += eps;
         A[i * M + m] = 1.0;
         A[m * M + i] = 1.0;
@@ -276,23 +289,6 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
         const auto& t = funcs[i];
         for (int k = 0; k < N; k++) mixed[k] += c * t[k];
     }
-//if(cleared || maxci > 500.0)
-if(0)
-{
-if(pct.gridpe==0)printf("\nCCCC0\n");
-    auto rm = funcs[m-1];
-    auto r = res[m-1];
-    for(int i=0;i < N;i++) rm[i] -= r[i];
-    return rm;
-}
-else
-{
-//if(pct.gridpe==0)printf("\nCCCC1\n");
-}
-    // Make sure the new wavefunction is normalized
-    double n = std::sqrt(get_vel()*std::real(dot(mixed, mixed)));
-    double invm = 1.0/(n + 1.0e-30);
-//    for (auto& v : mixed) v *= invm;
     return mixed;
 }
 
