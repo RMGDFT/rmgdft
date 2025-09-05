@@ -307,9 +307,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 sp->dptr->addres(work2_t);  // Preconditioned residual
 
                 // If first vcycle use gradient step
-                if(vcycle == 0) sp->dptr->lambda = -fg_step;
+                if(vcycle == 0) sp->dptr->lambda = -0.5*fg_step;
                 // Compute optimized for second vcycle
-                if(vcycle > 1)
+                if(vcycle == 2)
                 {
                     // line minimization to compute RMM-DIIS lambda
                     ApplyHamiltonian<OrbitalType,CalcType> (
@@ -323,6 +323,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                           false);
 
                     sp->dptr->compute_lambda(sp->eig[0], ihu_t, work2_t, hr0_t);
+
                 }
 
                 std::vector<OrbitalType> next;

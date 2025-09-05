@@ -159,11 +159,11 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *r0, T *Hr
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
-        double ss[2] = {0.0, 0.0};
+        double ss[3] = {0.0, 0.0, 0.0};
         for(int i=0;i < N;i++)
         {
-            ss[0] += std::real((Hr0[i] - eig*r0[i])*(iHu[i] - eig*u0[i]));
-            ss[1] += std::real((Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]));
+            ss[0] += std::real(std::conj(Hr0[i] - eig*r0[i])*(iHu[i] - eig*u0[i]));
+            ss[1] += std::real(std::conj(Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]));
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
         lambda = ss[0]/ss[1];
