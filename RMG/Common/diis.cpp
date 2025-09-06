@@ -23,6 +23,7 @@
 #include <vector>
 #include <stdexcept>
 #include <limits>
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <typeinfo>
@@ -138,19 +139,19 @@ template <class T> void diis<T>::addres(std::complex<float> *r)
 
 // Performs a line minimization to compute the value of lambda that
 // minimizes R1.
-template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *r0, T *Hr0)
+template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *Hr0)
 {
-    auto u0 = funcs[0];
-    std::vector<T> u1(N), h1(N);
-
+    size_t it = funcs.size() - 1;
+    auto u0 = funcs[it];
+    auto pr0 = res[it];
     if constexpr (std::is_same_v<T, double>)
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
         double ss[2] = {0.0, 0.0};
         for(int i=0;i < N;i++)
         {
-            ss[0] += (Hr0[i] - eig*r0[i])*(iHu[i] - eig*u0[i]);
-            ss[1] += (Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]);
+            ss[0] += ir0[i]*(Hr0[i] - eig*pr0[i]);
+            ss[1] += (Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]);
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
         lambda = ss[0]/ss[1];
@@ -159,16 +160,15 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *r0, T *Hr
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
-        double ss[3] = {0.0, 0.0, 0.0};
+        double ss[2] = {0.0, 0.0};
         for(int i=0;i < N;i++)
         {
-            ss[0] += std::real(std::conj(Hr0[i] - eig*r0[i])*(iHu[i] - eig*u0[i]));
-            ss[1] += std::real(std::conj(Hr0[i] - eig*r0[i])*(Hr0[i] - eig*r0[i]));
+            ss[0] += std::real(std::conj(ir0[i])*(Hr0[i] - eig*pr0[i]));
+            ss[1] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]));
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
         lambda = ss[0]/ss[1];
-     }
-
+    }
 }
 
 template <class T> void diis<T>::compute_lambda(double eig, float *iHu, float *r0, float *Hr0)
@@ -242,50 +242,11 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
     }
     A[m * M + m] = 0.0;
 
-    // Solve A*x = b with lapack
+    // Solve A*x = b with gaussian elimination.
+    // We avoid lapack here to avoid thread safety issues
+    // with some implementations
     std::vector<T> x = b;
-    std::vector<int> ipvt(N);
-    int ione = 1, rank, info;
-    double rcond = -1.0;
-    omp_set_num_threads(1);
-    if constexpr (std::is_same_v<T, double>)
-    {
-#if 0
-        dgesv(&M, &ione, (double *)A.data(), &M, ipvt.data(), (double *)b.data(), &M, &info);
-#else
-        // dgelss better for nearly singular matrices?
-        int lwork=100;
-        double work[100];
-        std::vector<double> S(M);    // singular values
-        dgelss(&M, &M, &ione, A.data(), &M,
-                         b.data(), &M,
-                         S.data(), &rcond,
-                         &rank,
-                         work, &lwork,
-                         &info);
-#endif
-    }
-    else
-    {
-#if 0
-        zgesv(&M, &ione, (double *)A.data(), &M, ipvt.data(),
-             (double *)b.data(), &M, &info);
-#else
-        int lwork=100;
-        std::complex<double> work[100];
-        double rwork[100];
-        std::vector<double> S(M);    // singular values
-        zgelss(&M, &M, &ione,
-               A.data(), &M,
-               b.data(), &M,
-               S.data(), &rcond,
-               &rank,
-               work, &lwork,
-               rwork,
-               &info);
-#endif
-    }
-    omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
+    gauss_solve(A, b, M);
 
     // Form the new estimate using the coefficients c_i
     std::vector<T> mixed = funcs.back();
@@ -331,3 +292,4 @@ template void diis<double>::compute_lambda(double eig, double *iHu, double *r0, 
 template void diis<std::complex<double>>::compute_lambda(double eig, std::complex<double> *iHu, std::complex<double> *r0, std::complex<double> *Hr0);
 template void diis<double>::compute_lambda(double eig, float *iHu, float *r0, float *Hr0);
 template void diis<std::complex<double>>::compute_lambda(double eig, std::complex<float> *iHu, std::complex<float> *r0, std::complex<float> *Hr0);
+

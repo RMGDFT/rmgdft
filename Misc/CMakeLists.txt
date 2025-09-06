@@ -121,6 +121,7 @@ invmat.f90
 GetFdFactor.cpp 
 GpuEleMul_sycl.cpp
 rmg_write.cpp
+gauss_solve.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/XC/")

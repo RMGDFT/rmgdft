@@ -87,7 +87,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
     int tid = Thread->get_thread_tid();
-    int diis_stop = active_threads*(kptr->nstates / active_threads);
 
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
@@ -214,7 +213,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
-    if(ct.use_rmm_diis && sp->istate < diis_stop)
+    if(ct.use_rmm_diis)
         sp->dptr->addfunc(saved_psi);
 
     // Check if residuals were decreasing and if not abort smoothing for
@@ -300,10 +299,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
              */
-            if(ct.use_rmm_diis && sp->istate < diis_stop)
+            if(ct.use_rmm_diis)
             {
                 CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
-                for(int i=0;i < pbasis_noncoll;i++) work2_t[i] = (saved_psi[i] - tmp_psi_t[i] + work2_t[i]);
+                for(int i=0;i < pbasis_noncoll;i++)
+                {
+                    work2_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
+                                              tmp_psi_t[is*pbasis+i] +
+                                              work2_t[is*pbasis+i]);
+                }
                 sp->dptr->addres(work2_t);  // Preconditioned residual
 
                 // If first vcycle use gradient step
@@ -315,14 +319,16 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     ApplyHamiltonian<OrbitalType,CalcType> (
                           kptr, sp,
                           sp->istate,
-                          work2_t,   //  |KR0>
-                          hr0_t,     // H|KRo>
+                          work2_t,   // Preconditioned residual |KR0>
+                          hr0_t,     // Hamiltonian applied to  |KRo>
                           vtot_psi,
                           vxc_psi,
                           nv_t,
                           false);
 
-                    sp->dptr->compute_lambda(sp->eig[0], ihu_t, work2_t, hr0_t);
+                    // Not clear if initial residual r0_t or final residual 
+                    // res_t works better here
+                    sp->dptr->compute_lambda(sp->eig[0], ihu_t, r0_t, hr0_t);
 
                 }
 

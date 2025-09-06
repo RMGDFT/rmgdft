@@ -57,4 +57,6 @@ template <typename OrbitalType, typename CalcType> void mgsmoother(
               double &eig, int order, bool is_jacobi,
               double lmax, double lmin, int vcycle);
 
+template <typename T> void gauss_solve(std::vector<T>& A, std::vector<T>& b, int N);
+
 #endif
