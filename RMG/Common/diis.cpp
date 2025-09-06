@@ -150,7 +150,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
         double ss[2] = {0.0, 0.0};
         for(int i=0;i < N;i++)
         {
-            ss[0] += ir0[i]*(Hr0[i] - eig*pr0[i]);
+            ss[0] += (Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]);
             ss[1] += (Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]);
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
@@ -163,7 +163,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
         double ss[2] = {0.0, 0.0};
         for(int i=0;i < N;i++)
         {
-            ss[0] += std::real(std::conj(ir0[i])*(Hr0[i] - eig*pr0[i]));
+            ss[0] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]));
             ss[1] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]));
         }
         GlobalSums(ss, 2, pct.coalesced_grid_comm);
