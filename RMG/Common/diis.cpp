@@ -194,10 +194,13 @@ template <class T> void diis<T>::compute_lambda(double eig, std::complex<float> 
 template <class T> std::vector<T> diis<T>::compute_estimate()
 {
     int m = res.size();
-    if (m < 2)
+    if(m == 0)
+        rmg_error_handler (__FILE__,__LINE__,"Coding error if this happens.");
+
+    if (m <= 2)
     {
         std::vector<T> rm;
-        rm = funcs[0];
+        rm = funcs[m-1];
         return rm;
     }
 
