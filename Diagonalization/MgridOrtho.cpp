@@ -118,7 +118,7 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     delete RT1;
 
     /* compute the cholesky factor of the overlap matrix */
-    int info, info_trtri;
+    int info=0, info_trtri=0;
     if (typeid(KpointType) == typeid(double))
     {
         double rone = 1.0/sqrt(vel);
