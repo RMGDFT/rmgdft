@@ -402,9 +402,11 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     pol_elec = pdl_elec_tot * rmod;
     pol_ion = pdl_ion_tot * rmod;  
     pol_tot = pdl_tot * rmod;
+    enthalpy_elec = -pol_tot * this->efield_mag; 
     rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
     rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
     rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
+    rmg_printf("\n  Electric Enthalpy             = %e Hatree", enthalpy_elec);
 
     delete [] ipiv;
 

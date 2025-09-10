@@ -85,12 +85,11 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
         Zi = Species[Atoms[ion].species].zvalence;
 
-        force_sum[ion *3 + 0] =  ct.efield_crds[0] * Zi;
-        force_sum[ion *3 + 1] =  ct.efield_crds[1] * Zi;
-        force_sum[ion *3 + 2] =  ct.efield_crds[2] * Zi;
+        force_sum[ion *3 + 0] =  ct.efield_crds[0] * Zi ;
+        force_sum[ion *3 + 1] =  ct.efield_crds[1] * Zi ;
+        force_sum[ion *3 + 2] =  ct.efield_crds[2] * Zi ;
 
     }
-
 
     /* Get the ion-ion component and store. No need to sum over spin or kpoint. */
     RmgTimer *RT1 = new RmgTimer("2-Force: ion-ion");
@@ -207,7 +206,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     }
 
-    if(ct.renormalize_forces)
+    if(ct.renormalize_forces )
     {
 
         // Now get sum of forces over all ions
@@ -220,7 +219,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
             sumz += fp[2];
         }
 
-        //if(pct.gridpe==0)printf("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
+        rmg_printf("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
         // Normalize by the number of ions
         sumx /= (double)num_ions;
         sumy /= (double)num_ions;
@@ -261,11 +260,11 @@ void output_force(double *force_tmp, char *desc)
     global_sums (force_tmp, &size1, pct.grid_comm);
     if (pct.imgpe == 0)
     {
-        printf ("\n\n %s", desc);
+        rmg_printf ("\n\n %s", desc);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            printf ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
+            rmg_printf ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
                     ion, force_tmp[3 * ion],force_tmp[3 * ion + 1],force_tmp[3 * ion + 2]);
         }
     }

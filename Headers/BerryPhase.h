@@ -38,7 +38,7 @@ public:
     double vel;
     std::complex<double> vel_C;
     double eai; //efield dot lattice vector in berryphase_dri
-    double pol_elec, pol_ion, pol_tot;
+    double pol_elec, pol_ion, pol_tot, enthalpy_elec;
     int nband_occ;
     int pbasis, pbasis_noncoll;
     size_t wfc_size;

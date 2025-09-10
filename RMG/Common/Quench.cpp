@@ -428,6 +428,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        if(ct.BerryPhase) 
+        {
+            total_e += Rmg_BP->enthalpy_elec;
+            rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+        }
 
         rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
         rmg_printf ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
