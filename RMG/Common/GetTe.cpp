@@ -308,6 +308,12 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         rmg_printf ("@@ HUBBARD ENERGY     = %15.6f %s\n", efactor*ldaU_H, eunits);
+    if(ct.BerryPhase)
+    {
+        ct.TOTAL += Rmg_BP->enthalpy_elec;
+        rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+    }
+
 
     rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
