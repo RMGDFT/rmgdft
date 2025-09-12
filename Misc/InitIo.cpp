@@ -425,6 +425,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf (" %d MPI processes/image. ", status);
 
 
+
+
 #if CUDA_ENABLED || HIP_ENABLED
     size_t deviceMem;
     int clock;

@@ -833,6 +833,12 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         init_bfgs( &fnum, &ct.bfgs_ndim, &ct.trust_radius_max, &ct.trust_radius_min,
                 &ct.trust_radius_ini, &ct.w_1, &ct.w_2, &pct.spinpe, &pct.imgpe, &kpsub_rank, &ct.runflag );
     }
+    if(ct.dipole_corr[0]+ct.dipole_corr[1]+ct.dipole_corr[2] >0)
+    {
+        double dipole[3]{0.0,0.0,0.0};
+        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+        DipoleCorrection(dipole,  NULL);
+    }
 
 
 }                               /* end init */

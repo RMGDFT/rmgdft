@@ -967,6 +967,7 @@ public:
    int non_local_block_size;
    int poisson_solver;
    int dipole_corr[3];
+   double dipole_center[3];
 
    // Flag to use fine grid for vdf-df
    bool use_vdwdf_finegrid;

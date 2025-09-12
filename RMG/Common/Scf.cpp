@@ -75,10 +75,12 @@ template <typename OrbitalType> bool Scf (
     int FP0_BASIS = vtot.size();
     int P0_BASIS = vtot_psi.size();
 
-    if(ct.dipole_corr[0]+ct.dipole_corr[0]+ct.dipole_corr[0] >0)
+    if(ct.dipole_corr[0]+ct.dipole_corr[1]+ct.dipole_corr[2] >0)
     {
         double dipole[3];
-        get_dipole(rho.data(), dipole);
+        get_dipole(rho.data(), rhoc.data(),dipole);
+        //get_dipole(rho.data(),dipole);
+        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  vh_dipole_corr.data());
     }
     else
