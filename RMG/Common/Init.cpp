@@ -349,6 +349,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
             Kptr[kpt]->Kstates[st1].vnuc_correction = 0.0;
             Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
+            Kptr[kpt]->Kstates[st1].p = new wfobj(rptr_k);
             rptr_k +=P0_BASIS * ct.noncoll_factor;
         }
 

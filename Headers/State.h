@@ -31,6 +31,7 @@
 #define RMG_State_H 1
 
 #include <mpi.h>
+#include "GridObject.h"
 #include "diis.h"
 
 template <typename T> class Kpoint;
@@ -57,6 +58,9 @@ public:
     // Storage area for the orbital
     StateType *psi;
  
+    // Wfobj wrapping the storage
+    wfobj<StateType> *p;
+
     /** Nuclear potential */
     double *vnuc;
     double *vnuc_f;   // Ephemeral object that only exists in GetNewRho
