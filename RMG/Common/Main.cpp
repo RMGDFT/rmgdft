@@ -473,7 +473,7 @@ template <typename OrbitalType> void run (
 
             }
             ct.cube_rho = false;
-            RmgTddft (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr);
+            RmgTddft (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             break;
 
         case Exx_only:
