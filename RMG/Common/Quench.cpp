@@ -528,7 +528,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     if (ct.dipole_moment)
     {
         double dipole[3];
-        get_dipole(rho.data(), dipole);
+        get_dipole(rho.data(), rhoc.data(), dipole);
 
         double DEBYE_CONVERSION = 2.54174618772314;
 
