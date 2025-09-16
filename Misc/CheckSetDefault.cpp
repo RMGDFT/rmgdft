@@ -48,7 +48,7 @@ void CheckSetDefault(void)
     ct.tddft_gpu = false;
 #endif
 
-    if(ct.tddft_noscf)
+    if(ct.tddft_noscf || ct.restart_tddft)
     {
         ct.runflag = RESTART;
     }

@@ -91,10 +91,6 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     std::complex<double> *block_matrix_y = block_matrix_x + num_states * nb;
     std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
 
-    if(nb != ct.scalapack_block_factor)
-    {
-        rmg_error_handler (__FILE__, __LINE__, "state_block_size must be same as scalack_block_factor\n");
-    }
     if(retval1 != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
     }

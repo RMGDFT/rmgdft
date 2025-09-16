@@ -764,6 +764,8 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
             MPI_Allreduce(MPI_IN_PLACE, rho_ksum.data(), FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
             for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+            rho.get_oppo();
+
 
             //write_rho_x(rho, "update rho");
             //write_rho_x(rho_ground.data(), "groumd rho");
@@ -905,7 +907,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             if(ct.tddft_mode == VECTOR_POT )
             {
                 fprintf(current_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                        tot_steps*time_step, current[0]-current0[0], current[1]-current0[1], current[2]-current0[2]);
+                        tot_steps*time_step, current[0], current[1], current[2]);
                 if(ct.BerryPhase) fprintf(dbp_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                         tot_steps*time_step, tot_bp_pol, 0.0,0.0);
             }
