@@ -96,7 +96,6 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     char *side = "R";
 
     RmgTimer *RT1 = new RmgTimer("MgridOrtho: overlaps");
-    KpointType *tarr = new KpointType[notcon];
 
     if (typeid(KpointType) == typeid(double))
     {

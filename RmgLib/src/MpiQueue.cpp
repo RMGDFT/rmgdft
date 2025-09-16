@@ -178,7 +178,7 @@ MpiQueue::MpiQueue(int max_size, int max_threads, void *mask, void *newtopology,
     }
     this->exitflag.store(false, std::memory_order_release);
     this->running.store(true, std::memory_order_release);
-    this->QueueManager = boost::thread(&manager_thread, this);
+    this->QueueManager = std::thread(&manager_thread, this);
     this->QueueManager.detach();
     this->running.store(false, std::memory_order_release);
 }
