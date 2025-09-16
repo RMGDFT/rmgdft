@@ -128,6 +128,14 @@ void get_topology(void)
 
 namespace Ri = RmgInput;
 
+void rmg_mpi_errors(MPI_Comm *comm, int *err, ...)
+{
+    char errmsg[MPI_MAX_ERROR_STRING];
+    int len;
+    MPI_Error_string(*err, errmsg, &len);
+    printf("RMG MPI error: %s\n", errmsg);fflush(NULL);sleep(5);
+    rmg_error_handler(__FILE__,__LINE__,"MPI error. Terminating.\n");
+}
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -139,6 +147,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     /* get this cores mpi rank */
     MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
     pct.worldrank = worldpe;
+
+    // Will need to build a custom handler for this at some point.
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+
+    MPI_Errhandler handler;
+    MPI_Comm_create_errhandler(rmg_mpi_errors, &handler);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
 
     // Set error handler to only print to rank 0
     RmgErrorSetPrint(pct.worldrank == 0);
