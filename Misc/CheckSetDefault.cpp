@@ -48,6 +48,11 @@ void CheckSetDefault(void)
     ct.tddft_gpu = false;
 #endif
 
+    if(ct.BerryPhase && (ct.kohn_sham_solver == DAVIDSON_SOLVER) )
+    {
+        ct.kohn_sham_solver = MULTIGRID_SOLVER;
+        if(pct.worldrank == 0) printf("\n Davidson solver does not work for Berry Phase\n and use multigrid solver instead");
+    }
     if(ct.tddft_noscf || ct.restart_tddft)
     {
         ct.runflag = RESTART;

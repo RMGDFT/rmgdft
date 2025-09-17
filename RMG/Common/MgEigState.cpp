@@ -102,9 +102,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
 
 
-        freeze_occupied = true;
-
-    bool using_davidson = Verify ("kohn_sham_solver","davidson", kptr->ControlMap);
+    freeze_occupied = true;
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;

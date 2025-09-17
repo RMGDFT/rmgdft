@@ -452,14 +452,12 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
                 // We use a single non update davidson cycle to get a variational value for the total
                 // energy when the multigrid solver is used so we don't want to write any davidson info
                 // in this case
-                if (!Verify ("kohn_sham_solver","multigrid", this->ControlMap))
-                    rmg_printf("Davidson converged in %d steps\n", steps+1);
+                rmg_printf("Davidson converged in %d steps\n", steps+1);
                 break;  // done
             }
 
             if(steps == (ct.david_max_steps-1)) {
-                if (!Verify ("kohn_sham_solver","multigrid", this->ControlMap))
-                    rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
+                rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
                 break;
             }
 

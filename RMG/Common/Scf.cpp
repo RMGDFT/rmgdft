@@ -185,14 +185,14 @@ template <typename OrbitalType> bool Scf (
         // Loop over k-points
         for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
-            if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || 
+            if (ct.kohn_sham_solver == MULTIGRID_SOLVER || 
                     ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
                 Kptr[kpt]->MgridSubspace(0, Kptr[kpt]->nstates, vtot_psi.data(), vxc_psi);
                 delete RT1;
             }
-            else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+            else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
                 int notconv;
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
                 Kptr[kpt]->Davidson(vtot_psi.data(), vxc_psi, notconv);
@@ -372,9 +372,9 @@ template <typename OrbitalType> bool Scf (
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code
         // will give us a variational energy.
-        if ((Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && (!ct.noncoll 
-                && ct.potential_acceleration_constant_step > 1.0e-5)) ||
-            (Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)))
+        if ( (ct.kohn_sham_solver == MULTIGRID_SOLVER
+                    && (!ct.noncoll && ct.potential_acceleration_constant_step > 1.0e-5)) ||
+                (ct.kohn_sham_solver == DAVIDSON_SOLVER) )
 
         {
             ct.scf_correction = 0.0;

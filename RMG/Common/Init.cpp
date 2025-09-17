@@ -219,7 +219,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
     /* Set state pointers and initialize state data */
     if(ct.xc_is_hybrid || ct.write_qmcpack_restart) ct.non_local_block_size = ct.max_states;
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
+    if(ct.kohn_sham_solver == DAVIDSON_SOLVER)
     {
         ct.non_local_block_size = ct.max_states;
     }
@@ -227,7 +227,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // Blocks of pinned host memory
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap))
+    if(ct.kohn_sham_solver == DAVIDSON_SOLVER)
     {
         size_t palloc = (size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType);
         palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));

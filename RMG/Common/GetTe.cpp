@@ -85,7 +85,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     int state, kpt, idx, P0_BASIS;
     double vel, cvel, ES_pa = 0.0;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
+    if(ct.kohn_sham_solver == DAVIDSON_SOLVER) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
  
     int fpbasis = rho.pbasis;

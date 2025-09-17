@@ -131,7 +131,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
-            if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) ) {
+            if (ct.kohn_sham_solver == MULTIGRID_SOLVER ) {
 
                 RmgTimer *RT = new RmgTimer("MgridSub in band");
 
@@ -141,7 +141,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 delete RT;
 
             } // end loop scf
-            else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+            else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
                 int notconv;
                 Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
             }
