@@ -89,6 +89,10 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     {
         RmgTimer RT1("Mg_eig: apply hamiltonian");
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
+        if(ct.BerryPhase)
+        {
+            Rmg_BP->Apply_BP_Hpsi(kptr, 1,  (OrbitalType *)u, (OrbitalType *)Hu);
+        }
     }
     for (int i=0;i<pbasis;i++) iHu[i] = Hu[i];
 
@@ -164,6 +168,10 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             for(int i=0;i < pbasis;i++) u[i] *= norm;
 
         ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
+        if(ct.BerryPhase)
+        {
+            Rmg_BP->Apply_BP_Hpsi(kptr, 1,  (OrbitalType *)u, (OrbitalType *)Hu);
+        }
         eig1 = ComputeEig(pbasis, u, Hu, ns);
         mixeig(eig, eig1);
         f1 = 2.0*eig;

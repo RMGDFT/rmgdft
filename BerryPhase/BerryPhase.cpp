@@ -489,13 +489,13 @@ void BerryPhase::Apply_BP_Hpsi(Kpoint<std::complex<double>> *kptr, int num_state
     // BP_Hpsi =     |Gnk > <psi_bp | psi current> 
     std::complex<double> one(1.0), zero(0.0); 
     RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
-    BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, mat, (size_t)nband_occ * num_states, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
     RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_Gnk, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);
     // BP_Hpsi +=     |psi_bp > <Gnk | psi current> 
     RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
-    BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, mat, (size_t)nband_occ * num_states, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
     RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_psi, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);
