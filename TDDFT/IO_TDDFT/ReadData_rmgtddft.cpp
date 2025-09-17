@@ -46,17 +46,13 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst)
 {
     int fhand, fgrid_size;
-    char newname[MAX_PATH];
-
 
     int amode;
-    sprintf (newname, "%s%d", filename, pct.gridpe);
-
     amode = S_IREAD | S_IWRITE;
-    fhand = open(newname, O_RDWR, amode);
+    fhand = open(filename, O_RDWR, amode);
 
    if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", newname);
+        rmg_printf("Can't open restart file %s", filename);
         rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 

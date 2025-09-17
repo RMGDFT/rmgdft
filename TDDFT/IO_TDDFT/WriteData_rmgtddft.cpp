@@ -50,18 +50,17 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
 {
     int fhand;
     int fgrid_size;
-    char newname[MAX_PATH], tmpname[MAX_PATH];
+    char tmpname[MAX_PATH];
 
 
     int amode;
-    sprintf (newname, "%s%d", filename, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
-    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+    fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
    if (fhand < 0) {
 
-       strcpy (tmpname, newname);
+       strcpy (tmpname, filename);
 
 
 #if !(defined(_WIN32) || defined(_WIN64))
@@ -76,10 +75,10 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
         rmg_printf ("\n Creating directory %s FAILED\n\n", tmpname);
 
 
-    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+    fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", newname);
+        rmg_printf("Can't open restart file %s", filename);
         rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
