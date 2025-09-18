@@ -123,6 +123,7 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         if(typeid(RmgType) == typeid(int)) qi.datatype = MPI_INT;
         if(typeid(RmgType) == typeid(float)) qi.datatype = MPI_FLOAT;
         if(typeid(RmgType) == typeid(double)) qi.datatype = MPI_DOUBLE;
+        if(typeid(RmgType) == typeid(std::complex<double>)) qi.datatype = MPI_DOUBLE_COMPLEX;
 //        std::atomic_thread_fence(std::memory_order_seq_cst);
         //Rmg_Q->push(tid, qi);
         Rmg_Q->queue[tid]->push(qi);
@@ -157,7 +158,29 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
             T->thread_barrier_wait(false);
 
             if(tid == 0)
-                MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
+            {
+                if(typeid(RmgType) == typeid(int))
+                {
+                    MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_INT, MPI_SUM, comm);
+                }
+                else if(typeid(RmgType) == typeid(float))
+                {
+                    MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_FLOAT, MPI_SUM, comm);
+                }
+                else if(typeid(RmgType) == typeid(double))
+                {
+                    MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
+                }
+                else if(typeid(RmgType) == typeid(std::complex<double>))
+                {
+                    MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE_COMPLEX, MPI_SUM, comm);
+                }
+                else
+                {
+                    std::cout << "size of RmgType " << sizeof(RmgType) << std::endl;
+                    rmg_error_handler(__FILE__, __LINE__, "RmgType not defined.\n");
+                }
+            }
 
             T->thread_barrier_wait(false);
             for(int idx = 0;idx < length;idx++) vect[idx] = v2[length * tid + idx];

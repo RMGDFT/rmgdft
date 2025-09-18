@@ -121,11 +121,5 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         first_nls++;
     }
    
-    if(ct.BerryPhase)
-    {
-        //if(first_state < Rmg_BP->nband_occ)
-            Rmg_BP->Apply_BP_Hpsi(kptr, num_states,  kptr->Kstates[first_state].psi, h_psi);
-
-    } 
     return -0.5 * fd_diag;
 }
