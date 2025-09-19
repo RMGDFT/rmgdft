@@ -604,6 +604,7 @@ void finish ()
         if(ct.forceflag == BAND_STRUCTURE) break;
     }
 
+    if(ct.mpi_queue_mode) Rmg_Q->set_exitflag();
     MPI_Barrier(MPI_COMM_WORLD);
     /*Exit MPI */
     MPI_Finalize ();

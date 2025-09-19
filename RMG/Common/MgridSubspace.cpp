@@ -148,6 +148,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                    &this->ns[bofs * pbasis_noncoll],
                    bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
+
             for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
             {
                 SCF_THREAD_CONTROL thread_control;
@@ -159,8 +160,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                     int sindex = bofs + st1 + ist + istart;
                     if(sindex >= mstates)
                     {
-                        thread_control.job = HYBRID_SKIP;
-                        if(!ct.mpi_queue_mode && nthreads == active_threads) nthreads = ist;
+                        break;
                     }
                     else
                     {
@@ -188,16 +188,15 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
 
                 // Thread tasks are set up so run them
                 if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
+                if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
                 delete RT1;
             }
-            if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         } // end for ib
 
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
-
         if(vcycle > 0)
         {
             double deig_min = DBL_MAX, deig_max = 0.0, deig_avg = 0.0;

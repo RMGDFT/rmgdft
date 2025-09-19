@@ -132,6 +132,7 @@ void rmg_mpi_errors(MPI_Comm *comm, int *err, ...)
 {
     char errmsg[MPI_MAX_ERROR_STRING];
     int len;
+    Rmg_Q->set_exitflag();
     MPI_Error_string(*err, errmsg, &len);
     printf("RMG MPI error: %s\n", errmsg);fflush(NULL);sleep(5);
     rmg_error_handler(__FILE__,__LINE__,"MPI error. Terminating.\n");
