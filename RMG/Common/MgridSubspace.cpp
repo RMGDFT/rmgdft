@@ -111,9 +111,14 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
     for(int is=first;is < N+first;is++) Kstates[is].skip = false;
+
+    // The dptrs are deleted in MgEigState after the last mucycle
+    // which helps save some memory
     if(ct.use_rmm_diis)
+    {
         for(int is=first;is < N+first;is++) 
             Kstates[is].dptr = new diis<KpointType>(4, pbasis_noncoll);
+    }
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -270,9 +275,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
             LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
         }
     }
-
-    if(ct.use_rmm_diis)
-        for(int is=first;is < N+first;is++) delete Kstates[is].dptr;
 
     RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
     this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
