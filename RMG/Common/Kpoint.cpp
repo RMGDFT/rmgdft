@@ -260,6 +260,10 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
     int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
     if(states_rem) ct.num_states = states_div + (active_threads*pct.coalesce_factor);
+    int block_div = (ct.non_local_block_size / (active_threads * pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+;
+    int block_rem = ct.non_local_block_size % (active_threads*pct.coalesce_factor);
+    if(block_rem) ct.non_local_block_size =  block_div + (active_threads*pct.coalesce_factor);
 
     // When LCAO init is selected we may use more orbitals during the initialization
     // than during the rest of the run so we need to count the number of atomic orbitals
