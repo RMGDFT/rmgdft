@@ -412,12 +412,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     /* allocate memory for eigenvalue send array and receive array */
 
     wfobj<double> vtot_psi;
-    fgobj<double> rho_ground, vtot;
+    fgobj<double> vtot;
+    spinobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
     int pbasis = Kptr[0]->pbasis;
     size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis * sizeof(OrbitalType);
     ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
+    rho_ground.get_oppo();
 
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -628,6 +630,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     Sp->ScalapackBlockAllreduce(current0, 3);
+    MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     Rmg_Symm->symm_vec(current0);
 
     if(pct.imgpe == 0)
@@ -888,6 +891,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
+        MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
         Rmg_Symm->symm_vec(current);
 
         if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)
