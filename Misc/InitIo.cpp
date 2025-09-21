@@ -414,13 +414,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 
     /* if logname exists, increment until unique filename found */
+    int name_incr;
+    name_incr = FilenameIncrement(ct.shortname);
+    snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
+    snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
+
     if (pct.imgpe == 0)
     {
-        int name_incr;
-        name_incr = FilenameIncrement(ct.shortname);
-        snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
-        snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
-
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
         if (!ct.logfile)
@@ -538,7 +538,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
             hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
             hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
-//            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
+            //            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;

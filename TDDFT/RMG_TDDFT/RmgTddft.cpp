@@ -378,26 +378,27 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         exit(0);
     }
 
-    if(pct.imgpe == 0)
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
 
         
         if(ct.tddft_mode == VECTOR_POT)
         {
-            filename = std::string(ct.basename) + "_current.dat";
+            filename = std::string(ct.basename)+"_spin" +std::to_string(pct.spinpe)+ "_current.dat";
+            
             current_fi = fopen(filename.c_str(), "w");
             fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
 
             if(ct.BerryPhase)
             {
-                filename = std::string(ct.basename) + "_bp_dipole.dat";
+                filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_bp_dipole.dat";
                 dbp_fi = fopen(filename.c_str(), "w");
                 fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
             }
         }
         else
         {
-            filename = std::string(ct.basename) + "_dipole.dat";
+            filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_dipole.dat";
 
             dfi = fopen(filename.c_str(), "w");
 
@@ -630,10 +631,9 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     Sp->ScalapackBlockAllreduce(current0, 3);
-    MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     Rmg_Symm->symm_vec(current0);
 
-    if(pct.imgpe == 0)
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
         if(ct.tddft_mode == VECTOR_POT)
         {
@@ -891,7 +891,6 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         Sp->ScalapackBlockAllreduce(current, 3);
-        MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
         Rmg_Symm->symm_vec(current);
 
         if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)
@@ -906,7 +905,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             //Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
         }
 
-        if(pct.imgpe == 0)
+        if(pct.kstart == 0 && pct.gridpe == 0)
         {
             if(ct.tddft_mode == VECTOR_POT )
             {
@@ -954,7 +953,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                         (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, Eterms, Hcore_tddft, numst);
             }
 
-            if(pct.imgpe == 0)
+            if(pct.kstart == 0 && pct.gridpe == 0)
             {
                 if(ct.tddft_mode == VECTOR_POT )
                     fflush(current_fi);
@@ -976,7 +975,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     gpuFree(Kptr[0]->work_dev);
     gpuFree(Kptr[0]->psi_dev);
 #endif
-    if(pct.imgpe == 0) 
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
         if(ct.tddft_mode == VECTOR_POT )
             fclose(current_fi);
