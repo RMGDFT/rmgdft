@@ -85,11 +85,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     wfobj<CalcType> p;
     int pbasis = p.pbasis * ct.noncoll_factor;
 
-    /* Apply Hamiltonian */
-    {
-        RmgTimer RT1("Mg_eig: apply hamiltonian");
-        ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
-    }
+    ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
     for (int i=0;i<pbasis;i++) iHu[i] = Hu[i];
 
     double eig1 = ComputeEig(pbasis, u, Hu, ns);
