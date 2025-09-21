@@ -364,8 +364,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     p->free(res2_t, pool_blocks);
 
-    if(ct.use_rmm_diis && (vcycle == (ct.eig_parm.mucycles-1))) delete sp->dptr;
-
 } // end MgEigState
 
 
