@@ -33,7 +33,6 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
-#include "RmgTimer.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
@@ -82,7 +81,6 @@ template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std
 template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
-    RmgTimer RT("Mg_eig");
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
@@ -239,8 +237,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
             /* Do multigrid step with solution returned in sg_twovpsi */
             {
-
-                RmgTimer RT1("Mg_eig: mgrid_solv");
 
                 // We use a residual correction multigrid scheme where the right hand side is the residual
                 // so single precision is adequate for the correction since the errors from lower precision
