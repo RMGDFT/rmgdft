@@ -52,16 +52,50 @@
 
 template void Kpoint<double>::MgridSubspace(double *, double *vxc_psi);
 template void Kpoint<std::complex<double>>::MgridSubspace(double *, double *vxc_psi);
-template void Kpoint<double>::MgridSubspace(int, int, double *, double *vxc_psi);
-template void Kpoint<std::complex<double>>::MgridSubspace(int, int, double *, double *vxc_psi);
+template void Kpoint<double>::MgridSubspace(int, int, int, double *, double *vxc_psi);
+template void Kpoint<std::complex<double>>::MgridSubspace(int ,int, int, double *, double *vxc_psi);
+template void Kpoint<double>::MgridSubspaceBlocked(double *, double *vxc_psi);
+template void Kpoint<std::complex<double>>::MgridSubspaceBlocked(double *, double *vxc_psi);
+
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot_psi, double *vxc_psi)
 {
-    MgridSubspace (0, this->nstates, vtot_psi, vxc_psi);
+    MgridSubspace (0, this->nstates, ct.non_local_block_size, vtot_psi, vxc_psi);
 }
 
+template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
+{
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
+    int bs = ct.non_local_block_size;
+
+    for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
+
+    int nb = this->nstates / bs;
+    int irem = this->nstates % bs;
+    for(int ib=0;ib < nb;ib++)
+    {
+        MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
+    }
+    if(irem)
+    {
+        MgridSubspace (nb*bs, irem, bs, vtot_psi, vxc_psi);
+    }
+
+
+    RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
+    this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
+    delete(RT1);
+
+    // wavefunctions have changed, projectors have to be recalculated */
+    RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
+    delete(RT1);
+
+}
+
+
 template <class KpointType>
-void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, double *vxc_psi)
+void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_psi, double *vxc_psi)
 {
     RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -99,7 +133,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
     mstates = mstates * (active_threads * pct.coalesce_factor);
 
     // We adjust the block size here for threading and coalescing
-    int block_size = ct.non_local_block_size;
+    int block_size = bs;
     block_size = block_size / (active_threads * pct.coalesce_factor);
     block_size = block_size * (active_threads * pct.coalesce_factor);
     int nblocks = mstates / block_size;
@@ -110,7 +144,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
 
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
-    for(int is=first;is < N+first;is++) Kstates[is].skip = false;
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) 
             Kstates[is].dptr = new diis<KpointType>(4, pbasis_noncoll);
@@ -145,10 +178,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
             int bofs = ib * block_size;
             RT1 = new RmgTimer("3-MgridSubspace: AppNls");
             AppNls(this, newsint, this->Kstates[first + bofs].psi, this->nv, 
-                   &this->ns[bofs * pbasis_noncoll],
+                   &this->ns[(first+bofs) * pbasis_noncoll],
                    bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
-
             for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
             {
                 SCF_THREAD_CONTROL thread_control;
@@ -169,7 +201,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                         thread_control.vxc_psi = vxc_psi;
                         thread_control.coarse_vtot = NULL;
                         thread_control.vcycle = vcycle;
-                        thread_control.sp = &this->Kstates[sindex];
+                        thread_control.sp = &this->Kstates[first + sindex];
                         thread_control.p3 = (void *)this;
 // this is a hack since we are backing the nv array up before it's start in order to make
 // the code in MgEigState work properly. Fix at some point.
@@ -177,8 +209,8 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                             thread_control.nv = this->nv - bofs * pbasis_noncoll;
                         else
                             thread_control.nv = (void *)&this->nv[(st1 + ist + istart) * pbasis_noncoll];
-                        thread_control.ns = (void *)&this->ns[sindex * pbasis_noncoll];  // ns is not blocked!
-                        thread_control.basetag = this->Kstates[sindex].istate;
+                        thread_control.ns = (void *)&this->ns[(first+sindex) * pbasis_noncoll];  // ns is not blocked!
+                        thread_control.basetag = this->Kstates[first + sindex].istate;
                         thread_control.extratag1 = active_threads;
                         thread_control.extratag2 = bofs + st1;
                         thread_control.extratag3 = st1 + ist + istart;
@@ -191,57 +223,33 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
                 if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
                 delete RT1;
             }
+            if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         } // end for ib
 
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
-        if(vcycle > 0)
-        {
-            double deig_min = DBL_MAX, deig_max = 0.0, deig_avg = 0.0;
-            int count = 0;
-            for(int is=first;is < N+first;is++)
-            {
-                if(Kstates[is].occupation[0] > 0.0001)
-                {
-                    double diff = std::abs(Kstates[is].eig[1] - Kstates[is].eig[0]);
-                    if(diff < ct.scf_accuracy/10000) Kstates[is].skip = true;
-                    deig_avg += diff;
-                    deig_min = std::min(deig_min, diff);
-                    deig_max = std::max(deig_max, diff);
-                    count++;
-                }
-            }
-            deig_avg /= (double)count;
-            deig[vcycle] = deig_avg;
-            if(ct.verbose && pct.gridpe==0) 
-                printf("Delta eig avg = %14.8e, min = %14.8e, max = %14.8e\n",deig_avg, deig_min, deig_max);
-        }
+
         for(int is=first;is < N+first;is++)
         {
             Kstates[is].eig[1] = Kstates[is].eig[0];
-
         }
 
         // Seems to be necessary for Broyden mixing in some cases.
         if(vcycle != (ct.eig_parm.mucycles-1))
         {
             RmgTimer RTO("3-MgridSubspace: ortho");
-            MgridOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
-        }
-    }
-
-
-    // Scan state residuals and see which ones (if any) multigrid iterations did not work on
-    int notconv = 0;
-    for(int is=first;is < N+first;is++)
-    {
-        if(this->Kstates[is].res[0] < this->Kstates[is].res[1])
-        {
-            notconv++;
-            if(ct.verbose && pct.gridpe==0)
-                printf("\nMultigrid smoothing failed for state %d\n",is);
+            if(first)
+            {
+                std::vector<KpointType> emat(this->nstates*this->nstates);
+                ct.davidson_2stage_ortho=true;
+                DavidsonOrtho(first, this->nstates-first, pbasis_noncoll, this->orbital_storage, emat.data());
+            }
+            else
+            {
+                MgridOrtho(0, N, pbasis_noncoll, this->orbital_storage);
+            }
         }
     }
 
@@ -273,15 +281,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, double *vtot_psi, doub
 
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) delete Kstates[is].dptr;
-
-    RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
-    this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
-    delete(RT1);
-
-    // wavefunctions have changed, projectors have to be recalculated */
-    RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, weight);
-    delete(RT1);
 
 }
 

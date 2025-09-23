@@ -189,7 +189,7 @@ template <typename OrbitalType> bool Scf (
                     ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-                Kptr[kpt]->MgridSubspace(0, Kptr[kpt]->nstates, vtot_psi.data(), vxc_psi);
+                Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                 delete RT1;
             }
             else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
