@@ -94,7 +94,7 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     if(!ct.davidson_2stage_ortho) return;
 
     //return;
-    if(0)   // if 0 switches to old method
+    if(1)   // if 0 switches to old method
     {
         int st, st1, length, idx, omp_tid;
         KpointType *sarr;
@@ -125,19 +125,18 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
 
         /* compute the cholesky factor of the overlap matrix */
         int info, info_trtri;
+        rmg_potrf(uplo, notcon, mat, notcon, &info);
+        rmg_trtri(uplo, diag, notcon, mat, notcon, &info_trtri);
+
         if (typeid(KpointType) == typeid(double))
         {
             double rone = 1.0/sqrt(vel);
-            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
             dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
 
         }
         else
         {
             std::complex<double> cone = 1.0/sqrt(vel);
-            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
-            ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
             ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
         }
         if (info != 0)
