@@ -378,26 +378,27 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         exit(0);
     }
 
-    if(pct.imgpe == 0)
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
 
         
         if(ct.tddft_mode == VECTOR_POT)
         {
-            filename = std::string(ct.basename) + "_current.dat";
+            filename = std::string(ct.basename)+"_spin" +std::to_string(pct.spinpe)+ "_current.dat";
+            
             current_fi = fopen(filename.c_str(), "w");
             fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
 
             if(ct.BerryPhase)
             {
-                filename = std::string(ct.basename) + "_bp_dipole.dat";
+                filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_bp_dipole.dat";
                 dbp_fi = fopen(filename.c_str(), "w");
                 fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
             }
         }
         else
         {
-            filename = std::string(ct.basename) + "_dipole.dat";
+            filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_dipole.dat";
 
             dfi = fopen(filename.c_str(), "w");
 
@@ -412,12 +413,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     /* allocate memory for eigenvalue send array and receive array */
 
     wfobj<double> vtot_psi;
-    fgobj<double> rho_ground, vtot;
+    fgobj<double> vtot;
+    spinobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
     int pbasis = Kptr[0]->pbasis;
     size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis * sizeof(OrbitalType);
     ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
+    rho_ground.get_oppo();
 
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -630,7 +633,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     Sp->ScalapackBlockAllreduce(current0, 3);
     Rmg_Symm->symm_vec(current0);
 
-    if(pct.imgpe == 0)
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
         if(ct.tddft_mode == VECTOR_POT)
         {
@@ -902,7 +905,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             //Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
         }
 
-        if(pct.imgpe == 0)
+        if(pct.kstart == 0 && pct.gridpe == 0)
         {
             if(ct.tddft_mode == VECTOR_POT )
             {
@@ -950,7 +953,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                         (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, Eterms, Hcore_tddft, numst);
             }
 
-            if(pct.imgpe == 0)
+            if(pct.kstart == 0 && pct.gridpe == 0)
             {
                 if(ct.tddft_mode == VECTOR_POT )
                     fflush(current_fi);
@@ -972,7 +975,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     gpuFree(Kptr[0]->work_dev);
     gpuFree(Kptr[0]->psi_dev);
 #endif
-    if(pct.imgpe == 0) 
+    if(pct.kstart == 0 && pct.gridpe == 0)
     {
         if(ct.tddft_mode == VECTOR_POT )
             fclose(current_fi);
