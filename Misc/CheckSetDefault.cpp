@@ -123,6 +123,12 @@ void CheckSetDefault(void)
         rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
     }
 
+    if(us_count && ct.use_rmm_diis)
+    {
+        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled.\n");
+        ct.use_rmm_diis = false;
+    }
+
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 
