@@ -142,8 +142,8 @@ template <class T> void diis<T>::addres(std::complex<float> *r)
 template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *Hr0)
 {
     size_t it = funcs.size() - 1;
-    auto u0 = funcs[it];
-    auto pr0 = res[it];
+    auto &u0 = funcs[it];
+    auto &pr0 = res[it];
     if constexpr (std::is_same_v<T, double>)
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
