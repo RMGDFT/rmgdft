@@ -50,9 +50,12 @@ template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataT
     int *dev_info, lwork;
     cusolverStatus_t custat;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
+    cublasDiagType_t diag_mode = CUBLAS_DIAG_NON_UNIT;
 
     if(!strcmp(uplo, "u")) fill_mode = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) fill_mode = CUBLAS_FILL_MODE_UPPER;
+    if(!strcmp(diag, "u")) diag_mode = CUBLAS_DIAG_UNIT;
+    if(!strcmp(diag, "U")) diag_mode = CUBLAS_DIAG_UNIT;
 
     size_t a_size = (size_t)lda * (size_t)n;
     gpuMalloc((void **)&dev_info, sizeof(int));
@@ -68,32 +71,49 @@ template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataT
 
     DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
+        size_t dwork;
+        size_t hwork;
+
         std::complex<double> *dA=(std::complex<double> *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cusolverDnZpotrf_bufferSize(ct.cusolver_handle, fill_mode, n,
-			          (cuDoubleComplex *)dA, lda, &lwork);
-        gpuMalloc((void **)&work, lwork * sizeof(std::complex<double>));
-        custat = cusolverDnZpotrf(ct.cusolver_handle, fill_mode, n, (cuDoubleComplex *)dA, lda,
-			          (cuDoubleComplex *)work, lwork, dev_info);
+        custat = cusolverDnZtrtri_bufferSize(ct.cusolver_handle, fill_mode, diag_mode,
+            n, CUDA_C_64F, (void *)dA, lda, &dwork, &hwork);
+        gpuMalloc((void **)&dbuf, dwork);
+        hbuf = new char[hwork];
+        custat = cusolverDnZtrtri(ct.cusolver_handle, fill_mode, diag_mode,
+                 n, CUDA_C_64F, (void *)A, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
+
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZpotrf failed.");
-	gpuFree(work);
+            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZtrtri failed.");
+
+        delete [] work;
+	gpuFree(dbuf);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
     else {
+        size_t dwork;
+        size_t hwork;
+
         double *dA=(double *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        custat = cusolverDnDpotrf_bufferSize(ct.cusolver_handle, fill_mode, n, dA, lda, &lwork);
-        gpuMalloc((void **)&work, lwork * sizeof(double));
-        custat = cusolverDnDpotrf(ct.cusolver_handle, fill_mode, n, dA, lda, work, lwork, dev_info);
+        custat = cusolverDnDtrtri_bufferSize(ct.cusolver_handle, fill_mode, diag_mode,
+            n, CUDA_R_64F, (void *)dA, lda, &dwork, &hwork);
+        gpuMalloc((void **)&dbuf, dwork);
+        hbuf = new char[hwork];
+        custat = cusolverDnDtrtri(ct.cusolver_handle, fill_mode, diag_mode,
+                 n, CUDA_C_64F, (void *)A, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
+
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
-	gpuFree(work);
+            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDtrtri failed.");
+
+        delete [] work;
+	gpuFree(dbuf);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
+    }
     }
     cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
     DeviceSynchronize();
