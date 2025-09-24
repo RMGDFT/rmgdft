@@ -32,6 +32,7 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"
+#include "Solvers.h"
 #include "blas.h"
 #include "GlobalSums.h"
 #include "RmgException.h"
@@ -50,22 +51,19 @@
 // mat: matrix to hold <Psi|psi>, need to be allocated nbase * notconv at least
 //
 
-template void DavidsonOrtho (int, int, int pbasis_noncoll, double *, double *);
-template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *, std::complex<double> *);
+template void DavidsonOrtho (int, int, int pbasis_noncoll, double *);
+template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *);
 
 template <typename KpointType>
-void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat)
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 {
 
     if(!ct.norm_conserving_pp)
     {
         return;
     }
-    if(nbase == 0)
-    {
-        rmg_error_handler(__FILE__, __LINE__, "nbase cannot be zero\n");
-    }
-
+    size_t alloc = (notcon+nbase)*(notcon+nbase)*sizeof(KpointType);
+    KpointType *mat = (KpointType *)ct.get_gmatrix(alloc);
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -86,10 +84,13 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
 
-    // ortho to the first nbase states
-    RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
-    BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
+    if(nbase > 0)
+    {
+        // ortho to the first nbase states
+        RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
+        BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
+    }
 
     if(!ct.davidson_2stage_ortho) return;
 

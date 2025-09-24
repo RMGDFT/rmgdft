@@ -212,10 +212,6 @@ void GetFdFactor(int kidx);
 void SimplePolyFit(const double *x, double *y, const size_t n, const size_t k, double *beta);
 void DipoleCorrection(double *dipole,  double *vh_dipole);
 void write_ffield (std::string &filename);
-template <typename KpointType>
-void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat);
-template <typename KpointType>
-void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi);
 
 template <typename KpointType>
 void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp);

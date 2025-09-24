@@ -44,6 +44,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "GatherScatter.h"
+#include "Solvers.h"
 #include "blas.h"
 
 
@@ -240,16 +241,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         if(vcycle != (ct.eig_parm.mucycles-1))
         {
             RmgTimer RTO("3-MgridSubspace: ortho");
-            if(first)
-            {
-                std::vector<KpointType> emat(this->nstates*this->nstates);
-                ct.davidson_2stage_ortho=true;
-                DavidsonOrtho(first, this->nstates-first, pbasis_noncoll, this->orbital_storage, emat.data());
-            }
-            else
-            {
-                MgridOrtho(0, N, pbasis_noncoll, this->orbital_storage);
-            }
+            ct.davidson_2stage_ortho=true;
+            DavidsonOrtho(first, this->nstates-first,
+                          pbasis_noncoll, this->orbital_storage);
         }
     }
 

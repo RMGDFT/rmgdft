@@ -242,7 +242,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete RT1;
 
         RT1 = new RmgTimer("6-Davidson: orthogonalization");
-        if(ct.davidson_1stage_ortho) DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
+        if(ct.davidson_1stage_ortho) DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi);
         delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials

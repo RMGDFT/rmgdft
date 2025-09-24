@@ -59,4 +59,9 @@ template <typename OrbitalType, typename CalcType> void mgsmoother(
 
 template <typename T> void gauss_solve(std::vector<T>& A, std::vector<T>& b, int N);
 
+template <typename KpointType>
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi);
+template <typename KpointType>
+void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi);
+
 #endif
