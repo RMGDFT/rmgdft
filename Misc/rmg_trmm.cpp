@@ -60,7 +60,9 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
 
     cublasStatus_t custat;
     cublasOperation_t cu_trans = CUBLAS_OP_N;
+    cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
+    cublasDiagType_t diag_mode = CUBLAS_DIAG_NON_UNIT;
 
     if(!strcmp(uplo, "u")) fill_mode = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) fill_mode = CUBLAS_FILL_MODE_UPPER;
@@ -70,29 +72,41 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
     if(!strcmp(trans, "c")) cu_trans = CUBLAS_OP_C;
     if(!strcmp(trans, "C")) cu_trans = CUBLAS_OP_C;
 
+    if(!strcmp(side, "l")) cu_side = CUBLAS_SIDE_LEFT;
+    if(!strcmp(side, "L")) cu_side = CUBLAS_SIDE_LEFT;
+    if(!strcmp(side, "r")) cu_side = CUBLAS_SIDE_RIGHT;
+    if(!strcmp(side, "R")) cu_side = CUBLAS_SIDE_RIGHT;
+
+    if(!strcmp(diag, "u")) diag_mode = CUBLAS_DIAG_UNIT;
+    if(!strcmp(diag, "U")) diag_mode = CUBLAS_DIAG_UNIT;
+
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
     {
-        custat = cublasXtZsyrk(ct.cublasxt_handle, fill_mode, cu_trans, n, k,
+        custat = cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+                            m, n,
                             (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex*)A, lda,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                            (cuDoubleComplex *)dA, lda,
+                            (cuDoubleComplex *)dB, ldb,
+                            (cuDoubleComplex *)dB, ldb);
         ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZsyrkx");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZtrmm");
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
-        custat = cublasXtDsyrk(ct.cublasxt_handle, fill_mode, cu_trans, (size_t)n, (size_t)k,
-                            (double*)&alpha,
-                            (double*)A, (size_t)lda,
-                            (double*)&beta, (double*)C, (size_t)ldc );
+        custat = cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+                            m, n,
+                            (double *)&alpha,
+                            (double *)dA, lda,
+                            (double *)dB, ldb,
+                            (double *)dB, ldb);
         ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDsyrkx");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDtrmm");
         return;
     }
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
+    size_t b_size = (size_t)ldb * (size_t)n;
 
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
@@ -100,47 +114,51 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
     bool a_dev = false;
 #if (CUDA_VERSION_MAJOR > 10)
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
 #else
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
-    cudaerr = cudaPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
 #endif
 
     DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        std::complex<double> *dA=(std::complex<double> *)A, *dC=(std::complex<double> *)C;
+        std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
+        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        custat = cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+                            m, n,
                             (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex*)dA, lda,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
+                            (cuDoubleComplex *)dA, lda,
+                            (cuDoubleComplex *)dB, ldb,
+                            (cuDoubleComplex *)dB, ldb);
         ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZtrmm");
+        if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
     else {
-        double *dA=(double *)A, *dC=(double *)C;
+        double *dA=(double *)A, *dB=(double *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDsyrk(ct.cublas_handle, fill_mode, cu_trans, n, k,
-                            (double*)&alpha,
-                            (double*)dA, lda,
-                            (double*)&beta, (double*)dC, ldc );
+        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
+        custat = cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+                            m, n,
+                            (cuDoubleComplex *)&alpha,
+                            (cuDoubleComplex *)dA, lda,
+                            (cuDoubleComplex *)dB, ldb,
+                            (cuDoubleComplex *)dB, ldb);
         ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDtrmm");
+        if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(double), cudaMemcpyDefault);
+        if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
     DeviceSynchronize();
@@ -243,16 +261,16 @@ this should cause a compile error since as I have no access to a machine to test
     }
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
+    size_t b_size = (size_t)ldb * (size_t)n;
 
     cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
     bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
+    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
     if(A == B)
     {
         try {
             oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufA, ldb, beta, bufC, ldc);
+                                    bufA, lda, bufA, ldb, beta, bufB, ldb);
         }
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
@@ -266,7 +284,7 @@ this should cause a compile error since as I have no access to a machine to test
         bufB.set_final_data(nullptr);
         try {
             oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufB, ldb, beta, bufC, ldc);
+                                    bufA, lda, bufB, ldb, beta, bufB, ldb);
         }
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
