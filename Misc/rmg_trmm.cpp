@@ -147,60 +147,73 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
     return;
 
 #elif HIP_ENABLED
-    hipblasStatus_t hipstat;
-    hipblasOperation_t hip_trans = HIPBLAS_OP_N;
-    hipblasFillMode_t fill_mode = HIPBLAS_FILL_MODE_LOWER;
+    rocblas_status rocstat;
+    rocblas_fill fill_mode = rocblas_fill_lower;
+    rocblas_diagonal diag_mode = rocblas_diagonal_non_unit;
+    rocblas_side side_mode = rocblas_side_left;
+    rocblas_operation roc_trans = rocblas_operation_none;
 
-    if(!strcmp(uplo, "u")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "u")) fill_mode = rocblas_fill_upper;
+    if(!strcmp(uplo, "U")) fill_mode = rocblas_fill_upper;
 
-    if(!strcmp(trans, "t")) hip_trans = HIPBLAS_OP_T;
-    if(!strcmp(trans, "T")) hip_trans = HIPBLAS_OP_T;
-    if(!strcmp(trans, "c")) hip_trans = HIPBLAS_OP_C;
-    if(!strcmp(trans, "C")) hip_trans = HIPBLAS_OP_C;
+    if(!strcmp(trans, "t")) roc_trans = rocblas_operation_transpose;
+    if(!strcmp(trans, "T")) roc_trans = rocblas_operation_transpose;
+    if(!strcmp(trans, "c")) roc_trans = rocblas_operation_conjugate_transpose;
+    if(!strcmp(trans, "C")) roc_trans = rocblas_operation_conjugate_transpose;
+
+    if(!strcmp(side, "r")) side_mode = rocblas_side_right;
+    if(!strcmp(side, "R")) side_mode = rocblas_side_right;
+
+    if(!strcmp(diag, "u")) diag_mode = rocblas_diagonal_unit;
+    if(!strcmp(diag, "U")) diag_mode = rocblas_diagonal_unit;
+
 
     size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
+    size_t b_size = (size_t)ldb * (size_t)n;
 
     hipPointerAttribute_t attr;
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
     if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
-    hiperr = hipPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
+    hiperr = hipPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        std::complex<double> *dA=(std::complex<double> *)A, *dC=(std::complex<double> *)C;
+        std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
-        hipstat = hipblasZsyrk(ct.hipblas_handle, fill_mode, hip_trans, n, k,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZsyrkx");
-        if(!c_dev) hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuFree(dC);
+        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
+        rocstat = rocblas_ztrmm(ct.roc_handle, side_mode, fill_mode, roc_trans, diag_mode,
+                            m, n,
+                            (rocblas_double_complex *)&alpha,
+                            (rocblas_double_complex *)dA, lda,
+                            (rocblas_double_complex *)dB, ldb,
+                            (rocblas_double_complex *)dB, ldb);
+//        ProcessGpublasError(hipstat);
+//        RmgGpuError(__FILE__, __LINE__, rocstat, "Problem executing cublasZsyrkx");
+        if(!b_dev) hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>));
+        if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
     else {
-        double *dA=(double *)A, *dC=(double *)C;
+        double *dA=(double *)A, *dB=(double *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
-        hipstat = hipblasDsyrk(ct.hipblas_handle, fill_mode, hip_trans, n, k,
+        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
+        rocstat = rocblas_dtrmm(ct.roc_handle, side_mode, fill_mode, roc_trans, diag_mode,
+                            m, n,
                             (double*)&alpha,
                             (double*)dA, lda,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDsyrkx");
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
-        if(!c_dev) gpuFree(dC);
+                            (double*)dB, ldb,
+                            (double*)dB, ldb );
+        //ProcessGpublasError(hipstat);
+        //RmgGpuError(__FILE__, __LINE__, rocstat, "Problem executing hipblasDsyrkx");
+        if(!b_dev) hipMemcpyDtoH(B, dB, b_size * sizeof(double));
+        if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
 
     }
