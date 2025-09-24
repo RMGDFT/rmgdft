@@ -78,6 +78,7 @@ RmgSyrkx.cpp
 RmgSyrk.cpp
 rmg_potrf.cpp
 rmg_trtri.cpp
+rmg_trmm.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
 GpuStreams.cpp
