@@ -85,9 +85,9 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
         custat = cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex *)dA, lda,
-                            (cuDoubleComplex *)dB, ldb,
-                            (cuDoubleComplex *)dB, ldb);
+                            (cuDoubleComplex *)A, lda,
+                            (cuDoubleComplex *)B, ldb,
+                            (cuDoubleComplex *)B, ldb);
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZtrmm");
         return;
@@ -97,9 +97,9 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
         custat = cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (double *)&alpha,
-                            (double *)dA, lda,
-                            (double *)dB, ldb,
-                            (double *)dB, ldb);
+                            (double *)A, lda,
+                            (double *)B, ldb,
+                            (double *)B, ldb);
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDtrmm");
         return;
@@ -151,10 +151,10 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
         custat = cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
-                            (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex *)dA, lda,
-                            (cuDoubleComplex *)dB, ldb,
-                            (cuDoubleComplex *)dB, ldb);
+                            (double *)&alpha,
+                            (double *)dA, lda,
+                            (double *)dB, ldb,
+                            (double *)dB, ldb);
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDtrmm");
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(double), cudaMemcpyDefault);
