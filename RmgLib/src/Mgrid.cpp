@@ -228,6 +228,17 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     if(!check) offset = 1;
 check=false;offset=1;
 
+/* get sizes for the next level */
+    int dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
+    int dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
+    int dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
+
+    // More sweeps on coarsest level
+    int presweeps = pre_cyc[level];
+    if((level >= max_levels) || (dx2 < 0) || (dy2 < 0) || (dz2 < 0))
+        presweeps = 12;
+
+
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int size2 = (dimx + 2*offset)*(dimy + 2*offset)*(dimz + 2*offset);
@@ -241,7 +252,7 @@ check=false;offset=1;
     scale = step * scale;
 
 
-    if(pot || (k != 0.0) || (pre_cyc[level] > T->get_max_images()) || !check)
+    if(pot || (k != 0.0) || (presweeps > T->get_max_images()) || !check)
 // EMIL -- this needs a lot more checking if we want to enable the offset loop
     //if(pot || (k != 0.0) || !check)
     {
@@ -250,13 +261,13 @@ check=false;offset=1;
         for (int idx = 0; idx < size; idx++) v_mat[idx] = half*(RmgType)scale * f_mat[idx];
 
         // solve on this grid level 
-        for (int cycl = 0; cycl < pre_cyc[level]; cycl++)
+        for (int cycl = 0; cycl < presweeps; cycl++)
         {
             /* solve once */
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
             /* trade boundary info */
-            if (((level >= max_levels) && (cycl == pre_cyc[level]-1)) || !this->central_trade) {
+            if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
                 T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
             }
             else {
@@ -270,8 +281,8 @@ check=false;offset=1;
         //RmgType *nf_mat = &f_mat[size];
         CPP_pack_stop (f_mat, work, dimx, dimy, dimz);
         T->trade_imagesx (work, nf_mat, dimx, dimy, dimz, offset, FULL_TRADE);
-        int fullsteps = pre_cyc[level] / offset;
-        int rem = pre_cyc[level] % offset;
+        int fullsteps = presweeps / offset;
+        int rem = presweeps % offset;
         for (int idx = 0; idx < size2; idx++) v_mat[idx] = half*(RmgType)scale * nf_mat[idx];
         for(int steps=0;steps < fullsteps;steps++)
         {
@@ -298,11 +309,6 @@ check=false;offset=1;
         return;
 
     }                           /* end if */
-
-/* size for next smaller grid */
-    int dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
-    int dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
-    int dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
 
     // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
     // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
@@ -345,7 +351,7 @@ check=false;offset=1;
 
 
         /* re-solve on this grid level */
-        if(pot || (k != 0.0) || (pre_cyc[level] > T->get_max_images()) || !check)
+        if(pot || (k != 0.0) || (presweeps > T->get_max_images()) || !check)
         //if(pot || (k != 0.0) || !check)
         {
             if(!this->central_trade)

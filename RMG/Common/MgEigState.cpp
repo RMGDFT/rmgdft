@@ -89,26 +89,16 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
 
-    bool freeze_occupied = true;
-
     // We want a clean exit if user terminates early
     CheckShutdown();
-
-    // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
-    // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
-    // be possible to fix this at a higher level at some point though so unneccessary work is not done.
-    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
-
-
-    freeze_occupied = true;
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
     double eig=0.0, t1;
-    int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
+    int eig_pre[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -167,7 +157,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy nv into local array
     if(ct.coalesce_states)
         GatherPsi(G, pbasis_noncoll, sp->istate, nv, nv_t, pct.coalesce_factor);
-//        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
     else
         GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, 1);
 
@@ -355,8 +344,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
 
     // Copy single precision orbital back to double precision
-    if(freeze_occupied)
-        ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
+    ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
 
     p->free(res2_t, pool_blocks);
 
