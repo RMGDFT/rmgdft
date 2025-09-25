@@ -84,7 +84,7 @@ template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataT
         gpuMalloc((void **)&dbuf, dwork);
         hbuf = new char[hwork];
         custat = cusolverDnXtrtri(ct.cusolver_handle, fill_mode, diag_mode,
-                 n, CUDA_C_64F, (void *)A, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
+                 n, CUDA_C_64F, (void *)dA, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
 
 	if(custat != CUSOLVER_STATUS_SUCCESS)
             rmg_error_handler (__FILE__, __LINE__, " cusolverDnZtrtri failed.");
@@ -108,7 +108,7 @@ template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataT
         gpuMalloc((void **)&dbuf, dwork);
         hbuf = new char[hwork];
         custat = cusolverDnXtrtri(ct.cusolver_handle, fill_mode, diag_mode,
-                 n, CUDA_C_64F, (void *)A, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
+                 n, CUDA_R_64F, (void *)dA, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
 
 	if(custat != CUSOLVER_STATUS_SUCCESS)
             rmg_error_handler (__FILE__, __LINE__, " cusolverDnDtrtri failed.");
