@@ -1895,7 +1895,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
     {
         auto K1 = InputMap["charge_mixing_type"];
-        K1->Readstr = "Pulay";
+        K1->Readstr = "Broyden";
         lc.potential_acceleration_constant_step = 0.0;
     }
     else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
