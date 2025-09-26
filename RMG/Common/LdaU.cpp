@@ -710,7 +710,9 @@ template <class KpointType> void LdaU<KpointType>::calc_energy()
                     for(int j=0;j < lm;j++)
                     {
                         this->Ehub     -=       Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
-                        this->vhub_ns[ispin][ion][i][j] -= 2.0 * Ueff * (ns_occ[ispin][ion][j][i]);
+                        this->vhub_ns[ispin][ion][i][j] -= 2.0 * Ueff * std::real(ns_occ[ispin][ion][j][i]);
+
+                        //for spin-polarized case, the ns_occ should be real because of time-inversal symmetry, psi(-k) = conj(psi(k))
                     }
                 }
             }
