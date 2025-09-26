@@ -128,6 +128,7 @@
 #define		ztrmm  	        RMG_FC_GLOBAL(ztrmm, ZTRMM)
 #define         dgelss          RMG_FC_GLOBAL(dgelss, DGELSS)
 #define         zgelss          RMG_FC_GLOBAL(zgelss, ZGELSS)
+#define         dgecon          RMG_FC_GLOBAL(dgecon, DGECON)
 
 #if __cplusplus
 extern "C" {
@@ -277,6 +278,9 @@ void zgelss(
     std::complex<double>* work, const int* lwork,
     double* rwork,
     int* info);
+
+void dgecon(char *norm, int *n, double *A, int *lda, double *anorm, double *rcond,
+            double *work, int *iwork, int *info);
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 DoubleC zdotu(int*, DoubleC *, int*, DoubleC *, int*);
