@@ -32,6 +32,7 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"
+#include "Solvers.h"
 #include "blas.h"
 #include "GlobalSums.h"
 #include "RmgException.h"
@@ -50,22 +51,19 @@
 // mat: matrix to hold <Psi|psi>, need to be allocated nbase * notconv at least
 //
 
-template void DavidsonOrtho (int, int, int pbasis_noncoll, double *, double *);
-template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *, std::complex<double> *);
+template void DavidsonOrtho (int, int, int pbasis_noncoll, double *);
+template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *);
 
 template <typename KpointType>
-void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat)
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 {
 
     if(!ct.norm_conserving_pp)
     {
         return;
     }
-    if(nbase == 0)
-    {
-        rmg_error_handler(__FILE__, __LINE__, "nbase cannot be zero\n");
-    }
-
+    size_t alloc = (notcon+nbase)*(notcon+nbase)*sizeof(KpointType);
+    KpointType *mat = (KpointType *)ct.get_gmatrix(alloc);
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -86,155 +84,54 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
 
-    // ortho to the first nbase states
-    RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
-    BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
+    if(nbase > 0)
+    {
+        // ortho to the first nbase states
+        RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
+        BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
+    }
 
     if(!ct.davidson_2stage_ortho) return;
 
-    //return;
-    if(0)   // if 0 switches to old method
+    int st, st1, length, idx, omp_tid;
+    KpointType *sarr;
+    char *transt = "t";
+    char *uplo = "u";
+    char *diag = "N";
+    char *side = "R";
+
+    KpointType *tarr = new KpointType[notcon];
+
+    if (typeid(KpointType) == typeid(double))
     {
-        int st, st1, length, idx, omp_tid;
-        KpointType *sarr;
-        char *transt = "t";
-        char *uplo = "u";
-        char *diag = "N";
-        char *side = "R";
-
-        KpointType *tarr = new KpointType[notcon];
-
-        if (typeid(KpointType) == typeid(double))
-        {
-            double rone = 1.0, rzero = 0.0;
-            dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-                &rzero, (double *)mat, &notcon);
-        }
-        else
-        {
-            KpointType cone(1.0), czero(0.0);
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
-        }
-
-        /* get the global part */
-        length = factor * notcon * notcon;
-        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
-
-        /* compute the cholesky factor of the overlap matrix */
-        int info, info_trtri;
-        if (typeid(KpointType) == typeid(double))
-        {
-            double rone = 1.0/sqrt(vel);
-            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-            dtrtri(uplo, diag, &notcon, (double *)mat, &notcon, &info_trtri);
-            dtrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &rone, (double *)mat, &notcon, (double *)psi_extra, &pbasis_noncoll); 
-
-        }
-        else
-        {
-            std::complex<double> cone = 1.0/sqrt(vel);
-            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
-            ztrtri(uplo, diag, &notcon, (std::complex<double> *)mat, &notcon, &info_trtri);
-            ztrmm(side, uplo, "N", diag, &pbasis_noncoll, &notcon, &cone, (std::complex<double> *)mat, &notcon, (std::complex<double> *)psi_extra, &pbasis_noncoll); 
-        }
-        if (info != 0)
-            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
-
-        if (info_trtri != 0)
-        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
-
+        double rone = 1.0, rzero = 0.0;
+        dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
+            &rzero, (double *)mat, &notcon);
+    }
+    else
+    {
+        KpointType cone(1.0), czero(0.0);
+        RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
+                pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
     }
 
-    else   // if 0 switches to old method
-    {
-        int st, st1, length, idx, omp_tid;
-        KpointType *sarr;
-        char *transt = "t";
-        char *uplo = "l";
-
-        KpointType *tarr = new KpointType[notcon];
-
-        if (typeid(KpointType) == typeid(double))
-        {
-            double rone = 1.0, rzero = 0.0;
-            dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-                    &rzero, (double *)mat, &notcon);
-        }
-        else
-        {
-            KpointType cone(1.0), czero(0.0);
-            RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                    pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
-        }
-
-        /* get the global part */
-        length = factor * notcon * notcon;
-        MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    /* get the global part */
+    length = factor * notcon * notcon;
+    MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
 
-        /* compute the cholesky factor of the overlap matrix */
-        int info;
-        if (typeid(KpointType) == typeid(double))
-        {
-            dpotrf(uplo, &notcon, (double *)mat, &notcon, &info);
-        }
-        else
-        {
-            zpotrf(uplo, &notcon, (std::complex<double> *)mat, &notcon, &info);
-        }
-        if (info != 0)
-            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+    /* compute the cholesky factor of the overlap matrix then subtract off projections */
+    int info, info_trtri;
+    KpointType inv_vel(1.0/sqrt(vel));
+    rmg_potrf(uplo, notcon, mat, notcon, &info);
+    rmg_trtri(uplo, diag, notcon, mat, notcon, &info_trtri);
+    rmg_trmm(side, uplo, "N", diag, pbasis_noncoll, notcon, inv_vel, mat, notcon, psi_extra, pbasis_noncoll);
 
+    if (info != 0)
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
 
-        // Get inverse of diagonal elements
-        for(st = 0;st < notcon;st++) tarr[st] = 1.0 / std::real(mat[st + notcon * st]);
+    if (info_trtri != 0)
+    throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
 
-
-        // This code may look crazy but there is a method to the madness. We copy a slice
-        // of the wavefunction array consisting of the values for all orbitals of a given
-        // basis point into a temporary array. Then we do the updates on each slice and
-        // parallelize over slices with OpenMP. This produces good cache behavior
-        // and excellent parformance on the XK6.
-
-        KpointType *darr=NULL;
-#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
-        {
-            omp_tid = omp_get_thread_num();
-            if(omp_tid == 0) darr = new KpointType[notcon * omp_get_num_threads()];
-#pragma omp barrier
-
-#pragma omp for schedule(static, 1) nowait
-            for(idx = 0;idx < pbasis_noncoll;idx++) {
-
-                sarr = &darr[omp_tid*notcon];
-
-                for (st = 0; st < notcon; st++) sarr[st] = psi_extra[st*pbasis_noncoll + idx];
-
-                for (st = 0; st < notcon; st++) {
-
-                    sarr[st] *= tarr[st];
-
-                    for (st1 = st+1; st1 < notcon; st1++) {
-                        sarr[st1] -= mat[st1 + notcon*st] * sarr[st];
-                    }
-
-                }
-
-                for (st = 0; st < notcon; st++) psi_extra[st*pbasis_noncoll + idx] = sarr[st];
-
-            }
-        }
-        if(darr) delete [] darr;
-
-        double tmp = 1.0 / sqrt(vel);
-        idx = notcon * pbasis_noncoll;
-        for(int idx = 0;idx < notcon * pbasis_noncoll;idx++) {
-            psi_extra[idx] *= tmp;
-        }
-
-        delete [] tarr;
-    }
 }

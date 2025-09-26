@@ -93,22 +93,20 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     }
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
+    KpointType *gmatrix = (KpointType *)ct.get_gmatrix(nstates * nstates * sizeof(KpointType));
+
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    if(!ct.gmatrix) gpuMallocHost((void **)&ct.gmatrix, nstates * nstates * sizeof(KpointType));     
     KpointType *Hij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
     double *eigs;
     gpuMallocHost((void **)&eigs, 2*nstates * sizeof(double));
 #else
-    if(!ct.gmatrix) ct.gmatrix = new KpointType[nstates * nstates];
     KpointType *Hij = new KpointType[nstates * nstates];
     KpointType *Bij = new KpointType[nstates * nstates];
     KpointType *Sij = new KpointType[nstates * nstates];
     double *eigs = new double[2*nstates];
 #endif
-    KpointType *gmatrix = (KpointType *)ct.gmatrix;
-    ct.gmatrix_size = nstates * nstates * sizeof(KpointType);
 
     KpointType *D = new KpointType[2*nstates];
 

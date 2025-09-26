@@ -89,25 +89,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
 
-    bool freeze_occupied = true;
-
     // We want a clean exit if user terminates early
     CheckShutdown();
-
-    // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
-    // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
-    // be possible to fix this at a higher level at some point though so unneccessary work is not done.
-    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
-
-
-    freeze_occupied = true;
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig=0.0, t1;
-    int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
+    int eig_pre[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int potential_acceleration;
     Mgrid MG(L, T);
@@ -132,7 +121,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
 
-    double gl_step = ct.eig_parm.gl_step;
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
@@ -159,6 +147,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *r0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *hr0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    double *dinv  = (double *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *rmmres_t = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
 
     // Copy double precision psi into correct precison array
@@ -167,7 +157,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy nv into local array
     if(ct.coalesce_states)
         GatherPsi(G, pbasis_noncoll, sp->istate, nv, nv_t, pct.coalesce_factor);
-//        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
     else
         GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, 1);
 
@@ -193,19 +182,19 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         PotentialAccelerationWait(sp->istate, kptr->nstates, ct.dvh_skip);
     }
 
-    wfobj<double> dinv;
-    for(int ix=0;ix < dinv.pbasis;ix++)
+    for(int is = 0; is < ct.noncoll_factor; is++)
     {
-        dinv.up[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
-        if(ct.noncoll_factor)
-            dinv.dw[ix] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
+        for(int ix=0;ix < pbasis;ix++)
+        {
+            dinv[ix+is*pbasis] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
+        }
     }
 
     bool is_jacobi = true;
     if(ct.norm_conserving_pp) is_jacobi = false;
     mgsmoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t, ihu_t, r0_t,
-              vtot_psi, vxc_psi, dinv.data(),
+              vtot_psi, vxc_psi, dinv,
               nv_t, res2_t,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
@@ -298,48 +287,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
                 for(int i=0;i < pbasis_noncoll;i++)
                 {
-                    work2_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
+                    rmmres_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
                                               tmp_psi_t[is*pbasis+i] +
                                               work2_t[is*pbasis+i]);
-                }
-                sp->dptr->addres(work2_t);  // Preconditioned residual
-
-                // If first vcycle use gradient step
-                if(vcycle == 0) sp->dptr->lambda = -0.5*fg_step;
-                // Compute optimized for second vcycle
-                if(vcycle >= 2)
-                {
-                    // line minimization to compute RMM-DIIS lambda
-                    ApplyHamiltonian<OrbitalType,CalcType> (
-                          kptr, sp,
-                          sp->istate,
-                          work2_t,   // Preconditioned residual |KR0>
-                          hr0_t,     // Hamiltonian applied to  |KRo>
-                          vtot_psi,
-                          vxc_psi,
-                          nv_t,
-                          false);
-
-                    // Not clear if initial residual r0_t or final residual 
-                    // res_t works better here
-                    sp->dptr->compute_lambda(sp->eig[0], ihu_t, r0_t, hr0_t);
-                }
-
-                std::vector<OrbitalType> next;
-                next = sp->dptr->compute_estimate(); 
-                if(next.size() > 0)
-                {
-                    for(int i=0;i < pbasis;i++)
-                        tmp_psi_t[is*pbasis+i] =
-                        (CalcType)next[is*pbasis + i] + saved_psi[is+pbasis+i]+
-                        sp->dptr->lambda*work2_t[is*pbasis + i];
-                }
-                else
-                {
-                    // Fall back to gradient step
-                    for(int i=0;i < pbasis;i++)
-                        tmp_psi_t[is*pbasis+i] = saved_psi[is*pbasis+i] -
-                        fg_step*work2_t[is*pbasis + i];
                 }
             }
             else
@@ -347,16 +297,54 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 // Gradient step
                 CPP_pack_stop_axpy<CalcType>(sg_twovpsi_t, &tmp_psi_t[is*pbasis], -fg_step, dimx, dimy, dimz);
             }
-        }
+        } 
 
+        if(ct.use_rmm_diis)
+        {
+            sp->dptr->addres(rmmres_t);  // Preconditioned residual
+
+            // If first vcycle use gradient step
+            if(vcycle == 0) sp->dptr->lambda = -0.5*fg_step;
+            // compute optimized for second vcycle
+            if(vcycle >= 2)
+            {
+                // line minimization to compute rmm-diis lambda
+                ApplyHamiltonian<OrbitalType,CalcType> (
+                      kptr, sp,
+                      sp->istate,
+                      rmmres_t,  // preconditioned residual |kr0>
+                      hr0_t,     // hamiltonian applied to  |kro>
+                      vtot_psi,
+                      vxc_psi,
+                      nv_t,
+                      false);
+
+                // not clear if initial residual r0_t or final residual 
+                // res_t works better here
+                sp->dptr->compute_lambda(sp->eig[0], ihu_t, r0_t, hr0_t);
+            }
+
+            std::vector<OrbitalType> next;
+            next = sp->dptr->compute_estimate(); 
+            if(next.size() > 0)
+            {
+                for(int i=0;i < pbasis_noncoll;i++)
+                    tmp_psi_t[i] = (CalcType)next[i] + sp->dptr->lambda*rmmres_t[i];
+            }
+            else
+            {
+                // Fall back to gradient step
+                for(int i=0;i < pbasis_noncoll;i++)
+                    tmp_psi_t[i] = saved_psi[i] - fg_step*rmmres_t[i];
+            }
+        }
     }
 
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
 
     // Copy single precision orbital back to double precision
-    if(freeze_occupied)
-        ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
+    ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
 
     p->free(res2_t, pool_blocks);
 

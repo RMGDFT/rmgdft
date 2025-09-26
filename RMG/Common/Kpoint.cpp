@@ -122,7 +122,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
         int sbasis_noncoll = sbasis * ct.noncoll_factor;
 
         for(int tid=0;tid < ct.MG_THREADS_PER_NODE;tid++)
-            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 27, 35);
+            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 28, 36);
 
     }
     this->init_states();

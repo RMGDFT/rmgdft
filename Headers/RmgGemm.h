@@ -58,6 +58,11 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
                              DataType *C, int ldc, size_t strideC, int batchCount);
 
 template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info);
+template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info);
+template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, char *diag,
+                             int m, int n, DataType alpha, DataType *A, int lda,
+                             DataType *B, int ldb);
+
 #endif
 #endif
 

@@ -34,6 +34,7 @@
 #include "Gpufuncs.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "Solvers.h"
 #include "RmgException.h"
 
 
@@ -61,7 +62,6 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     {
         return;
     }
-
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     if(!ct.gmatrix) gpuMallocHost((void **)&ct.gmatrix, notcon * notcon * sizeof(KpointType));
 #else

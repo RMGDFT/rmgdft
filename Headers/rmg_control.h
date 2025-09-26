@@ -1100,6 +1100,43 @@ public:
    void *gmatrix;
    size_t gmatrix_size;
 
+   void *get_gmatrix(size_t size)
+   {
+       if(!this->gmatrix)
+       {
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
+           gpuMallocHost((void **)&this->gmatrix, size);
+#else
+           this->gmatrix = malloc(size);
+#endif
+           this->gmatrix_size = size;
+       }
+       else if(size > this->gmatrix_size)
+       {
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+           gpuFreeHost(this->gmatrix);
+           gpuMallocHost((void **)&this->gmatrix, size);
+#else
+           free(this->gmatrix);
+           this->gmatrix = malloc(size);
+#endif
+           this->gmatrix_size = size;
+       }
+       return gmatrix;
+   }
+   void free_gmatrix(void)
+   {
+       if(this->gmatrix_size)
+       {
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+           gpuFreeHost(this->gmatrix);
+#else
+           free(this->gmatrix);
+#endif
+           this->gmatrix = NULL;
+           this->gmatrix_size = 0;
+       }
+   }
 };
 
 
