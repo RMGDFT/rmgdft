@@ -43,6 +43,7 @@
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
+#include "rmg_error.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -62,18 +63,28 @@
 //   INPUT:  M  =  number of eigenvectors to solve for
 //
 // 
+void Eigen(std::complex<double> *mat, double *eigs, int N, int lda)
+{
+    int info;
+    int lwork = 2 * N * N;  // this function is for LDA+U diag, so N is small
+    double *rwork = new double[3*N];
+    double *work = new double[lwork];
+    zheev("V", "L", &N, (double *)mat, &N, eigs, work,&lwork, rwork, &info);
+    delete [] rwork;
+    delete [] work;
+    if(info != 0)
+    {
+         rmg_error_handler (__FILE__, __LINE__, "failed to diagonalization a matrix\n");
+    }
+
+    return;
+}
 
 template void Eigen<double>(double *A, double *eigs, double *V, int N, int M, Scalapack &Sp);
 template void Eigen<std::complex<double>>(std::complex<double> *A, double *eigs, std::complex<double> *V, int N, int M, Scalapack &Sp);
-
     template <typename KpointType>
 void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp)
 {
-
-#if !SCALAPACK_LIBS
-    rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
-#endif
-
     int ibtype = 1;
     int ione = 1;
     int info = 0;

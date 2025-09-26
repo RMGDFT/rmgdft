@@ -215,6 +215,7 @@ void write_ffield (std::string &filename);
 
 template <typename KpointType>
 void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp);
+void Eigen(std::complex<double> *distA, double *eigs, int N, int lda);
 
 
 #endif

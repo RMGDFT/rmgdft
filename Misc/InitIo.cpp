@@ -414,13 +414,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 
     /* if logname exists, increment until unique filename found */
-    int name_incr;
-    name_incr = FilenameIncrement(ct.shortname);
-    snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
-    snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
-
     if (pct.imgpe == 0)
     {
+        int name_incr;
+        name_incr = FilenameIncrement(ct.shortname);
+        snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
+        snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
+
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
         if (!ct.logfile)
@@ -435,6 +435,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
+    MPI_Bcast(ct.basename, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
     rmg_printf ("RMG initialization ...");
     rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
