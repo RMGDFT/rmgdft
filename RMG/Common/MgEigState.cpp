@@ -96,7 +96,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig=0.0, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int potential_acceleration;
@@ -122,7 +121,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
 
-    double gl_step = ct.eig_parm.gl_step;
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
