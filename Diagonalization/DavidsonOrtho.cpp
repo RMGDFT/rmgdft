@@ -35,6 +35,7 @@
 #include "Solvers.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "RmgMatrix.h"
 #include "RmgException.h"
 
 
@@ -62,8 +63,6 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     {
         return;
     }
-    size_t alloc = (notcon+nbase)*(notcon+nbase)*sizeof(KpointType);
-    KpointType *mat = (KpointType *)ct.get_gmatrix(alloc);
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -74,6 +73,12 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
         trans_a = trans_c;
         factor = 2;
     }
+
+    size_t tlength = ((notcon + 2) * notcon / 2);
+    size_t alloc = (notcon+nbase)*(notcon+nbase);
+    KpointType *mat = (KpointType *)ct.get_gmatrix((alloc + tlength + 8192)*sizeof(KpointType));
+    size_t offset = 4096 * (alloc / 4096 + 1);
+    KpointType *tmat = mat + offset;
 
     double vel = Rmg_L.get_omega() /
         ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
@@ -86,6 +91,7 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 
     if(nbase > 0)
     {
+        RmgTimer RT("MgridOrtho: 1st stage");
         // ortho to the first nbase states
         RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
         BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
@@ -94,39 +100,44 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
 
     if(!ct.davidson_2stage_ortho) return;
 
-    int st, st1, length, idx, omp_tid;
-    KpointType *sarr;
+    RmgTimer *RT1 = new RmgTimer("MgridOrtho: 1st stage update");
     char *transt = "t";
     char *uplo = "u";
     char *diag = "N";
     char *side = "R";
 
-    KpointType *tarr = new KpointType[notcon];
-
-    if (typeid(KpointType) == typeid(double))
+    if constexpr (std::is_same_v<KpointType, double>)
     {
-        double rone = 1.0, rzero = 0.0;
-        dsyrk( uplo, transt, &notcon, &pbasis_noncoll, &rone, (double *)psi_extra, &pbasis_noncoll,
-            &rzero, (double *)mat, &notcon);
+        RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
+            zero, mat, notcon);
     }
-    else
+    if constexpr (std::is_same_v<KpointType, std::complex<double>>)
     {
-        KpointType cone(1.0), czero(0.0);
-        RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, cone, psi_extra,
-                pbasis_noncoll, psi_extra, pbasis_noncoll, czero, mat, notcon);
+        RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, one, psi_extra,
+                pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, notcon);
     }
+    delete RT1;
 
     /* get the global part */
-    length = factor * notcon * notcon;
-    MPI_Allreduce(MPI_IN_PLACE, mat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
+    RT1 = new RmgTimer("MgridOrtho: allreduce");
+    int length = factor * (notcon + 2) * notcon / 2;
+    PackSqToTr("U", notcon, mat, notcon, tmat);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)tmat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    UnPackSqToTr("U", notcon, mat, notcon, tmat);
+    delete RT1;
 
     /* compute the cholesky factor of the overlap matrix then subtract off projections */
+    RT1 = new RmgTimer("MgridOrtho: cholesky");
     int info, info_trtri;
     KpointType inv_vel(1.0/sqrt(vel));
     rmg_potrf(uplo, notcon, mat, notcon, &info);
+    delete RT1;
+    RT1 = new RmgTimer("MgridOrtho: inverse");
     rmg_trtri(uplo, diag, notcon, mat, notcon, &info_trtri);
+    delete RT1;
+    RT1 = new RmgTimer("MgridOrtho: 2nd stage update");
     rmg_trmm(side, uplo, "N", diag, pbasis_noncoll, notcon, inv_vel, mat, notcon, psi_extra, pbasis_noncoll);
+    delete RT1;
 
     if (info != 0)
         throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
