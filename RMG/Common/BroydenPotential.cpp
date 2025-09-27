@@ -72,7 +72,6 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    }
 
 
-BroydenRestart:
    // Set up arrays and get delta rho
    std::vector<double> rhout(pbasis_noncoll);
    std::vector<double> rhoin(pbasis_noncoll);
@@ -110,6 +109,7 @@ BroydenRestart:
    for(int i = 0;i < pbasis;i++) dvh1[i] = vh_out[i] - vh_in[i];
    dvh.push_back(dvh1);
 
+BroydenRestart:
    if(iter_used > 0) {
 
        for(int i = 0;i < iter_used;i++) {
@@ -140,7 +140,8 @@ BroydenRestart:
        int info = 0;
        double anorm;
 
-       // Check the condition number in the 1 norm
+       // Check the condition number in the 1 norm and if it gets too large
+       // remove the oldest entry.
        anorm = dlange("1", &iter_used, &iter_used, &workmix[0][0], &ld_betamix, work);
        dgetrf(&iter_used, &iter_used, &workmix[0][0], &ld_betamix, ipiv,  &info );
        if(info)
@@ -151,9 +152,15 @@ BroydenRestart:
        {
            if(ct.verbose && pct.gridpe==0)
                printf("\nBroyden condition number = %10.4e. Restarting.\n",rcond);
-           dr_out.clear();
-           dr_in.clear();
-           dvh.clear();
+           dr_out.pop_front();
+           dr_in.pop_front();
+           dvh.pop_front();
+           iter_used--;
+           if(iter_used == 0)
+           {
+               throw RmgFatalException() << "Programming error. " << " in " 
+                     << __FILE__ << " at line " << __LINE__ << "\n";
+           }
            goto BroydenRestart;
        }
 

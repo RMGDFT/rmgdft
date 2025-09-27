@@ -1814,6 +1814,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
     }
 
+    if(Verify ("ldaU_mode", "Simple", InputMap) ) {
+        lc.charge_broyden_order = 5;
+        if(pct.worldrank == 0)
+            std::cout << "Broyden history automatically set to 5 when ldaU is enabled." << std::endl;
+    }
+
     // Potential acceleration is disabled for Pulay or Broyden mixing
     if(Verify("charge_mixing_type","Pulay", InputMap) || Verify("charge_mixing_type","Broyden", InputMap)) {
         lc.potential_acceleration_constant_step = 0.0;
