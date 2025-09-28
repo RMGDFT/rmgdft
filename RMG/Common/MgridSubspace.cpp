@@ -85,6 +85,8 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
 
     RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
     this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
+// Blocks have to be manually set in the routine before using
+//    this->BlockDiag(vtot_psi, vxc_psi);
     delete(RT1);
 
     // wavefunctions have changed, projectors have to be recalculated */
