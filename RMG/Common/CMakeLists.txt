@@ -1,5 +1,6 @@
 add_library (RMG_Common
 #GetFdFactor.cpp
+BlockDiag.cpp
 diis.cpp
 compute_vxc.cpp
 mgsmoother.cpp
