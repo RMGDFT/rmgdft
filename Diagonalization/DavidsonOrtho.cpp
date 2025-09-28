@@ -122,7 +122,7 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
     RT1 = new RmgTimer("MgridOrtho: allreduce");
     int length = factor * (notcon + 2) * notcon / 2;
     PackSqToTr("U", notcon, mat, notcon, tmat);
-    MPI_Allreduce(MPI_IN_PLACE, (double *)tmat, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((double *)tmat, length, pct.grid_comm);
     UnPackSqToTr("U", notcon, mat, notcon, tmat);
     delete RT1;
 
