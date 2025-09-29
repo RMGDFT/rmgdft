@@ -62,11 +62,10 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
 {
     RmgTimer RT0("6-BlockDiag"), *RT1;
     double gap_thr = 20.0;     // Distance between blocks of eigenvalues in eV
-    size_t N = this->nstates;
     int count_thr = std::floor(0.05*(double)this->nstates);
     std::vector<std::pair<int, int>> gaps;
     double last_eig = 1.0e20;
-    int count = 0, start = 0;
+    int count = 0, Nmax = 0, start = 0;
     for(int st=0;st < this->nstates;st++)
     {
         double eig = Ha_eV * this->Kstates[st].eig[0];
@@ -74,28 +73,29 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
         {
             gaps.push_back(std::make_pair(start, count));
             start = st;
+            Nmax = std::max(Nmax, count);
             count = 0;
         }
         last_eig = eig;
         count++;
     }
     gaps.push_back(std::make_pair(start, this->nstates - start));
-
+    Nmax = std::max(Nmax, this->nstates - start);
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    KpointType *hr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
-    KpointType *sr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
-    KpointType *vr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
+    KpointType *hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+    KpointType *sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+    KpointType *vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
 #else
-    KpointType *hr = new KpointType[N * N]();
-    KpointType *sr = new KpointType[N * N]();
-    KpointType *vr = new KpointType[N * N]();
+    KpointType *hr = new KpointType[Nmax * Nmax]();
+    KpointType *sr = new KpointType[Nmax * Nmax]();
+    KpointType *vr = new KpointType[Nmax * Nmax]();
 #endif
 
 
     for(auto &gap: gaps)
     {
-        //if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
+        if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
         this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
     }
 
