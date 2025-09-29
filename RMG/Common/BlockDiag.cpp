@@ -24,6 +24,8 @@
 #include <omp.h>
 #include <cmath>
 #include <float.h>
+#include <vector>
+#include <utility>
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -53,55 +55,77 @@ template void Kpoint<double>::BlockDiag(double *vtot, double *vxc_psi);
 template void Kpoint<std::complex<double>>::BlockDiag(double *vtot, double *vxc_psi);
 
 
-template void Kpoint<double>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, double *hr, double *sr, double *vr, double *h_psi);
-template void Kpoint<std::complex<double>>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, std::complex<double> *hr, std::complex<double> *sr, std::complex<double> *vr, std::complex<double> *h_psi);
+template void Kpoint<double>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, double *hr, double *sr, double *vr);
+template void Kpoint<std::complex<double>>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, std::complex<double> *hr, std::complex<double> *sr, std::complex<double> *vr);
 
 template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, double *vxc_psi)
 {
-    size_t N = 120;
+    RmgTimer RT0("6-BlockDiag"), *RT1;
+    double gap_thr = 20.0;     // Distance between blocks of eigenvalues in eV
+    size_t N = this->nstates;
+    int count_thr = std::floor(0.05*(double)this->nstates);
+    std::vector<std::pair<int, int>> gaps;
+    double last_eig = 1.0e20;
+    int count = 0, start = 0;
+    for(int st=0;st < this->nstates;st++)
+    {
+        double eig = Ha_eV * this->Kstates[st].eig[0];
+        if(((eig - last_eig) > gap_thr) && (count > count_thr))
+        {
+            gaps.push_back(std::make_pair(start, count));
+            start = st;
+            count = 0;
+        }
+        last_eig = eig;
+        count++;
+    }
+    gaps.push_back(std::make_pair(start, this->nstates - start));
+
+
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    KpointType *h_psi = (KpointType *)RmgMallocHost(pbasis_noncoll * this->nstates * sizeof(KpointType));
     KpointType *hr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
     KpointType *sr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
     KpointType *vr = (KpointType *)GpuMallocHost(N * N * sizeof(KpointType));
 #else
-    KpointType *h_psi = new KpointType[pbasis_noncoll * this->nstates];
     KpointType *hr = new KpointType[N * N]();
     KpointType *sr = new KpointType[N * N]();
     KpointType *vr = new KpointType[N * N]();
 #endif
 
-    this->BlockDiagInternal(vtot, vxc_psi, 0, 60, hr, sr, vr, h_psi);
-    this->BlockDiagInternal(vtot, vxc_psi, 60, 119, hr, sr, vr, h_psi);
+
+    for(auto &gap: gaps)
+    {
+        //if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
+        this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
+    }
+
+    RT1 = new RmgTimer("6-BlockDiag: ortho");
     DavidsonOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
+    delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     GpuFreeHost(vr);
     GpuFreeHost(sr);
     GpuFreeHost(hr);
-    RmgFreeHost(h_psi);
 #else
     delete [] vr;
     delete [] sr;
     delete [] hr;
-    delete [] h_psi;
 #endif
 
 }
 
-template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr, KpointType *h_psi)
+template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr)
 {
 
-    RmgTimer RT0("6-BlockDiag"), *RT1;
+    RmgTimer *RT1;
 
     KpointType alpha(1.0);
     KpointType beta(0.0);
     KpointType *newsint;
 
-    KpointType *weight = this->nl_weight;
-#if HIP_ENABLED || CUDA_ENABLED
-    weight = this->nl_weight_gpu;
-#endif
+    // Use the upper part of the wavefunction array as workspace
+    KpointType *h_psi = this->orbital_storage + (size_t)this->nstates * (size_t)pbasis_noncoll;
 
     int max_states = this->nstates;
 
@@ -133,10 +157,12 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     KpointType *psi = &this->orbital_storage[first*pbasis_noncoll];
 
     // Apply Hamiltonian to the new vectors
+#if 0
     RT1 = new RmgTimer("6-BlockDiag: Betaxpsi");
     newsint = this->newsint_local + first * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl * ct.noncoll_factor;
     this->BetaProjector->project(this, newsint, first*ct.noncoll_factor, N*ct.noncoll_factor, weight);
     delete RT1;
+#endif
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {   
@@ -213,21 +239,11 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     delete RT1;
 
 
-    // Rotate orbitals
+    // Rotate orbitals and use h_psi for scratch space
     RT1 = new RmgTimer("6-BlockDiag: rotate orbitals");
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    KpointType *npsi = (KpointType *)RmgMallocHost(N*pbasis_noncoll*sizeof(KpointType));
-#else
-    KpointType *npsi = new KpointType[N*pbasis_noncoll];
-#endif
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, npsi, pbasis_noncoll);
-    for(int idx=0;idx < N*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
+    RmgGemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
+    for(int idx=0;idx < N*pbasis_noncoll;idx++)psi[idx] = h_psi[idx];
 
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    RmgFreeHost(npsi);
-#else
-    delete [] npsi;
-#endif
     delete RT1;
 
     // Copy eigs from compact array back into state structure

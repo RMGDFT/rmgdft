@@ -105,7 +105,7 @@ public:
     void MgridSubspace (int istart, int N, int bs, double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, double *vxc_psi, int &notconv);
     void BlockDiag(double *vtot, double *vxc_psi);
-    void BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr, KpointType *h_psi);
+    void BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);
     void GetDelocalizedOrbital (void);
