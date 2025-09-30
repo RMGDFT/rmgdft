@@ -88,7 +88,22 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // The distributed solvers are handled in a different routine now
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        Subdiag_Scalapack(this, h_psi);
+        static Scalapack *SP  = NULL;
+        if(SP == NULL)
+        {
+            int last = !ct.use_folded_spectrum;
+            SP = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, this->nstates,
+                    ct.scalapack_block_factor, last, pct.grid_comm);
+        }
+        if(SP->GetN() != this->nstates)
+        {
+            delete SP;
+            int last = !ct.use_folded_spectrum;
+            SP = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, this->nstates,
+                    ct.scalapack_block_factor, last, pct.grid_comm);
+        }
+
+        Subdiag_Scalapack(this, h_psi, 0, nstates, *SP);
         return;
     }
 
@@ -110,8 +125,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     KpointType *D = new KpointType[2*nstates];
 
-//  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
-//  for HIP its a GPU buffer.
+    //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
+    //  for HIP its a GPU buffer.
     KpointType *psi_d = orbital_storage;
 #if HIP_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU

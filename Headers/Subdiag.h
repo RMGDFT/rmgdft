@@ -51,6 +51,8 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 template <typename KpointType>
 char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
+char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int last_state, Scalapack &SP);
+template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi);
 template <typename KpointType>
 char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
