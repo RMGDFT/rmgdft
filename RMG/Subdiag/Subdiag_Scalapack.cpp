@@ -157,10 +157,18 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     {
         RmgTimer *RT2 = new RmgTimer("4-Diagonalization: ELPA/PDSYGVX/PZHEGVX");
 
-        // Copy Aij into Bij to pass to eigensolver
-        for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
 
-        SP.generalized_eigenvectors(distAij, distSij, eigs, distBij);
+        if(0 && ct.norm_conserving_pp)
+        {
+            SP.symherm_eigenvectors(distAij, eigs, distBij);
+            for(int ix=0;ix < dist_length;ix++) distAij[ix] = distBij[ix];
+        }
+        else
+        {
+            // Copy Aij into Bij to pass to eigensolver
+            for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
+            SP.generalized_eigenvectors(distAij, distSij, eigs, distBij);
+        }
         delete RT2;
 
     }
