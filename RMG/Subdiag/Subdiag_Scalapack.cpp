@@ -132,7 +132,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     psi_dev = psi;
 #endif
 
-    HS_Scalapack (num_states, pbasis_noncoll, psi_dev, hpsi, &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij);
+    HS_Scalapack (num_states, pbasis_noncoll, psi_dev, &hpsi[first_state * pbasis_noncoll], &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij);
 
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
@@ -181,13 +181,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     // Begin rotation
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
     KpointType *matrix_diag = new KpointType[num_states];
-    PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
+    PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
 
     // And finally copy them back
     size_t istart = (size_t)first_state * (size_t)pbasis_noncoll;
     size_t tlen = (size_t)num_states * (size_t)pbasis_noncoll * sizeof(KpointType); 
 
-    memcpy(&kptr->orbital_storage[istart], hpsi, tlen);
+    memcpy(&kptr->orbital_storage[istart], &hpsi[first_state * pbasis_noncoll], tlen);
 
     // And finally make sure they follow the same sign convention when using hybrid XC
     // Optimize this for GPUs!
@@ -206,8 +206,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 #else
         psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
 #endif
-        PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, hpsi,  matrix_diag);
-        memcpy(&kptr->vexx[first_state * pbasis_noncoll], hpsi, tlen);
+        PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
+        memcpy(&kptr->vexx[first_state * pbasis_noncoll], &hpsi[first_state * pbasis_noncoll], tlen);
     }
 
     delete [] matrix_diag;

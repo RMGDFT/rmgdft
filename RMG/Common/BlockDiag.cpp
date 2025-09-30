@@ -168,6 +168,16 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     ApplyHamiltonianBlock<KpointType> (this, first, N, h_psi, vtot, vxc_psi);
     delete RT1;
 
+    if(0)
+    if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        int last = !ct.use_folded_spectrum;
+        Scalapack SP(ct.subdiag_groups, pct.thisimg, ct.images_per_node, N,
+                ct.scalapack_block_factor, last, pct.grid_comm);
+        Subdiag_Scalapack(this, h_psi, first, N, SP);
+        return;
+    }
+
 
     // Update the reduced Hamiltonian and S matrices
     RT1 = new RmgTimer("6-BlockDiag: matrix setup/reduce");

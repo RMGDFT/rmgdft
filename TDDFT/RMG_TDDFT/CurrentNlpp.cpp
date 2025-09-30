@@ -145,7 +145,7 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
         int st_start = ib *nb + tddft_start_state;
         int st_end   = st_start + this_block_size;
 
-        AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, st_end);
+        AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size);
 
         for (int st1 = 0; st1 < this_block_size; st1++)
         {
