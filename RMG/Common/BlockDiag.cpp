@@ -45,6 +45,7 @@
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
+#include "RmgMatrix.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -61,8 +62,14 @@ template void Kpoint<std::complex<double>>::BlockDiagInternal(double *vtot, doub
 template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, double *vxc_psi)
 {
     RmgTimer RT0("6-BlockDiag"), *RT1;
-    double gap_thr = 20.0;     // Distance between blocks of eigenvalues in eV
+
+    // Distance between blocks of eigenvalues in eV
+    double gap_thr = 20.0;
+
+    // Required size of block before we treat it as distinct object
     int count_thr = std::floor(0.05*(double)this->nstates);
+
+    // Identify the start and size of each block
     std::vector<std::pair<int, int>> gaps;
     double last_eig = 1.0e20;
     int count = 0, Nmax = 0, start = 0;
@@ -93,15 +100,15 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
 #endif
 
 
+    // Loop over blocks.
     for(auto &gap: gaps)
     {
         if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
         this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
+        RT1 = new RmgTimer("6-BlockDiag: ortho");
+        DavidsonOrtho(gaps[0].first, gaps[0].second, pbasis_noncoll, this->orbital_storage);
+        delete RT1;
     }
-
-    RT1 = new RmgTimer("6-BlockDiag: ortho");
-    DavidsonOrtho(0, this->nstates, pbasis_noncoll, this->orbital_storage);
-    delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     GpuFreeHost(vr);
@@ -156,21 +163,6 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     // short version
     KpointType *psi = &this->orbital_storage[first*pbasis_noncoll];
 
-    // Apply Hamiltonian to the new vectors
-#if 0
-    RT1 = new RmgTimer("6-BlockDiag: Betaxpsi");
-    newsint = this->newsint_local + first * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl * ct.noncoll_factor;
-    this->BetaProjector->project(this, newsint, first*ct.noncoll_factor, N*ct.noncoll_factor, weight);
-    delete RT1;
-#endif
-
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-    {   
-        RmgTimer RTL("6-BlockDiag: ldaUop x psi"); 
-        newsint = this->orbitalsint_local + first * this->OrbitalProjector->get_num_nonloc_ions() * 
-            this->OrbitalProjector->get_pstride() * ct.noncoll_factor;
-        LdaplusUxpsi(this, first, N, newsint);
-    }
     RT1 = new RmgTimer("6-BlockDiag: apply hamiltonian");
     ApplyHamiltonianBlock<KpointType> (this, first, N, h_psi, vtot, vxc_psi);
     delete RT1;
@@ -179,40 +171,14 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     // Update the reduced Hamiltonian and S matrices
     RT1 = new RmgTimer("6-BlockDiag: matrix setup/reduce");
     RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce it
-    MPI_Request MPI_reqAij;
-    if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, N * N * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
-    else
-        BlockAllreduce((double *)hr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
-#else
-    BlockAllreduce((double *)hr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
-#endif
+    PackSqToTr("U", N, hr, N, vr);
+    BlockAllreduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
+    UnPackSqToTr("U", N, hr, N, vr);
 
     RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for Aij request to finish
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
-#endif
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce Sij request
-    MPI_Request MPI_reqSij;
-    if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, N * N * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
-    else
-        BlockAllreduce((double *)sr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
-#else
-    BlockAllreduce((double *)sr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
-#endif
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for S request to finish
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-#endif
+    PackSqToTr("U", N, sr, N, vr);
+    BlockAllreduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
+    UnPackSqToTr("U", N, sr, N, vr);
     delete RT1;
 
     std::complex<double> *hr_C = (std::complex<double> *)hr;
