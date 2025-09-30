@@ -592,6 +592,16 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             }
 
             CurrentNlpp(Kptr[kpt], desca, ct.tddft_start_state);
+            if(0)
+            {
+                for(int i = 0; i < n2; i++) 
+                {
+                    Kptr[kpt]->Pxmatrix_cpu[i] = 0.0;
+                    Kptr[kpt]->Pymatrix_cpu[i] = 0.0;
+                    Kptr[kpt]->Pzmatrix_cpu[i] = 0.0;
+                }
+                CurrentOperator(Kptr[kpt], desca, ct.tddft_start_state);
+            }
         }
 
     }

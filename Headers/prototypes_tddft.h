@@ -51,6 +51,8 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
 void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
 void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state);
+void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
+void CurrentOperator (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 
 template <typename KpointType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);

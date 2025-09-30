@@ -8,6 +8,7 @@ GetNewRho_rmgtddft.cpp
 VecPmatrix.cpp
 CalculatePrho.cpp
 CurrentNlpp.cpp
+CurrentOperator.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${RMG_BINARY_DIR}/TDDFT/Headers/")
