@@ -90,6 +90,12 @@ public:
     void generalized_eigenvectors_scalapack(std::complex<double> *a, std::complex<double> *b, 
              double *ev, std::complex<double> *q);
 
+    void symherm_eigenvectors(double *a, double *ev, double *q);
+    void symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q);
+
+    void symherm_eigenvectors_scalapack(double *a, double *ev, double *q);
+    void symherm_eigenvectors_scalapack(std::complex<double> *a, double *ev, std::complex<double> *q);
+
 #if USE_ELPA
     void generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q);
     void generalized_eigenvectors_elpa(std::complex<double> *a, std::complex<double> *b,

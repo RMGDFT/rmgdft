@@ -637,6 +637,103 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
 }
 
+
+void Scalapack::symherm_eigenvectors(double *a, double *ev, double *q)
+{
+#if USE_ELPA
+    not programmed so this will throw a compile error
+#endif    
+
+    this->symherm_eigenvectors_scalapack(a, ev, q);
+}
+
+void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
+{
+    /****************** Find Matrix of Eigenvectors *****************************/
+    /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+    char *uplo = "l", *jobz = "v";
+    int info, ione = 1;
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    // Get workspace required
+    int NN = std::max( N, this->NB);
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+    int lwork = 2*NP*this->NB + NQ*this->NB + this->NB*this->NB;
+    double *work2 = new double[lwork];
+    
+    double *nwork = new double[lrwork];
+    int *iwork = new int[liwork];
+
+    // and now solve it 
+    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
+            ev, a, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] work2;
+}
+
+
+void Scalapack::symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q)
+{
+#if USE_ELPA
+    not programmed so this will throw a compile error
+#endif    
+    this->symherm_eigenvectors_scalapack(a, ev, q);
+}
+
+void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *ev, std::complex<double> *q)
+{
+    int ione=1, info;
+    char *uplo = "l", *jobz = "v";
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    // Get workspace required
+     int NN = std::max( N, this->NB);
+
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lwork = N + ( NP+NQ+this->NB )*this->NB;
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+
+    double *rwork = new double[lrwork];
+    double *nwork = new double[lwork*2];
+    int *iwork = new int[liwork];
+
+
+    // and now solve it
+    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
+            ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+        rmg_printf ("\n pzheevd failed, info is %d", info);
+        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] rwork;
+}
+
 #if USE_ELPA
 void Scalapack::generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q)
 {
