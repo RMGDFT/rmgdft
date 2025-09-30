@@ -672,8 +672,8 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
     int *iwork = new int[liwork];
 
     // and now solve it 
-    pdsyevd(jobz, uplo, &N, q, &ione, &ione, desca,
-            ev, a, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
+    pdsyevd(jobz, uplo, &N, a, &ione, &ione, desca,
+            ev, q, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
 
     if (info)
     {
@@ -720,8 +720,8 @@ void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *
 
 
     // and now solve it
-    pzheevd(jobz, uplo, &N, (double *)q, &ione, &ione, desca,
-            ev, (double *)a, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+    pzheevd(jobz, uplo, &N, (double *)a, &ione, &ione, desca,
+            ev, (double *)q, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 
     if (info)
     {
