@@ -1164,6 +1164,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_rmm_diis", &lc.use_rmm_diis, true,
             "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
 
+    If.RegisterInputKey("use_block_diag", &lc.use_block_diag, false,
+            "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS);
+
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
             "When a semi-local pseudopotential is being used projectors will be generated using Bloechl's procedure with Bessel functions as the basis set if this is true.", PSEUDO_OPTIONS|EXPERIMENTAL_OPTION);
 

@@ -550,6 +550,9 @@ public:
     /* Use RMM-DIIS? */
     bool use_rmm_diis;
 
+    /* Use blocked diagonalization */
+    bool use_block_diag;
+
     /*Charge Mixing type*/
     int charge_mixing_type;
 
