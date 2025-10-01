@@ -89,15 +89,19 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     gaps.push_back(std::make_pair(start, this->nstates - start));
     Nmax = std::max(Nmax, this->nstates - start);
 
+    KpointType *hr=NULL, *sr=NULL, *vr=NULL;
+    if(ct.subdiag_driver != SUBDIAG_SCALAPACK && ct.subdiag_driver != SUBDIAG_ELPA)
+    {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    KpointType *hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-    KpointType *sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-    KpointType *vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        KpointType *hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        KpointType *sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        KpointType *vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
 #else
-    KpointType *hr = new KpointType[Nmax * Nmax]();
-    KpointType *sr = new KpointType[Nmax * Nmax]();
-    KpointType *vr = new KpointType[Nmax * Nmax]();
+        KpointType *hr = new KpointType[Nmax * Nmax]();
+        KpointType *sr = new KpointType[Nmax * Nmax]();
+        KpointType *vr = new KpointType[Nmax * Nmax]();
 #endif
+    }
 
 
     // Loop over blocks.
@@ -110,6 +114,8 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
             DavidsonOrtho(gap.first, gap.second, pbasis_noncoll, this->orbital_storage);
         delete RT1;
     }
+
+    if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     GpuFreeHost(vr);
