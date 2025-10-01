@@ -177,7 +177,7 @@ protected:
     MPI_Comm used_comm; // holds processes that participate in scalapack ops
                         // may include more than one group
     MPI_Comm broadcast_comm;  // holds root process in group 0 and any leftovers
-
+    MPI_Group grp_world, grp_this;
 };
 
 #endif

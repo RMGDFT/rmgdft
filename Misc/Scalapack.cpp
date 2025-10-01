@@ -50,7 +50,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     MPI_Comm_size(rootcomm, &this->npes);
     MPI_Comm_rank(rootcomm, &this->root_rank);
-    MPI_Group grp_world, grp_this;
 
     if(this->npes < images_per_node)
         throw RmgFatalException() << "NPES " <<  this->npes << " < images_per_node " << images_per_node << " in " << __FILE__ << " at line " << __LINE__ << ".\n";
@@ -129,10 +128,10 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
 
     // Get the world rank mapping of this groups processes since blacs uses world group ranking
-    MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
-    MPI_Comm_group (this->comm, &grp_this);
+    MPI_Comm_group (MPI_COMM_WORLD, &this->grp_world);
+    MPI_Comm_group (this->comm, &this->grp_this);
     MPI_Comm_size (this->comm, &this->scalapack_npes);
-    MPI_Group_translate_ranks (grp_this, this->scalapack_npes, tgmap, grp_world, pmap);
+    MPI_Group_translate_ranks (this->grp_this, this->scalapack_npes, tgmap, this->grp_world, pmap);
 
     // Now set up the blacs with nprow*npcol
     //std::cout << "scalapack_npes=  " << this->scalapack_npes << std::endl;
@@ -1082,6 +1081,10 @@ Scalapack::~Scalapack(void)
 {
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
+    MPI_Comm_free(&this->used_comm);
+    MPI_Comm_free(&this->broadcast_comm);
+    MPI_Group_free(&this->grp_world);
+    MPI_Group_free(&this->grp_this);
     delete [] this->dist_desca;
     delete [] this->local_desca;
 #if USE_ELPA
