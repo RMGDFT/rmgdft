@@ -109,10 +109,12 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     {
         if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
         this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
-        RT1 = new RmgTimer("6-BlockDiag: ortho");
         if(gaps.size() > 1)
-            DavidsonOrtho(gap.first, gap.second, pbasis_noncoll, this->orbital_storage);
-        delete RT1;
+        {
+            RmgTimer RT2("6-BlockDiag: ortho");
+            DavidsonOrtho(gap.first, gap.second, pbasis_noncoll,
+                          this->orbital_storage, ct.davidson_2stage_ortho);
+        }
     }
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;

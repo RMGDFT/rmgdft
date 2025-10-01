@@ -240,13 +240,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
 
-        //if(vcycle != (ct.eig_parm.mucycles-1))
-        {
-            RmgTimer RTO("3-MgridSubspace: ortho");
-            ct.davidson_2stage_ortho=true;
-            DavidsonOrtho(first, this->nstates-first,
-                          pbasis_noncoll, this->orbital_storage);
-        }
+        RmgTimer RTO("3-MgridSubspace: ortho");
+        DavidsonOrtho(first, this->nstates-first,
+                      pbasis_noncoll, this->orbital_storage, true);
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
