@@ -176,10 +176,21 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        int last = !ct.use_folded_spectrum;
-        Scalapack SP(ct.subdiag_groups, pct.thisimg, ct.images_per_node, N,
-                ct.scalapack_block_factor, last, pct.grid_comm);
-        Subdiag_Scalapack(this, h_psi, first, N, SP, true);
+        Scalapack *SP;
+        static std::unordered_map<uint64_t, Scalapack *> SPS;
+        uint64_t hash = first << 32 + N;
+        if(SPS.contains(hash))
+        {
+            SP = SPS[hash];
+        }
+        else
+        {
+            int last = !ct.use_folded_spectrum;
+            SP = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, N,
+                    ct.scalapack_block_factor, last, pct.grid_comm);
+            SPS.insert({hash, SP});
+        }
+        Subdiag_Scalapack(this, h_psi, first, N, *SP, true);
         return;
     }
 
