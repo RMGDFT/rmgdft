@@ -49,15 +49,15 @@ Scalapack *MainSp;
 extern Scalapack *MainSp;
 
 template <typename KpointType>
-char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int last_state, Scalapack &SP);
+char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int last_state, Scalapack &SP, bool use_symmetric);
 
 
-template char * Subdiag_Scalapack<double> (Kpoint<double> *kptr, double *hpsi, int first_state, int last_state, Scalapack &SP);
-template char * Subdiag_Scalapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *hpsi, int first_state, int last_state, Scalapack &SP);
+template char * Subdiag_Scalapack<double> (Kpoint<double> *kptr, double *hpsi, int first_state, int last_state, Scalapack &SP, bool use_symmetric);
+template char * Subdiag_Scalapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *hpsi, int first_state, int last_state, Scalapack &SP, bool use_symmetric);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
-char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int num_states, Scalapack &SP)
+char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int num_states, Scalapack &SP, bool use_symmetric)
 {
     RmgTimer *RT1;
     int my_rank;
@@ -132,7 +132,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     psi_dev = psi;
 #endif
 
-    HS_Scalapack (num_states, pbasis_noncoll, psi_dev, &hpsi[first_state * pbasis_noncoll], &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij);
+    HS_Scalapack (num_states, pbasis_noncoll, psi_dev, &hpsi[first_state * pbasis_noncoll], &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij, use_symmetric);
 
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
@@ -158,7 +158,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
         RmgTimer *RT2 = new RmgTimer("4-Diagonalization: ELPA/PDSYGVX/PZHEGVX");
 
 
-        if(0 && ct.norm_conserving_pp)
+        if(use_symmetric && ct.norm_conserving_pp)
         {
             SP.symherm_eigenvectors(distAij, eigs, distBij);
             for(int ix=0;ix < dist_length;ix++) distAij[ix] = distBij[ix];

@@ -45,11 +45,11 @@
 
 
 
-template void HS_Scalapack (int nstates, int pbasis_noncoll, double *psi, double *hpsi, double *ns, int *desca, double *distHij, double *distSij);
-template void HS_Scalapack (int nstates, int pbasis_noncoll, std::complex<double> *psi, std::complex<double> *hpsi, std::complex<double> *ns, int *desca, std::complex<double> *distHij, std::complex<double> *distSij);
+template void HS_Scalapack (int nstates, int pbasis_noncoll, double *psi, double *hpsi, double *ns, int *desca, double *distHij, double *distSij, bool use_symmetric);
+template void HS_Scalapack (int nstates, int pbasis_noncoll, std::complex<double> *psi, std::complex<double> *hpsi, std::complex<double> *ns, int *desca, std::complex<double> *distHij, std::complex<double> *distSij, bool use_symmetric);
 
 template <typename KpointType>
-void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij)
+void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij, bool use_symmetric)
 {
     RmgTimer *RT1;
 
@@ -170,61 +170,62 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
 
 
-
-        RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-
-        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
-                &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
-        delete RT1a;
-
-        RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-        BlockAllreduce(block_matrix, this_block_size * length_block , pct.grid_comm);
-        delete RT1a;
-
-        //block_matrix to distHij;
-        if(myrow == ib%nprow)
+        if(!use_symmetric || !ct.norm_conserving_pp)
         {
-            int istart = (ib/nprow) *nb;
-            for(int jb = ib; jb < num_blocks; jb++)
+            RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
+
+            RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
+                    &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
+            delete RT1a;
+
+            RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
+            BlockAllreduce(block_matrix, this_block_size * length_block , pct.grid_comm);
+            delete RT1a;
+
+            //block_matrix to distHij;
+            if(myrow == ib%nprow)
             {
-                if(mycol == jb%npcol)
-                    //  block (ib,jb) in this processor
+                int istart = (ib/nprow) *nb;
+                for(int jb = ib; jb < num_blocks; jb++)
                 {
-                    int this_block_size_col  = std::min(mb, nstates - mb * jb);
-                    int jstart = (jb/npcol) * mb;
-                    for(int i = 0; i < this_block_size; i++)
+                    if(mycol == jb%npcol)
+                        //  block (ib,jb) in this processor
                     {
-                        for(int j = 0; j < this_block_size_col; j++)
+                        int this_block_size_col  = std::min(mb, nstates - mb * jb);
+                        int jstart = (jb/npcol) * mb;
+                        for(int i = 0; i < this_block_size; i++)
                         {
-                            distSij[(jstart + j) * mxllda + i + istart] = block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i];
+                            for(int j = 0; j < this_block_size_col; j++)
+                            {
+                                distSij[(jstart + j) * mxllda + i + istart] = block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i];
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if(mycol == ib%npcol)
-        {
-            int istart = (ib/npcol) *nb;
-            for(int jb = ib; jb < num_blocks; jb++)
+            if(mycol == ib%npcol)
             {
-                if(myrow == jb%nprow)
-                    //  block (jb,ib) in this processor
+                int istart = (ib/npcol) *nb;
+                for(int jb = ib; jb < num_blocks; jb++)
                 {
-                    int this_block_size_col  = std::min(mb, nstates - mb * jb);
-                    int jstart = (jb/nprow) * mb;
-                    for(int i = 0; i < this_block_size; i++)
+                    if(myrow == jb%nprow)
+                        //  block (jb,ib) in this processor
                     {
-                        for(int j = 0; j < this_block_size_col; j++)
+                        int this_block_size_col  = std::min(mb, nstates - mb * jb);
+                        int jstart = (jb/nprow) * mb;
+                        for(int i = 0; i < this_block_size; i++)
                         {
-                            distSij[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i]);
+                            for(int j = 0; j < this_block_size_col; j++)
+                            {
+                                distSij[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i]);
+                            }
                         }
                     }
-                }
 
+                }
             }
         }
-
     }
 
 

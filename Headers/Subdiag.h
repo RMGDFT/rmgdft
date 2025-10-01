@@ -51,7 +51,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 template <typename KpointType>
 char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
-char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int last_state, Scalapack &SP);
+char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_state, int last_state, Scalapack &SP, bool use_symmetric);
 template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi);
 template <typename KpointType>
@@ -101,7 +101,7 @@ template <typename KpointType>
 int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *V, int M, int N, int ld);
 
 template <typename KpointType>
-void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij);
+void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij, bool use_symmetric);
 
 template <typename KpointType>
 void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);

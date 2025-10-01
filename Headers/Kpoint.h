@@ -96,7 +96,7 @@ public:
     void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
-    void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver);
+    void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver, bool use_symmetric);
     void KineticEnergyDensity(double *ked);
     void ComputeHpsi (double *vtot_eig, double *vxc_psi, KpointType *h_psi);
     void ComputeHcore (double *vtot_eig, double *vxc_psi, KpointType *Hcore, KpointType *Hcore_kin, KpointType *Hij_localpp);
