@@ -99,7 +99,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
             SP = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, this->nstates,
                     ct.scalapack_block_factor, last, pct.grid_comm);
         }
-
+        if(!ct.is_gamma) use_symmetric = false;
         Subdiag_Scalapack(this, h_psi, 0, nstates, *SP, use_symmetric);
         return;
     }
