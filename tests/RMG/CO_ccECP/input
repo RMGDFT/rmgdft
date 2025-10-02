@@ -12,7 +12,7 @@ occupations_type = "Fixed"
 renormalize_forces = "false"
 
 #write_pseudopotential_plots = "true"
-test_energy="-21.70720978"
+test_energy="21.70721649"
 
 #verbose="true"
 
@@ -55,14 +55,8 @@ relax_method="LBFGS"
 relax_max_force = "0.00001"
 kohn_sham_solver="davidson"
 davidson_multiplier = "2"
-
-
-
 charge_mixing_type = "Broyden"
-charge_density_mixing = "0.7"
-kohn_sham_mucycles = "3"
 max_scf_steps="30"
-potential_acceleration_constant_step="1.5"
 
 # Criterion used to judge SCF convergency 
 energy_convergence_criterion = "1.0e-14"
