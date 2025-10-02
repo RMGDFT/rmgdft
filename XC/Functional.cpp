@@ -516,7 +516,14 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         double netxc=0.0, nvtxc=0.0;
         fgobj<double> trho;
         for(int ix=0;ix < this->pbasis;ix++)
-            trho[ix] = rho_in[ix] + rho_in[ix+this->pbasis] + rho_core[ix];
+        {
+            trho[ix] = rho_in[ix] + rho_core[ix];
+         }
+        if(nspin == 2)
+        {
+            for(int ix=0;ix < this->pbasis;ix++)
+                trho[ix] += rho_in[ix+this->pbasis];
+        }
         this->nlc_rmg(trho.data(), rho_core, netxc, nvtxc, v_out);
         vtxc += nvtxc;
         etxc += netxc;
