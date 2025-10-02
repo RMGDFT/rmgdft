@@ -394,6 +394,13 @@ template <typename OrbitalType> bool Scf (
             ct.potential_acceleration_constant_step = 0.0;
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
+                Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                        Kptr[kpt]->nstates*ct.noncoll_factor, 
+                        Kptr[kpt]->nl_weight);
+                if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+                {
+                    LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+                }
                 Kptr[kpt]->Subdiag(vtot_psi.data(), vxc_psi, ct.subdiag_driver, false);
                 Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                         Kptr[kpt]->nstates*ct.noncoll_factor, 
