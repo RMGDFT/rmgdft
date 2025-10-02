@@ -12,7 +12,7 @@ occupations_type = "Fixed"
 renormalize_forces = "false"
 
 #write_pseudopotential_plots = "true"
-test_energy="21.70721649"
+test_energy="-21.70721649"
 
 #verbose="true"
 
