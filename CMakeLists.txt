@@ -80,6 +80,8 @@ set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
 set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
 if(BLAS_PROFILING)
