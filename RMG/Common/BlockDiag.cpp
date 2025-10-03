@@ -138,7 +138,6 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    KpointType *newsint;
 
     // Use the upper part of the wavefunction array as workspace
     KpointType *h_psi = this->orbital_storage + (size_t)this->nstates * (size_t)pbasis_noncoll;
