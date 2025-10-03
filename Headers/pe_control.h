@@ -151,6 +151,7 @@ typedef struct
     /** Processor kpoint- coordinate for domain decomposition */
     /*  paralleled for kpoint */
     int pe_kpoint;
+    int kpsub_rank;
 
     /* kpoint index for start and end for a subdomain processors */
     int kstart;
