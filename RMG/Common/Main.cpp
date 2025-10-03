@@ -462,16 +462,6 @@ template <typename OrbitalType> void run (
             {   
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
-            else
-            {
-                spinobj<double> &rho = *(Kptr[0]->rho);
-                spinobj<double> &vxc = *(Kptr[0]->vxc);
-                fgobj<double> &rhoc = *(Kptr[0]->rhoc);
-                fgobj<double> &rhocore = *(Kptr[0]->rhocore);
-                fgobj<double> &vnuc = *(Kptr[0]->vnuc);
-                fgobj<double> &vh = *(Kptr[0]->vh);
-
-            }
             ct.cube_rho = false;
             RmgTddft (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             break;
