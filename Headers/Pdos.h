@@ -36,6 +36,7 @@
 #include "Exxbase.h"
 #include "Kpoint.h"
 
+template <typename T> void STS_calc(Kpoint<T> **Kptr, double Ef, int line_start[3], int line_end[3]);
 template <typename T> void Ldos_calc(Kpoint<T> **Kptr, std::vector<double> eigs, double Ef);
 
 template <typename T> class Pdos {

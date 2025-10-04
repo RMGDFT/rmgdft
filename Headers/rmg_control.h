@@ -904,6 +904,7 @@ public:
     std::vector<double> stm_height_list;
     // starting and endiing grid points for ldos calculation
     int ldos_start_grid[3], ldos_end_grid[3];
+    int sts_start_grid[3], sts_end_grid[3];
     
     std::vector<std::string> file_atomic_orbit;
 

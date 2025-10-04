@@ -156,6 +156,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
     Ri::ReadVector<int> ldos_start_grid;
     Ri::ReadVector<int> ldos_end_grid;
+    Ri::ReadVector<int> sts_start_grid;
+    Ri::ReadVector<int> sts_end_grid;
     Ri::ReadVector<int> def_ldos_start_grid({{-1,-1,-1}});
     Ri::ReadVector<int> def_ldos_end_grid({{-1,-1,-1}});
 
@@ -288,6 +290,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "a ending grid point for ldos caclualtion", 
                      "You must specify a triplet of grid index ix1, iy1, iz1 . ", CELL_OPTIONS);
 
+    If.RegisterInputKey("sts_start_grid", &sts_start_grid, &def_ldos_start_grid, 3, OPTIONAL, 
+                     "a grid point for starting sts caclualtion", 
+                     "You must specify a triplet of grid index ix0, iy0, iz0 . ", CELL_OPTIONS);
+    If.RegisterInputKey("sts_end_grid", &sts_end_grid, &def_ldos_end_grid, 3, OPTIONAL, 
+                     "a ending grid point for sts caclualtion", 
+                     "You must specify a triplet of grid index ix1, iy1, iz1 . start and end points must form a line on real space grids ", CELL_OPTIONS);
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -981,9 +989,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Block size to use when applying the non-local and S operators. ",
             "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ", PERF_OPTIONS);
 
-    If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
+    If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 1, INT_MAX, 201,
             CHECK_AND_FIX, OPTIONAL,
-            "",
+            "number of E points for ldos and sts calculation",
             "");
 
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
@@ -1597,6 +1605,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
             lc.ldos_start_grid[ix] = ldos_start_grid.vals.at(ix);
             lc.ldos_end_grid[ix] = ldos_end_grid.vals.at(ix);
+            lc.sts_start_grid[ix] = sts_start_grid.vals.at(ix);
+            lc.sts_end_grid[ix] = sts_end_grid.vals.at(ix);
         }
     }
     catch (const std::out_of_range& oor) {
