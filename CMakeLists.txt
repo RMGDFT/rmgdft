@@ -27,8 +27,8 @@
 
 cmake_minimum_required (VERSION 3.17) 
 
-set(RMG_VERSION_MAJOR "6")
-set(RMG_VERSION_MINOR "2")
+set(RMG_VERSION_MAJOR "7")
+set(RMG_VERSION_MINOR "0")
 set(RMG_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${RMG_VERSION_MAJOR}.${RMG_VERSION_MINOR}.${RMG_VERSION_PATCH})
 
@@ -79,6 +79,8 @@ set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic da
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
 set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)

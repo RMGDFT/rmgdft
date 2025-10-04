@@ -84,10 +84,10 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
 
 
     RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
-    this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver, true);
-//  To use BlockDiag comment out the Subdiag line above and uncomment
-//  the line below. Block boundaries are set in BlockDiag.
-//    this->BlockDiag(vtot_psi, vxc_psi);
+    if(ct.use_block_diag)
+        this->BlockDiag(vtot_psi, vxc_psi);
+    else
+        this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver, true);
     delete(RT1);
 
     // wavefunctions have changed, projectors have to be recalculated */
@@ -240,13 +240,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
             Kstates[is].eig[1] = Kstates[is].eig[0];
         }
 
-        //if(vcycle != (ct.eig_parm.mucycles-1))
-        {
-            RmgTimer RTO("3-MgridSubspace: ortho");
-            ct.davidson_2stage_ortho=true;
-            DavidsonOrtho(first, this->nstates-first,
-                          pbasis_noncoll, this->orbital_storage);
-        }
+        RmgTimer RTO("3-MgridSubspace: ortho");
+        DavidsonOrtho(first, this->nstates-first,
+                      pbasis_noncoll, this->orbital_storage, true);
     }
 
     // Set trade images coalesce factor back to 1 for other routines.

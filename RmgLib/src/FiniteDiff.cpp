@@ -1512,8 +1512,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + ixs + iys] + cx[0] * A[iz - ixs - iys];
@@ -1541,8 +1539,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + ixs + 1] + cx[0] * A[iz - ixs - 1];
@@ -1570,8 +1566,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + iys + 1] + cx[0] * A[iz - iys - 1];
@@ -1599,8 +1593,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz - ixs + iys] + cx[0] * A[iz + ixs - iys];
@@ -1613,7 +1605,7 @@ else if(gx && !gy && !gz)
                     if constexpr(order >= 10)
                         bgx[iz] += -cx[4] * A[iz - 5*ixs + 5*iys] + cx[4] * A[iz + 5*ixs - 5*iys];
                     if constexpr(order >= 12)
-                        bgz[iz] += -cz[5] * A[iz - 6*ixs + 6*iys] + cz[5] * A[iz + 6*ixs - 6*iys];
+                        bgx[iz] += -cz[5] * A[iz - 6*ixs + 6*iys] + cz[5] * A[iz + 6*ixs - 6*iys];
                 }                   /* end for */
             }
         }
@@ -1628,8 +1620,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz - ixs + 1] + cx[0] * A[iz + ixs - 1];
@@ -1657,8 +1647,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz - iys + 1] + cx[0] * A[iz + iys - 1];
@@ -1686,8 +1674,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + 1*ixs + 1*iys + 1] + cx[0] * A[iz - 1*ixs - 1*iys - 1];
@@ -1715,8 +1701,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz - 1*ixs - 1*iys + 1] + cx[0] * A[iz + 1*ixs + 1*iys - 1];
@@ -1744,8 +1728,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys + 1] + cx[0] * A[iz - 1*ixs + 1*iys - 1];
@@ -1773,8 +1755,6 @@ else if(gx && !gy && !gz)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
                 RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgx[iz] += -cx[0] * A[iz + 1*ixs - 1*iys - 1] + cx[0] * A[iz - 1*ixs + 1*iys + 1];
@@ -1863,9 +1843,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + ixs + iys] + cy[0] * A[iz - ixs - iys];
@@ -1892,9 +1870,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + ixs + 1] + cy[0] * A[iz - ixs - 1];
@@ -1921,9 +1897,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + iys + 1] + cy[0] * A[iz - iys - 1];
@@ -1950,9 +1924,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz - ixs + iys] + cy[0] * A[iz + ixs - iys];
@@ -1965,7 +1937,7 @@ else if(gy && !gx && !gz)
                     if constexpr(order >= 10)
                         bgy[iz] += -cy[4] * A[iz - 5*ixs + 5*iys] + cy[4] * A[iz + 5*ixs - 5*iys];
                     if constexpr(order >= 12)
-                        bgz[iz] += -cz[5] * A[iz - 6*ixs + 6*iys] + cz[5] * A[iz + 6*ixs - 6*iys];
+                        bgy[iz] += -cy[5] * A[iz - 6*ixs + 6*iys] + cy[5] * A[iz + 6*ixs - 6*iys];
                 }
             }
         }
@@ -1979,9 +1951,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz - ixs + 1] + cy[0] * A[iz + ixs - 1];
@@ -2008,9 +1978,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz - iys + 1] + cy[0] * A[iz + iys - 1];
@@ -2037,9 +2005,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + 1*ixs + 1*iys + 1] + cy[0] * A[iz - 1*ixs - 1*iys - 1];
@@ -2066,9 +2032,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz - 1*ixs - 1*iys + 1] + cy[0] * A[iz + 1*ixs + 1*iys - 1];
@@ -2095,9 +2059,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys + 1] + cy[0] * A[iz - 1*ixs + 1*iys - 1];
@@ -2124,9 +2086,7 @@ else if(gy && !gx && !gz)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
                     bgy[iz] += -cy[0] * A[iz + 1*ixs - 1*iys - 1] + cy[0] * A[iz - 1*ixs + 1*iys + 1];
@@ -2215,8 +2175,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2244,8 +2202,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2273,8 +2229,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2302,8 +2256,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2331,8 +2283,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2360,8 +2310,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2389,8 +2337,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2418,8 +2364,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2447,8 +2391,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {
@@ -2476,8 +2418,6 @@ else if(gz && !gx && !gy)
             for (int iy = order/2; iy < dimy + order/2; iy++)
             {
                 RmgType *A = &a[iy*iys + ix*ixs];
-                RmgType *bgx = &gx[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
-                RmgType *bgy = &gy[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 RmgType *bgz = &gz[(iy - order/2)*dimz + (ix - order/2)*dimy*dimz - order/2];
                 for (int iz = order/2; iz < dimz + order/2; iz++)
                 {

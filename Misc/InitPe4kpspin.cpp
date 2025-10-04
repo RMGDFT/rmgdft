@@ -166,6 +166,7 @@ void InitPe4kpspin()
         }
     }
 
+    pct.kpsub_rank = kpsub_rank;
     // Set up grids and neighbors
     //set_rank(pct.gridpe);
 

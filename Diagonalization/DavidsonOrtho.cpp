@@ -52,11 +52,11 @@
 // mat: matrix to hold <Psi|psi>, need to be allocated nbase * notconv at least
 //
 
-template void DavidsonOrtho (int, int, int pbasis_noncoll, double *);
-template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *);
+template void DavidsonOrtho (int, int, int pbasis_noncoll, double *, bool);
+template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *, bool);
 
 template <typename KpointType>
-void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, bool dostage2)
 {
 
     if(!ct.norm_conserving_pp)
@@ -98,7 +98,7 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi)
         RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
     }
 
-    if(!ct.davidson_2stage_ortho) return;
+    if(!dostage2) return;
 
     RmgTimer *RT1 = new RmgTimer("MgridOrtho: 1st stage update");
     char *transt = "t";

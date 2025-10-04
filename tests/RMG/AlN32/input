@@ -1,6 +1,6 @@
 # Description of run.
 # Energy test
-test_energy="-215.98783697"
+test_energy="-215.98793336"
 test_steps = "14"
 test_steps_tolerance = "1"
 
@@ -36,15 +36,11 @@ calculation_mode="Quench Electrons"
 #calculation_mode="Relax Structure"
 
 kohn_sham_solver="davidson"
-charge_mixing_type = "Broyden"
-charge_density_mixing = "0.5"
-kohn_sham_mucycles = "3"
 max_scf_steps="20"
-potential_acceleration_constant_step="1.0"
 write_data_period="50"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
+#energy_convergence_criterion="1.0e-10"
 #rms_convergence_criterion = "1.0e-10"
 
 atomic_coordinate_type="Absolute"

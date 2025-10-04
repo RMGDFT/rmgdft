@@ -41,8 +41,12 @@ void  get_rho_oppo (double * rho, double * rho_oppo)
     else
     {
         MPI_Status status;
-        MPI_Sendrecv(rho,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, 
-                rho_oppo,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+        int tag = pct.kpsub_rank * pct.grid_npes + pct.gridpe;
+        int send_tag = pct.spinpe * pct.pe_kpoint * pct.grid_npes + tag;
+        int recv_tag = (pct.spinpe+1)%2 * pct.pe_kpoint * pct.grid_npes + tag;
+        MPI_Sendrecv(rho,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, send_tag, 
+                rho_oppo,(int) get_FP0_BASIS(), MPI_DOUBLE, (pct.spinpe+1)%2, recv_tag, pct.spin_comm, &status);
+        MPI_Barrier(pct.img_comm);
     }
 }                               /* end scf */
 

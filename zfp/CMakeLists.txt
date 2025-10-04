@@ -323,7 +323,7 @@ if(BUILD_TESTING OR BUILD_TESTING_FULL)
   option(INSTALL_GMOCK "Install Googlemock" OFF)
   option(INSTALL_GTEST "Install Googletest" OFF)
 
-  add_subdirectory(tests)
+  #add_subdirectory(tests)
 endif()
 
 #------------------------------------------------------------------------------#

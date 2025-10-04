@@ -109,10 +109,12 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     {
         if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
         this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
-        RT1 = new RmgTimer("6-BlockDiag: ortho");
         if(gaps.size() > 1)
-            DavidsonOrtho(gap.first, gap.second, pbasis_noncoll, this->orbital_storage);
-        delete RT1;
+        {
+            RmgTimer RT2("6-BlockDiag: ortho");
+            DavidsonOrtho(gap.first, gap.second, pbasis_noncoll,
+                          this->orbital_storage, ct.davidson_2stage_ortho);
+        }
     }
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;
@@ -136,7 +138,6 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    KpointType *newsint;
 
     // Use the upper part of the wavefunction array as workspace
     KpointType *h_psi = this->orbital_storage + (size_t)this->nstates * (size_t)pbasis_noncoll;
@@ -176,10 +177,21 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        int last = !ct.use_folded_spectrum;
-        Scalapack SP(ct.subdiag_groups, pct.thisimg, ct.images_per_node, N,
-                ct.scalapack_block_factor, last, pct.grid_comm);
-        Subdiag_Scalapack(this, h_psi, first, N, SP, true);
+        Scalapack *SP;
+        static std::unordered_map<uint64_t, Scalapack *> SPS;
+        uint64_t hash = first << 32 + N;
+        if(SPS.contains(hash))
+        {
+            SP = SPS[hash];
+        }
+        else
+        {
+            int last = !ct.use_folded_spectrum;
+            SP = new Scalapack(ct.subdiag_groups, pct.thisimg, ct.images_per_node, N,
+                    ct.scalapack_block_factor, last, pct.grid_comm);
+            SPS.insert({hash, SP});
+        }
+        Subdiag_Scalapack(this, h_psi, first, N, *SP, true);
         return;
     }
 

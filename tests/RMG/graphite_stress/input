@@ -5,7 +5,7 @@ localize_localpp="false"
 wavefunction_grid="24 24 80"
 exchange_correlation_type = "vdw-df"
 #verbose = "true"
-test_energy="-22.95605110"
+test_energy="-22.95605731"
 test_energy_tolerance = "1.00000000e-06"
 
 # The normal process is to set thread counts via environment variables
