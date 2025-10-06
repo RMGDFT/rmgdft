@@ -374,9 +374,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
 "RMG supports Broyden, Pulay and Linear mixing "
 "When the davidson Kohn-Sham solver is selected Broyden or "
-"Pulay are preferred. For the multigrid solver Linear with "
-"potential acceleration is often (but not always) the best "
-"choice.",
+"Pulay are preferred. For the multigrid solver Broyden is "
+"usually the best choice.",
                      "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating. ", MIXING_OPTIONS);
     
     If.RegisterInputKey("ldau_mixing_type", NULL, &lc.ldau_mixing_type, "Linear",
@@ -893,7 +892,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 3,
             CHECK_AND_FIX, OPTIONAL,
             "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
-            "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 3. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 12, 8,
             CHECK_AND_FIX, OPTIONAL,
@@ -986,7 +985,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 40000, 512,
             CHECK_AND_FIX, OPTIONAL,
-            "Block size to use when applying the non-local and S operators. ",
+"Block size to use when applying the non-local and S operators. "
+"A value at least as large as the number of wavefunctions produces "
+"better performance but requires more memory. ",
             "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ", PERF_OPTIONS);
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 1, INT_MAX, 201,
@@ -1173,7 +1174,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("use_block_diag", &lc.use_block_diag, false,
-            "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS);
+            "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
             "When a semi-local pseudopotential is being used projectors will be generated using Bloechl's procedure with Bessel functions as the basis set if this is true.", PSEUDO_OPTIONS|EXPERIMENTAL_OPTION);
