@@ -34,6 +34,7 @@
 
 /* Function prototypes */
 void get_dipole (double * rho, double *dipole);
+void get_dipole (double * rho, double *, double *dipole);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);

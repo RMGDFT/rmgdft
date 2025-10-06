@@ -66,16 +66,21 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(Q->max_threads*54);
 
 
+    int dflag;
+    MPI_Request dreq = MPI_REQUEST_NULL;
 
     // Here we loop and process requests
     while(1)
     {
-
+        if(Q->exitflag.load(std::memory_order_acquire)) return;
+        MPI_Test(&dreq, &dflag, MPI_STATUS_IGNORE);
         // Threads post requests into a boost single-producer, single-consumer queue.
         // Manager thread dequeues them and passes them on to MPI then we put the request info
         // into a separate queue that we then check for completion.
         for(int tid=0;tid < Q->max_threads;tid++)
         {
+            if(Q->exitflag.load(std::memory_order_acquire)) return;
+            MPI_Test(&dreq, &dflag, MPI_STATUS_IGNORE);
             if(qcount > 10)
             {
                 //usleep(1000);
@@ -132,7 +137,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             }
             else
             {
-if(ierr)printf("IERR=%d\n",ierr);
+                if(ierr)printf("IERR=%d\n",ierr);
                 // Not complete so push it back on the queue and loop around again
                 qcount++;
                 postedq->push(qobj);
@@ -153,7 +158,7 @@ if(ierr)printf("IERR=%d\n",ierr);
             }
             else
             {
-                Q->cvwait(manager_mutex, manager_cv, Q->running);
+//                Q->cvwait(manager_mutex, manager_cv, Q->running);
             }
         }
     }
@@ -178,7 +183,7 @@ MpiQueue::MpiQueue(int max_size, int max_threads, void *mask, void *newtopology,
     }
     this->exitflag.store(false, std::memory_order_release);
     this->running.store(true, std::memory_order_release);
-    this->QueueManager = boost::thread(&manager_thread, this);
+    this->QueueManager = std::thread(&manager_thread, this);
     this->QueueManager.detach();
     this->running.store(false, std::memory_order_release);
 }
@@ -215,6 +220,7 @@ void MpiQueue::stop_manager(void)
 
 void MpiQueue::set_exitflag(void)
 {
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     this->exitflag.store(true, std::memory_order_release);
 }
 

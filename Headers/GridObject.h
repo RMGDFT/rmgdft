@@ -88,6 +88,8 @@
 
 #include <complex>
 #include <span>
+#include "BaseGrid.h"
+#include "Lattice.h"
 
 template <typename T> class fgobj;
 template <typename T> class wfobj;
@@ -125,8 +127,8 @@ template <typename T> class GridObject {
   }
 
 public:
-    GridObject(int density);
-    GridObject(int density, T *data_ptr);
+    GridObject(int density_in);
+    GridObject(int density_in, T *data_ptr);
     GridObject(GridObject& t) // copy constructor
     {
         this->dimx_  = t.dimx;
@@ -146,6 +148,20 @@ public:
     }
     ~GridObject(void);
 
+    void set(T x)
+    {
+        for(int i=0;i < this->factor*this->pbasis_;i++) this->data_[i] = x;
+    }
+
+    double vel(void)
+    {
+        return L->get_omega() /
+              ((double)((size_t)G->get_NX_GRID(density_) *
+                        (size_t)G->get_NY_GRID(density_) *
+                        (size_t)G->get_NZ_GRID(density_)));
+
+    }
+
     // Dimensions and offsets on each MPI task
     // These are public and read only external to the
     // class but reference the internally writeable data
@@ -159,7 +175,7 @@ public:
     const int& offsety = offsety_;
     const int& offsetz = offsetz_;
     const int& pbasis = pbasis_;
-    const double& vel = vel_;
+    const int& density = density_;
 
     const int size() const { return pbasis; }
     T* data() { return data_; }
@@ -195,9 +211,11 @@ protected:
    int offsety_;
    int offsetz_;
    int pbasis_;
+   int density_;
    int factor = 1;
-   double vel_;
    T *data_;
+   BaseGrid *G;
+   Lattice *L;
 
    void allocate(int components)
    {
@@ -210,15 +228,92 @@ protected:
        data_ = ptr;
        owns_allocation = false;
    }
-   void increment( const GridObject& c );
-   void increment( const fgobj<T>& c );
-   void increment( const wfobj<T>& c );
-   void increment( const spinobj<T>& c );
-   void decrement( const GridObject& c );
-   void decrement( const fgobj<T>& c );
-   void decrement( const wfobj<T>& c );
-   void decrement( const spinobj<T>& c );
-   void multiply( const T& b );
+
+void increment(const GridObject<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void increment(const fgobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void increment(const wfobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void increment(const spinobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < this->factor*this->pbasis; i++) {
+      data_[i] += c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void decrement(const GridObject<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void decrement(const fgobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void decrement(const wfobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void decrement(const spinobj<T>& c) {
+  if(this->pbasis == c.pbasis && this->factor == c.factor) {
+    for (int i = 0; i < factor*this->pbasis; i++) {
+      data_[i] -= c.data_[i];
+    }
+  } else {
+    throw "Grid objects are not the same size!";
+  }
+}
+
+void multiply(const T& b) {
+    for (int i = 0; i < factor * this->pbasis; i++) {
+        data_[i] *= b;
+    }
+}
 
    GridObject& operator=(GridObject const &rhs)
    {

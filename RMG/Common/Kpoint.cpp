@@ -50,6 +50,7 @@
 #include "blas.h"
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
+#include "OrbitalProfile.h"
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
@@ -110,7 +111,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     // This is a boost pool per thread allocator used in MgEigState. It makes it easy
     // to change the type of the underlying memory (cpu, cuda, hip) by modifying
     // rmg_user_allocator as well as the fixed pool performance advantage. Initial
-    // size is 24 blocks with max size of 32.
+    // size is 27 blocks with max size of 35.
     if(kalloc.size() == 0)
     {
         kalloc.resize(ct.MG_THREADS_PER_NODE);
@@ -121,7 +122,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
         int sbasis_noncoll = sbasis * ct.noncoll_factor;
 
         for(int tid=0;tid < ct.MG_THREADS_PER_NODE;tid++)
-            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 24, 32);
+            kalloc[tid] = new boost::pool<rmg_user_allocator>(sbasis_noncoll*sizeof(KpointType), 28, 36);
 
     }
     this->init_states();
@@ -141,7 +142,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     struct
     {
         int n;
-        double occ;
+        double occ=0.0;
     } occ[nspin_occ * MAX_NOCC];
 
     int repeat_occ;
@@ -149,6 +150,11 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
     /* calculate total number of electrons in the system from pseudopotential information */
     ct.ionic_charge = 0.0;
+
+    // P holds orbital profile information which is computed in the constructor
+    // This info includes the maximum and the actual occupancies of each angular
+    // momentum channel summed over all atoms.
+    OrbitalProfile P;
 
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         ct.ionic_charge += Species[Atoms[ion].species].zvalence;
@@ -206,6 +212,12 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
+        int total_occ_states = std::round(ct.nel / (double)ct.nspin);
+        if(num_states_spf[0] < (total_occ_states + P.rec_unoccupied))
+        {
+            num_states_spf[0] = total_occ_states + P.rec_unoccupied;
+            num_states_spf[1] = total_occ_states + P.rec_unoccupied;
+        }
         ct.background_charge = ct.nel - ct.ionic_charge;
 
     }
@@ -216,6 +228,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         {
             // num of unocc states set to 10 or 10% which is larger
             ct.num_unocc_states = std::max(10, int(ct.nel * 0.5 * 0.1) );
+            ct.num_unocc_states = std::max(ct.num_unocc_states, P.rec_unoccupied);
         }
 
 
@@ -228,6 +241,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
     }
 
+
     if(nspin_occ == 1)
     {
         ct.nel_up = 0.5 * ct.nel;
@@ -237,23 +251,19 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     /* re-assign the number of states for global variables */
     if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
 
-    if(pct.coalesce_factor > 1)
-    {
-        // Adjust num_states to be an integral multiple of pct.coalesce_factor. Whatever value is used for active threads here
-        // must match the value used in MgridSubspace
-        int active_threads = ct.MG_THREADS_PER_NODE;
-        if(ct.mpi_queue_mode) active_threads--;
-        if(active_threads < 1) active_threads = 1;
-        int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
-        int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
-        if(states_rem)
-        {
-            while(states_div < ct.num_states) states_div += pct.coalesce_factor;
-            if((pct.gridpe == 0) && (states_div != ct.num_states))
-                std::cout << "Notice: Numstates adjusted from " << ct.num_states << " to " << states_div <<  " to satisfy coalesce conditions." << std::endl;
-            ct.num_states = states_div;
-        }
-    }
+    // Adjust num_states to be an integral multiple of pct.coalesce_factor*active_threas.
+    // Whatever value is used for active threads here
+    // must match the value used in MgridSubspace
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
+    int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+    int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
+    if(states_rem) ct.num_states = states_div + (active_threads*pct.coalesce_factor);
+    int block_div = (ct.non_local_block_size / (active_threads * pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+;
+    int block_rem = ct.non_local_block_size % (active_threads*pct.coalesce_factor);
+    if(block_rem) ct.non_local_block_size =  block_div + (active_threads*pct.coalesce_factor);
 
     // When LCAO init is selected we may use more orbitals during the initialization
     // than during the rest of the run so we need to count the number of atomic orbitals
@@ -276,9 +286,10 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.run_states = ct.num_states;
 
     if(ct.state_block_size > ct.num_states ) ct.state_block_size = ct.num_states;
+    ct.scalapack_block_factor = std::min(ct.scalapack_block_factor, ct.num_states);
     // Now figure out some buffer sizes
     ct.max_states = ct.run_states + 3 * ct.state_block_size;
-    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) 
+    if (ct.kohn_sham_solver == DAVIDSON_SOLVER)
     {
         // Check if user specified autosetting of davidson multiplier
         if(ct.davidx <= 1)
@@ -296,7 +307,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
 
     /* Allocate memory for the state structures */
-    this->Kstates = new State<KpointType>[ct.max_states];
+    this->Kstates.resize(2*ct.max_states);
     this->nstates = ct.init_states;
 
     // Set the size of the wavefunction array to allocate. This needs to be 4 times
@@ -1338,7 +1349,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 
 template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)
 {
-    for(size_t idx=0;idx < this->dvh_size;idx++)
+    for(size_t idx=0;idx < ct.dvh_size;idx++)
     {
         this->dvh[idx] = 0.0;
     }

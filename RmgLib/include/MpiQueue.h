@@ -92,7 +92,7 @@ class MpiQueue {
 
 private:
 
-    boost::thread QueueManager;
+    std::thread QueueManager;
     static void manager_thread(MpiQueue *Q);
     std::atomic<bool> running;
     std::atomic<bool> exitflag;

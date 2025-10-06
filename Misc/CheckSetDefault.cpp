@@ -48,7 +48,7 @@ void CheckSetDefault(void)
     ct.tddft_gpu = false;
 #endif
 
-    if(ct.tddft_noscf)
+    if(ct.tddft_noscf || ct.restart_tddft)
     {
         ct.runflag = RESTART;
     }
@@ -123,6 +123,12 @@ void CheckSetDefault(void)
         rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
     }
 
+    if(us_count && ct.use_rmm_diis)
+    {
+        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled.\n");
+        ct.use_rmm_diis = false;
+    }
+
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 
@@ -185,9 +191,12 @@ void CheckSetDefault(void)
 
     if(ct.forceflag== TDDFT)
     {
+        if(ct.checkpoint <= 0) ct.checkpoint = 500;
         ct.potential_acceleration_constant_step = 0.0;
+        ct.interp_flag = PROLONG_INTERPOLATION;
 
     }
+    if(ct.checkpoint <= 0) ct.checkpoint = 5;
     if(ct.wannier90) {
         ct.frac_symm = false;
         ct.time_reversal = false;

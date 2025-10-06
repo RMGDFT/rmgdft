@@ -78,7 +78,8 @@ private:
     // Pool of communicators not tied to a specific thread. Pool size is set equal to the
     // number of threads. Typically used to ensure that electronic orbitals being processed
     // by parallel threads use a unique communicator across nodes.
-    MPI_Comm *comm_pool;
+    std::vector<MPI_Comm *> comm_pool;
+    std::vector<size_t> comm_indices;
 
     // Initialization flag
     static int init_flag;

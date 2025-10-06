@@ -52,11 +52,12 @@
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset)
 {
 
-   static boost::circular_buffer<double *> df(MAX_BROYDEN_ITER);
-   static boost::circular_buffer<double *> dv(MAX_BROYDEN_ITER);
-   static boost::circular_buffer<double *> dvh(MAX_BROYDEN_ITER);
-   static int iter;
+   static boost::circular_buffer<std::vector<double>> dr_out(MAX_BROYDEN_ITER);
+   static boost::circular_buffer<std::vector<double>> dr_in(MAX_BROYDEN_ITER);
+   static boost::circular_buffer<std::vector<double>> dvh(MAX_BROYDEN_ITER);
+   static double rcond;
    double betamix[MAX_BROYDEN_ITER][MAX_BROYDEN_ITER];
+   double workmix[MAX_BROYDEN_ITER][MAX_BROYDEN_ITER];
    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
    int pbasis_noncoll = pbasis * ct.noncoll_factor * ct.noncoll_factor;
    int ld_betamix = MAX_BROYDEN_ITER;
@@ -64,81 +65,107 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    // Check if this is a reset request
    if(reset) {
        // Clear any old allocations
-       while(df.size()) {
-           delete [] df[0];
-           df.pop_front();
-       }
-       while(dv.size()) {
-           delete [] dv[0];
-           dv.pop_front();
-       }
-       while(dvh.size()) {
-           delete [] dvh[0];
-           dvh.pop_front();
-       }
-       iter = 0;
+       dr_out.clear();
+       dr_in.clear();
+       dvh.clear();
        return;
    }
 
 
    // Set up arrays and get delta rho
-   double *rhout = new double[pbasis_noncoll];
-   double *rhoin = new double[pbasis_noncoll];
+   std::vector<double> rhout(pbasis_noncoll);
+   std::vector<double> rhoin(pbasis_noncoll);
+
    for(int i = 0;i < pbasis_noncoll;i++) rhoin[i] = rho[i];
    for(int i = 0;i < pbasis_noncoll;i++) rhout[i] = new_rho[i];
    for(int i = 0;i < pbasis_noncoll;i++) rhout[i] -= rhoin[i]; 
 
-
    // Check if it's time to remove old entries
-   if(df.size() == (size_t)max_iter) {
-       delete [] df[0];
-       delete [] dv[0];
-       delete [] dvh[0];
-       df.pop_front();
-       dv.pop_front();
+   if(dr_out.size() == (size_t)max_iter) {
+       dr_out.pop_front();
+       dr_in.pop_front();
        dvh.pop_front();
    }
 
 
-   if(iter > 0) {
-       for(int i = 0;i < pbasis_noncoll;i++) df[df.size() - 1][i] -= rhout[i];
-       for(int i = 0;i < pbasis_noncoll;i++) dv[df.size() - 1][i] -= rhoin[i];
-       for(int i = 0;i < pbasis;i++) dvh[df.size() - 1][i] -= (vh_out[i] - vh_in[i]);
+   if(dr_out.size() > 0) {
+       for(int i = 0;i < pbasis_noncoll;i++) dr_out[dr_out.size() - 1][i] -= rhout[i];
+       for(int i = 0;i < pbasis_noncoll;i++) dr_in[dr_out.size() - 1][i] -= rhoin[i];
+       for(int i = 0;i < pbasis;i++) dvh[dr_out.size() - 1][i] -= (vh_out[i] - vh_in[i]);
    }
 
-   int iter_used = df.size();
+   int iter_used = dr_out.size();
 
    // Create new entries
-   double *df1 = new double[pbasis_noncoll];
-   for(int i = 0;i < pbasis_noncoll;i++) df1[i] = rhout[i];
-   df.push_back(df1);
+   std::vector<double> dr_out1(pbasis_noncoll);
+   for(int i = 0;i < pbasis_noncoll;i++) dr_out1[i] = rhout[i];
+   dr_out.push_back(dr_out1);
 
-   double *dv1 = new double[pbasis_noncoll];
-   for(int i = 0;i < pbasis_noncoll;i++) dv1[i] = rhoin[i];
-   dv.push_back(dv1);
+   std::vector<double> dr1(pbasis_noncoll);
+   for(int i = 0;i < pbasis_noncoll;i++) dr1[i] = rhoin[i];
+   dr_in.push_back(dr1);
 
-   double *dvh1 = new double[pbasis];
+   std::vector<double> dvh1(pbasis);
    for(int i = 0;i < pbasis;i++) dvh1[i] = vh_out[i] - vh_in[i];
    dvh.push_back(dvh1);
 
-
+BroydenRestart:
    if(iter_used > 0) {
 
        for(int i = 0;i < iter_used;i++) {
            for(int j = 0;j < iter_used;j++) {
                betamix[j][i] = 0.0;
                for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
-                   for(int k = 0;k < pbasis;k++) betamix[j][i] += df[i][k + is * pbasis] * dvh[j][k];
+               {
+                   for(int k = 0;k < pbasis;k++)
+                   {
+                       betamix[j][i] += dr_out[i][k + is * pbasis] * dvh[j][k];
+                   }
+               }
            }
        }
 
        MPI_Allreduce(MPI_IN_PLACE, betamix, MAX_BROYDEN_ITER*MAX_BROYDEN_ITER, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
        MPI_Allreduce(MPI_IN_PLACE, betamix, MAX_BROYDEN_ITER*MAX_BROYDEN_ITER, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
+       for(int i = 0;i < iter_used;i++) {
+           for(int j = 0;j < iter_used;j++) {
+               workmix[i][j] = betamix[i][j];
+           }
+       }
+
        double work[MAX_BROYDEN_ITER*MAX_BROYDEN_ITER];
        int ipiv[MAX_BROYDEN_ITER*MAX_BROYDEN_ITER];
        int lwork = MAX_BROYDEN_ITER*MAX_BROYDEN_ITER;
        int info = 0;
+       double anorm;
+
+       // Check the condition number in the 1 norm and if it gets too large
+       // remove the oldest entry.
+       anorm = dlange("1", &iter_used, &iter_used, &workmix[0][0], &ld_betamix, work);
+       dgetrf(&iter_used, &iter_used, &workmix[0][0], &ld_betamix, ipiv,  &info );
+       if(info)
+           throw RmgFatalException() << "dgetrf failed " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+       dgecon("1", &iter_used, &workmix[0][0], &ld_betamix, &anorm, &rcond, work, ipiv, &info);
+       rcond = 1.0/(rcond + 1.0e-12);
+       if(std::abs(rcond) > 1.0e6)
+       {
+           if(ct.verbose && pct.gridpe==0)
+               printf("\nBroyden condition number = %10.4e. Restarting.\n",rcond);
+           dr_out.pop_front();
+           dr_in.pop_front();
+           dvh.pop_front();
+           iter_used--;
+           if(iter_used == 0)
+           {
+               throw RmgFatalException() << "Programming error. " << " in " 
+                     << __FILE__ << " at line " << __LINE__ << "\n";
+           }
+           goto BroydenRestart;
+       }
+
+
+
        dgetrf(&iter_used, &iter_used, &betamix[0][0], &ld_betamix, ipiv,  &info );
        if(info)
            throw RmgFatalException() << "dgetrf failed " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -161,22 +188,18 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
            double gamma = 0.0;
            for(int j=0;j < iter_used;j++) gamma += work[j] * betamix[i][j];
 
-           for(int k=0;k < pbasis_noncoll;k++) rhout[k] -= gamma * df[i][k];
-           for(int k=0;k < pbasis_noncoll;k++) rhoin[k] -= gamma * dv[i][k];
+           for(int k=0;k < pbasis_noncoll;k++) rhout[k] -= gamma * dr_out[i][k];
+           for(int k=0;k < pbasis_noncoll;k++) rhoin[k] -= gamma * dr_in[i][k];
 
        }
 
    }
 
    // New density. This is the place to do things with screening and frequency based mixing
-   if(ct.drho_precond) Precond_drho(rhout);
+   if(ct.drho_precond) Precond_drho(rhout.data());
    for(int k=0;k < pbasis_noncoll;k++)  rhoin[k] =  rhoin[k] + ct.mix*rhout[k];
    for(int k=0;k < pbasis_noncoll;k++)  rho[k] = rhoin[k];
 
-   delete [] rhoin;
-   delete [] rhout;
-
-   iter++;
 
 }
 

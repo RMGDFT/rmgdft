@@ -75,6 +75,10 @@ RmgGemm.cpp
 RmgGemmStridedBatched.cpp
 RmgSymm.cpp
 RmgSyrkx.cpp
+RmgSyrk.cpp
+rmg_potrf.cpp
+rmg_trtri.cpp
+rmg_trmm.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
 GpuStreams.cpp
@@ -119,6 +123,7 @@ invmat.f90
 GetFdFactor.cpp 
 GpuEleMul_sycl.cpp
 rmg_write.cpp
+gauss_solve.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/XC/")

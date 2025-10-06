@@ -91,7 +91,6 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     std::complex<double> *block_matrix_y = block_matrix_x + num_states * nb;
     std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
 
-
     if(retval1 != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
     }
@@ -221,5 +220,19 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     }
 
     delete [] block_matrix;
+//    rmg_printf("kvec %f", kptr->kp.kvec[0] );
+//    for(int i = 0; i < 8; i++)
+//    {
+////        rmg_printf("\n aaa ");
+//        for(int j = 0; j < 8; j++)
+//            rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+//    }
+//    for(int i = 0; i < 8; i++)
+//    {
+//        rmg_printf("\n bbb ");
+//        for(int j = 0; j < 8; j++)
+//            rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+//    }
+
 }
 

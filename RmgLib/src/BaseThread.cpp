@@ -93,22 +93,21 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 
     BaseThread::funcptr = funcptr;
     BaseThread::parent_grid_comm = comm;
-    BaseThread::comm_pool = new MPI_Comm[20*BaseThread::THREADS_PER_NODE + 1];
+    BaseThread::comm_pool.resize(BaseThread::THREADS_PER_NODE);
+    BaseThread::comm_indices.resize(BaseThread::THREADS_PER_NODE);
     BaseThread::jobs.store(0);
 
     // Create a set of long lived threads
     for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) 
     {
+        BaseThread::comm_pool[thread] = new MPI_Comm[200];
+        BaseThread::comm_indices[thread] = 0;
         thread_controls[thread].tid = thread;
+        for(int i=0;i < 200;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
         MPI_Comm_dup(comm, &thread_controls[thread].grid_comm);
         threadgroup.create_thread(boost::bind(BaseThread::funcptr, (void *)&thread_controls[thread]));
     }
     
-    for(thread = 0;thread < 20*BaseThread::THREADS_PER_NODE + 1;thread++) 
-    {
-        MPI_Comm_dup(comm, &BaseThread::comm_pool[thread]);
-    }
-
 }
 
 // Wakes jobs sleeping threads starting from tid=0 and counting up
@@ -165,7 +164,9 @@ void BaseThread::rmg_leave_omp_region(MpiQueue *Queue)
 // Called from main when we terminate all threads
 void BaseThread::wake_all_threads(void)
 {
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     BaseThread::thread_cv.notify_all();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
 }
 
 void BaseThread::thread_sleep(void)
@@ -194,6 +195,7 @@ void BaseThread::thread_joinall(void)
 
 // Blocks all threads until nthreads specified in the init call have reached this point
 void BaseThread::thread_barrier_wait(bool spin) {
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     if(BaseThread::in_threaded_region.load())
     {
         BaseThread::barrier->wait_for_threads(spin);
@@ -282,8 +284,12 @@ MPI_Comm BaseThread::get_grid_comm(void) {
 }
 
 MPI_Comm BaseThread::get_unique_comm(int index) {
-    int comm_index = index % (20*BaseThread::THREADS_PER_NODE + 1);
-    return this->comm_pool[comm_index]; 
+    int tid = BaseThread::get_thread_tid();
+    if(tid < 0) tid=0;
+    size_t next = this->comm_indices[tid];
+    this->comm_indices[tid]++;
+    size_t comm_index = next % 200;
+    return this->comm_pool[tid][comm_index]; 
 }
 
 

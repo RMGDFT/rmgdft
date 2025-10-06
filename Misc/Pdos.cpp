@@ -520,3 +520,154 @@ template <typename T> void Ldos_calc(Kpoint<T> **Kptr, std::vector<double> eigs,
         fclose(dos_f);
     }
 }
+
+template  void STS_calc(Kpoint<double> **Kptr, double Ef, int line_start[3], int line_end[3]);
+template  void STS_calc(Kpoint<std::complex<double>> **Kptr, double Ef, int line_start[3], int line_end[3]);
+template <typename T> void STS_calc(Kpoint<T> **Kptr, double Ef, int line_start[3], int line_end[3])
+{
+
+    int grids_in_x = std::abs(line_end[0] - line_start[0]);
+    int grids_in_y = std::abs(line_end[1] - line_start[1]);
+    int grids_in_z = std::abs(line_end[2] - line_start[2]);
+    if( grids_in_x * grids_in_y != 0 && grids_in_x != grids_in_y)
+    {
+        std::cout << grids_in_x << " grids in x and y direction do not match" << grids_in_y << std::endl;
+        throw RmgFatalException() << "Error! in STS.   Terminating.\n";
+    }
+    if( grids_in_x * grids_in_z != 0 && grids_in_x != grids_in_z)
+    {
+        std::cout << grids_in_x << " grids in x and z direction do not match" << grids_in_z << std::endl;
+        throw RmgFatalException() << "Error! in STS.   Terminating.\n";
+    }
+    if( grids_in_z * grids_in_y != 0 && grids_in_z != grids_in_y)
+    {
+        std::cout << grids_in_z << " grids in x and y direction do not match" << grids_in_y << std::endl;
+        throw RmgFatalException() << "Error! in STS.   Terminating.\n";
+    }
+
+    int dx=0, dy=0, dz=0;
+    int num_points = 0;
+    if( (line_end[0] - line_start[0]) > 0 ) dx = 1;
+    if( (line_end[0] - line_start[0]) < 0 ) dx = -1;
+    if( (line_end[1] - line_start[1]) > 0 ) dy = 1;
+    if( (line_end[1] - line_start[1]) < 0 ) dy = -1;
+    if( (line_end[2] - line_start[2]) > 0 ) dz = 1;
+    if( (line_end[2] - line_start[2]) < 0 ) dz = -1;
+    num_points = std::max(num_points, grids_in_x);
+    num_points = std::max(num_points, grids_in_y);
+    num_points = std::max(num_points, grids_in_z);
+
+    int px0_grid = Rmg_G->get_PX0_GRID(1);
+    int py0_grid = Rmg_G->get_PY0_GRID(1);
+    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
+    int px_offset = Rmg_G->get_PX_OFFSET(1);
+    int py_offset = Rmg_G->get_PY_OFFSET(1);
+    int pz_offset = Rmg_G->get_PZ_OFFSET(1);
+    int pbasis = px0_grid * py0_grid * pz0_grid;
+
+    T *psi_k ;
+    // T *psi_k = (T *)RmgMallocHost(length);
+
+    //  total rho projected in x,y,z direction
+    // magnatic rho projected in x, y, z direction
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+
+    double rho_temp[factor];
+    double gaus_broad = ct.gaus_broad;
+    double Emax = ct.Emax;
+    double Emin = ct.Emin;
+    double delta_e = (Emax- Emin)/(ct.E_POINTS-1);
+
+    double_3d_array sts_data;
+    sts_data.resize(boost::extents[factor][num_points][ct.E_POINTS]);
+    std::fill(sts_data.origin(), sts_data.origin()+ factor * num_points *ct.E_POINTS, 0.0);
+
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+    {
+        for(int st = 0; st < ct.num_states; st++) {
+
+            psi_k = Kptr[ik]->Kstates[st].psi;
+
+            for(int ie = 0; ie < ct.E_POINTS; ie++)
+            {
+                double energy = Emin + ie * delta_e + Ef;
+                if(ik == 0 && st == 0)
+                    rmg_printf("\n energy %d  %f %f", ie, energy, Ef);
+                double tem = energy - Kptr[ik]->Kstates[st].eig[0] * Ha_eV;
+                double dos_one = std::exp(-tem * tem/gaus_broad/gaus_broad) / gaus_broad /std::sqrt(PI);
+                if(dos_one < 1.0e-5) continue;
+
+                for(int igrid = 0; igrid < num_points; igrid++)
+                {
+                    int ix = line_start[0] + igrid * dx - px_offset;
+                    int iy = line_start[1] + igrid * dy - py_offset;
+                    int iz = line_start[2] + igrid * dz - pz_offset;
+
+                    //  ix, iy, iz grid in this process
+                    if(ix >=0 && ix < px0_grid && iy >=0 && iy < py0_grid && iz >=0 && iz < pz0_grid)
+                    {
+                        int idx = ix * py0_grid * pz0_grid + iy * pz0_grid + iz;
+
+                        sts_data[0][igrid][ie] += std::norm(psi_k[idx]) * dos_one;
+                        if(ct.noncoll)
+                        {
+                            std::complex<double> psiud = 2.0 * psi_k[idx] * std::conj(psi_k[idx + pbasis]);
+                            double psiup = std::norm(psi_k[idx]);
+                            double psidn = std::norm(psi_k[idx + pbasis]);
+                            sts_data[0][igrid][ie] += (psiup + psidn)*dos_one;
+                            sts_data[1][igrid][ie] += (std::real(psiud))*dos_one;
+
+                            sts_data[2][igrid][ie] += (std::imag(psiud))*dos_one;
+                            sts_data[3][igrid][ie] += (psiup - psidn)*dos_one;
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    int count = factor * num_points * ct.E_POINTS;
+    MPI_Allreduce(MPI_IN_PLACE, sts_data.data(), count, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, sts_data.data(), count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+    double hx = Rmg_G->get_hxgrid(1);
+    double hy = Rmg_G->get_hygrid(1);
+    double hz = Rmg_G->get_hzgrid(1);
+    double xtal[3],crts[3]; 
+    xtal[0] = dx * hx;
+    xtal[1] = dy * hy;
+    xtal[2] = dz * hz;
+    Rmg_L.to_cartesian(xtal, crts);
+    double dd = sqrt(crts[0] * crts[0] + crts[1] * crts[1] + crts[2] * crts[2]) * a0_A;
+
+
+    if(pct.imgpe == 0)
+    {
+        std::string filename = "STS_spin" + std::to_string(pct.spinpe) + ".dat";
+        FILE *fhand = fopen (filename.c_str(), "w");
+        FILE *fhand1 = fopen ("tem.dat", "w");
+
+        fprintf(fhand, "#This is a STS 2D data file to be viewed \n");
+
+        //  dd the line length in Angstrom
+        fprintf(fhand, "%d %12.6f %12.6f \n", num_points, 0.0, num_points * dd); 
+        fprintf(fhand, "%d %12.6f %12.6f \n", ct.E_POINTS, ct.Emin, ct.Emax);
+
+        for (int i=0; i<num_points; i++) {
+            fprintf(fhand1, "\n && %d", i);
+            for (int j=0; j<ct.E_POINTS; j++) {
+
+                fprintf(fhand1, "\n %f %g ", ct.Emin + j*delta_e, sts_data[0][i][j]);
+                fprintf(fhand, " %g ", sts_data[0][i][j]);
+                if( (j % 6) == 5) fprintf(fhand, "\n");
+            }
+
+            fprintf(fhand, "\n");
+            fprintf(fhand1, "\n");
+        }
+        fclose(fhand);
+        fclose(fhand1);
+    }
+
+}

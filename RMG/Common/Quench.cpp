@@ -57,7 +57,7 @@
 
 // Local function prototypes
 void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
-void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &);
+void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &);
 
 
 // Instantiate gamma and non-gamma versions
@@ -85,6 +85,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
     static std::vector<double> etot;
+    static std::vector<double> dStress;
 
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     std::string tempwave = std::string(ct.outfile) + "_serial";
@@ -142,6 +143,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     { 
         exx_step_time = my_crtc ();
         RMSdV.clear();
+        dStress.clear();
 
         ct.total_scf_steps = 0;
         // Adjust exx convergence threshold
@@ -167,7 +169,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             else
             {
                 double tmix = AutoMix();
-                if(tmix != ct.mix)
+                if(tmix != ct.mix && ct.mix > 0.02)
                 {
                     bool reset = true;
                     if(ct.scf_accuracy > 1.0e-3)
@@ -180,19 +182,14 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     ct.mix /= 2.0;
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
+                    dStress.clear();
                     ct.scf_steps = 0;
+                    ct.exx_steps = 0;
                 }
                 if(ct.mix < 0.02)
                 {
-                    ct.scf_is_converging = false;
-                    // Write forcefield info
-                    std::string ffield = std::string(pct.image_path[pct.thisimg]) + 
-                        "forcefield.xml";
-                    write_ffield (ffield);
-
-                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", 0.02);
+                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", ct.mix);
                     rmg_printf ("and usually means something is wrong with the job.\n");
-                    rmg_error_handler(__FILE__, __LINE__, "Terminating.");
                 }
 
                 // Should add a check here for a minimum density mixing to trigger an error
@@ -213,7 +210,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             }
 
             /*Perform charge analysis if requested*/
-            ChargeAnalysis(rho.data(), Kptr[0]->ControlMap, *Voronoi_charge);
+            ChargeAnalysis(rho, Kptr[0]->ControlMap, *Voronoi_charge);
 
 #if PLPLOT_LIBS
             // Generate convergence plots
@@ -342,8 +339,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     if(compute_direct)
     {
         double kin_energy=0.0, pseudo_energy= 0.0, total_e = 0.0, E_localpp = 0.0, E_nonlocalpp;
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+        compute_vxc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
         GetNewRho(Kptr, rho.data());
         rho.get_oppo();
@@ -432,6 +428,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        if(ct.BerryPhase) 
+        {
+            total_e += Rmg_BP->enthalpy_elec;
+            rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+        }
 
         rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
         rmg_printf ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
@@ -483,10 +484,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     if(ct.stress)
     {
+        bool local_only = false;
         fgobj<double> vtot;
         for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
         Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
-                ct.XC, vxc.data(), rho.data(), rhocore.data(), vtot.data());
+                ct.XC, vxc, rho, rhocore, vtot, ct.stress_tensor, local_only);
     }
 
 
@@ -521,76 +523,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 
-    if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
-    {
-        double timex = my_crtc ();
-        double *localrho = new double[Atoms.size()];
-        if(ct.nspin == 1)
-        {
-            Voronoi_charge->LocalCharge(rho.data(), localrho);
-            for(size_t ion = 0; ion < Atoms.size(); ion++)
-                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
-        }
-
-        if(ct.nspin == 2)
-        {
-            double *localrho_up = new double[Atoms.size()];
-            double *localrho_dn = new double[Atoms.size()];
-            Voronoi_charge->LocalCharge(rho.up.data(), localrho_up);
-            Voronoi_charge->LocalCharge(rho.dw.data(), localrho_dn);
-
-            rmg_printf("\n@ION  Ion  Species      Magnetization(Voronoi)\n");
-
-            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-            {
-                ION &Atom = Atoms[ion];
-                SPECIES &AtomType = Species[Atom.species];
-
-                rmg_printf ("@ION  %3lu  %4s        %7.3f \n",
-                        ion + 1, AtomType.atomic_symbol,localrho_up[ion]-localrho_dn[ion]);
-            }
-            for(size_t ion = 0; ion < Atoms.size(); ion++)
-                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho_up[ion] - localrho_dn[ion];
-            delete [] localrho_up;
-            delete [] localrho_dn;
-        }
-
-        if(ct.noncoll)
-        {
-            Voronoi_charge->LocalCharge(rho.data(), localrho);
-            for(size_t ion = 0; ion < Atoms.size(); ion++)
-                Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
-            double *localrho_x = new double[Atoms.size()];
-            double *localrho_y = new double[Atoms.size()];
-            double *localrho_z = new double[Atoms.size()];
-
-            Voronoi_charge->LocalCharge(rho.cx.data(), localrho_x);
-            Voronoi_charge->LocalCharge(rho.cy.data(), localrho_y);
-            Voronoi_charge->LocalCharge(rho.cz.data(), localrho_z);
-            rmg_printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
-            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-            {
-                ION &Atom = Atoms[ion];
-                SPECIES &AtomType = Species[Atom.species];
-
-                rmg_printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
-                        ion + 1, AtomType.atomic_symbol,localrho_x[ion], localrho_y[ion], localrho_z[ion]);
-            }
-
-            delete [] localrho_x;
-            delete [] localrho_y;
-            delete [] localrho_z;
-        }
-        delete [] localrho;
-
-        rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
-    }
 
     /*Calculate and write dipole moment if requested*/
     if (ct.dipole_moment)
     {
         double dipole[3];
-        get_dipole(rho.data(), dipole);
+        get_dipole(rho.data(), rhoc.data(), dipole);
 
         double DEBYE_CONVERSION = 2.54174618772314;
 
@@ -657,7 +595,7 @@ void PlotConvergence(std::vector<double> &RMSdV, bool ct.scf_converged)
 #endif
 
 
-void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &Vdd)
+void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &Voronoi_charge)
 {
     /*Perform charge analysis if requested*/
     if (ct.charge_analysis_period)
@@ -668,13 +606,61 @@ void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& Co
             {
                 double timex = my_crtc ();
                 double *localrho = new double[Atoms.size()];
-                Vdd.LocalCharge(rho, localrho);
-                for(size_t ion = 0; ion < Atoms.size(); ion++)
-                    Atoms[ion].partial_charge = Vdd.localrho_atomic[ion] - localrho[ion];
+                if(ct.nspin == 1)
+                {
+                    Voronoi_charge.LocalCharge(rho.data(), localrho);
+                    for(size_t ion = 0; ion < Atoms.size(); ion++)
+                        Atoms[ion].partial_charge = Voronoi_charge.localrho_atomic[ion] - localrho[ion];
+                }
+
+                if(ct.nspin == 2)
+                {
+                    double *localrho_up = new double[Atoms.size()];
+                    double *localrho_dn = new double[Atoms.size()];
+                    Voronoi_charge.LocalCharge(rho.up.data(), localrho_up);
+                    Voronoi_charge.LocalCharge(rho.dw.data(), localrho_dn);
+
+                    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+                    {
+                        Atoms[ion].mag = localrho_up[ion]-localrho_dn[ion];
+                    }
+                    for(size_t ion = 0; ion < Atoms.size(); ion++)
+                        Atoms[ion].partial_charge = Voronoi_charge.localrho_atomic[ion] - localrho_up[ion] - localrho_dn[ion];
+                    delete [] localrho_up;
+                    delete [] localrho_dn;
+                }
+
+                if(ct.noncoll)
+                {
+                    Voronoi_charge.LocalCharge(rho.data(), localrho);
+                    for(size_t ion = 0; ion < Atoms.size(); ion++)
+                        Atoms[ion].partial_charge = Voronoi_charge.localrho_atomic[ion] - localrho[ion];
+                    double *localrho_x = new double[Atoms.size()];
+                    double *localrho_y = new double[Atoms.size()];
+                    double *localrho_z = new double[Atoms.size()];
+
+                    Voronoi_charge.LocalCharge(rho.cx.data(), localrho_x);
+                    Voronoi_charge.LocalCharge(rho.cy.data(), localrho_y);
+                    Voronoi_charge.LocalCharge(rho.cz.data(), localrho_z);
+                    rmg_printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
+                    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+                    {
+                        ION &Atom = Atoms[ion];
+                        SPECIES &AtomType = Species[Atom.species];
+
+                        rmg_printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
+                                ion + 1, AtomType.atomic_symbol,localrho_x[ion], localrho_y[ion], localrho_z[ion]);
+                    }
+
+                    delete [] localrho_x;
+                    delete [] localrho_y;
+                    delete [] localrho_z;
+                }
                 delete [] localrho;
-                WriteChargeAnalysis();
+
                 rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
             }
+            WriteChargeAnalysis();
         }
     }
 }

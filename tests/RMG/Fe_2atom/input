@@ -1,6 +1,6 @@
 # Iron test cell.
 #
-test_energy="-250.34839904"
+test_energy="-250.34842319"
 test_steps = "16"
 test_steps_tolerance = "4"
 

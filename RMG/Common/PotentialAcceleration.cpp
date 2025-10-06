@@ -90,7 +90,7 @@ template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *vxc_z_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
     // Return if we are in the last slot
-    int check = (kptr->nstates / kptr->dvh_skip)*kptr->dvh_skip;
+    int check = (kptr->nstates / ct.dvh_skip)*ct.dvh_skip;
     if(sp->istate >= check) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -101,7 +101,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
     if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
     int base_state = s->extratag2;
     int pbasis = kptr->pbasis * pct.coalesce_factor;
-    int skip = kptr->dvh_skip;
+    int skip = ct.dvh_skip;
     if(ct.coalesce_states) skip = active_threads * pct.coalesce_factor;
     int offset = (sp->istate / skip) * pbasis;
 

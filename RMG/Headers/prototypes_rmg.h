@@ -54,8 +54,8 @@ template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, doubl
 template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoGpuOne(State<OrbitalType> *sp, Prolong *P, double scale);
 #endif
-template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &rho, fgobj<double> &rhocore, 
+           fgobj<double> &rhoc, fgobj<double> &vnuc, spinobj<double> &vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Reinit (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 
@@ -163,5 +163,8 @@ template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc, std::vector<bool> exclude_bands);
 
 template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_allions, double *forces, int num_owned_ions, int *owned_ion_list);
+
+void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double *v_xc, int nspin);
+void compute_vxc(spinobj<double> &rho, fgobj<double> &rhocore, double &XC, double &vtxc, spinobj<double> &v_xc, int nspin);
 
 #endif

@@ -150,6 +150,7 @@ template <typename OrbitalType> void Relax (
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+        ct.mix = ct.init_mix;
 
         /* ct.md_steps measures the number of updates to the atomic positions */
         ct.md_steps++;

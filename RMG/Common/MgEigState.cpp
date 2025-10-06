@@ -33,7 +33,6 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
-#include "RmgTimer.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
@@ -43,7 +42,6 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "rmg_complex.h"
-
 
 
 template <typename T>
@@ -65,6 +63,12 @@ double ComputeEig(int n, T *A, T *B, T *D)
 
 }
 
+template double ComputeEig<double>(int n, double *A, double *B, double *D);
+template double ComputeEig<std::complex<double>>(int n, std::complex<double> *A, std::complex<double> *B, std::complex<double> *D);
+template double ComputeEig<float>(int n, float *A, float *B, float *D);
+template double ComputeEig<std::complex<float>>(int n, std::complex<float> *A, std::complex<float> *B, std::complex<float> *D);
+
+std::atomic<bool> reduce_it = false;
 
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
 template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, double *, int);
@@ -77,37 +81,26 @@ template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std
 template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
-    RmgTimer RT("Mg_eig");
     BaseThread *Thread = BaseThread::getBaseThread(0);
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
     int tid = Thread->get_thread_tid();
 
-    bool freeze_occupied = true;
+    // Save in case needed for variational energy correction term
+    sp->feig[0]=sp->eig[0];
 
     // We want a clean exit if user terminates early
     CheckShutdown();
-
-    // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
-    // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
-    // be possible to fix this at a higher level at some point though so unneccessary work is not done.
-    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
-
-    if(Verify ("calculation_mode", "Band Structure Only", kptr->ControlMap) )
-        freeze_occupied = true;
-
-    bool using_davidson = Verify ("kohn_sham_solver","davidson", kptr->ControlMap);
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig=0.0, diag, t1;
-    int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 0, 4, 4, 4, 4, 4, 4 };
-
+    int eig_pre[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
-    int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
@@ -120,6 +113,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
     bool do_mgrid = true;
+    double mg_step = ct.eig_parm.sb_step;
+    double fg_step = ct.eig_parm.mg_timestep;
+
+    FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+    double diag = FD.fd_coeff0(ct.kohn_sham_fd_order, hxgrid);
+
+    if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
+
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
@@ -140,10 +141,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *sg_twovpsi_t  =  (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
     OrbitalType *saved_psi  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
     double *dvtot_psi = (double *)p->ordered_malloc(aratio);pool_blocks+=aratio;
-    double *c_vtot = (double *)p->ordered_malloc(2);pool_blocks+=2;
     CalcType *tmp_psi_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *res_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *ihu_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *r0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *hr0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
+    double *dinv  = (double *)p->ordered_malloc(1);pool_blocks++;
+    CalcType *rmmres_t = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
 
     // Copy double precision psi into correct precison array
@@ -152,12 +157,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy nv into local array
     if(ct.coalesce_states)
         GatherPsi(G, pbasis_noncoll, sp->istate, nv, nv_t, pct.coalesce_factor);
-//        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
     else
         GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, 1);
-
-    // Set up coarse vtot
-    for(int idx=0;idx < pbasis;idx++) c_vtot[idx] = -coarse_vtot[idx];
 
     // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
     if(ct.norm_conserving_pp)
@@ -173,185 +174,177 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     for(int ix=0;ix < pbasis_noncoll;ix++) res2_t[ix] = work1_t[ix];
 
     // Setup some potential acceleration stuff
+    for(int idx = 0;idx <pbasis_noncoll;idx++)
+        saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
+
     potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(potential_acceleration) {
-        for(int idx = 0;idx <pbasis_noncoll;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
-        PotentialAccelerationWait(sp->istate, kptr->nstates, kptr->dvh_skip);
+        PotentialAccelerationWait(sp->istate, kptr->nstates, ct.dvh_skip);
     }
 
-    /* Smoothing cycles */
-    for (int cycles = 0; cycles <= nits; cycles++)
+    for(int is = 0; is < ct.noncoll_factor; is++)
     {
-        /* Apply Hamiltonian */
+        for(int ix=0;ix < pbasis;ix++)
         {
-            RmgTimer RT1("Mg_eig: apply hamiltonian");
-            diag=ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp->istate, tmp_psi_t, work1_t, vtot_psi, vxc_psi, nv_t, false);
+            dinv[ix+is*pbasis] = 1.0 / std::abs(diag + 2.0*vtot_psi[ix] + 0.5*kptr->kp.kmag);
         }
+    }
 
-        // Copy saved application to ns to res
-        memcpy(res_t, res2_t, pbasis_noncoll * sizeof(CalcType));
+    bool is_jacobi = true;
+    if(ct.norm_conserving_pp) is_jacobi = false;
+    mgsmoother<OrbitalType,CalcType>(kptr, sp,
+              tmp_psi_t, work1_t, res_t, ihu_t, r0_t,
+              vtot_psi, vxc_psi, dinv,
+              nv_t, res2_t,
+              sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
-        /* If this is the first time through compute the eigenvalue */
-        if ((cycles == 0) || (potential_acceleration != 0) || (using_davidson && (cycles == 0))) 
-        {
-            eig = ComputeEig(pbasis_noncoll, tmp_psi_t, work1_t, res_t);
-            // Save this for variational energy correction
-            if((cycles == 0) && (vcycle == 0)) sp->feig[0]=eig;
+    if(ct.use_rmm_diis)
+        sp->dptr->addfunc(saved_psi);
+
+    // Check if residuals were decreasing and if not abort smoothing for
+    // this state.
+    bool smooth_status = (sp->res[0] > sp->res[1]);
+    if(!smooth_status)
+    {
+        if(ct.verbose && pct.gridpe==0)
+            printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
+        reduce_it = true;
+        //do_mgrid = false;  causes hang with some kpoint distributions
+        // This is still a little tricky since if it happens to too many states you can
+        // converge to a wrong answer so maybe just leave it off for now so that it won't
+        // converge at all.
+        //for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
+    }
 
 
-            /*If diagonalization is done every step, do not calculate eigenvalues, use those
-             * from diagonalization, except for the first step, since at that time eigenvalues 
-             * are not defined yet*/
-            if(freeze_occupied) {
-
-                if ((ct.diag == 1) && (potential_acceleration == 0))
-                {
-                    if ((ct.scf_steps == 0) && (ct.exx_steps == 0))
-                    {
-                        sp->eig[0] = eig;
-                        sp->oldeig[0] = eig;
-                    }
-                    else
-                        eig = sp->eig[0];
-                }
-                else
-                {
-                    sp->eig[0] = eig;
-                    if(ct.scf_steps == 0 && (ct.exx_steps == 0)) {
-                        sp->oldeig[0] = eig;
-                    }
-                }
-
-                if(potential_acceleration) {
-                    t1 = eig;
-                    eig = 0.3 * eig + 0.7 * sp->oldeig[0];
-                    sp->oldeig[0] = t1;
-                }
-            }
-            else {
-                eig = sp->eig[0];
-            }
-
-        }
-
-        // Get the residual
-        CalcType f1(2.0*eig);
-        for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - 2.0*work1_t[idx];
-        sp->res = 0.0;
-        for (int idx = 0; idx <pbasis_noncoll; idx++) sp->res += std::real(res_t[idx] * std::conj(res_t[idx]));
+    /* Now do a multigrid cycle */
+    if (do_mgrid )
+    {
 
         for(int is = 0; is < ct.noncoll_factor; is++)
         {
-            /* Now either smooth the wavefunction or do a multigrid cycle */
-            if ((cycles == ct.eig_parm.gl_pre) && do_mgrid )
+
+            /* Do multigrid step with solution returned in sg_twovpsi */
             {
 
-                /* Do multigrid step with solution returned in sg_twovpsi */
-                {
+                // We use a residual correction multigrid scheme where the right hand side is the residual
+                // so single precision is adequate for the correction since the errors from lower precision
+                // will be approximately 7 decimal digits smaller than the original error we are correcting
+                // for. The std::conditional_t typdefs allow us to cleanly handle the multiple combinations
+                // of OrbitalType and CalcType. The combinations are as follows.
+                //
+                //   OrbitalType = double, CalcType = double
+                //   OrbitalType = double, CalcType = float
+                //   OrbitalType = std::complex<double>, CalcType = std::complex<double>
+                //   OrbitalType = std::complex<double>, CalcType = std::complex<float>
+                // with mg_type always float or std::complex<float>
+                typedef typename std::conditional_t< std::is_same<CalcType, double>::value, float,
+                                 std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>,
+                                 std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
+                typedef typename std::conditional_t< std::is_same<CalcType, double>::value, double,
+                                 std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
+                                 std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
 
-                    RmgTimer RT1("Mg_eig: mgrid_solv");
-
-                    // We use a residual correction multigrid scheme where the right hand side is the residual
-                    // so single precision is adequate for the correction since the errors from lower precision
-                    // will be approximately 7 decimal digits smaller than the original error we are correcting
-                    // for. The std::conditional_t typdefs allow us to cleanly handle the multiple combinations
-                    // of OrbitalType and CalcType. The combinations are as follows.
-                    //
-                    //   OrbitalType = double, CalcType = double
-                    //   OrbitalType = double, CalcType = float
-                    //   OrbitalType = std::complex<double>, CalcType = std::complex<double>
-                    //   OrbitalType = std::complex<double>, CalcType = std::complex<float>
-                    // with mg_type always float or std::complex<float>
-                    typedef typename std::conditional_t< std::is_same<CalcType, double>::value, float,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
-                    typedef typename std::conditional_t< std::is_same<CalcType, double>::value, double,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
-
-                    mgtype_t *v_mat = (mgtype_t *)&sg_twovpsi_t[sbasis];
-                    mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
-                    mgtype_t *twork_tf = (mgtype_t *)twork_t;
-                    mgtype_t *work2_tf = (mgtype_t *)work2_t;
+                mgtype_t *v_mat = (mgtype_t *)&sg_twovpsi_t[sbasis];
+                mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
+                mgtype_t *twork_tf = (mgtype_t *)twork_t;
+                mgtype_t *work2_tf = (mgtype_t *)work2_t;
 
 
-                    int ixoff, iyoff, izoff;
-                    int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
-                    int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
-                    int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
+                int ixoff, iyoff, izoff;
+                int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
+                int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
+                int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
 
-                    if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
-                        printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , NX_GRID, NY_GRID, NZ_GRID);
-                        exit(0);
-                    }
-
-                    /* Pack the residual data into multigrid array */
-                    CPP_pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
-                    T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
-                    MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-
-                    MG.mgrid_solv (v_mat, f_mat, work2_tf,
-                            dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                            1, levels, eig_pre, eig_post, 1, 
-                            ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                            //ct.eig_parm.sb_step, Zfac, 0.0, c_vtot,
-                            NX_GRID, NY_GRID, NZ_GRID,
-                            G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                            dimx, dimy, dimz, ct.boundaryflag);
-
-                    MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                    CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);
-
+                if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
+                    printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , NX_GRID, NY_GRID, NZ_GRID);
+                    exit(0);
                 }
 
-                /* The correction is in a smoothing grid so we use this
-                 * routine to update the orbital which is stored in a physical grid.
-                 */
+                /* Pack the residual data into multigrid array */
+                CPP_pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
+                T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
+                MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
-                t1 = -ct.eig_parm.mg_timestep;
-                CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, &tmp_psi_t[is*pbasis], t1, dimx, dimy, dimz);
+                MG.mgrid_solv (v_mat, f_mat, work2_tf,
+                        dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                        1, levels, eig_pre, eig_post, 1, 
+                        mg_step, 2.0*Zfac, 0.0, NULL,
+                        NX_GRID, NY_GRID, NZ_GRID,
+                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                        dimx, dimy, dimz, ct.boundaryflag);
 
+                MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);
+
+            }
+
+            /* The correction is in a smoothing grid so we use this
+             * routine to update the orbital which is stored in a physical grid.
+             */
+            if(ct.use_rmm_diis)
+            {
+                CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                for(int i=0;i < pbasis_noncoll;i++)
+                {
+                    rmmres_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
+                                              tmp_psi_t[is*pbasis+i] +
+                                              work2_t[is*pbasis+i]);
+                }
             }
             else
             {
+                // Gradient step
+                CPP_pack_stop_axpy<CalcType>(sg_twovpsi_t, &tmp_psi_t[is*pbasis], -fg_step, dimx, dimy, dimz);
+            }
+        } 
 
-                t1 = eig;
-                double t5 = diag - Zfac;
-                t5 = -1.0 / t5;
-                double t4 = ct.eig_parm.gl_step * t5;
-                for (int idx = 0; idx <pbasis; idx++)
-                {
-                    OrbitalType t5 = t4 * (OrbitalType)res_t[idx + is * pbasis];
-                    tmp_psi_t[idx + is * pbasis] += t5;
-                }
+        if(ct.use_rmm_diis)
+        {
+            sp->dptr->addres(rmmres_t);  // Preconditioned residual
 
-                if (cycles == 0)
-                {
+            // If first vcycle use gradient step
+            if(vcycle == 0) sp->dptr->lambda = -0.5*fg_step;
+            // compute optimized for second vcycle
+            if(vcycle >= 2)
+            {
+                // line minimization to compute rmm-diis lambda
+                ApplyHamiltonian<OrbitalType,CalcType> (
+                      kptr, sp,
+                      sp->istate,
+                      rmmres_t,  // preconditioned residual |kr0>
+                      hr0_t,     // hamiltonian applied to  |kro>
+                      vtot_psi,
+                      vxc_psi,
+                      nv_t,
+                      false);
 
-                    // If occupied orbitals are frozen we compute residuals 
-                    if(freeze_occupied) {
-                        //double t2 = ZERO;
-                        //for (int idx = 0; idx <pbasis; idx++) t2 += std::norm(res_t[idx]);
-                        //GlobalSums (&t2, 1, pct.coalesced_grid_comm);
-                        //t2 = RmgSumAll (t2, pct.coalesced_grid_comm);
-                        //t1 = (double) (ct.psi_nbasis);
-                        //sp->res = sqrt (t2 / t1);
-                        //                    if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
-                    }
+                // not clear if initial residual r0_t or final residual 
+                // res_t works better here
+                sp->dptr->compute_lambda(sp->eig[0], ihu_t, r0_t, hr0_t);
+            }
 
-                }
-
+            std::vector<OrbitalType> next;
+            next = sp->dptr->compute_estimate(); 
+            if(next.size() > 0)
+            {
+                for(int i=0;i < pbasis_noncoll;i++)
+                    tmp_psi_t[i] = (CalcType)next[i] + sp->dptr->lambda*rmmres_t[i];
+            }
+            else
+            {
+                // Fall back to gradient step
+                for(int i=0;i < pbasis_noncoll;i++)
+                    tmp_psi_t[i] = saved_psi[i] - fg_step*rmmres_t[i];
             }
         }
-
-    }                           /* end for */
+    }
 
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
 
     // Copy single precision orbital back to double precision
-    if(freeze_occupied)
-        ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
+    ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
 
     p->free(res2_t, pool_blocks);
 

@@ -77,5 +77,13 @@ void OutputDos (Kpoint<KpointType> **Kptr)
 
     }
 
+    bool sts_flag = true;
+
+    if(ct.sts_start_grid[0] + ct.sts_start_grid[1] + ct.sts_start_grid[2] == -3) sts_flag = false;
+    if(ct.sts_end_grid[0] + ct.sts_end_grid[1] + ct.sts_end_grid[2] == -3) sts_flag = false;
+    if(sts_flag)
+    {
+        STS_calc(Kptr, Ef_ev, ct.sts_start_grid, ct.sts_end_grid);
+    }
 }
 

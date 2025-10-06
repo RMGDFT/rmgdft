@@ -38,7 +38,7 @@ template void Kpoint<std::complex<double>>::LcaoGetPsi(void);
 template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 {
 
-    State<KpointType> *states = Kstates;
+    std::vector<State<KpointType>> &states = Kstates;
     double *kvec = kp.kvec;
 
     long idum;

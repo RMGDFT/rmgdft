@@ -90,6 +90,12 @@ public:
     void generalized_eigenvectors_scalapack(std::complex<double> *a, std::complex<double> *b, 
              double *ev, std::complex<double> *q);
 
+    void symherm_eigenvectors(double *a, double *ev, double *q);
+    void symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q);
+
+    void symherm_eigenvectors_scalapack(double *a, double *ev, double *q);
+    void symherm_eigenvectors_scalapack(std::complex<double> *a, double *ev, std::complex<double> *q);
+
 #if USE_ELPA
     void generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q);
     void generalized_eigenvectors_elpa(std::complex<double> *a, std::complex<double> *b,
@@ -171,7 +177,7 @@ protected:
     MPI_Comm used_comm; // holds processes that participate in scalapack ops
                         // may include more than one group
     MPI_Comm broadcast_comm;  // holds root process in group 0 and any leftovers
-
+    MPI_Group grp_world, grp_this;
 };
 
 #endif
@@ -194,11 +200,14 @@ protected:
 #define		pdsyevx		RMG_FC_GLOBAL(pdsyevx, PDSYEVX)
 #define		pdpotrf		RMG_FC_GLOBAL(pdpotrf, PDPOTRF)
 #define		pdsyngst	RMG_FC_GLOBAL(pdsyngst, PDSYNGST)
+#define		pzhengst	RMG_FC_GLOBAL(pzhengst, PZHENGST)
 #define		pdtrsm		RMG_FC_GLOBAL(pdtrsm, PDTRSM)
 #define		pdtran		RMG_FC_GLOBAL(pdtran, PDTRAN)
 #define		pztranc		RMG_FC_GLOBAL(pztranc, PZTRANC)
 #define		pzhegvx		RMG_FC_GLOBAL(pzhegvx, PZHEGVX)
 #define		pdsyevd		RMG_FC_GLOBAL(pdsyevd, PDSYEVD)
+#define		pdsyevr		RMG_FC_GLOBAL(pdsyevr, PDSYEVR)
+#define		pzheevr		RMG_FC_GLOBAL(pzheevr, PZHEEVR)
 #define		psgeadd		RMG_FC_GLOBAL(psgeadd, PSGEADD)
 #define		pdgeadd		RMG_FC_GLOBAL(pdgeadd, PDGEADD)
 #define		pcgeadd		RMG_FC_GLOBAL(pcgeadd, PCGEADD)
@@ -257,9 +266,10 @@ void pdsygst(int *, char *, int *, double *, int *, int *, int *, double *, int 
               int *, int *, double *, int *);
 void pdsyngst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, double *, int *, int *);
-
 void pzhegst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, int *);
+void pzhengst(int *, char *, int *, std::complex<double> *, int *, int *, int *, std::complex<double> *,
+              int *, int*, int*, double *, std::complex<double> *, int *, int *);
 void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
 void pdpocon(char *, int*, double*, int*, int*, int*, double *, double *, double *, int *, int *, int *, int *);
 void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
@@ -304,6 +314,13 @@ void pdgetri(int *, double *, int *, int *, int *, int *, double*, int *, int *,
 void pzgetrf(int *, int *, std::complex<double> *, int *, int *, int *, int *, int *);
 void pzgeqpf(int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *, int*);
 void pdgeqpf(int *, int *, double *, int *, int *, int *, int *, double *, double *, int *, int*);
+void pdsyevr(char *, char *, char *, int *, double *, int *, int *, int *, double *,
+             double *, int *, int *, int *, int *, double *, double *, int *, int *,
+             int *, double *, int *, int *, int *, int *);
+void pzheevr(char *, char *, char *, int *, std::complex<double> *, int *, int *, 
+             int *, double *, double *, int *, int *, int *, int *, double *,
+             std::complex<double> *, int *, int *, int *, std::complex<double> *,
+             int *, double *, int *, int *, int *, int *);
 #ifdef __cplusplus
 }
 #endif

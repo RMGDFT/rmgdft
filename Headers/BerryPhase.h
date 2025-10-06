@@ -31,18 +31,19 @@ private:
     
 public:
     int num_kort, num_kort_pe, num_kpp;
+    int kort_start;
     int BerryPhase_dir;
     double efield_mag=0.0;
     double eps = 1.0e-10;
     double vel;
     std::complex<double> vel_C;
     double eai; //efield dot lattice vector in berryphase_dri
-    double pol_elec, pol_ion, pol_tot;
+    double pol_elec, pol_ion, pol_tot, enthalpy_elec;
     int nband_occ;
     int pbasis, pbasis_noncoll;
     size_t wfc_size;
     std::vector<double> kweight_string;
-    std::complex<double> *mat, *psi_k0;
+    std::complex<double> *mat, *psi_k0 = NULL;
     BerryPhase();
 
     ~BerryPhase(void);
@@ -55,7 +56,13 @@ public:
     void Apply_BP_Hpsi(Kpoint<double> *kptr, int num_states, double *psi, double *h_psi);
     void CalcBP(Kpoint<std::complex<double>> **Kptr);
     void CalcBP(Kpoint<double> **Kptr);
-    void psi_x_phase(std::complex<double> *psi_k0, double gr[3]);
+    void psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nband);
+    void CalcBP_Skk1(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
+    void CalcBP_Skk1(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
+    void CalcBP_tddft(Kpoint<double> **Kptr, double &tot_bp_pol, double *, Scalapack &);
+    void CalcBP_tddft(Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &);
+    void tddft_Xml(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
+    void tddft_Xml(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
 
 };
 

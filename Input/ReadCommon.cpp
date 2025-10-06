@@ -156,6 +156,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
     Ri::ReadVector<int> ldos_start_grid;
     Ri::ReadVector<int> ldos_end_grid;
+    Ri::ReadVector<int> sts_start_grid;
+    Ri::ReadVector<int> sts_end_grid;
     Ri::ReadVector<int> def_ldos_start_grid({{-1,-1,-1}});
     Ri::ReadVector<int> def_ldos_end_grid({{-1,-1,-1}});
 
@@ -259,6 +261,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("cell_relax", &lc.cell_relax, false, 
                         "flag to control unit cell relaxation", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("davidson_1stage_ortho", &lc.davidson_1stage_ortho, true, 
+            "Flag that improves davidson convergence for hard cases. Defaults to true but can be disabled for well behaved systems enabling higher performance.", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("davidson_2stage_ortho", &lc.davidson_2stage_ortho, false, 
+            "Flag to futher improve davidson convergence for hard cases. Experimental. ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes. ", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid. ", CELL_OPTIONS);
@@ -282,6 +290,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "a ending grid point for ldos caclualtion", 
                      "You must specify a triplet of grid index ix1, iy1, iz1 . ", CELL_OPTIONS);
 
+    If.RegisterInputKey("sts_start_grid", &sts_start_grid, &def_ldos_start_grid, 3, OPTIONAL, 
+                     "a grid point for starting sts caclualtion", 
+                     "You must specify a triplet of grid index ix0, iy0, iz0 . ", CELL_OPTIONS);
+    If.RegisterInputKey("sts_end_grid", &sts_end_grid, &def_ldos_end_grid, 3, OPTIONAL, 
+                     "a ending grid point for sts caclualtion", 
+                     "You must specify a triplet of grid index ix1, iy1, iz1 . start and end points must form a line on real space grids ", CELL_OPTIONS);
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -360,9 +374,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
 "RMG supports Broyden, Pulay and Linear mixing "
 "When the davidson Kohn-Sham solver is selected Broyden or "
-"Pulay are preferred. For the multigrid solver Linear with "
-"potential acceleration is often (but not always) the best "
-"choice.",
+"Pulay are preferred. For the multigrid solver Broyden is "
+"usually the best choice.",
                      "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating. ", MIXING_OPTIONS);
     
     If.RegisterInputKey("ldau_mixing_type", NULL, &lc.ldau_mixing_type, "Linear",
@@ -375,7 +388,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Type of charge analysis to use. Only Voronoi deformation density is currently available. ", 
                      "charge_analysis must be either \"Voronoi\" or \"None\". Terminating. ");
     
-    If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
+    If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 10,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to  perform and write out charge analysis.",
                      "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0. ", OUTPUT_OPTIONS);
@@ -829,7 +842,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "ldau pulay mixing reset steps",
             "", MIXING_OPTIONS);
 
-    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 10,
+    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 12, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Number of previous steps to use when Broyden mixing is used to update the charge density.",
             "", MIXING_OPTIONS);
@@ -839,7 +852,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "When using localized projectors the radius can be adjusted with this parameter. ",
             "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50000, 5,
+    If.RegisterInputKey("write_data_period", &lc.checkpoint, -5, 50000, -1,
             CHECK_AND_FIX, OPTIONAL,
             "How often to write checkpoint files during the initial quench in units of SCF steps. During structural relaxations of molecular dynamics checkpoints are written each ionic step.",
             "", CONTROL_OPTIONS);
@@ -870,16 +883,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid preconditioner iteration. ",
             "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
+    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 0, 5, 1,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid post-smoothing steps to perform after a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 1. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
+    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 3,
             CHECK_AND_FIX, OPTIONAL,
             "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
-            "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 3. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 6, 12, 8,
             CHECK_AND_FIX, OPTIONAL,
@@ -919,10 +932,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner. ",
             "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 0.6666666666666,
+    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "timestep for multigrid correction. ",
-            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 1.0 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
             CHECK_AND_FIX, OPTIONAL,
@@ -972,12 +985,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 40000, 512,
             CHECK_AND_FIX, OPTIONAL,
-            "Block size to use when applying the non-local and S operators. ",
+"Block size to use when applying the non-local and S operators. "
+"A value at least as large as the number of wavefunctions produces "
+"better performance but requires more memory. ",
             "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ", PERF_OPTIONS);
 
-    If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
+    If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 1, INT_MAX, 201,
             CHECK_AND_FIX, OPTIONAL,
-            "",
+            "number of E points for ldos and sts calculation",
             "");
 
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
@@ -1015,7 +1030,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Grid coalescing factor.",
             "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
+    If.RegisterInputKey("charge_density_mixing", &lc.init_mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
             "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
@@ -1154,6 +1169,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_cublasxt", &lc.use_cublasxt, false,
             "This flag enables the use of the cublasxt library in place of the standard cublas library with cuda enabled builds. Intended for use when GPU memory is constrained.", CONTROL_OPTIONS);
 #endif
+
+    If.RegisterInputKey("use_rmm_diis", &lc.use_rmm_diis, true,
+            "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
+
+    If.RegisterInputKey("use_block_diag", &lc.use_block_diag, false,
+            "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
             "When a semi-local pseudopotential is being used projectors will be generated using Bloechl's procedure with Bessel functions as the basis set if this is true.", PSEUDO_OPTIONS|EXPERIMENTAL_OPTION);
@@ -1412,6 +1433,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
+    If.RegisterInputKey("lambda_max", &lc.lambda_max, 1.0, 100.0, 3.0,
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
+            "", EXPERT_OPTION);
+
+    If.RegisterInputKey("lambda_min", &lc.lambda_min, 0.0, 2.0, 0.3,
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
+            "", EXPERT_OPTION);
+
+
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
             CHECK_AND_FIX, OPTIONAL,
             "",
@@ -1577,6 +1609,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
             lc.ldos_start_grid[ix] = ldos_start_grid.vals.at(ix);
             lc.ldos_end_grid[ix] = ldos_end_grid.vals.at(ix);
+            lc.sts_start_grid[ix] = sts_start_grid.vals.at(ix);
+            lc.sts_end_grid[ix] = sts_end_grid.vals.at(ix);
         }
     }
     catch (const std::out_of_range& oor) {
@@ -1794,6 +1828,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
     }
 
+    if(Verify ("ldaU_mode", "Simple", InputMap) ) {
+        lc.charge_broyden_order = 5;
+        if(pct.worldrank == 0)
+            std::cout << "Broyden history automatically set to 5 when ldaU is enabled." << std::endl;
+    }
+
     // Potential acceleration is disabled for Pulay or Broyden mixing
     if(Verify("charge_mixing_type","Pulay", InputMap) || Verify("charge_mixing_type","Broyden", InputMap)) {
         lc.potential_acceleration_constant_step = 0.0;
@@ -1875,7 +1915,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
     {
         auto K1 = InputMap["charge_mixing_type"];
-        K1->Readstr = "Pulay";
+        K1->Readstr = "Broyden";
         lc.potential_acceleration_constant_step = 0.0;
     }
     else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
@@ -1887,4 +1927,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Force grad order must match kohn_sham_fd_order unless fft is chose
     if(lc.force_grad_order != lc.kohn_sham_fd_order) lc.force_grad_order = 0;
+
+    ct.mix = lc.init_mix;
 }

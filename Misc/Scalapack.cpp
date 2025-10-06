@@ -50,7 +50,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     MPI_Comm_size(rootcomm, &this->npes);
     MPI_Comm_rank(rootcomm, &this->root_rank);
-    MPI_Group grp_world, grp_this;
 
     if(this->npes < images_per_node)
         throw RmgFatalException() << "NPES " <<  this->npes << " < images_per_node " << images_per_node << " in " << __FILE__ << " at line " << __LINE__ << ".\n";
@@ -129,10 +128,10 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
 
     // Get the world rank mapping of this groups processes since blacs uses world group ranking
-    MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
-    MPI_Comm_group (this->comm, &grp_this);
+    MPI_Comm_group (MPI_COMM_WORLD, &this->grp_world);
+    MPI_Comm_group (this->comm, &this->grp_this);
     MPI_Comm_size (this->comm, &this->scalapack_npes);
-    MPI_Group_translate_ranks (grp_this, this->scalapack_npes, tgmap, grp_world, pmap);
+    MPI_Group_translate_ranks (this->grp_this, this->scalapack_npes, tgmap, this->grp_world, pmap);
 
     // Now set up the blacs with nprow*npcol
     //std::cout << "scalapack_npes=  " << this->scalapack_npes << std::endl;
@@ -637,6 +636,103 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
 }
 
+
+void Scalapack::symherm_eigenvectors(double *a, double *ev, double *q)
+{
+#if USE_ELPA
+    not programmed so this will throw a compile error
+#endif    
+
+    this->symherm_eigenvectors_scalapack(a, ev, q);
+}
+
+void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
+{
+    /****************** Find Matrix of Eigenvectors *****************************/
+    /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+    char *uplo = "l", *jobz = "v";
+    int info, ione = 1;
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    // Get workspace required
+    int NN = std::max( N, this->NB);
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+    int lwork = 2*NP*this->NB + NQ*this->NB + this->NB*this->NB;
+    double *work2 = new double[lwork];
+    
+    double *nwork = new double[lrwork];
+    int *iwork = new int[liwork];
+
+    // and now solve it 
+    pdsyevd(jobz, uplo, &N, a, &ione, &ione, desca,
+            ev, q, &ione, &ione, desca, nwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] work2;
+}
+
+
+void Scalapack::symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q)
+{
+#if USE_ELPA
+    not programmed so this will throw a compile error
+#endif    
+    this->symherm_eigenvectors_scalapack(a, ev, q);
+}
+
+void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *ev, std::complex<double> *q)
+{
+    int ione=1, info;
+    char *uplo = "l", *jobz = "v";
+    int N = this->N;
+    int *desca = this->GetDistDesca();
+
+    // Get workspace required
+     int NN = std::max( N, this->NB);
+
+    int izero = 0;
+    int nprow = this->GetRows();
+    int npcol = this->GetCols();
+    int NQ = numroc( &NN, &this->NB, &izero, &izero, &npcol );
+    int NP = numroc( &NN, &this->NB, &izero, &izero, &nprow );
+    int lwork = N + ( NP+NQ+this->NB )*this->NB;
+    int lrwork = 1 + 9*N + 3*NP*NQ;
+    int liwork = 7*N + 8* npcol + 2;
+
+    double *rwork = new double[lrwork];
+    double *nwork = new double[lwork*2];
+    int *iwork = new int[liwork];
+
+
+    // and now solve it
+    pzheevd(jobz, uplo, &N, (double *)a, &ione, &ione, desca,
+            ev, (double *)q, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+
+    if (info)
+    {
+        rmg_printf ("\n pzheevd failed, info is %d", info);
+        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+    }
+
+    delete [] iwork;
+    delete [] nwork;
+    delete [] rwork;
+}
+
 #if USE_ELPA
 void Scalapack::generalized_eigenvectors_elpa(double *a, double *b, double *ev, double *q)
 {
@@ -985,6 +1081,10 @@ Scalapack::~Scalapack(void)
 {
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
+    MPI_Comm_free(&this->used_comm);
+    MPI_Comm_free(&this->broadcast_comm);
+    MPI_Group_free(&this->grp_world);
+    MPI_Group_free(&this->grp_this);
     delete [] this->dist_desca;
     delete [] this->local_desca;
 #if USE_ELPA

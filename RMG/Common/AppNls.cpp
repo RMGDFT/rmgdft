@@ -334,6 +334,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         delete RT1;
     }
 
+    if(ct.BerryPhase)
+    {
+          Rmg_BP->Apply_BP_Hpsi(kpoint, num_states,  psi, nv);
+    }
 }
 
 

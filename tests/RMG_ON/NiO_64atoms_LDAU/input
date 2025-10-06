@@ -14,7 +14,7 @@ charge_pulay_scale = "0.10000000"
 occupation_electron_temperature_eV = "0.1"
 #AFM="True"
 
-test_energy = "-5941.91635891"
+test_energy = "-5941.92361113"
 
 #write_pseudopotential_plots = "true"
 

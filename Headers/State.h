@@ -31,6 +31,9 @@
 #define RMG_State_H 1
 
 #include <mpi.h>
+#include "GridObject.h"
+#include "diis.h"
+
 template <typename T> class Kpoint;
 template <typename StateType> class State {
 
@@ -44,6 +47,9 @@ public:
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;
 
+    // diis class instance for this state
+    diis<StateType> *dptr;
+
     /** Index showing which k-point this orbital is associated with */
     int kidx;
 
@@ -52,10 +58,14 @@ public:
     // Storage area for the orbital
     StateType *psi;
  
+    // Wfobj wrapping the storage
+    wfobj<StateType> *p;
+
     /** Nuclear potential */
     double *vnuc;
     double *vnuc_f;   // Ephemeral object that only exists in GetNewRho
     double *vnuc_c;   // Ephemeral object that only exists in GetNewRho
+    double e_meta_xc; // energy correction term for MetaGGA
 
     /** Nuclear potential energy correction term */
     double vnuc_correction;
@@ -82,8 +92,8 @@ public:
     /** Total basis size on each processor (dimx*dimy*dimz) */
     int pbasis;
 
-    /** Wavefunction residual error computed by multigrid solver */
-    double res;
+    /** Wavefunction residual errors computed by multigrid solver */
+    double res[20];
 
     // Last two eigenvalues
     double eig[2];
@@ -98,6 +108,7 @@ public:
     // Occupation of the orbital
     double occupation[2];
 
+    bool skip;
 
 };
 

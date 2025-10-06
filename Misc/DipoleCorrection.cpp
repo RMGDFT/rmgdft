@@ -36,6 +36,7 @@ void DipoleCorrection(double *dipole,  double *vh_dipole)
         VhcorrDipoleInit(vh_x, vh_y, vh_z);
     }
 
+    if(vh_dipole == NULL ) return;
     if(ct.dipole_corr[0])
     {
         for(int idx = 0; idx < nfp0; idx++) 
@@ -80,7 +81,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z)
     double r, x, y, z, alpha, fac2l1, vcorr;
     int idx, i,j,k, lpole;
 
-    double dipole_center[3], dipole_ion[3];
+    double dipole_ion[3];
 
 
 
@@ -115,7 +116,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z)
     // use the charge center as the dipole center  
     for (i = 0; i < 3; i++) 
     {
-        dipole_center[i] = dipole_ion[i]/ct.nel;
+        ct.dipole_center[i] = dipole_ion[i]/ct.nel;
     }
 
     //  make the center on the grid
@@ -127,25 +128,25 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z)
 //    dipole_center[2] = idx * hzzgrid * zside;
 
 
-    rmg_printf("\n dipole center at %f %f %f", dipole_center[0], dipole_center[1], dipole_center[2]);
+    rmg_printf("\n dipole center at %f %f %f", ct.dipole_center[0], ct.dipole_center[1], ct.dipole_center[2]);
 
-    VhcorrPeriodicPart(vh_x, vh_y, vh_z, alpha, dipole_center);
+    VhcorrPeriodicPart(vh_x, vh_y, vh_z, alpha, ct.dipole_center);
     for(i = 0; i < FPX0_GRID; i++)
     {
-        x = (FPX_OFFSET + i)*hxxgrid * xside - dipole_center[0];
+        x = (FPX_OFFSET + i)*hxxgrid * xside - ct.dipole_center[0];
         if(x > xside * 0.5) x = x- xside;
         if(x < -xside * 0.5) x = x + xside;
 
 
         for(j = 0; j < FPY0_GRID; j++)
         {
-            y = (FPY_OFFSET + j)*hyygrid * yside - dipole_center[1];
+            y = (FPY_OFFSET + j)*hyygrid * yside - ct.dipole_center[1];
             if(y > yside * 0.5) y = y- yside;
             if(y < -yside * 0.5) y = y + yside;
 
             for(k = 0; k < FPZ0_GRID; k++)
             {
-                z = (FPZ_OFFSET + k)*hzzgrid * zside - dipole_center[2];
+                z = (FPZ_OFFSET + k)*hzzgrid * zside - ct.dipole_center[2];
                 if(z > zside * 0.5) z = z- zside;
                 if(z < -zside * 0.5) z = z + zside;
 

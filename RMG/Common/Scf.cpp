@@ -75,10 +75,12 @@ template <typename OrbitalType> bool Scf (
     int FP0_BASIS = vtot.size();
     int P0_BASIS = vtot_psi.size();
 
-    if(ct.dipole_corr[0]+ct.dipole_corr[0]+ct.dipole_corr[0] >0)
+    if(ct.dipole_corr[0]+ct.dipole_corr[1]+ct.dipole_corr[2] >0)
     {
         double dipole[3];
-        get_dipole(rho.data(), dipole);
+        get_dipole(rho.data(), rhoc.data(),dipole);
+        //get_dipole(rho.data(),dipole);
+        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  vh_dipole_corr.data());
     }
     else
@@ -96,10 +98,8 @@ template <typename OrbitalType> bool Scf (
 
     /* Evaluate XC energy and potential */
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
+    compute_vxc(rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
-    delete F;
     delete RT1;
 
     double rms_target = std::min(std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12), 1.0e-6);
@@ -124,8 +124,8 @@ template <typename OrbitalType> bool Scf (
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
-    t[0] *= rho.vel;
-    t[2] *= vh.vel;
+    t[0] *= rho.vel();
+    t[2] *= vh.vel();
 
     /* get the averaged value over each spin and each fine grid */
     if(ct.AFM)
@@ -185,14 +185,14 @@ template <typename OrbitalType> bool Scf (
         // Loop over k-points
         for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
-            if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || 
+            if (ct.kohn_sham_solver == MULTIGRID_SOLVER || 
                     ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-                Kptr[kpt]->MgridSubspace(vtot_psi.data(), vxc_psi);
+                Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                 delete RT1;
             }
-            else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+            else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
                 int notconv;
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
                 Kptr[kpt]->Davidson(vtot_psi.data(), vxc_psi, notconv);
@@ -337,22 +337,30 @@ template <typename OrbitalType> bool Scf (
     delete RT1;
 
     // Compute convergence measure (2nd order variational term) and average by nspin
-    double sum = 0.0;
-    for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
+    spinobj<double> rho_diff;
+    rho_diff = new_rho;
+    for(int i = 0;i < rho.pbasis;i++) rho_diff[i] -= rho[i];
+
+    double sum[2] = {0.0, 0.0};
+    for(int i = 0;i < rho.pbasis;i++) sum[0] += (vh_out[i] - vh[i]) * rho_diff[i];
+    for(int i = 0;i < rho.pbasis;i++) sum[1] += rho_diff[i] * rho_diff[i];
     if(ct.AFM) 
     {
-        for(int i = 0;i < rho.pbasis;i++) sum += (vh_out[i] - vh[i]) * (new_rho.dw[i] - rho.dw[i]);
+        for(int i = 0;i < rho.pbasis;i++) rho_diff.dw[i] -= rho.dw[i];
+        for(int i = 0;i < rho.pbasis;i++) sum[0] += (vh_out[i] - vh[i]) * rho_diff.dw[i];
+        for(int i = 0;i < rho.pbasis;i++) sum[1] += rho_diff.dw[i] * rho_diff.dw[i];
     }
-    sum = 0.5 * rho.vel * sum;
+    sum[0] = 0.5 * rho.vel() * sum[0];
+    sum[1] = rho.vel() * sum[1];
 
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_MAX, pct.img_comm);
-    ct.scf_accuracy = sum;
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, sum, 2, MPI_DOUBLE, MPI_MAX, pct.img_comm);
+    ct.scf_accuracy = sum[0];
+    ct.dr2 = sum[1];
 
     // Compute variational energy correction term if any
-    sum = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
-    ct.scf_correction = sum;
+    ct.scf_correction = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
@@ -364,8 +372,10 @@ template <typename OrbitalType> bool Scf (
         // If the multigrid solver is selected the total energy calculation from
         // the loop above is not variational but the following block of code
         // will give us a variational energy.
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && !ct.noncoll 
-                && ct.potential_acceleration_constant_step > 1.0e-5)
+        if ( (ct.kohn_sham_solver == MULTIGRID_SOLVER
+                    && (!ct.noncoll && ct.potential_acceleration_constant_step > 1.0e-5)) ||
+                (ct.kohn_sham_solver == DAVIDSON_SOLVER) )
+
         {
             ct.scf_correction = 0.0;
             for (int idx = 0; idx < vtot.pbasis; idx++)
@@ -384,7 +394,14 @@ template <typename OrbitalType> bool Scf (
             ct.potential_acceleration_constant_step = 0.0;
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
-                Kptr[kpt]->Subdiag(vtot_psi.data(), vxc_psi, ct.subdiag_driver);
+                Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                        Kptr[kpt]->nstates*ct.noncoll_factor, 
+                        Kptr[kpt]->nl_weight);
+                if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+                {
+                    LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+                }
+                Kptr[kpt]->Subdiag(vtot_psi.data(), vxc_psi, ct.subdiag_driver, false);
                 Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                         Kptr[kpt]->nstates*ct.noncoll_factor, 
                         Kptr[kpt]->nl_weight);
@@ -450,9 +467,8 @@ template <typename OrbitalType> bool Scf (
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
         vxc_in = vxc;
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(new_rho.data(), rhocore.data(), ct.XC, ct.vtxc, vxc.data(), ct.nspin );
-        delete F;
+        new_rho.get_oppo();
+        compute_vxc(new_rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
         delete RT1;
 
     }
@@ -461,6 +477,7 @@ template <typename OrbitalType> bool Scf (
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("2-Scf steps: MixRho");
     MixRho(new_rho.data(), rho.data(), rhocore.data(), vh.data(), vh_out.data(), rhoc.data(), Kptr[0]->ControlMap, false);
+
     delete RT1;
 
     rho.get_oppo();

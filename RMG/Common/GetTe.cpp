@@ -85,7 +85,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     int state, kpt, idx, P0_BASIS;
     double vel, cvel, ES_pa = 0.0;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) potential_acceleration = false;
+    if(ct.kohn_sham_solver == DAVIDSON_SOLVER) potential_acceleration = false;
     Kpoint<KpointType> *kptr;
  
     int fpbasis = rho.pbasis;
@@ -183,7 +183,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
             for (int is = 0; is < ct.num_states; is++)
             {
-                int offset = (is / kptr->dvh_skip) * kptr->pbasis;
+                int offset = (is / ct.dvh_skip) * kptr->pbasis;
                 double *veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*kptr->pbasis];
                 KpointType *psi = kptr->Kstates[is].psi;
                 for(int ix = 0;ix < kptr->pbasis;ix++)
@@ -234,6 +234,22 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
     /*XC potential energy */
     xcstate = vel * RmgSumAll(xcstate, pct.grid_comm);
+
+    Functional F (*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(ct.xc_is_meta)
+    {
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            kptr = Kptr[kpt];
+            double t1 = 0.0;
+            for (int is = 0; is < ct.num_states; is++)
+            { 
+                t1 += kptr->Kstates[is].occupation[0] * kptr->Kstates[is].e_meta_xc;
+            }
+            t1 = get_vel() * RmgSumAll(t1, pct.grid_comm);
+            xcstate += kptr->kp.kweight * t1;
+        }
+    }
 
 
     if(ii_flag) {
@@ -292,6 +308,12 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         rmg_printf ("@@ HUBBARD ENERGY     = %15.6f %s\n", efactor*ldaU_H, eunits);
+    if(ct.BerryPhase)
+    {
+        ct.TOTAL += Rmg_BP->enthalpy_elec;
+        rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+    }
+
 
     rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {

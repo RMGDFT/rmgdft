@@ -96,11 +96,16 @@ public:
     void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
-    void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver);
+    void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver, bool use_symmetric);
+    void KineticEnergyDensity(double *ked);
     void ComputeHpsi (double *vtot_eig, double *vxc_psi, KpointType *h_psi);
     void ComputeHcore (double *vtot_eig, double *vxc_psi, KpointType *Hcore, KpointType *Hcore_kin, KpointType *Hij_localpp);
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
+    void MgridSubspaceBlocked (double *vtot_psi, double *vxc_psi);
+    void MgridSubspace (int istart, int N, int bs, double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, double *vxc_psi, int &notconv);
+    void BlockDiag(double *vtot, double *vxc_psi);
+    void BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);
     void GetDelocalizedOrbital (void);
@@ -150,7 +155,7 @@ public:
     KpointType *prev_orbitals;
 
     // The orbital structure for this k-point
-    State<KpointType> *Kstates;
+    std::vector<State<KpointType>> Kstates;
 
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;
@@ -183,11 +188,6 @@ public:
 
     // Pointer to potential acceleration arrays and size
     double *dvh;
-    size_t dvh_size;
-
-    // Number of potential acceleration arrays and the skip factor
-    int ndvh;
-    int dvh_skip;
 
     // Number of points in orbital basis
     int pbasis;
@@ -223,7 +223,10 @@ public:
     KpointType *Pxmatrix_cpu  ;
     KpointType *Pymatrix_cpu  ;
     KpointType *Pzmatrix_cpu  ;
+
     // BP_matrix_cpu: S^-1(k, k+1) Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
+    KpointType *BP_Xml = NULL  ;
+    KpointType *BP_Skk1_cpu = NULL  ;
     KpointType *BP_matrix_cpu=NULL  ;
     KpointType *BP_psi=NULL  ;
     KpointType *BP_Gnk=NULL  ;

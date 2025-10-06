@@ -28,6 +28,7 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "Pw.h"
+#include "GridObject.h"
 
 typedef struct
 {
@@ -82,6 +83,8 @@ void FftLaplacian(std::complex<double> *x, std::complex<double> *lapx, Pw &pwave
 
 void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, int type);
 void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, double factor);
+void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, int type);
+void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, double factor);
 
 void FftFreqBin(double *x, Pw &pwaves, double *bins);
 

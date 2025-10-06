@@ -241,12 +241,10 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         DavPreconditioner (this, &psi[nbase*pbasis_noncoll], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
-        if(ct.BerryPhase)
-        {
-            RT1 = new RmgTimer("6-Davidson: orthogonalization");
-            DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, vr);
-            delete RT1;
-        }
+        RT1 = new RmgTimer("6-Davidson: orthogonalization");
+        if(ct.davidson_1stage_ortho)
+            DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, ct.davidson_2stage_ortho);
+        delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
         // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the
@@ -455,14 +453,12 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
                 // We use a single non update davidson cycle to get a variational value for the total
                 // energy when the multigrid solver is used so we don't want to write any davidson info
                 // in this case
-                if (!Verify ("kohn_sham_solver","multigrid", this->ControlMap))
-                    rmg_printf("Davidson converged in %d steps\n", steps+1);
+                rmg_printf("Davidson converged in %d steps\n", steps+1);
                 break;  // done
             }
 
             if(steps == (ct.david_max_steps-1)) {
-                if (!Verify ("kohn_sham_solver","multigrid", this->ControlMap))
-                    rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
+                rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
                 break;
             }
 

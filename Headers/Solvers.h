@@ -33,7 +33,7 @@
 #include "Kpoint.h"
 
 template <typename KpointType, typename CalcType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv, bool potential_acceleration);
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int istate, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv, bool potential_acceleration);
 
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi);
@@ -45,5 +45,23 @@ template <typename OrbitalType>
 void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                         double fd_diag, double eig, double *vtot, double avg_potential);
 
+template <typename T>
+double ComputeEig(int n, T *A, T *B, T *D);
+
+template <typename OrbitalType, typename CalcType> void mgsmoother(
+              Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
+              CalcType *u, CalcType *Hu, CalcType *r, 
+              CalcType *ihu, CalcType *ir,
+              double *v, double *vxc, double *dinv,
+              OrbitalType *nv, CalcType *ns,
+              double &eig, int order, bool is_jacobi,
+              double lmax, double lmin, int vcycle);
+
+template <typename T> void gauss_solve(std::vector<T>& A, std::vector<T>& b, int N);
+
+template <typename KpointType>
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, bool dostage2);
+template <typename KpointType>
+void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi);
 
 #endif

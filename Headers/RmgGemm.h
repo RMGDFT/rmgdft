@@ -44,6 +44,11 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
 template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k,
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
                              DataType *C, int ldc);
+
+template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
+                             DataType alpha, DataType *A, int lda, DataType beta,
+                             DataType *C, int ldc);
+
 void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<double> *alpha, 
         std::complex<double> *A, int lda, std::complex<double> *B, int ldb,
         std::complex<double> *beta, std::complex<double> *C, int ldc);
@@ -51,6 +56,13 @@ void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<doubl
 template <typename DataType> void RmgGemmStridedBatched(char *transa, char *transb, int m, int n, int k,
                              DataType alpha, DataType *A, int lda, size_t strdedA, DataType *B, int ldb, size_t strideB, DataType beta,
                              DataType *C, int ldc, size_t strideC, int batchCount);
+
+template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info);
+template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info);
+template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, char *diag,
+                             int m, int n, DataType alpha, DataType *A, int lda,
+                             DataType *B, int ldb);
+
 #endif
 #endif
 

@@ -44,8 +44,7 @@
 #include "RmgThread.h"
 #include "Symmetry.h"
 #include "Voronoi.h"
-
-
+#include "Functional.h"
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -258,6 +257,23 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
+#if 0
+//  Computing the kinetic energy density on the fine grid may help in some cases but
+//  that's not clear yet
+    if(ct.xc_is_meta)
+    {
+        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        fgobj<OrbitalType> gx, gy, gz;
+        ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
+        for(int idx = 0;idx < FP0_BASIS;idx++)
+        {
+            double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
+                                  gy[idx]*std::conj(gy[idx]) + 
+                                  gz[idx]*std::conj(gz[idx]));
+            F.ke_density[idx] += 0.5*scale*t1;
+        }
+    }
+#endif
     rhomutex.unlock();
 
     delete [] psi_f;
@@ -390,6 +406,7 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     int order = MAX_PROLONG_ORDER;
     size_t rbufsize = 8*dimx*dimy*dimz*sizeof(double);
     size_t bufsize = (dimx + order)*(dimy + order)*(dimz + order)*sizeof(double)*factor;
+    size_t buf_max = std::max(bufsize, rbufsize);
     int max_threads = ct.MG_THREADS_PER_NODE;
 
     // Check if just clearing the accumulators
@@ -408,7 +425,7 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     for(int i=0;i < max_threads;i++)
     {
         hipMalloc((void **)&P.abufs[i], bufsize);
-        hipMallocHost((void **)&P.hbufs[i], rbufsize);
+        hipMallocHost((void **)&P.hbufs[i], buf_max);
         hipMalloc((void **)&P.rbufs[i], rbufsize);
     }
     for(int i=0;i < max_threads;i++)

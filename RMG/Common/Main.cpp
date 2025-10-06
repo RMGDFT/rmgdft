@@ -224,10 +224,10 @@ int main (int argc, char **argv)
 
         /* Perform any necessary initializations */
         if(ct.is_gamma) {
-            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_g);
+            Init (vh, rho, rhocore, rhoc, vnuc, vxc, Kptr_g);
         }
         else {
-            Init (vh.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), vnuc.data(), vxc.data(), Kptr_c);
+            Init (vh, rho, rhocore, rhoc, vnuc, vxc, Kptr_c);
         }
 
         if(ct.verbose) {
@@ -462,18 +462,8 @@ template <typename OrbitalType> void run (
             {   
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
-            else
-            {
-                spinobj<double> &rho = *(Kptr[0]->rho);
-                spinobj<double> &vxc = *(Kptr[0]->vxc);
-                fgobj<double> &rhoc = *(Kptr[0]->rhoc);
-                fgobj<double> &rhocore = *(Kptr[0]->rhocore);
-                fgobj<double> &vnuc = *(Kptr[0]->vnuc);
-                fgobj<double> &vh = *(Kptr[0]->vh);
-
-            }
             ct.cube_rho = false;
-            RmgTddft (vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhocore.data(), rhoc.data(), Kptr);
+            RmgTddft (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             break;
 
         case Exx_only:
@@ -604,6 +594,7 @@ void finish ()
         if(ct.forceflag == BAND_STRUCTURE) break;
     }
 
+    if(ct.mpi_queue_mode) Rmg_Q->set_exitflag();
     MPI_Barrier(MPI_COMM_WORLD);
     /*Exit MPI */
     MPI_Finalize ();

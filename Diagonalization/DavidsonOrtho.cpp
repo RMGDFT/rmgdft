@@ -32,8 +32,11 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"
+#include "Solvers.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "RmgMatrix.h"
+#include "RmgException.h"
 
 
 
@@ -49,22 +52,17 @@
 // mat: matrix to hold <Psi|psi>, need to be allocated nbase * notconv at least
 //
 
-template void DavidsonOrtho (int, int, int pbasis_noncoll, double *, double *);
-template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *, std::complex<double> *);
+template void DavidsonOrtho (int, int, int pbasis_noncoll, double *, bool);
+template void DavidsonOrtho(int, int, int pbasis_noncoll, std::complex<double> *, bool);
 
 template <typename KpointType>
-void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, KpointType *mat)
+void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, bool dostage2)
 {
 
     if(!ct.norm_conserving_pp)
     {
-        rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp in DavidsonOrtho now\n");
+        return;
     }
-    if(nbase == 0)
-    {
-        rmg_error_handler(__FILE__, __LINE__, "nbase cannot be zero\n");
-    }
-
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -76,6 +74,12 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
         factor = 2;
     }
 
+    size_t tlength = ((notcon + 2) * notcon / 2);
+    size_t alloc = (notcon+nbase)*(notcon+nbase);
+    KpointType *mat = (KpointType *)ct.get_gmatrix((alloc + tlength + 8192)*sizeof(KpointType));
+    size_t offset = 4096 * (alloc / 4096 + 1);
+    KpointType *tmat = mat + offset;
+
     double vel = Rmg_L.get_omega() /
         ((double)((size_t)Rmg_G->get_NX_GRID(1) * (size_t)Rmg_G->get_NY_GRID(1) * (size_t)Rmg_G->get_NZ_GRID(1)));
     KpointType alphavel(vel);
@@ -85,45 +89,60 @@ void DavidsonOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi, K
     KpointType mone(-1.0);
     KpointType *psi_extra = &psi[nbase * pbasis_noncoll];
 
-    // ortho to the first nbase states
-    RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
-    BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
-
-    // ortho for the remainl noncon states
-
-    double norm;
-    int pbasis_c = pbasis_noncoll * factor;
-    int ione = 1;
-    norm =  ddot(&pbasis_c, (double *)psi_extra, &ione, (double *)psi_extra, &ione);
-    MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    norm = 1.0/sqrt(norm * vel);
-    dscal(&pbasis_c, &norm, (double *)psi_extra, &ione);
-
-    for (int st = 1; st < notcon; st++)
+    if(nbase > 0)
     {
-        // mat = <psi_extra[0:st-1] |psi_extr[st]>
-        RmgGemm(trans_a, trans_n, st, ione, pbasis_noncoll, alphavel, psi_extra, pbasis_noncoll, &psi_extra[st*pbasis_noncoll], pbasis_noncoll, zero, mat, st);
-        BlockAllreduce((double *)mat, (size_t)st * (size_t)factor, pct.grid_comm);
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, ione, st, mone, psi_extra, pbasis_noncoll, mat, st, one, &psi_extra[st*pbasis_noncoll], pbasis_noncoll);
-        norm =  ddot(&pbasis_c, (double *)&psi_extra[st*pbasis_noncoll], &ione, (double *)&psi_extra[st*pbasis_noncoll], &ione);
-        MPI_Allreduce(MPI_IN_PLACE, &norm, ione, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        norm = 1.0/sqrt(norm * vel);
-        dscal(&pbasis_c, &norm, (double *)&psi_extra[st*pbasis_noncoll], &ione);
+        RmgTimer RT("MgridOrtho: 1st stage");
+        // ortho to the first nbase states
+        RmgGemm(trans_a, trans_n, nbase, notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, nbase);
+        BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notcon, nbase, mone, psi, pbasis_noncoll, mat, nbase, one, psi_extra, pbasis_noncoll);
     }
 
+    if(!dostage2) return;
 
-    /*
-    RmgGemm(trans_a, trans_n, nbase+notcon, nbase+notcon, pbasis_noncoll, alphavel, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nbase+notcon);
-    BlockAllreduce((double *)mat, (size_t)(nbase+notcon)*(size_t)(nbase+notcon) * (size_t)factor, pct.grid_comm);
-    for(int i = 0; i < nbase + notcon; i++) 
-        for(int j = 0; j < nbase + notcon; j++) 
-        {
-            if(std::abs(mat[i * (nbase + notcon) + j]) > 1.0e-5)
-            rmg_printf("\n ortho? %d %d  %e %e", i,j, mat[i *(nbase+notcon) + j]);
-        }
+    RmgTimer *RT1 = new RmgTimer("MgridOrtho: 1st stage update");
+    char *transt = "t";
+    char *uplo = "u";
+    char *diag = "N";
+    char *side = "R";
 
-    rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp in DavidsonOrtho now\n");
-    */
+    if constexpr (std::is_same_v<KpointType, double>)
+    {
+        RmgSyrk( uplo, transt, notcon, pbasis_noncoll, one, psi_extra, pbasis_noncoll,
+            zero, mat, notcon);
+    }
+    if constexpr (std::is_same_v<KpointType, std::complex<double>>)
+    {
+        RmgGemm(trans_a, trans_n, notcon, notcon, pbasis_noncoll, one, psi_extra,
+                pbasis_noncoll, psi_extra, pbasis_noncoll, zero, mat, notcon);
+    }
+    delete RT1;
+
+    /* get the global part */
+    RT1 = new RmgTimer("MgridOrtho: allreduce");
+    int length = factor * (notcon + 2) * notcon / 2;
+    PackSqToTr("U", notcon, mat, notcon, tmat);
+    BlockAllreduce((double *)tmat, length, pct.grid_comm);
+    UnPackSqToTr("U", notcon, mat, notcon, tmat);
+    delete RT1;
+
+    /* compute the cholesky factor of the overlap matrix then subtract off projections */
+    RT1 = new RmgTimer("MgridOrtho: cholesky");
+    int info, info_trtri;
+    KpointType inv_vel(1.0/sqrt(vel));
+    rmg_potrf(uplo, notcon, mat, notcon, &info);
+    delete RT1;
+    RT1 = new RmgTimer("MgridOrtho: inverse");
+    rmg_trtri(uplo, diag, notcon, mat, notcon, &info_trtri);
+    delete RT1;
+    RT1 = new RmgTimer("MgridOrtho: 2nd stage update");
+    rmg_trmm(side, uplo, "N", diag, pbasis_noncoll, notcon, inv_vel, mat, notcon, psi_extra, pbasis_noncoll);
+    delete RT1;
+
+    if (info != 0)
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+
+    if (info_trtri != 0)
+    throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
 
 }

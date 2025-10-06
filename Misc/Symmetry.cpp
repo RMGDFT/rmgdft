@@ -478,11 +478,27 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         tem[1] = BP[1];
         tem[2] = BP[2];
         symm_vec(isym, tem);
-        if( (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
-                (std::abs(tem[1] - BP[1]) > 1.0e-10) ||
-                (std::abs(tem[2] - BP[2]) > 1.0e-10) )
+
+        if(inv_type[isym]) 
         {
-            sym_to_be_removed.push_back(isym);
+            if(     (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
+                    (std::abs(tem[1] - BP[1]) > 1.0e-10) ||
+                    (std::abs(tem[2] - BP[2]) > 1.0e-10) ||
+                    (std::abs(tem[0] + BP[0]) > 1.0e-10) ||
+                    (std::abs(tem[1] + BP[1]) > 1.0e-10) ||
+                    (std::abs(tem[2] + BP[2]) > 1.0e-10) )
+            {
+                sym_to_be_removed.push_back(isym);
+            }
+        }
+        else
+        {
+            if(     (std::abs(tem[0] - BP[0]) > 1.0e-10) ||
+                    (std::abs(tem[1] - BP[1]) > 1.0e-10) ||
+                    (std::abs(tem[2] - BP[2]) > 1.0e-10) )
+            {
+                sym_to_be_removed.push_back(isym);
+            }
         }
     }
 

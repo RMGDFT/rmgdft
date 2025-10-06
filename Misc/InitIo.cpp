@@ -128,6 +128,15 @@ void get_topology(void)
 
 namespace Ri = RmgInput;
 
+void rmg_mpi_errors(MPI_Comm *comm, int *err, ...)
+{
+    char errmsg[MPI_MAX_ERROR_STRING];
+    int len;
+    Rmg_Q->set_exitflag();
+    MPI_Error_string(*err, errmsg, &len);
+    printf("RMG MPI error: %s\n", errmsg);fflush(NULL);sleep(5);
+    rmg_error_handler(__FILE__,__LINE__,"MPI error. Terminating.\n");
+}
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -139,6 +148,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     /* get this cores mpi rank */
     MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
     pct.worldrank = worldpe;
+
+    // Will need to build a custom handler for this at some point.
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+
+    MPI_Errhandler handler;
+    MPI_Comm_create_errhandler(rmg_mpi_errors, &handler);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
 
     // Set error handler to only print to rank 0
     RmgErrorSetPrint(pct.worldrank == 0);
@@ -419,10 +435,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
+    MPI_Bcast(ct.basename, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
     rmg_printf ("RMG initialization ...");
     rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
     rmg_printf (" %d MPI processes/image. ", status);
+
+
 
 
 #if CUDA_ENABLED || HIP_ENABLED
@@ -520,7 +539,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
             hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
             hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
-//            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
+            //            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;
@@ -809,12 +828,25 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         std::string xc_type = reordered_xc_type[*ik->Readintval];
         F.set_dft_from_name_rmg(xc_type);
     }
+    F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
+    ct.xc_is_meta = F.dft_is_meta_rmg();
+    ct.xc_is_gradient = F.dft_is_gradient_rmg();
+    ct.xc_is_nonlocc = F.dft_is_nonlocc_rmg();
     if(ct.exx_fraction < 0.0)
         ct.exx_fraction = F.get_exx_fraction_rmg();
     else
         F.set_exx_fraction_rmg(ct.exx_fraction);
 
+    if(F.dft_is_meta_rmg())
+    {
+        int dimx = pct.coalesce_factor * Rmg_G->get_PX0_GRID(1);
+        int dimy = Rmg_G->get_PY0_GRID(1);
+        int dimz = Rmg_G->get_PZ0_GRID(1);
+        F.ke_taur_wf = new double[ct.nspin*dimx*dimy*dimz]();
+        F.ke_density = new double[get_FP0_BASIS()]();
+        F.ke_taur = new double[ct.nspin*get_FP0_BASIS()]();
+    }
 
     if(ct.wannier90 && ct.BerryPhase)
     {

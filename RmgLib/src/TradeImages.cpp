@@ -42,7 +42,6 @@
 #include <condition_variable>
 #include <boost/lockfree/queue.hpp>
 #include "zfp.h"
-#include "zfp/macros.h"
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>

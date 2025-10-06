@@ -1,7 +1,7 @@
 # Description of run.
 description="atomO_pp"
 
-test_energy = "-15.87869559"
+test_energy = "-15.87871087"
 test_energy_tolerance = "1.0e-5"
 
 # Wavefunction grid

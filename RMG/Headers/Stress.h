@@ -30,8 +30,9 @@
 //#include "BaseGrid.h"
 //#include "species.h"
 //#include "Pw.h"
+#include "GridObject.h"
 
-
+void print_stress(char *w, double *stress_term);
 
 template <typename T> class Stress 
 {
@@ -41,21 +42,27 @@ private:
 public:
     double stress_tensor[9];
     Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves,
-            std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *vtot);
+            std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
+            spinobj<double> &vxc,
+            spinobj<double> &rho,
+            fgobj<double> &rhocore,
+            fgobj<double> &vtot,
+            double *stress_tensor_out,
+            bool local_only);
 
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
     void Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
-    void Local_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, double *rho, Pw &pwaves);
-    void Local_term1(double *rho, double *vnuc);
-    void Hartree_term(double *rho, Pw &pwaves);
+    void Local_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, spinobj<double> &rho, Pw &pwaves);
+    void Local_term1(spinobj<double> &rho, fgobj<double> &vnuc);
+    void Hartree_term(spinobj<double> &rho, Pw &pwaves);
     void NonLocal_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species);
-    void NonLocalQfunc_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species, double *vtot, double *vxc);
-    void Exc_term(double Exc, double *vxc, double *rho);
-    void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
-    void Exc_Nlcc(double *vxc, double *rhocore);
-    void vdW_DF_term (double *rho, double *rhocore, int nspin);
+    void NonLocalQfunc_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species, fgobj<double> &vtot, spinobj<double> &vxc);
+    void Exc_term(double Exc, spinobj<double> &vxc, spinobj<double> &rho);
+    void Exc_gradcorr(double Exc, spinobj<double> &vxc, spinobj<double> &rho, fgobj<double> &rhocore);
+    void Exc_Nlcc(spinobj<double> &vxc, fgobj<double> &rhocore);
+    void vdW_DF_term (spinobj<double> &rho, fgobj<double> &rhocore, int nspin);
 
     ~Stress(void);
 

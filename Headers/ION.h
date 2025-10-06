@@ -217,6 +217,7 @@ public:
     int num_orbitals;
 
     double partial_charge;
+    double mag;
     double init_spin_rho;
     double init_spin_x;
     double init_spin_y;

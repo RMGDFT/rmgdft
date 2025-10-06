@@ -30,6 +30,7 @@
 #include "RmgParallelFft.h"
 #include "RmgGemm.h"
 #include "blas_driver.h"
+#include "Prolong.h"
 
 template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
 template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state);
@@ -47,10 +48,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     if(!ct.norm_conserving_pp) {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
-    }
-    if(ct.nspin > 1)
-    {
-        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for spin-polarized \n");
     }
     if(ct.noncoll)
     {
@@ -86,40 +83,39 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
         GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
         gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
 #else
+        RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
         KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
         KpointType *xpsi = kptr->work_cpu;
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
+        delete RT;
+        RT = new RmgTimer("TDDFT: rho: dot");
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
+        delete RT;
 #endif
     }
 
 
     /* Interpolate onto fine grid, result will be stored in rho*/
-    switch (ct.interp_flag)
-    {
-        case CUBIC_POLYNOMIAL_INTERPOLATION:
-            pack_rho_ctof (rho_temp, rho_k);
-            break;
-        case PROLONG_INTERPOLATION:
-            mg_prolong_MAX10 (rho_k, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
-            break;
-        case FFT_INTERPOLATION:
-            FftInterpolation (*Rmg_G, rho_temp, rho_k, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
-            break;
-
-        default:
-
-            //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-            rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
+    RmgTimer *RT1 = new RmgTimer("TDDFT: rho: interp");
+    int ratio = Rmg_G->default_FG_RATIO;
+    int dimx = Rmg_G->get_PX0_GRID(ratio);
+    int dimy = Rmg_G->get_PY0_GRID(ratio);
+    int dimz = Rmg_G->get_PZ0_GRID(ratio);
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
 
 
-    }
 
+    static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
+    P.prolong(rho_k, rho_temp, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
+    delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED 
     gpuFree(rho_temp_dev);

@@ -167,7 +167,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
              first_nls = 0;
              delete RT3;
          }
-        ApplyHamiltonian<KpointType, KpointType> (kptr, st1, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], 
+        ApplyHamiltonian<KpointType, KpointType> (kptr, &kptr->Kstates[st1], st1, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], 
                       vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
 
         first_nls++;

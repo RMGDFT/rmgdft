@@ -166,8 +166,11 @@ public:
     /* number of state to output */
     int plot_state;
 
-    /* Exchage-Correlation flag */
+    /* Exchage-Correlation flags */
     int xctype;
+    bool xc_is_meta;
+    bool xc_is_gradient;
+    bool xc_is_nonlocc;
 
     /* Hybrid EXC flag */
     int xc_is_hybrid;
@@ -312,6 +315,10 @@ public:
     /** Davidson pre multigrid steps */
     int davidson_premg;
 
+    /** Use davidson 1 and 2 stage ortho flags */
+    bool davidson_1stage_ortho;
+    bool davidson_2stage_ortho;
+
     /** Number of states to allocate memory for */
     int alloc_states;
     int state_block_size;
@@ -415,6 +422,7 @@ public:
 
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
     double mix;
+    double init_mix;
     double drho_q0;
     int drho_precond_type;
 
@@ -538,6 +546,12 @@ public:
 
     /* Kohn sham solver type */
     int kohn_sham_solver;
+
+    /* Use RMM-DIIS? */
+    bool use_rmm_diis;
+
+    /* Use blocked diagonalization */
+    bool use_block_diag;
 
     /*Charge Mixing type*/
     int charge_mixing_type;
@@ -711,6 +725,9 @@ public:
     double scf_accuracy;
     double ns_occ_rms;
 
+    /* (rho_new - rho)^2 */
+    double dr2;
+
     /* variational correction term for potential convergence */
     double scf_correction;
 
@@ -725,6 +742,11 @@ public:
 
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;
+
+    /* Potential acceleratoin skip and size factors */
+    int ndvh;
+    int dvh_skip;
+    size_t dvh_size;
 
     // Some GPU information.
     // Total number of gpu devices present in the node
@@ -885,6 +907,7 @@ public:
     std::vector<double> stm_height_list;
     // starting and endiing grid points for ldos calculation
     int ldos_start_grid[3], ldos_end_grid[3];
+    int sts_start_grid[3], sts_end_grid[3];
     
     std::vector<std::string> file_atomic_orbit;
 
@@ -948,6 +971,7 @@ public:
    int non_local_block_size;
    int poisson_solver;
    int dipole_corr[3];
+   double dipole_center[3];
 
    // Flag to use fine grid for vdf-df
    bool use_vdwdf_finegrid;
@@ -1071,6 +1095,52 @@ public:
    int test_steps_tolerance=0;
    int kpoint_units = 0;
 
+   // Parameters for Chebyshev smoothing.
+   double lambda_max;
+   double lambda_min;
+
+   // Global matrix used for diag and ortho routines. We use a global here that is
+   // only allocated once since allocation on GPU architectures can be so slow.
+   void *gmatrix;
+   size_t gmatrix_size;
+
+   void *get_gmatrix(size_t size)
+   {
+       if(!this->gmatrix)
+       {
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
+           gpuMallocHost((void **)&this->gmatrix, size);
+#else
+           this->gmatrix = malloc(size);
+#endif
+           this->gmatrix_size = size;
+       }
+       else if(size > this->gmatrix_size)
+       {
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+           gpuFreeHost(this->gmatrix);
+           gpuMallocHost((void **)&this->gmatrix, size);
+#else
+           free(this->gmatrix);
+           this->gmatrix = malloc(size);
+#endif
+           this->gmatrix_size = size;
+       }
+       return gmatrix;
+   }
+   void free_gmatrix(void)
+   {
+       if(this->gmatrix_size)
+       {
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+           gpuFreeHost(this->gmatrix);
+#else
+           free(this->gmatrix);
+#endif
+           this->gmatrix = NULL;
+           this->gmatrix_size = 0;
+       }
+   }
 };
 
 
