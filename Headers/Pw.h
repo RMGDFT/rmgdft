@@ -64,7 +64,6 @@
 #include "Lattice.h"
 #include "fftw3.h"
 #include "fft3d.h"
-#include "WaitQueue.h"
 
 
 typedef struct {
@@ -80,9 +79,6 @@ typedef struct {
 class Pw {
 
 private:
-
-    // Pending ffts
-    WaitQueue<FftPair> FftQ;
 
     // Grid spacings
     double hxgrid;

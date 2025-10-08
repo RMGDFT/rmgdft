@@ -36,7 +36,6 @@
 #include <boost/next_prior.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
-#include <boost/thread/thread.hpp>
 #include "BaseThread.h"
 #include "MpiQueue.h"
 

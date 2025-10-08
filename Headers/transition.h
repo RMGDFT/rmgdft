@@ -4,6 +4,8 @@
 #if __cplusplus
 #include <complex>
 #include <set>
+#include <list>
+#include <map>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"

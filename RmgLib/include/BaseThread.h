@@ -45,8 +45,7 @@
 #include <atomic>
 #include <vector>
 #include <condition_variable>
-#include <boost/thread.hpp>
-#include <boost/thread/tss.hpp>
+#include <thread>
 #include "BaseThreadControl.h"
 #include <boost/lockfree/queue.hpp>
 #include "MpiQueue.h"

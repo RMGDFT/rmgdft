@@ -54,7 +54,7 @@
 #include <condition_variable>
 #include <boost/next_prior.hpp>
 #include <boost/lockfree/queue.hpp>
-#include <boost/thread/thread.hpp>
+#include <thread>
 #include <boost/lockfree/spsc_queue.hpp>
 
 typedef struct
