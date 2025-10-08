@@ -1287,7 +1287,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_energy_correction", &lc.use_energy_correction, false, 
             "Experimental energy correction term ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
 
-    If.RegisterInputKey("use_numa", &lc.use_numa, true, 
+    If.RegisterInputKey("use_numa", &lc.use_numa, false, 
             "Numa stands for Non Uniform Memory Access and means that the main "
             "memory of a computer is organized into seperate distinct banks. "
             "Each bank is then attached to a CPU core or group of cores and "
@@ -1296,8 +1296,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "CPU cores mostly access memory in banks they are directly attached "
             "to can have a large impact on performance. Process mapping that "
             "does this can normally be done when jobs are submitted and run "
-            "via arguments to mpirun/mpiexec but if this is not done RMG will "
-            "attempt to provide an optimal mapping if use_numa is set to true. ",
+            "via arguments to mpirun/mpiexec but if this is not done setting "
+            "use_numa to true will cause RMG to attempt it. ",
             PERF_OPTIONS);
 
     If.RegisterInputKey("use_hwloc", &lc.use_hwloc, false, 

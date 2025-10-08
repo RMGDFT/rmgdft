@@ -157,7 +157,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             }
             else
             {
-//                Q->cvwait(manager_mutex, manager_cv, Q->running);
+                Q->cvwait(manager_mutex, manager_cv, Q->running);
             }
         }
     }
@@ -226,13 +226,13 @@ void MpiQueue::set_exitflag(void)
 void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_int &var)
 {
     std::unique_lock<std::mutex> lk(mut);
-    cv.wait(lk, [&] {return var.load(std::memory_order_acquire)==true;});
+    cv.wait_for(lk, std::chrono::milliseconds(10), [&] {return var.load(std::memory_order_acquire)==true;});
 }
 
 void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var)
 {
     std::unique_lock<std::mutex> lk(mut);
-    cv.wait(lk, [&] {return var.load(std::memory_order_acquire)==true;});
+    cv.wait_for(lk, std::chrono::milliseconds(10), [&] {return var.load(std::memory_order_acquire)==true;});
 }
 
 void MpiQueue::waitall(std::atomic_bool *items, int n)
