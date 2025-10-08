@@ -12,7 +12,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "MapElements.h"
 #include "transition.h"
 
@@ -125,7 +125,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     else if(Atoms_str.size() == 1) {
 
         // If the file exists use it
-        if( !boost::filesystem::exists(Atoms_str[0].c_str())) external_atoms = false;
+        if( !std::filesystem::exists(Atoms_str[0].c_str())) external_atoms = false;
 
     }
     else {

@@ -10,7 +10,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/lexical_cast.hpp>
 #include "BaseGrid.h"
 #include "transition.h"
@@ -35,15 +35,15 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     meta1 = new char[MAX_PATH];
     // On Windows if the input file does not begin with a drive letter, ./ or .\ then we
     // add a ./
-    boost::filesystem::path p{meta};
+    std::filesystem::path p{meta};
     //std::cout << "PREFERRED = " << p.make_preferred() << std::endl;
-    boost::filesystem::path np{p.make_preferred()};
+    std::filesystem::path np{p.make_preferred()};
     std::strncpy(meta1, np.string().c_str(), MAX_PATH);
 #else
     meta1 = meta;
 #endif
 
-    if(!boost::filesystem::exists(meta1) )
+    if(!std::filesystem::exists(meta1) )
     {
         int my_rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);

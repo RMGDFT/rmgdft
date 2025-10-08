@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
 #else
@@ -81,7 +81,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         new_file = new_file + ".restart";
         old_file = old_file + ".restart_1";
         try {
-            boost::filesystem::rename(new_file, old_file);
+            std::filesystem::rename(new_file, old_file);
         }
         catch (std::exception &e) {
             // This could be an error but it could just be the first step ...
@@ -179,7 +179,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     std::string old_file(newname);
     old_file = old_file + "_1";
     try {
-        boost::filesystem::rename(new_file, old_file);
+        std::filesystem::rename(new_file, old_file);
     }
     catch (std::exception &e) { 
         // This could be an error but it could just be the first step ...

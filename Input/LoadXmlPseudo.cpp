@@ -10,7 +10,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/foreach.hpp>
 
 
@@ -55,8 +55,8 @@ void LoadXmlPseudo(SPECIES *sp)
     if(pct.imgpe == 0) {
 
         // Check for file existence
-        boost::filesystem::path pp_filepath(ct.pseudo_dir +"/" + sp->pseudo_filename);
-        if( !boost::filesystem::exists(pp_filepath) ) {
+        std::filesystem::path pp_filepath(ct.pseudo_dir +"/" + sp->pseudo_filename);
+        if( !std::filesystem::exists(pp_filepath) ) {
 
             Msg = "Pseudopotential file " + boost::lexical_cast<std::string>(sp->pseudo_filename) + " does not exist.\n";
 

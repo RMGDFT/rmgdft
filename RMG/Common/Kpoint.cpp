@@ -33,7 +33,7 @@
 #include <libgen.h>
 #include <complex>
 #include <omp.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -1326,7 +1326,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
         std::string weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
             std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
 
-        if(boost::filesystem::exists(weight_path.c_str()))
+        if(std::filesystem::exists(weight_path.c_str()))
         {
             unlink(weight_path.c_str());
         }
@@ -1338,7 +1338,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
         std::string orbital_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
             std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
 
-        if(boost::filesystem::exists(orbital_path.c_str()))
+        if(std::filesystem::exists(orbital_path.c_str()))
         {
             unlink(orbital_path.c_str());
         }

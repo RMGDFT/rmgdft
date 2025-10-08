@@ -6,7 +6,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -348,8 +348,8 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
     if(rank == 0) {
 
         // Check for file existence
-        boost::filesystem::path input_filepath(cfile);
-        if( !boost::filesystem::exists(input_filepath) ) {
+        std::filesystem::path input_filepath(cfile);
+        if( !std::filesystem::exists(input_filepath) ) {
 
             Msg = "Input file " + boost::lexical_cast<std::string>(cfile) + " does not exist.\n";
 
