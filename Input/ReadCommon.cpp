@@ -1478,6 +1478,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "if false, no k -> -k symmetry", CONTROL_OPTIONS);
     If.RegisterInputKey("wannier90", &lc.wannier90, false,
             "set up informations for wannier90 interface", CONTROL_OPTIONS);
+    If.RegisterInputKey("LOPTICS", &lc.LOPTICS, false,
+            "calculate epsilon_2 in DFT level without local field correction", CONTROL_OPTIONS);
     If.RegisterInputKey("num_wanniers", &lc.num_wanniers, 0, INT_MAX, 0, 
             CHECK_AND_FIX, OPTIONAL, 
             "number of wannier functions to be used in wannier90 ", 

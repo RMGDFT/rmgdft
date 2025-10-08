@@ -902,6 +902,7 @@ public:
     bool cube_rho;
     bool cube_vh;
     bool cube_pot;
+    bool LOPTICS;
     std::vector<int> cube_states_list;
     std::vector<double> stm_bias_list;
     std::vector<double> stm_height_list;

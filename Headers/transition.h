@@ -42,6 +42,8 @@ extern BerryPhase *Rmg_BP;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+template <typename T> void EpsilonMatrix(Kpoint<T> **Kptr);
+
 void OutputBandPlot(double *);
 void CheckSetDefault();
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
