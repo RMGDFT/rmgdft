@@ -1,6 +1,7 @@
 #ifndef RMG_ION_H
 #define RMG_ION_H 1
 
+#include <map>
 #include "species.h"
 #include "const.h"
 

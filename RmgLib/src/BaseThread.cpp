@@ -55,7 +55,7 @@ BaseThread *BaseThread::instance = NULL;
 // Pointer to the thread function
 void *(*BaseThread::funcptr)(void *s) = NULL;
 
-boost::thread_group threadgroup;
+std::vector<std::thread> threadgroup;
 
 // Constructor
 BaseThread::BaseThread(int nthreads)
@@ -105,7 +105,7 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
         thread_controls[thread].tid = thread;
         for(int i=0;i < 200;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
         MPI_Comm_dup(comm, &thread_controls[thread].grid_comm);
-        threadgroup.create_thread(boost::bind(BaseThread::funcptr, (void *)&thread_controls[thread]));
+        threadgroup.emplace_back(BaseThread::funcptr, (void *)&thread_controls[thread]);
     }
     
 }
@@ -190,7 +190,14 @@ void BaseThread::thread_exit(void)
 
 void BaseThread::thread_joinall(void)
 {
-    threadgroup.join_all();
+    for (std::thread& t : threadgroup)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+    threadgroup.clear();
 }
 
 // Blocks all threads until nthreads specified in the init call have reached this point
@@ -321,17 +328,16 @@ void *BaseThread::get_pptr(int tid)
 void tsd_cleanup(BaseThreadControl *T)
 {
 }
-static boost::thread_specific_ptr<BaseThreadControl> my_ptr(tsd_cleanup);
+
+thread_local BaseThreadControl *my_ptr;
 void rmg_set_tsd(BaseThreadControl *p)
 {
-    if(!my_ptr.get()) {
-       my_ptr.reset(p);
-    }
+    my_ptr = p;
 }
 BaseThreadControl *rmg_get_tsd(void) {
-    return my_ptr.get();
+    return my_ptr;
 }
 void rmg_release_tsd(void)
 {
-    my_ptr.release();
+//    my_ptr.release();
 }
