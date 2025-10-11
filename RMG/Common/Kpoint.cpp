@@ -1138,8 +1138,16 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     {
         this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
 #if CUDA_ENABLED
-        int device = -1;
-        gpuGetDevice(&device);
+        int _device = -1;
+        gpuGetDevice(&_device);
+#if CUDA_VERSION_MAJOR >= 13
+        struct cudaMemLocation device = {
+                .type = cudaMemLocationTypeDevice,
+                .id = _device,
+        };
+#else
+        int device = _device;
+#endif
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
         custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
@@ -1275,8 +1283,16 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
 #if CUDA_ENABLED
-    int device = -1;
-    gpuGetDevice(&device);
+    int _device = -1;
+    gpuGetDevice(&_device);
+#if CUDA_VERSION_MAJOR >= 13
+    struct cudaMemLocation device = {
+        .type = cudaMemLocationTypeDevice,
+        .id = _device,
+    };
+#else
+    int device = _device;
+#endif
     cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
 #elif HIP_ENABLED
     int device = -1;

@@ -234,9 +234,18 @@ cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMe
     return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);
 }
 
-cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream)
+cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevice, cudaStream_t stream)
 {
-    return cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
+#if CUDA_VERSION_MAJOR >= 13
+    struct cudaMemLocation dstDevice = {
+        .type = cudaMemLocationTypeDevice,
+        .id = _dstDevice,
+    };
+    return cudaMemPrefetchAsync (devPtr, count, dstDevice, 0, stream);
+#else
+    return cudaMemPrefetchAsync (devPtr, count, _dstDevice, stream);
+#endif
+
 }
 cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags)
 {
