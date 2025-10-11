@@ -56,7 +56,7 @@
 
 
 // Local function prototypes
-void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
+void PlotConvergence(std::vector<double> &RMSdV);
 void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &);
 
 
@@ -214,7 +214,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
 #if PLPLOT_LIBS
             // Generate convergence plots
-            PlotConvergence(RMSdV, ct.scf_converged);
+            PlotConvergence(RMSdV);
 #endif
 
             // Write out progress info
@@ -576,7 +576,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
 
 #if PLPLOT_LIBS
-void PlotConvergence(std::vector<double> &RMSdV, bool ct.scf_converged)
+void PlotConvergence(std::vector<double> &RMSdV)
 {
     if(pct.imgpe == 0) {
         std::vector<double> x;
