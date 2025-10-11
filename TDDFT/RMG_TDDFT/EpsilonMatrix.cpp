@@ -264,6 +264,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
 
         }
 
+//for(int i = 0; i < num_states; i++) rmg_printf("\n aaa %d %f %f", i, Pmat[0][i*num_states + i]);
         int vmax_st = 0;
         int cmin_st = 0;
 
@@ -375,14 +376,35 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     {
         std::string filename = "Epsilon/epsilon_spin"+std::to_string(pct.spinpe)+".dat";
         FILE *eps_fi = fopen(filename.c_str(), "w");
-        fprintf(eps_fi, "&& epsilon2(omega) tensor, xx, yy,zz xy, xz, yz");
+        fprintf(eps_fi, "&& imag part epsilon2(omega) tensor, xx, yy,zz xy, xz, yz");
         for(int ie = 0; ie < Epoints; ie++)
         {
             fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie*delta_e*Ha_eV,epsilon[0][ie], epsilon[4][ie], epsilon[8][ie], epsilon[1][ie], epsilon[2][ie], epsilon[5][ie]);
         }
+        
+        // Kramers-Kronig to get the real part
+        fprintf(eps_fi, "\n&& real part");
+        for(int ie1 = 0; ie1 < Epoints; ie1++)
+        {
+            double ene1 = ie1 * delta_e;
+            double tem = 0.0;
+
+            for(int ie2 = 0; ie2 < Epoints; ie2++)
+            {
+                double ene2 = ie2 * delta_e;
+                if(ie1 != ie2)
+                    tem += (epsilon[0][ie2] + epsilon[1][ie2] + epsilon[3][ie2])/3.0 * ene2 * delta_e/(ene2* ene2 - ene1 * ene1);
+            }
+            double epsilon1 = 1.0 + 2.0/PI * tem;
+            fprintf(eps_fi, "\n%f    %e ", ie1*delta_e*Ha_eV,epsilon1);
+
+        }
+
 
         fclose(eps_fi);
     }
+
+
 
     delete [] block_matrix;
 }
