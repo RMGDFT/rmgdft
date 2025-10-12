@@ -46,6 +46,7 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "blas.h"
+#include "ortho.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations
@@ -115,6 +116,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
+
+    ortho<KpointType> MGOrtho(ct.run_states, pbasis_noncoll);
+
     double *nvtot_psi = vtot_psi;;
     if(pct.coalesce_factor > 1)
     {
@@ -241,8 +245,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         }
 
         RmgTimer RTO("3-MgridSubspace: ortho");
-        DavidsonOrtho(first, this->nstates-first,
-                      pbasis_noncoll, this->orbital_storage, true);
+        MGOrtho.orthogonalize(first, this->nstates-first, this->orbital_storage, true);
     }
 
     // Set trade images coalesce factor back to 1 for other routines.

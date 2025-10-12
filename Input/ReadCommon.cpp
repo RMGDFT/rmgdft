@@ -983,7 +983,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware. ",
             "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32. ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 40000, 512,
+    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, -1, 40000, -1,
             CHECK_AND_FIX, OPTIONAL,
 "Block size to use when applying the non-local and S operators. "
 "A value at least as large as the number of wavefunctions produces "
