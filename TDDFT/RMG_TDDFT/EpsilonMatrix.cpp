@@ -135,7 +135,10 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
         epsilon_lorentzian[i].resize(Epoints, 0.0);
     }
     // ct.gaus_broad is in unit of eV
+    // use small broadening with Gaussian first, then Lorentzian 
     double gaus_broad = ct.gaus_broad/Ha_eV;
+    double Lorentzian = gaus_broad;
+    gaus_broad = gaus_broad * 0.1;
     int negrid = 1+int(gaus_broad/delta_e *std::sqrt(-std::log(eps * gaus_broad*std::sqrt(PI))));
     double e2gaus = delta_e * delta_e /gaus_broad/gaus_broad;
 
@@ -314,18 +317,6 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
                     }
                 }
 
-                for (int ie = 0; ie < Epoints; ie++)
-                {
-                    double coeff = gaus_broad/(gaus_broad * gaus_broad+(ie-egrid_center) * (ie-egrid_center) * delta_e * delta_e) * occ_diff * kptr->kp.kweight/PI;
-                    for(int ix = 0; ix < 3; ix++)
-                    {
-                        for(int iy = 0; iy < 3; iy++)
-                        {
-                            tem = coeff * std::real(MyConj(Pmat[ix][stv * num_states + stc]) * Pmat[iy][stv * num_states+stc]);
-                            epsilon_lorentzian[ix*3+iy][ie] += tem;
-                        }
-                    }
-                }
 
             }
         }
@@ -369,8 +360,6 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     {
         BlockAllreduce(epsilon[i].data(), (size_t)Epoints , pct.grid_comm);
         BlockAllreduce(epsilon[i].data(), (size_t)Epoints , pct.kpsub_comm);
-        BlockAllreduce(epsilon_lorentzian[i].data(), (size_t)Epoints , pct.grid_comm);
-        BlockAllreduce(epsilon_lorentzian[i].data(), (size_t)Epoints , pct.kpsub_comm);
     }
 
     double eps_tem[9];
@@ -387,53 +376,51 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
 
         }
 
-        for(int i = 0; i < 9; i++) eps_tem[i] = epsilon_lorentzian[i][ie];
-        Rmg_Symm->symmetrize_tensor(eps_tem);
-
-        for(int i = 0; i < 9; i++)
-        {
-            epsilon_lorentzian[i][ie] = eps_tem[i] * 4.0 * PI *PI/(ene * ene)/L->get_omega();
-
-        }
     }
 
     if(pct.gridpe == 0 && pct.kstart == 0) 
     {
+        
+        for (int ie1 = 0; ie1 < Epoints; ie1++)
+        {
+            for (int ie = 0; ie < Epoints; ie++)
+            {
+                double coeff = delta_e * Lorentzian/(Lorentzian * Lorentzian+(ie-ie1) * (ie-ie1) * delta_e * delta_e) /PI;
+                for(int ixyz = 0; ixyz < 9; ixyz++)
+                {
+                    epsilon_lorentzian[ixyz][ie1] += coeff * epsilon[ixyz][ie]; 
+                }
+            }
+        }
+
         std::string filename = "Epsilon/epsilon_spin"+std::to_string(pct.spinpe)+".dat";
         FILE *eps_fi = fopen(filename.c_str(), "w");
         fprintf(eps_fi, "&& imag part epsilon2(omega) tensor, xx, yy,zz xy, xz, yz");
         for(int ie = 0; ie < Epoints; ie++)
         {
-            fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie*delta_e*Ha_eV,epsilon[0][ie], epsilon[4][ie], epsilon[8][ie], epsilon[1][ie], epsilon[2][ie], epsilon[5][ie]);
+            fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie*delta_e*Ha_eV,epsilon_lorentzian[0][ie], epsilon_lorentzian[4][ie], epsilon_lorentzian[8][ie], epsilon_lorentzian[1][ie], epsilon_lorentzian[2][ie], epsilon_lorentzian[5][ie]);
         }
-        
+
         // Kramers-Kronig to get the real part
         fprintf(eps_fi, "\n&& real part");
         for(int ie1 = 0; ie1 < Epoints; ie1++)
         {
             double ene1 = ie1 * delta_e;
-            double tem = 0.0;
-
+            for(int i = 0; i < 9; i++) eps_tem[i] = 0.0;
             for(int ie2 = 0; ie2 < Epoints; ie2++)
             {
                 double ene2 = ie2 * delta_e;
-                if(ie1 != ie2)
-                    tem += (epsilon[0][ie2] + epsilon[1][ie2] + epsilon[3][ie2])/3.0 * ene2 * delta_e/(ene2* ene2 - ene1 * ene1);
+                double tem = ene2 * ene2 - ene1 * ene1;
+
+                double coeff = delta_e * ene2 * tem/(tem*tem + Lorentzian * Lorentzian * Lorentzian * Lorentzian);
+                coeff  = 2.0/PI * coeff; 
+
+                for(int i = 0; i < 9; i++)
+                    eps_tem[i] += epsilon_lorentzian[i][ie2] * coeff;
             }
-            double epsilon1 = 1.0 + 2.0/PI * tem;
-            fprintf(eps_fi, "\n%f    %e ", ie1*delta_e*Ha_eV,epsilon1);
+            fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie1*delta_e*Ha_eV,
+                    1.0+eps_tem[0], 1.0+eps_tem[4], 1.0+eps_tem[8], 1.0+eps_tem[1], 1.0+eps_tem[2], 1.0+eps_tem[5]);
 
-        }
-
-
-        fclose(eps_fi);
-
-        filename = "Epsilon/epsilonLorentzian_spin"+std::to_string(pct.spinpe)+".dat";
-        eps_fi = fopen(filename.c_str(), "w");
-        fprintf(eps_fi, "&& imag part epsilon2(omega) tensor, xx, yy,zz xy, xz, yz");
-        for(int ie = 0; ie < Epoints; ie++)
-        {
-            fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie*delta_e*Ha_eV,epsilon_lorentzian[0][ie], epsilon_lorentzian[4][ie], epsilon_lorentzian[8][ie], epsilon_lorentzian[1][ie], epsilon_lorentzian[2][ie], epsilon_lorentzian[5][ie]);
         }
         fclose(eps_fi);
     }
