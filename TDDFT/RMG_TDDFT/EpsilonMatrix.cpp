@@ -123,8 +123,8 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     KpointType *block_matrix_y = block_matrix_x + num_states * nb;
     KpointType *block_matrix_z = block_matrix_y + num_states * nb;
 
-    double Emax = 50.0/Ha_eV;
-    int Epoints = 5001;
+    double Emax = ct.Emax/Ha_eV;
+    int Epoints = ct.E_POINTS;
     double delta_e = Emax/(Epoints-1);
     std::vector<double> epsilon[9];
     std::vector<double> epsilon_lorentzian[9];
