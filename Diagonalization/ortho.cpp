@@ -94,11 +94,11 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 
 #if HIP_ENABLED || CUDA_ENABLED
     T *psi_extra = &this->psi_d[nbase * this->pbasis];
-    gpuMemcpy(psi_extra, &psi[nbase * this->pbasis],
-              (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyHostToDevice);
+    gpuMemcpy(this->psi_d, psi,
+              (size_t)(notcon + nbase) * (size_t)this->pbasis * sizeof(T), gpuMemcpyHostToDevice);
 #else
     T *psi_extra = &psi[nbase * this->pbasis];
-    T *psi_d = psi;
+    this->psi_d = psi;
 #endif
 
     DeviceSynchronize();
@@ -106,12 +106,13 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     {
         RmgTimer RT("MgridOrtho: 1st stage");
         // ortho to the first nbase states
-        //RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
-        RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, psi, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
+        RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
+        DeviceSynchronize();
         BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-        //RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
-        RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, psi, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
+        DeviceSynchronize();
+        RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
     }
+    DeviceSynchronize();
 
     if(!dostage2)
     {
@@ -175,7 +176,6 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED
     gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
           (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
-    DeviceSynchronize();
     gpuFree(mat_d);
 #endif
 
