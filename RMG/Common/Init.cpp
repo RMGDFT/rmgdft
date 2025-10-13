@@ -225,17 +225,6 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     }
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
 
-    // Autoset if needed.
-    if(ct.non_local_block_size <= 0)
-    {
-        if(ct.run_states < 128)
-            ct.non_local_block_size = ct.run_states;
-        else if(ct.run_states >= 128 && ct.run_states < 256)
-            ct.non_local_block_size = ct.run_states/2;
-        else if(ct.run_states >= 256)
-            ct.non_local_block_size = ct.run_states/3;
-    }
-
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     // Blocks of pinned host memory
     if(ct.kohn_sham_solver == DAVIDSON_SOLVER)

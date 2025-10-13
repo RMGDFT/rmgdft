@@ -260,6 +260,18 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
     int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
     if(states_rem) ct.num_states = states_div + (active_threads*pct.coalesce_factor);
+
+    // Autoset if needed.
+    if(ct.non_local_block_size <= 0)
+    {
+        if(ct.num_states < 128)
+            ct.non_local_block_size = ct.num_states;
+        else if(ct.num_states >= 128 && ct.num_states < 256)
+            ct.non_local_block_size = ct.num_states/2;
+        else if(ct.num_states >= 256)
+            ct.non_local_block_size = ct.num_states/3;
+    }
+
     int block_div = (ct.non_local_block_size / (active_threads * pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
 ;
     int block_rem = ct.non_local_block_size % (active_threads*pct.coalesce_factor);
