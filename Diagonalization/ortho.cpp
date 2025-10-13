@@ -34,15 +34,24 @@
 //
 
 
+template ortho<double>::ortho(int, int);
+template ortho<std::complex<double>>::ortho(int, int);
+template ortho<double>::~ortho(void);
+template ortho<std::complex<double>>::~ortho(void);
+template void ortho<double>::orthogonalize(int, int, double *, bool);
+template void ortho<std::complex<double>>::orthogonalize(int, int, std::complex<double>*, bool);
+
+
 template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
 {
     if(!ct.norm_conserving_pp) return;
     this->max_states = max_states_in;
     this->pbasis = pbasis_in; 
+
 #if HIP_ENABLED || CUDA_ENABLED
     size_t dfactor = 1;
     if(ct.kohn_sham_solver == DAVIDSON_SOLVER) dfactor = (size_t)ct.davidx;
-    gpuMalloc((void **)&this->psi_d, dfactor * (size_t)ct.run_states * (size_t)factor *
+    gpuMalloc((void **)&this->psi_d, dfactor * (size_t)this->max_states * 
               (size_t)this->pbasis * sizeof(T));
 #endif
 }
@@ -50,6 +59,7 @@ template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
 template <class T> ortho<T>::~ortho(void)
 {
 #if HIP_ENABLED || CUDA_ENABLED
+    DeviceSynchronize();
     gpuFree(this->psi_d);
 #endif
 }
@@ -85,19 +95,22 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED
     T *psi_extra = &this->psi_d[nbase * this->pbasis];
     gpuMemcpy(psi_extra, &psi[nbase * this->pbasis],
-              (size_t)notcon * (size_t)this->pbasis * sizeof(KpointType), gpuMemcpyHostToDevice);
+              (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyHostToDevice);
 #else
     T *psi_extra = &psi[nbase * this->pbasis];
     T *psi_d = psi;
 #endif
 
+    DeviceSynchronize();
     if(nbase > 0)
     {
         RmgTimer RT("MgridOrtho: 1st stage");
         // ortho to the first nbase states
-        RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
+        //RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
+        RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, psi, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
         BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-        RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
+        //RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
+        RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, psi, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
     }
 
     if(!dostage2)
@@ -111,8 +124,8 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 
     RmgTimer *RT1 = new RmgTimer("MgridOrtho: 2nd stage overlaps");
 #if HIP_ENABLED || CUDA_ENABLED
-    KpointType *mat_d;
-    gpuMalloc((void **)&mat_d, (size_t)notcon * (size_t)notcon * sizeof(KpointType));
+    T *mat_d;
+    gpuMalloc((void **)&mat_d, (size_t)notcon * (size_t)notcon * sizeof(T));
 #else   
     T *mat_d = mat;
 #endif
@@ -124,12 +137,12 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     if constexpr (std::is_same_v<T, double>)
     {
         RmgSyrk( uplo, transt, notcon, this->pbasis, one, psi_extra, this->pbasis,
-            zero, mat_d, notcon);
+            zero, mat, notcon);
     }
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
         RmgGemm(trans_a, trans_n, notcon, notcon, this->pbasis, one, psi_extra,
-                this->pbasis, psi_extra, this->pbasis, zero, mat_d, notcon);
+                this->pbasis, psi_extra, this->pbasis, zero, mat, notcon);
     }
     delete RT1;
 
@@ -162,21 +175,16 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED
     gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
           (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
+    DeviceSynchronize();
     gpuFree(mat_d);
 #endif
 
     if (info != 0)
-        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating.\n";
 
     if (info_trtri != 0)
-    throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem";
+    throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem.\n";
 
 }
 
-template ortho<double>::ortho(int, int);
-template ortho<std::complex<double>>::ortho(int, int);
-template ortho<double>::~ortho(void);
-template ortho<std::complex<double>>::~ortho(void);
-template void ortho<double>::orthogonalize(int, int, double *, bool);
-template void ortho<std::complex<double>>::orthogonalize(int, int, std::complex<double>*, bool);
 

@@ -117,7 +117,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
-    ortho<KpointType> MGOrtho(ct.run_states, pbasis_noncoll);
 
     double *nvtot_psi = vtot_psi;;
     if(pct.coalesce_factor > 1)
@@ -139,6 +138,8 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     int mstates = N / (active_threads * pct.coalesce_factor);
     if(N % (active_threads * pct.coalesce_factor)) mstates++;
     mstates = mstates * (active_threads * pct.coalesce_factor);
+
+    ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
 
     // We adjust the block size here for threading and coalescing
     int block_size = bs;
