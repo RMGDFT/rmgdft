@@ -712,7 +712,23 @@ if(RMG_CUDA_ENABLED)
     list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
     list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
+
+    if (NOT CUDA_INCLUDE_DIRS)
+        message( WARNING "Using default CUDA include directory" )
+        set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
+    endif()
+
+    message( "Using CUDA include directory: ${CUDA_INCLUDE_DIRS}" )
     include_directories(${CUDA_INCLUDE_DIRS})
+
+    # https://nvidia.github.io/cccl/cccl/3.0_migration_guide.html
+    if (${CUDAToolkit_VERSION_MAJOR} GREATER_EQUAL 13)
+        include_directories(${CUDA_INCLUDE_DIRS}/cccl)
+        message( "Added addition include directory: ${CUDA_INCLUDE_DIRS}/cccl" )
+    endif()
+
+    message( "CUDA_INCLUDE_DIRS=${CUDA_INCLUDE_DIRS}" )
+
 #    find_library (cusolverMg_LIBRARY NAMES cusolverMg PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 #    list(APPEND RMGLIBS ${cusolverMg_LIBRARY})
     # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
