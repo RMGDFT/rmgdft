@@ -96,9 +96,9 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-    KpointType *weight = kpoint->nl_weight;
+    KpointType *weight = kpoint->nl_weight + ixyz * kpoint->nl_weight_size;
 #if HIP_ENABLED || CUDA_ENABLED
-    weight = kpoint->nl_weight_gpu;
+    weight = kpoint->nl_weight_gpu + ixyz * kpoint->nl_weight_size;
 #endif
 
     //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.

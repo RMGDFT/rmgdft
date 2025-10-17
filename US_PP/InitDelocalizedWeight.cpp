@@ -89,7 +89,7 @@ void SPECIES::InitDelocalizedWeight (void)
     /*This array will store forward fourier transform on the coarse grid for all betas of this species */
     if(this->forward_beta) fftw_free(this->forward_beta);
     this->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
-    if(ct.stress)
+    if(ct.stress || ct.LOPTICS)
     {
         if(this->forward_beta_r[0]) fftw_free(this->forward_beta_r[0]); 
         if(this->forward_beta_r[1]) fftw_free(this->forward_beta_r[1]); 
