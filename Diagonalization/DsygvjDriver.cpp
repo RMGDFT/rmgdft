@@ -52,7 +52,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
     double abstol = 1.0e-5;
-    abstol = std::min(abstol, ct.scf_accuracy);
+    abstol = std::min(abstol, ct.scf_accuracy)/100.0;
     cusolverDnXsyevjSetTolerance( dsygvj_params, abstol);
 
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
