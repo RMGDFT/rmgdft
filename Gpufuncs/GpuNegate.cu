@@ -41,10 +41,17 @@ template <typename Iterator>
 class strided_range
 {
     public:
-
+#if CUDA_VERSION_MAJOR >= 13 || (CUDA_VERSION_MAJOR == 12 && CUDA_VERSION_MINOR == 9)
+    typedef typename cuda::std::iterator_traits<Iterator>::difference_type difference_type;
+#else
     typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+#endif
 
+#if CUDA_VERSION_MAJOR >= 13
+    struct stride_functor
+#else
     struct stride_functor : public thrust::unary_function<difference_type,difference_type>
+#endif
     {
         difference_type stride;
 
