@@ -25,7 +25,7 @@
 void SPECIES::InitLocalizedWeight (void)
 {
 
-    fftw_complex *in, *out, *betaptr;
+    fftw_complex *betaptr;
     std::complex<double> *phaseptr;
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
@@ -43,6 +43,7 @@ void SPECIES::InitLocalizedWeight (void)
     int size = this->nldim * this->nldim * this->nldim;
     this->phase = new fftw_complex[size * ct.num_kpts_pe];
     phaseptr = (std::complex<double> *)this->phase;
+    // phase: multiply exp(-ik.r) in real space
     GetPhaseSpecies(this, phaseptr);
     /*Loop over all betas to calculate num of projectors for given species */
     int prjcount = 0;
@@ -73,26 +74,12 @@ void SPECIES::InitLocalizedWeight (void)
 
     delete RT1;
 
-    int xdim = std::max(nldim_max, get_NX_GRID() );
-    int ydim = std::max(nldim_max, get_NY_GRID() );
-    int zdim = std::max(nldim_max, get_NZ_GRID() );
-    in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
-    out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
-
-    if(!in || !out)
-        throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
-
-
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = pct.gridpe; iproj < this->num_projectors; iproj+=pct.grid_npes)
     {
         proj = proj_iter[iproj];
 
         // if this->nldim > get_NX_GRID, folding of neighbor cells are needed. 
-        xdim = this->nldim;
-        ydim = this->nldim;
-        zdim = this->nldim;
-        size = xdim * ydim * zdim;
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
@@ -103,8 +90,6 @@ void SPECIES::InitLocalizedWeight (void)
 
     }                           /* end for */
 
-    fftw_free(out);
-    fftw_free(in);
     delete RT3;
     RmgTimer *RT4= new RmgTimer("Weight: bcast");
 
