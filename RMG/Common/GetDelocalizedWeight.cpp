@@ -112,37 +112,39 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
         }
 
         // for stress calculation, calculate x*beta, y * beta, z*beta
-        if(!ct.stress) continue;
-        for(int ixyz = 0; ixyz < 3; ixyz++)
+        if(ct.stress || ct.LOPTICS) 
         {
-            for (int ip = 0; ip < AtomType.num_projectors; ip++)
+            for(int ixyz = 0; ixyz < 3; ixyz++)
             {
-                Nlweight = &nl_weight[nl_weight_size * (ixyz+1) + offset + ip * pbasis];
+                for (int ip = 0; ip < AtomType.num_projectors; ip++)
+                {
+                    Nlweight = &nl_weight[nl_weight_size * (ixyz+1) + offset + ip * pbasis];
 
-                /*Temporary pointer to the already calculated forward transform */
-                fptr = (std::complex<double> *)AtomType.forward_beta_r[ixyz][kidx * AtomType.num_projectors * pbasis + ip*pbasis];
+                    /*Temporary pointer to the already calculated forward transform */
+                    fptr = (std::complex<double> *)AtomType.forward_beta_r[ixyz][kidx * AtomType.num_projectors * pbasis + ip*pbasis];
 
-                /*Apply the phase factor */
-                for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
+                    /*Apply the phase factor */
+                    for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
 
-                /*Do the backwards transform */
-                coarse_pwaves->FftInverse(gbptr, beptr);
+                    /*Do the backwards transform */
+                    coarse_pwaves->FftInverse(gbptr, beptr);
 
-                std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
-                double *Nlweight_R = (double *)Nlweight;
-                for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
+                    std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
+                    double *Nlweight_R = (double *)Nlweight;
+                    for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
 
-                std::complex<double> *nbeptr = (std::complex<double> *)beptr;
+                    std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
-                // Apply B operator then map weights back
-                if(ct.is_gamma) {
-                    for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
-                }
-                else {
-                    for (int idx = 0; idx < pbasis; idx++) Nlweight_C[idx] = nbeptr[idx];
-                }
+                    // Apply B operator then map weights back
+                    if(ct.is_gamma) {
+                        for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
+                    }
+                    else {
+                        for (int idx = 0; idx < pbasis; idx++) Nlweight_C[idx] = nbeptr[idx];
+                    }
 
-            } 
+                } 
+            }
         }
 
     }                           /* end for */
@@ -155,13 +157,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
 
 #if HIP_ENABLED || CUDA_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress) stress_factor = 4;
+    if(ct.stress || ct.LOPTICS) stress_factor = 4;
     gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 #if SYCL_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress) stress_factor = 4;
-//    memcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType));
+    if(ct.stress || ct.LOPTICS) stress_factor = 4;
+    //    memcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType));
 #endif
 
 }                               /* end GetWeight */

@@ -190,7 +190,6 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
             this_block_size = std::min(nb, length_block);
 
             int st_start = ib *nb;
-            AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size);
 
             for (int st1 = 0; st1 < this_block_size; st1++)
             {
@@ -219,28 +218,22 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
                         psi_zC[i] += I_t *  kptr->kp.kvec[2] * psi_C[i];
                     }
                 }
+            }
 
-                for(int i = 0; i < px0_grid; i++)
-                {
-                    for(int j = 0; j < py0_grid; j++)
-                    {
-                        for(int k = 0; k < pz0_grid; k++)
-                        {
-
-                            xtal[0] = xoff + i * hxgrid;
-                            xtal[1] = yoff + j * hygrid;
-                            xtal[2] = zoff + k * hzgrid;
-                            Rmg_L.to_cartesian(xtal, xcrt);
-
-                            int idx = st1 * pbasis_noncol + i * py0_grid * pz0_grid + j * pz0_grid + k;
-                            // nonlocal part need add the conj part
-                            psi_x[idx] = 0.5 * psi_x[idx] + nv[idx] * xcrt[0] ;
-                            psi_y[idx] = 0.5 * psi_y[idx] + nv[idx] * xcrt[1] ;
-                            psi_z[idx] = 0.5 * psi_z[idx] + nv[idx] * xcrt[2] ;
-
-                        } 
-                    }
-                }
+            AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 1);
+            for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+            {
+                psi_x[idx] = 0.5 * psi_x[idx] + nv[idx]  ;
+            }
+            AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 2);
+            for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+            {
+                psi_y[idx] = 0.5 * psi_y[idx] + nv[idx]  ;
+            }
+            AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 3);
+            for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+            {
+                psi_z[idx] = 0.5 * psi_z[idx] + nv[idx]  ;
             }
 
             RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev, 
@@ -380,7 +373,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
 
     if(pct.gridpe == 0 && pct.kstart == 0) 
     {
-        
+
         for (int ie1 = 0; ie1 < Epoints; ie1++)
         {
             for (int ie = 0; ie < Epoints; ie++)

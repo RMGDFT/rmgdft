@@ -89,7 +89,7 @@ void SPECIES::InitDelocalizedWeight (void)
     /*This array will store forward fourier transform on the coarse grid for all betas of this species */
     if(this->forward_beta) fftw_free(this->forward_beta);
     this->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
-    if(ct.stress)
+    if(ct.stress || ct.LOPTICS)
     {
         if(this->forward_beta_r[0]) fftw_free(this->forward_beta_r[0]); 
         if(this->forward_beta_r[1]) fftw_free(this->forward_beta_r[1]); 
@@ -118,7 +118,7 @@ void SPECIES::InitDelocalizedWeight (void)
 
 //            for(int idx = 0;idx < pbasis;idx++) betaptr[idx] = 0.0;
             std::fill(betaptr, betaptr + pbasis, 0.0);
-            if(ct.stress)
+            if(ct.stress || ct.LOPTICS)
             {
                 betaptr_r[0] = (std::complex<double> *)&this->forward_beta_r[0][index_ptr];
                 betaptr_r[1] = (std::complex<double> *)&this->forward_beta_r[1][index_ptr];
@@ -148,27 +148,29 @@ void SPECIES::InitDelocalizedWeight (void)
                 betaptr[idx] = IL[proj.l] * Ylm(proj.l, proj.m, ax) * t1;
 
                 // l2m_i: l*l + m for the first angular momentum
-                if(!ct.stress) continue;
-                int l2mi = proj.l * proj.l + proj.m;
-                for(int l2mj = 1; l2mj < 4; l2mj++)     // index for cubic harmonics x, y, z
+                if(ct.stress || ct.LOPTICS)
                 {
-                    for (int LM = 0; LM < lpx[l2mi * num_lm + l2mj]; LM++)
+                    int l2mi = proj.l * proj.l + proj.m;
+                    for(int l2mj = 1; l2mj < 4; l2mj++)     // index for cubic harmonics x, y, z
                     {
-                        int L2M = lpl[(l2mi * num_lm + l2mj) * num_LM2 + LM];   // L*L + M for one LM harmonic function 
+                        for (int LM = 0; LM < lpx[l2mi * num_lm + l2mj]; LM++)
+                        {
+                            int L2M = lpl[(l2mi * num_lm + l2mj) * num_LM2 + LM];   // L*L + M for one LM harmonic function 
 
-                        int L, M;
-                        if(L2M == 0)
-                            L = 0;
-                        else if (L2M < 4)
-                            L = 1;
-                        else if (L2M < 9)
-                            L = 2;
-                        else
-                            L = (int)sqrt(L2M + 0.1);
+                            int L, M;
+                            if(L2M == 0)
+                                L = 0;
+                            else if (L2M < 4)
+                                L = 1;
+                            else if (L2M < 9)
+                                L = 2;
+                            else
+                                L = (int)sqrt(L2M + 0.1);
 
-                        M = L2M - L * L;
-                        double t2 = AtomicInterpolateInline_Ggrid(this->rbeta_g[proj.ip][L], gval);
-                        betaptr_r[l2mj-1][idx] += IL[L] * Ylm(L, M, ax) * t2 * ap[L2M * num_lm * num_lm + l2mi * num_lm + l2mj];
+                            M = L2M - L * L;
+                            double t2 = AtomicInterpolateInline_Ggrid(this->rbeta_g[proj.ip][L], gval);
+                            betaptr_r[l2mj-1][idx] += IL[L] * Ylm(L, M, ax) * t2 * ap[L2M * num_lm * num_lm + l2mi * num_lm + l2mj];
+                        }
                     }
                 }
             }
@@ -182,10 +184,12 @@ void SPECIES::InitDelocalizedWeight (void)
                         int idx = ix * dimy * dimz + iy * dimz + iz;
                         std::complex<double> phaseshift =std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
                         betaptr[idx] *= phaseshift/vol;
-                        if(!ct.stress) continue;
-                        betaptr_r[0][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
-                        betaptr_r[1][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
-                        betaptr_r[2][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
+                        if(ct.stress || ct.LOPTICS)
+                        {
+                            betaptr_r[0][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
+                            betaptr_r[1][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
+                            betaptr_r[2][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
+                        }
 
                         // sqrt(3/4pi) is the normlaized constant for hamonic x, y, z and we only want non-normalized x, y, z
                     }

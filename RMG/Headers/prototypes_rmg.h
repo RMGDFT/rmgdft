@@ -78,6 +78,8 @@ template <typename OrbitalType> bool Scf (spinobj<double> &vxc_in, fgobj<double>
 
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states);
+template <typename KpointType> void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
+            KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states, int ixyz);
 template <typename KpointType> void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *ns, int first_state, int num_states);
 template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,

@@ -102,12 +102,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     delete RT1;
 
     RmgTimer *RT2 = new RmgTimer("weight fold");
-    if(!ct.localize_projectors)
-    {
-        xdim = get_NX_GRID();
-        ydim = get_NY_GRID();
-        zdim = get_NZ_GRID();
-    }
 
     size = xdim * ydim * zdim;
 

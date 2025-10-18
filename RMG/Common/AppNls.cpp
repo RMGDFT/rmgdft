@@ -52,15 +52,53 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         KpointType *psi, KpointType *nv, KpointType *ns,
         int first_state, int num_states)
 {
+    AppNls_0xyz(kpoint, sintR, psi, nv, ns, first_state, num_states, 0);
 
+    int P0_BASIS = kpoint->pbasis;
+    size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
+    {
+        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
+        //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
+
+    }
+    // Add in ldaU contributions to nv
+    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
+    {
+        RmgTimer *RT1 = new RmgTimer("AppNls: ldaU");
+        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
+        delete RT1;
+    }
+
+    if(ct.BerryPhase)
+    {
+          Rmg_BP->Apply_BP_Hpsi(kpoint, num_states,  psi, nv);
+    }
+}
+
+template void AppNls_0xyz<double>(Kpoint<double> *, double *, double *, double *, double *, int, int, int);
+template void AppNls_0xyz<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+        std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, int);
+
+    template <typename KpointType>
+void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR, 
+        KpointType *psi, KpointType *nv, KpointType *ns,
+        int first_state, int num_states, int ixyz)
+{
+
+    // ixyz = 0: |beta><beta|psi>
+    // ixyz = 1: x|beta><beta|psi>
+    // ixyz = 2: y|beta><beta|psi>
+    // ixyz = 3: z|beta><beta|psi>
+    // 
     RmgTimer RT("AppNls");
     // Sanity check
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-    KpointType *weight = kpoint->nl_weight;
+    KpointType *weight = kpoint->nl_weight + ixyz * kpoint->nl_weight_size;
 #if HIP_ENABLED || CUDA_ENABLED
-    weight = kpoint->nl_weight_gpu;
+    weight = kpoint->nl_weight_gpu + ixyz * kpoint->nl_weight_size;
 #endif
 
     //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
@@ -312,12 +350,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
 
-    if(ct.xc_is_hybrid && Functional::is_exx_active())
-    {
-        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
-        //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
-
-    }
 
     RmgFreeHost(M_qqq);
     RmgFreeHost(M_dnm);
@@ -326,18 +358,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     RmgFreeHost(sint_compack);
 
 
-    // Add in ldaU contributions to nv
-    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
-    {
-        RT1 = new RmgTimer("AppNls: ldaU");
-        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
-        delete RT1;
-    }
-
-    if(ct.BerryPhase)
-    {
-          Rmg_BP->Apply_BP_Hpsi(kpoint, num_states,  psi, nv);
-    }
 }
 
 
