@@ -27,6 +27,7 @@ private:
     void InitUmm(int lmax, std::complex<double> *Umm);
     void InitDelocalizedWeight (void);
     void InitLocalizedWeight (void);
+    void InitLocalizedWeight_xyz (void);
     void InitDelocalizedOrbital(void);
     void InitLocalizedOrbital(void);
 

@@ -107,6 +107,7 @@ public:
     void BlockDiag(double *vtot, double *vxc_psi);
     void BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr);
     void GetLocalizedWeight (void);
+    void GetLocalizedWeight_xyz (void);
     void GetDelocalizedWeight (void);
     void GetDelocalizedOrbital (void);
     void LcaoGetPsi (void);

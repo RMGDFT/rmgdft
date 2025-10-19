@@ -86,10 +86,6 @@ void CheckSetDefault(void)
             ct.force_grad_order = 12;
         }
     }
-    if(ct.LOPTICS)
-    {
-        ct.localize_projectors = false;
-    }
 
     if(ct.spinorbit)
     {
