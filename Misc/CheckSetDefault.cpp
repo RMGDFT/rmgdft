@@ -77,7 +77,7 @@ void CheckSetDefault(void)
     if(ct.stress)
     {
         ct.localize_localpp = false;
-        ct.localize_projectors = false;
+      //  ct.localize_projectors = false;
         ct.kohn_sham_fd_order = 12;
         if(ct.prolong_order != 0)ct.prolong_order=12;
         ct.force_grad_order = 0;
