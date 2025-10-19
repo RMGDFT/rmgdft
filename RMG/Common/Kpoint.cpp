@@ -1135,7 +1135,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
     int stress_factor = 1;
-    if(ct.stress || ct.LOPTICS) stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) stress_factor = 4;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuError_t custat;
@@ -1222,7 +1222,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             RmgFreeHost(this->newsint_local);
 #else
         int stress_factor = 1;
-        if(ct.stress || ct.LOPTICS) stress_factor = 4;
+         if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) stress_factor = 4;
         if(ct.nvme_weights)
         {
             munmap(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(double));

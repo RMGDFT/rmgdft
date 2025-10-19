@@ -134,7 +134,8 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
     delete [] phase_fftw;
     int stress_factor = 1;
 
-    if(ct.stress || ct.LOPTICS)
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
+
     {
         this->GetLocalizedWeight_xyz();
         stress_factor = 4;

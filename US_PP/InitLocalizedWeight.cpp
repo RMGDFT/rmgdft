@@ -112,7 +112,7 @@ void SPECIES::InitLocalizedWeight (void)
 
     delete [] this->phase;
 
-    if(ct.stress || ct.LOPTICS)
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
     {
         this->InitLocalizedWeight_xyz();
     }

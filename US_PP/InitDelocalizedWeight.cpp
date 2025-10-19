@@ -89,7 +89,7 @@ void SPECIES::InitDelocalizedWeight (void)
     /*This array will store forward fourier transform on the coarse grid for all betas of this species */
     if(this->forward_beta) fftw_free(this->forward_beta);
     this->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
-    if(ct.stress || ct.LOPTICS)
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
     {
         if(this->forward_beta_r[0]) fftw_free(this->forward_beta_r[0]); 
         if(this->forward_beta_r[1]) fftw_free(this->forward_beta_r[1]); 
@@ -118,7 +118,7 @@ void SPECIES::InitDelocalizedWeight (void)
 
 //            for(int idx = 0;idx < pbasis;idx++) betaptr[idx] = 0.0;
             std::fill(betaptr, betaptr + pbasis, 0.0);
-            if(ct.stress || ct.LOPTICS)
+            if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
             {
                 betaptr_r[0] = (std::complex<double> *)&this->forward_beta_r[0][index_ptr];
                 betaptr_r[1] = (std::complex<double> *)&this->forward_beta_r[1][index_ptr];
@@ -148,7 +148,7 @@ void SPECIES::InitDelocalizedWeight (void)
                 betaptr[idx] = IL[proj.l] * Ylm(proj.l, proj.m, ax) * t1;
 
                 // l2m_i: l*l + m for the first angular momentum
-                if(ct.stress || ct.LOPTICS)
+                if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
                 {
                     int l2mi = proj.l * proj.l + proj.m;
                     for(int l2mj = 1; l2mj < 4; l2mj++)     // index for cubic harmonics x, y, z
@@ -184,7 +184,7 @@ void SPECIES::InitDelocalizedWeight (void)
                         int idx = ix * dimy * dimz + iy * dimz + iz;
                         std::complex<double> phaseshift =std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
                         betaptr[idx] *= phaseshift/vol;
-                        if(ct.stress || ct.LOPTICS)
+                        if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
                         {
                             betaptr_r[0][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
                             betaptr_r[1][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
