@@ -1751,11 +1751,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         ct.efield_xtal[1] = electric_field.vals.at(1);
         ct.efield_xtal[2] = electric_field.vals.at(2);
 
-        if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
-                std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
-                std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+        if(ct.BerryPhase)
         {
-            throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+            if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
+                    std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
+                    std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+            {
+                throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+            }
         }
 
     }
@@ -1767,49 +1770,61 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         ct.efield_tddft_xtal[0] = electric_field_tddft.vals.at(0);
         ct.efield_tddft_xtal[1] = electric_field_tddft.vals.at(1);
         ct.efield_tddft_xtal[2] = electric_field_tddft.vals.at(2);
-        if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
-                std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
-                std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+        if(ct.BerryPhase)
         {
-            throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+            if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
+                    std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
+                    std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+            {
+                throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+            }
         }
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the TDDFT electric field vector.\n";
     }
 
-    for(int i = 0; i < 3; i++)
+    ct.efield_crds[0]  = ct.efield_xtal[0];
+    ct.efield_crds[1]  = ct.efield_xtal[1];
+    ct.efield_crds[2]  = ct.efield_xtal[2];
+    ct.efield_tddft_crds[0]  = ct.efield_tddft_xtal[0];
+    ct.efield_tddft_crds[1]  = ct.efield_tddft_xtal[1];
+    ct.efield_tddft_crds[2]  = ct.efield_tddft_xtal[2];
+    if(ct.BerryPhase)
     {
-        double b0_length(0.0), b1_length(0.0), b2_length(0.0);
-        for(int j = 0; j <3; j++)
+        for(int i = 0; i < 3; i++)
         {
-            b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
-            b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
-            b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
-        }
-        b0_length = sqrt(b0_length);
-        b1_length = sqrt(b1_length);
-        b2_length = sqrt(b2_length);
+            double b0_length(0.0), b1_length(0.0), b2_length(0.0);
+            for(int j = 0; j <3; j++)
+            {
+                b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
+                b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
+                b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
+            }
+            b0_length = sqrt(b0_length);
+            b1_length = sqrt(b1_length);
+            b2_length = sqrt(b2_length);
 
-        if(ct.forceflag== TDDFT)
-        {
-            if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
-            if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
-            if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
-        }
-        else
-        {
-            if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
-            if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
-            if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
-        }
+            if(ct.forceflag== TDDFT)
+            {
+                if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+                if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+                if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+            }
+            else
+            {
+                if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+                if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+                if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+            }
 
-        ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
-        ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
-        ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
-        ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
-        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
-        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+            ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
+            ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
+            ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
+            ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
+            ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
+            ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+        }
     }
 
     if (lc.iondt_max < lc.iondt)
