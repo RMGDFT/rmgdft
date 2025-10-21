@@ -883,11 +883,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid preconditioner iteration. ",
             "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 0, 5, 1,
+    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid post-smoothing steps to perform after a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 1. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 3,
             CHECK_AND_FIX, OPTIONAL,
