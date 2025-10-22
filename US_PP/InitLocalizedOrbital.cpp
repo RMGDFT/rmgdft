@@ -63,10 +63,10 @@ void SPECIES::InitLocalizedOrbital (void)
 
     size = this->nldim * this->nldim * this->nldim;
 
-    if(this->forward_orbital) fftw_free(this->forward_orbital);
-    this->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_orbitals * size * ct.num_kpts_pe);
+    if(this->forward_orbital[0]) fftw_free(this->forward_orbital[0]);
+    this->forward_orbital[0] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_orbitals * size * ct.num_kpts_pe);
 
-    if (this->forward_orbital == NULL)
+    if (this->forward_orbital[0] == NULL)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
     tot_orbitals += orbital_count;
@@ -97,7 +97,7 @@ void SPECIES::InitLocalizedOrbital (void)
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
             phaseptr = (std::complex<double> *) &this->phase[kpt * this->nldim * this->nldim * this->nldim];
-            betaptr = &this->forward_orbital[kpt *this->num_projectors *size + proj.proj_index * size];
+            betaptr = &this->forward_orbital[0][kpt *this->num_projectors *size + proj.proj_index * size];
             InitWeightOne(this, betaptr, phaseptr, proj.ip, proj.l, proj.m);
         }
 
@@ -117,7 +117,7 @@ void SPECIES::InitLocalizedOrbital (void)
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
-            betaptr = &this->forward_orbital[kpt *this->num_projectors *size + proj.proj_index * size];
+            betaptr = &this->forward_orbital[0][kpt *this->num_projectors *size + proj.proj_index * size];
             MPI_Bcast(betaptr, 2*size, MPI_DOUBLE, root, pct.grid_comm);
         }
     }

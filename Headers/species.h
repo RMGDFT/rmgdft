@@ -181,6 +181,7 @@ public:
 
     /* Pseudo atomic wavefunctions on G-space log grid */
     std::vector<double *> atomic_wave_g;
+    boost::multi_array<double, 3> r_atomic_wave_g;
 
     /*Sum of all atomic states (with different l or m numbers*/
     //int sum_atomic_waves;
@@ -333,7 +334,7 @@ public:
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta=NULL;
     fftw_complex *forward_beta_r[3] = {NULL, NULL, NULL};
-    fftw_complex *forward_orbital=NULL;
+    fftw_complex *forward_orbital[4]={NULL, NULL, NULL, NULL};
     fftw_complex *forward_orbital_gamma=NULL;
 
     /*Some parameters for Q function*/

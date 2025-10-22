@@ -93,7 +93,7 @@ public:
     void get_nlop(int type);
     void get_ldaUop(int type);
     void get_orbitals(KpointType *orbitals);
-    void get_ion_orbitals(ION *iptr, KpointType *orbitals);
+    void get_ion_orbitals(ION *iptr, KpointType *orbitals, int ixyz);
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
     void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver, bool use_symmetric);
@@ -109,7 +109,7 @@ public:
     void GetLocalizedWeight (void);
     void GetLocalizedWeight_xyz (void);
     void GetDelocalizedWeight (void);
-    void GetDelocalizedOrbital (void);
+    void GetDelocalizedOrbital (int ixyz);
     void LcaoGetPsi (void);
     void DeleteNvmeArrays(void);
     void ClearPotentialAcceleration(void);
@@ -179,6 +179,7 @@ public:
     KpointType *nl_weight_gpu;
 #endif
     size_t nl_weight_size;
+    int stress_factor;
 
     //Pointer to vexx
     KpointType *vexx;

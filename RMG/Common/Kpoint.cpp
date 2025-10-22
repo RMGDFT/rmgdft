@@ -74,8 +74,8 @@ template void Kpoint<double>::reset_orbital_arrays(void);
 template void Kpoint<std::complex <double> >::reset_orbital_arrays(void);
 template void Kpoint<double>::get_orbitals(double *orbitals);
 template void Kpoint<std::complex <double> >::get_orbitals(std::complex<double> *orbitals);
-template void Kpoint<double>::get_ion_orbitals(ION *iptr, double *orbitals);
-template void Kpoint<std::complex <double> >::get_ion_orbitals(ION *iptr, std::complex<double> *orbitals);
+template void Kpoint<double>::get_ion_orbitals(ION *iptr, double *orbitals, int ixyz);
+template void Kpoint<std::complex <double> >::get_ion_orbitals(ION *iptr, std::complex<double> *orbitals, int ixyz);
 template void Kpoint<double>::get_ldaUop(int);
 template void Kpoint<std::complex <double> >::get_ldaUop(int);
 
@@ -107,6 +107,8 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->L = newL;
     this->pbasis = this->G->get_P0_BASIS(1);
     this->pbasis_noncoll = ct.noncoll_factor * this->pbasis;
+    this->stress_factor = 1;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) this->stress_factor = 4;
 
     // This is a boost pool per thread allocator used in MgEigState. It makes it easy
     // to change the type of the underlying memory (cpu, cuda, hip) by modifying
@@ -948,7 +950,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
 
 // Used to generate a set of delocalized atomic orbitals for a specific ion.
-template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr, KpointType *orbitals)
+template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr, KpointType *orbitals, int ixyz)
 {
 
     std::complex<double> I_t(0.0, 1.0);
@@ -986,7 +988,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     FindPhaseKpoint (this->kp.kvec, nlxdim, nlydim, nlzdim, nlcrds, fftw_phase, false);
 
     /*Temporary pointer to the already calculated forward transform */
-    fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
+    fptr = (std::complex<double> *)&sp->forward_orbital[ixyz][this->kidx * sp->num_orbitals * pbasis];
 
     KpointType *orbit = orbitals;
     /* Loop over atomic orbitals */
@@ -1134,8 +1136,6 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     ct.beta_alloc[2] *= (size_t)(ct.num_kpts_pe * pct.pe_kpoint * ct.nspin);
 
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
-    int stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) stress_factor = 4;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuError_t custat;
@@ -1221,8 +1221,6 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         if (this->newsint_local)
             RmgFreeHost(this->newsint_local);
 #else
-        int stress_factor = 1;
-         if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) stress_factor = 4;
         if(ct.nvme_weights)
         {
             munmap(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(double));
@@ -1251,7 +1249,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
 #else
         if(ct.nvme_weights)
         {
-            munmap(this->orbital_weight, this->orbital_weight_size*sizeof(double));
+            munmap(this->orbital_weight, this->orbital_weight_size* stress_factor * sizeof(double));
         }
         else
         {
@@ -1293,7 +1291,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * (size_t)ct.noncoll_factor;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
+    this->orbital_weight = (KpointType *)RmgMallocHost(stress_factor * this->orbital_weight_size * sizeof(KpointType));
 #if CUDA_ENABLED
     int _device = -1;
     gpuGetDevice(&_device);
@@ -1305,26 +1303,26 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 #else
     int device = _device;
 #endif
-    cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+    cudaMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
 #elif HIP_ENABLED
     int device = -1;
     gpuGetDevice(&device);
-    hipMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
+    hipMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
 #endif
 
-    for(size_t idx = 0;idx < this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
+    for(size_t idx = 0;idx < stress_factor * this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
 #else
     if(ct.nvme_weights)
     {
-        this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->orbital_weight_size*sizeof(KpointType));
+        this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, stress_factor * this->orbital_weight_size*sizeof(KpointType));
         if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
+        madvise(this->orbital_weight, stress_factor * this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
 
     }
     else
     {
-        this->orbital_weight = new KpointType[this->orbital_weight_size]();
+        this->orbital_weight = new KpointType[stress_factor * this->orbital_weight_size]();
     }
 #endif
 
