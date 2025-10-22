@@ -60,14 +60,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     {
         for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
         //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
-
-    }
-    // Add in ldaU contributions to nv
-    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
-    {
-        RmgTimer *RT1 = new RmgTimer("AppNls: ldaU");
-        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
-        delete RT1;
     }
 
     if(ct.BerryPhase)
@@ -357,6 +349,12 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
     RmgFreeHost(nwork_ion);
     RmgFreeHost(sint_compack);
 
+    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
+    {
+        RmgTimer *RT1 = new RmgTimer("AppNls: ldaU");
+        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states, ixyz);
+        delete RT1;
+    }
 
 }
 

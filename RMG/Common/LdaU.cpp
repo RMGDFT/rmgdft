@@ -56,8 +56,8 @@ template LdaU<std::complex<double>>::~LdaU(void);
 
 template void LdaU<double>::calc_ns_occ(double *, int, int);
 template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *, int, int);
-template void LdaU<double>::app_vhubbard(double *, double *, int, int);
-template void LdaU<std::complex<double>>::app_vhubbard(std::complex<double> *, std::complex<double> *, int, int);
+template void LdaU<double>::app_vhubbard(double *, double *, int, int, int);
+template void LdaU<std::complex<double>>::app_vhubbard(std::complex<double> *, std::complex<double> *, int, int, int);
 template void LdaU<double>::write_ldaU(void);
 template void LdaU<std::complex<double>>::write_ldaU(void);
 
@@ -223,7 +223,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
 
 
 // Applies the hubbard potential to orbitals V_hub|psi>
-template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int num_states)
+template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int num_states, int ixyz)
 {
     KpointType ONE_t(1.0), ZERO_t(0.0);
 
@@ -231,6 +231,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     int num_nonloc_ions = K.OrbitalProjector->get_num_nonloc_ions();
     int pstride = K.OrbitalProjector->get_pstride();
 
+    KpointType *orbital_weight_ptr = K.orbital_weight + ixyz * K.orbital_weight_size;
     // allocate memory for sint_compack;
     size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
     size_t M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
@@ -333,7 +334,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
     int num_states_nc = num_states * ct.noncoll_factor;
     RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
-            ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
+            ONE_t, orbital_weight_ptr, K.pbasis, nwork, num_tot_proj,
             ONE_t, v_hub_x_psi, K.pbasis);
 
 

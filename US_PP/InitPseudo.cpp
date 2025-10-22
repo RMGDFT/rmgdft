@@ -406,8 +406,6 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         // L = l1 + l2 ... |l1-l2|
         for(int L = std::abs(this->atomic_wave_l[ip] - 1); L <= this->atomic_wave_l[ip] +1; L++)
         {
-            
-            this->rbeta_g[ip][L] = new double[RADIAL_GVECS];
             RLogGridToGLogGrid(work, this->r, this->rab, this->r_atomic_wave_g[ip][L].origin(),
                     this->rg_points, L, bessel_rg);
         }
