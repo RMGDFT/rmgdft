@@ -154,7 +154,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
         // Queue receives
         if(i != pe_offset)
         {
-            qitems_r[i].comm = T->get_unique_comm(istate);
+            qitems_r[i].comm = T->get_unique_coalesced_comm(istate);
             qitems_r[i].is_unpacked = false;
             qitems_r[i].is_completed->store(false);
             // The actual tag passed to mpi consists of the state index shifted left 5 bits and
@@ -189,7 +189,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
         if(istate != remote_istate)
         {
-            qitems_s[i].comm = T->get_unique_comm(remote_istate);
+            qitems_s[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
             qitems_s[i].mpi_tag = (remote_istate<<5);
@@ -289,7 +289,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
         if(istate != remote_istate)
         {
-            qitems_r[i].comm = T->get_unique_comm(remote_istate);
+            qitems_r[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_r[i].is_unpacked = false;
             qitems_r[i].is_completed->store(false);
             qitems_r[i].mpi_tag = (remote_istate<<5);
@@ -319,7 +319,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int
         // Queue sends
         if(i != pe_offset)
         {
-            qitems_s[i].comm = T->get_unique_comm(istate);
+            qitems_s[i].comm = T->get_unique_coalesced_comm(istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
             qitems_s[i].mpi_tag = (istate<<5);

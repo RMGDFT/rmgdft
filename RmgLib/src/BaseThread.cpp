@@ -94,6 +94,7 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
     BaseThread::funcptr = funcptr;
     BaseThread::parent_grid_comm = comm;
     BaseThread::comm_pool.resize(BaseThread::THREADS_PER_NODE);
+    BaseThread::coalesced_comm_pool.resize(BaseThread::THREADS_PER_NODE);
     BaseThread::comm_indices.resize(BaseThread::THREADS_PER_NODE);
     BaseThread::jobs.store(0);
 
@@ -101,9 +102,11 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
     for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) 
     {
         BaseThread::comm_pool[thread] = new MPI_Comm[200];
+        BaseThread::coalesced_comm_pool[thread] = new MPI_Comm[20*BaseThread::THREADS_PER_NODE+1];
         BaseThread::comm_indices[thread] = 0;
         thread_controls[thread].tid = thread;
         for(int i=0;i < 200;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
+        for(int i=0;i < 20*BaseThread::THREADS_PER_NODE+1;i++) MPI_Comm_dup(comm, &BaseThread::coalesced_comm_pool[thread][i]);
         MPI_Comm_dup(comm, &thread_controls[thread].grid_comm);
         threadgroup.emplace_back(BaseThread::funcptr, (void *)&thread_controls[thread]);
     }
@@ -113,7 +116,6 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 // Wakes jobs sleeping threads starting from tid=0 and counting up
 // jobs must be less than THREADS_PER_NODE
 void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
-
     if(rjobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
         rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
@@ -299,6 +301,12 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
     return this->comm_pool[tid][comm_index]; 
 }
 
+MPI_Comm BaseThread::get_unique_coalesced_comm(int index) {
+    int tid = BaseThread::get_thread_tid();
+    if(tid < 0) tid=0;
+    int comm_index = index % (20*BaseThread::THREADS_PER_NODE + 1);
+    return this->coalesced_comm_pool[tid][comm_index]; 
+}
 
 int BaseThread::is_loop_over_states(void)
 {

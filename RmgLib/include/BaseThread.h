@@ -78,6 +78,7 @@ private:
     // number of threads. Typically used to ensure that electronic orbitals being processed
     // by parallel threads use a unique communicator across nodes.
     std::vector<MPI_Comm *> comm_pool;
+    std::vector<MPI_Comm *> coalesced_comm_pool;
     std::vector<size_t> comm_indices;
 
     // Initialization flag
@@ -128,6 +129,7 @@ public:
     // For a given value of index returns a unique communicator across nodes for each
     // value of index.
     MPI_Comm get_unique_comm(int index);
+    MPI_Comm get_unique_coalesced_comm(int index);
 
     void set_pptr(int tid, void *p);
     void *get_pptr(int tid);
