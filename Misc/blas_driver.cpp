@@ -43,7 +43,7 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 #if CUDA_ENABLED 
     cublasZcopy (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #elif HIP_ENABLED
-    hipblasZcopy (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
+    hipblasZcopy (ct.gpublas_handle, n, (hipDoubleComplex *)A, ia, (hipDoubleComplex *)B, ib);
 #else
     zcopy (&n, A, &ia, B, &ib);
 #endif
@@ -56,7 +56,7 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 #if CUDA_ENABLED 
     cublasZaxpy (ct.gpublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #elif HIP_ENABLED
-    hipblasZaxpy (ct.gpublas_handle, n, (hipblasDoubleComplex *)&alpha, (hipblasDoubleComplex *)A, ia, (hipblasDoubleComplex *)B, ib);
+    hipblasZaxpy (ct.gpublas_handle, n, (hipDoubleComplex *)&alpha, (hipDoubleComplex *)A, ia, (hipDoubleComplex *)B, ib);
 #else
     zaxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
@@ -67,7 +67,7 @@ void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 #if CUDA_ENABLED 
     cublasDzasum (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, sum);
 #elif HIP_ENABLED
-    hipblasDzasum (ct.gpublas_handle, n, (hipblasDoubleComplex *)A, ia, sum);
+    hipblasDzasum (ct.gpublas_handle, n, (hipDoubleComplex *)A, ia, sum);
 #else
     *sum = dzasum(&n, (double *)A, &ia);
 #endif

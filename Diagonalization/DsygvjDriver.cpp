@@ -73,10 +73,9 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     const rocblas_esort sortdir = rocblas_esort_ascending;
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_lower;
-    double abstol = 1.0e-5;
-    abstol = std::min(abstol, ct.scf_accuracy);
+    double abstol = 1.0e-20;
     double *devResidual = NULL;
-    rocblas_int max_sweeps = 15;
+    rocblas_int max_sweeps = 50;
     int n_sweeps;
     int info;
     double residual;

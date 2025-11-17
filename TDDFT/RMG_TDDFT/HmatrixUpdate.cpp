@@ -222,7 +222,7 @@ void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, 
 
 #if  HIP_ENABLED
     gstat = hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (hipblasDoubleComplex *)psi_dev, pbasis, (hipblasDoubleComplex *)v_dev, 1, (hipblasDoubleComplex *)work_dev, pbasis);
+            (hipDoubleComplex *)psi_dev, pbasis, (hipDoubleComplex *)v_dev, 1, (hipDoubleComplex *)work_dev, pbasis);
 #endif
 #if  CUDA_ENABLED 
     gstat = cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
