@@ -187,8 +187,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     {
         factor = 3;
     }
-
-    if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+    if( (ct.nspin == 4) && (object_type == ATOMIC_RHO))
     {
         factor = 4;
     }
