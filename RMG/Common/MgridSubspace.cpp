@@ -149,7 +149,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     int nblocks = mstates / block_size;
     int irem = mstates % block_size;
     if(irem) nblocks++;
-
     for(int is=first;is < N+first;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
 
     std::vector<double> deig(20);
@@ -216,13 +215,14 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 // this is a hack since we are backing the nv array up before it's start in order to make
 // the code in MgEigState work properly. Fix at some point.
                         if(cfac > 1)
-                            thread_control.nv = this->nv - bofs * pbasis_noncoll;
+                            thread_control.nv = this->nv - (first+bofs) * pbasis_noncoll;
                         else
                             thread_control.nv = (void *)&this->nv[(st1 + ist + istart) * pbasis_noncoll];
                         thread_control.ns = (void *)&this->ns[(first+sindex) * pbasis_noncoll];  // ns is not blocked!
                         thread_control.basetag = this->Kstates[first + sindex].istate;
                         thread_control.extratag1 = active_threads;
                         thread_control.extratag2 = bofs + st1;
+                        thread_control.extratag2 = first + bofs + st1;
                         thread_control.extratag3 = st1 + ist + istart;
                     }
                     QueueThreadTask(ist, thread_control);

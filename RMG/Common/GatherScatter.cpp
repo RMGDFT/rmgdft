@@ -145,8 +145,9 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
         qitems_s[it].is_completed = &is_completed_s[it];
         qitems_r[it].group_count = &group_count;
         qitems_s[it].group_count = &group_count;
+        qitems_r[it].mpi_tag = -1;
+        qitems_s[it].mpi_tag = -1;
     }
-
 
     // States are coalesced so we have to get the remote parts of istate
     for(int i=0;i < factor;i++)
@@ -187,7 +188,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
     {
         // Queue sends
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
-        if(istate != remote_istate)
+        if(i != pe_offset)
         {
             qitems_s[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_s[i].is_unpacked = false;
@@ -222,14 +223,17 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
     {
         for(int i=0;i < factor;i++)
         {
+            int remote_istate = base_istate + i * active_threads + istate % active_threads;
+            if(i != pe_offset)
+            {
+                MPI_Wait(&qitems_s[i].req, MPI_STATUS_IGNORE);
+            }
+        }
+        for(int i=0;i < factor;i++)
+        {
             if(i != pe_offset)
             {
                 MPI_Wait(&qitems_r[i].req, MPI_STATUS_IGNORE);
-            }
-            int remote_istate = base_istate + i * active_threads + istate % active_threads;
-            if(istate != remote_istate)
-            {
-                MPI_Wait(&qitems_s[i].req, MPI_STATUS_IGNORE);
             }
         }
     }
@@ -287,7 +291,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int
     {
         // Queue receives
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
-        if(istate != remote_istate)
+        if(i != pe_offset)
         {
             qitems_r[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_r[i].is_unpacked = false;
@@ -353,7 +357,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
             for(int i=0;i < factor;i++)
             {
                 int remote_istate = base_istate + i * active_threads + istate % active_threads;
-                if(istate != remote_istate)
+                if(i != pe_offset)
                 {
                     if(!qitems_r[i].is_unpacked)
                     {
