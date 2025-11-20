@@ -1369,7 +1369,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Single precision ffts are generally accurate enough. ",
             "vexx_fft_threshold must lie in the range (1.0e-14,1.0e-1). Resetting to default value of 1.0e-14. ", XC_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
+    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-1, 1.0e-10,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the change in the total potential where we switch "
             "the preconditioner from single to double precision.",
