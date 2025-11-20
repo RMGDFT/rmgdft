@@ -126,8 +126,9 @@ void CheckSetDefault(void)
 
     if(us_count && ct.use_rmm_diis)
     {
-        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled.\n");
+        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled and preconditioner threshold set to 1.0e-1.\n");
         ct.use_rmm_diis = false;
+        ct.preconditioner_thr = 1.0e-1;
     }
 
     // For USPP force a minimum of 2
