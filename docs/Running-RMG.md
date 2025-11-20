@@ -60,3 +60,12 @@ The **rmsdv.png** file is updated dynamically during the run and can be monitore
 
 # Binary output (restart files)
 RMG can generate binary output files suitable for restarts and interfacing with other codes in a variety of different formats. By default restarts and checkpoints are written in a parallel format where each MPI process writes it's own restart file. This is the fastest option but restart runs have to use the same number of MPI procs as the original run. A serial restart format is also available in which case RMG restarts can run using a different number of MPI procs than the original run as long as the number satisfies all other requirements for the run (e.g. for any given problem size there is an upper limit on the number of tasks that can be used).
+
+# System specific: Frontier at ORNL
+A sample job file for frontier is available [here.](https://raw.githubusercontent.com/RMGDFT/rmgdft/b4dd46310b84139786dc7e88a9caa1093b0cec30/scripts/jobfiles/frontier.job)
+
+# System specific: Summit at ORNL
+A sample job file for summit is available [here.](https://raw.githubusercontent.com/RMGDFT/rmgdft/b4dd46310b84139786dc7e88a9caa1093b0cec30/scripts/jobfiles/summit.job)
+
+# System specific: NERSC machine Perlmutter
+A sample job file for perlmutter is available [here.](https://raw.githubusercontent.com/RMGDFT/rmgdft/develop/scripts/jobfiles/perlmutter.gpu)

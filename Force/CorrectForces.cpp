@@ -67,7 +67,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
 
     ApplyGradient (dvh, gx, gy, gz, ct.force_grad_order, "Fine");
 
-    double *dum_array = new double[FP0_BASIS];
+    double *dum_array = new double[ct.nspin*FP0_BASIS];
     
     InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
 

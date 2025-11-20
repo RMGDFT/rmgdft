@@ -229,10 +229,10 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
         if(!b_dev) hipMemcpy(dB, B, b_size * sizeof(std::complex<double>), hipMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpy(dC, C, c_size * sizeof(std::complex<double>), hipMemcpyDefault);
         custat = hipblasZsymm(ct.hipblas_handle, cu_side, cu_uplo, m, n,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda,
-                            (hipblasDoubleComplex*)dB, ldb,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+                            (hipDoubleComplex *)&alpha,
+                            (hipDoubleComplex*)dA, lda,
+                            (hipDoubleComplex*)dB, ldb,
+                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc );
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing hipblasZsymm");
         if(!c_dev) hipMemcpy(C, dC, c_size * sizeof(std::complex<double>), hipMemcpyDefault);

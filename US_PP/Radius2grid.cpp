@@ -50,8 +50,8 @@ int Radius2grid (const double radius, const double mingrid_spacing, const int ib
     {
         if (std::abs(ibrav) == CUBIC_BC) scale = 1.1;
         if (ibrav == CUBIC_FC) scale = 1.3;
-        if (ibrav == HEXAGONAL) scale = 1.6;
-        if (ibrav == HEXAGONAL2) scale = 1.6;
+        if (ibrav == HEXAGONAL) scale = 1.2;
+        if (ibrav == HEXAGONAL2) scale = 1.2;
         if (ibrav == MONOCLINIC_PRIMITIVE) scale = 1.6;
         if (ibrav == TRICLINIC_PRIMITIVE) scale = 1.6;
     }

@@ -42,6 +42,7 @@ public:
     void calc_ns_occ(KpointType *sint, int first_state, int nstates);
     void calc_force(KpointType *sint, double *force_ldau);
     void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int nstates);
+    void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int nstates, int ixyz);
     void write_ldaU(void);
     void init_ns_occ(void);
     void Hubbard_matrix();

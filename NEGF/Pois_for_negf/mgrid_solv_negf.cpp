@@ -75,6 +75,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     double *resid, *newf, *newv, *newwork;
+    Mgrid MG(&Rmg_L, Rmg_T);
 
     int ncycl;
 
@@ -123,14 +124,13 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     {
   		
 	/* solve once */
-       solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
-      
+        MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 
-         pack_stop(v_mat, work, dimx, dimy, dimz);
+        pack_stop(v_mat, work, dimx, dimy, dimz);
          
-         confine (work, dimx, dimy, dimz, potentialCompass, level);
+        confine (work, dimx, dimy, dimz, potentialCompass, level);
 
-         pack_ptos(v_mat, work, dimx, dimy, dimz);
+        pack_ptos(v_mat, work, dimx, dimy, dimz);
 
         /* trade boundary info */
         trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -151,7 +151,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
 
 /* evaluate residual */
-    eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+    MG.eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, NULL);
 
     pack_stop(resid, work, dimx, dimy, dimz);
 
@@ -170,9 +170,9 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
 
 /* size for next smaller grid */
-    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, ct.boundaryflag);
-    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, ct.boundaryflag);
-    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, ct.boundaryflag);
+    dx2 = MG.MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, ct.boundaryflag);
+    dy2 = MG.MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, ct.boundaryflag);
+    dz2 = MG.MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, ct.boundaryflag);
 
  
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
@@ -186,7 +186,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     for (i = 0; i < mu_cyc; i++)
     {
 
-        mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
 
         /* call mgrid solver on new level */
@@ -199,7 +199,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
         trade_images(newv, dx2, dy2, dz2, FULL_TRADE);
 
-        mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         scale = ONE;
 
@@ -213,7 +213,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
         {
 
             /* solve once */
-            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+            MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 
             pack_stop(v_mat, work, dimx, dimy, dimz);
 
@@ -230,7 +230,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
         if (i < (mu_cyc - 1))
         {
 
-            eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+            MG.eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, NULL);
 
 
             trade_images(resid, dimx, dimy, dimz, FULL_TRADE);

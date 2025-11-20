@@ -4,6 +4,8 @@
 #if __cplusplus
 #include <complex>
 #include <set>
+#include <list>
+#include <map>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -41,6 +43,8 @@ extern BerryPhase *Rmg_BP;
 
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
+
+template <typename T> void EpsilonMatrix(Kpoint<T> **Kptr);
 
 void OutputBandPlot(double *);
 void CheckSetDefault();

@@ -46,6 +46,7 @@
 
 #include "transition.h"
 #include "blas.h"
+#include "ortho.h"
 
 
 
@@ -80,6 +81,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     if(ct.scf_steps == 0) acheck = 0.01;
     occupied_tol = 0.1*acheck / std::max(1.0, (double)ct.nel);
     if(ct.spinorbit || ct.noncoll) occupied_tol /= 8.0;
+
+    ortho<KpointType> DavidsonOrtho(nstates, pbasis_noncoll);
 
     occupied_tol = std::min(occupied_tol, 1.0e-4);
     // Need this since the eigensolver may become unstable for very small residuals
@@ -243,7 +246,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         RT1 = new RmgTimer("6-Davidson: orthogonalization");
         if(ct.davidson_1stage_ortho)
-            DavidsonOrtho(nbase, notconv, pbasis_noncoll, psi, ct.davidson_2stage_ortho);
+            DavidsonOrtho.orthogonalize(nbase, notconv, psi, ct.davidson_2stage_ortho);
         delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials

@@ -1,0 +1,19 @@
+### Introduction
+RMG is a DFT-based electronic structure code developed at North Carolina State University. The original version was written in 1993-1994 and it has been updated and expanded continuously since that time. It uses real-space meshes to represent the wavefunctions, the charge density, and the ionic pseudopotentials. The real-space formulation is advantageous for parallelization, because each processor can be assigned a region of space, and for convergence acceleration, since multiple length scales can be dealt with separately. Both norm-conserving and ultrasoft pseudopotentials (UPPs) are allowed. 
+
+The parallelization strategy for the main RMG routines employs a mixed programming model that utilizes MPI, OpenMP and Posix threads. Domain decomposition is used to assign different regions of space to different cores, and a domain may span an entire node, consisting of, e.g., 16 cores on a Cray XK6. This greatly reduces the required communications and makes the communication latency more uniform. The orbitals are processed in blocks and do local synchronization within nodes at specific points of the SCF cycle, greatly reducing the need for global synchronization. The RMG code scales nearly linearly up to 100k processor cores and 20k GPUs on Cray XK6. It is expected to also scale well on large parallel clusters that include low-latency, high speed switches, such as InfiniBand.
+
+RMG can be used through a Graphical User Interface (GUI) or text input. Both accept atomic coordinate files in several formats. RMG also has GUI and text-based interfaces for coupling it with the BerkeleyGW code for computing band gap corrections and exciton binding energies. RMG has been tested on a large number of systems, including big supercells of bulk materials containing various impurities, surfaces and interfaces and bulk transition metals, as well as molecular dynamics of liquid water and of breakage of carbon nanotubes. In all cases, the results agree very well with plane-wave calculations and experiment.
+
+The RMG code suite consists of several modules. The current distribution contains the code needed to perform DFT calculations for a large number of atoms. Other modules, planned to be released in the future will: (i) perform quantum transport calculations for nanoscale devices using an optimized localized basis, and (ii) execute hybrid DFT calculations that embed a full density-functional region (e.g., containing a biomolecule and its first solvation shell) into a larger "solvent" region treated by the much simpler orbital-free DFT method, which works well for closed shell molecules (e.g., water).
+
+### Delta test results
+The Delta test was developed to test the accuracy and reproducibility of DFT codes. Published results using highly converged all electron results as a reference standard are available for a wide range of basis sets, pseudopotentials and computational algorithms. RMG results for all 72 elements used in the test along with the average over all elements are presented in the figure below and compare well with published results for plane wave codes.
+<p align="center">
+<img src="https://github.com/RMGDFT/AFD_5.3/blob/main/DFT_benchmark_Delta_v3-1/RMG/Delta_SSSP_RMG_v5.2_AFD8th/delta.png">
+ RMG Delta test results. Average value = 0.298meV, VASP = 0.3meV, Quantum Espresso = 0.3meV<BR>
+
+[Adaptive finite differencing in high accuracy electronic structure calculations](https://rdcu.be/dwtYr)[1]
+
+1. Briggs, E.L., Lu, W. & Bernholc, J. Adaptive finite differencing in high accuracy electronic structure calculations. npj Comput Mater 10, 17 (2024). https://doi.org/10.1038/s41524-024-01203-y
+</p>

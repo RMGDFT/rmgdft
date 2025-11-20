@@ -457,7 +457,6 @@ template <typename OrbitalType> bool Scf (
                 if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
             }
 
-
             if (ct.nspin == 2) GetOppositeEigvals (Kptr);
             GetTe (rho, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
             ct.potential_acceleration_constant_step = potential_acceleration_step;

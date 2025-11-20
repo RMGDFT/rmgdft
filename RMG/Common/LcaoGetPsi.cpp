@@ -100,7 +100,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         if(ct.atomic_orbital_type == DELOCALIZED)
         {
             // Delocalized orbitals
-            get_ion_orbitals(&Atom, &npsi[wave_idx * pbasis]);
+            get_ion_orbitals(&Atom, &npsi[wave_idx * pbasis], 0);
             wave_idx += AtomType.num_orbitals;
         }
         else

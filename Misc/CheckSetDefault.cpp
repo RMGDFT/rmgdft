@@ -77,6 +77,7 @@ void CheckSetDefault(void)
     if(ct.stress)
     {
         ct.localize_localpp = false;
+      //  ct.localize_projectors = false;
         ct.kohn_sham_fd_order = 12;
         if(ct.prolong_order != 0)ct.prolong_order=12;
         ct.force_grad_order = 0;
@@ -125,8 +126,9 @@ void CheckSetDefault(void)
 
     if(us_count && ct.use_rmm_diis)
     {
-        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled.\n");
+        printf("Ultrasoft pseudopotentials detected. RMM-DIIS disabled and preconditioner threshold set to 1.0e-1.\n");
         ct.use_rmm_diis = false;
+        ct.preconditioner_thr = 1.0e-1;
     }
 
     // For USPP force a minimum of 2

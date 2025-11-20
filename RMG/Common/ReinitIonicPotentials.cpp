@@ -104,7 +104,14 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         {
-            Kptr[kpt]->GetDelocalizedOrbital ();
+            Kptr[kpt]->GetDelocalizedOrbital(0);
+            if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
+            {
+                Kptr[kpt]->GetDelocalizedOrbital(1);
+                Kptr[kpt]->GetDelocalizedOrbital(2);
+                Kptr[kpt]->GetDelocalizedOrbital(3);
+            }
+
         }
     }
 

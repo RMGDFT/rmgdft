@@ -145,6 +145,7 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
         int st_start = ib *nb + tddft_start_state;
         int st_end   = st_start + this_block_size;
 
+#if 0
         AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size);
 
         for (int st1 = 0; st1 < this_block_size; st1++)
@@ -179,7 +180,23 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
             }
 
         }
+#endif
 
+        AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 1);
+        for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+        {
+            psi_x[idx] = nv[idx]  ;
+        }
+        AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 2);
+        for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+        {
+            psi_y[idx] = nv[idx]  ;
+        }
+        AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 3);
+        for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
+        {
+            psi_z[idx] = nv[idx]  ;
+        }
         RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_x, this_block_size);
         BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
@@ -242,18 +259,18 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
     }
 
     delete [] block_matrix;
-//  rmg_printf("kvec %f", kptr->kp.kvec[0] );
-//  for(int i = 0; i < 8; i++)
-//  {
-//      rmg_printf("\n aaa ");
-//      for(int j = 0; j < 8; j++)
-//          rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
-//  }
-//  for(int i = 0; i < 8; i++)
-//  {
-//      rmg_printf("\n bbb ");
-//      for(int j = 0; j < 8; j++)
-//          rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
-//  }
+    //  rmg_printf("kvec %f", kptr->kp.kvec[0] );
+    //  for(int i = 0; i < 8; i++)
+    //  {
+    //      rmg_printf("\n aaa ");
+    //      for(int j = 0; j < 8; j++)
+    //          rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+    //  }
+    //  for(int i = 0; i < 8; i++)
+    //  {
+    //      rmg_printf("\n bbb ");
+    //      for(int j = 0; j < 8; j++)
+    //          rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+    //  }
 
 }

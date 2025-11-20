@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "main.h"
 
 
@@ -39,7 +39,7 @@ void DeleteNvmeArrays(void)
     {
         std::string newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        if(boost::filesystem::exists(newpath.c_str()))
+        if(std::filesystem::exists(newpath.c_str()))
         {
             unlink(newpath.c_str());
         }
@@ -51,7 +51,7 @@ void DeleteNvmeArrays(void)
         std::string orbital_path = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
                   std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
 
-        if(boost::filesystem::exists(orbital_path.c_str()))
+        if(std::filesystem::exists(orbital_path.c_str()))
         {
             unlink(orbital_path.c_str());
         }

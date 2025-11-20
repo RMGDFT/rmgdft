@@ -46,6 +46,7 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "blas.h"
+#include "ortho.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations
@@ -103,9 +104,11 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 {
     RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
+    int cfac = 1;
+    if(ct.coalesce_states) cfac = pct.coalesce_factor;
     int my_pe_x, my_pe_y, my_pe_z;
     this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
-    int my_pe_offset = my_pe_x % pct.coalesce_factor;
+    int my_pe_offset = my_pe_x % cfac;
 
 
     KpointType *weight = this->nl_weight;
@@ -115,15 +118,16 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
+
     double *nvtot_psi = vtot_psi;;
-    if(pct.coalesce_factor > 1)
+    if(cfac > 1)
     {
-        nvtot_psi = new double[pbasis * pct.coalesce_factor];
+        nvtot_psi = new double[pbasis * cfac];
         GatherGrid(this->G, pbasis, vtot_psi, nvtot_psi);
     }
 
     // Set trade images coalesce_factor
-    this->T->set_coalesce_factor(pct.coalesce_factor);
+    this->T->set_coalesce_factor(cfac);
 
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
@@ -132,25 +136,26 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     // multiple of (active_threads * pct.coalesce_factor) in order for the
     // coalescing routines to work correctly. So we pad nstates to satisfy
     // that condition where required (stored in mstates).
-    int mstates = N / (active_threads * pct.coalesce_factor);
-    if(N % (active_threads * pct.coalesce_factor)) mstates++;
-    mstates = mstates * (active_threads * pct.coalesce_factor);
+    int mstates = N / (active_threads * cfac);
+    if(N % (active_threads * cfac)) mstates++;
+    mstates = mstates * (active_threads * cfac);
+
+    ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
 
     // We adjust the block size here for threading and coalescing
     int block_size = bs;
-    block_size = block_size / (active_threads * pct.coalesce_factor);
-    block_size = block_size * (active_threads * pct.coalesce_factor);
+    block_size = block_size / (active_threads * cfac);
+    block_size = block_size * (active_threads * cfac);
     int nblocks = mstates / block_size;
     int irem = mstates % block_size;
     if(irem) nblocks++;
-
     for(int is=first;is < N+first;is++) Kstates[is].eig[1] = Kstates[is].eig[0];
 
     std::vector<double> deig(20);
     std::fill(deig.begin(), deig.end(), 0.0);
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) 
-            Kstates[is].dptr = new diis<KpointType>(4, pbasis_noncoll);
+            Kstates[is].dptr = new diis<KpointType>(4, cfac*pbasis_noncoll);
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
@@ -158,9 +163,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         // Zero out dvh array if potential acceleration is enabled
         if(potential_acceleration)
         {
-           int stop = ct.ndvh * pbasis * pct.coalesce_factor;
+           int stop = ct.ndvh * pbasis * cfac;
            for(int i=0;i < stop;i++) this->dvh[i] = 0.0;
-           PotentialAccelerationReset(my_pe_offset*active_threads + ct.dvh_skip/pct.coalesce_factor);
+           PotentialAccelerationReset(my_pe_offset*active_threads + ct.dvh_skip/cfac);
         }
 
         // Update betaxpsi        
@@ -185,7 +190,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                    &this->ns[(first+bofs) * pbasis_noncoll],
                    bofs, std::min(block_size, mstates - bofs));
             delete(RT1);
-            for(int st1=0;st1 < block_size;st1+=active_threads*pct.coalesce_factor)
+            for(int st1=0;st1 < block_size;st1+=active_threads*cfac)
             {
                 SCF_THREAD_CONTROL thread_control;
 
@@ -209,29 +214,32 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                         thread_control.p3 = (void *)this;
 // this is a hack since we are backing the nv array up before it's start in order to make
 // the code in MgEigState work properly. Fix at some point.
-                        if(pct.coalesce_factor > 1 && ct.coalesce_states)
-                            thread_control.nv = this->nv - bofs * pbasis_noncoll;
+                        if(cfac > 1)
+                            thread_control.nv = this->nv - (first+bofs) * pbasis_noncoll;
                         else
                             thread_control.nv = (void *)&this->nv[(st1 + ist + istart) * pbasis_noncoll];
                         thread_control.ns = (void *)&this->ns[(first+sindex) * pbasis_noncoll];  // ns is not blocked!
                         thread_control.basetag = this->Kstates[first + sindex].istate;
                         thread_control.extratag1 = active_threads;
                         thread_control.extratag2 = bofs + st1;
+                        thread_control.extratag2 = first + bofs + st1;
                         thread_control.extratag3 = st1 + ist + istart;
                     }
                     QueueThreadTask(ist, thread_control);
                 }
 
                 // Thread tasks are set up so run them
-                if(!ct.mpi_queue_mode && nthreads) T->run_thread_tasks(nthreads);
+                if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
                 if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
                 delete RT1;
             }
+            if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
             if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         } // end for ib
 
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
+        if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
         delete RT1;
 
@@ -241,14 +249,13 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         }
 
         RmgTimer RTO("3-MgridSubspace: ortho");
-        DavidsonOrtho(first, this->nstates-first,
-                      pbasis_noncoll, this->orbital_storage, true);
+        MGOrtho.orthogonalize(first, this->nstates-first, this->orbital_storage, true);
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
     this->T->set_coalesce_factor(1);
 
-    if(pct.coalesce_factor > 1)
+    if(cfac > 1)
     {
         delete [] nvtot_psi;
         // Eigenvalues are not copied to all nodes in MgEigState when using coalesced grids.

@@ -883,11 +883,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid preconditioner iteration. ",
             "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 0, 5, 1,
+    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid post-smoothing steps to perform after a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 1. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
+            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 3,
             CHECK_AND_FIX, OPTIONAL,
@@ -983,7 +983,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware. ",
             "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32. ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 40000, 512,
+    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, -1, 40000, -1,
             CHECK_AND_FIX, OPTIONAL,
 "Block size to use when applying the non-local and S operators. "
 "A value at least as large as the number of wavefunctions produces "
@@ -1287,7 +1287,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_energy_correction", &lc.use_energy_correction, false, 
             "Experimental energy correction term ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
 
-    If.RegisterInputKey("use_numa", &lc.use_numa, true, 
+    If.RegisterInputKey("use_numa", &lc.use_numa, false, 
             "Numa stands for Non Uniform Memory Access and means that the main "
             "memory of a computer is organized into seperate distinct banks. "
             "Each bank is then attached to a CPU core or group of cores and "
@@ -1296,8 +1296,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "CPU cores mostly access memory in banks they are directly attached "
             "to can have a large impact on performance. Process mapping that "
             "does this can normally be done when jobs are submitted and run "
-            "via arguments to mpirun/mpiexec but if this is not done RMG will "
-            "attempt to provide an optimal mapping if use_numa is set to true. ",
+            "via arguments to mpirun/mpiexec but if this is not done setting "
+            "use_numa to true will cause RMG to attempt it. ",
             PERF_OPTIONS);
 
     If.RegisterInputKey("use_hwloc", &lc.use_hwloc, false, 
@@ -1369,7 +1369,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Single precision ffts are generally accurate enough. ",
             "vexx_fft_threshold must lie in the range (1.0e-14,1.0e-1). Resetting to default value of 1.0e-14. ", XC_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
+    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-1, 1.0e-10,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the change in the total potential where we switch "
             "the preconditioner from single to double precision.",
@@ -1478,6 +1478,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "if false, no k -> -k symmetry", CONTROL_OPTIONS);
     If.RegisterInputKey("wannier90", &lc.wannier90, false,
             "set up informations for wannier90 interface", CONTROL_OPTIONS);
+    If.RegisterInputKey("LOPTICS", &lc.LOPTICS, false,
+            "calculate epsilon_2 in DFT level without local field correction", CONTROL_OPTIONS);
     If.RegisterInputKey("num_wanniers", &lc.num_wanniers, 0, INT_MAX, 0, 
             CHECK_AND_FIX, OPTIONAL, 
             "number of wannier functions to be used in wannier90 ", 
@@ -1749,11 +1751,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         ct.efield_xtal[1] = electric_field.vals.at(1);
         ct.efield_xtal[2] = electric_field.vals.at(2);
 
-        if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
-                std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
-                std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+        if(ct.BerryPhase)
         {
-            throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+            if(std::abs(ct.efield_xtal[0] * ct.efield_xtal[1]) > 1.e-10 ||
+                    std::abs(ct.efield_xtal[0] * ct.efield_xtal[2]) > 1.e-10 ||
+                    std::abs(ct.efield_xtal[1] * ct.efield_xtal[2]) > 1.e-10 )
+            {
+                throw RmgFatalException() << "electric field vector must be along one of the reciprocal lattice vectors.\n";
+            }
         }
 
     }
@@ -1765,49 +1770,61 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         ct.efield_tddft_xtal[0] = electric_field_tddft.vals.at(0);
         ct.efield_tddft_xtal[1] = electric_field_tddft.vals.at(1);
         ct.efield_tddft_xtal[2] = electric_field_tddft.vals.at(2);
-        if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
-                std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
-                std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+        if(ct.BerryPhase)
         {
-            throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+            if(std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[1]) > 1.e-10 ||
+                    std::abs(ct.efield_tddft_xtal[0] * ct.efield_tddft_xtal[2]) > 1.e-10 ||
+                    std::abs(ct.efield_tddft_xtal[1] * ct.efield_tddft_xtal[2]) > 1.e-10 )
+            {
+                throw RmgFatalException() << "TDDFT electric field vector must be along one of the reciprocal lattice vectors.\n";
+            }
         }
     }
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the TDDFT electric field vector.\n";
     }
 
-    for(int i = 0; i < 3; i++)
+    ct.efield_crds[0]  = ct.efield_xtal[0];
+    ct.efield_crds[1]  = ct.efield_xtal[1];
+    ct.efield_crds[2]  = ct.efield_xtal[2];
+    ct.efield_tddft_crds[0]  = ct.efield_tddft_xtal[0];
+    ct.efield_tddft_crds[1]  = ct.efield_tddft_xtal[1];
+    ct.efield_tddft_crds[2]  = ct.efield_tddft_xtal[2];
+    if(ct.BerryPhase)
     {
-        double b0_length(0.0), b1_length(0.0), b2_length(0.0);
-        for(int j = 0; j <3; j++)
+        for(int i = 0; i < 3; i++)
         {
-            b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
-            b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
-            b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
-        }
-        b0_length = sqrt(b0_length);
-        b1_length = sqrt(b1_length);
-        b2_length = sqrt(b2_length);
+            double b0_length(0.0), b1_length(0.0), b2_length(0.0);
+            for(int j = 0; j <3; j++)
+            {
+                b0_length += Rmg_L.b0[j] * Rmg_L.b0[j]; 
+                b1_length += Rmg_L.b1[j] * Rmg_L.b1[j]; 
+                b2_length += Rmg_L.b2[j] * Rmg_L.b2[j]; 
+            }
+            b0_length = sqrt(b0_length);
+            b1_length = sqrt(b1_length);
+            b2_length = sqrt(b2_length);
 
-        if(ct.forceflag== TDDFT)
-        {
-            if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
-            if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
-            if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
-        }
-        else
-        {
-            if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
-            if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
-            if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
-        }
+            if(ct.forceflag== TDDFT)
+            {
+                if(std::abs(ct.efield_tddft_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+                if(std::abs(ct.efield_tddft_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+                if(std::abs(ct.efield_tddft_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+            }
+            else
+            {
+                if(std::abs(ct.efield_xtal[0]) > 1.0e-10) ct.BerryPhase_dir = 0;
+                if(std::abs(ct.efield_xtal[1]) > 1.0e-10) ct.BerryPhase_dir = 1;
+                if(std::abs(ct.efield_xtal[2]) > 1.0e-10) ct.BerryPhase_dir = 2;
+            }
 
-        ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
-        ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
-        ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
-        ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
-        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
-        ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+            ct.efield_crds[i]  = ct.efield_xtal[0] * Rmg_L.b0[i]/b0_length;
+            ct.efield_crds[i] += ct.efield_xtal[1] * Rmg_L.b1[i]/b1_length;
+            ct.efield_crds[i] += ct.efield_xtal[2] * Rmg_L.b2[i]/b2_length;
+            ct.efield_tddft_crds[i]  = ct.efield_tddft_xtal[0] * Rmg_L.b0[i]/b0_length;
+            ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[1] * Rmg_L.b1[i]/b1_length;
+            ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
+        }
     }
 
     if (lc.iondt_max < lc.iondt)

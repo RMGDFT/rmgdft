@@ -57,8 +57,8 @@ Available targets include.
     rmg-negf-cpu   Non equilibrium greens function code cpu only
     rmg-negf-gpu   Non equilibrium greens function code with gpu support
 ```
-RMG GPU support at the present time is limited to Nvidia hardware and requires
-Pascal or later hardware.
+RMG GPU support is production ready on Nvidia and AMD hardware. Experimental
+support for Intel hardware is available but is not complete.
 
 
 # Top level directory structure
@@ -114,7 +114,7 @@ Pascal or later hardware.
   directory only has C bindings for the C++ class in RmgLib. Will eventually be deprecated.
 
 ```Gpufuncs/```
-  Cuda code.
+  Cuda and HIP code.
 
 ```XC/```
 XC_useLIBXC/
@@ -134,6 +134,9 @@ XC_useLIBXC/
 
 ```spglib/```
   Symmetry routines.
+
+```Tiled-MM/```
+  GPU blas routines that support tiling on AMD hardware.
 
 Examples/
   Various examples.

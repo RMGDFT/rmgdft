@@ -388,6 +388,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     int lm_index = 0;
     this->num_ldaU_orbitals = 0;
     this->atomic_wave_g.resize(this->num_atomic_waves);
+    this->r_atomic_wave_g.resize(boost::extents[this->num_atomic_waves][MAX_L+1][RADIAL_GVECS]);
     for (int ip = 0; ip < this->num_atomic_waves; ip++)
     {
 
@@ -395,6 +396,19 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         this->atomic_wave_g[ip] = new double[RADIAL_GVECS];
         RLogGridToGLogGrid(this->atomic_wave[ip], this->r, this->rab, this->atomic_wave_g[ip],
                 this->rg_points, this->atomic_wave_l[ip], bessel_rg);
+
+        for(int idx = 0; idx < this->rg_points; idx++)
+            work[idx] = this->atomic_wave[ip][idx] * this->r[idx];
+
+        // generate beta * x, beta * y, beta * z for stress calculation 
+        // equally, the beta * r will have the angular momentum +1
+        // l1 = llbeta[ip], l2 = 1 (for x, y, z)
+        // L = l1 + l2 ... |l1-l2|
+        for(int L = std::abs(this->atomic_wave_l[ip] - 1); L <= this->atomic_wave_l[ip] +1; L++)
+        {
+            RLogGridToGLogGrid(work, this->r, this->rab, this->r_atomic_wave_g[ip][L].origin(),
+                    this->rg_points, L, bessel_rg);
+        }
 
 
         // The range over which an atomic orbital is non-zero can vary widely so we

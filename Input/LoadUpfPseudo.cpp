@@ -10,7 +10,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 
 #include "const.h"
@@ -104,14 +104,14 @@ void LoadUpfPseudo(SPECIES *sp)
         else
             fq_pseudo_filename = fq_pseudo_filename + sp->pseudo_filename;
 
-        boost::filesystem::path pp_filepath(fq_pseudo_filename);
+        std::filesystem::path pp_filepath(fq_pseudo_filename);
 
         // Open on one pe and read entire file into a character buffer
         if(pct.imgpe == 0) 
         {
 
             // Check for file existence
-            if( !boost::filesystem::exists(pp_filepath) ) {
+            if( !std::filesystem::exists(pp_filepath) ) {
 
                 Msg = "Pseudopotential file " + fq_pseudo_filename + " does not exist.\n";
 

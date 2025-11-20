@@ -118,3 +118,11 @@
 
 “**Direct writing of heterostructures in single atomically precise graphene nanoribbons,**” C. Ma, Z. Xiao, J. Huang, L. Liang, W. Lu, K. Hong, B. G. Sumpter, J. Bernholc, A.-P. Li, Phys. Rev. Materials 3, 016001 (2019), https://journals.aps.org/prmaterials/abstract/10.1103/PhysRevMaterials.3.016001. 
 
+"**Mesh independence of the generalized Davidson algorithm,**" C. T. Kelley, J. Bernholc, E. Briggs, S. Hamilton, L. Lin, and C. Yang, J. Comp. Phys., 409, 109322 (2020), DOI: 10.1016/j.jcp.2020.109322.
+
+"**Large-scale phonon calculations using the real-space multigrid method,**" J. Zhang, Y. Cheng, W. Lu, E. Briggs, A. J. Ramirez-Cuesta, and J. Bernholc, J.  Chem. Theory Comput. 12, 6859 (2019), DOI: 10.1021/acs.jctc.9b00802.
+
+"**Local manifestations of thickness-dependent topology and axion edge state in topological magnet MnBi2Te4,**" F. Lüpke, A. D. Pham, Y. F. Zhao, L.-J. Zhou, W. Lu, E. Briggs, J. Bernholc, M. Kolmer, W. Ko, C.-Z. Chang, P. Ganesh, A.-P. Li, Phys. Rev. B 105, 035423 (2022), DOI: 10.1103/PhysRevB.105.035423.
+
+"**Ab initio simulations of metal contacts for graphene-based devices,**" H. Qin, W. Lu and J. Bernholc, J. Appl. Phys. 131, 214301 (2022), DOI: 10.1063/5.0091028.
+

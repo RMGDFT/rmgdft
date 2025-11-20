@@ -204,10 +204,10 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
         hipstat = hipblasZtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex *)dA, lda,
-                            (hipblasDoubleComplex *)dB, ldb,
-                            (hipblasDoubleComplex *)dB, ldb);
+                            (hipDoubleComplex *)&alpha,
+                            (hipDoubleComplex *)dA, lda,
+                            (hipDoubleComplex *)dB, ldb,
+                            (hipDoubleComplex *)dB, ldb);
         ProcessGpublasError(hipstat);
         RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZtrmm");
         if(!b_dev) hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>));

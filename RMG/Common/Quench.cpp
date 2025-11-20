@@ -454,6 +454,11 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     /* output final eigenvalues with occupations */
     OutputEigenvalues (Kptr, 0, ct.scf_steps);
     OutputDos(Kptr);
+    if(ct.LOPTICS)
+    {
+        EpsilonMatrix(Kptr);
+    }
+    
     rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
     // Output RMSdV for convergence analysis

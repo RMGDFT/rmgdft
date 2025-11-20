@@ -49,6 +49,7 @@
 
 #include "transition.h"
 #include "blas.h"
+#include "ortho.h"
 
 
 
@@ -103,6 +104,8 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
 #endif
     }
 
+    ortho<KpointType> Ortho(nstates, pbasis_noncoll);
+
 
     // Loop over blocks.
     for(auto &gap: gaps)
@@ -112,8 +115,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
         if(gaps.size() > 1)
         {
             RmgTimer RT2("6-BlockDiag: ortho");
-            DavidsonOrtho(gap.first, gap.second, pbasis_noncoll,
-                          this->orbital_storage, ct.davidson_2stage_ortho);
+            Ortho.orthogonalize(gap.first, gap.second, this->orbital_storage, ct.davidson_2stage_ortho);
         }
     }
 

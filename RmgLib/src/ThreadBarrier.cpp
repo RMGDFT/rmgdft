@@ -50,7 +50,7 @@ void Thread_barrier_t::wait_for_threads(bool spin)
     }
     else
     {
-        bbarrier.wait();
+        bbarrier.arrive_and_wait();
     }
 }
 

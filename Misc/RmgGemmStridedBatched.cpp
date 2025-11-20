@@ -206,10 +206,10 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
         hipstat = hipblasZgemmStridedBatched(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda, strideA,
-                            (hipblasDoubleComplex*)dB, ldb, strideB,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc, strideC, batchCount );
+                            (hipDoubleComplex *)&alpha,
+                            (hipDoubleComplex*)dA, lda, strideA,
+                            (hipDoubleComplex*)dB, ldb, strideB,
+                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc, strideC, batchCount );
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);

@@ -33,17 +33,17 @@
 #ifdef __cplusplus
 
 #include <thread>
+#include <barrier>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-#include <boost/thread.hpp>
 
 class Thread_barrier_t {
 private:
     unsigned const count;
     std::atomic<unsigned> spaces;
     std::atomic<unsigned> generation;
-    boost::barrier bbarrier;
+    std::barrier<> bbarrier;
 public:
     Thread_barrier_t(unsigned ncount) :
         count(ncount), spaces(ncount), generation(0), bbarrier(ncount){}

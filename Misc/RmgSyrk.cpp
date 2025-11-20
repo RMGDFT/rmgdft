@@ -186,9 +186,9 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
         hipstat = hipblasZsyrk(ct.hipblas_handle, fill_mode, hip_trans, n, k,
-                            (hipblasDoubleComplex *)&alpha,
-                            (hipblasDoubleComplex*)dA, lda,
-                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+                            (hipDoubleComplex *)&alpha,
+                            (hipDoubleComplex*)dA, lda,
+                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc );
         ProcessGpublasError(hipstat);
         RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZsyrkx");
         if(!c_dev) hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
