@@ -283,8 +283,9 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     std::fill(pdos_y.origin(), pdos_y.origin() + factor * ct.E_POINTS * ny_grid, 0.0);
     std::fill(pdos_z.origin(), pdos_z.origin() + factor * ct.E_POINTS * nz_grid, 0.0);
 
+    double Ef = ct.efermi * Ha_eV;
     for(int ie = pct.imgpe; ie < ct.E_POINTS; ie++) {
-        double energy = ct.Emin + ie * delta_e;
+        double energy = ct.Emin + ie * delta_e + Ef;
         for(int ik = 0; ik < num_q; ik++) {
             int ik_irr = ct.klist.k_map_index[ik];
             for(int st = 0; st < nstates; st++){
