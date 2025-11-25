@@ -71,7 +71,7 @@ void OutputDos (Kpoint<KpointType> **Kptr)
     }
     if(ct.pdos_flag )
     {
-        Pdos<KpointType> pdos(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates,
+        Pdos<KpointType> pdos(*Kptr[0]->G, *Kptr[0]->L, std::string(ct.outfile) + "_nodist_", Kptr[0]->nstates,
                 Kptr[0]->orbital_storage, Kptr);
         pdos.Pdos_calc(Kptr, eigs);
 
