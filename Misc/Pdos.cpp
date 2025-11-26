@@ -195,7 +195,8 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     int num_q = ct.klist.num_k_all;
 
     size_t length = nstates * pbasis_noncoll * sizeof(T);
-    T *psi_k = (T *)RmgMallocHost(length);
+    T *psi_k_read = (T *)RmgMallocHost(length);
+    T *psi_k;
 
     //  total rho projected in x,y,z direction
     // magnatic rho projected in x, y, z direction
@@ -218,7 +219,23 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         int isyma = std::abs(isym) -1;
 
         //    RmgTimer *RT1 = new RmgTimer("8-Pdos: read and rotate");
-        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        if(ik == ik_irr)
+        {
+            int ikk = ik - pct.kstart;
+            if(ikk >= 0 && ikk < ct.num_kpts_pe)
+            {
+                psi_k = Kptr[ik]->orbital_storage;
+            }
+            else
+            {
+                continue;
+            }
+        }
+        else
+        {
+            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k_read);
+            psi_k = psi_k_read;
+        }
         //    delete RT1;
 
         for(int st = 0; st < nstates; st++) {
