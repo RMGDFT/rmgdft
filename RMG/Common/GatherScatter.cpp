@@ -43,9 +43,11 @@ template void GatherPsi<double, double>(BaseGrid *, int, int, double *, double *
 template void GatherPsi<std::complex<double>, std::complex<float> >(BaseGrid *, int, int, std::complex<double> *, std::complex<float> *, int);
 template void GatherPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
 template void ScatterPsi<float, double>(BaseGrid *, int, int, float *, double *, int);
+template void ScatterPsi<float, float>(BaseGrid *, int, int, float *, float *, int);
 template void ScatterPsi<double, double>(BaseGrid *, int, int, double *, double *, int);
 template void ScatterPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
 template void ScatterPsi<std::complex<float>, std::complex<double> >(BaseGrid *, int, int, std::complex<float> *, std::complex<double> *, int);
+template void ScatterPsi<std::complex<float>, std::complex<float> >(BaseGrid *, int, int, std::complex<float> *, std::complex<float> *, int);
 template void GatherGrid<double>(BaseGrid *, int, double *, double *);
 template void GatherGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
 template void GatherEigs<double>(Kpoint<double> *);

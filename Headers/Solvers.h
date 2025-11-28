@@ -35,8 +35,18 @@
 template <typename KpointType, typename CalcType>
 double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int istate, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv, bool potential_acceleration);
 
+template <typename KpointType, typename CalcType>
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int istate, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv, bool potential_acceleration);
+
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi);
+
+template <typename KpointType>
+void ApplyBlockedHamiltonian(Kpoint<KpointType> *kptr, KpointType *h_psi, double *vtot_psi, double *vxc_psi);
+
+template <typename OrbitalType, typename CalcType> void ApplySubdiagHamiltonian (Kpoint<OrbitalType> *kptr,
+State<OrbitalType> * sp, double * vtot_psi, double *vxc_psi, OrbitalType *nv, OrbitalType *ns);
+
 
 template <typename OrbitalType>
 void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, 

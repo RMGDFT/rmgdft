@@ -1,5 +1,7 @@
 add_library (RMG_Common
 #GetFdFactor.cpp
+ApplySubdiagHamiltonian.cpp 
+ApplyBlockedHamiltonian.cpp
 BlockDiag.cpp
 diis.cpp
 compute_vxc.cpp
