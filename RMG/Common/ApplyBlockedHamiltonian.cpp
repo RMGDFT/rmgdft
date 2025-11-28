@@ -175,16 +175,6 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
 
 }
 
-template <typename KpointType>
-void CoalescedHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int istate, KpointType * __restrict__ psi, KpointType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv, bool potential_acceleration)
-{
-    int cfac = 1;
-    if(ct.coalesce_states) cfac = pct.coalesce_factor;
-    // Copy double precision psi into correct precison array
-//    GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t, pct.coalesce_factor);
-
-
-}
 
 template void ApplyBlockedHamiltonian (Kpoint<double> *kptr, int first, int N, int bs, double *h_psi, double *vtot_psi, double *vxc_psi);
 template void ApplyBlockedHamiltonian(Kpoint<double> *kptr, double *h_psi, double *vtot_psi, double *vxc_psi);
