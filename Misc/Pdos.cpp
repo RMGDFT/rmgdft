@@ -93,9 +93,14 @@ template <class T> Pdos<T>::Pdos(
 
     std::vector<double> occs;
     occs.resize(nstates, 1.0);
-    Exx = new Exxbase<T>(G, G, L, wavefile, nstates, occs.data(), psi, EXX_LOCAL_FFT);
     RmgTimer *RT1 = new RmgTimer("8-Pdos: writesingle file");
-    Exx->WriteWfsToSingleFile();
+    std::vector<bool> exclude_bands;
+    exclude_bands.resize(nstates, false);
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        int kpt_global = kpt + pct.kstart;
+        Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, wavefile);
+    }
+
     MPI_Barrier(MPI_COMM_WORLD);
     delete RT1;
 
@@ -128,8 +133,8 @@ template <class T> void Pdos<T>::ReadRotatePsi(int ikindex, int isym, int isyma,
 
                 if(ct.is_use_symmetry)
                 {
-                symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
-                        ix_g, iy_g, iz_g, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                    symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
+                            ix_g, iy_g, iz_g, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
                 }
                 else
                 {
@@ -137,7 +142,7 @@ template <class T> void Pdos<T>::ReadRotatePsi(int ikindex, int isym, int isyma,
                     iyy = iy_g;
                     izz = iz_g;
                 }
-       
+
                 for(int st = 0; st < nstates; st++)
                 {
                     if(ct.noncoll) 
@@ -190,10 +195,11 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     int num_q = ct.klist.num_k_all;
 
     size_t length = nstates * pbasis_noncoll * sizeof(T);
-    T *psi_k = (T *)RmgMallocHost(length);
+    T *psi_k_read = (T *)RmgMallocHost(length);
+    T *psi_k;
 
-//  total rho projected in x,y,z direction
-// magnatic rho projected in x, y, z direction
+    //  total rho projected in x,y,z direction
+    // magnatic rho projected in x, y, z direction
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double_4d_array rhop_x, rhop_y, rhop_z;
     rhop_x.resize(boost::extents[factor][num_q][nstates][nx_grid]);
@@ -212,9 +218,25 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         int isym = ct.klist.k_map_symm[ik];
         int isyma = std::abs(isym) -1;
 
-    //    RmgTimer *RT1 = new RmgTimer("8-Pdos: read and rotate");
-        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
-    //    delete RT1;
+        //    RmgTimer *RT1 = new RmgTimer("8-Pdos: read and rotate");
+        if(ik == ik_irr)
+        {
+            int ikk = ik - pct.kstart;
+            if(ikk >= 0 && ikk < ct.num_kpts_pe)
+            {
+                psi_k = Kptr[ik]->orbital_storage;
+            }
+            else
+            {
+                continue;
+            }
+        }
+        else
+        {
+            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k_read);
+            psi_k = psi_k_read;
+        }
+        //    delete RT1;
 
         for(int st = 0; st < nstates; st++) {
 
@@ -230,7 +252,7 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
                     rho_temp[2][idx] = std::imag(psiud);
                     rho_temp[3][idx] = psiup - psidn;
                 }
-                
+
             }
 
             for(int is = 0; is < factor; is++){
@@ -283,8 +305,9 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     std::fill(pdos_y.origin(), pdos_y.origin() + factor * ct.E_POINTS * ny_grid, 0.0);
     std::fill(pdos_z.origin(), pdos_z.origin() + factor * ct.E_POINTS * nz_grid, 0.0);
 
+    double Ef = ct.efermi * Ha_eV;
     for(int ie = pct.imgpe; ie < ct.E_POINTS; ie++) {
-        double energy = ct.Emin + ie * delta_e;
+        double energy = ct.Emin + ie * delta_e + Ef;
         for(int ik = 0; ik < num_q; ik++) {
             int ik_irr = ct.klist.k_map_index[ik];
             for(int st = 0; st < nstates; st++){
@@ -404,7 +427,7 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         }
     }
 
-   // RmgFreeHost(psi_k);
+    // RmgFreeHost(psi_k);
 }
 
 template  void Ldos_calc(Kpoint<double> **Kptr, std::vector<double> eigs, double Ef);
@@ -426,7 +449,7 @@ template <typename T> void Ldos_calc(Kpoint<T> **Kptr, std::vector<double> eigs,
     int pbasis = px0_grid * py0_grid * pz0_grid;
 
     T *psi_k ;
-   // T *psi_k = (T *)RmgMallocHost(length);
+    // T *psi_k = (T *)RmgMallocHost(length);
     int ix0 = ct.ldos_start_grid[0];
     int iy0 = ct.ldos_start_grid[1];
     int iz0 = ct.ldos_start_grid[2];
