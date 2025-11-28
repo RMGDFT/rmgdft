@@ -22,6 +22,7 @@ typedef struct
     int extratag1;
     int extratag2;
     int extratag3;
+    int extratag4;
 
     // vcycle during multigrid iterations
     int vcycle;

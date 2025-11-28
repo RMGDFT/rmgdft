@@ -221,9 +221,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                         thread_control.ns = (void *)&this->ns[(first+sindex) * pbasis_noncoll];  // ns is not blocked!
                         thread_control.basetag = this->Kstates[first + sindex].istate;
                         thread_control.extratag1 = active_threads;
-                        thread_control.extratag2 = bofs + st1;
                         thread_control.extratag2 = first + bofs + st1;
                         thread_control.extratag3 = st1 + ist + istart;
+                        thread_control.extratag4 = potential_acceleration;
                     }
                     QueueThreadTask(ist, thread_control);
                 }

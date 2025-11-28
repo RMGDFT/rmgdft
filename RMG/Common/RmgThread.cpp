@@ -238,12 +238,12 @@ ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns);
             case HYBRID_APPLY_HAMILTONIAN:
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
-                    ApplyHamiltonian<double> (kptr_d, (State<double> *)ss.sp, ss.istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, (double *)ss.nv, ss.extratag4, ss.extratag3);
+                    ApplyHamiltonian<double> (kptr_d, (State<double> *)ss.sp, ss.istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, (double *)ss.nv, ss.extratag4);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
                     ApplyHamiltonian<std::complex<double> > (kptr_c, (State<std::complex<double>> *)ss.sp, ss.istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot, ss.vxc_psi, 
-                                          (std::complex<double> *)ss.nv, ss.extratag4, ss.extratag3);
+                                          (std::complex<double> *)ss.nv, ss.extratag4);
                 } 
                 break;
             case HYBRID_DAV_PRECONDITIONER:
