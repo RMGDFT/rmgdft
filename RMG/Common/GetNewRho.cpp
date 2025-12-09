@@ -296,10 +296,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         if(cfac > 1)
             GlobalSums(&sum1, 1, pct.coalesced_grid_comm);
         else
-{
-printf("HERE\n");
             GlobalSums(&sum1, 1, pct.grid_comm);
-}
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
