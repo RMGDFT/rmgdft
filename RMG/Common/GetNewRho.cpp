@@ -143,6 +143,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
+    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
     int my_pe_x, my_pe_y, my_pe_z;
     Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
     int my_pe_offset = my_pe_x % cfac;
@@ -256,6 +257,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
+    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
     int my_pe_x, my_pe_y, my_pe_z;
     Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
     int my_pe_offset = my_pe_x % cfac;
@@ -269,7 +271,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
     else
     {
-        if(half_dimx >= 5)
+        if(cfac == 1)
         {
             P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
         }
@@ -291,7 +293,13 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     {
         sum1 = 0.0;
         for (int idx = 0; idx < cfac*FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
-        GlobalSums(&sum1, 1, pct.coalesced_grid_comm);
+        if(cfac > 1)
+            GlobalSums(&sum1, 1, pct.coalesced_grid_comm);
+        else
+{
+printf("HERE\n");
+            GlobalSums(&sum1, 1, pct.grid_comm);
+}
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
