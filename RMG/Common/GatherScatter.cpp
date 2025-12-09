@@ -50,6 +50,8 @@ template void ScatterPsi<std::complex<float>, std::complex<double> >(BaseGrid *,
 template void ScatterPsi<std::complex<float>, std::complex<float> >(BaseGrid *, int, int, std::complex<float> *, std::complex<float> *, int);
 template void GatherGrid<double>(BaseGrid *, int, double *, double *);
 template void GatherGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
+template void ScatterGrid<double>(BaseGrid *, int, double *, double *);
+template void ScatterGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
 template void GatherEigs<double>(Kpoint<double> *);
 template void GatherEigs<std::complex<double>> (Kpoint<std::complex<double>> *);
 
@@ -225,7 +227,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
     {
         for(int i=0;i < factor;i++)
         {
-            int remote_istate = base_istate + i * active_threads + istate % active_threads;
+            //int remote_istate = base_istate + i * active_threads + istate % active_threads;
             if(i != pe_offset)
             {
                 MPI_Wait(&qitems_s[i].req, MPI_STATUS_IGNORE);
@@ -267,6 +269,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int
     int active_threads = 1;
     if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
     int base_istate = s->extratag2;
+
     //CalcType *rbuf = new CalcType[n];
     CalcType *sbuf = (CalcType *)bufptr_s[tid];
     CalcType *rbuf = (CalcType *)bufptr_r[tid];
@@ -350,7 +353,6 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
         }
     }
 
-
     if(ct.mpi_queue_mode)
     {
         int items_completed = factor - 1;
@@ -391,6 +393,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
             }
         }
     }
+
     //delete [] rbuf;
 }
 
@@ -420,6 +423,99 @@ void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
     if(typeid(DataType) == typeid(std::complex<double>)) length *= 2;
     MPI_Allreduce(MPI_IN_PLACE, B, length, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
 
+}
+#if 0
+template <typename DataType>
+void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
+{
+    if(!ct.coalesce_states || (pct.coalesce_factor == 1))
+    {
+        for(int i=0;i < n;i++) B[i] = A[i];
+        return;
+    }
+
+    int my_pe_x, pe_y, pe_z;
+    G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
+    int pe_offset = my_pe_x % pct.coalesce_factor;
+    int factor = 1;
+    if(typeid(DataType) == typeid(std::complex<double>)) factor = 2;
+    int length = pct.coalesce_factor * n;
+
+    std::vector<int> recvcounts(pct.coalesce_factor, n*factor);
+    std::vector<int> offsets(pct.coalesce_factor);
+    for(int i=0;i < pct.coalesce_factor;i++) offsets[i] = i*n*factor;
+    MPI_Allgatherv(A, factor*n, MPI_DOUBLE, B,
+                     recvcounts.data(), offsets.data(),
+                     MPI_DOUBLE, pct.coalesced_local_comm);
+}
+#endif
+// This is used to scatter the coalesced charge density from a non-threaded region.
+// n = non coalesced matrix size
+// A = array of pct.coalesce_factor non coalesced matrices
+// B = coalesced matrix (size = pct.coalesce_factor*n)
+template <typename DataType>
+void ScatterGrid(BaseGrid *G, int n, DataType *A, DataType *B)
+{
+    if(!ct.coalesce_states || (pct.coalesce_factor == 1))
+    {
+        for(int i=0;i < n;i++) A[i] = B[i];
+        return;
+    }
+
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int my_pe_x, pe_y, pe_z;
+    G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
+    int pe_offset = my_pe_x % pct.coalesce_factor;
+    int cfac = pct.coalesce_factor;
+    int chunksize = n / cfac;
+    int buflen = sizeof(DataType)*chunksize;
+
+    std::vector<MPI_Request> rreqs(cfac);
+    std::vector<MPI_Request> sreqs(cfac);
+    std::vector<MPI_Comm> comms(cfac);
+    std::vector<MPI_Comm> commr(cfac);
+    // Prepost recvs
+    for(int i=0;i < cfac;i++)
+    {
+        if(i != pe_offset)
+        {
+            comms[i] = T->get_unique_coalesced_comm(i);
+            int tag = (i<<5);
+            int source = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            MPI_Irecv(&A[i*chunksize], buflen, MPI_BYTE, source, tag, comms[i], &rreqs[i]);
+        }
+        else
+        {
+            for(int j=0;j < chunksize;j++) A[j+i*chunksize] = B[j+i*chunksize];
+        }
+    }
+
+    // Now the sends
+    for(int i=0;i < cfac;i++)
+    {
+        if(i != pe_offset)
+        {
+            commr[i] = T->get_unique_coalesced_comm(pe_offset);
+            int tag = (pe_offset<<5);
+            int dest = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            MPI_Isend(&B[i*chunksize], buflen, MPI_BYTE, dest, tag, commr[i], &sreqs[i]);
+        }
+    }
+
+    for(int i=0;i < cfac;i++)
+    {
+        if(i != pe_offset)
+        {
+            MPI_Wait(&rreqs[i], MPI_STATUS_IGNORE);
+        }
+    }
+    for(int i=0;i < cfac;i++)
+    {
+        if(i != pe_offset)
+        {
+            MPI_Wait(&sreqs[i], MPI_STATUS_IGNORE);
+        }
+    }
 }
 
 // Called after MgridSubspace has finished in order to sync eigenvalues to PE 0.

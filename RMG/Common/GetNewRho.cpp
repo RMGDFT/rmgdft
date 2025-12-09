@@ -43,8 +43,8 @@
 #include "rmgthreads.h"
 #include "RmgThread.h"
 #include "Symmetry.h"
-#include "Voronoi.h"
 #include "Functional.h"
+#include "GatherScatter.h"
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -55,8 +55,8 @@ template void GetNewRhoPre<std::complex<double> >(Kpoint<std::complex<double>> *
 template void GetNewRhoPost<double>(Kpoint<double> **, double *);
 template void GetNewRhoPost<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
 
-template void GetNewRhoOne<double>(State<double> *, Prolong *, double *, double);
-template void GetNewRhoOne<std::complex<double>>(State<std::complex<double>> *, Prolong *, double *, double);
+template void GetNewRhoOne<double>(Kpoint<double> *, State<double> *, Prolong *, double *, double);
+template void GetNewRhoOne<std::complex<double>>(Kpoint<std::complex<double>> *, State<std::complex<double>> *, Prolong *, double *, double);
 
 
 
@@ -141,10 +141,18 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int cfac = 1;
+    if(ct.coalesce_states) cfac = pct.coalesce_factor;
+    int my_pe_x, my_pe_y, my_pe_z;
+    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % cfac;
+
+
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
-    double *work = new double[FP0_BASIS * factor]();
+    int cstride = FP0_BASIS * factor;
+    double *work = new double[cfac * cstride]();
 
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--; 
@@ -154,22 +162,28 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
+        Rmg_T->set_coalesce_factor(cfac);
 
         /* Loop over states and accumulate charge */
-        for(int st1=0;st1 < istop;st1+=active_threads)
+        for(int st1=0;st1 < istop;st1+=active_threads*cfac)
         {
 
             SCF_THREAD_CONTROL thread_control;
+            int istart = my_pe_offset*active_threads;
 
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = HYBRID_GET_RHO;
                 double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
-                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
+                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist+istart];
                 thread_control.p2 = (void *)&P;
                 thread_control.p3 = (void *)work;
+                thread_control.p4 = (void *)Kpts[kpt];
+                thread_control.extratag1 = active_threads;
+                thread_control.extratag2 = st1;
+
                 thread_control.fd_diag = scale;
-                thread_control.basetag = st1 + ist;
+                thread_control.basetag = st1 + ist + istart;
                 QueueThreadTask(ist, thread_control);
             }
             // Thread tasks are set up so wake them
@@ -177,14 +191,34 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
         } 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+        Rmg_T->set_coalesce_factor(1);
 
         for(int st1=istop;st1 < nstates;st1++)
         {
             double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
-            GetNewRhoOne(&Kpts[kpt]->Kstates[st1], &P, work, scale);
+            GetNewRhoOne(Kpts[kpt], &Kpts[kpt]->Kstates[st1], &P, work, scale);
         }
         MPI_Barrier(pct.grid_comm);
     }                           /*end for kpt */
+
+    // If coalescing enabled then each MPI process contains the
+    // charge density from a subset of the orbitals. But this
+    // subset also spans a larger domain so we have to combine
+    // the domains to get the contribution from all orbitals.
+    if(cfac > 1)
+    {
+        double *w0 = new double[cfac*cstride]();
+        ScatterGrid(Rmg_G, cfac*FP0_BASIS, w0, work);
+        std::fill(work, work+FP0_BASIS, 0.0);
+        for(int i=0;i < cfac;i++)
+        {
+            for(int j=0;j < cstride;j++)
+            {
+                work[j] += w0[i*cstride+j];
+            }
+        }
+        delete [] w0;
+    }
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
@@ -205,13 +239,12 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
 std::mutex rhomutex;
 
-template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolong *P, double *work, double scale)
+template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, Prolong *P, double *work, double scale)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
     if(scale < 1.0e-10) return;              // No need to include unoccupied orbitals
-
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
@@ -221,16 +254,35 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
+    int cfac = 1;
+    if(ct.coalesce_states) cfac = pct.coalesce_factor;
+    int my_pe_x, my_pe_y, my_pe_z;
+    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % cfac;
 
 
     OrbitalType *psi = sp->psi;
     std::complex<double> psiud;
-    OrbitalType *psi_f = new OrbitalType[ct.noncoll_factor * FP0_BASIS]();
+    OrbitalType *psi_f = new OrbitalType[cfac*ct.noncoll_factor * FP0_BASIS]();
 
     if(ct.prolong_order == 0)
         FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
     else
-        P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    {
+        if(half_dimx >= 5)
+        {
+            P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        }
+        else
+        {
+            OrbitalType *work1 = new OrbitalType[cfac * ct.noncoll_factor * P0_BASIS]();
+            OrbitalType *work2 = new OrbitalType[cfac * ct.noncoll_factor * FP0_BASIS]();
+            GatherPsi(Rmg_G, cfac*P0_BASIS, sp->istate, kptr->orbital_storage, work1, cfac);
+            P->prolong(psi_f, work1, cfac*dimx, dimy, dimz, cfac*half_dimx, half_dimy, half_dimz);
+            delete [] work2;
+            delete [] work1;
+        }
+    }
 
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
@@ -240,13 +292,13 @@ template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolon
     if(ct.norm_conserving_pp)
     {
         sum1 = 0.0;
-        for (int idx = 0; idx < FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
-        GlobalSums(&sum1, 1, pct.grid_comm);
+        for (int idx = 0; idx < cfac*FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
+        GlobalSums(&sum1, 1, pct.coalesced_grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
     rhomutex.lock();
-    for (int idx = 0; idx < FP0_BASIS; idx++)
+    for (int idx = 0; idx < cfac*FP0_BASIS; idx++)
     {
         work[idx] += sum1 * scale * std::norm(psi_f[idx]);
         if(ct.noncoll)

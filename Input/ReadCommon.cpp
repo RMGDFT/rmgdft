@@ -1025,10 +1025,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
-    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 16, 4,
+    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 24, 4,
             CHECK_AND_FIX, OPTIONAL,
             "Grid coalescing factor.",
-            "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
+            "coalesce_factor must lie in the range (1,24). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("charge_density_mixing", &lc.init_mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,

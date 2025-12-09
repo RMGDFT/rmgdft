@@ -77,7 +77,6 @@ void ApplySubdiagHamiltonian (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp
     CalcType *work1_t = (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
     CalcType *tmp_psi_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *hr0_t  =  (CalcType *)p->ordered_malloc(4);pool_blocks+=4;
-    CalcType *rmmres_t = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
     // Copy double precision psi into correct precison array
     GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t, pct.coalesce_factor);

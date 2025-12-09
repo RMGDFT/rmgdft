@@ -10,6 +10,7 @@
 #include "Lattice.h"
 #include "transition.h"
 #include "GlobalSums.h"
+#include "GatherScatter.h"
 
 /*
    This routine is used to compute adaptive factors for the
@@ -136,15 +137,25 @@ void GetFdFactor(int kpt)
     int pxdim = get_PX0_GRID();
     int pydim = get_PY0_GRID();
     int pzdim = get_PZ0_GRID();
+    double gridhx = Rmg_G->get_hxgrid(1);
+    double gridhy = Rmg_G->get_hygrid(1);
+    double gridhz = Rmg_G->get_hzgrid(1);
+    int coalesce_factor = 1;
+    if(ct.coalesce_states) coalesce_factor = pct.coalesce_factor;
+    int my_pe_x, my_pe_y, my_pe_z;
+    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % coalesce_factor;
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     double *orbital = new double[pbasis];
+    double *corbital = new double[coalesce_factor*pbasis];
     std::vector<double> cvals;
     std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
-    double *work = new double[pbasis];
-    double *pwork1 = new double[fpbasis];
-    double *pwork2 = new double[fpbasis];
+    double *work = new double[coalesce_factor*pbasis];
+    double *pwork1 = new double[ratio*coalesce_factor*fpbasis]();
+    double *pwork2 = new double[ratio*coalesce_factor*fpbasis]();
+    double *pwork3 = new double[ratio*coalesce_factor*fpbasis]();
     double vect[3], nlcrds[3], kvec[3];
 
     /* Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -231,19 +242,29 @@ void GetFdFactor(int kpt)
             {
 
                 SetCfacs(FD.cfac, c2);
-                ApplyAOperator (orbital, work, kvec);
-                double fd_ke = ComputeKineticEnergy(orbital, work, pbasis);
+                GatherGrid(Rmg_G, pbasis, orbital, corbital);
+                Rmg_T->set_coalesce_factor(coalesce_factor);
+                ApplyAOperator<double>(corbital, work, pxdim*coalesce_factor, pydim, pzdim,
+                                       gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kvec);
+
+                // We divide here by the coalesce factor since the sum gets multiplied by it
+                // when coalesce factor is > 1.
+                double fd_ke = ComputeKineticEnergy(corbital, work, coalesce_factor*pbasis) /
+                               (double)coalesce_factor;
                 if(ct.verbose && pct.gridpe == 0) 
                     fprintf(ct.logfile, "FFT-FD  %e   %e   %e   %e\n",c2, fft_ke, fd_ke, fft_ke - fd_ke);
                 cvals.push_back(c2);
                 yarr1.push_back((fft_ke - fd_ke)*(fft_ke - fd_ke));
 
                 Prolong P(ratio, ct.prolong_order, c2, *Rmg_T,  Rmg_L, *Rmg_G);
-                P.prolong(pwork2, orbital, ratio*pxdim, ratio*pydim, ratio*pzdim, 
-                              pxdim, pydim, pzdim);
+                P.prolong(pwork3, corbital, coalesce_factor*ratio*pxdim, ratio*pydim, ratio*pzdim, 
+                              coalesce_factor*pxdim, pydim, pzdim);
+                for(int i=0;i<fpbasis;i++)pwork2[i] = pwork3[i+my_pe_offset*fpbasis];
+                Rmg_T->set_coalesce_factor(1);
 
                 double snorm_f = 0.0;
-                for(int idx=0;idx < fpbasis;idx++) snorm_f += std::real(pwork2[idx] * std::conj(pwork2[idx]));
+                for(int idx=0;idx < fpbasis;idx++)
+                    snorm_f += std::real(pwork2[idx] * std::conj(pwork2[idx]));
                 GlobalSums(&snorm_f, 1, pct.grid_comm);
                 snorm_f *= get_vel_f();
                 snorm_f = 1.0 / sqrt(snorm_f);
@@ -251,7 +272,7 @@ void GetFdFactor(int kpt)
 
                 double rhogood = ComputeRhoGoodness(pwork1, pwork2, fpbasis);
                 if(ct.verbose && pct.gridpe==0 && pct.spinpe==0 && kpt==0)
-                    printf("rhogood  %14.8f   %14.8e\n",c2, rhogood);
+                    printf("rhogood  %14.8f   %14.8e  %14.8f\n",c2, rhogood, snorm_f);
                 yarr2.push_back(rhogood);
                 c2 += dx; 
             }
@@ -326,11 +347,13 @@ void GetFdFactor(int kpt)
         }
     }
 
+    delete [] pwork3;
     delete [] pwork2;
     delete [] pwork1;
     delete [] work;
     fftw_free (gbptr);
     fftw_free (beptr);
+    delete [] corbital;
     delete [] orbital;
     delete [] fftw_phase;
 }
