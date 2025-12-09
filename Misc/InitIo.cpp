@@ -399,8 +399,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     // We do not (currently) coalesce outside of the multigrid solver so the number of grid points on a PE in any
     // coordinate direction (non-coalesced) must be greater than or equal to the number of points used in the global FD routines.
+    int cfac = 1;
+    if(ct.coalesce_states && pct.coalesce_factor > 1) cfac = pct.coalesce_factor;
     int fd_check_err = false;
-    PX0_GRID = Rmg_G->get_PX0_GRID(1);
+    PX0_GRID = cfac*Rmg_G->get_PX0_GRID(1);
     if(PX0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
     if(PY0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
     if(PZ0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;

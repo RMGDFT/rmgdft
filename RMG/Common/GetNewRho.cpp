@@ -276,10 +276,8 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         else
         {
             OrbitalType *work1 = new OrbitalType[cfac * ct.noncoll_factor * P0_BASIS]();
-            OrbitalType *work2 = new OrbitalType[cfac * ct.noncoll_factor * FP0_BASIS]();
             GatherPsi(Rmg_G, cfac*P0_BASIS, sp->istate, kptr->orbital_storage, work1, cfac);
             P->prolong(psi_f, work1, cfac*dimx, dimy, dimz, cfac*half_dimx, half_dimy, half_dimz);
-            delete [] work2;
             delete [] work1;
         }
     }
