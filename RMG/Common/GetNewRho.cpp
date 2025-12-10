@@ -175,7 +175,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = HYBRID_GET_RHO;
-                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                double scale = Kpts[kpt]->kp.kweight;
                 thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist+istart];
                 thread_control.p2 = (void *)&P;
                 thread_control.p3 = (void *)work;
@@ -196,7 +196,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
         for(int st1=istop;st1 < nstates;st1++)
         {
-            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
+            double scale = Kpts[kpt]->kp.kweight;
             GetNewRhoOne(Kpts[kpt], &Kpts[kpt]->Kstates[st1], &P, work, scale);
         }
         MPI_Barrier(pct.grid_comm);
@@ -245,7 +245,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
 
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
-    if(scale < 1.0e-10) return;              // No need to include unoccupied orbitals
+    scale = scale * sp->occupation[0];
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
@@ -507,6 +507,14 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     int half_dimx = rhop.dimx / 2;
     int half_dimy = rhop.dimy / 2;
     int half_dimz = rhop.dimz / 2;
+
+    int cfac = 1;
+    if(ct.coalesce_states) cfac = pct.coalesce_factor;
+    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
+    int my_pe_x, my_pe_y, my_pe_z;
+    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % cfac;
+
 
     int nstates = Kpts[0]->nstates;
     Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
