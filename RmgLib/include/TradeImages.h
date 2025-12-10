@@ -47,7 +47,7 @@
 #define FULL_TRADE 1
 #define CENTRAL_TRADE 2
 
-#define MAX_CFACTOR 16
+#define MAX_CFACTOR 24
 
 #if __cplusplus
 
