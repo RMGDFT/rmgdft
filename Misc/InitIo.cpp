@@ -396,6 +396,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
     }
 
+    // For now forces via finite differencing require this so force use of FFT.
+    if(Rmg_G->get_PX0_GRID(1) < ct.kohn_sham_fd_order/2) ct.force_grad_order = 0;
 
     // We do not (currently) coalesce outside of the multigrid solver so the number of grid points on a PE in any
     // coordinate direction (non-coalesced) must be greater than or equal to the number of points used in the global FD routines.
