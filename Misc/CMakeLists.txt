@@ -1,4 +1,5 @@
 add_library (Misc
+GatherScatter.cpp
 GpuCpuWraper.cpp
 DipoleCorrection.cpp
 GridObject.cpp

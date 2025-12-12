@@ -37,7 +37,6 @@ ReadData.cpp
 Read_nsocc.cpp
 ReadSerialData.cpp
 AssignWeight.cpp
-GatherScatter.cpp
 GetDelocalizedWeight.cpp
 GetLocalizedWeight.cpp
 ReinitIonicPotentials.cpp
