@@ -28,6 +28,11 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
 double alpha, double *A, int ia, int ja, int *desca,
 double *B, int ib, int jb, int *descb, double beta,
 double *C, int ic, int jc, int *descc);
+void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
+std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,
+std::complex<double> *B, int ib, int jb, int *descb, std::complex<double> beta,
+std::complex<double> *C, int ic, int jc, int *descc);
+
 void my_sync_device();
 
 
