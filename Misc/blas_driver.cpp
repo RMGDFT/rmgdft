@@ -40,37 +40,53 @@ void my_sync_device()
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
+    if(!ct.tddft_gpu)
+    {
+        zcopy (&n, A, &ia, B, &ib);
+    }
+    else
+    {
 #if CUDA_ENABLED 
     cublasZcopy (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #elif HIP_ENABLED
     hipblasZcopy (ct.gpublas_handle, n, (hipDoubleComplex *)A, ia, (hipDoubleComplex *)B, ib);
-#else
-    zcopy (&n, A, &ia, B, &ib);
 #endif
+    }
 }
 
 
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
+    if(!ct.tddft_gpu)
+    {
+        zaxpy (&n, &alpha, A, &ia, B, &ib);
+    }
+    else
+    {
+
 #if CUDA_ENABLED 
     cublasZaxpy (ct.gpublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #elif HIP_ENABLED
     hipblasZaxpy (ct.gpublas_handle, n, (hipDoubleComplex *)&alpha, (hipDoubleComplex *)A, ia, (hipDoubleComplex *)B, ib);
-#else
-    zaxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
+    }
 }
 
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
+    if(!ct.tddft_gpu)
+    {
+        *sum = dzasum(&n, (double *)A, &ia);
+    }
+    else
+    {
 #if CUDA_ENABLED 
     cublasDzasum (ct.gpublas_handle, n, (cuDoubleComplex *)A, ia, sum);
 #elif HIP_ENABLED
     hipblasDzasum (ct.gpublas_handle, n, (hipDoubleComplex *)A, ia, sum);
-#else
-    *sum = dzasum(&n, (double *)A, &ia);
 #endif
+    }
 }
 
 
@@ -190,17 +206,6 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
         exit (0);
     }
 
-#if CUDA_ENABLED || HIP_ENABLED
-
-    if(nprow*npcol != 1)
-    {
-        printf ("GPU ENABLED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
-        fflush (NULL);
-        exit (0);
-    }
-
-#endif
-
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
     {
@@ -233,17 +238,6 @@ void zgemm_driver (char *transa, char *transb, int m, int n, int k,
         fflush (NULL);
         exit (0);
     }
-
-#if CUDA_ENABLED || HIP_ENABLED
-
-    if(nprow*npcol != 1)
-    {
-        printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
-        fflush (NULL);
-        exit (0);
-    }
-
-#endif
 
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  
