@@ -90,7 +90,7 @@ public:
     template <typename T, int ord, int htype>
     void prolong_hex_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     static inline std::vector<void *> abufs;
     static inline std::vector<void *> hbufs;
     static inline std::vector<double *> rbufs;

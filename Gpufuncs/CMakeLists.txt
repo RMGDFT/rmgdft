@@ -62,10 +62,12 @@ if ( NOT MIN_ARCH )
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr")
+    set(CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr --extended-lambda")
 elseif (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    set(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr")
+    set(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr --extended-lambda")
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda" CACHE STRING "NVCC flags" FORCE)
 
 add_definitions( "-DMIN_CUDA_ARCH=${MIN_ARCH}" )
 set(LIB_TYPE STATIC)
@@ -76,6 +78,8 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuEleMul.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuProductBr.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_orthorhombic.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_hex.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
 
 endif(RMG_CUDA_ENABLED)

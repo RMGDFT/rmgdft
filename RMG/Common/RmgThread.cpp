@@ -190,7 +190,7 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
             case GPU_GET_RHO:
                 if(ct.is_gamma)
                     GetNewRhoGpuOne((State<double> *)ss.p1, (Prolong *)ss.p2, ss.fd_diag);

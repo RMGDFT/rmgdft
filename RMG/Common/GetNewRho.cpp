@@ -73,7 +73,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
     else
     {
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
         int ibrav = Rmg_L.get_ibrav_type();
         if(ct.prolong_order == 0)
         {
@@ -443,7 +443,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
     delete [] work;
 }
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
 
 #include "Gpufuncs.h"
 
@@ -479,9 +479,9 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     P.hbufs.resize(max_threads);
     for(int i=0;i < max_threads;i++)
     {
-        hipMalloc((void **)&P.abufs[i], bufsize);
-        hipMallocHost((void **)&P.hbufs[i], buf_max);
-        hipMalloc((void **)&P.rbufs[i], rbufsize);
+        gpuMalloc((void **)&P.abufs[i], bufsize);
+        gpuMallocHost((void **)&P.hbufs[i], buf_max);
+        gpuMalloc((void **)&P.rbufs[i], rbufsize);
     }
     for(int i=0;i < max_threads;i++)
     {
@@ -496,7 +496,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
 {
 
     if(ct.verbose) {
-        printf("PE: %d  start GetnewRhoGpu \n", pct.gridpe);
+        printf("PE: %d  start GetNewRhoGpu \n", pct.gridpe);
         fflush(NULL);
     }
 
@@ -567,7 +567,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     {
         gpublasDaxpy (ct.gpublas_handle, rhop.pbasis, &rone, P.rbufs[i], ione, P.rbufs[0], ione);
     }
-    hipMemcpy(P.hbufs[0], P.rbufs[0], rhop.pbasis*sizeof(double), hipMemcpyDeviceToHost);
+    gpuMemcpy(P.hbufs[0], P.rbufs[0], rhop.pbasis*sizeof(double), gpuMemcpyDeviceToHost);
     double *hptr = (double *)P.hbufs[0];
 
     // Sum over kpoints and spin
@@ -594,7 +594,6 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
     int tid = T->get_thread_tid();
     int ord = P->order;
     gpuStream_t stream = getGpuStream();
-
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
@@ -609,7 +608,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         float *hptr = (float *)P->hbufs[tid];
         float *gptr = (float *)P->abufs[tid];
         std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
-        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
+        gpuMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), gpuMemcpyHostToDevice, stream);
 
         if(ord == 6)
             P->prolong_ortho_gpu<float, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
@@ -629,7 +628,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         std::complex<float> *hptr = (std::complex<float> *)P->hbufs[tid];
         std::complex<float> *gptr = (std::complex<float> *)P->abufs[tid];
         std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
-        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
+        gpuMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), gpuMemcpyHostToDevice, stream);
         if(ord == 6)
             P->prolong_ortho_gpu<std::complex<float>, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 8)
@@ -639,7 +638,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         if(ord == 12)
             P->prolong_ortho_gpu<std::complex<float>, 12>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
     }
-    hipStreamSynchronize(stream);
+    gpuStreamSynchronize(stream);
 }
 
 #endif

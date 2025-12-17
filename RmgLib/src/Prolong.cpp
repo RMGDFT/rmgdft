@@ -1140,7 +1140,7 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     }
 }
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full,
