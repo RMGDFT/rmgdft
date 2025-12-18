@@ -54,16 +54,24 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
 template <typename KpointType>
 void ApplyBlockedHamiltonian(Kpoint<KpointType> *kptr, KpointType *h_psi, double *vtot_psi, double *vxc_psi)
 {
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+    int cfac = 1;
+    if(ct.coalesce_states) cfac = pct.coalesce_factor;
     int bs = ct.non_local_block_size;
     int nb = kptr->nstates / bs;
     int irem = kptr->nstates % bs;
+
     for(int ib=0;ib < nb;ib++)
     {
         ApplyBlockedHamiltonian (kptr, ib*bs, bs, bs, h_psi, vtot_psi, vxc_psi);
     }
     if(irem)
     {
-        ApplyBlockedHamiltonian (kptr, nb*bs, irem, bs,  h_psi,vtot_psi, vxc_psi);
+        int mstates = irem / (active_threads * cfac);
+        mstates = mstates * (active_threads * cfac);
+        ApplyBlockedHamiltonian (kptr, nb*bs, mstates, mstates,  h_psi,vtot_psi, vxc_psi);
     }
 
 
@@ -109,7 +117,7 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
     block_size = block_size * (active_threads * cfac);
     int nblocks = mstates / block_size;
     int irem = mstates % block_size;
-    if(irem) nblocks++;
+    //if(irem) nblocks++;
 
         for(int ib = 0;ib < nblocks;ib++)
         {
