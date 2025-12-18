@@ -53,20 +53,6 @@ __device__ __host__ inline double norm(cuDoubleComplex z) {
     return z.x * z.x + z.y * z.y;
 }
 
-template <typename T, int images, typename AType>
-__device__ __forceinline__
-T stencil(const T* ptr, int stride, const AType& a)
-{
-    T sum = T(0);
-
-    #pragma unroll
-    for (int k = 0; k < 2 * images; ++k) {
-        sum += a.a[1][k] * ptr[k * stride];
-    }
-
-    return sum;
-}
-
 // Version with shared memory slice
 template <typename T, int images>
 __global__ void prolong_ortho_kernel(double * full, 
@@ -80,7 +66,7 @@ __global__ void prolong_ortho_kernel(double * full,
                                      pcoeff a)
 
 {
-    extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
+    extern __shared__ __align__(sizeof(16)) unsigned char sbuf[];
     T *fulla0 = reinterpret_cast<T *>(sbuf);
     T *fulla1 = fulla0 + ((dimy + 2*images) * (zlen + 2*images));
     T *fullb0 = fulla1 + ((dimy + 2*images) * (zlen + 2*images));
@@ -91,12 +77,19 @@ __global__ void prolong_ortho_kernel(double * full,
     const int incy = dimz + 2*images;
     const int incx = (dimy + 2*images) * incy;
     const int sincy = zlen + 2*images;
-    const int sincx = (dimy + 2*images) * sincy;
+    //const int sincx = (dimy + 2*images) * sincy;
 
     const int incy2 = 2*dimz;
     const int incx2 = 2*dimy * incy2;
 
     const int ic = images - 1;
+
+    // lambda to clean up code
+    auto stencil = [&](const T *ptr, const int stride) {
+        T sum(0.0);
+        for(int k = 0;k < 2*images;k++) sum = sum + a.a[1][k] * ptr[k*stride];
+        return sum;
+    };
 
     for(int ix = blockIdx.x * blockDim.x + threadIdx.x;ix < dimx;ix += gridDim.x * blockDim.x)
     {
@@ -119,7 +112,7 @@ __global__ void prolong_ortho_kernel(double * full,
             for(int iz1 = blockIdx.y*blockDim.y + threadIdx.y;iz1 < zlen+2*images;iz1 += gridDim.y*blockDim.y)
             {
                 const T *halfptr = &half[(ix + 1) * incx + iy1 * incy];
-                fulla1[iy1 * sincy + iz1] = stencil<T, images, pcoeff>(halfptr + zstart + iz1, incx, a);
+                fulla1[iy1 * sincy + iz1] = stencil(halfptr + zstart + iz1, incx);
             }
         }
         __syncthreads();
@@ -128,14 +121,14 @@ __global__ void prolong_ortho_kernel(double * full,
         {
             T *full_tmp = &fulla0[(iy1 + 1) * sincy + iz1];
             fullb0[(2 * iy1 + 0) * sincy + iz1] = a.a[0][ic] * full_tmp[ic*sincy];
-            fullb0[(2 * iy1 + 1) * sincy + iz1] = stencil<T, images, pcoeff>(full_tmp, sincy, a);
+            fullb0[(2 * iy1 + 1) * sincy + iz1] = stencil(full_tmp, sincy);
         }
         __syncthreads();
         for (int iy1 = 0; iy1 < dimy; iy1++)
         {
             T *full_tmp = &fulla1[(iy1 + 1) * sincy + iz1];
             fullb1[(2 * iy1 + 0) * sincy + iz1] = a.a[0][ic] * full_tmp[ic*sincy];
-            fullb1[(2 * iy1 + 1) * sincy + iz1] = stencil<T, images, pcoeff>(full_tmp, sincy, a);
+            fullb1[(2 * iy1 + 1) * sincy + iz1] = stencil(full_tmp, sincy);
         }
         __syncthreads();
         // This last block writes back to global memory
@@ -147,7 +140,7 @@ __global__ void prolong_ortho_kernel(double * full,
                 double t1;
                 t1 = scale*norm(a.a[0][ic] * full_tmp[ic]);
                 full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
-                t1 = scale*norm(stencil<T, images, pcoeff>(full_tmp, 1, a));
+                t1 = scale*norm(stencil(full_tmp, 1));
                 full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
@@ -160,7 +153,7 @@ __global__ void prolong_ortho_kernel(double * full,
                 double t1;
                 t1 = scale*norm(a.a[0][ic] * full_tmp[ic]);
                 full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
-                t1 = scale*norm(stencil<T, images, pcoeff>(full_tmp, 1, a));
+                t1 = scale*norm(stencil(full_tmp, 1));
                 full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
@@ -168,17 +161,17 @@ __global__ void prolong_ortho_kernel(double * full,
 }
 
 
-template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
 template <typename T, int images>
@@ -188,6 +181,7 @@ void prolong_ortho_gpu_internal(double *full,
                    const int dimy,
                    const int dimz,
                    double scale,
+                   int smem_limit,
                    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER])
 {
     pcoeff agpu;
@@ -199,11 +193,9 @@ void prolong_ortho_gpu_internal(double *full,
         }
     }
 
-    dim3 Grid, Block, Grid1, Block1;
+    dim3 Grid, Block;
     cudaStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
-//    int smem_limit = ct.smemSize[ct.cu_dev] - 4092;
-    int smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
@@ -226,8 +218,6 @@ void prolong_ortho_gpu_internal(double *full,
     }
 
     int tid = getThreadId();
-    int fbasis = 8*dimx*dimy*dimz;
-    int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
     Grid.x = dimx;
     Grid.y = 1;

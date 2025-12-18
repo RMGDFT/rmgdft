@@ -148,6 +148,7 @@ void prolong_ortho_gpu_internal(double *full,
                const int dimy,
                const int dimz,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 template <typename T, int images>
 void prolong_hex_gpu_internal(double *full,
@@ -157,6 +158,7 @@ void prolong_hex_gpu_internal(double *full,
                const int dimz,
                const int type,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
@@ -192,6 +194,7 @@ void prolong_ortho_gpu_internal(double *full,
                const int dimy,
                const int dimz,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template <typename T, int images>
@@ -202,6 +205,7 @@ void prolong_hex_gpu_internal(double *full,
                const int dimz,
                const int type,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 #endif
 
