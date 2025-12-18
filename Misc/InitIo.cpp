@@ -538,6 +538,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if CUDA_ENABLED
             cuDeviceGet( &ct.cu_devices[ct.num_usable_gpu_devices], idevice);
             cuDeviceGetAttribute( &does_managed, CU_DEVICE_ATTRIBUTE_MANAGED_MEMORY, ct.cu_devices[ct.num_usable_gpu_devices]);
+            cudaDeviceGetAttribute(&ct.smemSize[idevice], cudaDevAttrMaxSharedMemoryPerBlock, idevice);
 #endif
 #if HIP_ENABLED
             hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
