@@ -164,6 +164,22 @@ public:
                                 double hxgrid,
                                 int dimx, int dimy, int dimz);
 
+    template <typename RmgType, int order>
+    void fd_gradient_general1 (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                double hxgrid,
+                                int dimx, int dimy, int dimz);
+
+    template <typename RmgType, int order>
+    void fd_gradient_general2 (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                double hxgrid,
+                                int dimx, int dimy, int dimz);
+
     template <typename RmgType>
     void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
