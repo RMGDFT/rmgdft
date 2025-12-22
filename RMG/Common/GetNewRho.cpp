@@ -140,7 +140,6 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
     if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
@@ -155,9 +154,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int cstride = FP0_BASIS * factor;
     double *work = new double[cfac * cstride]();
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--; 
-
+    int active_threads = rmg_get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
 
@@ -260,7 +257,6 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
     int my_pe_x, my_pe_y, my_pe_z;
     Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
-    int my_pe_offset = my_pe_x % cfac;
 
 
     OrbitalType *psi = sp->psi;
@@ -520,8 +516,8 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
     init_gpu_prolong(half_dimx, half_dimy, half_dimz, P);
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+    int active_threads = rmg_get_active_threads();
+
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {

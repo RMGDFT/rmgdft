@@ -33,6 +33,7 @@
 #include "rmg_complex.h"
 #include "Functional.h"
 #include "RmgSumAll.h"
+#include "rmgthreads.h"
 
 
 template double ApplyHamiltonian<double,float>(Kpoint<double> *, State<double> *, int, float *, float *, double *, double *, double *, bool);
@@ -74,8 +75,6 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
     fd_diag = ApplyAOperator<CalcType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
     if(potential_acceleration) {
-        int active_threads = ct.MG_THREADS_PER_NODE;
-        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
         int offset = (istate / ct.dvh_skip) * pbasis;
         int my_pe_x, my_pe_y, my_pe_z;
         kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);

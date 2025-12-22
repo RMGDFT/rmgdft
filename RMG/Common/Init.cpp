@@ -56,6 +56,8 @@
 #include "GatherScatter.h"
 #include "bfgs.h"
 #include "FDOpt.h"
+#include "rmgthreads.h"
+
 
 #if HIP_ENABLED
 template <typename T>
@@ -808,8 +810,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if(ct.run_states <= 64) ct.dvh_skip = 1;
         if(ct.coalesce_states)
         {
-            int active_threads = ct.MG_THREADS_PER_NODE;
-            if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+            int active_threads = rmg_get_active_threads();
             ct.dvh_skip = active_threads * pct.coalesce_factor;
         }
         ct.ndvh = ct.run_states / ct.dvh_skip + 1;

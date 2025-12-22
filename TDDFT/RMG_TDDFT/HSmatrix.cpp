@@ -108,10 +108,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     DeviceSynchronize();
 #endif
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
-
+    int active_threads = rmg_get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
     for(int st1=0;st1 < istop;st1 += active_threads) {
