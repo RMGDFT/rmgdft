@@ -101,12 +101,12 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
     // Create a set of long lived threads
     for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) 
     {
-        BaseThread::comm_pool[thread] = new MPI_Comm[200];
-        BaseThread::coalesced_comm_pool[thread] = new MPI_Comm[20*BaseThread::THREADS_PER_NODE+1];
+        BaseThread::comm_pool[thread] = new MPI_Comm[100];
+        BaseThread::coalesced_comm_pool[thread] = new MPI_Comm[10*BaseThread::THREADS_PER_NODE+1];
         BaseThread::comm_indices[thread] = 0;
         thread_controls[thread].tid = thread;
-        for(int i=0;i < 200;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
-        for(int i=0;i < 20*BaseThread::THREADS_PER_NODE+1;i++) MPI_Comm_dup(comm, &BaseThread::coalesced_comm_pool[thread][i]);
+        for(int i=0;i < 100;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
+        for(int i=0;i < 10*BaseThread::THREADS_PER_NODE+1;i++) MPI_Comm_dup(comm, &BaseThread::coalesced_comm_pool[thread][i]);
         MPI_Comm_dup(comm, &thread_controls[thread].grid_comm);
         threadgroup.emplace_back(BaseThread::funcptr, (void *)&thread_controls[thread]);
     }
@@ -297,14 +297,14 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
     if(tid < 0) tid=0;
     size_t next = this->comm_indices[tid];
     this->comm_indices[tid]++;
-    size_t comm_index = next % 200;
+    size_t comm_index = next % 100;
     return this->comm_pool[tid][comm_index]; 
 }
 
 MPI_Comm BaseThread::get_unique_coalesced_comm(int index) {
     int tid = BaseThread::get_thread_tid();
     if(tid < 0) tid=0;
-    int comm_index = index % (20*BaseThread::THREADS_PER_NODE + 1);
+    int comm_index = index % (10*BaseThread::THREADS_PER_NODE + 1);
     return this->coalesced_comm_pool[tid][comm_index]; 
 }
 
