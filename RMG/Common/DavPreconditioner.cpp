@@ -45,6 +45,7 @@
 #include "TradeImages.h"
 #include "GatherScatter.h"
 #include "packfuncs.h"
+#include "rmgthreads.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -77,9 +78,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    int active_threads = rmg_get_active_threads();
 
     int my_pe_x, my_pe_y, my_pe_z;
     kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);

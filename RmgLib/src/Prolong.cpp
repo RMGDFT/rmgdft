@@ -1140,7 +1140,7 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     }
 }
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full,
@@ -1149,6 +1149,7 @@ void prolong_ortho_gpu_internal(double *full,
                const int dimy,
                const int dimz,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template <typename T, int images>
@@ -1159,6 +1160,7 @@ void prolong_hex_gpu_internal(double *full,
                const int dimz,
                const int type,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template void Prolong::prolong_ortho_gpu<float,6>(double * , float *, int, int, int, double);
@@ -1183,22 +1185,22 @@ void Prolong::prolong_ortho_gpu(double *full,
                    double scale)
 {
     if constexpr (std::is_same_v<T, float> && ord==6)
-        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==8)
-        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==10)
-        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==12)
-        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
 
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
-        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
-        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
-        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
-        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
 }
 
 template void Prolong::prolong_hex_gpu<float,6>(double * , float *, int, int, int, int, double);
@@ -1224,21 +1226,21 @@ void Prolong::prolong_hex_gpu(double *full,
                    double scale)
 {
     if constexpr (std::is_same_v<T, float> && ord==6)
-        prolong_hex_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==8)
-        prolong_hex_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==10)
-        prolong_hex_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==12)
-        prolong_hex_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
 
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
-        prolong_hex_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
-        prolong_hex_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
-        prolong_hex_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
-        prolong_hex_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
 }
 #endif

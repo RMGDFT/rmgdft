@@ -34,6 +34,11 @@ include_directories("${PROJECT_BINARY_DIR}/include")
 endif (SEPARATE_BUILD)
 
 set (RmgLibSources 
+src/FiniteDiff.cpp
+src/FiniteDiffGrad1.cpp
+src/FiniteDiffGrad2.cpp
+src/FiniteDiff_exp.cpp
+src/FiniteDiff_mehr.cpp
 src/TradeImages.cpp
 src/Lattice.cpp
 src/BaseThread.cpp
@@ -44,9 +49,6 @@ src/app_cir_driver.cpp
 src/app_cil_driver.cpp
 src/app_grad_driver.cpp
 src/app_del2_driver.cpp
-src/FiniteDiff.cpp
-src/FiniteDiff_exp.cpp
-src/FiniteDiff_mehr.cpp
 src/LaplacianCoeff.cpp
 src/RmgTimer.cpp
 src/RmgPrintTimings.cpp

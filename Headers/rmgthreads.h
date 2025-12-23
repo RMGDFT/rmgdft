@@ -57,4 +57,8 @@ void QueueThreadTask(int tid, SCF_THREAD_CONTROL &task);
 bool PopThreadTask(int tid, SCF_THREAD_CONTROL &task);
 // Called from main to terminate all threads
 void RmgTerminateThreads(void);
+
+int rmg_get_active_threads(void);
+int rmg_get_max_threads(void);
+
 #endif

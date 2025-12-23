@@ -21,17 +21,17 @@
 */
 
 
-#if HIP_ENABLED
+#if CUDA_ENABLED
 
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime_api.h>
-#include <hip/hip_ext.h>
-#include <stdio.h>
-#include <unistd.h>
-#include "Gpufuncs.h"
-#include <iostream>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <cuda_device_runtime_api.h>
+#include <cublas_v2.h>
 #include <vector>
+#include "ErrorFuncs.h"
+#include "GpuAlloc.h"
+#include "Gpufuncs.h"
 
 typedef struct {
   float a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
@@ -40,7 +40,7 @@ typedef struct {
 
 // Version with shared memory slice
 template <typename T, int images>
-__global__ void prolong_ortho_kernel(double * full, 
+__global__ void prolong_hex_kernel(double * full, 
                                      const T *half, 
                                      const int zstart,
                                      const int zlen,
@@ -146,25 +146,26 @@ __global__ void prolong_ortho_kernel(double * full,
 }
 
 
-template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,3>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,4>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,5>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,6>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
 template <typename T, int images>
-void prolong_ortho_gpu_internal(double *full, 
+void prolong_hex_gpu_internal(double *full, 
                    T *half, 
                    const int dimx,
                    const int dimy,
                    const int dimz,
+                   const int type,
                    double scale,
                    int smem_limit,
                    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER])
@@ -179,10 +180,8 @@ void prolong_ortho_gpu_internal(double *full,
     }
 
     dim3 Grid, Block, Grid1, Block1;
-    hipStream_t stream = getGpuStream();
+    cudaStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
-//    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
-//    int smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
@@ -215,20 +214,18 @@ void prolong_ortho_gpu_internal(double *full,
     {
         Block.x = 1;
         Block.y = (zlen[i] + 2*images);
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(prolong_ortho_kernel<T, images>), 
-                   Grid,
-                   Block,
-                   smem_sizes[i],
-                   stream,
+        prolong_hex_kernel<T, images>
+                <<<Grid, Block, smem_sizes[i], stream>>>(
                    full,
                    //(T *)abufs[tid],
                    half,
                    zstart[i],
                    zlen[i],
                    dimx, dimy, dimz, scale, agpu);
+
     }
 
-    hipStreamSynchronize(stream);
+    cudaStreamSynchronize(stream);
 
 }
 #endif

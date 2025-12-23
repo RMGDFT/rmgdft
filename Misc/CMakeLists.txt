@@ -1,4 +1,5 @@
 add_library (Misc
+rmg_threadutils.cpp
 GatherScatter.cpp
 GpuCpuWraper.cpp
 DipoleCorrection.cpp

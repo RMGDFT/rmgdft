@@ -788,6 +788,7 @@ public:
     // Cuda devices
     CUdevice  cu_dev;
     CUdevice  cu_devices[MAX_GPU_DEVICES];
+    int smemSize[MAX_GPU_DEVICES];
 
     // Cuda device context
     CUcontext cu_context;
@@ -808,7 +809,7 @@ public:
 
 #if HIP_ENABLED
 
-    // Cuda version
+    // Hip version
     int hip_version;
 
     // Hip devices

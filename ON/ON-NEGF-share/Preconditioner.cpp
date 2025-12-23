@@ -66,10 +66,7 @@ void Preconditioner (double *res, int num_states)
 
     RmgTimer RT("Precond");
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
-
+    int active_threads = rmg_get_active_threads();
     int istop = num_states / active_threads;
     istop = istop * active_threads;
     if(active_threads == 1) istop = 0;

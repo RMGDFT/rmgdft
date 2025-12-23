@@ -50,7 +50,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
 template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoGpuOne(State<OrbitalType> *sp, Prolong *P, double scale);
 #endif

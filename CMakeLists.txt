@@ -186,6 +186,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Cray)$")
 endif()
 
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "NVIDIA")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mpreprocess>")
+endif()
+
 # Modify this if you need some special compiler flags.
 set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=sapphirerapids")
@@ -716,6 +720,7 @@ if(RMG_CUDA_ENABLED)
     if (NOT CUDA_INCLUDE_DIRS)
         message( WARNING "Using default CUDA include directory" )
         set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
+#        set(CUDA_INCLUDE_DIRS "/usr/local/cuda/include")
     endif()
 
     message( "Using CUDA include directory: ${CUDA_INCLUDE_DIRS}" )

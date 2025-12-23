@@ -21,22 +21,37 @@
 */
 
 
-#if HIP_ENABLED
+#if CUDA_ENABLED
 
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime_api.h>
-#include <hip/hip_ext.h>
-#include <stdio.h>
-#include <unistd.h>
-#include "Gpufuncs.h"
-#include <iostream>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <cuda_device_runtime_api.h>
+#include <cublas_v2.h>
 #include <vector>
+#include "ErrorFuncs.h"
+#include "GpuAlloc.h"
+#include "Gpufuncs.h"
 
 typedef struct {
   float a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER];
 } pcoeff;
 
+__device__ __host__ inline float norm(float x) {
+    return x * x;
+}
+
+__device__ __host__ inline double norm(double x) {
+    return x * x;
+}
+
+__device__ __host__ inline float norm(cuFloatComplex z) {
+    return z.x * z.x + z.y * z.y;
+}
+
+__device__ __host__ inline double norm(cuDoubleComplex z) {
+    return z.x * z.x + z.y * z.y;
+}
 
 // Version with shared memory slice
 template <typename T, int images>
@@ -51,7 +66,7 @@ __global__ void prolong_ortho_kernel(double * full,
                                      pcoeff a)
 
 {
-    extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
+    extern __shared__ __align__(sizeof(16)) unsigned char sbuf[];
     T *fulla0 = reinterpret_cast<T *>(sbuf);
     T *fulla1 = fulla0 + ((dimy + 2*images) * (zlen + 2*images));
     T *fullb0 = fulla1 + ((dimy + 2*images) * (zlen + 2*images));
@@ -62,7 +77,7 @@ __global__ void prolong_ortho_kernel(double * full,
     const int incy = dimz + 2*images;
     const int incx = (dimy + 2*images) * incy;
     const int sincy = zlen + 2*images;
-    const int sincx = (dimy + 2*images) * sincy;
+    //const int sincx = (dimy + 2*images) * sincy;
 
     const int incy2 = 2*dimz;
     const int incx2 = 2*dimy * incy2;
@@ -123,9 +138,9 @@ __global__ void prolong_ortho_kernel(double * full,
             {
                 T *full_tmp = &fullb0[iy1 * sincy + iz1 + 1];
                 double t1;
-                t1 = scale*std::norm(a.a[0][ic] * full_tmp[ic]);
+                t1 = scale*norm(a.a[0][ic] * full_tmp[ic]);
                 full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
-                t1 = scale*std::norm(stencil(full_tmp, 1));
+                t1 = scale*norm(stencil(full_tmp, 1));
                 full[2*ix * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
@@ -136,9 +151,9 @@ __global__ void prolong_ortho_kernel(double * full,
             {
                 T *full_tmp = &fullb1[iy1 * sincy + iz1 + 1];
                 double t1;
-                t1 = scale*std::norm(a.a[0][ic] * full_tmp[ic]);
+                t1 = scale*norm(a.a[0][ic] * full_tmp[ic]);
                 full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 0] += t1;
-                t1 = scale*std::norm(stencil(full_tmp, 1));
+                t1 = scale*norm(stencil(full_tmp, 1));
                 full[(2*ix + 1) * incx2 + iy1 * incy2 + 2 * (zstart+iz1) + 1] += t1;
             }
         }
@@ -178,11 +193,9 @@ void prolong_ortho_gpu_internal(double *full,
         }
     }
 
-    dim3 Grid, Block, Grid1, Block1;
-    hipStream_t stream = getGpuStream();
+    dim3 Grid, Block;
+    cudaStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
-//    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
-//    int smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
@@ -205,8 +218,6 @@ void prolong_ortho_gpu_internal(double *full,
     }
 
     int tid = getThreadId();
-    int fbasis = 8*dimx*dimy*dimz;
-    int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
     Grid.x = dimx;
     Grid.y = 1;
@@ -215,20 +226,18 @@ void prolong_ortho_gpu_internal(double *full,
     {
         Block.x = 1;
         Block.y = (zlen[i] + 2*images);
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(prolong_ortho_kernel<T, images>), 
-                   Grid,
-                   Block,
-                   smem_sizes[i],
-                   stream,
-                   full,
-                   //(T *)abufs[tid],
-                   half,
-                   zstart[i],
-                   zlen[i],
-                   dimx, dimy, dimz, scale, agpu);
+        prolong_ortho_kernel<T, images>
+        <<<Grid, Block, smem_sizes[i], stream>>>(
+            full,
+            //(T *)abufs[tid],
+            half,
+            zstart[i],
+            zlen[i],
+            dimx, dimy, dimz, scale, agpu
+        );
     }
 
-    hipStreamSynchronize(stream);
+    cudaStreamSynchronize(stream);
 
 }
 #endif
