@@ -182,7 +182,7 @@ void prolong_hex_gpu_internal(double *full,
     dim3 Grid, Block, Grid1, Block1;
     hipStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
-    //smem_limit = 65536 - 4092;
+    smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
