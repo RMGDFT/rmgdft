@@ -157,15 +157,15 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
         }
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_x, this_block_size);
         BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_y, this_block_size);
         BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
-        RmgGemm(trans_a, trans_n, this_block_size, length_block,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev+ib*nb*pbasis_noncol, 
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_z, this_block_size);
         BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
@@ -173,7 +173,7 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
         if(myrow == ib%nprow)
         {
             int istart = (ib/nprow) *nb;
-            for(int jb = ib; jb < num_blocks; jb++)
+            for(int jb = 0; jb < num_blocks; jb++)
             {
                 if(mycol == jb%npcol)
                     //  block (ib,jb) in this processor
@@ -184,55 +184,39 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_x[ (j + (jb-ib) * mb ) * this_block_size + i];
-                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_y[ (j + (jb-ib) * mb ) * this_block_size + i];
-                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_z[ (j + (jb-ib) * mb ) * this_block_size + i];
+                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_z[ (j + jb * mb ) * this_block_size + i];
                         }
                     }
                 }
-            }
-        }
-
-        if(mycol == ib%npcol)
-        {
-            int istart = (ib/npcol) *nb;
-            for(int jb = ib; jb < num_blocks; jb++)
-            {
-                if(myrow == jb%nprow)
-                    //  block (jb,ib) in this processor
-                {
-                    int this_block_size_col  = std::min(mb, num_states - mb * jb);
-                    int jstart = (jb/nprow) * mb;
-                    for(int i = 0; i < this_block_size; i++)
-                    {
-                        for(int j = 0; j < this_block_size_col; j++)
-                        {
-                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix_x[ (j + (jb-ib) * mb ) * this_block_size + i]);
-                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix_y[ (j + (jb-ib) * mb ) * this_block_size + i]);
-                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix_z[ (j + (jb-ib) * mb ) * this_block_size + i]);
-                        }
-                    }
-                }
-
             }
         }
 
     }
 
     delete [] block_matrix;
-//    rmg_printf("kvec %f", kptr->kp.kvec[0] );
-//    for(int i = 0; i < 8; i++)
-//    {
-////        rmg_printf("\n aaa ");
-//        for(int j = 0; j < 8; j++)
-//            rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
-//    }
-//    for(int i = 0; i < 8; i++)
-//    {
-//        rmg_printf("\n bbb ");
-//        for(int j = 0; j < 8; j++)
-//            rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
-//    }
+//  if(pct.worldrank == 4)
+//  {
+//      printf("\n %d %d ", myrow, mycol);
+
+//      printf("\nkvec %f %f %f\n", kptr->kp.kvec[0] , kptr->kp.kvec[1] , kptr->kp.kvec[2] );
+//      fflush(NULL);
+//      for(int i = 0; i < 8; i++)
+//      {
+//          printf("\n aaa ");
+//          for(int j = 0; j < 8; j++)
+//              printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+//      }
+//      fflush(NULL);
+//      for(int i = 0; i < 8; i++)
+//      {
+//          printf("\n bbb ");
+//          for(int j = 0; j < 8; j++)
+//              printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+//      }
+//      fflush(NULL);
+//  }
 
 }
 

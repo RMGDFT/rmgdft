@@ -148,6 +148,7 @@ public:
     bool restart_tddft;
     bool tddft_noscf;
     bool tddft_gpu =1;
+    bool tddft_tiledMM =0;
     int tddft_mode;
     double tddft_frequency;
     double tddft_qpos[3];

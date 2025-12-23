@@ -274,6 +274,24 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
     if(!Sp->Participates()) n2 = 1;
     int *desca = Sp->GetDistDesca();
+    int npes_mtile = pct.grid_npes;
+    if(ct.tddft_tiledMM == 1)
+    {
+        if(!ct.tddft_gpu)
+        {
+            pct.local_rank = pct.gridpe;
+            pct.local_comm = pct.grid_comm;
+        }
+        MPI_Comm_size(pct.local_comm, &npes_mtile);
+
+        if(numst%npes_mtile != 0)
+        {
+            rmg_printf("\n ERRPR: numst npes_mtile = %d %d", numst, npes_mtile);
+            rmg_error_handler(__FILE__, __LINE__, "numst must be divisible by npes_mtile");
+        }
+
+        n2 = numst * numst/npes_mtile;
+    }
 
     n22 = 2* n2;
     int n2_C = n2 * sizeof(OrbitalType)/sizeof(double);
@@ -381,11 +399,11 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     if(pct.kstart == 0 && pct.gridpe == 0)
     {
 
-        
+
         if(ct.tddft_mode == VECTOR_POT)
         {
             filename = std::string(ct.basename)+"_spin" +std::to_string(pct.spinpe)+ "_current.dat";
-            
+
             current_fi = fopen(filename.c_str(), "w");
             fprintf(current_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
 
@@ -513,7 +531,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
 
-            Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
+            if(ct.tddft_tiledMM == 1)
+            {
+                memcpy(Kptr[kpt]->Hmatrix_cpu, &matrix_glob[numst * numst/npes_mtile * pct.local_rank], matrix_size);
+            }
+            else
+            {
+                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
+            }
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
@@ -530,7 +555,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
             for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
-            Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Pn0_cpu, numst, desca);
+            if(ct.tddft_tiledMM == 1)
+            {
+                memcpy(Kptr[kpt]->Pn0_cpu, &matrix_glob[numst * numst/npes_mtile * pct.local_rank], matrix_size);
+            }
+            else
+            {
+                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Pn0_cpu, numst, desca);
+            }
         }
 
         rmg_printf("\n  x dipolll  %f ", dipole_tot[0]);
