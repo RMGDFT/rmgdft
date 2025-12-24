@@ -368,7 +368,6 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
 
     int      Nsq = Mdim * Ndim         ;
     int      Nsq2 = 2*Nsq              ;
-    int      Nsq_alloc                 ;
     int      iter   = 1                ;
     bool     tConv  = false            ;
     double   errmax = 0.0e0            ;
@@ -378,7 +377,6 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
     double   rone   = 1.0e0            ;
 
     // Needed for padding in C_dev
-    Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
     if(!ct.tddft_gpu)
     {
         /* ----  P1=P0 ,  dP=P0   ---- */
@@ -409,6 +407,8 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
     else
     {
 #if CUDA_ENABLED || HIP_ENABLED
+        int      Nsq_alloc                 ;
+        Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
         double *Om_dev, *P0_dev, *P1_dev, *W_dev, *C_dev, *dP_dev;
         gpublasStatus_t gstat;
         gpuMalloc((void **)&Om_dev, Nsq * sizeof(double));
@@ -492,8 +492,8 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
     int       ione   = 1                  ;
     double    rone   = 1.0e0              ;
 
-    float *work = (float *)RmgMallocHost(Nsq2 * sizeof(float));
 #if CUDA_ENABLED || HIP_ENABLED
+    float *work = (float *)RmgMallocHost(Nsq2 * sizeof(float));
     float *Om_dev, *P0_dev, *P1_dev, *W_dev, *C_dev, *dP_dev;
     gpublasStatus_t gstat;
     gpuMalloc((void **)&Om_dev, Nsq * sizeof(float));
@@ -598,13 +598,12 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
     int      ione   = 1                ;
 
     // Needed for padding in C_dev
-    int Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
 
     std::complex<double>   rone(1.0, 0.0)           ;
     std::complex<double>   mone(-1.0,0.0)           ;
     int Mglob = desca[3];
 
-     if(!ct.tddft_gpu)
+    if(!ct.tddft_gpu)
     {
         /* ----  P1=P0 ,  dP=P0   ---- */
         std::complex<double>      *C   = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
@@ -615,11 +614,11 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
             std::complex<double> alpha(0.0, -1.0e0 /iter) ;
             std::complex<double> beta (0.0,0.0) ;
 
-            zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
+            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
                     dP, ione, ione, desca, beta, C, ione, ione, desca);
             // C = -i * Om * dP
 
-            zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
+            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
                     Om, ione, ione, desca, mone, C, ione, ione, desca);
             // C = -i (dP * OM - Om * dP)
 
@@ -638,6 +637,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
     else
     {
 #if CUDA_ENABLED || HIP_ENABLED
+        int Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
         std::complex<double> *Om_dev, *P0_dev, *P1_dev, *dP_dev, *C0_dev;
         gpublasStatus_t gstat;
         gpuMalloc((void **)&Om_dev, Nsq_alloc * sizeof(std::complex<double>));
@@ -660,7 +660,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
 
             mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP_dev, ione, ione, desca,
                     Om_dev, ione, ione, desca, mone, C0_dev, ione, ione, desca);
-    my_sync_device();
+            my_sync_device();
             //zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
             //        Om, ione, ione, desca, mone, C, ione, ione, desca);
             // C = -i (dP * OM - Om * dP)
@@ -682,7 +682,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         gpuFree(P1_dev);
         gpuFree(Om_dev);
 
-    #endif
+#endif
     }
 
     /*--- return  error max---- */

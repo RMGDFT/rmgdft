@@ -375,7 +375,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
 
         TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
-        RmgGemm(transa, transb, m, my_step, k, alpha, A_glob, lda, B, ldb, beta, C, ldc);
+        RmgGemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
         return;
     }
     if(!ct.tddft_gpu)

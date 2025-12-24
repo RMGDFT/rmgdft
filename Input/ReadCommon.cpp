@@ -252,6 +252,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "restart TDDFT", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_gpu", &lc.tddft_gpu, true, 
                         "use gpu for ELYDYN or not", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_tiledMM", &lc.tddft_tiledMM, false, 
+                        "use TiledM distribution for TDDFT matrix", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
                         "TDDFT run read data directly from the last scf job", TDDFT_OPTIONS);
 
