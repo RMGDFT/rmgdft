@@ -182,7 +182,7 @@ void prolong_ortho_gpu_internal(double *full,
     hipStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
 //    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
-//    int smem_limit = 65536 - 4092;
+smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +

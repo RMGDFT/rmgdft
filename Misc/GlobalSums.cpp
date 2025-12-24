@@ -57,15 +57,15 @@ void GlobalSumsInit(void) {
         rmg_error_handler(__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
 
-    coalesced_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
-    coalesced_local_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
-    for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
+    coalesced_comm_pool = new MPI_Comm[10*ct.MG_THREADS_PER_NODE + 1];
+    coalesced_local_comm_pool = new MPI_Comm[10*ct.MG_THREADS_PER_NODE + 1];
+    for(int thread = 0;thread < 10*ct.MG_THREADS_PER_NODE + 1;thread++)
     {
     }
 
     if(ct.coalesce_states)
     {
-        for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
+        for(int thread = 0;thread < 10*ct.MG_THREADS_PER_NODE + 1;thread++)
         {
             MPI_Comm_dup(pct.coalesced_local_comm, &coalesced_local_comm_pool[thread]);
         MPI_Comm_dup(pct.coalesced_grid_comm, &coalesced_comm_pool[thread]);
@@ -75,13 +75,13 @@ void GlobalSumsInit(void) {
 
 MPI_Comm get_unique_coalesced_comm(int istate)
 {
-   int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+   int comm_index = istate % (10*ct.MG_THREADS_PER_NODE + 1);
    return coalesced_comm_pool[comm_index];
 }
 
 MPI_Comm get_unique_coalesced_local_comm(int istate)
 {
-   int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+   int comm_index = istate % (10*ct.MG_THREADS_PER_NODE + 1);
    return coalesced_local_comm_pool[comm_index];
 }
 
@@ -109,7 +109,7 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         qi.type = RMG_MPI_SUM;
         if(ct.coalesce_states && (cfac > 1))
         {
-            int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+            int comm_index = istate % (10*ct.MG_THREADS_PER_NODE + 1);
             qi.comm = coalesced_comm_pool[comm_index];
         }
         else
