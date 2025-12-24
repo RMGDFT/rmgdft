@@ -91,6 +91,7 @@ typedef struct
 
     // Communicator associated with the local ranks.
     MPI_Comm local_comm;
+    int local_comm_npes;
 
     // local master
     int is_local_master;

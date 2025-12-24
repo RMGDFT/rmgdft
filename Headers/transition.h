@@ -45,6 +45,8 @@ extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwave
 
 
 template <typename T> void EpsilonMatrix(Kpoint<T> **Kptr);
+template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst, MPI_Comm tiled_comm);
+
 
 void OutputBandPlot(double *);
 void CheckSetDefault();

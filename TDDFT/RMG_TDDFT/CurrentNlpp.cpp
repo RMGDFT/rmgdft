@@ -72,7 +72,6 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
 
     std::complex<double> *block_matrix;
 
-    char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a;
@@ -117,18 +116,6 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
     int factor = 2;
     int ix, iy, iz;
     Rmg_G->pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    double hxgrid = Rmg_G->get_hxgrid(1);
-    double hygrid = Rmg_G->get_hygrid(1);
-    double hzgrid = Rmg_G->get_hzgrid(1);
-
-    int px0_grid = Rmg_G->get_PX0_GRID(1);
-    int py0_grid = Rmg_G->get_PY0_GRID(1);
-    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
-    double xoff = ix * px0_grid * hxgrid;
-    double yoff = iy * py0_grid * hygrid;
-    double zoff = iz * pz0_grid * hzgrid;
-
-    double xtal[3], xcrt[3];
 
     for(int ib = 0; ib < num_blocks; ib++)
     {
@@ -143,44 +130,6 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
         length_block = num_states - ib * nb;
         this_block_size = std::min(nb, length_block);
         int st_start = ib *nb + tddft_start_state;
-        int st_end   = st_start + this_block_size;
-
-#if 0
-        AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size);
-
-        for (int st1 = 0; st1 < this_block_size; st1++)
-        {
-
-            for(int i = 0; i < px0_grid; i++)
-            {
-                for(int j = 0; j < py0_grid; j++)
-                {
-                    for(int k = 0; k < pz0_grid; k++)
-                    {
-
-                        xtal[0] = xoff + i * hxgrid;
-                        xtal[1] = yoff + j * hygrid;
-                        xtal[2] = zoff + k * hzgrid;
-                        Rmg_L.to_cartesian(xtal, xcrt);
-
-                        int idx = st1 * pbasis_noncol + i * py0_grid * pz0_grid + j * pz0_grid + k;
-                        psi_x[idx] = nv[idx] * xcrt[0];
-                        psi_y[idx] = nv[idx] * xcrt[1];
-                        psi_z[idx] = nv[idx] * xcrt[2];
-
-                    } 
-                }
-            }
-
-
-            if(ct.noncoll)
-            {
-                rmg_printf("\nAAAAAA\n"); 
-                exit(0);
-            }
-
-        }
-#endif
 
         AppNls_0xyz(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, st_start, this_block_size, 1);
         for (int idx = 0; idx < this_block_size * pbasis_noncol; idx++)
@@ -209,53 +158,86 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                 pbasis_noncol, beta, block_matrix_z, this_block_size);
         BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
-        //block_matrix to distHij;
-        if(myrow == ib%nprow)
+        if(ct.tddft_tiledMM)
         {
             int istart = (ib/nprow) *nb;
-            for(int jb = 0; jb < num_blocks; jb++)
+            for(int i = 0; i < this_block_size; i++)
             {
-                if(mycol == jb%npcol)
-                    //  block (ib,jb) in this processor
+                for(int j = 0; j < num_states/pct.local_comm_npes; j++)
                 {
-                    int this_block_size_col  = std::min(mb, num_states - mb * jb);
-                    int jstart = (jb/npcol) * mb;
-                    for(int i = 0; i < this_block_size; i++)
+                    int jglob = j + pct.local_rank * num_states/pct.local_comm_npes ;
+                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] += block_matrix_x[ jglob * this_block_size + i];
+                    kptr->Pymatrix_cpu[ j * num_states + i + istart] += block_matrix_y[ jglob * this_block_size + i];
+                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] += block_matrix_z[ jglob * this_block_size + i];
+                }
+            }
+
+            for(int i = 0; i < this_block_size; i++)
+            {
+                int itile = i + istart - pct.local_rank * num_states/pct.local_comm_npes;
+                if(itile >= 0 && itile < num_states/pct.local_comm_npes)
+                {
+                    for(int j = 0; j < num_states; j++)
                     {
-                        for(int j = 0; j < this_block_size_col; j++)
-                        {
-                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_x[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_y[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_z[ (j + jb * mb ) * this_block_size + i];
-                        }
+                        kptr->Pxmatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_x[ j * this_block_size + i]);
+                        kptr->Pymatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_y[ j * this_block_size + i]);
+                        kptr->Pzmatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_z[ j * this_block_size + i]);
                     }
                 }
             }
+
         }
 
-        if(mycol == ib%npcol)
+        else
         {
-            int istart = (ib/npcol) *nb;
-            for(int jb = 0; jb < num_blocks; jb++)
+            //block_matrix to distHij;
+            if(myrow == ib%nprow)
             {
-                if(myrow == jb%nprow)
-                    //  block (jb,ib) in this processor
+                int istart = (ib/nprow) *nb;
+                for(int jb = 0; jb < num_blocks; jb++)
                 {
-                    int this_block_size_col  = std::min(mb, num_states - mb * jb);
-                    int jstart = (jb/nprow) * mb;
-                    for(int i = 0; i < this_block_size; i++)
+                    if(mycol == jb%npcol)
+                        //  block (ib,jb) in this processor
                     {
-                        for(int j = 0; j < this_block_size_col; j++)
+                        int this_block_size_col  = std::min(mb, num_states - mb * jb);
+                        int jstart = (jb/npcol) * mb;
+                        for(int i = 0; i < this_block_size; i++)
                         {
-                            kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
-                            kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
-                            kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
+                            for(int j = 0; j < this_block_size_col; j++)
+                            {
+                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                            }
                         }
                     }
                 }
             }
-        }
 
+            if(mycol == ib%npcol)
+            {
+                int istart = (ib/npcol) *nb;
+                for(int jb = 0; jb < num_blocks; jb++)
+                {
+                    if(myrow == jb%nprow)
+                        //  block (jb,ib) in this processor
+                    {
+                        int this_block_size_col  = std::min(mb, num_states - mb * jb);
+                        int jstart = (jb/nprow) * mb;
+                        for(int i = 0; i < this_block_size; i++)
+                        {
+                            for(int j = 0; j < this_block_size_col; j++)
+                            {
+                                kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
+                                kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
+                                kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     delete [] block_matrix;

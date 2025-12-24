@@ -274,7 +274,6 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
     if(!Sp->Participates()) n2 = 1;
     int *desca = Sp->GetDistDesca();
-    int npes_mtile = pct.grid_npes;
     if(ct.tddft_tiledMM == 1)
     {
         if(!ct.tddft_gpu)
@@ -282,15 +281,17 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             pct.local_rank = pct.gridpe;
             pct.local_comm = pct.grid_comm;
         }
-        MPI_Comm_size(pct.local_comm, &npes_mtile);
+        MPI_Comm_size(pct.local_comm, &pct.local_comm_npes);
 
-        if(numst%npes_mtile != 0)
+        if(numst%pct.local_comm_npes != 0)
         {
-            rmg_printf("\n ERRPR: numst npes_mtile = %d %d", numst, npes_mtile);
+            rmg_printf("\n ERRPR: numst npes_mtile = %d %d", numst, pct.local_comm_npes);
             rmg_error_handler(__FILE__, __LINE__, "numst must be divisible by npes_mtile");
         }
 
-        n2 = numst * numst/npes_mtile;
+        n2 = numst * numst/pct.local_comm_npes;
+        Mdim = numst;
+        Ndim = numst/pct.local_comm_npes;
     }
 
     n22 = 2* n2;
@@ -533,7 +534,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
             if(ct.tddft_tiledMM == 1)
             {
-                memcpy(Kptr[kpt]->Hmatrix_cpu, &matrix_glob[numst * numst/npes_mtile * pct.local_rank], matrix_size);
+                memcpy(Kptr[kpt]->Hmatrix_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
             }
             else
             {
@@ -557,7 +558,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
             if(ct.tddft_tiledMM == 1)
             {
-                memcpy(Kptr[kpt]->Pn0_cpu, &matrix_glob[numst * numst/npes_mtile * pct.local_rank], matrix_size);
+                memcpy(Kptr[kpt]->Pn0_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
             }
             else
             {
@@ -672,7 +673,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     }
 
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    Sp->ScalapackBlockAllreduce(current0, 3);
+    if(ct.tddft_tiledMM)
+    {
+        MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.local_comm);
+    }
+    else
+    {
+        Sp->ScalapackBlockAllreduce(current0, 3);
+    }
     Rmg_Symm->symm_vec(current0);
 
     if(pct.kstart == 0 && pct.gridpe == 0)
@@ -779,21 +787,28 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
                 /////// <----- update Hamiltonian from  Pn1
                 RT2a = new RmgTimer("2-TDDFT: Rho");
-                if( scalapack_groups != pct.grid_npes)
+                if(ct.tddft_tiledMM)
                 {
-                    if(Sp->Participates()) 
-                    {
-                        Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
-                        if( scalapack_groups != pct.grid_npes)
-                            Sp->ScalapackBlockAllreduce((double *)matrix_glob, (size_t)numst * (size_t)numst *n2_C/n2);
-                    }
-
-                    size_t count = numst * numst * sizeof(OrbitalType) /sizeof(double);
-                    Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
+                    TiledM_to_glob(matrix_glob, Pn1, numst, pct.local_comm);
                 }
                 else
                 {
-                    RmgMemcpy(matrix_glob, Pn1, matrix_size);
+                    if( scalapack_groups != pct.grid_npes)
+                    {
+                        if(Sp->Participates()) 
+                        {
+                            Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
+                            if( scalapack_groups != pct.grid_npes)
+                                Sp->ScalapackBlockAllreduce((double *)matrix_glob, (size_t)numst * (size_t)numst *n2_C/n2);
+                        }
+
+                        size_t count = numst * numst * sizeof(OrbitalType) /sizeof(double);
+                        Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
+                    }
+                    else
+                    {
+                        RmgMemcpy(matrix_glob, Pn1, matrix_size);
+                    }
                 }
 
 
@@ -865,13 +880,20 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 RT2a = new RmgTimer("2-TDDFT: Hupdate");
                 HmatrixUpdate(Kptr[kpt], vtot_psi.data(), matrix_glob, ct.tddft_start_state);                                     
-                if( scalapack_groups != pct.grid_npes)
+                if(ct.tddft_tiledMM)
                 {
-                    Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_m1_cpu, numst, desca);
+                    memcpy(Kptr[kpt]->Hmatrix_m1_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
                 }
                 else
                 {
-                    memcpy(Kptr[kpt]->Hmatrix_m1_cpu, matrix_glob, matrix_size);
+                    if( scalapack_groups != pct.grid_npes)
+                    {
+                        Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_m1_cpu, numst, desca);
+                    }
+                    else
+                    {
+                        memcpy(Kptr[kpt]->Hmatrix_m1_cpu, matrix_glob, matrix_size);
+                    }
                 }
                 delete(RT2a);
 
@@ -889,7 +911,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 //tst_conv_matrix (&err, &ij_err ,  Hmatrix_1,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
 
                 bool tConv;
-                tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, Sp->GetComm());
+                if(ct.tddft_tiledMM)
+                {
+                    tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, pct.local_comm);
+                }
+                else
+                {
+                    tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, Sp->GetComm());
+                }
                 memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
                 delete(RT2a);
             }
@@ -933,7 +962,14 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         }
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-        Sp->ScalapackBlockAllreduce(current, 3);
+        if(ct.tddft_tiledMM)
+        {
+            MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.local_comm);
+        }
+        else
+        {
+            Sp->ScalapackBlockAllreduce(current, 3);
+        }
         Rmg_Symm->symm_vec(current);
 
         if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)

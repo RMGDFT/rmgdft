@@ -26,6 +26,7 @@
 #endif
 
 #include "Gpufuncs.h"
+#include "rmg_error.h"
 
 void my_sync_device()
 {
@@ -36,6 +37,7 @@ void my_sync_device()
     hipDeviceSynchronize();
 #endif
 }
+
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
@@ -171,7 +173,7 @@ void dgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in dgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        exit (0);
+        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -203,7 +205,7 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in sgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        exit (0);
+        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -236,7 +238,7 @@ void zgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in zgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        exit (0);
+        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -280,9 +282,9 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
 
         if(m != n || m != k)
         {
-            printf ("mgpu_dgemm requires m=n=k! \n");
+            printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
             fflush (NULL);
-            exit (0);
+            rmg_error_handler(__FILE__, __LINE__, "wrong mnk ");
         }
 
 #if USE_NCCL
@@ -348,6 +350,34 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     int ictxt = desca[1];
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    static int m_dim=0;
+    static std::complex<double> *A_glob = NULL;
+    if(m != n || m != k)
+    {
+        printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
+        fflush (NULL);
+        rmg_error_handler(__FILE__, __LINE__, "wrong mnk ");
+    }
+    if(ct.tddft_tiledMM)
+    {
+        if(m_dim != m)
+        {
+            if(A_glob != NULL) FreeHostOrDevice(A_glob);
+            MallocHostOrDevice((void **)&A_glob,  m*m*sizeof(std::complex<double>));
+            m_dim = m;
+        }
+        if(strcmp("n", transb) && strcmp("N", transb)) 
+        {
+            printf ("mgpu_dgemm requires transb = n \n");
+            fflush (NULL);
+            rmg_error_handler(__FILE__, __LINE__, "wrong transb ");
+        }
+
+        TiledM_to_glob(A_glob, A, m, pct.local_comm);
+        int my_step = n/pct.local_comm_npes;
+        RmgGemm(transa, transb, m, my_step, k, alpha, A_glob, lda, B, ldb, beta, C, ldc);
+        return;
+    }
     if(!ct.tddft_gpu)
     {
         zgemm_driver (transa, transb, m, n, k, 
@@ -358,14 +388,6 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     else
     {
 #if CUDA_ENABLED || HIP_ENABLED
-
-        if(m != n || m != k)
-        {
-            printf ("mgpu_dgemm requires m=n=k! \n");
-            fflush (NULL);
-            exit (0);
-        }
-
 #if USE_NCCL
         // gemm split over on node GPUs and recombined with nccl
         // local_comm contains the number of procs on this node which is also the number of GPUs

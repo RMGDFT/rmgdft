@@ -170,23 +170,41 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
         BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)length_block * (size_t)factor , pct.grid_comm);
 
         //block_matrix to distHij;
-        if(myrow == ib%nprow)
+        if(ct.tddft_tiledMM)
         {
             int istart = (ib/nprow) *nb;
-            for(int jb = 0; jb < num_blocks; jb++)
+            for(int i = 0; i < this_block_size; i++)
             {
-                if(mycol == jb%npcol)
-                    //  block (ib,jb) in this processor
+                for(int j = 0; j < num_states/pct.local_comm_npes; j++)
                 {
-                    int this_block_size_col  = std::min(mb, num_states - mb * jb);
-                    int jstart = (jb/npcol) * mb;
-                    for(int i = 0; i < this_block_size; i++)
+                    int jglob = j + pct.local_rank * num_states/pct.local_comm_npes ;
+                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] = block_matrix_x[ jglob * this_block_size + i];
+                    kptr->Pymatrix_cpu[ j * num_states + i + istart] = block_matrix_y[ jglob * this_block_size + i];
+                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] = block_matrix_z[ jglob * this_block_size + i];
+                }
+            }
+
+        }
+        else
+        {
+            if(myrow == ib%nprow)
+            {
+                int istart = (ib/nprow) *nb;
+                for(int jb = 0; jb < num_blocks; jb++)
+                {
+                    if(mycol == jb%npcol)
+                        //  block (ib,jb) in this processor
                     {
-                        for(int j = 0; j < this_block_size_col; j++)
+                        int this_block_size_col  = std::min(mb, num_states - mb * jb);
+                        int jstart = (jb/npcol) * mb;
+                        for(int i = 0; i < this_block_size; i++)
                         {
-                            kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_x[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_y[ (j + jb * mb ) * this_block_size + i];
-                            kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                            for(int j = 0; j < this_block_size_col; j++)
+                            {
+                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                            }
                         }
                     }
                 }
@@ -196,27 +214,27 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     }
 
     delete [] block_matrix;
-//  if(pct.worldrank == 4)
-//  {
-//      printf("\n %d %d ", myrow, mycol);
+    //  if(pct.worldrank == 4)
+    //  {
+    //      printf("\n %d %d ", myrow, mycol);
 
-//      printf("\nkvec %f %f %f\n", kptr->kp.kvec[0] , kptr->kp.kvec[1] , kptr->kp.kvec[2] );
-//      fflush(NULL);
-//      for(int i = 0; i < 8; i++)
-//      {
-//          printf("\n aaa ");
-//          for(int j = 0; j < 8; j++)
-//              printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
-//      }
-//      fflush(NULL);
-//      for(int i = 0; i < 8; i++)
-//      {
-//          printf("\n bbb ");
-//          for(int j = 0; j < 8; j++)
-//              printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
-//      }
-//      fflush(NULL);
-//  }
+    //      printf("\nkvec %f %f %f\n", kptr->kp.kvec[0] , kptr->kp.kvec[1] , kptr->kp.kvec[2] );
+    //      fflush(NULL);
+    //      for(int i = 0; i < 8; i++)
+    //      {
+    //          printf("\n aaa ");
+    //          for(int j = 0; j < 8; j++)
+    //              printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+    //      }
+    //      fflush(NULL);
+    //      for(int i = 0; i < 8; i++)
+    //      {
+    //          printf("\n bbb ");
+    //          for(int j = 0; j < 8; j++)
+    //              printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+    //      }
+    //      fflush(NULL);
+    //  }
 
 }
 
