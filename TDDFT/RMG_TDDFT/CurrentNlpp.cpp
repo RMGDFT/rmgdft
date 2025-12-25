@@ -160,7 +160,7 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
 
         if(ct.tddft_tiledMM)
         {
-            int istart = (ib/nprow) *nb;
+            int istart = ib *nb;
             for(int i = 0; i < this_block_size; i++)
             {
                 for(int j = 0; j < num_states/pct.local_comm_npes; j++)
