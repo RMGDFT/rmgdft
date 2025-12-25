@@ -18,6 +18,9 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     MPI_Comm_rank(tiled_comm, &my_rank);
     if(numst%nprocs != 0) 
     {
+        rmg_printf("\n numst nprocs %d %d", numst, nprocs);
+        fflush(NULL);
+        rmg_error_handler(__FILE__, __LINE__, "numst must be divisible by nprocs ");
     }
 
     size_t sendcount = numst * numst/nprocs * sizeof(T)/sizeof(double);

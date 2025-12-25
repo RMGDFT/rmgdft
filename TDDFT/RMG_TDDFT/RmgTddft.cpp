@@ -234,6 +234,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     int Ieldyn = 1;    // BCH  
                        //int Ieldyn = 2;    // Diagev
     int iprint = ct.verbose;
+    MPI_Comm eldyn_comm;
 
 
 
@@ -273,6 +274,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     n2 = Sp->GetDistMdim() * Sp->GetDistNdim();
 
     if(!Sp->Participates()) n2 = 1;
+    eldyn_comm =  Sp->GetComm() ;
     int *desca = Sp->GetDistDesca();
     if(ct.tddft_tiledMM == 1)
     {
@@ -283,6 +285,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         }
         MPI_Comm_size(pct.local_comm, &pct.local_comm_npes);
 
+        eldyn_comm = pct.local_comm;
         if(numst%pct.local_comm_npes != 0)
         {
             rmg_printf("\n ERRPR: numst npes_mtile = %d %d", numst, pct.local_comm_npes);
@@ -668,19 +671,12 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-            Sp->ScalapackBlockAllreduce(&tot_bp_pol, 1);
+            MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, eldyn_comm);
         }
     }
 
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    if(ct.tddft_tiledMM)
-    {
-        MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.local_comm);
-    }
-    else
-    {
-        Sp->ScalapackBlockAllreduce(current0, 3);
-    }
+    MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, eldyn_comm);
     Rmg_Symm->symm_vec(current0);
 
     if(pct.kstart == 0 && pct.gridpe == 0)
@@ -772,7 +768,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
                 /* --- C++  version:  --*/
 
-                eldyn_ort(desca, Mdim, Ndim,  Hmatrix_m1,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
+                eldyn_ort(desca, Mdim, Ndim,  Hmatrix_m1,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, eldyn_comm) ;
                 RmgMemcpy(Kptr[kpt]->Pn1_cpu, Pn1, 2*n2*sizeof(double));
 
                 delete(RT2a);
@@ -911,14 +907,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 //tst_conv_matrix (&err, &ij_err ,  Hmatrix_1,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
 
                 bool tConv;
-                if(ct.tddft_tiledMM)
-                {
-                    tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, pct.local_comm);
-                }
-                else
-                {
-                    tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, Sp->GetComm());
-                }
+                tstconv((double *)Kptr[kpt]->Hmatrix_1_cpu, &n2_C, &thrs_dHmat,&ij_err,&err,&tConv, eldyn_comm);
                 memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
                 delete(RT2a);
             }
@@ -962,14 +951,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         }
 
         MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-        if(ct.tddft_tiledMM)
-        {
-            MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, pct.local_comm);
-        }
-        else
-        {
-            Sp->ScalapackBlockAllreduce(current, 3);
-        }
+        MPI_Allreduce(MPI_IN_PLACE, current, 3, MPI_DOUBLE, MPI_SUM, eldyn_comm);
         Rmg_Symm->symm_vec(current);
 
         if(ct.BerryPhase && ct.tddft_mode == VECTOR_POT)
@@ -980,7 +962,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-            Sp->ScalapackBlockAllreduce(&tot_bp_pol, 1);
+            MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, eldyn_comm);
             //Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
         }
 
