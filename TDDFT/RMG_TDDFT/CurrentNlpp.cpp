@@ -47,12 +47,12 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state)
+void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state, int num_states)
 {
     throw RmgFatalException() << "TDDFT vector potential mode: wave function cannot be real now " << "\n";
 }
 
-void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state)
+void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state, int num_states)
 {
 
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
@@ -61,7 +61,6 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
-    int num_states = kptr->nstates - tddft_start_state;
     int pbasis = kptr->pbasis;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 

@@ -59,17 +59,16 @@ void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis
 void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states);
 #endif
 
-template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state);
-template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state);
+template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
 
 template <typename KpointType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state)
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state, int num_states)
 {
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
-    int num_states = kptr->nstates - tddft_start_state;
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
     KpointType alpha(vel);

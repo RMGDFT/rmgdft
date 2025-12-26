@@ -350,8 +350,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     int ictxt = desca[1];
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-    static int m_dim=0;
-    static std::complex<double> *A_glob = NULL;
+    std::complex<double> *A_glob = NULL;
     if(m != n || m != k)
     {
         printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
@@ -360,12 +359,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     if(ct.tddft_tiledMM)
     {
-        if(m_dim != m)
-        {
-            if(A_glob != NULL) FreeHostOrDevice(A_glob);
-            MallocHostOrDevice((void **)&A_glob,  m*m*sizeof(std::complex<double>));
-            m_dim = m;
-        }
+        MallocHostOrDevice((void **)&A_glob,  m*m*sizeof(std::complex<double>));
         if(strcmp("n", transb) && strcmp("N", transb)) 
         {
             printf ("mgpu_dgemm requires transb = n \n");
@@ -376,6 +370,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
         TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
         RmgGemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
+        FreeHostOrDevice(A_glob);
         return;
     }
     if(!ct.tddft_gpu)

@@ -47,12 +47,12 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state)
+void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states)
 {
      throw RmgFatalException() << "TDDFT vector potential mode: wave function cannot be real now " << "\n";
 }
 
-void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state)
+void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states)
 {
 
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
@@ -61,7 +61,6 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
-    int num_states = kptr->nstates - tddft_start_state;
     int pbasis = kptr->pbasis;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 

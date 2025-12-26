@@ -47,15 +47,15 @@ void RmgTddft ( spinobj<double> &vxc,
                    fgobj<double> &rhocore,
                    fgobj<double> &rhoc,Kpoint<OrbitalType> **Kptr);
 
-void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
-void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
-void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
-void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state);
+void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
+void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
+void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state, int num_states);
+void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state, int num_states);
 void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
 void CurrentOperator (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 
 template <typename KpointType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state, int num_states);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
