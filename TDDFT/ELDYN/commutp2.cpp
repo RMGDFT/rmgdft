@@ -603,11 +603,13 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
     std::complex<double>   mone(-1.0,0.0)           ;
     int Mglob = desca[3];
 
-    if(!ct.tddft_gpu)
+    //if(!ct.tddft_gpu)
     {
         /* ----  P1=P0 ,  dP=P0   ---- */
-        std::complex<double>      *C   = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
-        std::complex<double>      *dP  = (std::complex<double> *)RmgMallocHost(Nsq * sizeof(std::complex<double>));
+        std::complex<double> *C, *dP;
+        MallocHostOrDevice((void **)&C,  Nsq * sizeof(std::complex<double>));
+        MallocHostOrDevice((void **)&dP,  Nsq * sizeof(std::complex<double>));
+
         zcopy_driver(Nsq,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
         zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         while ( iter  <= maxiter && tConv ==  false ) {
@@ -631,62 +633,9 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
 
             iter ++ ;
         }
-        RmgFreeHost(C);
-        RmgFreeHost(dP);
+        FreeHostOrDevice(C);
+        FreeHostOrDevice(dP);
     }
-    else
-    {
-#if CUDA_ENABLED || HIP_ENABLED
-        int Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
-        std::complex<double> *Om_dev, *P0_dev, *P1_dev, *dP_dev, *C0_dev;
-        gpublasStatus_t gstat;
-        gpuMalloc((void **)&Om_dev, Nsq_alloc * sizeof(std::complex<double>));
-        gpuMalloc((void **)&P1_dev, Nsq2 * sizeof(std::complex<double>));
-        gpuMalloc((void **)&C0_dev, Nsq_alloc * sizeof(std::complex<double>));
-        gpuMalloc((void **)&dP_dev, Nsq2 * sizeof(std::complex<double>));
-        zcopy_driver(Nsq,   Om, ione, Om_dev ,ione) ;      // GPU buffer for Om
-        /* ----  P1=P0 ,  dP=P0   ---- */
-        zcopy_driver(Nsq,  P0, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-        zcopy_driver(Nsq,  P0, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-        while ( iter  <= maxiter && tConv ==  false ) {
-            std::complex<double> alpha(0.0, -1.0e0 /iter) ;
-            std::complex<double> beta (0.0,0.0) ;
-
-            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om_dev, ione, ione, desca,
-                    dP_dev, ione, ione, desca, beta, C0_dev, ione, ione, desca);
-            //zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
-            //        dP, ione, ione, desca, beta, C, ione, ione, desca);
-            // C = -i * Om * dP
-
-            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP_dev, ione, ione, desca,
-                    Om_dev, ione, ione, desca, mone, C0_dev, ione, ione, desca);
-            my_sync_device();
-            //zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
-            //        Om, ione, ione, desca, mone, C, ione, ione, desca);
-            // C = -i (dP * OM - Om * dP)
-
-            zcopy_driver(Nsq,  C0_dev, ione, dP_dev   ,ione) ;
-            //
-            zaxpy_driver(Nsq, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
-            tstconv((double *)dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
-            if (abs(err) >  errmax)  errmax= abs(err)  ;
-
-            iter ++ ;
-        }
-
-        zcopy_driver(Nsq,  P1_dev, ione, P1, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
-
-        gpuFree(dP_dev);
-        gpuFree(C0_dev);
-        gpuFree(P1_dev);
-        gpuFree(Om_dev);
-
-#endif
-    }
-
     /*--- return  error max---- */
     *(p_errmax) = errmax ;
 } 
-
-
