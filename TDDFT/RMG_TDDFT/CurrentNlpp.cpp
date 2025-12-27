@@ -47,12 +47,10 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state, int num_states)
-{
-    throw RmgFatalException() << "TDDFT vector potential mode: wave function cannot be real now " << "\n";
-}
-
-void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state, int num_states)
+template void CurrentNlpp<std::complex<double>> (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state, int num_states);
+template void CurrentNlpp<double> (Kpoint<double> *kptr, int *desca, int tddft_start_state, int num_states);
+template <typename OrbitalType>
+void CurrentNlpp (Kpoint<OrbitalType> *kptr, int *desca, int tddft_start_state, int num_states)
 {
 
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
@@ -66,10 +64,11 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
 
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
     //  alpha take care of i in moment operator
-    std::complex<double> alpha(0.0, vel);
-    std::complex<double> beta(0.0);
+    OrbitalType alpha(vel);
+    OrbitalType beta(0.0);
+    std::complex<double> I_t(0.0, 1.0);
 
-    std::complex<double> *block_matrix;
+    OrbitalType *block_matrix;
 
     char *trans_n = "n";
     char *trans_c = "c";
@@ -82,18 +81,18 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
 
     // 3 block matrix for px, py, pz operators
     int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(std::complex<double>) , MPI_INFO_NULL, &block_matrix);
-    std::complex<double> *block_matrix_x = block_matrix;
-    std::complex<double> *block_matrix_y = block_matrix_x + num_states * nb;
-    std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
-
     if(retval1 != MPI_SUCCESS) {
-        rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+        rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure ");
     }
+
+    OrbitalType *block_matrix_x = block_matrix;
+    OrbitalType *block_matrix_y = block_matrix_x + num_states * nb;
+    OrbitalType *block_matrix_z = block_matrix_y + num_states * nb;
 
 
     // V|psi> is in tmp_arrayT
-    std::complex<double> *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
-    std::complex<double> *psi_dev;
+    OrbitalType *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
+    OrbitalType *psi_dev;
     if(kptr->psi_dev)
     {
         psi_dev = kptr->psi_dev + tddft_start_state * pbasis_noncol;
@@ -103,16 +102,16 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
         psi_dev = psi;
     }
 
-    std::complex<double> *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
-    std::complex<double> *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
-    std::complex<double> *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
 
-    std::complex<double> *ns = kptr->ns;
-    std::complex<double> *nv = kptr->nv;
-    std::complex<double> *newsint_local = kptr->newsint_local;
+    OrbitalType *ns = kptr->ns;
+    OrbitalType *nv = kptr->nv;
+    OrbitalType *newsint_local = kptr->newsint_local;
 
 
-    int factor = 2;
+    int factor = sizeof(OrbitalType)/sizeof(double);
     int ix, iy, iz;
     Rmg_G->pe2xyz (pct.gridpe, &ix, &iy, &iz);
 
@@ -165,9 +164,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                 for(int j = 0; j < num_states/pct.local_comm_npes; j++)
                 {
                     int jglob = j + pct.local_rank * num_states/pct.local_comm_npes ;
-                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] += block_matrix_x[ jglob * this_block_size + i];
-                    kptr->Pymatrix_cpu[ j * num_states + i + istart] += block_matrix_y[ jglob * this_block_size + i];
-                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] += block_matrix_z[ jglob * this_block_size + i];
+                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] += I_t * block_matrix_x[ jglob * this_block_size + i];
+                    kptr->Pymatrix_cpu[ j * num_states + i + istart] += I_t * block_matrix_y[ jglob * this_block_size + i];
+                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] += I_t * block_matrix_z[ jglob * this_block_size + i];
                 }
             }
 
@@ -178,9 +177,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                 {
                     for(int j = 0; j < num_states; j++)
                     {
-                        kptr->Pxmatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_x[ j * this_block_size + i]);
-                        kptr->Pymatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_y[ j * this_block_size + i]);
-                        kptr->Pzmatrix_cpu[ itile * num_states + j] += MyConj(block_matrix_z[ j * this_block_size + i]);
+                        kptr->Pxmatrix_cpu[ itile * num_states + j] += MyConj(I_t * block_matrix_x[ j * this_block_size + i]);
+                        kptr->Pymatrix_cpu[ itile * num_states + j] += MyConj(I_t * block_matrix_y[ j * this_block_size + i]);
+                        kptr->Pzmatrix_cpu[ itile * num_states + j] += MyConj(I_t * block_matrix_z[ j * this_block_size + i]);
                     }
                 }
             }
@@ -204,9 +203,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_x[ (j + jb * mb ) * this_block_size + i];
-                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_y[ (j + jb * mb ) * this_block_size + i];
-                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] += block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] += I_t * block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] += I_t * block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] += I_t * block_matrix_z[ (j + jb * mb ) * this_block_size + i];
                             }
                         }
                     }
@@ -227,9 +226,9 @@ void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_star
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
-                                kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
-                                kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
+                                kptr->Pxmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(I_t * block_matrix_x[ (j + jb * mb ) * this_block_size + i]);
+                                kptr->Pymatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(I_t * block_matrix_y[ (j + jb * mb ) * this_block_size + i]);
+                                kptr->Pzmatrix_cpu[(istart + i) * mxllda + j + jstart] += MyConj(I_t * block_matrix_z[ (j + jb * mb ) * this_block_size + i]);
                             }
                         }
                     }
