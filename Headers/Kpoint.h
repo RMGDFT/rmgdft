@@ -222,9 +222,9 @@ public:
     KpointType *Hmatrix_m1_cpu ;
     KpointType *Hmatrix_0_cpu  ;
     KpointType *Akick_cpu  ;
-    KpointType *Pxmatrix_cpu  ;
-    KpointType *Pymatrix_cpu  ;
-    KpointType *Pzmatrix_cpu  ;
+    std::complex<double> *Pxmatrix_cpu  ;
+    std::complex<double> *Pymatrix_cpu  ;
+    std::complex<double> *Pzmatrix_cpu  ;
 
     // BP_matrix_cpu: S^-1(k, k+1) Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
     KpointType *BP_Xml = NULL  ;

@@ -40,15 +40,15 @@ template <typename KpointType>
 void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l);
 
 template <typename OrbitalType> 
-void RmgTddft ( spinobj<double> &vxc,
+    void RmgTddft ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,
                    spinobj<double> &rho,
                    fgobj<double> &rhocore,
                    fgobj<double> &rhoc,Kpoint<OrbitalType> **Kptr);
 
-void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
-void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
+template <typename OrbitalType> 
+    void VecPHmatrix (Kpoint<OrbitalType> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
 void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state, int num_states);
 void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state, int num_states);
 void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);

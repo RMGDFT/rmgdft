@@ -47,12 +47,10 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states)
-{
-     throw RmgFatalException() << "TDDFT vector potential mode: wave function cannot be real now " << "\n";
-}
-
-void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states)
+template void VecPHmatrix<double> (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
+template void VecPHmatrix<std::complex<double>> (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
+template <typename OrbitalType>
+    void VecPHmatrix (Kpoint<OrbitalType> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states)
 {
 
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
@@ -66,10 +64,11 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
     //  alpha take care of i in moment operator
-    std::complex<double> alpha(0.0, vel);
-    std::complex<double> beta(0.0);
+    OrbitalType alpha(vel);
+    OrbitalType beta(0.0);
+    std::complex<double> I_t(0.0, 1.0);
 
-    std::complex<double> *block_matrix;
+    OrbitalType *block_matrix;
 
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
@@ -85,10 +84,10 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
     // First time through allocate pinned memory for global_matrix1
 
     // 3 block matrix for px, py, pz operators
-    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(std::complex<double>) , MPI_INFO_NULL, &block_matrix);
-    std::complex<double> *block_matrix_x = block_matrix;
-    std::complex<double> *block_matrix_y = block_matrix_x + num_states * nb;
-    std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
+    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(OrbitalType) , MPI_INFO_NULL, &block_matrix);
+    OrbitalType *block_matrix_x = block_matrix;
+    OrbitalType *block_matrix_y = block_matrix_x + num_states * nb;
+    OrbitalType *block_matrix_z = block_matrix_y + num_states * nb;
 
     if(retval1 != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
@@ -96,8 +95,8 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
 
     // V|psi> is in tmp_arrayT
-    std::complex<double> *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
-    std::complex<double> *psi_dev;
+    OrbitalType *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncol;
+    OrbitalType *psi_dev;
     if(kptr->psi_dev)
     {
         psi_dev = kptr->psi_dev + tddft_start_state * pbasis_noncol;
@@ -107,9 +106,9 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
         psi_dev = psi;
     }
 
-    std::complex<double> *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
-    std::complex<double> *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
-    std::complex<double> *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_x = &kptr->orbital_storage[kptr->nstates * pbasis_noncol];  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_y = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
+    OrbitalType *psi_z = &kptr->orbital_storage[kptr->nstates * pbasis_noncol] + 2*nb * pbasis_noncol;  // use the memory of psi extra 3* state_block_size.
 
     for(int ib = 0; ib < num_blocks; ib++)
     {
@@ -128,10 +127,10 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
         for (int st1 = 0; st1 < this_block_size; st1++)
         {
-            std::complex<double> *psi1 = psi + (ib*nb + st1) * pbasis_noncol;
-            std::complex<double> *psi1_x = psi_x + st1 * pbasis_noncol;
-            std::complex<double> *psi1_y = psi_y + st1 * pbasis_noncol;
-            std::complex<double> *psi1_z = psi_z + st1 * pbasis_noncol;
+            OrbitalType *psi1 = psi + (ib*nb + st1) * pbasis_noncol;
+            OrbitalType *psi1_x = psi_x + st1 * pbasis_noncol;
+            OrbitalType *psi1_y = psi_y + st1 * pbasis_noncol;
+            OrbitalType *psi1_z = psi_z + st1 * pbasis_noncol;
             ApplyGradient(psi1, psi1_x, psi1_y, psi1_z, ct.force_grad_order, "Coarse");
             if(ct.noncoll)
             {
@@ -140,7 +139,6 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
 
             if(!ct.is_gamma)
             {
-                std::complex<double> I_t(0.0, 1.0);
                 std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
                 psi_C = (std::complex<double> *) psi1;
                 psi_xC = (std::complex<double> *) psi1_x;
@@ -177,9 +175,9 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
                 for(int j = 0; j < num_states/pct.local_comm_npes; j++)
                 {
                     int jglob = j + pct.local_rank * num_states/pct.local_comm_npes ;
-                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] = block_matrix_x[ jglob * this_block_size + i];
-                    kptr->Pymatrix_cpu[ j * num_states + i + istart] = block_matrix_y[ jglob * this_block_size + i];
-                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] = block_matrix_z[ jglob * this_block_size + i];
+                    kptr->Pxmatrix_cpu[ j * num_states + i + istart] = I_t*block_matrix_x[ jglob * this_block_size + i];
+                    kptr->Pymatrix_cpu[ j * num_states + i + istart] = I_t*block_matrix_y[ jglob * this_block_size + i];
+                    kptr->Pzmatrix_cpu[ j * num_states + i + istart] = I_t*block_matrix_z[ jglob * this_block_size + i];
                 }
             }
 
@@ -200,9 +198,9 @@ void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int 
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_x[ (j + jb * mb ) * this_block_size + i];
-                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_y[ (j + jb * mb ) * this_block_size + i];
-                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = block_matrix_z[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pxmatrix_cpu[(jstart + j) * mxllda + i + istart] = I_t*block_matrix_x[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pymatrix_cpu[(jstart + j) * mxllda + i + istart] = I_t*block_matrix_y[ (j + jb * mb ) * this_block_size + i];
+                                kptr->Pzmatrix_cpu[(jstart + j) * mxllda + i + istart] = I_t*block_matrix_z[ (j + jb * mb ) * this_block_size + i];
                             }
                         }
                     }
