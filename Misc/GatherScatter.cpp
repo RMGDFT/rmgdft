@@ -103,6 +103,17 @@ void CopyAndConvert(int n, std::complex<float> *A, std::complex<float> *B)
         B[idx] = A[idx];
 }
 
+void CopyAndConvert(int n, double *A, std::complex<double> *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = A[idx];
+}
+void CopyAndConvert(int n, double *A, std::complex<float> *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = A[idx];
+}
+
 void GatherScatterInit(size_t n)
 {
     size_t sizr = sizeof(double);

@@ -43,6 +43,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "prototypes_tddft.h"
+#include "GatherScatter.h"
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
@@ -56,19 +57,22 @@
 
 #if CUDA_ENABLED || HIP_ENABLED
 void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states);
-void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(float *psi_dev,  float *work_dev, float *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *vtot_eig, int pbasis, int num_states);
 #endif
 
-template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
-template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<double, double>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<double, float>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
 
-template <typename KpointType>
+template <typename KpointType, typename CalType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state, int num_states)
 {
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
-
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
     KpointType alpha(vel);
@@ -91,9 +95,36 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }   
 
 #if CUDA_ENABLED || HIP_ENABLED
-    KpointType *psi_dev = (KpointType *)kptr->psi_dev;
+    CalType *psi_dev;
+    CalType *work_dev;
+    if(typeid(KpointType) == typeid(CalType))
+    {
+        psi_dev = (CalType *)kptr->psi_dev;
+        work_dev = (CalType *)kptr->work_dev;
+    }
+    else
+    {
+        psi_dev = (CalType *)kptr->psi_dev_half;
+        work_dev = (CalType *)kptr->work_dev_half;
+    }
+
     psi_dev = psi_dev + tddft_start_state * pbasis;
-    KpointType *work_dev = (KpointType *)kptr->work_dev;
+
+    static void *vtot_eig_caltype= NULL;
+    if(vtot_eig_caltype == NULL)
+    {
+        vtot_eig_caltype = malloc(pbasis*sizeof(std::complex<double>));
+    }
+    CopyAndConvert(pbasis, vtot_eig, (CalType *)vtot_eig_caltype);
+    static CalType *v_dev;
+    if(!v_dev)
+    {
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
+    }
+
+    gpuMemcpy(v_dev, vtot_eig_caltype,  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
+
     static KpointType *mat_dev;
     gpublasStatus_t gstat;
 
@@ -101,7 +132,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     //block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
 
-    Veff_x_psi(psi_dev, work_dev, vtot_eig, pbasis, num_states);
 
 
     if(!mat_dev)
@@ -120,7 +150,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     {
         int size_col = std::min(block_size, num_states - j * block_size);
         int size_row = num_states - j * block_size;
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi_dev+ j*block_size*pbasis, pbasis, work_dev + j * block_size * pbasis, 
+        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (KpointType *)(psi_dev+ j*block_size*pbasis), pbasis, (KpointType *)(work_dev + j * block_size * pbasis), 
                 pbasis, beta, mat_dev, size_row);
         gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
 
@@ -194,30 +224,23 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 }
 
 #if CUDA_ENABLED || HIP_ENABLED
-void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states)
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *v_dev, int pbasis, int num_states)
 {
     gpublasStatus_t gstat;
-    static double *v_dev;
-    if(!v_dev)
-    {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
-    }
-    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
     gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
             (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
     RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }
-void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states)
+void Veff_x_psi(float *psi_dev,  float *work_dev, float *v_dev, int pbasis, int num_states)
 {
     gpublasStatus_t gstat;
-    static std::complex<double> *v_dev, *vtot_eig_C;
-    if(!v_dev)
-    {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(std::complex<double>));
-        vtot_eig_C = new std::complex<double>[pbasis];
-    }
-    for(int i = 0; i < pbasis; i++) vtot_eig_C[i] = vtot_eig[i];
-    gpuMemcpy(v_dev, vtot_eig_C,  pbasis * sizeof(std::complex<double>), gpuMemcpyHostToDevice);
+    gstat = gpublasSdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (float *)psi_dev, pbasis, (float *)v_dev, 1, (float *)work_dev, pbasis);
+    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+}
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *v_dev, int pbasis, int num_states)
+{
+    gpublasStatus_t gstat;
 
 #if  HIP_ENABLED
     gstat = hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
@@ -228,6 +251,22 @@ void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, 
             reinterpret_cast<cuDoubleComplex*>(psi_dev), pbasis,
             reinterpret_cast<cuDoubleComplex*>(v_dev), 1,
             reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis);
+#endif
+    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+}
+void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *v_dev, int pbasis, int num_states)
+{
+    gpublasStatus_t gstat;
+
+#if  HIP_ENABLED
+    gstat = hipblasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (hipFloatComplex *)psi_dev, pbasis, (hipFloatComplex *)v_dev, 1, (hipFloatComplex *)work_dev, pbasis);
+#endif
+#if  CUDA_ENABLED 
+    gstat = cublasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            reinterpret_cast<cuFloatComplex*>(psi_dev), pbasis,
+            reinterpret_cast<cuFloatComplex*>(v_dev), 1,
+            reinterpret_cast<cuFloatComplex*>(work_dev), pbasis);
 #endif
     RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }

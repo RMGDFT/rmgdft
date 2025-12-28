@@ -53,7 +53,7 @@ template <typename OrbitalType> void CurrentNlpp (Kpoint<OrbitalType> *kptr, int
 void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
 void CurrentOperator (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 
-template <typename KpointType>
+template <typename KpointType, typename CalType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state, int num_states);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);

@@ -48,6 +48,8 @@ void CopyAndConvert(int n, std::complex<double> *A, std::complex<double> *B);
 void CopyAndConvert(int n, float *A, double *B);
 void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B);
 void CopyAndConvert(int n, std::complex<float> *A, std::complex<float> *B);
+void CopyAndConvert(int n, double *A, std::complex<float> *B);
+void CopyAndConvert(int n, double *A, std::complex<double> *B);
 
 
 #endif
