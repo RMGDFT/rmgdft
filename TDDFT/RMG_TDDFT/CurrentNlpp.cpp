@@ -80,7 +80,7 @@ void CurrentNlpp (Kpoint<OrbitalType> *kptr, int *desca, int tddft_start_state, 
     // First time through allocate pinned memory for global_matrix1
 
     // 3 block matrix for px, py, pz operators
-    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(std::complex<double>) , MPI_INFO_NULL, &block_matrix);
+    int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(OrbitalType) , MPI_INFO_NULL, &block_matrix);
     if(retval1 != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure ");
     }

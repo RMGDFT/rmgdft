@@ -311,15 +311,15 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     int *desca = Sp->GetDistDesca();
 
     n22 = 2* n2;
-    int n2_C = n2 * sizeof(OrbitalType)/sizeof(double);
+    int n2_C = n2 * sizeof(MatrixType)/sizeof(double);
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        Kptr[kpt]->Hmatrix_cpu     = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Hmatrix_cpu     = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         Kptr[kpt]->Pn0_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
         Kptr[kpt]->Pn1_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
-        Kptr[kpt]->Hmatrix_m1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Hmatrix_1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Hmatrix_0_cpu   = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Hmatrix_m1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
+        Kptr[kpt]->Hmatrix_1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
+        Kptr[kpt]->Hmatrix_0_cpu   = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         if(ct.tddft_mode == VECTOR_POT)
         {
             Kptr[kpt]->Pxmatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
