@@ -39,7 +39,7 @@ FILE *my_fopen_increment(char *name);
 template <typename KpointType>
 void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l);
 
-template <typename OrbitalType> 
+template <typename OrbitalType, typename MatrixType> 
     void RmgTddft ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,

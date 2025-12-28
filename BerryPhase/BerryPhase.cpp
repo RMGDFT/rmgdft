@@ -656,7 +656,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
     {
         // Pn1_cpu will store the eigenvectors
         // new psi = Pn1_cpu * psi
-        Eigen(Kptr[kpt]->Hmatrix_1_cpu, eigs, Kptr[kpt]->Pn1_cpu, numst, numst, Sp);  
+        Eigen((std::complex<double> *)Kptr[kpt]->Hmatrix_1_cpu, eigs, (std::complex<double> *)Kptr[kpt]->Pn1_cpu, numst, numst, Sp);  
 
     }
 
@@ -675,15 +675,15 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
         {
             int ik_index = iort * num_kpp + jpp;
 
-            std::complex<double> *Cij_k = Kptr[ik_index]->Pn1_cpu;
+            std::complex<double> *Cij_k = (std::complex<double> *)Kptr[ik_index]->Pn1_cpu;
             std::complex<double> *Cij_k1 = NULL;
             if(jpp == num_kpp-1)
             {
-                Cij_k1= Kptr[iort * num_kpp]->Pn1_cpu;
+                Cij_k1= (std::complex<double> *)Kptr[iort * num_kpp]->Pn1_cpu;
             }
             else
             {
-                Cij_k1= Kptr[ik_index+1]->Pn1_cpu;
+                Cij_k1= (std::complex<double> *)Kptr[ik_index+1]->Pn1_cpu;
             } 
             std::complex<double> *Skk1 = Kptr[ik_index]->BP_Skk1_cpu;
             zgemm_driver ("C", "N", numst, numst, numst, alpha, Cij_k, ione, ione, desca,

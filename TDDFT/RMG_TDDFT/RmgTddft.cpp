@@ -187,20 +187,26 @@ void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
 }
 
 
-template void RmgTddft<double> ( spinobj<double> &vxc,
+template void RmgTddft<double, double> ( spinobj<double> &vxc,
+                   fgobj<double> &vh,
+                   fgobj<double> &vnuc,
+                   spinobj<double> &rho,
+                   fgobj<double> &rhocore,
+                   fgobj<double> &rhoc,Kpoint<double> **Kptr);
+template void RmgTddft<double, std::complex<double>> ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,
                    spinobj<double> &rho,
                    fgobj<double> &rhocore,
                    fgobj<double> &rhoc,Kpoint<double> **Kptr);
 
-template void RmgTddft<std::complex<double> > ( spinobj<double> &vxc,
+template void RmgTddft<std::complex<double>, std::complex<double> > ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,
                    spinobj<double> &rho,
                    fgobj<double> &rhocore,
                    fgobj<double> &rhoc, Kpoint<std::complex<double>> **);
-template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
+template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,
                    spinobj<double> &rho,
@@ -308,12 +314,12 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
     int n2_C = n2 * sizeof(OrbitalType)/sizeof(double);
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        Kptr[kpt]->Hmatrix_cpu     = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Pn0_cpu         = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
-        Kptr[kpt]->Pn1_cpu         = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
-        Kptr[kpt]->Hmatrix_m1_cpu  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Hmatrix_1_cpu  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
-        Kptr[kpt]->Hmatrix_0_cpu   = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Hmatrix_cpu     = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Pn0_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+        Kptr[kpt]->Pn1_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+        Kptr[kpt]->Hmatrix_m1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Hmatrix_1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
+        Kptr[kpt]->Hmatrix_0_cpu   = (void *)RmgMallocHost((size_t)n2*sizeof(OrbitalType));
         if(ct.tddft_mode == VECTOR_POT)
         {
             Kptr[kpt]->Pxmatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
@@ -327,32 +333,35 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         }
     }
 
-    OrbitalType *matrix_glob = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
+    MatrixType *matrix_glob = (MatrixType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(MatrixType));
+    OrbitalType *matrix_glob_orbitaltype = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
+    std::complex<double> *mat_C = (std::complex<double> *) matrix_glob_orbitaltype; 
+    double *mat_R = (double *) matrix_glob_orbitaltype; 
     fgobj<double> vh_old, vh_dipole, vh_dipole_old;
     spinobj<double> vxc_old, rho_k, rho_ksum;
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
-    OrbitalType *Pn1        ;
-    OrbitalType *Hmatrix_1  ;
+    MatrixType *Pn1        ;
+    MatrixType *Hmatrix_1  ;
 
-    OrbitalType *Hmatrix     = NULL;
-    OrbitalType *Pn0         = NULL;
-    OrbitalType *Hmatrix_m1  = NULL;
-    OrbitalType *Hmatrix_0   = NULL;
-    size_t matrix_size = n2*sizeof(OrbitalType);
+    MatrixType *Hmatrix     = NULL;
+    MatrixType *Pn0         = NULL;
+    MatrixType *Hmatrix_m1  = NULL;
+    MatrixType *Hmatrix_0   = NULL;
+    size_t matrix_size = n2*sizeof(MatrixType);
     if(ct.tddft_gpu)
     {
-        gpuMalloc((void **)&Hmatrix, n2*sizeof(OrbitalType));
-        gpuMalloc((void **)&Hmatrix_m1, n2*sizeof(OrbitalType));
-        gpuMalloc((void **)&Hmatrix_0, n2*sizeof(OrbitalType));
+        gpuMalloc((void **)&Hmatrix, n2*sizeof(MatrixType));
+        gpuMalloc((void **)&Hmatrix_m1, n2*sizeof(MatrixType));
+        gpuMalloc((void **)&Hmatrix_0, n2*sizeof(MatrixType));
         gpuMalloc((void **)&Pn0, 2*n2*sizeof(double));
 
-        gpuMalloc((void **)&Hmatrix_1, n2*sizeof(OrbitalType));
+        gpuMalloc((void **)&Hmatrix_1, n2*sizeof(MatrixType));
         gpuMalloc((void **)&Pn1, 2*n2*sizeof(double));
     }
     else
     {
-        Pn1  = (OrbitalType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+        Pn1  = (MatrixType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
     }
 
 
@@ -548,21 +557,12 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             }
             else
             {
-                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_cpu, numst, desca);
+                Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Hmatrix_cpu, numst, desca);
             }
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
 
-
-            if(n2 == n2_C)
-            {
-                for(i = 0; i < 2* n2; i++) Kptr[kpt]->Pn0_cpu[i] = 0.0;
-            }
-            else
-            {
-                for(i = 0; i < n2; i++) Kptr[kpt]->Pn0_cpu[i] = 0.0;
-            }
 
             for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
             for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
@@ -572,7 +572,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             }
             else
             {
-                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Pn0_cpu, numst, desca);
+                Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Pn0_cpu, numst, desca);
             }
         }
 
@@ -602,7 +602,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
             }
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 HmatrixUpdate(Kptr[kpt], vtot_psi.data(), (OrbitalType *)matrix_glob, ct.tddft_start_state, numst);
-                Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
+                Sp->CopySquareMatrixToDistArray((OrbitalType *)matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
                 daxpy ( &n2_C,  &alpha, (double *)Kptr[kpt]->Akick_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu , &ione) ;
                 memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
             }
@@ -673,7 +673,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
         {
             // Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
             // Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
-            Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
+            Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, (OrbitalType *)matrix_glob, *Sp);
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
@@ -764,12 +764,12 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 }
                 else
                 {
-                    Hmatrix = Kptr[kpt]->Hmatrix_cpu;
-                    Hmatrix_m1 = Kptr[kpt]->Hmatrix_m1_cpu;
-                    Hmatrix_1 = Kptr[kpt]->Hmatrix_1_cpu;
-                    Hmatrix_0 = Kptr[kpt]->Hmatrix_0_cpu;
-                    Pn0 = Kptr[kpt]->Pn0_cpu;
-                    Pn1 = Kptr[kpt]->Pn1_cpu;
+                    Hmatrix = (MatrixType *)Kptr[kpt]->Hmatrix_cpu;
+                    Hmatrix_m1 = (MatrixType *)Kptr[kpt]->Hmatrix_m1_cpu;
+                    Hmatrix_1 = (MatrixType *)Kptr[kpt]->Hmatrix_1_cpu;
+                    Hmatrix_0 = (MatrixType *)Kptr[kpt]->Hmatrix_0_cpu;
+                    Pn0 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
+                    Pn1 = (MatrixType *)Kptr[kpt]->Pn1_cpu;
                 }
                 my_sync_device();
                 delete RT2a;
@@ -794,7 +794,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 RT2a = new RmgTimer("2-TDDFT: Rho");
                 if(ct.tddft_tiledMM)
                 {
-                    TiledM_to_glob(matrix_glob, Kptr[kpt]->Pn1_cpu, numst, pct.local_comm);
+                    TiledM_to_glob(matrix_glob, (MatrixType *)Kptr[kpt]->Pn1_cpu, numst, pct.local_comm);
                 }
                 else
                 {
@@ -807,7 +807,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                                 Sp->ScalapackBlockAllreduce((double *)matrix_glob, (size_t)numst * (size_t)numst *n2_C/n2);
                         }
 
-                        size_t count = numst * numst * sizeof(OrbitalType) /sizeof(double);
+                        size_t count = numst * numst * sizeof(MatrixType) /sizeof(double);
                         Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
                     }
                     else
@@ -817,8 +817,16 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 }
 
 
+                if(typeid(OrbitalType) == typeid(double))
+                {
+                    for(int i = 0; i < numst * numst; i++) mat_R[i] = std::real(matrix_glob[i]);
+                }
+                else
+                {
+                    for(int i = 0; i < numst * numst; i++) mat_C[i] = matrix_glob[i];
+                }
                 my_sync_device();
-                GetNewRho_rmgtddft(Kptr[kpt], rho_k.data(), matrix_glob, numst, ct.tddft_start_state);
+                GetNewRho_rmgtddft(Kptr[kpt], rho_k.data(), matrix_glob_orbitaltype, numst, ct.tddft_start_state);
 
                 int kpt_glob = kpt + pct.kstart;
                 for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] += rho_k[idx] * ct.kp[kpt_glob].kweight;
@@ -884,7 +892,8 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
 
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 RT2a = new RmgTimer("2-TDDFT: Hupdate");
-                HmatrixUpdate(Kptr[kpt], vtot_psi.data(), matrix_glob, ct.tddft_start_state, numst);                                     
+                HmatrixUpdate(Kptr[kpt], vtot_psi.data(), matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                for(int i = 0; i < numst * numst; i++) matrix_glob[i] = matrix_glob_orbitaltype[i];
                 if(ct.tddft_tiledMM)
                 {
                     memcpy(Kptr[kpt]->Hmatrix_m1_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
@@ -893,7 +902,7 @@ template <typename OrbitalType> void RmgTddft ( spinobj<double> &vxc,
                 {
                     if( scalapack_groups != pct.grid_npes)
                     {
-                        Sp->CopySquareMatrixToDistArray(matrix_glob, Kptr[kpt]->Hmatrix_m1_cpu, numst, desca);
+                        Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Hmatrix_m1_cpu, numst, desca);
                     }
                     else
                     {

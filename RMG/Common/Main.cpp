@@ -463,7 +463,14 @@ template <typename OrbitalType> void run (
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
             ct.cube_rho = false;
-            RmgTddft (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                RmgTddft<OrbitalType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+            else
+            {
+                RmgTddft<OrbitalType,OrbitalType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
             break;
 
         case Exx_only:

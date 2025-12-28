@@ -215,12 +215,12 @@ public:
     fgobj<double> *rhocore;
     spinobj<double> *rho;
     spinobj<double> *vxc;
-    KpointType *Hmatrix_cpu    ;
-    KpointType *Pn0_cpu        ;
-    KpointType *Pn1_cpu        ;
-    KpointType *Hmatrix_1_cpu ;
-    KpointType *Hmatrix_m1_cpu ;
-    KpointType *Hmatrix_0_cpu  ;
+    void *Hmatrix_cpu    ;
+    void *Pn0_cpu        ;
+    void *Pn1_cpu        ;
+    void *Hmatrix_1_cpu ;
+    void *Hmatrix_m1_cpu ;
+    void *Hmatrix_0_cpu  ;
     KpointType *Akick_cpu  ;
     std::complex<double> *Pxmatrix_cpu  ;
     std::complex<double> *Pymatrix_cpu  ;
