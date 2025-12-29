@@ -225,6 +225,9 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.local_comm);
     ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.local_rank);
 #endif  
+    Kpoint<double> *kptr_d;
+    Kpoint<std::complex<double>> *kptr_c;
+
 
     double dipole_tot[3];
 
@@ -469,23 +472,23 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         gpuMalloc((void **)&Kptr[kpt]->psi_dev, psi_alloc);
         gpuMalloc((void **)&Kptr[kpt]->work_dev, psi_alloc);
         RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, psi_alloc);
-        if(ct.tddft_halfprecision)
+        if(ct.tddft_floatprecision)
         {
-            gpuMalloc((void **)&Kptr[kpt]->psi_dev_half, psi_alloc/2);
-            gpuMalloc((void **)&Kptr[kpt]->work_dev_half, psi_alloc/2);
+            gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
+            gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
             size_t count = (size_t)ct.num_states * (size_t)pbasis;
             if(typeid(OrbitalType) == typeid(double))
             {
                 float *work_conv = new float[count];
                 CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_half, work_conv, psi_alloc/2);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
                 delete [] work_conv;
             }
             else if(typeid(OrbitalType) == typeid(std::complex<double>))
             {
                 std::complex<float> *work_conv = new std::complex<float>[count];
                 CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_half, work_conv, psi_alloc/2);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
                 delete [] work_conv;
             }
 
@@ -914,7 +917,23 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 RT2a = new RmgTimer("2-TDDFT: Hupdate");
-                HmatrixUpdate<OrbitalType,OrbitalType>  (Kptr[kpt], vtot_psi.data(), matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                if(ct.tddft_floatprecision)
+                {
+                    if(ct.is_gamma)
+                    {
+                        kptr_d = (Kpoint<double> *)Kptr[kpt];
+                        HmatrixUpdate<double,float>  (kptr_d, vtot_psi.data(), (double *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                    }
+                    else
+                    {
+                        kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
+                        HmatrixUpdate<std::complex<double>,std::complex<float>>  (kptr_c, vtot_psi.data(), (std::complex<double> *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                    }
+                }
+                else
+                {
+                    HmatrixUpdate<OrbitalType,OrbitalType>  (Kptr[kpt], vtot_psi.data(), matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                }
                 for(int i = 0; i < numst * numst; i++) matrix_glob[i] = matrix_glob_orbitaltype[i];
                 if(ct.tddft_tiledMM)
                 {

@@ -75,10 +75,10 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     Lattice *L = kptr->L;
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-    KpointType alpha(vel);
-    KpointType beta(0.0);
+    CalType alpha(vel);
+    CalType beta(0.0);
 
-    static KpointType *global_matrix1;
+    static CalType *global_matrix1;
 
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
@@ -104,8 +104,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }
     else
     {
-        psi_dev = (CalType *)kptr->psi_dev_half;
-        work_dev = (CalType *)kptr->work_dev_half;
+        psi_dev = (CalType *)kptr->psi_dev_float;
+        work_dev = (CalType *)kptr->work_dev_float;
     }
 
     psi_dev = psi_dev + tddft_start_state * pbasis;
@@ -117,6 +117,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }
     CopyAndConvert(pbasis, vtot_eig, (CalType *)vtot_eig_caltype);
     static CalType *v_dev;
+    static CalType *mat_dev;
     if(!v_dev)
     {
         gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
@@ -125,7 +126,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     gpuMemcpy(v_dev, vtot_eig_caltype,  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
     Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
 
-    static KpointType *mat_dev;
     gpublasStatus_t gstat;
 
     int block_size = std::max(1024, ct.scalapack_block_factor);
@@ -133,11 +133,10 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     int nblock = (num_states + block_size -1)/block_size;
 
 
-
     if(!mat_dev)
     {
-        gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(KpointType));
-        int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(CalType));
+        int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(CalType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
@@ -150,11 +149,49 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     {
         int size_col = std::min(block_size, num_states - j * block_size);
         int size_row = num_states - j * block_size;
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (KpointType *)(psi_dev+ j*block_size*pbasis), pbasis, (KpointType *)(work_dev + j * block_size * pbasis), 
-                pbasis, beta, mat_dev, size_row);
-        gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
+      //if(ct.tddft_floatprecision && 0)
+      //{
+      //    hipblasStatus_t hipstat;
+      //    hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transN = HIPBLAS_OP_N;
 
-        BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+      //    if(!strcmp(trans_a, "t")) hip_transA = HIPBLAS_OP_T;
+      //    if(!strcmp(trans_a, "T")) hip_transA = HIPBLAS_OP_T;
+      //    if(!strcmp(trans_a, "c")) hip_transA = HIPBLAS_OP_C;
+      //    if(!strcmp(trans_a, "C")) hip_transA = HIPBLAS_OP_C;
+
+
+      //    if(ct.is_gamma)
+      //    {
+      //        float alpha_f = std::real(alpha);
+      //        float beta_f = 0.0;
+      //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+      //                &alpha, psi_dev + j*block_size * pbasis, HIP_R_32F, pbasis, 
+      //                work_dev + j * block_size * pbasis, HIP_R_32F, pbasis, &beta, 
+      //                mat_dev, HIP_R_32F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+      //         // rocblas_gemm_ex(ct.roc_handle, rocblas_operation_transpose, rocblas_operation_none, size_row, size_col, pbasis, 
+      //         //       &alpha_f, psi_dev + j*block_size * pbasis, rocblas_datatype_f32_r, pbasis, 
+      //         //       work_dev + j * block_size * pbasis,  rocblas_datatype_f32_r, pbasis, &beta_f, 
+      //         //       mat_dev1, rocblas_datatype_f32_r, size_row, 
+      //         //       mat_dev, rocblas_datatype_f32_r, size_row, 
+      //         //       rocblas_datatype_f64_r, rocblas_gemm_algo_standard, 0,0);
+      //    }
+      //    else
+      //    {
+      //                  //rocblas_operation_conjugate_
+      //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+      //                &alpha, psi_dev + j*block_size * pbasis, HIP_C_32F, pbasis, 
+      //                work_dev + j * block_size * pbasis, HIP_C_32F, pbasis, &beta, 
+      //                mat_dev, HIP_C_64F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+      //    }
+      //}
+      //else
+        {
+            RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (psi_dev+ j*block_size*pbasis), pbasis, (work_dev + j * block_size * pbasis), 
+                    pbasis, beta, mat_dev, size_row);
+        }
+        gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
+
+        BlockAllreduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
 
         for(int jst = 0; jst < size_col; jst++)
         {
@@ -271,3 +308,5 @@ void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, st
     RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }
 #endif
+
+

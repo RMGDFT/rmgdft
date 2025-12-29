@@ -8,3 +8,11 @@ template <> std::complex<double> MyConj(std::complex<double> val)
 {
     return std::conj(val);
 }
+template <> float MyConj(float val)
+{
+    return val;
+}
+template <> std::complex<float> MyConj(std::complex<float> val)
+{
+    return std::conj(val);
+}
