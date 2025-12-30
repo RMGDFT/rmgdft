@@ -851,7 +851,23 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     for(int i = 0; i < numst * numst; i++) mat_C[i] = matrix_glob[i];
                 }
                 my_sync_device();
-                GetNewRho_rmgtddft(Kptr[kpt], rho_k.data(), matrix_glob_orbitaltype, numst, ct.tddft_start_state);
+                if(ct.tddft_floatprecision)
+                {
+                    if(ct.is_gamma)
+                    {
+                        kptr_d = (Kpoint<double> *)Kptr[kpt];
+                        GetNewRho_rmgtddft<double, float>(kptr_d, rho_k.data(), (double *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (float *)matrix_glob);
+                    }
+                    else
+                    {
+                        kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
+                        GetNewRho_rmgtddft<std::complex<double>, std::complex<float>>(kptr_c, rho_k.data(), (std::complex<double> *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (std::complex<float> *)matrix_glob);
+                    }
+                }
+                else
+                {
+                    GetNewRho_rmgtddft<OrbitalType, OrbitalType>(Kptr[kpt], rho_k.data(), matrix_glob_orbitaltype, numst, ct.tddft_start_state, (OrbitalType *)matrix_glob);
+                }
 
                 int kpt_glob = kpt + pct.kstart;
                 for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] += rho_k[idx] * ct.kp[kpt_glob].kweight;

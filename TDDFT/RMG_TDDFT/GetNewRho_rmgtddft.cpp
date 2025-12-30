@@ -31,11 +31,36 @@
 #include "RmgGemm.h"
 #include "blas_driver.h"
 #include "Prolong.h"
+#include "GatherScatter.h"
 
-template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
-template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state);
-template <typename KpointType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rho_matrix, int numst, int tddft_start_state)
+#include <type_traits>
+
+// 1. Primary template: handles scalar types (float, double, etc.)
+template <typename T>
+struct get_scalar {
+    using type = T;
+};
+
+// 2. Partial specialization: handles std::complex types
+template <typename T>
+struct get_scalar<std::complex<T>> {
+    using type = T;
+};
+
+// 3. Helper alias (Optional but recommended for modern C++)
+template <typename T>
+using get_scalar_t = typename get_scalar<T>::type;
+
+// --- Usage ---
+//using TypeA = get_scalar_t<float>;                // Result: float
+//using TypeB = get_scalar_t<std::complex<float>>;  // Result: float
+
+template void GetNewRho_rmgtddft<double, double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<double, float>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, float *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<double> *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<float> *rho_matrix_caltype);
+template <typename KpointType, typename CalType>
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype)
 {
     int idx;
 
@@ -43,7 +68,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     int st1;
 
-    KpointType one = 1.0, zero = 0.0;
+    using TypeV = get_scalar_t<CalType>;                // Result: float
     int pbasis = get_P0_BASIS();
 
     if(!ct.norm_conserving_pp) {
@@ -61,42 +86,57 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     }
 
+    CopyAndConvert(numst*numst, rho_matrix, rho_matrix_caltype);
 #if CUDA_ENABLED || HIP_ENABLED 
-    double *rho_temp, *rho_temp_dev;
-    rho_temp = (double *)GpuMallocHost(pbasis * sizeof(double));
-    gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
+    // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
+    // the reduction over numst.
+    
+    CalType one = 1.0, zero = 0.0;
+    TypeV *rho_temp, *rho_temp_dev;
+    rho_temp = (TypeV *)GpuMallocHost(pbasis * sizeof(TypeV));
+    gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(TypeV));
+
+    CalType *psi_dev;
+    CalType *xpsi;
+    if(typeid(KpointType) == typeid(CalType))
+    {
+        psi_dev = (CalType *)kptr->psi_dev;
+        xpsi = (CalType *)kptr->work_dev;
+    }
+    else
+    {
+        psi_dev = (CalType *)kptr->psi_dev_float;
+        xpsi = (CalType *)kptr->work_dev_float;
+    }
+
+    psi_dev = psi_dev + tddft_start_state * pbasis;
+
+    RmgGemm ("N", "N", pbasis, numst, numst, one, 
+            psi_dev, pbasis, rho_matrix_caltype, numst, zero, xpsi, pbasis);
+    GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
+    gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
 #else
+    if(typeid(KpointType) != typeid(CalType))
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\n float precision not for CPU \n");
+    }
+    KpointType one = 1.0, zero = 0.0;
+    RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
     double *rho_temp = new double[pbasis];
     for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
+
+    KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
+    KpointType *xpsi = kptr->work_cpu;
+    RmgGemm ("N", "N", pbasis, numst, numst, one, 
+            psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
+
+    delete RT;
+    RT = new RmgTimer("TDDFT: rho: dot");
+    for(st1 = 0; st1 < numst; st1++)
+        for(idx = 0; idx < pbasis; idx++)
+            rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
+    delete RT;
 #endif
-
-
-    if(numst > 0)
-    {
-#if CUDA_ENABLED || HIP_ENABLED 
-        // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
-        // the reduction over numst.
-        KpointType *psi_dev = &kptr->psi_dev[tddft_start_state * pbasis];
-        KpointType *xpsi = kptr->work_dev;
-        RmgGemm ("N", "N", pbasis, numst, numst, one, 
-                psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
-        GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-        gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
-#else
-        RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
-        KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
-        KpointType *xpsi = kptr->work_cpu;
-        RmgGemm ("N", "N", pbasis, numst, numst, one, 
-                psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
-
-        delete RT;
-        RT = new RmgTimer("TDDFT: rho: dot");
-        for(st1 = 0; st1 < numst; st1++)
-            for(idx = 0; idx < pbasis; idx++)
-                rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
-        delete RT;
-#endif
-    }
 
 
     /* Interpolate onto fine grid, result will be stored in rho*/
@@ -113,7 +153,10 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
-    P.prolong(rho_k, rho_temp, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    double *rho_k_double = new double[pbasis];
+    CopyAndConvert(pbasis, rho_temp, rho_k_double);
+    P.prolong(rho_k, rho_k_double, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    delete [] rho_k_double;
 
     delete RT1;
 

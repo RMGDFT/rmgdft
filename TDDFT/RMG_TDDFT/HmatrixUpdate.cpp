@@ -75,8 +75,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     Lattice *L = kptr->L;
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-    CalType alpha(vel);
-    CalType beta(0.0);
 
     static CalType *global_matrix1;
 
@@ -95,6 +93,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }   
 
 #if CUDA_ENABLED || HIP_ENABLED
+    CalType alpha(vel);
+    CalType beta(0.0);
     CalType *psi_dev;
     CalType *work_dev;
     if(typeid(KpointType) == typeid(CalType))
@@ -208,6 +208,12 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 
 #else
 
+    if(typeid(KpointType) != typeid(CalType))
+    {
+            rmg_error_handler (__FILE__, __LINE__, "float precision not programmed with cpu  failure in HmatrixUpdate");
+    }
+    KpointType alpha(vel);
+    KpointType beta(0.0);
     int block_size = ct.state_block_size;
     //block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
@@ -240,7 +246,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         }
 
         RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi+j*block_size*pbasis, pbasis, vpsi, 
-                pbasis, beta, global_matrix1, size_row);
+                pbasis, beta, (KpointType *)global_matrix1, size_row);
         BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         for(int jst = 0; jst < size_col; jst++)
