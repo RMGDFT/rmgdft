@@ -74,6 +74,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     int pbasis = kptr->pbasis;
+    int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
     static CalType *global_matrix1;
@@ -108,7 +109,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         work_dev = (CalType *)kptr->work_dev_float;
     }
 
-    psi_dev = psi_dev + tddft_start_state * pbasis;
+    psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
     static void *vtot_eig_caltype= NULL;
     if(vtot_eig_caltype == NULL)
@@ -124,7 +125,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }
 
     gpuMemcpy(v_dev, vtot_eig_caltype,  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states * ct.noncoll_factor);
 
     gpublasStatus_t gstat;
 
@@ -186,8 +187,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
       //}
       //else
         {
-            rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (psi_dev+ j*block_size*pbasis), pbasis, (work_dev + j * block_size * pbasis), 
-                    pbasis, beta, mat_dev, size_row);
+            rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, (psi_dev+ j*block_size*pbasis_noncoll), pbasis_noncoll, (work_dev + j * block_size * pbasis_noncoll), 
+                    pbasis_noncoll, beta, mat_dev, size_row);
         }
         gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
 
@@ -229,8 +230,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }
 
     // V|psi> is in tmp_arrayT
-    KpointType *psi = kptr->orbital_storage + tddft_start_state * pbasis;
-    KpointType *vpsi = &kptr->orbital_storage[kptr->nstates * pbasis];  // use the memory of psi extra 3* state_block_size.
+    KpointType *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncoll;
+    KpointType *vpsi = &kptr->orbital_storage[kptr->nstates * pbasis_noncoll];  // use the memory of psi extra 3* state_block_size.
 
     for(int j = 0; j < nblock; j++)
     {
@@ -241,12 +242,22 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         {
             for(int idx = 0; idx <pbasis; idx++)
             {
-                vpsi[st1 * pbasis + idx] = psi[(j * block_size +st1) * pbasis + idx] * vtot_eig[idx];
+                vpsi[st1 * pbasis_noncoll + idx] = psi[(j * block_size +st1) * pbasis_noncoll + idx] * vtot_eig[idx];
             } 
         }
+        if(ct.noncoll)
+        {
+            for (int st1 = 0; st1 < size_col; st1++)
+            {
+                for(int idx = 0; idx <pbasis; idx++)
+                {
+                    vpsi[st1 * pbasis_noncoll + pbasis + idx] = psi[(j * block_size +st1) * pbasis_noncoll + pbasis + idx] * vtot_eig[idx];
+                } 
+            }
+        }
 
-        rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi+j*block_size*pbasis, pbasis, vpsi, 
-                pbasis, beta, (KpointType *)global_matrix1, size_row);
+        rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, psi+j*block_size*pbasis_noncoll, pbasis_noncoll, vpsi, 
+                pbasis_noncoll, beta, (KpointType *)global_matrix1, size_row);
         BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         for(int jst = 0; jst < size_col; jst++)

@@ -856,17 +856,17 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     if(ct.is_gamma)
                     {
                         kptr_d = (Kpoint<double> *)Kptr[kpt];
-                        GetNewRho_rmgtddft<double, float>(kptr_d, rho_k.data(), (double *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (float *)matrix_glob);
+                        GetNewRho_rmgtddft<double, float>(kptr_d, rho_k, (double *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (float *)matrix_glob);
                     }
                     else
                     {
                         kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
-                        GetNewRho_rmgtddft<std::complex<double>, std::complex<float>>(kptr_c, rho_k.data(), (std::complex<double> *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (std::complex<float> *)matrix_glob);
+                        GetNewRho_rmgtddft<std::complex<double>, std::complex<float>>(kptr_c, rho_k, (std::complex<double> *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (std::complex<float> *)matrix_glob);
                     }
                 }
                 else
                 {
-                    GetNewRho_rmgtddft<OrbitalType, OrbitalType>(Kptr[kpt], rho_k.data(), matrix_glob_orbitaltype, numst, ct.tddft_start_state, (OrbitalType *)matrix_glob);
+                    GetNewRho_rmgtddft<OrbitalType, OrbitalType>(Kptr[kpt], rho_k, matrix_glob_orbitaltype, numst, ct.tddft_start_state, (OrbitalType *)matrix_glob);
                 }
 
                 int kpt_glob = kpt + pct.kstart;

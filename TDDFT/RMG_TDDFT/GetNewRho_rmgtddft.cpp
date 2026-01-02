@@ -55,12 +55,12 @@ using get_scalar_t = typename get_scalar<T>::type;
 //using TypeA = get_scalar_t<float>;                // Result: float
 //using TypeB = get_scalar_t<std::complex<float>>;  // Result: float
 
-template void GetNewRho_rmgtddft<double, double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<double, float>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state, float *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<double> *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<float> *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<double, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<double, float>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, float *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<double> *rho_matrix_caltype);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<float> *rho_matrix_caltype);
 template <typename KpointType, typename CalType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype)
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, KpointType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype)
 {
     int idx;
 
@@ -70,6 +70,9 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     using TypeV = get_scalar_t<CalType>;                // Result: float
     int pbasis = get_P0_BASIS();
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
+    // in the noncollinear case, noncoll_factor = 2, and number of rho components = 4
+    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
 
     if(!ct.norm_conserving_pp) {
         rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
@@ -93,8 +96,10 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
     
     CalType one = 1.0, zero = 0.0;
     TypeV *rho_temp, *rho_temp_dev;
-    rho_temp = (TypeV *)GpuMallocHost(pbasis * sizeof(TypeV));
-    gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(TypeV));
+
+
+    rho_temp = (TypeV *)GpuMallocHost(pbasis*n_rho * sizeof(TypeV));
+    gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV));
 
     CalType *psi_dev;
     CalType *xpsi;
@@ -109,12 +114,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
         xpsi = (CalType *)kptr->work_dev_float;
     }
 
-    psi_dev = psi_dev + tddft_start_state * pbasis;
+    psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
-    rmg::gemm ("N", "N", pbasis, numst, numst, one, 
-            psi_dev, pbasis, rho_matrix_caltype, numst, zero, xpsi, pbasis);
+    rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
+            psi_dev, pbasis_noncoll, rho_matrix_caltype, numst, zero, xpsi, pbasis_noncoll);
+
     GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-    gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
+    gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
@@ -122,19 +128,47 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
     }
     KpointType one = 1.0, zero = 0.0;
     RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
-    double *rho_temp = new double[pbasis];
-    for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
-    KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
+    double *rho_temp = new double[n_rho * pbasis]();
+
+    KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis_noncoll];
     KpointType *xpsi = kptr->work_cpu;
-    rmg::gemm ("N", "N", pbasis, numst, numst, one, 
-            psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
+    rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
+            psi, pbasis_noncoll, rho_matrix, numst, zero, xpsi, pbasis_noncoll);
 
     delete RT;
     RT = new RmgTimer("TDDFT: rho: dot");
-    for(st1 = 0; st1 < numst; st1++)
-        for(idx = 0; idx < pbasis; idx++)
-            rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
+    if(!ct.noncoll)
+    {
+        for(st1 = 0; st1 < numst; st1++)
+        {
+            for(idx = 0; idx < pbasis; idx++)
+            {
+                rho_temp[idx] += std::real(psi[st1 * pbasis_noncoll + idx] * std::conj(xpsi[st1 * pbasis_noncoll + idx]));
+            }
+        }
+    }
+    else
+    {
+        for(st1 = 0; st1 < numst; st1++)
+        {
+
+            KpointType *one_psi = &psi[st1 * pbasis_noncoll];
+            KpointType *one_xpsi = &xpsi[st1 * pbasis_noncoll];
+            for(idx = 0; idx < pbasis; idx++)
+            {
+                double rho_up = std::real(one_psi[idx] * std::conj(one_xpsi[idx]));
+                double rho_dn = std::real(one_psi[idx + pbasis] * std::conj(one_xpsi[idx + pbasis]));
+                std::complex<double> psiud = one_psi[idx] * std::conj(one_xpsi[idx + pbasis]);
+                std::complex<double> psidu = one_psi[idx+pbasis] * std::conj(one_xpsi[idx]);
+                rho_temp[idx] += rho_up + rho_dn;
+                rho_temp[idx + pbasis] += std::real(psiud + psidu);
+                rho_temp[idx + pbasis *2] += std::imag(psiud + psidu);
+                rho_temp[idx + pbasis *3] += rho_up - rho_dn;
+            }
+        }
+    }
+
     delete RT;
 #endif
 
@@ -153,10 +187,9 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
-    double *rho_k_double = new double[pbasis];
-    CopyAndConvert(pbasis, rho_temp, rho_k_double);
-    P.prolong(rho_k, rho_k_double, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-    delete [] rho_k_double;
+    spinobj<double> rho_k_double;
+    CopyAndConvert(n_rho * pbasis, rho_temp, rho_k_double.data());
+    P.prolong(rho_k.data(), rho_k_double.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
     delete RT1;
 

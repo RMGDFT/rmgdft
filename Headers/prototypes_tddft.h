@@ -69,7 +69,7 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
 template <typename OrbitalType, typename CalType> 
-void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, OrbitalType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype);
+void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, spinobj<double> &rho, OrbitalType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);
