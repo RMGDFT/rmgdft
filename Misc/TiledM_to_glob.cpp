@@ -60,8 +60,30 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     {
 #if (CUDA_ENABLED || HIP_ENABLED) && USE_NCCL
         ncclAllGather(tiledM, matrix_glob, sendcount, ncclDouble, ct.nccl_local_comm, 0);
+//keep those if we have trouble in the future
+//#elif (CUDA_ENABLED) && USE_NCCL
+//   use allreduce instead of allgather
+//    size_t matrix_size = numst * numst * sizeof(T);
+//    cudaMemset(matrix_glob, 0, matrix_size);
+//    matrix_size = numst * numst/nprocs * sizeof(T);
+//    RmgMemcpy(&matrix_glob[my_rank * numst * numst/nprocs], tiledM, matrix_size );
+//    sendcount = numst * numst * sizeof(T)/sizeof(double);
+//    ncclAllReduce(matrix_glob, matrix_glob, sendcount, ncclDouble, ncclSum, ct.nccl_local_comm, 0);
+
+  // use cpu MPI
+  //std::complex<double> *matrix_cpu = new std::complex<double>[numst*numst];
+  //std::complex<double> *tm_cpu = new std::complex<double>[numst*numst/nprocs];
+
+  //size_t matrix_size = numst * numst/nprocs * sizeof(std::complex<double>);
+  //RmgMemcpy(tm_cpu, tiledM, matrix_size );
+  //MPI_Allgather(tm_cpu, sendcount, MPI_DOUBLE, matrix_cpu, sendcount, MPI_DOUBLE, tiled_comm);
+  //matrix_size = numst * numst * sizeof(std::complex<double>);
+  //RmgMemcpy(matrix_glob, matrix_cpu, matrix_size);
+  //delete [] matrix_cpu;
+  //delete [] tm_cpu;
+
 #else
-        rmg_error_handler(__FILE__, __LINE__, "compile with -DUSE_NCCL=1  ");
+	rmg_error_handler(__FILE__, __LINE__, "compile with -DUSE_NCCL=1  ");
 #endif
     }
 
