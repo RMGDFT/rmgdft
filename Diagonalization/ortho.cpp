@@ -59,7 +59,7 @@ template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
 template <class T> ortho<T>::~ortho(void)
 {
 #if HIP_ENABLED || CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuFree(this->psi_d);
 #endif
 }
@@ -101,18 +101,18 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     this->psi_d = psi;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(nbase > 0)
     {
         RmgTimer RT("MgridOrtho: 1st stage");
         // ortho to the first nbase states
         rmg::gemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
-        DeviceSynchronize();
+        rmg::sync_device();
         BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
-        DeviceSynchronize();
+        rmg::sync_device();
         rmg::gemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
 
     if(!dostage2)
     {

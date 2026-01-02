@@ -40,6 +40,7 @@
 #include "Solvers.h"
 #include "Functional.h"
 #include "RmgMatrix.h"
+#include "blas_driver.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -107,7 +108,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     int active_threads = rmg_get_active_threads();
@@ -119,10 +120,10 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-            DeviceSynchronize();
+            rmg::sync_device();
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-            DeviceSynchronize();
+            rmg::sync_device();
             first_nls = 0;
             delete RT3;
         }
@@ -162,11 +163,11 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-            DeviceSynchronize();
+            rmg::sync_device();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-            DeviceSynchronize();
+            rmg::sync_device();
 #endif
             first_nls = 0;
             delete RT3;
@@ -180,7 +181,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     // Compute A matrix
@@ -230,7 +231,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     delete(RT1);
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
     for(int st = 0; st < nstates; st++) {
         for (int idx = 0; idx < pbasis; idx++)

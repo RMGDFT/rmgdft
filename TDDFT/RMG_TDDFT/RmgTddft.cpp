@@ -760,7 +760,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             extrapolate_Hmatrix ((double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, (double *)Kptr[kpt]->Hmatrix_1_cpu, n2_C) ;
         }   
 
-        my_sync_device();
+        rmg::sync_device();
         delete RT2a;
 
 
@@ -796,7 +796,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     Pn0 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
                     Pn1 = (MatrixType *)Kptr[kpt]->Pn1_cpu;
                 }
-                my_sync_device();
+                rmg::sync_device();
                 delete RT2a;
                 RT2a = new RmgTimer("2-TDDFT: ELDYN");
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
@@ -850,7 +850,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 {
                     for(int i = 0; i < numst * numst; i++) mat_C[i] = matrix_glob[i];
                 }
-                my_sync_device();
+                rmg::sync_device();
                 if(ct.tddft_floatprecision)
                 {
                     if(ct.is_gamma)
@@ -969,14 +969,14 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 delete(RT2a);
 
                 RT2a = new RmgTimer("2-TDDFT: conv check");
-                my_sync_device();
+                rmg::sync_device();
                 double one = 1.0, mone = -1.0;
                 daxpy( &n2_C ,  &one, (double *)Kptr[kpt]->Hmatrix_m1_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_cpu,  &ione) ;
 
                 //////////  < ---  end of Hamiltonian update
 
                 // check error and update Hmatrix_1:
-                my_sync_device();
+                rmg::sync_device();
                 daxpy ( &n2_C ,  &mone, (double *)Kptr[kpt]->Hmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_1_cpu ,  &ione) ;
 
                 //tst_conv_matrix (&err, &ij_err ,  Hmatrix_1,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
@@ -1078,7 +1078,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
 
-            my_sync_device();
+            rmg::sync_device();
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             {
                 int kpt_glob = kpt + pct.kstart;

@@ -124,7 +124,7 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
@@ -161,7 +161,7 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
     return;
 
 #elif HIP_ENABLED

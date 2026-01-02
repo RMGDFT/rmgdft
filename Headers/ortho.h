@@ -37,6 +37,7 @@
 #include "blas.h"
 #include "GlobalSums.h"
 #include "RmgException.h"
+#include "blas_driver.h"
  
 template <typename T> class ortho {
 public:

@@ -116,7 +116,7 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
     size_t b_size = (size_t)ldb * (size_t)kb * (size_t)batchCount;
     size_t c_size = (size_t)ldc * (size_t)n * (size_t)batchCount;
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
@@ -157,7 +157,7 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
     return;
 
 #elif HIP_ENABLED

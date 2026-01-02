@@ -97,7 +97,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     std::complex<double> *A = Hii;
     std::complex<double> *B = gpu_temp;
     
-    DeviceSynchronize();
+    rmg::sync_device();
     cusolverStatus_t cu_status;
     int Lwork;
     int *devIpiv, *devInfo;
@@ -119,7 +119,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     }
 
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
 
     cublasOperation_t trans =CUBLAS_OP_N;
@@ -135,7 +135,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         exit (0);
     }
     //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuFree(devIpiv);
     gpuFree(devInfo);
     gpuFree(Workspace);

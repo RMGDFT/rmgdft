@@ -34,6 +34,8 @@
 
 #if __cplusplus
 
+#include "blas_driver.h"
+
 namespace rmg
 {
 

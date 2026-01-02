@@ -79,7 +79,7 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     int active_threads = rmg_get_active_threads();
@@ -88,7 +88,7 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
 
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     int density = 1;
@@ -113,7 +113,7 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
     }
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
 }

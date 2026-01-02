@@ -89,9 +89,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     gpuMallocManaged((void **)&unitvector, n*sizeof(double));
     gpuMallocManaged((void **)&tvector, n*sizeof(double));
     gpublasDcopy(ct.gpublas_handle, n, B, n+1, tvector, 1);
-    DeviceSynchronize();
+    rmg::sync_device();
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
-    DeviceSynchronize();
+    rmg::sync_device();
 
 
     // Set up D^(-1) and transfer it to the GPU
@@ -147,7 +147,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // outer loop over steps
     int device = -1;
     gpuGetDevice(&device);
-    DeviceSynchronize();
+    rmg::sync_device();
     for(int step = 0;step < iterations;step++) {
 
             rmg::gemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
@@ -165,7 +165,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 
     }
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuMemPrefetchAsync ( Z, n*n*sizeof(double), gpuCpuDeviceId, NULL);
     gpuFree(T1);
     gpuFree(D);

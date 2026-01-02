@@ -69,7 +69,7 @@
 /* include scalapack wrapper */
 #include "Scalapack.h"
 
-/* Header file for blas routines */
+/* Header file for blas routines and rmg drivers */
 #include "blas.h"
 
 
