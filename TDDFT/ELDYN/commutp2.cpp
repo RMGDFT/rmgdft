@@ -35,7 +35,7 @@ void transpose( double *A,  double *B, int *desca)
     int Nbasis = desca[3];
     int ictxt = desca[1], nprow, npcol, myrow, mycol;
 
-    my_sync_device();
+    rmg::sync_device();
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if(nprow*npcol <1) 
@@ -79,7 +79,7 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
     int Nbasis = desca[3];
     int ictxt = desca[1], nprow, npcol, myrow, mycol;
 
-    my_sync_device();
+    rmg::sync_device();
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if(nprow*npcol <1) 
@@ -119,7 +119,7 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
 
 void transpose( float *A,  float *B, int *desca) 
 {
-    my_sync_device();
+    rmg::sync_device();
 #if CUDA_ENABLED || HIP_ENABLED
     int Nbasis = desca[3];
     float alpha = 1.0, beta = 0.0;
@@ -146,15 +146,15 @@ void  commstr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
 
     char trN='N' ;  // transpose ='not
                     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
-    my_sync_device();
+    rmg::sync_device();
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
     rmg::mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
-    my_sync_device();
+    rmg::sync_device();
     delete RT;
     RT = new RmgTimer("2-TDDFT: transpose");
     transpose(C,W,desca) ;
-    my_sync_device();
+    rmg::sync_device();
     delete RT;
 
     //SUBROUTINE DAXPY    ( n, alpha, x, incx, y, incy ) :: //  y  <--  alpha*x + y
@@ -205,15 +205,15 @@ void  commatr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     char trN='N' ;  // transpose ='not
                     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     int ione = 1, Mglob = desca[3];
-    my_sync_device();
+    rmg::sync_device();
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
     rmg::mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
     delete RT;
-    my_sync_device();
+    rmg::sync_device();
     RT = new RmgTimer("2-TDDFT: transpose");
     transpose(C,W,desca) ;
-    my_sync_device();
+    rmg::sync_device();
     delete RT;
 
     double one = 1.0e0 ;
@@ -259,7 +259,7 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
     bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
 
 
-    my_sync_device();
+    rmg::sync_device();
     if(!ct.tddft_gpu)
     { 
         err = abs(C[0]); 
@@ -289,7 +289,7 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
 #endif
     }
 
-    my_sync_device();
+    rmg::sync_device();
     MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_DOUBLE, MPI_MAX, comm);
 
     if (err < thrs)  tconv = true ;
@@ -311,7 +311,7 @@ void  tstconv(float *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool
     bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
 
 
-    my_sync_device();
+    rmg::sync_device();
 #if CUDA_ENABLED || HIP_ENABLED
     int idx;
 #if HIP_ENABLED

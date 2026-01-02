@@ -66,7 +66,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
@@ -96,7 +96,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
         if(!a_dev) gpuFree(dA);
     }
     cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuFree(dev_info);
     return;
 

@@ -69,7 +69,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         size_t dwork;
         size_t hwork;
@@ -119,7 +119,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
         if(!a_dev) gpuFree(dA);
     }
     cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuFree(dev_info);
     return;
 

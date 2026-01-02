@@ -40,6 +40,7 @@
 #include "Solvers.h"
 #include "Functional.h"
 #include "RmgMatrix.h"
+#include "blas_driver.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -78,7 +79,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     KpointType *h_psi = (KpointType *)tmp_arrayT;
     ApplyBlockedHamiltonian(this, h_psi, vtot_eig, vxc_psi);
     delete(RT1);
-    DeviceSynchronize();
+    rmg::sync_device();
 
     // Operators applied and we now have h_psi:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
     // The distributed solvers are handled in a different routine now

@@ -292,7 +292,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         RT0 = new RmgTimer("2-SCF: Residual calculation");
         CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat, CC_res_local);
         delete RT0;
-        my_sync_device();
+        rmg::sync_device();
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
 

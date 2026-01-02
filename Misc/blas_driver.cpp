@@ -28,7 +28,11 @@
 #include "Gpufuncs.h"
 #include "rmg_error.h"
 
-void my_sync_device()
+
+namespace rmg
+{
+
+void sync_device()
 {
 #if CUDA_ENABLED
     DeviceSynchronize();
@@ -37,9 +41,6 @@ void my_sync_device()
     hipDeviceSynchronize();
 #endif
 }
-
-namespace rmg
-{
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {

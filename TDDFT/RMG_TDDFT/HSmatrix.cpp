@@ -16,6 +16,7 @@
 #include "ErrorFuncs.h"
 #include "blas.h"
 #include "Solvers.h"
+#include "blas_driver.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -105,7 +106,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     int active_threads = rmg_get_active_threads();
@@ -117,10 +118,10 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-             DeviceSynchronize();
+             rmg::sync_device();
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-             DeviceSynchronize();
+             rmg::sync_device();
              first_nls = 0;
              delete RT3;
          }
@@ -158,9 +159,9 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + 1;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-             DeviceSynchronize();
+             rmg::sync_device();
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-             DeviceSynchronize();
+             rmg::sync_device();
              first_nls = 0;
              delete RT3;
          }
@@ -174,7 +175,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
-    DeviceSynchronize();
+    rmg::sync_device();
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");

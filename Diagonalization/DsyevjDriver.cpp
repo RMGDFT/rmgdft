@@ -28,6 +28,7 @@
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
+#include "blas_driver.h"
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
@@ -58,7 +59,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
     gpuFree(devInfo);
     if (dsyevj_params) cusolverDnDestroySyevjInfo(dsyevj_params);
-    DeviceSynchronize();
+    rmg::sync_device();
 }
 
 #elif HIP_ENABLED

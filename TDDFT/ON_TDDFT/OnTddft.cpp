@@ -250,7 +250,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
                 Smatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
         rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Smatrix, ione, ione, desca);
-        my_sync_device();
+        rmg::sync_device();
 
 
         pre_steps = 0;
@@ -286,7 +286,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
         rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
-        my_sync_device();
+        rmg::sync_device();
 
     }
 
@@ -301,7 +301,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
-        my_sync_device();
+        rmg::sync_device();
         //  SCF loop 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
@@ -323,7 +323,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             /* --- fortran version:  --*/
             // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             /* --- C++  version:  --*/
-            my_sync_device();
+            rmg::sync_device();
             eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
@@ -351,7 +351,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             }
 
 
-            my_sync_device();
+            rmg::sync_device();
 
 
             RT2a = new RmgTimer("2-TDDFT: mat_glob_to_local");
@@ -420,7 +420,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
             delete RT1;
 
-            my_sync_device();
+            rmg::sync_device();
             double one = 1.0;
             rmg::daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
             rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
@@ -428,7 +428,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
-            my_sync_device();
+            rmg::sync_device();
             tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
             rmg::dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 
@@ -456,7 +456,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         if((tddft_steps +1) % ct.checkpoint == 0)
         {
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: WriteData");
-            my_sync_device();
+            rmg::sync_device();
             WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
                     Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps, n2);
             delete RT1;
@@ -468,7 +468,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(pct.gridpe == 0) fclose(dfi);
 
 
-    my_sync_device();
+    rmg::sync_device();
     dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
     WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
             Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);

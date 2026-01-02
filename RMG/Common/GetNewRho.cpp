@@ -45,6 +45,7 @@
 #include "Symmetry.h"
 #include "Functional.h"
 #include "GatherScatter.h"
+#include "blas_driver.h"
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -483,7 +484,7 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     {
         GpuFill(P.rbufs[i], 8*dimx*dimy*dimz, 0.0);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
 }
 
 // Generates the new density by interpolating each orbital to the fine grid and then squaring
@@ -558,7 +559,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     // Now we have to reduce rbufs on the GPU
     int ione = 1;
     const double rone = 1.0;
-    DeviceSynchronize();
+    rmg::sync_device();
     for(size_t i=1;i < P.rbufs.size();i++)
     {
         gpublasDaxpy (ct.gpublas_handle, rhop.pbasis, &rone, P.rbufs[i], ione, P.rbufs[0], ione);

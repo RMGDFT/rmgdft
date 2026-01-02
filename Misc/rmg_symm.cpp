@@ -112,7 +112,7 @@ template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n
         return;
     }
 
-    DeviceSynchronize();
+    rmg::sync_device();
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
     cudaerr = cudaPointerGetAttributes(&attr, A);
@@ -179,7 +179,7 @@ template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
 
 #elif HIP_ENABLED
 
@@ -202,7 +202,7 @@ template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n
     if(!strcmp("r", side)) ka = n;
     if(!strcmp("R", side)) ka = n;
 
-    DeviceSynchronize();
+    rmg::sync_device();
     hipPointerAttribute_t attr;
     hipError_t cudaerr;
     cudaerr = hipPointerGetAttributes(&attr, A);
@@ -260,7 +260,7 @@ template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
