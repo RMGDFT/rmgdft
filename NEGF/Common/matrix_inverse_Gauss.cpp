@@ -13,6 +13,7 @@
 #include "pmo.h"
 #include "Scalapack.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
 
 void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double> * G_tri_cpu)
 {
@@ -122,7 +123,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
 
     ncopy = pmo.mxllda_cond[N-1] * pmo.mxlocc_cond[N-1];
 
-    zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
+    rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
 
 
     for (i = N-1; i > 0; i--)
@@ -145,20 +146,20 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
 
         //Ci = (Dii)^-1 * Hi,i-1
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
+        rmg::zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
 
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1]; 
-        zcopy_driver (ncopy, Hlower, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione);
+        rmg::zcopy_driver (ncopy, Hlower, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione);
         zgesv_driver(Gii_ptr, desca, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], descc);
 
 
         //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i - 1]; 
-        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
+        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
 
-        zgemm_driver ("N", "N", n1, n1, n2, mone, Hupper, ione, ione, descb, 
+        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, Hupper, ione, ione, descb, 
                 &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione, ione, descc,
                 one, &Gdiag_ptr[ndiag_begin[i-1]], ione, ione, descd);
     }
@@ -167,7 +168,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
 
     ncopy = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
 
-    zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
+    rmg::zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
 
 
     for (i = 0; i < N - 1; i++)
@@ -189,19 +190,19 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
         n2 = ni[i];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
+        rmg::zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i+1]; 
-        zcopy_driver (ncopy, Hupper, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
+        rmg::zcopy_driver (ncopy, Hupper, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
         //  Ci = -(Di,i)^-1 * Hi,i+1
         zgesv_driver (Gii_ptr, desca, &G_tri_ptr[pmo.offdiag_begin[i]], descc);
 
        //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; 
-        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
+        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
 
-        zgemm_driver ("N", "N", n1, n1, n2, mone, Hlower, ione, ione, descb,
+        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, Hlower, ione, ione, descb,
                 &G_tri_ptr[pmo.offdiag_begin[i]], ione, ione, descc,
                 one, &G_tri_ptr[pmo.diag_begin[i+1]], ione, ione, descd);
     }
@@ -224,8 +225,8 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
         desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
-        zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        rmg::zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        rmg::zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
         matrix_inverse_driver(&G_tri_ptr[pmo.diag_begin[i]], desca);
 
     }
@@ -240,12 +241,12 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
         desca = &pmo.desc_cond[ ((i+1) + (i+1) * ct.num_blocks) * DLEN];
         descb = &pmo.desc_cond[ (i   + (i+1) * ct.num_blocks) * DLEN];
 
-        zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri_ptr[pmo.offdiag_begin[i]], ione, ione, descb,
+        rmg::zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri_ptr[pmo.offdiag_begin[i]], ione, ione, descb,
                 &G_tri_ptr[pmo.diag_begin[i+1]], ione, ione, desca, zero, Gii_ptr, ione, ione, descb);
 
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i+1]; 
-        zcopy_driver (ncopy, Gii_ptr, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
+        rmg::zcopy_driver (ncopy, Gii_ptr, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
     }
 
     //calculating  lower offdiag blocks of G_tri = G_tri_ii * Ci_L
@@ -263,11 +264,11 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_cpu, std::complex<double
             desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
             descb = &pmo.desc_cond[ ((i+1) +  i    * ct.num_blocks) * DLEN];
 
-            zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
+            rmg::zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
                     &G_tri_ptr[pmo.diag_begin[i]], ione, ione, desca, zero, Gii_ptr, ione, ione, descb);
 
             ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i]; 
-            zcopy_driver (ncopy, Gii_ptr, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione);
+            rmg::zcopy_driver (ncopy, Gii_ptr, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione);
         }
     }
 

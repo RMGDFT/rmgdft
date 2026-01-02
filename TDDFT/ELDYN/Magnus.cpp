@@ -71,9 +71,9 @@ void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int Nsq)
     int    ione = 1 ;
     //printf("magnus,  dt, ldim =  %f   %d  \n", dt,Nbasis ) ;
 
-    dcopy_driver ( Nsq ,   H0      ,     ione , Hdt ,  ione) ;
-    daxpy_driver ( Nsq ,  one      , H1, ione , Hdt ,  ione) ;   
-    dscal_driver ( Nsq ,  half_dt  ,            Hdt ,  ione) ;
+    rmg::dcopy_driver ( Nsq ,   H0      ,     ione , Hdt ,  ione) ;
+    rmg::daxpy_driver ( Nsq ,  one      , H1, ione , Hdt ,  ione) ;   
+    rmg::dscal_driver ( Nsq ,  half_dt  ,            Hdt ,  ione) ;
 
 
 }
@@ -120,8 +120,8 @@ H1      : [out]
     double  neg_one   = -1.0e0   ;
     double  two       =  2.0e0   ;
 
-    dcopy_driver ( Nsq ,           Hm1 , ione , H1 ,  ione) ;    //  
-    dscal_driver ( Nsq , neg_one , H1  , ione )              ;    //  H1 = -H(-1)  
-    daxpy_driver ( Nsq , two     , H0  , ione , H1  , ione) ;    //  H1 =  2*H0 + H1 =  2*H0 -Hm1 
+    rmg::dcopy_driver ( Nsq ,           Hm1 , ione , H1 ,  ione) ;    //  
+    rmg::dscal_driver ( Nsq , neg_one , H1  , ione )              ;    //  H1 = -H(-1)  
+    rmg::daxpy_driver ( Nsq , two     , H0  , ione , H1  , ione) ;    //  H1 =  2*H0 + H1 =  2*H0 -Hm1 
 
 }

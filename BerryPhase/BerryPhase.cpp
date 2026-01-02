@@ -686,9 +686,9 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
                 Cij_k1= (std::complex<double> *)Kptr[ik_index+1]->Pn1_cpu;
             } 
             std::complex<double> *Skk1 = Kptr[ik_index]->BP_Skk1_cpu;
-            zgemm_driver ("C", "N", numst, numst, numst, alpha, Cij_k, ione, ione, desca,
+            rmg::zgemm_driver ("C", "N", numst, numst, numst, alpha, Cij_k, ione, ione, desca,
                     Skk1, ione, ione, desca, beta, CijSkk1, ione, ione, desca);
-            zgemm_driver ("N", "N", numst, numst, numst, alpha, CijSkk1, ione, ione, desca,
+            rmg::zgemm_driver ("N", "N", numst, numst, numst, alpha, CijSkk1, ione, ione, desca,
                     Cij_k1, ione, ione, desca, beta, Cmat, ione, ione, desca);
 
             Sp.GatherEigvectors(mat_glob, Cmat);

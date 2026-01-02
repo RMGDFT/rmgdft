@@ -148,7 +148,7 @@ void  commstr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
                     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     my_sync_device();
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
-    mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
+    rmg::mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
     my_sync_device();
     delete RT;
@@ -160,7 +160,7 @@ void  commstr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     //SUBROUTINE DAXPY    ( n, alpha, x, incx, y, incy ) :: //  y  <--  alpha*x + y
     double minus_one = -1.0e0 ;
 
-    daxpy_driver(Nbsq,  minus_one , W, ione, C, ione) ;
+    rmg::daxpy_driver(Nbsq,  minus_one , W, ione, C, ione) ;
 }
 
 void  commstr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim, int Ndim, float *W)
@@ -178,7 +178,7 @@ void  commstr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim,
     char trN='N' ;  // transpose ='not
                     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
-    sgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
+    rmg::sgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
     delete RT;
     RT = new RmgTimer("2-TDDFT: transpose");
@@ -188,7 +188,7 @@ void  commstr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim,
     //SUBROUTINE DAXPY    ( n, alpha, x, incx, y, incy ) :: //  y  <--  alpha*x + y
     double minus_one = -1.0e0 ;
 
-    saxpy_driver(Nbsq,  minus_one , W, ione, C, ione) ;
+    rmg::saxpy_driver(Nbsq,  minus_one , W, ione, C, ione) ;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ void  commatr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     int ione = 1, Mglob = desca[3];
     my_sync_device();
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
-    mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
+    rmg::mgpu_dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
     delete RT;
     my_sync_device();
@@ -217,7 +217,7 @@ void  commatr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     delete RT;
 
     double one = 1.0e0 ;
-    daxpy_driver(Nbsq,  one , W, ione, C, ione) ;
+    rmg::daxpy_driver(Nbsq,  one , W, ione, C, ione) ;
 }
 
 void  commatr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim, int Ndim, float *W)
@@ -234,7 +234,7 @@ void  commatr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim,
                     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     int ione = 1, Mglob = desca[3];
     RmgTimer *RT = new RmgTimer("2-TDDFT: dgemm");
-    sgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
+    rmg::sgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
             B, ione, ione, desca, beta, C, ione, ione, desca);
     delete RT;
     RT = new RmgTimer("2-TDDFT: transpose");
@@ -242,7 +242,7 @@ void  commatr(float *A, float *B, float *C, float *p_alpha,int *desca, int Mdim,
     delete RT;
 
     double one = 1.0e0 ;
-    saxpy_driver(Nbsq,  one , W, ione, C, ione) ;
+    rmg::saxpy_driver(Nbsq,  one , W, ione, C, ione) ;
 }
 
 
@@ -382,8 +382,8 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
         /* ----  P1=P0 ,  dP=P0   ---- */
         double      *C   = (double *)RmgMallocHost(Nsq2 * sizeof(double));
         double      *dP  = (double *)RmgMallocHost(Nsq2 * sizeof(double));
-        dcopy_driver(Nsq2,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-        dcopy_driver(Nsq2,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+        rmg::dcopy_driver(Nsq2,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
+        rmg::dcopy_driver(Nsq2,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         double *W   = (double *)RmgMallocHost(Mdim * Ndim * sizeof(double));
         while ( iter  <= maxiter && tConv ==  false ) {
             double alpha     =  1.0e0 /iter ;
@@ -392,8 +392,8 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             commatr(Om, &dP[Nsq], &C[0]  , &alpha,    desca, Mdim, Ndim, W)    ;  // real contrib correction  
             commstr(Om, &dP[0]  , &C[Nsq], &neg_alpha,desca, Mdim, Ndim, W)    ;  // imag contrib correction 
 
-            dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
-            daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
+            rmg::dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
+            rmg::daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv(dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
@@ -420,10 +420,10 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
         gpuMalloc((void **)&C0_dev, Nsq_alloc * sizeof(double));
         gpuMalloc((void **)&C1_dev, Nsq_alloc * sizeof(double));
         gpuMalloc((void **)&dP_dev, Nsq2 * sizeof(double));
-        dcopy_driver(Nsq,   Om, ione, Om_dev ,ione) ;      // GPU buffer for Om
+        rmg::dcopy_driver(Nsq,   Om, ione, Om_dev ,ione) ;      // GPU buffer for Om
         /* ----  P1=P0 ,  dP=P0   ---- */
-        dcopy_driver(Nsq2,  P0, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-        dcopy_driver(Nsq2,  P0, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+        rmg::dcopy_driver(Nsq2,  P0, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
+        rmg::dcopy_driver(Nsq2,  P0, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         while ( iter  <= maxiter && tConv ==  false ) {
             double alpha     =  1.0e0 /iter ;
             double neg_alpha = -alpha       ;
@@ -432,10 +432,10 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             commatr(Om_dev, &dP_dev[Nsq], C0_dev  , &alpha,    desca, Mdim, Ndim, W_dev)    ;  // real contrib correction  
                                                                                                //        commstr(Om_dev, &dP_dev[0]  , &C_dev[Nsq], &neg_alpha,desca, Mdim, Ndim, W_dev)    ;  // imag contrib correction 
             commstr(Om_dev, &dP_dev[0]  , C1_dev, &neg_alpha,desca, Mdim, Ndim, W_dev)    ;  // imag contrib correction 
-                                                                                             //        dcopy_driver(Nsq2, C_dev, ione, dP_dev ,ione)             ;  // dP=C     
-            dcopy_driver(Nsq, C0_dev, ione, dP_dev ,ione)             ;  // dP=C     
-            dcopy_driver(Nsq, C1_dev, ione, &dP_dev[Nsq] ,ione)             ;  // dP=C     
-            daxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
+                                                                                             //        rmg::dcopy_driver(Nsq2, C_dev, ione, dP_dev ,ione)             ;  // dP=C     
+            rmg::dcopy_driver(Nsq, C0_dev, ione, dP_dev ,ione)             ;  // dP=C     
+            rmg::dcopy_driver(Nsq, C1_dev, ione, &dP_dev[Nsq] ,ione)             ;  // dP=C     
+            rmg::daxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
 
             tstconv(dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
@@ -444,7 +444,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             iter ++ ;
         }
 
-        dcopy_driver(Nsq2,  P1_dev, ione, P1, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+        rmg::dcopy_driver(Nsq2,  P1_dev, ione, P1, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
 
         gpuFree(dP_dev);
         gpuFree(C1_dev);
@@ -503,19 +503,19 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
     gpuMalloc((void **)&C_dev, Nsq2 * sizeof(float));
     gpuMalloc((void **)&dP_dev, Nsq2 * sizeof(float));
     for(int idx=0;idx < Nsq;idx++) work[idx] = (float)Om[idx];
-    scopy_driver(Nsq,   work, ione, Om_dev ,ione) ;      // GPU buffer for Om
+    rmg::scopy_driver(Nsq,   work, ione, Om_dev ,ione) ;      // GPU buffer for Om
     /* ----  P1=P0 ,  dP=P0   ---- */
     for(int idx=0;idx < Nsq2;idx++) work[idx] = (float)P0[idx];
-    scopy_driver(Nsq2,  work, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-    scopy_driver(Nsq2,  work, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+    rmg::scopy_driver(Nsq2,  work, ione, P1_dev ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
+    rmg::scopy_driver(Nsq2,  work, ione, dP_dev, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
     while ( iter  <= maxiter && tConv ==  false ) {
         float alpha     =  1.0e0 /iter ;
         float neg_alpha = -alpha       ;
 
         commatr(Om_dev, &dP_dev[Nsq], &C_dev[0]  , &alpha,    desca, Mdim, Ndim, W_dev)    ;  // real contrib correction  
         commstr(Om_dev, &dP_dev[0]  , &C_dev[Nsq], &neg_alpha,desca, Mdim, Ndim, W_dev)    ;  // imag contrib correction 
-        scopy_driver(Nsq2, C_dev, ione, dP_dev ,ione)             ;  // dP=C     
-        saxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
+        rmg::scopy_driver(Nsq2, C_dev, ione, dP_dev ,ione)             ;  // dP=C     
+        rmg::saxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
 
         tstconv(dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
         if (iprint>0) printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
@@ -524,7 +524,7 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
         iter ++ ;
     }
 
-    scopy_driver(Nsq2,  P1_dev, ione, work, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+    rmg::scopy_driver(Nsq2,  P1_dev, ione, work, ione) ;   // dP =P0:  saves P0 into dP (for commutator )
     for(int idx=0;idx < Nsq2;idx++) P1[idx] = (double)work[idx];
 
     gpuFree(dP_dev);
@@ -539,8 +539,8 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
     /* ----  P1=P0 ,  dP=P0   ---- */
     double      *C   = (double *)RmgMallocHost(Nsq2 * sizeof(double));
     double      *dP  = (double *)RmgMallocHost(Nsq2 * sizeof(double));
-    dcopy_driver(Nsq2,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-    dcopy_driver(Nsq2,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+    rmg::dcopy_driver(Nsq2,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
+    rmg::dcopy_driver(Nsq2,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
     double *W   = (double *)RmgMallocHost(Mdim * Ndim * sizeof(double));
     while ( iter  <= maxiter && tConv ==  false ) {
         double alpha     =  1.0e0 /iter ;
@@ -549,8 +549,8 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
         commatr(Om, &dP[Nsq], &C[0]  , &alpha,    desca, Mdim, Ndim, W)    ;  // real contrib correction  
         commstr(Om, &dP[0]  , &C[Nsq], &neg_alpha,desca, Mdim, Ndim, W)    ;  // imag contrib correction 
 
-        dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
-        daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
+        rmg::dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
+        rmg::daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
         tstconv(dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
         if (iprint>0) printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
         if (abs(err) >  errmax)  errmax= abs(err)  ;
@@ -610,23 +610,23 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         MallocHostOrDevice((void **)&C,  Nsq * sizeof(std::complex<double>));
         MallocHostOrDevice((void **)&dP,  Nsq * sizeof(std::complex<double>));
 
-        zcopy_driver(Nsq,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
-        zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
+        rmg::zcopy_driver(Nsq,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
+        rmg::zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         while ( iter  <= maxiter && tConv ==  false ) {
             std::complex<double> alpha(0.0, -1.0e0 /iter) ;
             std::complex<double> beta (0.0,0.0) ;
 
-            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
+            rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
                     dP, ione, ione, desca, beta, C, ione, ione, desca);
             // C = -i * Om * dP
 
-            mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
+            rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
                     Om, ione, ione, desca, mone, C, ione, ione, desca);
             // C = -i (dP * OM - Om * dP)
 
-            zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
+            rmg::zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
             //
-            zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
+            rmg::zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv((double *)dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
             if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;

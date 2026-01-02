@@ -140,7 +140,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     gpuFree(devInfo);
     gpuFree(Workspace);
 
-    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    rmg::zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
     gpuFree(gpu_temp);
 
@@ -163,7 +163,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     ZgetrftrsDriver(nn, nn, Hii, gpu_temp);
 
-    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    rmg::zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
     gpuFree(gpu_temp);
 

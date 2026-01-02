@@ -83,15 +83,6 @@ void modify_rho (double *, double *);
 void get_vh_negf (double*, double*, double*,int, int, int, double);
 void tri_to_row (double *, double *, int, int *);
 
-void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum);
-void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
-void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
-void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B, int *descb );
-
-void zgemm_driver (char *transa, char *transb, int m, int n, int k,
-std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,
-std::complex<double> *B, int ib, int jb, int *descb, std::complex<double> beta,
-std::complex<double> *C, int ic, int jc, int *descc);
 void read_cond_input (double *emin, double *emax, int *E_POINTS, double *E_imag, double *KT, int *kpoint);
 
 double *memory_ptr_host_device(double *ptr_host, double *ptr_device);

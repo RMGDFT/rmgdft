@@ -21,6 +21,7 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
 #include "transition.h"
 
 #define 	MAX_STEP 	100
@@ -93,81 +94,81 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
 
     /* t11 = (ene-ch0)^-1  */
 
-    zcopy_driver(n1, ch0_ptr, ione, t11, ione);
+    rmg::zcopy_driver(n1, ch0_ptr, ione, t11, ione);
     matrix_inverse_driver(t11, desca);
 
     /* initialize intermediate t-matrices  */
 
-    zgemm_driver ("N", "N", nmax, nmax, nmax, mone, t11, ione, ione, desca,
+    rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, mone, t11, ione, ione, desca,
             ch10_ptr, ione, ione,  desca,  zero, tau, ione, ione, desca);
 
-    zgemm_driver ("N", "N", nmax, nmax, nmax, mone, t11, ione, ione, desca,
+    rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, mone, t11, ione, ione, desca,
             ch01_ptr, ione, ione,  desca,  zero, taut, ione, ione, desca);
 
 
 
 
-    zcopy_driver (n1, tau, ione, tot, ione);
-    zcopy_driver (n1, taut, ione, tott, ione);
-    zcopy_driver (n1, taut, ione, tsum, ione);
-    zcopy_driver (n1, tau, ione, tsumt, ione);
+    rmg::zcopy_driver (n1, tau, ione, tot, ione);
+    rmg::zcopy_driver (n1, taut, ione, tott, ione);
+    rmg::zcopy_driver (n1, taut, ione, tsum, ione);
+    rmg::zcopy_driver (n1, tau, ione, tsumt, ione);
 
     /*  iterative loop till convergence is achieved  */
     for (step = 0; step < MAX_STEP; step++)
     {
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tau, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tau, ione, ione, desca,
                 taut, ione, ione,  desca,  zero, t11, ione, ione, desca);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, taut, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, taut, ione, ione, desca,
                 tau, ione, ione,  desca,  zero, t12, ione, ione, desca);
 
 
-        zcopy_driver (n1, Imatrix_ptr, ione, s1, ione);
+        rmg::zcopy_driver (n1, Imatrix_ptr, ione, s1, ione);
 
 
-        zaxpy_driver (n1, mone, t11, ione, s1, ione);
-        zaxpy_driver (n1, mone, t12, ione, s1, ione);
+        rmg::zaxpy_driver (n1, mone, t11, ione, s1, ione);
+        rmg::zaxpy_driver (n1, mone, t12, ione, s1, ione);
         matrix_inverse_driver(s1, desca);
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tau, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tau, ione, ione, desca,
                 tau, ione, ione,  desca,  zero, t11, ione, ione, desca);
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, taut, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, taut, ione, ione, desca,
                 taut, ione, ione,  desca,  zero, t12, ione, ione, desca);
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, s1, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, s1, ione, ione, desca,
                 t11, ione, ione,  desca,  zero, &tau[n1], ione, ione, desca);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, s1, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, s1, ione, ione, desca,
                 t12, ione, ione,  desca,  zero, &taut[n1], ione, ione, desca);
 
 
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsum, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsum, ione, ione, desca,
                 &tau[n1], ione, ione,  desca,  zero, t11, ione, ione, desca);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsum, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsum, ione, ione, desca,
                 &taut[n1], ione, ione,  desca,  zero, s1, ione, ione, desca);
 
-        zcopy_driver (n1, s1, ione, tsum, ione);
+        rmg::zcopy_driver (n1, s1, ione, tsum, ione);
 
 
-        zaxpy_driver (n1, one, t11, ione, tot, ione);
+        rmg::zaxpy_driver (n1, one, t11, ione, tot, ione);
 
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsumt, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsumt, ione, ione, desca,
                 &taut[n1], ione, ione,  desca,  zero, t11, ione, ione, desca);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsumt, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tsumt, ione, ione, desca,
                 &tau[n1], ione, ione,  desca,  zero, s1, ione, ione, desca);
-        zcopy_driver (n1, s1, ione, tsumt, ione);
+        rmg::zcopy_driver (n1, s1, ione, tsumt, ione);
 
 
-        zaxpy_driver (n1, one, t11, ione, tott, ione);
+        rmg::zaxpy_driver (n1, one, t11, ione, tott, ione);
 
 
-        zcopy_driver (n1, &tau[n1], ione, tau, ione);
-        zcopy_driver (n1, &taut[n1], ione, taut, ione);
+        rmg::zcopy_driver (n1, &tau[n1], ione, tau, ione);
+        rmg::zcopy_driver (n1, &taut[n1], ione, taut, ione);
 
-        dzasum_driver(n1, &tau[n1], ione, &converge1);
-        dzasum_driver(n1, &taut[n1], ione, &converge2);
+        rmg::dzasum_driver(n1, &tau[n1], ione, &converge1);
+        rmg::dzasum_driver(n1, &taut[n1], ione, &converge2);
 
         comm_sums(&converge1, &ione, COMM_EN2);
         comm_sums(&converge2, &ione, COMM_EN2);
@@ -189,10 +190,10 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
 
 
 
-    zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
+    rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
             tot, ione, ione, desca, one, ch0_ptr, ione, ione, desca);
 
-    zcopy_driver(n1, ch0_ptr, ione, green_ptr, ione);
+    rmg::zcopy_driver(n1, ch0_ptr, ione, green_ptr, ione);
     matrix_inverse_driver(green_ptr, desca);
 
     MemcpyDeviceHost(size, green_gpu, green_cpu);

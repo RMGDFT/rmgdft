@@ -15,6 +15,7 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
 
 // for GPU run, ct.gpu_Grow and ct.gpu_Gcol are already in device after Sgreen_c_noneq.c 
 // Sgreen_c_noneq.c calls matrix_inverse_anyprobe.c with GPU 
@@ -67,19 +68,19 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
         descd = &pmo.desc_cond[ (i   + (i+1) * ct.num_blocks ) * DLEN ];
 
         /*  temp = G_i0 * Gamma  */
-        zgemm_driver("N", "N", n1, nL, nL, one, &Grow[n_green], ione, ione, desca,
+        rmg::zgemm_driver("N", "N", n1, nL, nL, one, &Grow[n_green], ione, ione, desca,
                 gamma, ione, ione, descl, zero, temp, ione, ione, desca);
 
         /* rho_mn (i,i) = temp * G_i0^, the block (i,i) */
 
-        zgemm_driver("N", "C", n1, n1, nL, one, temp, ione, ione, desca,
+        rmg::zgemm_driver("N", "C", n1, n1, nL, one, temp, ione, ione, desca,
                 &Grow[n_green], ione, ione, desca, zero, &rho_mn[pmo.diag_begin[i]], ione, ione, descb);
 
         /* rho_mn (i,i+1) = temp * G_i+10^, the block (i,i) */
         n_green += pmo.mxllda_cond[i] * maxcol;
 
 
-        zgemm_driver("N", "C", n1, n2, nL, one, temp, ione, ione, desca,
+        rmg::zgemm_driver("N", "C", n1, n2, nL, one, temp, ione, ione, desca,
                 &Grow[n_green], ione, ione, descc, zero, &rho_mn[pmo.offdiag_begin[i]], ione, ione, descd);
 
 
@@ -90,9 +91,9 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
 
     desca = &pmo.desc_cond[ (N-1   +  N1   * ct.num_blocks ) * DLEN ];
     descb = &pmo.desc_cond[ (N-1   +  (N-1)   * ct.num_blocks ) * DLEN ];
-    zgemm_driver("N", "N", n1, nL, nL, one, &Grow[n_green], ione, ione, desca,
+    rmg::zgemm_driver("N", "N", n1, nL, nL, one, &Grow[n_green], ione, ione, desca,
             gamma, ione, ione, descl, zero, temp, ione, ione, desca);
-    zgemm_driver("N", "C", n1, n1, nL, one, temp, ione, ione, desca,
+    rmg::zgemm_driver("N", "C", n1, n1, nL, one, temp, ione, ione, desca,
             &Grow[n_green], ione, ione, desca, zero, &rho_mn[pmo.diag_begin[N-1]], ione, ione, descb);
 
 
@@ -112,19 +113,19 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
 
 
             /*  temp = G_i0 * Gamma  */
-            zgemm_driver("C", "N", n1, nL, nL, one, &Gcol[n_green], ione, ione, desca,
+            rmg::zgemm_driver("C", "N", n1, nL, nL, one, &Gcol[n_green], ione, ione, desca,
                     gamma, ione, ione, descl, zero, temp, ione, ione, descb);
 
             /* rho_mn (i,i) = temp * G_i0^, the block (i,i) */
 
-            zgemm_driver("N", "N", n1, n1, nL, half, temp, ione, ione, descb,
+            rmg::zgemm_driver("N", "N", n1, n1, nL, half, temp, ione, ione, descb,
                     &Gcol[n_green], ione, ione, desca, half, &rho_mn[pmo.diag_begin[i]], ione, ione, descc);
 
             /* rho_mn (i,i+1) = temp * G_i+10^, the block (i,i) */
             n_green += pmo.mxllda_cond[i] * maxcol;
 
 
-            zgemm_driver("N", "N", n1, n2, nL, half, temp, ione,ione, descb,
+            rmg::zgemm_driver("N", "N", n1, n2, nL, half, temp, ione,ione, descb,
                     &Gcol[n_green], ione, ione, descd, half, &rho_mn[pmo.offdiag_begin[i]], ione, ione, desce);
 
 
@@ -136,9 +137,9 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
         descb = &pmo.desc_cond[ (N-1 +  N1   * ct.num_blocks ) * DLEN ];
         descc = &pmo.desc_cond[ (N-1 + (N-1) * ct.num_blocks ) * DLEN ];
 
-        zgemm_driver("C", "N", n1, nL, nL, one, &Gcol[n_green], ione, ione, desca,
+        rmg::zgemm_driver("C", "N", n1, nL, nL, one, &Gcol[n_green], ione, ione, desca,
                 gamma, ione, ione, descl, zero, temp, ione, ione, descb);
-        zgemm_driver("N", "N", n1, n1, nL, half, temp, ione, ione, descb,
+        rmg::zgemm_driver("N", "N", n1, n1, nL, half, temp, ione, ione, descb,
                 &Gcol[n_green], ione, ione, desca, half, &rho_mn[pmo.diag_begin[N-1]], ione, ione, descc);
 
 

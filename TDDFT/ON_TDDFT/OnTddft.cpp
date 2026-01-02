@@ -242,13 +242,13 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 #else
         dcopy(&n2, zz_dis, &ione, Cmatrix, &ione);
 #endif
-        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Hmatrix_old, ione, ione, desca);
-        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Smatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Smatrix, ione, ione, desca);
         my_sync_device();
 
@@ -264,7 +264,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         Sp->CopySquareMatrixToDistArray(Hmatrix_glob, Akick, numst, desca);
 
         double alpha = 1.0/time_step;
-        daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
+        rmg::daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
 
         for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
 
@@ -279,13 +279,13 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
-        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Hmatrix, ione, ione, desca);
 
-        dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
-        dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
+        rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
+        rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
         my_sync_device();
 
     }
@@ -329,9 +329,9 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             delete(RT2a);
 
             RT2a = new RmgTimer("2-TDDFT: transform of H to Cij *H * Cij");
-            dgemm_driver ("N", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+            rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                     Pn1, ione, ione, desca, zero, Akick, ione, ione, desca);
-            dgemm_driver ("N", "T", numst, numst, numst, one, Akick, ione, ione, desca,
+            rmg::dgemm_driver ("N", "T", numst, numst, numst, one, Akick, ione, ione, desca,
                     Cmatrix, ione, ione, desca, zero, Xmatrix, ione, ione, desca);
 
             if( scalapack_groups != pct.grid_npes)
@@ -347,7 +347,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             }
             else
             {
-                dcopy_driver(n2, Xmatrix, ione, Hmatrix_glob, ione);
+                rmg::dcopy_driver(n2, Xmatrix, ione, Hmatrix_glob, ione);
             }
 
 
@@ -412,9 +412,9 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             mat_local_to_glob(Hij_local, Hmatrix_glob, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
 
             Sp->CopySquareMatrixToDistArray(Hmatrix_glob, Hmatrix, numst, desca);
-            dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+            rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                     Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-            dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+            rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                     Cmatrix, ione, ione, desca, zero, Hmatrix, ione, ione, desca);
 
 
@@ -422,15 +422,15 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
             my_sync_device();
             double one = 1.0;
-            daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
-            dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
+            rmg::daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
+            rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
 
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
             my_sync_device();
             tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
-            dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
+            rmg::dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
@@ -439,15 +439,15 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         } //---- end of  SCF/while loop 
 
         /*  done with propagation,  save Pn1 ->  Pn0 */
-        dcopy_driver(n22, Pn1, ione, Pn0, ione);
+        rmg::dcopy_driver(n22, Pn1, ione, Pn0, ione);
 
         //  extract dipole from rho(Pn1)
         get_dipole(rho, dipole_ele);
         // save current  H0, H1 for the  next step extrapolatiion
-        dcopy_driver  (n2, Hmatrix_0, ione, Hmatrix_m1 , ione);         
+        rmg::dcopy_driver  (n2, Hmatrix_0, ione, Hmatrix_m1 , ione);         
         //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
 
-        dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
+        rmg::dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
 
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);

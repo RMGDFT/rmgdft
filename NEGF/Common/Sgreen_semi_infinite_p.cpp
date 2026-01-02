@@ -17,6 +17,7 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
 
 
 #define 	MAX_STEP 	40
@@ -71,10 +72,10 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     /*  green = (e S00- H00)^-1  */
 
-    zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
+    rmg::zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
     matrix_inverse_driver(green_ptr, desca);
 
-    dzasum_driver(n1, green_ptr, ione, &converge1);
+    rmg::dzasum_driver(n1, green_ptr, ione, &converge1);
 
     comm_sums(&converge1, &ione, COMM_EN2);
 
@@ -84,14 +85,14 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
         /*  calculate chnn = ch00 - Hn+1, n * Gnn * Hn,n+1  */
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
                 green_ptr, ione, ione, desca,  zero, chtem_ptr, ione, ione, desca);
-        zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, mone, chtem_ptr, ione, ione, desca,
+        rmg::zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, mone, chtem_ptr, ione, ione, desca,
                 ch10_ptr, ione, ione, desca, one, green_ptr, ione, ione, desca);
 
         matrix_inverse_driver(green_ptr, desca);
-        dzasum_driver(n1, green_ptr, ione, &converge2);
+        rmg::dzasum_driver(n1, green_ptr, ione, &converge2);
 
         comm_sums(&converge2, &ione, COMM_EN2);
 

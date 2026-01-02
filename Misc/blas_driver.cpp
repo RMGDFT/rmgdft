@@ -38,6 +38,8 @@ void my_sync_device()
 #endif
 }
 
+namespace rmg
+{
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
@@ -184,7 +186,7 @@ void dgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -216,7 +218,7 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -249,7 +251,7 @@ void zgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -322,12 +324,12 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
             stop[idx] *= m;
             counts[idx] *= m;
         }
-        rmg::gemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
+        gemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
         size_t sendcount = counts[0];
         ncclAllGather(&C[my_rank*sendcount], C, sendcount, ncclDouble, ct.nccl_local_comm, 0);
 #else
         // Full gemm no nccl
-        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #endif
 #endif
 
@@ -364,7 +366,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
 
         TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
-        rmg::gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
+        gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
         FreeHostOrDevice(A_glob);
         return;
     }
@@ -376,3 +378,5 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
                 C, ic, jc, descc);
     }
 }
+
+} // end namespace rmg

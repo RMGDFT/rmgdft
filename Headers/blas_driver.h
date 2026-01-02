@@ -1,6 +1,10 @@
+#pragma once
+
 #ifndef RMG_blas_driver_h
 #define RMG_blas_driver_h 1
 
+namespace rmg
+{
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) ;
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) ;
@@ -22,7 +26,6 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
 float alpha, float *A, int ia, int ja, int *desca,
 float *B, int ib, int jb, int *descb, float beta,
 float *C, int ic, int jc, int *descc);
-void my_sync_device();
 
 void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
 double alpha, double *A, int ia, int ja, int *desca,
@@ -33,7 +36,7 @@ std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,
 std::complex<double> *B, int ib, int jb, int *descb, std::complex<double> beta,
 std::complex<double> *C, int ic, int jc, int *descc);
 
+}
 void my_sync_device();
-
 
 #endif
