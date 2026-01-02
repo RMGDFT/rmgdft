@@ -28,7 +28,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "transition.h"
 
@@ -252,11 +252,11 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
 
         int lda = pbasis * ct.noncoll_factor;
-        RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+        rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
                 npsi, pbasis, rmatrix, state_count, beta, states[0].psi, lda);
 
         if(ct.noncoll)
-            RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+            rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
                     npsi, pbasis, rmatrix, state_count, beta, states[state_count].psi+pbasis, lda);
 
 

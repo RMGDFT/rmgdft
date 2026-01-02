@@ -106,11 +106,11 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     {
         RmgTimer RT("MgridOrtho: 1st stage");
         // ortho to the first nbase states
-        RmgGemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
+        rmg::gemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
         DeviceSynchronize();
         BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
         DeviceSynchronize();
-        RmgGemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
+        rmg::gemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
     }
     DeviceSynchronize();
 
@@ -137,12 +137,12 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 
     if constexpr (std::is_same_v<T, double>)
     {
-        RmgSyrk( uplo, transt, notcon, this->pbasis, one, psi_extra, this->pbasis,
+        rmg::syrk( uplo, transt, notcon, this->pbasis, one, psi_extra, this->pbasis,
             zero, mat, notcon);
     }
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
-        RmgGemm(trans_a, trans_n, notcon, notcon, this->pbasis, one, psi_extra,
+        rmg::gemm(trans_a, trans_n, notcon, notcon, this->pbasis, one, psi_extra,
                 this->pbasis, psi_extra, this->pbasis, zero, mat, notcon);
     }
     delete RT1;
@@ -164,13 +164,13 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     RT1 = new RmgTimer("MgridOrtho: cholesky");
     int info, info_trtri;
     T inv_vel(1.0/sqrt(vel));
-    rmg_potrf(uplo, notcon, mat_d, notcon, &info);
+    rmg::potrf(uplo, notcon, mat_d, notcon, &info);
     delete RT1;
     RT1 = new RmgTimer("MgridOrtho: inverse");
-    rmg_trtri(uplo, diag, notcon, mat_d, notcon, &info_trtri);
+    rmg::trtri(uplo, diag, notcon, mat_d, notcon, &info_trtri);
     delete RT1;
     RT1 = new RmgTimer("MgridOrtho: 2nd stage update");
-    rmg_trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi_extra, this->pbasis);
+    rmg::trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi_extra, this->pbasis);
     delete RT1;
 
 #if HIP_ENABLED || CUDA_ENABLED

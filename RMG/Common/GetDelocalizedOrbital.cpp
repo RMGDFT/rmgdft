@@ -34,7 +34,7 @@
 #include "GlobalSums.h"
 #include "params.h"
 #include "rmg_error.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 
 // Used to generate LDA+U orbital projectors that span the full space

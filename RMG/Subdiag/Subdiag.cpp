@@ -31,7 +31,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
@@ -153,9 +153,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     KpointType beta(0.0);
 
     if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
     else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
     if(typeid(KpointType) == typeid(std::complex<double>))
@@ -181,11 +181,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Compute S matrix
     if(ct.norm_conserving_pp && ct.is_gamma)
     {
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, Sij, nstates);
+        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, Sij, nstates);
     }
     else
     {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
+        rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
     // Save diagonal elements
@@ -282,7 +282,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Update the orbitals
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
-    RmgGemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
+    rmg::gemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
             psi_d, pbasis_noncoll, gmatrix, nstates, beta, tmp_arrayT, pbasis_noncoll);
 
     // And finally copy them back
@@ -318,7 +318,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     {
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
         // vexx is not in managed memory yet so that might create an issue
-        RmgGemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
+        rmg::gemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
                 this->vexx, pbasis_noncoll, gmatrix, nstates, beta, tmp_arrayT, pbasis_noncoll);
         memcpy(this->vexx, tmp_arrayT, tlen);
     }

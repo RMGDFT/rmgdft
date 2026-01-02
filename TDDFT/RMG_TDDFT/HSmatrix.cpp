@@ -9,7 +9,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
@@ -181,7 +181,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     KpointType alpha(vel);
     KpointType beta(0.0);
 
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -200,7 +200,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
+    rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
 
 
 #if HAVE_ASYNC_ALLREDUCE

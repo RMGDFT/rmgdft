@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -48,13 +48,13 @@ void zsymm(const char *, const char *, int *, int *, std::complex<double> *, std
 */
 
 
-template void RmgSymm<double>(char *, char *, int, int, double, double *, int, double *, int, 
+template void rmg::symm<double>(char *, char *, int, int, double, double *, int, double *, int, 
                                   double, double *, int);
-template void RmgSymm<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
+template void rmg::symm<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
                       std::complex<double> *, int, std::complex<double> *, int, 
                       std::complex<double>, std::complex<double> *, int);
 
-template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, DataType alpha,
+template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n, DataType alpha,
                              DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc)
 {
 

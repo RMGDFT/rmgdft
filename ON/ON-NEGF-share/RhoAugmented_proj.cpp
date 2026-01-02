@@ -16,7 +16,7 @@
 #include "prototypes_on.h"
 #include "LocalObject.h"
 #include "GpuAlloc.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Kbpsi.h"
 
 
@@ -36,12 +36,12 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
 
     RmgTimer *RT5 = new RmgTimer("3-get_new_rho: Qnm_coeff)");
     double one(1.0), zero(0.0);
-    RmgGemm("N", "C", num_orb, num_prj, num_orb, one, rho_matrix_local, num_orb,
+    rmg::gemm("N", "C", num_orb, num_prj, num_orb, one, rho_matrix_local, num_orb,
                 Kbpsi_mat_local, num_prj, zero, rho_kbpsi, num_orb);
 
     // don't need the whole Qnm_coeff matrix, only need the diagonal blocks for ions, each block is nh * nh
     // if this is slow, we can split and only calculate the necessary blocks
-    RmgGemm("N", "N", num_prj, num_prj, num_orb, one, Kbpsi_mat_local, num_prj,
+    rmg::gemm("N", "N", num_prj, num_prj, num_orb, one, Kbpsi_mat_local, num_prj,
                 rho_kbpsi, num_orb, zero, Qnm_coeff, num_prj);
     delete RT5;
 

@@ -58,39 +58,18 @@ template <typename DataType> void trtri(char *uplo, char *diag, int n, DataType 
 template <typename DataType> void trmm(char *side, char *uplo, char *trans, char *diag,
                              int m, int n, DataType alpha, DataType *A, int lda,
                              DataType *B, int ldb);
+
+template <typename DataType> void gemm_strided_batched(char *transa, char *transb, int m, int n, int k,
+                             DataType alpha, DataType *A, int lda, size_t strdedA, DataType *B, int ldb, size_t strideB, DataType beta,
+                             DataType *C, int ldc, size_t strideC, int batchCount);
 }
 
 
 #include <complex>
-template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, int n, int k,
-                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
-                             DataType *C, int ldc);
-
-template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n,
-                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
-                             DataType *C, int ldc);
-
-template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int k,
-                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
-                             DataType *C, int ldc);
-
-template <typename DataType> void rmg::syrk(char *uplo, char *trans, int n, int k,
-                             DataType alpha, DataType *A, int lda, DataType beta,
-                             DataType *C, int ldc);
 
 void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<double> *alpha, 
         std::complex<double> *A, int lda, std::complex<double> *B, int ldb,
         std::complex<double> *beta, std::complex<double> *C, int ldc);
-
-template <typename DataType> void RmgGemmStridedBatched(char *transa, char *transb, int m, int n, int k,
-                             DataType alpha, DataType *A, int lda, size_t strdedA, DataType *B, int ldb, size_t strideB, DataType beta,
-                             DataType *C, int ldc, size_t strideC, int batchCount);
-
-template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info);
-template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info);
-template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans, char *diag,
-                             int m, int n, DataType alpha, DataType *A, int lda,
-                             DataType *B, int ldb);
 
 #endif
 #endif

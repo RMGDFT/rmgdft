@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -43,15 +43,15 @@ void ztrmm(const char *side, const char *uplo, const char *transa, const char *d
 }
 #endif
 
-template void rmg_trmm<double>(char *, char *, char *, char *, int, int, double, double *, int,
+template void rmg::trmm<double>(char *, char *, char *, char *, int, int, double, double *, int,
                              double *, int);
 
-template void rmg_trmm<std::complex<double> >(char *, char *, char *, char *, int, int,
+template void rmg::trmm<std::complex<double> >(char *, char *, char *, char *, int, int,
                      std::complex<double>, std::complex<double> *, int,
                      std::complex<double> *, int);
 
 
-template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, char *diag,
+template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans, char *diag,
                              int m, int n, DataType alpha, DataType *A, int lda,
                              DataType *B, int ldb)
 {

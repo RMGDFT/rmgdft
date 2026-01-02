@@ -31,7 +31,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Scalapack.h"
@@ -127,7 +127,7 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     for(int step = 0;step < iterations;step++) {
 
         // Compute (I - D-1 * B) * Z(step) and store in A
-        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
+        rmg::gemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
 
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];

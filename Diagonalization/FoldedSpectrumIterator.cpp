@@ -31,7 +31,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 #include "ErrorFuncs.h"
@@ -78,7 +78,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     for(int step = 0;step < iterations;step++) {
 
         // Generate A * X for entire block
-        RmgGemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n);
+        rmg::gemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n);
 
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if CUDA_ENABLED

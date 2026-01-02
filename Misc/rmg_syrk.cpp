@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -41,14 +41,14 @@ void zsyrk(const char *, const char *, int *, int *, std::complex<double> *, std
 }
 #endif
 
-template void RmgSyrk<double>(char *, char *, int, int, double, double *, int,
+template void rmg::syrk<double>(char *, char *, int, int, double, double *, int,
                              double, double *, int);
 
-template void RmgSyrk<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
+template void rmg::syrk<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
                     std::complex<double> *, int, std::complex<double>, std::complex<double> *, int);
 
 
-template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k, 
+template <typename DataType> void rmg::syrk(char *uplo, char *trans, int n, int k, 
                              DataType alpha, DataType *A, int lda, DataType beta, 
                              DataType *C, int ldc)
 {

@@ -31,7 +31,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "blas.h"

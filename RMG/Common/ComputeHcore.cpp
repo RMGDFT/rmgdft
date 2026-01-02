@@ -31,7 +31,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
@@ -188,7 +188,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     KpointType alphavel(vel);
     KpointType beta(0.0);
 
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     BlockAllreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
     if(Hij_kin == NULL && Hij_localpp == NULL)
@@ -222,7 +222,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     // - 0.5 for laplacian 
     alphavel = vel;
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_kin, nstates);
 
     BlockAllreduce((double *)Hij_kin, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
@@ -247,7 +247,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
     alphavel = vel;
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_localpp, nstates);
     BlockAllreduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 

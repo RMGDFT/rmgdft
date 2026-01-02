@@ -32,7 +32,7 @@
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 #include "blacs.h"
 #include "RmgMatrix.h"
@@ -116,7 +116,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
         this_block_size = std::min(nb, length_block);
 
         RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
-        RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll, 
+        rmg::gemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll, 
                 &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
         delete RT1a;
 
@@ -174,7 +174,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
         {
             RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
 
-            RmgGemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
+            rmg::gemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
                     &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
             delete RT1a;
 

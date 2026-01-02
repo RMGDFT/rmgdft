@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <complex>
 
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 
 
 #if CUDA_ENABLED
@@ -184,7 +184,7 @@ void dgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -216,7 +216,7 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -249,7 +249,7 @@ void zgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     else
     {
-        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
 
@@ -322,12 +322,12 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
             stop[idx] *= m;
             counts[idx] *= m;
         }
-        RmgGemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
+        rmg::gemm(transa, transb, m, my_step, k, alpha, A, lda, &B[my_start*m], ldb, beta, &C[my_start*m], ldc);
         size_t sendcount = counts[0];
         ncclAllGather(&C[my_rank*sendcount], C, sendcount, ncclDouble, ct.nccl_local_comm, 0);
 #else
         // Full gemm no nccl
-        RmgGemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+        rmg::gemm (transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #endif
 #endif
 
@@ -364,7 +364,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
 
         TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
-        RmgGemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
+        rmg::gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
         FreeHostOrDevice(A_glob);
         return;
     }

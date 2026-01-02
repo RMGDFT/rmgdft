@@ -30,7 +30,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 #include "ErrorFuncs.h"

@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -35,15 +35,15 @@
     #include "mkl.h"
 #endif
 
-template void RmgSyrkx<double>(char *, char *, int, int, double, double *, int, double *, int, 
+template void rmg::syrkx<double>(char *, char *, int, int, double, double *, int, double *, int, 
                                   double, double *, int);
 
-template void RmgSyrkx<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
+template void rmg::syrkx<std::complex<double> >(char *, char *, int, int, std::complex<double>, 
                       std::complex<double> *, int, std::complex<double> *, int, 
                       std::complex<double>, std::complex<double> *, int);
 
 
-template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k, 
+template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int k, 
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, 
                              DataType *C, int ldc)
 {
@@ -296,7 +296,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
 #else
 
     // No standard CPU version of syrkx so just use gemm call
-    RmgGemm (trans, "N", n, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+    rmg::gemm (trans, "N", n, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 
 #endif
 }

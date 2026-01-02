@@ -42,7 +42,7 @@
 #include "common_prototypes1.h"
 #include "Kpoint.h"
 #include "RmgSumAll.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Projector.h"
 #include "RmgException.h"
@@ -506,7 +506,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
         int length = factor * nstates * this->num_tot_proj;
-        RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
+        rmg::gemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
                 weight, kptr->pbasis, &orbitals[offset*kptr->pbasis], kptr->pbasis,
                 rzero, p, this->num_tot_proj);
 
@@ -663,7 +663,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
 #else
     KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
 #endif
-    RmgGemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
+    rmg::gemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
             weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
 
     for (int nion = 0; nion < this->num_nonloc_ions; nion++)

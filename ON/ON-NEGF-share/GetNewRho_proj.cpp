@@ -23,7 +23,7 @@
 #include "blas.h"
 #include "RmgParallelFft.h"
 #include "BaseGrid.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 
 void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *rho, double *rho_matrix_local)
@@ -44,7 +44,7 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
     {
 
         int num_orb = Phi.num_thispe;
-        RmgGemm ("N", "N", pbasis, num_orb, num_orb, one, 
+        rmg::gemm ("N", "N", pbasis, num_orb, num_orb, one, 
                 Phi.storage_cpu, pbasis, rho_matrix_local, num_orb,
                 zero, HPhi.storage_cpu, pbasis);
 

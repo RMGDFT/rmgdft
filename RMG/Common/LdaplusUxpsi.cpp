@@ -35,7 +35,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "GpuAlloc.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 
 

@@ -28,7 +28,7 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
@@ -108,9 +108,9 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+        rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
         // Multiply G by V and leave result in C for the magma_dpotrf_gpu call coming up next
-        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
+        rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
     }
     delete(RT1);
 

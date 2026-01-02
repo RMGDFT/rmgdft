@@ -30,7 +30,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"

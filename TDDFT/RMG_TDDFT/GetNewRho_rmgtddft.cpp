@@ -28,7 +28,7 @@
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
 #include "RmgParallelFft.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas_driver.h"
 #include "Prolong.h"
 #include "GatherScatter.h"
@@ -111,7 +111,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     psi_dev = psi_dev + tddft_start_state * pbasis;
 
-    RmgGemm ("N", "N", pbasis, numst, numst, one, 
+    rmg::gemm ("N", "N", pbasis, numst, numst, one, 
             psi_dev, pbasis, rho_matrix_caltype, numst, zero, xpsi, pbasis);
     GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
     gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
@@ -127,7 +127,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rh
 
     KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
     KpointType *xpsi = kptr->work_cpu;
-    RmgGemm ("N", "N", pbasis, numst, numst, one, 
+    rmg::gemm ("N", "N", pbasis, numst, numst, one, 
             psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
     delete RT;

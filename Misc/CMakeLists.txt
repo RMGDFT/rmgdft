@@ -74,11 +74,11 @@ FileOpenAndCreate.cpp
 CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
 MyZgemm.cpp
-RmgGemm.cpp
+rmg_gemm.cpp
 RmgGemmStridedBatched.cpp
-RmgSymm.cpp
-RmgSyrkx.cpp
-RmgSyrk.cpp
+rmg_symm.cpp
+rmg_syrkx.cpp
+rmg_syrk.cpp
 rmg_potrf.cpp
 rmg_trtri.cpp
 rmg_trmm.cpp

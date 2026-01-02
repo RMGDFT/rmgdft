@@ -33,7 +33,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
@@ -164,7 +164,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
     // Compute A matrix
     RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, h_psi, pbasis_noncoll, beta, hr, max_states);
+    rmg::gemm(trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, h_psi, pbasis_noncoll, beta, hr, max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -179,7 +179,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #endif
 
     // Compute S matrix
-    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, max_states);
+    rmg::gemm (trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -229,14 +229,14 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         // expand the basis set with the residuals ( H - e*S )|psi>
         RT1 = new RmgTimer("6-Davidson: generate residuals");
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
 
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis_noncoll + idx];
         }
 
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, alpha, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, alpha, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
         delete RT1;
 
         // Apply preconditioner
@@ -290,7 +290,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         // Update the reduced Hamiltonian and S matrices
         RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &hr[nbase*max_states], max_states);
+        rmg::gemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &hr[nbase*max_states], max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
@@ -303,7 +303,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         BlockAllreduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*max_states], max_states);
+        rmg::gemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*max_states], max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for Aij request to finish
@@ -442,7 +442,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #else
             KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
 #endif
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, max_states, beta, npsi, pbasis_noncoll);
+            rmg::gemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, max_states, beta, npsi, pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
             RmgFreeHost(npsi);
@@ -467,10 +467,10 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
             // refresh s_psi and h_psi
             RT1 = new RmgTimer("6-Davidson: refresh h_psi and s_psi");
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            rmg::gemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, s_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
             if(!ct.norm_conserving_pp) for(int idx=0;idx < nstates*pbasis_noncoll;idx++)s_psi[idx] = psi[nstates*pbasis_noncoll + idx];
 
-            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            rmg::gemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, h_psi, pbasis_noncoll, vr, max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)h_psi[idx] = psi[nstates*pbasis_noncoll + idx];
             delete RT1;
 

@@ -8,7 +8,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "RmgTimer.h"
@@ -53,22 +53,22 @@ void cgemm(const char *, const char *, int *, int *, int *, std::complex<float> 
 */
 
 
-template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
+template void rmg::gemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
                                   double, double *, int);
 
-template void RmgGemm<float>(char *, char *, int, int, int, float, float *, int, float *, int, 
+template void rmg::gemm<float>(char *, char *, int, int, int, float, float *, int, float *, int, 
                                   float, float *, int);
 
-template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
+template void rmg::gemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
                       std::complex<double> *, int, std::complex<double> *, int, 
                       std::complex<double>, std::complex<double> *, int);
 
-template void RmgGemm<std::complex<float> >(char *, char *, int, int, int, std::complex<float>, 
+template void rmg::gemm<std::complex<float> >(char *, char *, int, int, int, std::complex<float>, 
                       std::complex<float> *, int, std::complex<float> *, int, 
                       std::complex<float>, std::complex<float> *, int);
 
 
-template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
+template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, int n, int k, 
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, 
                              DataType *C, int ldc)
 {

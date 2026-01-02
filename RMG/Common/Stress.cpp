@@ -43,7 +43,7 @@
 #include "GlobalSums.h"
 #include <boost/math/special_functions/erf.hpp>
 #include "GpuAlloc.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "transition.h"
 #include "Stress.h"
 #include "AtomicInterpolate.h"
@@ -280,7 +280,7 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            RmgGemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
                     grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
 
         }
@@ -352,7 +352,7 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGri
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            RmgGemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
                     grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
 
         }
@@ -441,7 +441,7 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid 
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            RmgGemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
                     grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
 
         }
@@ -853,7 +853,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     T one(1.0);
                     T zero(0.0);
 
-                    RmgGemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
+                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
                             sint, num_proj_noncoll, zero, proj_mat, num_proj_noncoll); 
 
                     for(int st = state_start[ib]; st < state_end[ib]; st++)
@@ -864,7 +864,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                             sint_der[ (st-state_start[ib]) * num_proj_noncoll + iproj] *= t1;
                         }
                     }
-                    RmgGemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
+                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
                             sint, num_proj_noncoll, zero, proj_mat_q, num_proj_noncoll); 
 
                     delete RT1;
@@ -1150,7 +1150,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
         T one(1.0);
 
-        RmgGemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_occupied, one, sint_der, num_proj_noncoll,
+        rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_occupied, one, sint_der, num_proj_noncoll,
                 sint, num_proj_noncoll, one, proj_mat, num_proj_noncoll); 
     }
 

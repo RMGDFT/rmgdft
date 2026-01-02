@@ -32,7 +32,7 @@
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 #include "blacs.h"
 #include "RmgMatrix.h"
@@ -115,7 +115,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 
 
         RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
                 psi_dev, pbasis_noncoll, block_matrix, nstates, 
                 beta, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll);
         delete RT1;

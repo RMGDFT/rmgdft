@@ -21,7 +21,7 @@
 #include "blas.h"
 #include "blas_driver.h"
 #include "GpuAlloc.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "RmgMatrix.h"
 
 
@@ -145,7 +145,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
 
 
     RmgTimer *RT3 = new RmgTimer("3-DiagGpu: gemm ");
-    RmgGemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
+    rmg::gemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
     MemcpyDeviceHost(size, H_gpu, mat_glob);
     delete(RT3);
 
@@ -155,7 +155,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     // H_gpu = Cij^-1
     dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
     InvertMatrix(S_gpu, H_gpu, numst);
-    RmgGemm("N", "N", numst, numst, num_res_states, one, eigvector_gpu, numst, H_gpu, numst, zero, S_gpu, numst);
+    rmg::gemm("N", "N", numst, numst, num_res_states, one, eigvector_gpu, numst, H_gpu, numst, zero, S_gpu, numst);
     // S_gpu = Cij * Cij^-1
     MemcpyDeviceHost(size, S_gpu, mat_glob);
     

@@ -36,7 +36,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "RmgException.h"
 
 static void read_double (int fhand, double * rp, int count);
@@ -626,7 +626,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         {
             KpointType *A = (KpointType *)Kptr[ik]->Kstates[0].psi;
             KpointType *B = (KpointType *)Kptr[ik]->Kstates[ns].psi;
-            RmgGemm(trans_a, trans_n, ns, ns, grid_size, alpha, A, grid_size, B, grid_size, ZERO_t, C, ns);
+            rmg::gemm(trans_a, trans_n, ns, ns, grid_size, alpha, A, grid_size, B, grid_size, ZERO_t, C, ns);
             MPI_Allreduce(MPI_IN_PLACE, (double *)C, ns * ns * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
             if(ct.write_orbital_overlaps)

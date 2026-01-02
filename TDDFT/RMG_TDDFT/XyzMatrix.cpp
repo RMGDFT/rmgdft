@@ -32,7 +32,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
@@ -122,7 +122,7 @@ void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l)
     // Compute A matrix
     KpointType alpha(vel);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, 
+    rmg::gemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, 
             pbasis, beta, Aij, num_states);
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);

@@ -39,7 +39,7 @@
 #include "RmgException.h"
 #include "transition.h"
 #include "prototypes_on.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 
 
@@ -62,7 +62,7 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, 
     
     double zero = 0.0;
 
-    RmgGemm("T", "N", na, nb, P0_BASIS, vol, A.storage_ptr, P0_BASIS,
+    rmg::gemm("T", "N", na, nb, P0_BASIS, vol, A.storage_ptr, P0_BASIS,
                 B.storage_ptr, P0_BASIS, zero, mat_local, na);
 
 

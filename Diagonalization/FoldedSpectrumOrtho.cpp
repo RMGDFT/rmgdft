@@ -28,7 +28,7 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"
@@ -93,20 +93,20 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 // AMD Symm peformance is absymal right now so use the GEMM
 #if HIP_ENABLED
-            RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
-            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
+            rmg::gemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+            rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
 #else
-            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
-            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n);
+            rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+            rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n);
 #endif
 
         }
         else {
 
             // split over PE's if n is large enough
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n);
+            rmg::gemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n);
+            rmg::gemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
         }

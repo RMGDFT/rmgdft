@@ -35,7 +35,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
@@ -199,12 +199,12 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     // Update the reduced Hamiltonian and S matrices
     RT1 = new RmgTimer("6-BlockDiag: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
+    rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
     PackSqToTr("U", N, hr, N, vr);
     BlockAllreduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
     UnPackSqToTr("U", N, hr, N, vr);
 
-    RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
+    rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
     PackSqToTr("U", N, sr, N, vr);
     BlockAllreduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
     UnPackSqToTr("U", N, sr, N, vr);
@@ -236,7 +236,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     // Rotate orbitals and use h_psi for scratch space
     RT1 = new RmgTimer("6-BlockDiag: rotate orbitals");
-    RmgGemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
+    rmg::gemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
     for(int idx=0;idx < N*pbasis_noncoll;idx++)psi[idx] = h_psi[idx];
 
     delete RT1;

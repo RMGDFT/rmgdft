@@ -36,7 +36,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Functional.h"
 
@@ -294,7 +294,7 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     //nwork: num_tot_proj * (ct.noncoll_factor * num_states)
 
-    RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+    rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
             ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
             ZERO_t,  nv, P0_BASIS);
 
@@ -333,7 +333,7 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         delete RT1;
         RT1 = new RmgTimer("AppNls: ns");
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
+        rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
         delete RT1;
@@ -497,17 +497,17 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
         //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
-        //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
-        //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
+        //  in the first rmg::gemm, nwork is a matrix of (dim_dnm) * num_states 
+        //  in the second rmg::gemm, nwork is a matrix of num_tot_proj * (tot_states) 
 
         // leading dimension is num_tot_proj * 2 for noncollinear
         memcpy(ns, psi, stop*sizeof(KpointType));
 
-        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
+        rmg::gemm (transa, transa, dim_dnm, num_states, dim_dnm, 
                 ONE_t, M_qqq,  dim_dnm, sint_compack, dim_dnm,
                 ZERO_t,  nwork, dim_dnm);
 
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
+        rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
@@ -542,13 +542,13 @@ template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T *nv
     // Compute the overlap matrix
     T *overlaps = new T[kptr->nstates * N];
 
-    RmgGemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
+    rmg::gemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
             psi, pbasis, beta, overlaps, N);
 
     BlockAllreduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
 
     // Update nv
-    RmgGemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,
+    rmg::gemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,
             overlaps, kptr->nstates, alpha, nv, pbasis);
 
     delete [] overlaps;

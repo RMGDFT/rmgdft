@@ -33,7 +33,7 @@
 #include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "transition.h"
 #include "rmgtypedefs.h"
 #include "pe_control.h"
@@ -85,7 +85,7 @@ template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
     int pbasis = Phi.pbasis;
     RmgTimer RT0("5-Functional: Exx potential");
 
-    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
+    rmg::gemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
             rho_matrix, num_thispe, zero, DePhi, pbasis);
 
 
@@ -198,7 +198,7 @@ template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &P
     double zero = 0.0, one = 1.0;
 
     double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
-    RmgGemm("C", "N", na, ntot, pbasis, vol, Phi.storage_cpu, pbasis,
+    rmg::gemm("C", "N", na, ntot, pbasis, vol, Phi.storage_cpu, pbasis,
                (double *)Omega_j, pbasis, zero, mat_tem, na);
     for(int idx = 0; idx < na * ntot; idx++) Xij_mat[idx] = 0.0;
 
@@ -217,9 +217,9 @@ template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &P
     size_t size = ntot * ntot;
     MPI_Allreduce(MPI_IN_PLACE, Xij_mat, size, MPI_DOUBLE, MPI_SUM, Phi.comm);
 
-    RmgGemm("N", "N", ntot, ntot, ntot, one, Sij_inverse, ntot,
+    rmg::gemm("N", "N", ntot, ntot, ntot, one, Sij_inverse, ntot,
             Xij_mat, ntot, zero, mat_tem, ntot);
-    RmgGemm("N", "N", ntot, ntot, ntot, one, mat_tem, ntot,
+    rmg::gemm("N", "N", ntot, ntot, ntot, one, mat_tem, ntot,
             Sij_inverse, ntot, zero, Xij_mat_Sinv, ntot);
 
     RmgFreeHost(mat_tem);
@@ -258,15 +258,15 @@ template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &P
 
     double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
-    RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
+    rmg::gemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
             Phi.storage_cpu, pbasis, zero, mat_tem, na);
 
     mat_local_to_glob(mat_tem, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
 
-    RmgGemm("N", "N", ntot, ntot, ntot, one, Xij_mat_Sinv, ntot,
+    rmg::gemm("N", "N", ntot, ntot, ntot, one, Xij_mat_Sinv, ntot,
             mat_glob, ntot, zero, mat_tem, ntot);
 
-    RmgGemm("T", "N", ntot, ntot, ntot, ct.exx_fraction, mat_glob, ntot,
+    rmg::gemm("T", "N", ntot, ntot, ntot, ct.exx_fraction, mat_glob, ntot,
             mat_tem, ntot, one, Hij_glob, ntot);
 
 
@@ -287,7 +287,7 @@ template <> void Exx_on<double>::OmegaSinv(double *Sij_inverse, LocalObject<doub
 
     double *phi_tem = (double *)RmgMallocHost(ntot*pbasis*sizeof(double));
 
-    RmgGemm("N", "N", pbasis, ntot, ntot, one, Omega_j, pbasis,
+    rmg::gemm("N", "N", pbasis, ntot, ntot, one, Omega_j, pbasis,
             Sij_inverse, ntot, zero, phi_tem, pbasis);
 
     size_t size = ntot * pbasis * sizeof(double);
@@ -316,7 +316,7 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
 
     double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     double *mat_local = (double *)RmgMallocHost(ntot*na*sizeof(double));
-    RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
+    rmg::gemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
             Phi.storage_cpu, pbasis, zero, mat_local, na);
 
     mat_local_to_glob(mat_local, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
@@ -327,7 +327,7 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
         mat_local[st2 * ntot + st1] = mat_glob[st2_glob * ntot + st1];
     }
 
-    RmgGemm("N", "N", pbasis, na, ntot, ct.exx_fraction, Omega_j, pbasis,
+    rmg::gemm("N", "N", pbasis, na, ntot, ct.exx_fraction, Omega_j, pbasis,
             mat_local, ntot, one, res, pbasis);
 
     RmgFreeHost(mat_local);
@@ -344,7 +344,7 @@ template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global
     RmgTimer RT0("5-Functional: Exx potential");
 
     // DePhi: waveufnctions: Phi * C
-    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
+    rmg::gemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
             Cij_local, num_thispe, zero, DePhi, pbasis);
 
 
@@ -353,7 +353,7 @@ template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global
     this->Exxb->Vexx(Omega_j, true);
     //this->Exxb->Vexx(Omega_j, use_float_fft);
 
-    RmgGemm("T", "N", num_tot, num_tot, pbasis, one, Omega_j, pbasis,
+    rmg::gemm("T", "N", num_tot, num_tot, pbasis, one, Omega_j, pbasis,
             DePhi, pbasis, zero, Cij_local, num_tot);
     size_t size = num_tot * num_tot;
     MPI_Allreduce(MPI_IN_PLACE, Cij_local, size, MPI_DOUBLE, MPI_SUM, Phi.comm);
@@ -379,7 +379,7 @@ template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global
         exit (0);
     }
 
-    RmgGemm("N", "N", pbasis, num_tot, num_tot, one, Omega_j, pbasis,
+    rmg::gemm("N", "N", pbasis, num_tot, num_tot, one, Omega_j, pbasis,
             Cij_global, num_tot, zero, DePhi, pbasis);
 
 

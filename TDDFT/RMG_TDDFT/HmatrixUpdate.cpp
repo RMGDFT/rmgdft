@@ -32,7 +32,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
@@ -186,7 +186,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
       //}
       //else
         {
-            RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (psi_dev+ j*block_size*pbasis), pbasis, (work_dev + j * block_size * pbasis), 
+            rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, (psi_dev+ j*block_size*pbasis), pbasis, (work_dev + j * block_size * pbasis), 
                     pbasis, beta, mat_dev, size_row);
         }
         gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
@@ -245,7 +245,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
             } 
         }
 
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi+j*block_size*pbasis, pbasis, vpsi, 
+        rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi+j*block_size*pbasis, pbasis, vpsi, 
                 pbasis, beta, (KpointType *)global_matrix1, size_row);
         BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 

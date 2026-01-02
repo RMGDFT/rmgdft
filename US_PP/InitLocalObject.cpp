@@ -39,7 +39,7 @@
 #include "prototypes_on.h"
 #include "Kbpsi.h"
 #include "rmgthreads.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "AtomicInterpolate.h"
 #include "Atomic.h"
 #include "RmgException.h"

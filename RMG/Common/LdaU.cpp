@@ -41,7 +41,7 @@
 #include "common_prototypes1.h"
 #include "Kpoint.h"
 #include "RmgSumAll.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "FiniteDiff.h"
 #include "LdaU.h"
@@ -333,7 +333,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     }
 
     int num_states_nc = num_states * ct.noncoll_factor;
-    RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
+    rmg::gemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
             ONE_t, orbital_weight_ptr, K.pbasis, nwork, num_tot_proj,
             ONE_t, v_hub_x_psi, K.pbasis);
 

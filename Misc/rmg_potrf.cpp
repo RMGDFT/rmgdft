@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -39,11 +39,11 @@ void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
     #include "mkl.h"
 #endif
 
-template void rmg_potrf<double>(char *, int, double *, int, int *);
-template void rmg_potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
+template void rmg::potrf<double>(char *, int, double *, int, int *);
+template void rmg::potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
 
 
-template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info)
+template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info)
 {
 
 #if CUDA_ENABLED

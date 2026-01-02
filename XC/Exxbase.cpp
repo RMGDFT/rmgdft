@@ -35,7 +35,7 @@
 #include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "transition.h"
 #include "rmgtypedefs.h"
 #include "pe_control.h"
@@ -952,7 +952,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
     RT0 = new RmgTimer("5-Functional: Exx: gemm");
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
-    RmgGemm(trans_a, trans_n, ij_length, kl_length, pwave->pbasis, alpha, ij_pair, pwave->pbasis, kl_pair, pwave->pbasis, beta, Exxints, ij_length);
+    rmg::gemm(trans_a, trans_n, ij_length, kl_length, pwave->pbasis, alpha, ij_pair, pwave->pbasis, kl_pair, pwave->pbasis, beta, Exxints, ij_length);
     delete RT0;
     int pairsize = ij_length * kl_length;
     RT0 = new RmgTimer("5-Functional: Exx: reduce");

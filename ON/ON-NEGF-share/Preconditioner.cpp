@@ -34,7 +34,7 @@
 #include "GlobalSums.h"
 #include "RmgSumAll.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"

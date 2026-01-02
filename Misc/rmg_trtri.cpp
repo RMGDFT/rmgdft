@@ -5,7 +5,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
@@ -39,11 +39,11 @@ void ztrtri(const char *uplo, const char *diag, int *n, std::complex<double> *a,
     #include "mkl.h"
 #endif
 
-template void rmg_trtri<double>(char *, char *, int, double *, int, int *);
-template void rmg_trtri<std::complex<double>>(char *, char *, int, std::complex<double> *, int, int *);
+template void rmg::trtri<double>(char *, char *, int, double *, int, int *);
+template void rmg::trtri<std::complex<double>>(char *, char *, int, std::complex<double> *, int, int *);
 
 
-template <typename DataType> void rmg_trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info)
+template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info)
 {
 
 #if CUDA_ENABLED

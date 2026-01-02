@@ -36,7 +36,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "RmgException.h"
 
 template void Read_nsocc(char *, Kpoint<double> *);

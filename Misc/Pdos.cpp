@@ -43,7 +43,7 @@
 #include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "transition.h"
 #include "rmgtypedefs.h"
 #include "pe_control.h"

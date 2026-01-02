@@ -26,7 +26,7 @@
 #include "rmg_mangling.h"
 #include "Symmetry.h"
 #include "BerryPhase.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GlobalSums.h"
 #include "blas.h"
 #include "blas_driver.h"
@@ -238,7 +238,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 psi_k1 = Kptr[ik_index+1]->orbital_storage;
             }
 
-            RmgGemm("c", "n", nband_occ, nband_occ, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat, nband_occ);
+            rmg::gemm("c", "n", nband_occ, nband_occ, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat, nband_occ);
             BlockAllreduce(mat, nband_occ * nband_occ, pct.grid_comm);
 
             //calculate determinant of mat <psi_k |psi_(k+1)>
@@ -466,10 +466,10 @@ void BerryPhase::Calc_Gnk (Kpoint<std::complex<double>> **Kptr)
                 psi_kp1 = Kptr[iort*num_kpp + + jpp +1 ]->orbital_storage;
             }
 
-            RmgGemm("N", "N", pbasis_noncoll, nband_occ, nband_occ, alpha,
+            rmg::gemm("N", "N", pbasis_noncoll, nband_occ, nband_occ, alpha,
                     psi_kp1, pbasis_noncoll, BP_matrix_p1, nband_occ, 
                     zero, Gnk, pbasis_noncoll);
-            RmgGemm("N", "C", pbasis_noncoll, nband_occ, nband_occ, alpha,
+            rmg::gemm("N", "C", pbasis_noncoll, nband_occ, nband_occ, alpha,
                     psi_km1, pbasis_noncoll, BP_matrix_m1, nband_occ, 
                     mone, Gnk, pbasis_noncoll);
 
@@ -489,17 +489,17 @@ void BerryPhase::Apply_BP_Hpsi(Kpoint<std::complex<double>> *kptr, int num_state
     // extra Hamiltonian operator |Gnk ><psi_bp| + |psi_bp >< Gnk|, applied to all states including unoccupied 
     // BP_Hpsi =     |Gnk > <psi_bp | psi current> 
     std::complex<double> one(1.0), zero(0.0); 
-    RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+    rmg::gemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
 //    MPI_Allreduce(MPI_IN_PLACE, mat, (size_t)nband_occ * num_states, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
     BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
-    RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
+    rmg::gemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_Gnk, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);
     // BP_Hpsi +=     |psi_bp > <Gnk | psi current> 
-    RmgGemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+    rmg::gemm("c", "n", nband_occ, num_states, pbasis_noncoll, vel_C, kptr->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
 //    MPI_Allreduce(MPI_IN_PLACE, mat, (size_t)nband_occ * num_states, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
     BlockAllreduce(mat, (size_t)nband_occ * num_states, pct.grid_comm);
-    RmgGemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
+    rmg::gemm("N", "N", pbasis_noncoll, num_states, nband_occ, one,
             kptr->BP_psi, pbasis_noncoll, mat, nband_occ, 
             one, h_psi, pbasis_noncoll);
 }
@@ -610,7 +610,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
                 psi_k1 = Kptr[ik_index+1]->orbital_storage;
             }
 
-            RmgGemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat_glob, numst);
+            rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat_glob, numst);
             BlockAllreduce(mat_glob, numst * numst, pct.grid_comm);
 
             Sp.CopySquareMatrixToDistArray(mat_glob, Kptr[ik_index]->BP_Skk1_cpu, numst, desca);
@@ -893,7 +893,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
                 psi_k1 = Kptr[ik_index+1]->orbital_storage;
             }
 
-            RmgGemm("c", "n", nband_occ, nband_occ, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat, nband_occ);
+            rmg::gemm("c", "n", nband_occ, nband_occ, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat, nband_occ);
             BlockAllreduce(mat, nband_occ * nband_occ, pct.grid_comm);
 
             //calculate determinant of mat <psi_k |psi_(k+1)>
@@ -968,10 +968,10 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
                 psi_kp1 = Kptr[iort*num_kpp + + jpp +1 ]->orbital_storage;
             }
 
-            RmgGemm("N", "N", pbasis_noncoll, nband_occ, nband_occ, alpha,
+            rmg::gemm("N", "N", pbasis_noncoll, nband_occ, nband_occ, alpha,
                     psi_kp1, pbasis_noncoll, BP_matrix_p1, nband_occ, 
                     zero, Gnk, pbasis_noncoll);
-            RmgGemm("N", "C", pbasis_noncoll, nband_occ, nband_occ, alpha,
+            rmg::gemm("N", "C", pbasis_noncoll, nband_occ, nband_occ, alpha,
                     psi_km1, pbasis_noncoll, BP_matrix_m1, nband_occ, 
                     mone, Gnk, pbasis_noncoll);
 
@@ -1000,18 +1000,18 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
 
         psi = Kptr[kpt]->orbital_storage;
         
-        RmgGemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+        rmg::gemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
         BlockAllreduce(mat, (size_t)nband_occ * numst, pct.grid_comm);
-        RmgGemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
+        rmg::gemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
                 Kptr[kpt]->BP_Gnk, pbasis_noncoll, mat, nband_occ, 
                 zero, h_psi, pbasis_noncoll);
         // BP_Hpsi +=     |psi_bp > <Gnk | psi current> 
-        RmgGemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, Kptr[kpt]->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
+        rmg::gemm("c", "n", nband_occ, numst, pbasis_noncoll, vel_C, Kptr[kpt]->BP_Gnk, pbasis_noncoll, psi, pbasis_noncoll, zero, mat, nband_occ);
         BlockAllreduce(mat, (size_t)nband_occ * numst, pct.grid_comm);
-        RmgGemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
+        rmg::gemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
                 psi, pbasis_noncoll, mat, nband_occ, 
                 one, h_psi, pbasis_noncoll);
-        RmgGemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob, numst);
+        rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob, numst);
 
         BlockAllreduce(mat_glob, (size_t)numst * numst, pct.grid_comm);
         Sp.CopySquareMatrixToDistArray(mat_glob,  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());

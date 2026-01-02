@@ -32,7 +32,7 @@
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 #include "RmgMatrix.h"
 #include "Functional.h"
