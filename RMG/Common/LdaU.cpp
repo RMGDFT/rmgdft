@@ -311,7 +311,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     size_t strideB = (size_t)dim_a * (size_t)num_states;
     size_t strideC = (size_t)dim_a * (size_t)num_states;;
 
-    RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+    rmg::gemm_strided_batched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
             lambda, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
             nwork_ion, dim_a, strideC, num_nonloc_ions); 
 

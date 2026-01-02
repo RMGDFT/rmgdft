@@ -43,15 +43,15 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 */
 
 
-template void RmgGemmStridedBatched<double>(char *, char *, int, int, int, double, double *, int, size_t, double *, int,  size_t,
+template void rmg::gemm_strided_batched<double>(char *, char *, int, int, int, double, double *, int, size_t, double *, int,  size_t,
                                   double, double *, int,  size_t, int);
 
-template void RmgGemmStridedBatched<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
+template void rmg::gemm_strided_batched<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
                       std::complex<double> *, int,  size_t, std::complex<double> *, int,  size_t,
                       std::complex<double>, std::complex<double> *, int,  size_t, int);
 
 
-template <typename DataType> void RmgGemmStridedBatched(char *transa, char *transb, int m, int n, int k, 
+template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *transb, int m, int n, int k, 
                              DataType alpha, DataType *A, int lda,  size_t strideA, DataType *B, int ldb,  size_t strideB, DataType beta, 
                              DataType *C, int ldc,  size_t strideC, int batchCount)
 {

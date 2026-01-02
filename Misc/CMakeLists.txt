@@ -75,7 +75,7 @@ CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
 MyZgemm.cpp
 rmg_gemm.cpp
-RmgGemmStridedBatched.cpp
+rmg_gemm_strided_batched.cpp
 rmg_symm.cpp
 rmg_syrkx.cpp
 rmg_syrk.cpp
