@@ -56,19 +56,19 @@
 #endif
 
 #if CUDA_ENABLED || HIP_ENABLED
-void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states);
-void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *vtot_eig, int pbasis, int num_states);
-void Veff_x_psi(float *psi_dev,  float *work_dev, float *vtot_eig, int pbasis, int num_states);
-void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(float *psi_dev,  float *work_dev, float *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *vtot_psi, int pbasis, int num_states);
 #endif
 
-template void HmatrixUpdate<double, double>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
-template void HmatrixUpdate<double, float>(Kpoint<double> *, double *, double *, int tddft_start_state, int num_states);
-template void HmatrixUpdate<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
-template void HmatrixUpdate<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<double, double>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, double *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<double, float>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, double *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states);
+template void HmatrixUpdate<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states);
 
 template <typename KpointType, typename CalType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state, int num_states)
+void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, KpointType *Aij, int tddft_start_state, int num_states)
 {
 
     BaseGrid *G = kptr->G;
@@ -111,21 +111,21 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 
     psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
-    static void *vtot_eig_caltype= NULL;
-    if(vtot_eig_caltype == NULL)
+    static void *vtot_psi_caltype= NULL;
+    if(vtot_psi_caltype == NULL)
     {
-        vtot_eig_caltype = malloc(pbasis*sizeof(std::complex<double>));
+        vtot_psi_caltype = malloc(n_rho*pbasis*sizeof(std::complex<double>));
     }
-    CopyAndConvert(pbasis, vtot_eig, (CalType *)vtot_eig_caltype);
+    CopyAndConvert(n_rho * pbasis, vtot_psi.data(), (CalType *)vtot_psi_caltype);
     static CalType *v_dev;
     static CalType *mat_dev;
     if(!v_dev)
     {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
+        gpuMalloc((void **)&v_dev, n_rho * pbasis * sizeof(CalType));
     }
 
-    gpuMemcpy(v_dev, vtot_eig_caltype,  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states * ct.noncoll_factor);
+    gpuMemcpy(v_dev, vtot_psi_caltype,  n_rho * pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
 
     gpublasStatus_t gstat;
 
@@ -242,16 +242,17 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         {
             for(int idx = 0; idx <pbasis; idx++)
             {
-                vpsi[st1 * pbasis_noncoll + idx] = psi[(j * block_size +st1) * pbasis_noncoll + idx] * vtot_eig[idx];
+                vpsi[st1 * pbasis_noncoll + idx] = psi[(j * block_size +st1) * pbasis_noncoll + idx] * vtot_psi[idx];
             } 
         }
+        // >>>>????
         if(ct.noncoll)
         {
             for (int st1 = 0; st1 < size_col; st1++)
             {
                 for(int idx = 0; idx <pbasis; idx++)
                 {
-                    vpsi[st1 * pbasis_noncoll + pbasis + idx] = psi[(j * block_size +st1) * pbasis_noncoll + pbasis + idx] * vtot_eig[idx];
+                    vpsi[st1 * pbasis_noncoll + pbasis + idx] = psi[(j * block_size +st1) * pbasis_noncoll + pbasis + idx] * vtot_psi[idx];
                 } 
             }
         }

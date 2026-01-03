@@ -188,8 +188,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
     spinobj<double> rho_k_double;
+    int fpbasis = dimx * dimy * dimz;
     CopyAndConvert(n_rho * pbasis, rho_temp, rho_k_double.data());
-    P.prolong(rho_k.data(), rho_k_double.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+    for(int irho = 0; irho< n_rho; irho++)
+    {
+        P.prolong(rho_k.data()+irho*fpbasis, rho_k_double.data() + irho*pbasis, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+        
+    }
 
     delete RT1;
 
