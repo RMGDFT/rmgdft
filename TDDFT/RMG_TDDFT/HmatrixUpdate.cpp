@@ -114,18 +114,18 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     static void *vtot_eig_caltype= NULL;
     if(vtot_eig_caltype == NULL)
     {
-        vtot_eig_caltype = malloc(pbasis*sizeof(std::complex<double>));
+        vtot_eig_caltype = malloc(n_rho*pbasis*sizeof(std::complex<double>));
     }
-    CopyAndConvert(pbasis, vtot_eig, (CalType *)vtot_eig_caltype);
+    CopyAndConvert(n_rho * pbasis, vtot_eig, (CalType *)vtot_eig_caltype);
     static CalType *v_dev;
     static CalType *mat_dev;
     if(!v_dev)
     {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
+        gpuMalloc((void **)&v_dev, n_rho * pbasis * sizeof(CalType));
     }
 
-    gpuMemcpy(v_dev, vtot_eig_caltype,  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states * ct.noncoll_factor);
+    gpuMemcpy(v_dev, vtot_eig_caltype,  n_rho * pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
 
     gpublasStatus_t gstat;
 
@@ -245,6 +245,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
                 vpsi[st1 * pbasis_noncoll + idx] = psi[(j * block_size +st1) * pbasis_noncoll + idx] * vtot_eig[idx];
             } 
         }
+        // >>>>????
         if(ct.noncoll)
         {
             for (int st1 = 0; st1 < size_col; st1++)

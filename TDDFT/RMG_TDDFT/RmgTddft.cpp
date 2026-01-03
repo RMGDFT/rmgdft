@@ -231,15 +231,11 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
     double dipole_tot[3];
 
-    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
-    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
-    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
-    int FP0_BASIS = dimx * dimy * dimz;
 
     FILE *dfi = NULL, *efi = NULL, *current_fi = NULL, *dbp_fi = NULL;
     double vel = get_vel_f();
     std::string filename;
-    int n2,n22, numst, P0_BASIS,i, ione =1;
+    int n2,n22, numst, i, ione =1;
     int tot_steps = 0, pre_steps = 0, tddft_steps;
     int Ieldyn = 1;    // BCH  
                        //int Ieldyn = 2;    // Diagev
@@ -248,8 +244,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
 
 
-    P0_BASIS =  Rmg_G->get_P0_BASIS(1);
-    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
+    int pbasis = Kptr[0]->pbasis;
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
     int scalapack_groups = 1;
     switch(ct.subdiag_driver) {
@@ -455,12 +453,12 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     /* allocate memory for eigenvalue send array and receive array */
 
     wfobj<double> vtot_psi;
+    wf_spinobj<double> vxc_psi;
     fgobj<double> vtot;
     spinobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
-    int pbasis = Kptr[0]->pbasis;
-    size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis * sizeof(OrbitalType);
+    size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
     ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
     rho_ground.get_oppo();
 
@@ -476,7 +474,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {
             gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
             gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
-            size_t count = (size_t)ct.num_states * (size_t)pbasis;
+            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
             if(typeid(OrbitalType) == typeid(double))
             {
                 float *work_conv = new float[count];
@@ -494,7 +492,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
         }
 #else
-        Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis];
+        Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis_noncoll];
 #endif
     }
     if(ct.restart_tddft)
@@ -520,14 +518,12 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     else
     {
         {
-            int pbasis = Kptr[0]->pbasis;
-            wfobj<double> v_psi, vxc_psi;
             int nstates = Kptr[0]->nstates;
             OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
-            GetVtotPsi (v_psi.data(), vnuc.data(), Rmg_G->default_FG_RATIO);
+            GetVtotPsi (vtot_psi.data(), vnuc.data(), Rmg_G->default_FG_RATIO);
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                Kptr[kpt]->ComputeHcore(v_psi.data(), vxc_psi.data(), &Hcore[kpt*nstates * nstates], NULL, NULL);
+                Kptr[kpt]->ComputeHcore(vtot_psi.data(), vxc_psi.data(), &Hcore[kpt*nstates * nstates], NULL, NULL);
 
                 for (int st = 0; st < ct.tddft_start_state; st++)
                 {
@@ -887,6 +883,9 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             dcopy(&FP0_BASIS, vh_dipole.data(), &ione, vh_dipole_old.data(), &ione);
             dcopy(&FP0_BASIS, vh.data(), &ione, vh_old.data(), &ione);
             dcopy(&FP0_BASIS, vxc.data(), &ione, vxc_old.data(), &ione);
+            //vh_old = vh;
+            //vh_dipole_old = vh_dipole;
+            //vxc_old = vxc;
 
             //get_vxc(rho, rho_oppo, rhocore, vxc);
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
@@ -903,6 +902,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 DipoleCorrection(dipole_tot,  vh_dipole.data());
             }
 
+            // noncoll need change
             for (int idx = 0; idx < FP0_BASIS; idx++) {
                 vtot[idx] = vxc[idx] + vh[idx] + vh_dipole[idx]
                     -vxc_old[idx] -vh_old[idx] - vh_dipole_old[idx];
@@ -929,6 +929,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             }
 
 
+            //noncoll need change
             GetVtotPsi (vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
