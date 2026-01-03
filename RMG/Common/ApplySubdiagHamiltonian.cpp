@@ -109,7 +109,7 @@ void ApplySubdiagHamiltonian (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp
 
     // Copy single precision orbital back to double precision
     ScatterPsi(G, pbasis_noncoll, sp->istate, hr0_t, 
-               &kptr->orbital_storage[kptr->nstates*kptr->pbasis], pct.coalesce_factor);
+               &kptr->orbital_storage[kptr->nstates*kptr->pbasis_noncoll], pct.coalesce_factor);
 
     p->free(res2_t, pool_blocks);
 
