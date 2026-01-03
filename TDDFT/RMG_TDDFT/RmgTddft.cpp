@@ -340,7 +340,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     std::complex<double> *mat_C = (std::complex<double> *) matrix_glob_orbitaltype; 
     double *mat_R = (double *) matrix_glob_orbitaltype; 
     fgobj<double> vh_old, vh_dipole, vh_dipole_old;
-    spinobj<double> vxc_old, rho_k, rho_ksum;
+    spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
     MatrixType *Pn1        ;
@@ -622,7 +622,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 init_point_charge_pot(vtot_psi.data(), 1);
             }
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                HmatrixUpdate<OrbitalType, OrbitalType>(Kptr[kpt], vtot_psi.data(), (OrbitalType *)matrix_glob, ct.tddft_start_state, numst);
+                HmatrixUpdate<OrbitalType, OrbitalType>(Kptr[kpt], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state, numst);
                 Sp->CopySquareMatrixToDistArray((OrbitalType *)matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
                 daxpy ( &n2_C,  &alpha, (double *)Kptr[kpt]->Akick_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu , &ione) ;
                 memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
@@ -880,12 +880,12 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             //write_rho_x(rho, "update rho");
             //write_rho_x(rho_ground.data(), "groumd rho");
 
-            dcopy(&FP0_BASIS, vh_dipole.data(), &ione, vh_dipole_old.data(), &ione);
-            dcopy(&FP0_BASIS, vh.data(), &ione, vh_old.data(), &ione);
-            dcopy(&FP0_BASIS, vxc.data(), &ione, vxc_old.data(), &ione);
-            //vh_old = vh;
-            //vh_dipole_old = vh_dipole;
-            //vxc_old = vxc;
+            //dcopy(&FP0_BASIS, vh_dipole.data(), &ione, vh_dipole_old.data(), &ione);
+            //dcopy(&FP0_BASIS, vh.data(), &ione, vh_old.data(), &ione);
+            //dcopy(&FP0_BASIS, vxc.data(), &ione, vxc_old.data(), &ione);
+            vh_old = vh;
+            vh_dipole_old = vh_dipole;
+            vxc_old = vxc;
 
             //get_vxc(rho, rho_oppo, rhocore, vxc);
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
@@ -907,6 +907,8 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 vtot[idx] = vxc[idx] + vh[idx] + vh_dipole[idx]
                     -vxc_old[idx] -vh_old[idx] - vh_dipole_old[idx];
             }
+
+            vxc_diff = vxc - vxc_old;
 
             ES = 0.0;
             for (int idx = 0; idx < FP0_BASIS; idx++) 
@@ -939,17 +941,17 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     if(ct.is_gamma)
                     {
                         kptr_d = (Kpoint<double> *)Kptr[kpt];
-                        HmatrixUpdate<double,float>  (kptr_d, vtot_psi.data(), (double *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                        HmatrixUpdate<double,float>  (kptr_d, vtot_psi, vxc_psi, (double *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
                     }
                     else
                     {
                         kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
-                        HmatrixUpdate<std::complex<double>,std::complex<float>>  (kptr_c, vtot_psi.data(), (std::complex<double> *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                        HmatrixUpdate<std::complex<double>,std::complex<float>>  (kptr_c, vtot_psi, vxc_psi, (std::complex<double> *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
                     }
                 }
                 else
                 {
-                    HmatrixUpdate<OrbitalType,OrbitalType>  (Kptr[kpt], vtot_psi.data(), matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                    HmatrixUpdate<OrbitalType,OrbitalType>  (Kptr[kpt], vtot_psi, vxc_psi, matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
                 }
                 for(int i = 0; i < numst * numst; i++) matrix_glob[i] = matrix_glob_orbitaltype[i];
                 if(ct.tddft_tiledMM)
