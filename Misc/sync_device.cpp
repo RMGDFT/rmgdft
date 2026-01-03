@@ -1,15 +1,23 @@
 
+#include "blas_driver.h"
+#include "GpuAlloc.h"
+
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
-void DeviceSynchronize(void)
+namespace rmg
 {
-    hipDeviceSynchronize();
-}
+    void sync_device(void)
+    {
+        hipDeviceSynchronize();
+    }
+} // end namespace rmg
+
 hipError_t gpuStreamSynchronize (hipStream_t stream)
 {
     return hipStreamSynchronize (stream);
 }
+
 #elif SYCL_ENABLED
 #include <complex>
 #include <typeinfo>
@@ -18,25 +26,39 @@ hipError_t gpuStreamSynchronize (hipStream_t stream)
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "rmg_control.h"
-void DeviceSynchronize(void)
+
+namespace rmg
 {
-    ct.sycl_Q.wait();
-}
+    void sync_device(void)
+    {
+        ct.sycl_Q.wait();
+    }
+} // end namespace rmg
+
 #elif CUDA_ENABLED
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
 #include <driver_types.h>
 
-void DeviceSynchronize(void)
+namespace rmg
 {
-    cudaDeviceSynchronize();
+    void sync_device(void)
+    {
+        cudaDeviceSynchronize();
+    }
 }
+
 cudaError_t gpuStreamSynchronize (cudaStream_t stream)
 {
     return cudaStreamSynchronize (stream);
 }
 #else
-void DeviceSynchronize(void)
+namespace rmg
 {
+    void sync_device(void)
+    {
+    }
 }
 #endif
+

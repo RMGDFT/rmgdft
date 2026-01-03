@@ -557,7 +557,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  gpuMemcpyHostToDevice);
     gpuMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double), gpuMemcpyHostToDevice);
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 }
 

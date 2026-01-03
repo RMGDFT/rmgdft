@@ -22,7 +22,7 @@ GetPlanarAnisotropy.cpp
 check_tests.cpp
 MixLdaU.cpp
 Precond_drho.cpp
-DeviceSynchronize.cpp
+sync_device.cpp
 Dos.cpp
 Pdos.cpp
 write_rho_x.cpp

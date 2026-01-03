@@ -32,16 +32,6 @@
 namespace rmg
 {
 
-void sync_device()
-{
-#if CUDA_ENABLED
-    DeviceSynchronize();
-#endif
-#if HIP_ENABLED
-    hipDeviceSynchronize();
-#endif
-}
-
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
