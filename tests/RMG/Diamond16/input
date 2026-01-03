@@ -13,6 +13,9 @@ test_energy = "-91.81046110"
 test_steps = "9"
 test_steps_tolerance = "2"
 
+rmg_threads_per_node = "1"
+omp_threads_per_node = "1"
+
 # Wavefunction grid
 wavefunction_grid="32 32 32"
 renormalize_forces = "false"
