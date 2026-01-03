@@ -32,29 +32,28 @@
 #include "packfuncs.h"
 #include <complex>
 
+template void rmg::pack_stop<double>(double*, double*, int, int, int);
+template void rmg::pack_stop<float>(float*, float*, int, int, int);
+template void rmg::pack_stop<std::complex<float> >(std::complex<float>*, std::complex<float>*, int, int, int);
+template void rmg::pack_stop<std::complex<double> >(std::complex<double>*, std::complex<double>*, int, int, int);
 
-template void CPP_pack_stop<double>(double*, double*, int, int, int);
-template void CPP_pack_stop<float>(float*, float*, int, int, int);
-template void CPP_pack_stop<std::complex<float> >(std::complex<float>*, std::complex<float>*, int, int, int);
-template void CPP_pack_stop<std::complex<double> >(std::complex<double>*, std::complex<double>*, int, int, int);
+template void rmg::pack_ptos<double>(double*, double*, int, int, int);
+template void rmg::pack_ptos<float>(float*, float*, int, int, int);
+template void rmg::pack_ptos<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
+template void rmg::pack_ptos<std::complex<double> >(std::complex<double> *, std::complex<double>*, int, int, int);
 
-template void CPP_pack_ptos<double>(double*, double*, int, int, int);
-template void CPP_pack_ptos<float>(float*, float*, int, int, int);
-template void CPP_pack_ptos<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
-template void CPP_pack_ptos<std::complex<double> >(std::complex<double> *, std::complex<double>*, int, int, int);
+template void rmg::pack_ptos_convert<double>(double*, double*, int, int, int);
+template void rmg::pack_ptos_convert<float>(float*, float*, int, int, int);
+template void rmg::pack_ptos_convert<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
+template void rmg::pack_ptos_convert<std::complex<double> >(std::complex<double> *, std::complex<double>*, int, int, int);
 
-template void CPP_pack_ptos_convert<double>(double*, double*, int, int, int);
-template void CPP_pack_ptos_convert<float>(float*, float*, int, int, int);
-template void CPP_pack_ptos_convert<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
-template void CPP_pack_ptos_convert<std::complex<double> >(std::complex<double> *, std::complex<double>*, int, int, int);
-
-template void CPP_pack_stop_axpy<double>(double*, double*, double, int, int, int);
-template void CPP_pack_stop_axpy<float>(float*, float*, double, int, int, int);
-template void CPP_pack_stop_axpy<std::complex<float> >(std::complex<float>*, std::complex<float>*, double, int, int, int);
-template void CPP_pack_stop_axpy<std::complex<double> >(std::complex<double>*, std::complex<double>*, double, int, int, int);
+template void rmg::pack_stop_axpy<double>(double*, double*, double, int, int, int);
+template void rmg::pack_stop_axpy<float>(float*, float*, double, int, int, int);
+template void rmg::pack_stop_axpy<std::complex<float> >(std::complex<float>*, std::complex<float>*, double, int, int, int);
+template void rmg::pack_stop_axpy<std::complex<double> >(std::complex<double>*, std::complex<double>*, double, int, int, int);
 
 template <typename RmgType>
-void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
+void rmg::pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -82,7 +81,7 @@ void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 
 }                               /* end pack_stop */
 
-void CPP_pack_stop_convert (float * sg, double * pg, int dimx, int dimy, int dimz)
+void rmg::pack_stop_convert (float * sg, double * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -110,7 +109,7 @@ void CPP_pack_stop_convert (float * sg, double * pg, int dimx, int dimy, int dim
 
 }                               /* end pack_stop */
 
-void CPP_pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
+void rmg::pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -140,7 +139,7 @@ void CPP_pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg,
 
 
 template <typename RmgType>
-void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
+void rmg::pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -171,7 +170,7 @@ void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 }                               /* end pack_ptos_f */
 
 template <typename RmgType>
-void CPP_pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
+void rmg::pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -201,7 +200,7 @@ void CPP_pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int d
 
 }                               /* end pack_ptos_f */
 
-void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz)
+void rmg::pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -231,7 +230,7 @@ void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz
 
 }                               /* end pack_ptos_f */
 
-void CPP_pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
+void rmg::pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -264,7 +263,7 @@ void CPP_pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, 
 
 
 template <typename RmgType>
-void CPP_pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int dimy, int dimz)
+void rmg::pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ixh, iyh;
@@ -297,19 +296,5 @@ void CPP_pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int
     }                           /* end for */
 
 
-} // end CPP_pack_stop_axpy
-
-
-extern "C" void pack_stop_axpy (double * sg, double * pg, double alpha, int dimx, int dimy, int dimz)
-{
-    CPP_pack_stop_axpy<double> (sg, pg, alpha, dimx, dimy, dimz);
-}
-
-
-extern "C" void pack_stop_axpy_f (float * sg, float * pg, double alpha, int dimx, int dimy, int dimz)
-{
-    CPP_pack_stop_axpy<float> (sg, pg, alpha, dimx, dimy, dimz);
-}
-
-
+} // end rmg::pack_stop_axpy
 

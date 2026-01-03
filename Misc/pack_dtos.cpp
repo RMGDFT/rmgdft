@@ -35,7 +35,7 @@
 #include "packfuncs.h"
 
 
-void CPP_pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
+void rmg::pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     int ix, iy, iz;
     int pex, pey, pez;

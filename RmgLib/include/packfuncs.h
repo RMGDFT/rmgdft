@@ -27,6 +27,7 @@
  * 
 */
 
+#pragma once
 
 #ifndef RMG_packfuncs_H
 #define RMG_packfuncs_H 1
@@ -34,28 +35,33 @@
 #include <complex>
 #include "BaseGrid.h"
 
-template <typename RmgType>
-void CPP_pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int dimy, int dimz);
+namespace rmg
+{
 
 template <typename RmgType>
-void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
+void pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int dimy, int dimz);
 
 template <typename RmgType>
-void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
+void pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
 
 template <typename RmgType>
-void CPP_pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
+void pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
 
-void CPP_pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
+template <typename RmgType>
+void pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
 
-void CPP_pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
+void pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
 
-void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
+void pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
 
-void CPP_pack_stop_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
+void pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
 
-void CPP_pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
+void pack_stop_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
 
-void CPP_pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
+void pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
+
+void pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
+
+} // end namespace rmg
 
 #endif

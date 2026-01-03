@@ -279,20 +279,20 @@ check=false;offset=1;
     {
         // Convert f_mat into p-type work grid then trade images up to 4
         //RmgType *nf_mat = &f_mat[size];
-        CPP_pack_stop (f_mat, work, dimx, dimy, dimz);
+        rmg::pack_stop (f_mat, work, dimx, dimy, dimz);
         T->trade_imagesx (work, nf_mat, dimx, dimy, dimz, offset, FULL_TRADE);
         int fullsteps = presweeps / offset;
         int rem = presweeps % offset;
         for (int idx = 0; idx < size2; idx++) v_mat[idx] = half*(RmgType)scale * nf_mat[idx];
         for(int steps=0;steps < fullsteps;steps++)
         {
-            CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+            rmg::pack_stop (v_mat, work, dimx, dimy, dimz);
             T->trade_imagesx (work, v_mat, dimx, dimy, dimz, offset, FULL_TRADE);
             solv_pois_offset (v_mat, nf_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, offset, offset);
         }
         if(rem)
         {
-            CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+            rmg::pack_stop (v_mat, work, dimx, dimy, dimz);
             T->trade_imagesx (work, v_mat, dimx, dimy, dimz, rem, FULL_TRADE);
             solv_pois_offset (v_mat, nf_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, rem, offset);
         }
@@ -382,13 +382,13 @@ check=false;offset=1;
             int rem = post_cyc[level] % offset;
             for(int steps=0;steps < fullsteps;steps++)
             {
-                CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+                rmg::pack_stop (v_mat, work, dimx, dimy, dimz);
                 T->trade_imagesx (work, v_mat, dimx, dimy, dimz, offset, FULL_TRADE);
                 solv_pois_offset (v_mat, nf_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, offset, offset);
             }
             if(rem)
             {
-                CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+                rmg::pack_stop (v_mat, work, dimx, dimy, dimz);
                 T->trade_imagesx (work, v_mat, dimx, dimy, dimz, rem, FULL_TRADE);
                 solv_pois_offset (v_mat, nf_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, rem, offset);
             }
@@ -1116,7 +1116,7 @@ void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict_
     }
 
 
-    //CPP_pack_stop (half, rptr, dx2, dy2, dz2);
+    //rmg::pack_stop (half, rptr, dx2, dy2, dz2);
     T->trade_imagesx (half, half_c, dx2, dy2, dz2, 2, FULL_TRADE);
 
     for (int i = 2; i < dx2 + 2; i++)
@@ -1262,7 +1262,7 @@ void Mgrid::eval_residual (RmgType * __restrict__ mat,
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     FD.app2_del2 (mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    CPP_pack_ptos(res, work, dimx, dimy, dimz);
+    rmg::pack_ptos(res, work, dimx, dimy, dimz);
     if(pot) {
         for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)pot[idx]*mat[idx] - res[idx];
     }
@@ -1289,7 +1289,7 @@ void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
 //for (idx = 0; idx < size; idx++) work1[idx] = 0.0;
 
     diag = -FD.app2_del2 (vmat, work1, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    CPP_pack_ptos(work, work1, dimx, dimy, dimz);
+    rmg::pack_ptos(work, work1, dimx, dimy, dimz);
     scale = 1.0 / (diag + Zfac);
     scale = step * scale;
  
@@ -1338,7 +1338,7 @@ void Mgrid::solv_pois_offset (RmgType * __restrict__ vmat, RmgType * __restrict_
     {
         offset--;
         double diag = -FD.app2_del2 (vmat, work, dimx+2*offset, dimy+2*offset, dimz+2*offset, gridhx, gridhy, gridhz);
-        CPP_pack_stop (vmat, vmat, dimx+2*offset, dimy+2*offset, dimz+2*offset);
+        rmg::pack_stop (vmat, vmat, dimx+2*offset, dimy+2*offset, dimz+2*offset);
         double scale = 1.0 / (diag + Zfac);
         scale = step * scale;
         int idx = 0;
@@ -1357,7 +1357,7 @@ void Mgrid::solv_pois_offset (RmgType * __restrict__ vmat, RmgType * __restrict_
         eidx--;
     }
     for(int idx=0;idx < dimx*dimy*dimz;idx++) work[idx] = vmat[idx];
-    CPP_pack_ptos (vmat, work, dimx, dimy, dimz);
+    rmg::pack_ptos (vmat, work, dimx, dimy, dimz);
 }                               /* end solv_pois_offset */
 
 

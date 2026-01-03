@@ -262,7 +262,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 }
 
                 /* Pack the residual data into multigrid array */
-                CPP_pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
+                rmg::pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
                 T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
                 MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
@@ -284,7 +284,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
              */
             if(ct.use_rmm_diis)
             {
-                CPP_pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                rmg::pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
                 for(int i=0;i < pbasis_noncoll;i++)
                 {
                     rmmres_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
@@ -295,7 +295,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             else
             {
                 // Gradient step
-                CPP_pack_stop_axpy<CalcType>(sg_twovpsi_t, &tmp_psi_t[is*pbasis], -fg_step, dimx, dimy, dimz);
+                rmg::pack_stop_axpy<CalcType>(sg_twovpsi_t, &tmp_psi_t[is*pbasis], -fg_step, dimx, dimy, dimz);
             }
         } 
 

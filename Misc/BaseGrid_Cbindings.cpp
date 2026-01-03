@@ -215,10 +215,10 @@ void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxof
 }
 void pack_vhdtos (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
-    CPP_pack_dtos(Rmg_G, s, d, dimx, dimy, dimz, boundaryflag);
+    rmg::pack_dtos(Rmg_G, s, d, dimx, dimy, dimz, boundaryflag);
 }
 void pack_vhstod (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
-    CPP_pack_stod (Rmg_G, s, d, dimx, dimy, dimz, boundaryflag);
+    rmg::pack_stod (Rmg_G, s, d, dimx, dimy, dimz, boundaryflag);
 }
 

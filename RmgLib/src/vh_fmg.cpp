@@ -135,13 +135,13 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
         dy2 = MG.MG_SIZE (dy[level-1], level-1, G->get_NY_GRID(density), G->get_PY_OFFSET(density), dimy, &iyoff, boundaryflag);
         dz2 = MG.MG_SIZE (dz[level-1], level-1, G->get_NZ_GRID(density), G->get_PZ_OFFSET(density), dimz, &izoff, boundaryflag);
 
-        CPP_pack_ptos (work, mgrhsptr[level-1], dx[level-1], dy[level-1], dz[level-1]);
+        rmg::pack_ptos (work, mgrhsptr[level-1], dx[level-1], dy[level-1], dz[level-1]);
         T->trade_images (work, dx[level-1], dy[level-1], dz[level-1], FULL_TRADE);
         MG.mg_restrict (work, sg_res, dx[level-1], dy[level-1], dz[level-1], dx2, dy2, dz2, ixoff, iyoff, izoff);
       
         mgrhsptr[level] = &mgrhsarr[offset];
         mgrhsptr_f[level] = &mgrhsarr_f[offset];
-        CPP_pack_stop (sg_res, mgrhsptr[level], dx2, dy2, dz2);
+        rmg::pack_stop (sg_res, mgrhsptr[level], dx2, dy2, dz2);
 
         // Make sure the restriction process didn't introduce a spurious source term in the RHS
         int global_basis = G->get_GLOBAL_BASIS(density) / std::round(pow(8.0, level));
@@ -193,7 +193,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
         if((level == maxlevel) && vh_init) for(int ix=0;ix < dx2*dy2*dz2;ix++) vh_init[ix] = (float)mglhsarr_f[ix];
         if(level == 0) break;
         MG.mg_prolong_cubic (sg_res_f, mglhsarr_f, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
-        CPP_pack_stop (sg_res_f, mglhsarr_f, dx[level-1], dy[level-1], dz[level-1]);
+        rmg::pack_stop (sg_res_f, mglhsarr_f, dx[level-1], dy[level-1], dz[level-1]);
     }
     delete RT1;
 
@@ -303,7 +303,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
             {
                 // Generate single precision residual vector and transfer into smoothing grid 
                 for(int idx=0;idx < pbasis;idx++) work_f[idx] = (float)(mgrhsarr[idx] - mglhsarr[idx]);
-                CPP_pack_ptos (sg_res_f, work_f, dimx, dimy, dimz);
+                rmg::pack_ptos (sg_res_f, work_f, dimx, dimy, dimz);
                 MG.mgrid_solv_pois (mglhsarr_f, sg_res_f, work_f,
                             dimx, dimy, dimz,
                             gridhx, gridhy, gridhz,
@@ -316,7 +316,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
                 /* Transfer solution back to double array */
                 for(int idx=0;idx < sbasis;idx++) work[idx] = (double)mglhsarr_f[idx];
                 int t1 = 1.0;
-                CPP_pack_stop_axpy (work, vhartree, t1, dimx, dimy, dimz);
+                rmg::pack_stop_axpy (work, vhartree, t1, dimx, dimy, dimz);
             }
             else
             {

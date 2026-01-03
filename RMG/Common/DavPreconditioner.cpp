@@ -97,7 +97,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     }
 
     double *nvtot = new double[pct.coalesce_factor*4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    CPP_pack_ptos (nvtot, tvtot, dimx*pct.coalesce_factor, dimy, dimz);
+    rmg::pack_ptos (nvtot, tvtot, dimx*pct.coalesce_factor, dimy, dimz);
     for(int idx = 0;idx <(pct.coalesce_factor*dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
 
     int istop = notconv / (active_threads * pct.coalesce_factor);
@@ -134,7 +134,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     // Process any remaining states in serial fashion
     if(istop < notconv)
     {
-        CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
+        rmg::pack_ptos (nvtot, vtot, dimx, dimy, dimz);
         for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
         for(int st1 = istop;st1 < notconv;st1++) {
             DavPreconditionerOne (kptr, st1, res, fd_diag, eigs[st1], nvtot, avg_potential);
@@ -213,7 +213,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
         // neutralize cell
         for(int idx = 0;idx <pbasis;idx++) work2_t[idx] = work3_t[idx+is*pbasis] - OrbitalType(t1);
 
-        CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
+        rmg::pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
@@ -222,7 +222,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
+        rmg::pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
 
         for(int idx = 0;idx <pbasis;idx++) work3_t[idx+is*pbasis] = work1_t[idx] + eig * t1;;
     }

@@ -146,7 +146,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
             {
 
                 /* Transfer res into smoothing grid */
-                CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
+                rmg::pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
@@ -159,7 +159,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
 
                 /* Transfer solution back to mgresarr array */
-                CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
+                rmg::pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
 
                 /* Update vh */
                 for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];

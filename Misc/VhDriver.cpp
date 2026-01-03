@@ -71,7 +71,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
                  ct.poi_parm.gl_step, ct.poi_parm.sb_step, ct.boundaryflag, Rmg_G->get_default_FG_RATIO(), vh_init, ct.verbose);
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
-        CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
+        rmg::pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
         delete(RT1);
     }
 
