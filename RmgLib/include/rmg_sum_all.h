@@ -1,12 +1,15 @@
-#ifndef RMG_RmgSumAll_h
-#define RMG_RmgSumAll_h
+#pragma once
+
+#ifndef RMG_rmg_sum_all_h
+#define RMG_rmg_sum_all_h
 
 #include <mpi.h>
-
-template <typename RmgType>
-RmgType RmgSumAll (RmgType x, MPI_Comm comm);
-template <typename RmgType>
-RmgType RmgMaxAll (RmgType x, MPI_Comm comm);
-
+namespace rmg
+{
+    template <typename T>
+    T sum_all (T x, MPI_Comm comm);
+    template <typename T>
+    T max_all (T x, MPI_Comm comm);
+} // end namespace rmg
 
 #endif

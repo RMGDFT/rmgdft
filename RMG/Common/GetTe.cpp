@@ -69,7 +69,7 @@
 #include "Functional.h"
 #include "GlobalSums.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "RmgParallelFft.h"
 
 
@@ -137,10 +137,10 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         }
     }
 
-    eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
-    vnuc_correction = RmgSumAll(vnuc_correction, pct.kpsub_comm);
-    vxc_correction = RmgSumAll(vxc_correction, pct.kpsub_comm);
-    vh_correction = 0.5*RmgSumAll(vh_correction, pct.kpsub_comm);
+    eigsum = rmg::sum_all(eigsum, pct.kpsub_comm);
+    vnuc_correction = rmg::sum_all(vnuc_correction, pct.kpsub_comm);
+    vxc_correction = rmg::sum_all(vxc_correction, pct.kpsub_comm);
+    vh_correction = 0.5*rmg::sum_all(vh_correction, pct.kpsub_comm);
 
     if(ct.AFM) eigsum *= 2.0;
 
@@ -164,7 +164,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         for (idx = 0; idx < fpbasis; idx++)
             ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
     }
-    ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
+    ct.ES = 0.5 * vel * rmg::sum_all(ct.ES, pct.grid_comm);
 
     if(potential_acceleration)
     {
@@ -196,9 +196,9 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         }
         delete [] vc_tmp;
         delete [] vf_tmp;
-        ES_pa = 0.5 * cvel * RmgSumAll(ES_pa, pct.grid_comm);
-        ES_pa = RmgSumAll(ES_pa, pct.spin_comm);
-        ES_pa = RmgSumAll(ES_pa, pct.kpsub_comm);
+        ES_pa = 0.5 * cvel * rmg::sum_all(ES_pa, pct.grid_comm);
+        ES_pa = rmg::sum_all(ES_pa, pct.spin_comm);
+        ES_pa = rmg::sum_all(ES_pa, pct.kpsub_comm);
 
     }
 
@@ -216,8 +216,8 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
             mag += ( rho.up[idx] - rho.dw[idx] );       /* calculate the magnetization */
             absmag += fabs(rho.up[idx] - rho.dw[idx]);
         }
-        mag = vel * RmgSumAll(mag, pct.grid_comm);
-        absmag = vel * RmgSumAll(absmag, pct.grid_comm);
+        mag = vel * rmg::sum_all(mag, pct.grid_comm);
+        absmag = vel * rmg::sum_all(absmag, pct.grid_comm);
     }
     else if(ct.nspin == 4)
     {
@@ -233,7 +233,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     }
 
     /*XC potential energy */
-    xcstate = vel * RmgSumAll(xcstate, pct.grid_comm);
+    xcstate = vel * rmg::sum_all(xcstate, pct.grid_comm);
 
     Functional F (*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
@@ -246,7 +246,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
             { 
                 t1 += kptr->Kstates[is].occupation[0] * kptr->Kstates[is].e_meta_xc;
             }
-            t1 = get_vel() * RmgSumAll(t1, pct.grid_comm);
+            t1 = get_vel() * rmg::sum_all(t1, pct.grid_comm);
             xcstate += kptr->kp.kweight * t1;
         }
     }

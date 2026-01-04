@@ -24,7 +24,7 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 
 

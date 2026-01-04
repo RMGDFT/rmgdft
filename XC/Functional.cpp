@@ -37,7 +37,7 @@
 #include "RmgException.h"
 #include "RmgTimer.h"
 #include "FiniteDiff.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "RmgParallelFft.h"
 #include "transition.h"
 #if USE_LIBXC
@@ -533,8 +533,8 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     vtxc = vtxc * L->omega / (double)this->N;
     etxc = etxc * L->omega / (double)this->N;
 
-    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
-    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+    vtxc = rmg::sum_all(vtxc, this->T->get_MPI_comm());
+    etxc = rmg::sum_all(etxc, this->T->get_MPI_comm());
 
     if(Rmg_G->default_FG_RATIO > 1)
     {
@@ -700,8 +700,8 @@ dh = dh3[ix];
     vtxc = vtxc * L->omega / (double)this->N;
     etxc = etxc * L->omega / (double)this->N;
 
-    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
-    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+    vtxc = rmg::sum_all(vtxc, this->T->get_MPI_comm());
+    etxc = rmg::sum_all(etxc, this->T->get_MPI_comm());
 
     if(Rmg_G->default_FG_RATIO > 1)
     {

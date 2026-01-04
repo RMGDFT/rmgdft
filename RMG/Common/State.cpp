@@ -38,7 +38,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include <complex>
 
 
@@ -91,7 +91,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             sum1 = sum1 + std::norm(tpsi[idx]);
         }
 
-        sum2 = vel * RmgSumAll<double>(sum1, this->Kptr->grid_comm);
+        sum2 = vel * rmg::sum_all<double>(sum1, this->Kptr->grid_comm);
         sum2 = sqrt(1.0 / sum2);
 
         StateType tscale(sum2);
@@ -169,7 +169,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             sumpsi += std::norm(tpsi[idx]);
         }
 
-        sum = RmgSumAll<double>(vel * sumpsi + sumbeta, this->Kptr->grid_comm);
+        sum = rmg::sum_all<double>(vel * sumpsi + sumbeta, this->Kptr->grid_comm);
         sum = 1.0 / sum;
 
         if (sum < 0.0)

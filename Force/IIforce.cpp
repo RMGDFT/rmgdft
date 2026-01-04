@@ -43,7 +43,7 @@
 #include "Functional.h"
 #include "GlobalSums.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 
 
 void IIforce (double *force)

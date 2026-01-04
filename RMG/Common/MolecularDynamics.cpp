@@ -33,7 +33,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "Atomic.h"
 #include "transition.h"
 

@@ -53,7 +53,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "GlobalSums.h"
 
 
@@ -226,7 +226,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
         }
     }                           /* st and kpt */
 
-    fmid = RmgSumAll(fmid, pct.kpsub_comm);
+    fmid = rmg::sum_all(fmid, pct.kpsub_comm);
 
     fmid -= nel;
 
@@ -283,7 +283,7 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
     }                           /* st1 and kpt */
 
 
-    sumf = RmgSumAll(sumf, pct.kpsub_comm);
+    sumf = rmg::sum_all(sumf, pct.kpsub_comm);
     return (sumf - nel);
 
 }                               /* fd */

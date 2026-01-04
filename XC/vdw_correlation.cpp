@@ -76,7 +76,7 @@
 #include "typedefs.h"
 #include "vdW.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 #include "packfuncs.h"
 #include "RmgParallelFft.h"
@@ -645,7 +645,7 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int
   // followed in higher level routines where vdW_xc_energy is added to the other components
   // and then summed
   vdW_xc_energy = 0.5*vdW_xc_energy / (double)N_calc;
-  double t1 = L->omega * RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm()) / (double)N_calc;
+  double t1 = L->omega * rmg::sum_all(vdW_xc_energy, this->T->get_MPI_comm()) / (double)N_calc;
    
   rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", t1);
 
@@ -777,7 +777,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
 
   //double echeck = 0.0;
   //for(int idx=0;idx<this->pbasis;idx++) echeck += this->total_rho[idx] * potential[idx];
-  //echeck = RmgSumAll(echeck, this->T->get_MPI_comm());
+  //echeck = rmg::sum_all(echeck, this->T->get_MPI_comm());
   //rmg_printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
 
 

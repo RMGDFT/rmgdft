@@ -40,7 +40,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
 #include "packfuncs.h"
@@ -182,7 +182,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
-                vavgcor =  RmgSumAll(vavgcor, T->get_MPI_comm());
+                vavgcor =  rmg::sum_all(vavgcor, T->get_MPI_comm());
                 t1 = (double) global_basis;
                 vavgcor = vavgcor / t1;
 
@@ -210,7 +210,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
         }                   /* end for */
 
-        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
+        residual = sqrt (rmg::sum_all(residual, T->get_MPI_comm()) / global_basis);
         //if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
 
 	    

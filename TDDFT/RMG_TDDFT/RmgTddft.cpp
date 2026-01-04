@@ -52,7 +52,7 @@
 #include "RmgException.h"
 #include "blas_driver.h"
 #include "GpuAlloc.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "GatherScatter.h"
 
 
@@ -557,7 +557,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 ES_00 += (rho_ground[idx] - rhoc[idx]) * vh[idx];
             }
 
-            ES_00 = 0.5 * vel * RmgSumAll(ES_00, pct.grid_comm);
+            ES_00 = 0.5 * vel * rmg::sum_all(ES_00, pct.grid_comm);
             int ntot2 = numst *numst;
             int ione = 1;
             for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
@@ -916,7 +916,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 ES += (rho[idx] - rhoc[idx]) * vh[idx];
             }
 
-            ES = 0.5 * vel * RmgSumAll(ES, pct.grid_comm);
+            ES = 0.5 * vel * rmg::sum_all(ES, pct.grid_comm);
             int ntot2 = numst *numst;
             int ione = 1;
             EkinPseudo = ddot(&ntot2, (double *)matrix_glob, &ione, Hcore_tddft, &ione);

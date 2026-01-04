@@ -48,7 +48,7 @@
 #include "Voronoi.h"
 #include "GpuAlloc.h"
 #include "Wannier.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "FDOpt.h"
 #include "BerryPhase.h"
 
@@ -360,12 +360,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 E_localpp += std::real(Hcore_localpp[kpt * nstates * nstates + st * nstates + st]) * occ;
             }
         }
-        kin_energy = RmgSumAll(kin_energy, pct.kpsub_comm);
-        kin_energy = RmgSumAll(kin_energy, pct.spin_comm);
-        pseudo_energy = RmgSumAll(pseudo_energy, pct.kpsub_comm);
-        pseudo_energy = RmgSumAll(pseudo_energy, pct.spin_comm);
-        E_localpp = RmgSumAll(E_localpp, pct.kpsub_comm);
-        E_localpp = RmgSumAll(E_localpp, pct.spin_comm);
+        kin_energy = rmg::sum_all(kin_energy, pct.kpsub_comm);
+        kin_energy = rmg::sum_all(kin_energy, pct.spin_comm);
+        pseudo_energy = rmg::sum_all(pseudo_energy, pct.kpsub_comm);
+        pseudo_energy = rmg::sum_all(pseudo_energy, pct.spin_comm);
+        E_localpp = rmg::sum_all(E_localpp, pct.kpsub_comm);
+        E_localpp = rmg::sum_all(E_localpp, pct.spin_comm);
 
         pseudo_energy -= kin_energy;
         E_nonlocalpp = pseudo_energy - E_localpp;

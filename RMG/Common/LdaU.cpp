@@ -40,7 +40,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "Kpoint.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "FiniteDiff.h"
