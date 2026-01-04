@@ -77,6 +77,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
     int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
+    //value type of CalType
+    using TypeV = get_scalar_t<CalType>;
     static CalType *global_matrix1;
 
     int factor = 1;
@@ -98,6 +100,14 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
     CalType beta(0.0);
     CalType *psi_dev;
     CalType *work_dev;
+
+    static wfobj<CalType> vtot_psi_caltype;
+    static wf_spinobj<CalType> vxc_psi_caltype;
+    CopyAndConvert(pbasis, vtot_psi.data(), vtot_psi_caltype.data());
+    if(ct.noncoll)
+    {
+        CopyAndConvert(4*pbasis, vxc_psi.data(), vxc_psi_caltype.data());
+    }
     if(typeid(KpointType) == typeid(CalType))
     {
         psi_dev = (CalType *)kptr->psi_dev;
@@ -111,21 +121,29 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
     psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
-    static void *vtot_psi_caltype= NULL;
-    if(vtot_psi_caltype == NULL)
-    {
-        vtot_psi_caltype = malloc(n_rho*pbasis*sizeof(std::complex<double>));
-    }
-    CopyAndConvert(n_rho * pbasis, vtot_psi.data(), (CalType *)vtot_psi_caltype);
-    static CalType *v_dev;
+    static CalType *v_dev, *vxc_dev;
     static CalType *mat_dev;
     if(!v_dev)
     {
-        gpuMalloc((void **)&v_dev, n_rho * pbasis * sizeof(CalType));
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
+        if(ct.noncoll)
+        {
+            gpuMalloc((void **)&vxc_dev, 4*pbasis * sizeof(CalType));
+        }
     }
 
-    gpuMemcpy(v_dev, vtot_psi_caltype,  n_rho * pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, num_states);
+    if(ct.noncoll)
+    {
+        rmg_error_handler (__FILE__, __LINE__, " failure in HmatrixUpdate");
+        gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+        gpuMemcpy(vxc_dev, vxc_psi_caltype.data(),  4*pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+        Veff_x_psi(psi_dev, work_dev, v_dev, pbasis_noncoll, num_states);
+    }
+    else
+    {
+        gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+        Veff_x_psi(psi_dev, work_dev, v_dev, pbasis_noncoll, num_states);
+    }
 
     gpublasStatus_t gstat;
 
@@ -150,42 +168,42 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
     {
         int size_col = std::min(block_size, num_states - j * block_size);
         int size_row = num_states - j * block_size;
-      //if(ct.tddft_floatprecision && 0)
-      //{
-      //    hipblasStatus_t hipstat;
-      //    hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transN = HIPBLAS_OP_N;
+        //if(ct.tddft_floatprecision && 0)
+        //{
+        //    hipblasStatus_t hipstat;
+        //    hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transN = HIPBLAS_OP_N;
 
-      //    if(!strcmp(trans_a, "t")) hip_transA = HIPBLAS_OP_T;
-      //    if(!strcmp(trans_a, "T")) hip_transA = HIPBLAS_OP_T;
-      //    if(!strcmp(trans_a, "c")) hip_transA = HIPBLAS_OP_C;
-      //    if(!strcmp(trans_a, "C")) hip_transA = HIPBLAS_OP_C;
+        //    if(!strcmp(trans_a, "t")) hip_transA = HIPBLAS_OP_T;
+        //    if(!strcmp(trans_a, "T")) hip_transA = HIPBLAS_OP_T;
+        //    if(!strcmp(trans_a, "c")) hip_transA = HIPBLAS_OP_C;
+        //    if(!strcmp(trans_a, "C")) hip_transA = HIPBLAS_OP_C;
 
 
-      //    if(ct.is_gamma)
-      //    {
-      //        float alpha_f = std::real(alpha);
-      //        float beta_f = 0.0;
-      //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
-      //                &alpha, psi_dev + j*block_size * pbasis, HIP_R_32F, pbasis, 
-      //                work_dev + j * block_size * pbasis, HIP_R_32F, pbasis, &beta, 
-      //                mat_dev, HIP_R_32F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
-      //         // rocblas_gemm_ex(ct.roc_handle, rocblas_operation_transpose, rocblas_operation_none, size_row, size_col, pbasis, 
-      //         //       &alpha_f, psi_dev + j*block_size * pbasis, rocblas_datatype_f32_r, pbasis, 
-      //         //       work_dev + j * block_size * pbasis,  rocblas_datatype_f32_r, pbasis, &beta_f, 
-      //         //       mat_dev1, rocblas_datatype_f32_r, size_row, 
-      //         //       mat_dev, rocblas_datatype_f32_r, size_row, 
-      //         //       rocblas_datatype_f64_r, rocblas_gemm_algo_standard, 0,0);
-      //    }
-      //    else
-      //    {
-      //                  //rocblas_operation_conjugate_
-      //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
-      //                &alpha, psi_dev + j*block_size * pbasis, HIP_C_32F, pbasis, 
-      //                work_dev + j * block_size * pbasis, HIP_C_32F, pbasis, &beta, 
-      //                mat_dev, HIP_C_64F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
-      //    }
-      //}
-      //else
+        //    if(ct.is_gamma)
+        //    {
+        //        float alpha_f = std::real(alpha);
+        //        float beta_f = 0.0;
+        //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+        //                &alpha, psi_dev + j*block_size * pbasis, HIP_R_32F, pbasis, 
+        //                work_dev + j * block_size * pbasis, HIP_R_32F, pbasis, &beta, 
+        //                mat_dev, HIP_R_32F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+        //         // rocblas_gemm_ex(ct.roc_handle, rocblas_operation_transpose, rocblas_operation_none, size_row, size_col, pbasis, 
+        //         //       &alpha_f, psi_dev + j*block_size * pbasis, rocblas_datatype_f32_r, pbasis, 
+        //         //       work_dev + j * block_size * pbasis,  rocblas_datatype_f32_r, pbasis, &beta_f, 
+        //         //       mat_dev1, rocblas_datatype_f32_r, size_row, 
+        //         //       mat_dev, rocblas_datatype_f32_r, size_row, 
+        //         //       rocblas_datatype_f64_r, rocblas_gemm_algo_standard, 0,0);
+        //    }
+        //    else
+        //    {
+        //                  //rocblas_operation_conjugate_
+        //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+        //                &alpha, psi_dev + j*block_size * pbasis, HIP_C_32F, pbasis, 
+        //                work_dev + j * block_size * pbasis, HIP_C_32F, pbasis, &beta, 
+        //                mat_dev, HIP_C_64F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+        //    }
+        //}
+        //else
         {
             rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, (psi_dev+ j*block_size*pbasis_noncoll), pbasis_noncoll, (work_dev + j * block_size * pbasis_noncoll), 
                     pbasis_noncoll, beta, mat_dev, size_row);
@@ -211,7 +229,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
     if(typeid(KpointType) != typeid(CalType))
     {
-            rmg_error_handler (__FILE__, __LINE__, "float precision not programmed with cpu  failure in HmatrixUpdate");
+        rmg_error_handler (__FILE__, __LINE__, "float precision not programmed with cpu  failure in HmatrixUpdate");
     }
     KpointType alpha(vel);
     KpointType beta(0.0);
@@ -240,7 +258,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
         for (int st1 = 0; st1 < size_col; st1++)
         {
-            for(int idx = 0; idx <pbasis; idx++)
+            for(int idx = 0; idx <pbasis_noncoll; idx++)
             {
                 vpsi[st1 * pbasis_noncoll + idx] = psi[(j * block_size +st1) * pbasis_noncoll + idx] * vtot_psi[idx];
             } 
@@ -250,9 +268,16 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         {
             for (int st1 = 0; st1 < size_col; st1++)
             {
+                std::complex<double> *vpsi_C = (std::complex<double> *)&vpsi[st1 * pbasis_noncoll];
+                std::complex<double> *psi_C = (std::complex<double> *)&psi[(j * block_size +st1) * pbasis_noncoll];
+
                 for(int idx = 0; idx <pbasis; idx++)
                 {
-                    vpsi[st1 * pbasis_noncoll + pbasis + idx] = psi[(j * block_size +st1) * pbasis_noncoll + pbasis + idx] * vtot_psi[idx];
+                      vpsi_C[idx] += psi_C[idx] * std::complex<double>(vxc_psi.cz[idx], 0.0);
+                      vpsi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_psi.cx[idx], vxc_psi.cy[idx]);
+                      vpsi_C[idx + pbasis] += - psi_C[idx + pbasis] * std::complex<double>(vxc_psi.cz[idx], 0.0);
+                      vpsi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_psi.cx[idx], -vxc_psi.cy[idx]);
+
                 } 
             }
         }

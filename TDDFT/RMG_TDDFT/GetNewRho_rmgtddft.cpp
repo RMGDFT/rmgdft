@@ -33,28 +33,6 @@
 #include "Prolong.h"
 #include "GatherScatter.h"
 
-#include <type_traits>
-
-// 1. Primary template: handles scalar types (float, double, etc.)
-template <typename T>
-struct get_scalar {
-    using type = T;
-};
-
-// 2. Partial specialization: handles std::complex types
-template <typename T>
-struct get_scalar<std::complex<T>> {
-    using type = T;
-};
-
-// 3. Helper alias (Optional but recommended for modern C++)
-template <typename T>
-using get_scalar_t = typename get_scalar<T>::type;
-
-// --- Usage ---
-//using TypeA = get_scalar_t<float>;                // Result: float
-//using TypeB = get_scalar_t<std::complex<float>>;  // Result: float
-
 template void GetNewRho_rmgtddft<double, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_matrix_caltype);
 template void GetNewRho_rmgtddft<double, float>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, float *rho_matrix_caltype);
 template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<double> *rho_matrix_caltype);
