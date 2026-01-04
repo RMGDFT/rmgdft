@@ -52,8 +52,8 @@ src/app_del2_driver.cpp
 src/LaplacianCoeff.cpp
 src/RmgTimer.cpp
 src/RmgPrintTimings.cpp
-src/RmgSumAll.cpp
-src/RmgMaxAll.cpp
+src/rmg_sum_all.cpp
+src/rmg_max_all.cpp
 src/ThreadBarrier.cpp
 src/rmg_error.cpp
 src/get_vh.cpp

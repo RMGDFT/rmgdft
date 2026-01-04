@@ -40,7 +40,7 @@
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 
 #include "prototypes_on.h"
 #include "init_var.h"

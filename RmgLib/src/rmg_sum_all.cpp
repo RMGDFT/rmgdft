@@ -34,70 +34,70 @@
 */
 
 #include "BaseThread.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include <typeinfo>
 
 
-std::mutex RmgSumAllLock;
+std::mutex sum_all_lock;
 volatile int vector_state = 0;
-double RmgSumAllVector[2*MAX_RMG_THREADS];
+double sum_allVector[2*MAX_RMG_THREADS];
 double RecvBuf[2*MAX_RMG_THREADS];
 
-template int RmgSumAll<int>(int, MPI_Comm);
-template float RmgSumAll<float>(float, MPI_Comm);
-template double RmgSumAll<double>(double, MPI_Comm);
+template int rmg::sum_all<int>(int, MPI_Comm);
+template float rmg::sum_all<float>(float, MPI_Comm);
+template double rmg::sum_all<double>(double, MPI_Comm);
 
-template <typename RmgType>
-RmgType RmgSumAll (RmgType x, MPI_Comm comm)
+template <typename T>
+T rmg::sum_all (T x, MPI_Comm comm)
 {
-    BaseThread *T = BaseThread::getBaseThread(0);
+    BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid;
-    RmgType inreg;
-    RmgType outreg;
-    RmgType *inbuf = (RmgType *)RmgSumAllVector;
-    RmgType *outbuf = (RmgType *)RecvBuf;
+    T inreg;
+    T outreg;
+    T *inbuf = (T *)sum_allVector;
+    T *outbuf = (T *)RecvBuf;
 
-    tid = T->get_thread_tid();
+    tid = Thread->get_thread_tid();
     if(tid < 0) {
 
         inreg = x;
         
-        if(typeid(RmgType) == typeid(int))
+        if(typeid(T) == typeid(int))
             MPI_Allreduce (&inreg, &outreg, 1, MPI_INT, MPI_SUM, comm);
 
-        if(typeid(RmgType) == typeid(float))
+        if(typeid(T) == typeid(float))
             MPI_Allreduce (&inreg, &outreg, 1, MPI_FLOAT, MPI_SUM, comm);
 
-        if(typeid(RmgType) == typeid(double))
+        if(typeid(T) == typeid(double))
             MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_SUM, comm);
 
         return outreg;
 
     }
 
-    RmgSumAllLock.lock();
+    sum_all_lock.lock();
         vector_state = 1;
         inbuf[tid] = x;
-    RmgSumAllLock.unlock();
+    sum_all_lock.unlock();
 
     // Wait until everyone gets here
-    T->thread_barrier_wait(false);
+    Thread->thread_barrier_wait(false);
 
-    RmgSumAllLock.lock();
+    sum_all_lock.lock();
         if(vector_state == 1) {
 
-            if(typeid(RmgType) == typeid(int))
-                MPI_Allreduce(inbuf, outbuf, T->get_threads_per_node(), MPI_INT, MPI_SUM, comm);
+            if(typeid(T) == typeid(int))
+                MPI_Allreduce(inbuf, outbuf, Thread->get_threads_per_node(), MPI_INT, MPI_SUM, comm);
 
-            if(typeid(RmgType) == typeid(float))
-                MPI_Allreduce(inbuf, outbuf, T->get_threads_per_node(), MPI_FLOAT, MPI_SUM, comm);
+            if(typeid(T) == typeid(float))
+                MPI_Allreduce(inbuf, outbuf, Thread->get_threads_per_node(), MPI_FLOAT, MPI_SUM, comm);
 
-            if(typeid(RmgType) == typeid(double))
-                MPI_Allreduce(inbuf, outbuf, T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
+            if(typeid(T) == typeid(double))
+                MPI_Allreduce(inbuf, outbuf, Thread->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
 
             vector_state = 0;
         }
-    RmgSumAllLock.unlock();
+    sum_all_lock.unlock();
 
     return outbuf[tid]; 
 }

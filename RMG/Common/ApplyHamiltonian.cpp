@@ -32,7 +32,7 @@
 #include "transition.h"
 #include "rmg_complex.h"
 #include "Functional.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "rmgthreads.h"
 
 

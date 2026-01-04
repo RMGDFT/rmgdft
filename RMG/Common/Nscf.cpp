@@ -46,7 +46,7 @@
 #include "Functional.h"
 #include "Solvers.h"
 #include "RmgParallelFft.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 
 
 
@@ -227,7 +227,7 @@ template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_in, double 
         }
     }
 
-    eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
+    eigsum = rmg::sum_all(eigsum, pct.kpsub_comm);
 
     ct.scf_accuracy = eigsum - eigsum_old;
     eigsum_old = eigsum;

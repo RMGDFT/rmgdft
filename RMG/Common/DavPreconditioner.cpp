@@ -32,7 +32,7 @@
 #include "RmgTimer.h"
 #include "RmgThread.h"
 #include "GlobalSums.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
 #include "Mgrid.h"

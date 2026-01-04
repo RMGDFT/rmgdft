@@ -36,7 +36,7 @@
 #include "RmgParallelFft.h"
 #include "RmgException.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "blas.h"
 #include "GlobalSums.h"
 #include "Functional.h"

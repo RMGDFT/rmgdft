@@ -8,7 +8,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "GlobalSums.h"
 #include "boundary_conditions.h"
 

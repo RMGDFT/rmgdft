@@ -40,7 +40,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
 #include "packfuncs.h"
@@ -117,7 +117,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
         mgrhsarr[idx] = t1 * rho[idx];
         rhs_avgcor += mgrhsarr[idx];
     }
-    rhs_avgcor = RmgSumAll(rhs_avgcor, T->get_MPI_comm());
+    rhs_avgcor = rmg::sum_all(rhs_avgcor, T->get_MPI_comm());
     rhs_avgcor /= (double)G->get_GLOBAL_BASIS(density);
     for(int idx = 0;idx < pbasis;idx++) mgrhsarr[idx] -= rhs_avgcor;
     for(int idx = 0;idx < pbasis;idx++) mgrhsarr_f[idx] = (float)mgrhsarr[idx];
@@ -148,7 +148,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
         double *tptr=mgrhsptr[level];
         rhs_avgcor = 0.0;
         for(int idx=0;idx<dx2*dy2*dz2;idx++)rhs_avgcor += tptr[idx];
-        rhs_avgcor = RmgSumAll(rhs_avgcor, T->get_MPI_comm());
+        rhs_avgcor = rmg::sum_all(rhs_avgcor, T->get_MPI_comm());
         rhs_avgcor /= (double)global_basis;
         for(int idx=0;idx<dx2*dy2*dz2;idx++)tptr[idx] -= rhs_avgcor;
         //if((G->get_rank() == 0)) printf("FOR LEVEL=%d  SUM=%18.12e\n",level,rhs_avgcor);
@@ -338,7 +338,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
             residual += (double)(mgrhsarr[idx] - mglhsarr[idx])*(mgrhsarr[idx] - mglhsarr[idx]);
         } 
 
-        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / (double)global_basis);
+        residual = sqrt (rmg::sum_all(residual, T->get_MPI_comm()) / (double)global_basis);
         //if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
         its ++;
 
@@ -359,7 +359,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
         vavgcor = 0.0;
         for (idx = 0; idx < pbasis; idx++) vavgcor += (double)vhartree[idx];
 
-        vavgcor =  RmgSumAll(vavgcor, T->get_MPI_comm());
+        vavgcor =  rmg::sum_all(vavgcor, T->get_MPI_comm());
         t1 = (double) global_basis;
         vavgcor = vavgcor / t1;
 

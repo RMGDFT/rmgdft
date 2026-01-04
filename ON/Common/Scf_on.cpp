@@ -18,7 +18,7 @@
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 
 #include "prototypes_on.h"
 #include "init_var.h"
@@ -258,9 +258,9 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     //    dvxc_max = fabs(rho_old[idx]);
 
 
-    drho_max = RmgMaxAll<double>(drho_max, pct.grid_comm); 
-    dvh_max = RmgMaxAll<double>(dvh_max, pct.grid_comm); 
-    dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
+    drho_max = rmg::max_all<double>(drho_max, pct.grid_comm); 
+    dvh_max = rmg::max_all<double>(dvh_max, pct.grid_comm); 
+    dvxc_max = rmg::max_all<double>(dvxc_max, pct.grid_comm); 
 
 
     ct.rms = fabs(dvh_max) + fabs(dvxc_max);

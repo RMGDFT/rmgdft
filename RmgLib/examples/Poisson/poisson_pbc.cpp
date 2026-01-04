@@ -34,7 +34,7 @@
 #include "FiniteDiff.h"
 #include "Mgrid.h"
 #include "vhartree.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "RmgTimer.h"
 #include "rmg_error.h"
 #include "boundary_conditions.h"
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     }
 
     // now neutralize it with a uniform charge
-    totalcharge = RmgSumAll(totalcharge, T.get_MPI_comm());
+    totalcharge = rmg::sum_all(totalcharge, T.get_MPI_comm());
     cout << "For Rank " << my_rank << " total charge = " << totalcharge << endl;
     double t1 = totalcharge / ((double) (npes * pbasis)) / vel;
     for(ix=0;ix < pbasis;ix++) rho[ix] -= t1;
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
     totalcharge = 0.0;
     for(ix=0;ix < pbasis;ix++) totalcharge+=rho[ix] * vel;
 
-    totalcharge = RmgSumAll(totalcharge, T.get_MPI_comm());
+    totalcharge = rmg::sum_all(totalcharge, T.get_MPI_comm());
     if(my_rank == 0)
         cout << "Total charge for full cell = " << totalcharge << endl;
 

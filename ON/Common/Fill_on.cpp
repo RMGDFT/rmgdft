@@ -53,7 +53,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "GlobalSums.h"
 
 
@@ -198,8 +198,8 @@ static double occ_allstates (double mu, std::vector<double> & occ, std::vector<d
     }                           /* st1 and kpt */
 
 
-    sumf = RmgSumAll(sumf, pct.kpsub_comm);
-    sumf = RmgSumAll(sumf, pct.spin_comm);
+    sumf = rmg::sum_all(sumf, pct.kpsub_comm);
+    sumf = rmg::sum_all(sumf, pct.spin_comm);
 
     return (sumf - nel);
 

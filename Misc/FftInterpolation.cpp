@@ -32,7 +32,6 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
 #include <boost/math/special_functions/powm1.hpp>
