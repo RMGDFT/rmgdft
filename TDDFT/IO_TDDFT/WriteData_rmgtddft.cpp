@@ -86,9 +86,10 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
    }
 
 
+   int n_rho = ct.noncoll_factor * ct.noncoll_factor;
    fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
    write (fhand, vh, fgrid_size * sizeof(double));
-   write (fhand, vxc, fgrid_size * sizeof(double));
+   write (fhand, vxc, n_rho*fgrid_size * sizeof(double));
    write (fhand, vh_corr, fgrid_size * sizeof(double));
 
    write (fhand, Pn0, 2*n2 * sizeof(double));
