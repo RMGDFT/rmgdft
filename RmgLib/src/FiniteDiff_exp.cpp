@@ -234,7 +234,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
             break;
 
         default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+            rmg::error("Lattice type not implemented");
 
     }
 
@@ -337,7 +337,7 @@ void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __re
             break;
 
         default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+            rmg::error("Lattice type not implemented");
 
     }                           /* end switch */
 
@@ -539,7 +539,7 @@ double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
             break;
 
         default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+            rmg::error("Lattice type not implemented");
 
     }
 

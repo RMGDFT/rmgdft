@@ -75,7 +75,7 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg_error_handler (__FILE__, __LINE__, " dgestrs  not programmed.");
+    rmg::error(" dgestrs  not programmed.");
 }
 #else
 #include <rocsolver/rocsolver.h>
@@ -97,11 +97,11 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
     status = rocsolver_dgetrf(ct.roc_handle, n, n, A, n, ipiv, devInfo);
 
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrf failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrf failed.");
 
 
     status = rocsolver_dgetrs(ct.roc_handle, rocblas_operation_none, n, m, A, n, ipiv, B, n);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrs failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrs failed.");
 
     gpuFree(devInfo);
     gpuFree(ipiv);
@@ -113,7 +113,7 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg_error_handler (__FILE__, __LINE__, " dgetrs not programmed.");
+    rmg::error(" dgetrs not programmed.");
 
 }
 #endif

@@ -44,11 +44,11 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     syevjInfo_t dsygvj_params = NULL;
 
     cu_status = cusolverDnCreateSyevjInfo(&dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnCreateDsygvjInfo failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnCreateDsygvjInfo failed.");
 
     cu_status = cusolverDnDsygvj_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork, dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvjDriver: provided workspace too small.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
+    if(lwork > worksize) rmg::error(" DsygvjDriver: provided workspace too small.");
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
     double abstol = 1.0e-5;
@@ -58,7 +58,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvj failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsygvj failed.");
 
     gpuFree(devInfo);
     if (dsygvj_params) cusolverDnDestroySyevjInfo(dsygvj_params);
@@ -110,7 +110,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(dev_n_sweeps);
     gpuFree(devResidual);
     gpuFree(devInfo);
-    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    if(status != 0) rmg::error(" rocsolver_dsygvj failed.");
     if(ct.verbose && pct.gridpe==0)
         printf("rocsolver_dsygvj  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 }

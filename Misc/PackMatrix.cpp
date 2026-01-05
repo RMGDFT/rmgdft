@@ -274,7 +274,7 @@ template <typename T> void TransposeMatrix(T *A, int n, int m)
     }
     else
     {
-        rmg_error_handler(__FILE__, __LINE__, " Data type not implemented.\n");
+        rmg::error(" Data type not implemented.\n");
     }
 }
 #endif

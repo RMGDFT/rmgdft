@@ -452,7 +452,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
     catch(cl::sycl::exception const& e) {
         std::cout << "\t\tCaught synchronous SYCL exception during GEMM:\n"
         << e.what() << std::endl << std::endl;
-        rmg_error_handler (__FILE__, __LINE__, "Terminating");
+        rmg::error("Terminating");
     }
 
 #else

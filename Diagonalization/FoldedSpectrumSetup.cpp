@@ -96,7 +96,7 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
     // Find start of interval
     int ix = n_win - eig_step;
     if(ix < 4)
-        rmg_error_handler(__FILE__, __LINE__, "Too few PE's to use folded spectrum method for this problem");
+        rmg::error("Too few PE's to use folded spectrum method for this problem");
     if(ix % 2) {
         n_win = n_win + 1;
         ix = n_win - eig_step;

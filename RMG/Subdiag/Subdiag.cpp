@@ -267,7 +267,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
             break;
 #endif
         default:
-            rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
+            rmg::error("Invalid subdiag_driver type");
 
     } // end switch
     delete(RT1);

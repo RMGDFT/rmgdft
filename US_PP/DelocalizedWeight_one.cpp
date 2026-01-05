@@ -63,7 +63,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
     std::complex<double> *gbptr = new std::complex<double>[pbasis];
 
     if (gbptr == NULL)
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     int nlxdim = Rmg_G->get_NX_GRID(1);
     int nlydim = Rmg_G->get_NY_GRID(1);

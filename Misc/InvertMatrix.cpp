@@ -53,7 +53,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     {
         GpuFill((double *)B, n*n, 0.0);
         cu_status = cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, (double *)A, n, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrf_bufferSize failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrf_bufferSize failed.");
         RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
@@ -61,16 +61,16 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         cublasDcopy(ct.cublas_handle, n, (double *)Workspace, 1, (double *)B, n+1);
 
         cu_status = cusolverDnDgetrf(ct.cusolver_handle, n, n, (double *)A, n, (double *)Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrf failed.");
 
         cu_status = cusolverDnDgetrs(ct.cusolver_handle, trans, n, n, (double *)A, n, devIpiv, (double *)B, n, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrs failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrs failed.");
     }
     else if(typeid(DataType) == typeid(std::complex<double>))
     {
         GpuFill((double *)B, 2*n*n, 0.0);
         cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverZnDgetrf_bufferSize failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverZnDgetrf_bufferSize failed.");
         RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
@@ -78,10 +78,10 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         cublasDcopy(ct.cublas_handle, n, (double *)Workspace, 1, (double *)B, 2*(n+1));
 
         cu_status = cusolverDnZgetrf(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverZnDgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverZnDgetrf failed.");
 
         cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, n, n, (cuDoubleComplex *)A, n, devIpiv, (cuDoubleComplex *)B, n, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrs failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrs failed.");
     }
 
     gpuFree(Workspace);
@@ -114,7 +114,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     }
     if (info) {
         rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-        rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
+        rmg::error(" p{d,z}gesv failed");
     }
 
     delete [] ipiv;

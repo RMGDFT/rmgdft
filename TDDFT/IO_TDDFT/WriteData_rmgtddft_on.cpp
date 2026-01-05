@@ -78,7 +78,7 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
 
     if (fhand < 0) {
         rmg_printf("Can't open restart file %s", newname);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::error("Terminating.");
     }
 
 

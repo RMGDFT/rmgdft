@@ -274,7 +274,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
     else
@@ -288,7 +288,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
 #else

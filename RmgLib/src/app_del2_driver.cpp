@@ -114,7 +114,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     }
     else {
 
-        rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+        rmg::error("APP_DEL2 order not programmed yet in app_del2_driver.\n");
         return 0;   // Just to keep the compiler from complaining
 
     }

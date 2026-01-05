@@ -68,7 +68,7 @@ void read_orbital (STATE * states)
                     if (fhand < 0)
                     {
                         rmg_printf ("\n %s, st1 = %d %d", newname, st1, st);
-                        rmg_error_handler (__FILE__, __LINE__, " Unable to open file ");
+                        rmg::error(" Unable to open file ");
                     }
 
                     idx = states[st].size * (int) sizeof (double);
@@ -82,7 +82,7 @@ void read_orbital (STATE * states)
                         if (nbytes != idx)
                         {
                             rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
-                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+                            rmg::error("Unexpected end of file orbit");
                         }
 
                         nbytes = read (fhand, &ixmin, sizeof (int));
@@ -93,7 +93,7 @@ void read_orbital (STATE * states)
                         {
                             rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                                     (int) sizeof (int), st);
-                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+                            rmg::error("Unexpected end of file orbit");
                         }
 
                         states[st].ixmin_old = ixmin;
@@ -121,7 +121,7 @@ void read_orbital (STATE * states)
                         if (nbytes != idx)
                         {
                             rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
-                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+                            rmg::error("Unexpected end of file orbit");
                         }
 
                         incx = states[st].orbit_nz * states[st].orbit_ny;
@@ -153,7 +153,7 @@ void read_orbital (STATE * states)
                         {
                             rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                                     (int) sizeof (int), st);
-                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+                            rmg::error("Unexpected end of file orbit");
                         }
 
                         states[st].ixmin_old = iymin;

@@ -248,6 +248,6 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 
 void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 {
-    rmg_error_handler (__FILE__, __LINE__, " cusolverDsygvdMg not programmed without CUDA.");
+    rmg::error(" cusolverDsygvdMg not programmed without CUDA.");
 }
 #endif

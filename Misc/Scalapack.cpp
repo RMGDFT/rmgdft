@@ -515,7 +515,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     if (info)
     {
        rmg_printf ("\n pdpotrf failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
+       rmg::error("pdpotrf failed");
     }
 
     // Get workspace required
@@ -536,7 +536,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     if (info)
     {
        rmg_printf ("\n pdsyngst failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
+       rmg::error("pdsyngst failed");
     }
 
 
@@ -550,7 +550,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     if (info)
     {
        rmg_printf ("\n pdsyevd failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+       rmg::error("psyevd failed");
     }
 
     pdtrsm("Left", uplo, "T", "N", &N, &N, &rone, b, &ione, &ione, desca,
@@ -559,7 +559,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     if (info)
     {
        rmg_printf ("\n pdtrms failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdtrms failed");
+       rmg::error("pdtrms failed");
     }
 
     delete [] iwork;
@@ -581,7 +581,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     if (info)
     {
        rmg_printf ("\n pzpotrf failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pzpotrf failed");
+       rmg::error("pzpotrf failed");
     }
 
     pzhegst(&ibtype, uplo, &N, (double *)q, &ione, &ione, desca,
@@ -590,7 +590,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     if (info)
     {
        rmg_printf ("\n pzhegst failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pzhegst failed");
+       rmg::error("pzhegst failed");
     }
 
 
@@ -618,7 +618,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     if (info)
     {
         rmg_printf ("\n pzheevd failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+        rmg::error("pzheevd failed");
     }
 
     pztrsm("Left", uplo, "C", "N", &N, &N, rone, (double *)b, &ione, &ione, desca,
@@ -627,7 +627,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     if (info)
     {
         rmg_printf ("\n pztrsm failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
+        rmg::error("pztrms failed");
     }
 
     delete [] iwork;
@@ -677,7 +677,7 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
     if (info)
     {
        rmg_printf ("\n pdsyevd failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+       rmg::error("psyevd failed");
     }
 
     delete [] iwork;
@@ -725,7 +725,7 @@ void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *
     if (info)
     {
         rmg_printf ("\n pzheevd failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+        rmg::error("pzheevd failed");
     }
 
     delete [] iwork;

@@ -44,7 +44,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     cuDoubleComplex *zwork;
 
     cu_status = cusolverDnZhegvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, &lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZheevd_bufferSize failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZheevd_bufferSize failed.");
 
     if(work == NULL)
     {
@@ -52,7 +52,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     }
     else
     {
-        if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " ZhegvdDriver: provided workspace too small.");
+        if(lwork > worksize) rmg::error(" ZhegvdDriver: provided workspace too small.");
         zwork = (cuDoubleComplex *)work;
     }
 
@@ -61,7 +61,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)zwork, lwork, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZhegvd failed.");
 
     gpuFree(devInfo);
     if(work == NULL) RmgFreeHost(zwork);
@@ -83,7 +83,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     zhegvd(&itype, jobz, cuplo, &n, (double *)A, &n, (double *)B, &n, eigs, work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
 
     if(info)
-        rmg_error_handler (__FILE__, __LINE__, " zhegvd failed.");
+        rmg::error(" zhegvd failed.");
 
     delete [] rwork;
     delete [] iwork;

@@ -156,7 +156,7 @@ void WriteHeader (void)
 
 
     default:
-        rmg_error_handler (__FILE__,__LINE__,"Unknown molecular dynamics method.");
+        rmg::error("Unknown molecular dynamics method.");
     }
     if(pct.imgpe==0) fprintf(ct.logfile, "    Description:              %s\n", ct.description.c_str());
     if(pct.imgpe==0) fprintf(ct.logfile, "    Orbital Initialization:   ");

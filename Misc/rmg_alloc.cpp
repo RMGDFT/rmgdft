@@ -14,7 +14,7 @@ void *rmg_malloc(int n, size_t size )
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
            printf("\n memory size required %d x %lu", n, size);
-           rmg_error_handler(__FILE__, __LINE__, "can't allocate memory malloc ");
+           rmg::error("can't allocate memory malloc ");
     }
     return ptr;
 }
@@ -24,7 +24,7 @@ void *rmg_malloc_init(int n, size_t size, char *type )
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
             printf("\n memory size required %d x %lu", n, size);
-           rmg_error_handler(__FILE__, __LINE__, "can't allocate memory malloc_init " );
+           rmg::error("can't allocate memory malloc_init " );
     }
     rmg_alloc_initialize (ptr, n, type);
     return ptr;
@@ -35,7 +35,7 @@ void *rmg_calloc(int n, size_t size )
     void *ptr;
     if(NULL == (ptr = calloc(n, size))) {
             printf("\n memory size required %d x %lu", n, size);
-           rmg_error_handler(__FILE__, __LINE__, "can't allocate memory calloc ");
+           rmg::error("can't allocate memory calloc ");
     }
     return ptr;
 }
@@ -49,7 +49,7 @@ void rmg_free( void *ptr )
     }
     else
     {
-           rmg_error_handler(__FILE__, __LINE__, "don't try to free null pointer");
+           rmg::error("don't try to free null pointer");
     }
 
 }

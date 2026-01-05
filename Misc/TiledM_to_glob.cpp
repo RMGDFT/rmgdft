@@ -24,7 +24,7 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     {
         rmg_printf("\n numst nprocs %d %d", numst, nprocs);
         fflush(NULL);
-        rmg_error_handler(__FILE__, __LINE__, "numst must be divisible by nprocs ");
+        rmg::error("numst must be divisible by nprocs ");
     }
 
     bool matrix_glob_dev = false;
@@ -48,7 +48,7 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     if(tiledM_dev != matrix_glob_dev)
     {
         std::cout<< tiledM_dev << matrix_glob_dev << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "both matrix must be in device or both in host  ");
+        rmg::error("both matrix must be in device or both in host  ");
     }
 
     size_t sendcount = numst * numst/nprocs * sizeof(T)/sizeof(double);
@@ -83,7 +83,7 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
   //delete [] tm_cpu;
 
 #else
-	rmg_error_handler(__FILE__, __LINE__, "compile with -DUSE_NCCL=1  ");
+	rmg::error("compile with -DUSE_NCCL=1  ");
 #endif
     }
 

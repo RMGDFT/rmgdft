@@ -64,7 +64,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
         /*Make sure that the wavefunctions have been read*/
         if (!AtomType.num_atomic_waves) {
             rmg_printf("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
-            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+            rmg::error("Terminating.");
         }
     }
 

@@ -388,7 +388,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_r2c[i] = {};
@@ -397,7 +397,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_r2c[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_d2z[i] = {};
@@ -406,7 +406,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_d2z[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_f[i] = {};
@@ -415,7 +415,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_f[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 #endif
 

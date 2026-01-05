@@ -71,7 +71,7 @@ Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in,
 {
     /*Order has to be even number */
     if (order % 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for even orders.");
+        rmg::error("This function works only for even orders.");
 
     ibrav = L.get_ibrav_type();
 
@@ -531,7 +531,7 @@ template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
@@ -613,7 +613,7 @@ template <typename T> void Prolong::prolong_bcc_other (T *full, T *half, int dim
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(dimx + 2*order) * (dimy + 2*order) * (dimz + 2*order)];
@@ -724,7 +724,7 @@ template <typename T> void Prolong::prolong_any (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
@@ -827,7 +827,7 @@ template <typename T> void Prolong::prolong_fcc (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];

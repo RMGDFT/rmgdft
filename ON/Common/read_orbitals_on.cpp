@@ -47,7 +47,7 @@ void read_orbitals_on(char *name, STATE *sts)
         if (nbytes != idx)
         {
             rmg_printf("\n read %d is different from %d for state %d", nbytes, idx, state);
-            rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
+            rmg::error("Unexpected end of file orbit");
         }
 
 

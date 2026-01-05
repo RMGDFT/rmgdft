@@ -89,7 +89,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
     std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
 
     if(retval1 != MPI_SUCCESS) {
-        rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+        rmg::error("Memory allocation failure in HmatrixUpdate");
     }
 
 

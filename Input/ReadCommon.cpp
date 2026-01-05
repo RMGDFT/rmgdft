@@ -1584,7 +1584,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() != 0))
     {
-        rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
+        rmg::error("You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
     }
 
     if(lc.spinorbit) ct.noncoll = true;
@@ -1648,7 +1648,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Check if a lattice vector was specified and if not 
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == No_Lattice)
-        rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
+        rmg::error("\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
 
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.
@@ -1930,7 +1930,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
-        //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+        //        rmg::error("\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
     if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))

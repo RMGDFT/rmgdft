@@ -349,7 +349,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         double *beta = new double[size];
         ssize_t read_size = read(fhand, beta, size * sizeof(double));
         if(read_size != (ssize_t)(size * sizeof(double)))
-            rmg_error_handler (__FILE__, __LINE__,"error reading");
+            rmg::error("error reading");
 
 
         close(fhand);
@@ -401,7 +401,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
     // Used to generate LDA+U orbital projectors that span the full space
     if (!this->delocalized)
-        rmg_error_handler (__FILE__, __LINE__,"error GetAtomicOrbitals");
+        rmg::error("error GetAtomicOrbitals");
 
     KpointType *weight;
     std::complex<double> I_t(0.0, 1.0);
@@ -417,7 +417,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 

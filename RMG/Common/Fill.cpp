@@ -165,7 +165,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     f = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
-        rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
+        rmg::error("root must be bracketed");
 
     if (f < 0.0)
     {
@@ -197,12 +197,12 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     while ((iter < maxit) && (std::abs(fmid) > charge_tol));
 
     if (iter == maxit)
-        rmg_error_handler (__FILE__,__LINE__,"too many bisections");
+        rmg::error("too many bisections");
 
     if (fabs (fmid) > charge_tol)
     {
         printf ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg_error_handler (__FILE__,__LINE__,"did not converge");
+        rmg::error("did not converge");
     }                           /* end if */
 
     /* mix occupations */
@@ -234,7 +234,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     {
         rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
         rmg_printf ("error in mixing occupations fmid = %e", fmid);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
+        rmg::error("Terminating.\n");
     }                           /* end if */
 
     delete [] occ;
@@ -361,7 +361,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
             break;
 
         default:
-            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
+            rmg::error("unknown filling procedure");
 
     }                           /* end switch */
 

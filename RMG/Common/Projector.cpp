@@ -324,7 +324,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
     {
         printf("\n num_owned_ions %d at pe %d num_ion %d\n", this->num_owned_ions, pct.gridpe, num_ions);
-        rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
+        rmg::error("Problem with claimimg ions.");
     }
 
     /* Loop over all ions to obtain the lists necessary for communication */

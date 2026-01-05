@@ -134,7 +134,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
     if(ct.noncoll)
     {
-        rmg_error_handler (__FILE__, __LINE__, " failure in HmatrixUpdate");
+        rmg::error(" failure in HmatrixUpdate");
         gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
         gpuMemcpy(vxc_dev, vxc_psi_caltype.data(),  4*pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
         Veff_x_psi(psi_dev, work_dev, v_dev, pbasis_noncoll, num_states);
@@ -158,7 +158,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(CalType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+            rmg::error("Memory allocation failure in HmatrixUpdate");
         }
     }
 
@@ -229,7 +229,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
     if(typeid(KpointType) != typeid(CalType))
     {
-        rmg_error_handler (__FILE__, __LINE__, "float precision not programmed with cpu  failure in HmatrixUpdate");
+        rmg::error("float precision not programmed with cpu  failure in HmatrixUpdate");
     }
     KpointType alpha(vel);
     KpointType beta(0.0);
@@ -242,7 +242,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+            rmg::error("Memory allocation failure in HmatrixUpdate");
         }
 
     }

@@ -214,7 +214,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         return cc;
     }
 
-    rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+    rmg::error("APP_DEL2 order not programmed yet in app_del2_driver.\n");
     return 0;   // Just to keep the compiler from complaining
 
     return cc;

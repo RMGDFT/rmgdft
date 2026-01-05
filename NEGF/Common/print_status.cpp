@@ -154,7 +154,7 @@ void print_data_to_file (int size, double *data, char *filename)
 
     file = fopen (filename, "a");
     if (file == NULL)
-        rmg_error_handler (__FILE__, __LINE__, "Unable to open file to write ");
+        rmg::error("Unable to open file to write ");
 
     for (i = 0; i < size; i++)
     {

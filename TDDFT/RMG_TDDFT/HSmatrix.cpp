@@ -76,7 +76,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     KpointType *Sij = new KpointType[nstates * nstates];
     if(!global_matrix1) {
         int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        if(retval1 != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
+        if(retval1 != MPI_SUCCESS) rmg::error("Memory allocation failure in Subdiag");
     }
     for(int ix=0;ix < nstates*nstates;ix++)global_matrix1[ix] = 0.0;
 #endif

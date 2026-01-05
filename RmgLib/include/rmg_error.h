@@ -27,6 +27,7 @@
  * 
 */
 
+#pragma once
 
 #ifndef RMG_ERROR_H
 #define RMG_ERROR_H 1
@@ -34,13 +35,14 @@
 #if __cplusplus
 #include <cstdio>
 #include <mpi.h>
+#include <source_location>
 
-void rmg_error_handler(const char *filename, int line, char const *message);
-void RmgErrorSetPrint(int doprint);
-void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message));
+namespace rmg
+{
+    void error(char const *message, std::source_location loc = std::source_location::current());
+    void error_set_print(int doprint);
+}
 
-#else
-void rmg_error_handler(char *message);
 #endif
 
 

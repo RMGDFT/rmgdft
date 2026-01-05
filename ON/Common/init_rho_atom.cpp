@@ -83,7 +83,7 @@ void init_rho_atom(double *rho)
             if (fhand < 0)
             {
                 rmg_printf("\n unable to open file: %s \n", newname);
-                rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
+                rmg::error(" Unable to open file ");
             }
 
             read(fhand, ibuf, 6*sizeof(int));
@@ -175,7 +175,7 @@ void init_rho_atom(double *rho)
             if (fhand < 0)
             {
                 rmg_printf("\n unable to open file: %s \n", newname);
-                rmg_error_handler(__FILE__, __LINE__, " Unable to open file ");
+                rmg::error(" Unable to open file ");
             }
 
             read(fhand, ibuf, 6*sizeof(int));

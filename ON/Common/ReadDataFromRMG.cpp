@@ -77,7 +77,7 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg_printf("Can't open data file %s", newname);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::error("Terminating.");
     }
 
 
@@ -85,32 +85,32 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != Rmg_G->get_NX_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg::error("Wrong NX_GRID");
     if (grid[1] != Rmg_G->get_NY_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg::error("Wrong NY_GRID");
     if (grid[2] != Rmg_G->get_NZ_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg::error("Wrong NZ_GRID");
     rmg_printf("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != Rmg_G->get_PE_X())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg::error("Wrong PE_X");
     if (pe[1] != Rmg_G->get_PE_Y())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg::error("Wrong PE_Y");
     if (pe[2] != Rmg_G->get_PE_Z())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg::error("Wrong PE_Z");
 
     grid_size = Rmg_G->get_P0_BASIS(0);
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PX0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[1] != Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PY0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[2] != Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PZ0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
@@ -124,12 +124,12 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //    rmg::error("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+        rmg::error("Wrong number of k points");
 
     rmg_printf ("read_data: gamma = %d\n", gamma);
     rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
@@ -170,7 +170,7 @@ static void read_double (int fhand, double * rp, int count)
     ssize_t wanted = sizeof (double) * (ssize_t)count;
     ssize_t size = read (fhand, rp, wanted);
     if(size != wanted)
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg::error("error reading");
 
 
 }
@@ -179,7 +179,7 @@ static void read_int (int fhand, int *ip, int count)
 {
     int size = count * sizeof (int);
     if (size != read (fhand, ip, size))
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg::error("error reading");
 }
 
 
@@ -194,14 +194,14 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
     size_t wsize = read (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     if(csize > sizeof(double)*nx*ny*nz)
-        rmg_error_handler (__FILE__,__LINE__,"error reading input buffer too small");
+        rmg::error("error reading input buffer too small");
 
     wsize = read (fh, in, csize);
     if(wsize != csize)
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     delete [] in;

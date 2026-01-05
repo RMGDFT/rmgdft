@@ -59,7 +59,7 @@ void get_dos (STATE * states)
     int nkp_tot = nkp[0] * nkp[1] * nkp[2];
     rmg_printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-    if (nkp_tot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
+    if (nkp_tot == 0 ) rmg::error("wrong number of kpoints in cond.in");
 
     kvecx = new double[nkp_tot];
     kvecy = new double[nkp_tot];

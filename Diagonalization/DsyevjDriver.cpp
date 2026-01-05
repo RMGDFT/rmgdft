@@ -44,18 +44,18 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     syevjInfo_t dsyevj_params = NULL;
 
     cu_status = cusolverDnCreateSyevjInfo(&dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnCreateDsyevjInfo failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnCreateDsyevjInfo failed.");
 
     cu_status = cusolverDnDsyevj_bufferSize(ct.cusolver_handle, jobz, uplo, n, A, n, work, &lwork, dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevjDriver: provided workspace too small.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevj_bufferSize failed.");
+    if(lwork > worksize) rmg::error(" DsyevjDriver: provided workspace too small.");
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     cu_status = cusolverDnDsyevj(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo, dsyevj_params);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevj failed.");
 
     gpuFree(devInfo);
     if (dsyevj_params) cusolverDnDestroySyevjInfo(dsyevj_params);
@@ -106,7 +106,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     gpuFree(dev_n_sweeps);
     gpuFree(devResidual);
     gpuFree(devInfo);
-    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    if(status != 0) rmg::error(" rocsolver_dsygvj failed.");
     //printf("RRRRR  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 
 

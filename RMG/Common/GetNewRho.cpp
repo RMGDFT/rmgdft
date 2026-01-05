@@ -423,7 +423,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
             default:
 
                 //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-                rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
+                rmg::error("ct.interp_flag is set to an invalid value.");
 
 
         }

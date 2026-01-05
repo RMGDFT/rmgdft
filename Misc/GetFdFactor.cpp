@@ -327,7 +327,7 @@ void GetFdFactor(int kpt)
 
     if(FD.cfac[0] < 0.0)
     {
-        rmg_error_handler (__FILE__, __LINE__, 
+        rmg::error(
             "CFAC < 0.0. This probably indicates an error in the cell setup:\n");
     }
 

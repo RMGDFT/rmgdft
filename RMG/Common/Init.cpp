@@ -195,7 +195,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
             printf ("A0-A2 density = %7.5f\n", density[1]);
             printf ("A1-A2 density = %7.5f\n", density[2]);
         }
-        rmg_error_handler (__FILE__, __LINE__, "Planar Anisotropy too large");
+        rmg::error("Planar Anisotropy too large");
     }
 
 
@@ -273,7 +273,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
                   std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS * ct.noncoll_factor + 1024) * sizeof(OrbitalType));
-        if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
+        if(!rptr) rmg::error("Error: CreateMmapArray failed for orbitals. \n");
         madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
     }
     else
@@ -289,7 +289,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS  * ct.noncoll_factor* sizeof(OrbitalType));
-        if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for work arrays. \n");
+        if(!ns) rmg::error("Error: CreateMmapArray failed for work arrays. \n");
         madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL);
     }
     else
@@ -407,7 +407,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(!ct.num_ldaU_ions && (ct.ldaU_mode != LDA_PLUS_U_NONE))
     {
         printf("\n You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.");
-        rmg_error_handler (__FILE__, __LINE__, "You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
+        rmg::error("You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
     }
 
     /*Set max_nldim */
@@ -550,7 +550,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if(ct.noncoll) 
         {
             printf("\n no random start for noncollinear case \n");
-            rmg_error_handler (__FILE__, __LINE__, "no random start for noncoll");
+            rmg::error("no random start for noncoll");
 
         }
         if (ct.nspin == 2)

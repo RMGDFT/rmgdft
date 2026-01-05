@@ -74,7 +74,7 @@ void Eigen(std::complex<double> *mat, double *eigs, int N, int lda)
     delete [] work;
     if(info != 0)
     {
-         rmg_error_handler (__FILE__, __LINE__, "failed to diagonalization a matrix\n");
+         rmg::error("failed to diagonalization a matrix\n");
     }
 
     return;

@@ -106,10 +106,10 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     cuerr = gpuMalloc((void **)&devInfo, sizeof(int) );
 
     cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf_bufferSize failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf_bufferSize failed.");
     cuerr = gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
     cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf failed.");
     info = 0;
     if (info != 0)
     {
@@ -120,11 +120,11 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
 
     rmg::sync_device();
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf failed.");
 
     cublasOperation_t trans =CUBLAS_OP_N;
     cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nn, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo );
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrs failed.");
 
 
     info = 0;
@@ -134,7 +134,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         fflush (NULL);
         exit (0);
     }
-    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
+    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZgetrs failed.");
     rmg::sync_device();
     gpuFree(devIpiv);
     gpuFree(devInfo);

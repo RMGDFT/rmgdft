@@ -33,26 +33,25 @@
 #include <signal.h>
 #include <boost/stacktrace.hpp>
 
-static void *(*rmgerrfunc)(const char *filename, int line, char const *message) = NULL;
 static int do_print=true;
 
-void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message))
-{
-    rmgerrfunc = func;
-}
-
-void RmgErrorSetPrint(int doprint)
+void rmg::error_set_print(int doprint)
 {
     do_print = doprint;
 }
 
-void rmg_error_handler(const char *filename, int line, char const *message)
+void rmg::error(char const *message, const std::source_location loc)
 {
-    std::cout << boost::stacktrace::stacktrace();
-    if(!rmgerrfunc) {
-        if(do_print) printf("\n\n%s at LINE %d in %s.\n\n\n", message, line, filename);
-        fflush (NULL);
-        raise(SIGTERM);
+   if(do_print)
+   {
+        std::cout << "\nError: " << message << "\n";
+        std::cout << "Function:  " << loc.function_name() << "\n"
+                  << "File:      " << loc.file_name()     << "\n"
+                  << "Line:      " << loc.line()          << "\n\n";
+        std::cout << "Stacktrace:" << "\n";
+        std::cout << boost::stacktrace::stacktrace();
     }
-    rmgerrfunc(filename, line, message);
+    fflush (NULL);
+    sleep(1);
+    raise(SIGTERM);
 }

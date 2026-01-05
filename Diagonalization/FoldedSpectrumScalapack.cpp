@@ -192,7 +192,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
          if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS) || 
             (retval5 != MPI_SUCCESS) || (retval6 != MPI_SUCCESS) || (retval7 != MPI_SUCCESS) || (retval8 != MPI_SUCCESS) ||
             (retval9 != MPI_SUCCESS) || (retval10 != MPI_SUCCESS) || (retval11 != MPI_SUCCESS) || (retval12 != MPI_SUCCESS)) {
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in FoldedSpectrum_Scalapack");
+            rmg::error("Memory allocation failure in FoldedSpectrum_Scalapack");
          }
     }
 
@@ -285,7 +285,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         delete [] iwork;
         delete [] work;
         if( info != 0 ) 
-                rmg_error_handler(__FILE__, __LINE__, "pdsyevd failure");
+                rmg::error("pdsyevd failure");
 
     }
 

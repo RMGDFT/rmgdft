@@ -229,7 +229,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             if(!find_atom)
             {
                 rmg_printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
-                rmg_error_handler(__FILE__, __LINE__, "Exiting.\n");
+                rmg::error("Exiting.\n");
             }
         }
     }
@@ -583,7 +583,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(nsym > 48)
     {
         std::cout << " too many rotation symmetries nsym = "<< nsym << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "too many  symmetry .\n");
+        rmg::error("too many  symmetry .\n");
     }
 
     full_sym_rotate.resize(9 * nsym_full);
@@ -695,7 +695,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(n_time_rev == 0 && ct.AFM)
     {
         std::cout << " no AFM symmetry is found from initial spin set up " << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "no AFM symmetry found Exiting.\n");
+        rmg::error("no AFM symmetry found Exiting.\n");
     }
     rotate_ylm();
     rotate_spin(); 
@@ -1207,7 +1207,7 @@ void Symmetry::rotate_spin()
             {
                 rmg_printf("\n rotation matrix error: norm = %f \n", tem);
                 fflush(NULL);
-                rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+                rmg::error(" type of symmetry not defined Exiting.\n");
             }
             axis[0] /= tem;
             axis[1] /= tem;
@@ -1232,7 +1232,7 @@ void Symmetry::rotate_spin()
         {
             rmg_printf("\n rotation matrix error \n");
             fflush(NULL);
-            rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+            rmg::error(" type of symmetry not defined Exiting.\n");
         }
 
         angle = 0.5 * angle;
@@ -1323,7 +1323,7 @@ int Symmetry::type_symm(double sr[3][3])
     {
         rmg_printf("\n determinant of the rotation matrix %f\n", det);
         fflush(NULL);
-        rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+        rmg::error(" type of symmetry not defined Exiting.\n");
     }
     return 0; 
 

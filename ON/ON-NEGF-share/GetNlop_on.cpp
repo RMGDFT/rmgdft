@@ -139,7 +139,7 @@ void GetNlop_on(void)
             ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
 
             projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
-            if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for GetNlop_on. \n");
+            if(!projectors) rmg::error("Error: CreateMmapArray failed for GetNlop_on. \n");
             madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
 
         }
@@ -228,7 +228,7 @@ void GetNlop_on(void)
         int amode = S_IREAD | S_IWRITE;
         int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0) 
-            rmg_error_handler (__FILE__, __LINE__,"error open file");
+            rmg::error("error open file");
 
         ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
         write(fhand, beta, size);
@@ -263,7 +263,7 @@ void GetNlop_on(void)
             ssize_t read_size = read(fhand, &beta[prjcount], size);
             if(read_size != size)
             {
-                rmg_error_handler (__FILE__, __LINE__,"error reading");
+                rmg::error("error reading");
             }
             prjcount += sp->num_projectors * ct.max_nlpoints;
         }

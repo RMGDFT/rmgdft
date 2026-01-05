@@ -82,7 +82,7 @@ void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm)
 	counter ++;
         
 	if (counter > MAX_TRIES)
-	    rmg_error_handler (__FILE__, __LINE__, "Could not automatically determine number of grids, please set up wavefunction_grid option in input file.");
+	    rmg::error("Could not automatically determine number of grids, please set up wavefunction_grid option in input file.");
     }
 
     

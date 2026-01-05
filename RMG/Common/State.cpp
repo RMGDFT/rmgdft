@@ -128,7 +128,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
                 
                 nidx++;
                 if (nidx >= num_nonloc_ions)
-                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list");
+                    rmg::error("Could not find matching entry in nonloc_ions_list");
             
             } while (nonloc_ions_list[nidx] != oion);
 
@@ -175,7 +175,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         if (sum < 0.0)
         {
             rmg_printf ("the %dth state is wrong\n", istate);
-            rmg_error_handler (__FILE__, __LINE__, "<psi|S|psi> cann't be negative");
+            rmg::error("<psi|S|psi> cann't be negative");
         }
 
         t1 = sqrt (sum);

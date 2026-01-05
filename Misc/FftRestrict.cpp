@@ -83,7 +83,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
     }
     else
     {
-        rmg_error_handler (__FILE__, __LINE__, "A grid ratio > 3 is not allowed.");
+        rmg::error("A grid ratio > 3 is not allowed.");
     }
     delete [] temp;
 }

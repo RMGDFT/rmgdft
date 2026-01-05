@@ -91,7 +91,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     if(!m_distC) {
         int retval1 = MPI_Alloc_mem(m_f_dist_length * sizeof(double) * factor , MPI_INFO_NULL, &m_distC);
         if(retval1 != MPI_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in FoldedSpectrumScalapackOrtho");
+            rmg::error("Memory allocation failure in FoldedSpectrumScalapackOrtho");
  
     }
 

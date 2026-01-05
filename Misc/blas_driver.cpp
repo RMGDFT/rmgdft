@@ -166,7 +166,7 @@ void dgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in dgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
+        rmg::error("wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -198,7 +198,7 @@ void sgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in sgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
+        rmg::error("wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -231,7 +231,7 @@ void zgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("error in zgemmdriver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
-        rmg_error_handler(__FILE__, __LINE__, "wrong ictxt ");
+        rmg::error("wrong ictxt ");
     }
 
     //  use scalapack if nprow * npcol > 1
@@ -277,7 +277,7 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
         {
             printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
             fflush (NULL);
-            rmg_error_handler(__FILE__, __LINE__, "wrong mnk ");
+            rmg::error("wrong mnk ");
         }
 
 #if USE_NCCL
@@ -343,7 +343,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     {
         printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
         fflush (NULL);
-        rmg_error_handler(__FILE__, __LINE__, "wrong mnk ");
+        rmg::error("wrong mnk ");
     }
     if(ct.tddft_tiledMM)
     {
@@ -352,7 +352,7 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
         {
             printf ("mgpu_dgemm requires transb = n \n");
             fflush (NULL);
-            rmg_error_handler(__FILE__, __LINE__, "wrong transb ");
+            rmg::error("wrong transb ");
         }
 
         TiledM_to_glob(A_glob, A, m, pct.local_comm);

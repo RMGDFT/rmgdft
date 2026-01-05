@@ -88,7 +88,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg_printf("Can't open data file %s", newname);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::error("Terminating.");
     }
 
 
@@ -96,31 +96,31 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg::error("Wrong NX_GRID");
     if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg::error("Wrong NY_GRID");
     if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg::error("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != Kptr[0]->G->get_PE_X())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg::error("Wrong PE_X");
     if (pe[1] != Kptr[0]->G->get_PE_Y())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg::error("Wrong PE_Y");
     if (pe[2] != Kptr[0]->G->get_PE_Z())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg::error("Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
@@ -134,12 +134,12 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //    rmg::error("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE && ct.forceflag != NSCF)    /* bandstructure calculation */
-        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+        rmg::error("Wrong number of k points");
 
     if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
     if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
@@ -148,7 +148,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     read_int (fhand, &ns, 1);
     if (ns > ct.num_states) {
         rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
-        rmg_error_handler (__FILE__, __LINE__,"Terminating.");
+        rmg::error("Terminating.");
     }
 
     if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
@@ -226,14 +226,14 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 else {
                     // If wavefunctions on disk are complex but current calc is real then throw error
                     if(ct.is_gamma)
-                        rmg_error_handler (__FILE__, __LINE__,"Can't convert complex wavefunctions to real.");
+                        rmg::error("Can't convert complex wavefunctions to real.");
 
                     // Wavefunctions on disk are real but current calc is complex so convert them
                     ssize_t wanted = sizeof (double) * (ssize_t)wvfn_size;
                     ssize_t size = read (fhand, tbuf, wanted);
 
                     if(size != wanted)
-                        rmg_error_handler (__FILE__, __LINE__,"error reading");
+                        rmg::error("error reading");
 
                     tptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi;
                     for(int ix=0;ix < wvfn_size;ix++) tptr[ix] = std::complex<double>(tbuf[ix], 0.0);
@@ -260,7 +260,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         if(ct.noncoll) 
         {
             printf("\n num_state %d != read %d\n", ct.num_states, ns);
-            rmg_error_handler (__FILE__, __LINE__,"noncollinear case: ct.num_state differenecec.");
+            rmg::error("noncollinear case: ct.num_state differenecec.");
         }
         for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
@@ -411,7 +411,7 @@ static void read_double (int fhand, double * rp, int count)
     if(size != wanted)
     {
         std::cout << " wanted and readsize " << wanted <<" != " << size << std::endl;
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg::error("error reading");
     }
 
 
@@ -421,7 +421,7 @@ static void read_int (int fhand, int *ip, int count)
 {
     int size = count * sizeof (int);
     if (size != read (fhand, ip, size))
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg::error("error reading");
 }
 
 
@@ -436,14 +436,14 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
     size_t wsize = read (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     if(csize > sizeof(double)*nx*ny*nz)
-        rmg_error_handler (__FILE__,__LINE__,"error reading input buffer too small");
+        rmg::error("error reading input buffer too small");
 
     wsize = read (fh, in, csize);
     if(wsize != csize)
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     delete [] in;
@@ -497,31 +497,31 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg::error("Wrong NX_GRID");
     if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg::error("Wrong NY_GRID");
     if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg::error("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != Kptr[0]->G->get_PE_X())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg::error("Wrong PE_X");
     if (pe[1] != Kptr[0]->G->get_PE_Y())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg::error("Wrong PE_Y");
     if (pe[2] != Kptr[0]->G->get_PE_Z())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg::error("Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
@@ -535,12 +535,12 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //    rmg::error("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+        rmg::error("Wrong number of k points");
 
     if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
     if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
@@ -549,7 +549,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     read_int (fhand, &ns, 1);
     if (ns > ct.num_states) {
         rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
-        rmg_error_handler (__FILE__, __LINE__,"Terminating.");
+        rmg::error("Terminating.");
     }
 
     if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);

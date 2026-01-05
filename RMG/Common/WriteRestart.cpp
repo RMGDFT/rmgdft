@@ -189,7 +189,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
     if (fhand < 0) {
         rmg_printf("Can't open restart file %s", newname);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::error("Terminating.");
     }
 
     WriteData (fhand, vh, rho, vxc, Kptr);
@@ -226,7 +226,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	    FILE *fhandle = fopen (new_file.c_str(), "w");
 	    if (!fhandle)
 	    {
-		    rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
+		    rmg::error("Unable to write atomic coordinate xyz file. Terminating.");
 	    }
 
 	    fprintf(fhandle,"%lu\n", Atoms.size());

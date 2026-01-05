@@ -321,10 +321,10 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
                 break;
             case LBFGS:
                 //simple_lbfgs();
-                rmg_error_handler (__FILE__, __LINE__, "LBFGS for NEB not implemented");
+                rmg::error("LBFGS for NEB not implemented");
                 break;
             default:
-                rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
+                rmg::error("Undefined MD method");
         }
 
         /* Update items that change when the ionic coordinates change */

@@ -672,7 +672,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
             break;
 
         default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not programmed");
+            rmg::error("Lattice type not programmed");
 
     }                           /* end switch */
 
@@ -1081,7 +1081,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
             break;
         
         default:
-            rmg_error_handler (__FILE__, __LINE__, "Lattice type not programmed");
+            rmg::error("Lattice type not programmed");
 
     } // end switch
 
@@ -1419,7 +1419,7 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
     }
 
-    rmg_error_handler (__FILE__, __LINE__, "Boundary condition not programmed."); 
+    rmg::error("Boundary condition not programmed."); 
     return -1;
 
 }

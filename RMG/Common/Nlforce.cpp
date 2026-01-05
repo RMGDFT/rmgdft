@@ -229,7 +229,7 @@ ct.state_block_size);
                     if (nion >= num_nonloc_ions)
                     {
                         printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                        rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
                     }
 
                 } while (nonloc_ions_list[nion] != gion);
@@ -266,7 +266,7 @@ ct.state_block_size);
             if (nion >= num_nonloc_ions)
             {
                 printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
             }
         } while (nonloc_ions_list[nion] != gion);
 
@@ -301,7 +301,7 @@ ct.state_block_size);
             if (nion >= num_nonloc_ions)
             {
                 printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
             }
 
         } while (nonloc_ions_list[nion] != gion);

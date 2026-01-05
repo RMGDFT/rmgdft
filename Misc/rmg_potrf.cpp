@@ -77,7 +77,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
         custat = cusolverDnZpotrf(ct.cusolver_handle, fill_mode, n, (cuDoubleComplex *)dA, lda,
 			          (cuDoubleComplex *)work, lwork, dev_info);
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZpotrf failed.");
+            rmg::error(" cusolverDnZpotrf failed.");
 	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
@@ -90,7 +90,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
         gpuMalloc((void **)&work, lwork * sizeof(double));
         custat = cusolverDnDpotrf(ct.cusolver_handle, fill_mode, n, dA, lda, work, lwork, dev_info);
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
+            rmg::error(" cusolverDnDpotrf failed.");
 	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
@@ -123,7 +123,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         rocstat = rocsolver_zpotrf(ct.roc_handle, fill_mode, n, (rocblas_double_complex *)dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_zpotrf");
+            rmg::error("Problem executing rocsolver_zpotrf");
         if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>));
         if(!a_dev) gpuFree(dA);
     }
@@ -133,7 +133,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         rocstat = rocsolver_dpotrf(ct.roc_handle, fill_mode, n, dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_dpotrf");
+            rmg::error("Problem executing rocsolver_dpotrf");
         if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(double));
         if(!a_dev) gpuFree(dA);
     }
@@ -179,7 +179,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
     else
@@ -193,7 +193,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
 #else

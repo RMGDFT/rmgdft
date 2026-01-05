@@ -62,7 +62,7 @@ BaseThread::BaseThread(int nthreads)
 {
 
     if(nthreads > MAX_RMG_THREADS)
-        rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
+        rmg::error("Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
 
     if(!BaseThread::init_flag)
     {
@@ -118,7 +118,7 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
     if(rjobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
-        rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
+        rmg::error("More jobs than available threads scheduled\n");
     }
 
     std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -318,7 +318,7 @@ int BaseThread::is_loop_over_states(void)
 int BaseThread::get_threads_per_node(void)
 {
     if(BaseThread::THREADS_PER_NODE == 0)
-        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
+        rmg::error("Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
 }
 

@@ -195,7 +195,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
 {
     int m = res.size();
     if(m == 0)
-        rmg_error_handler (__FILE__,__LINE__,"Coding error if this happens.");
+        rmg::error("Coding error if this happens.");
 
     if (m <= 2)
     {

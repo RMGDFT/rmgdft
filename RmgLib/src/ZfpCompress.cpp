@@ -83,14 +83,14 @@ size_t ZfpCompress::compress_buffer_fixed_rate(RmgType *in, RmgType *out, int xd
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+        rmg::error("Compressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t compressed_size = zfp_compress(this->zfp, this->field);
     if(!compressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+        rmg::error("Error compressing buffer.\n");
 
     stream_close(stream);
     return compressed_size;
@@ -111,14 +111,14 @@ size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydi
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+        rmg::error("Compressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t compressed_size = zfp_compress(this->zfp, this->field);
     if(!compressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+        rmg::error("Error compressing buffer.\n");
 
     stream_close(stream);
     return compressed_size;
@@ -138,14 +138,14 @@ size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydi
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+        rmg::error("Compressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t compressed_size = zfp_compress(this->zfp, this->field);
     if(!compressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+        rmg::error("Error compressing buffer.\n");
 
     stream_close(stream);
     return compressed_size;
@@ -166,14 +166,14 @@ size_t ZfpCompress::decompress_buffer_fixed_rate(RmgType *in, RmgType *out, int 
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+        rmg::error("Decompressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t decompressed_size = zfp_decompress(this->zfp, this->field);
     if(!decompressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+        rmg::error("Error decompressing buffer.\n");
 
     stream_close(stream);
 
@@ -194,14 +194,14 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+        rmg::error("Decompressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t decompressed_size = zfp_decompress(this->zfp, this->field);
     if(!decompressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+        rmg::error("Error decompressing buffer.\n");
 
     stream_close(stream);
 
@@ -222,14 +222,14 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+        rmg::error("Decompressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t decompressed_size = zfp_decompress(this->zfp, this->field);
     if(!decompressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+        rmg::error("Error decompressing buffer.\n");
 
     stream_close(stream);
 
@@ -253,14 +253,14 @@ size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydi
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+        rmg::error("Compressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t compressed_size = zfp_compress(this->zfp, this->field);
     if(!compressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+        rmg::error("Error compressing buffer.\n");
 
     stream_close(stream);
     return compressed_size;
@@ -280,14 +280,14 @@ size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydi
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+        rmg::error("Compressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t compressed_size = zfp_compress(this->zfp, this->field);
     if(!compressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+        rmg::error("Error compressing buffer.\n");
 
     stream_close(stream);
     return compressed_size;
@@ -307,14 +307,14 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+        rmg::error("Decompressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t decompressed_size = zfp_decompress(this->zfp, this->field);
     if(!decompressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+        rmg::error("Error decompressing buffer.\n");
 
     stream_close(stream);
 
@@ -336,14 +336,14 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
     if(bufsize > outbufsize)
-        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+        rmg::error("Decompressed buffer is too small.\n");
 
     bitstream *stream = stream_open(out, bufsize);
     zfp_stream_set_bit_stream(this->zfp, stream);
     zfp_stream_rewind(this->zfp);
     size_t decompressed_size = zfp_decompress(this->zfp, this->field);
     if(!decompressed_size)
-        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+        rmg::error("Error decompressing buffer.\n");
 
     stream_close(stream);
 

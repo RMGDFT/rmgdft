@@ -55,7 +55,7 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 {
 
 #if !HIP_ENABLED
-    rmg_error_handler (__FILE__, __LINE__, "This version of RMG was not built with GPU support so Rocsolver cannot be used.");
+    rmg::error("This version of RMG was not built with GPU support so Rocsolver cannot be used.");
 
 #endif
 

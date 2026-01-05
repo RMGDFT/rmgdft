@@ -43,7 +43,7 @@ BerryPhase::BerryPhase(void)
 
     if(!ct.norm_conserving_pp)
     {
-        rmg_error_handler(__FILE__, __LINE__, "only support norm-conserving pp now\n");
+        rmg::error("only support norm-conserving pp now\n");
     }
 
     this->efield_mag = 0.0;
@@ -73,7 +73,7 @@ BerryPhase::BerryPhase(void)
     num_kpp = ct.kpoint_mesh[BerryPhase_dir];
     if(num_kpp < 1) 
     {
-        rmg_error_handler(__FILE__, __LINE__,"each string needs more than one kpoint now\n");
+        rmg::error("each string needs more than one kpoint now\n");
     }
     kmesh[BerryPhase_dir] = 1;
     is_shift[BerryPhase_dir] = 0;
@@ -144,7 +144,7 @@ BerryPhase::BerryPhase(void)
 void BerryPhase::init(Kpoint<double> **Kptr)
 {
     std::cout << "not programed yet for gamma point" << std::endl;
-    rmg_error_handler(__FILE__, __LINE__, "only support complex version-non-gamma now\n");
+    rmg::error("only support complex version-non-gamma now\n");
 }
 void BerryPhase::init(Kpoint<std::complex<double>> **Kptr)
 {
@@ -182,7 +182,7 @@ void BerryPhase::init(Kpoint<std::complex<double>> **Kptr)
 
 void BerryPhase::CalcBP (Kpoint<double> **Kptr)
 {
-    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+    rmg::error(" only support non-gamma point now\n");
 }
 void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 {
@@ -248,7 +248,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
             {
                 rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
-                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+                rmg::error("zgetrf failed\n");
             }
 
             det = 1.0;
@@ -267,7 +267,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 {
                     rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
                     fflush (NULL);
-                    rmg_error_handler(__FILE__, __LINE__,"zgetri failed\n");
+                    rmg::error("zgetri failed\n");
                 }
                 memcpy(BP_matrix_cpu, mat, nband_occ * nband_occ * sizeof(std::complex<double>));
             }
@@ -545,7 +545,7 @@ void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nba
 
 void BerryPhase::CalcBP_Skk1 (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
 {
-    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+    rmg::error(" only support non-gamma point now\n");
 }
 void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
 {
@@ -563,7 +563,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
     if(numst != Sp.GetN())
     {
         rmg_printf("\n Scalpapack wrong !! numst = %d  N = %d \n", numst, Sp.GetN() );
-        rmg_error_handler(__FILE__, __LINE__," scalapack wrong\n");
+        rmg::error(" scalapack wrong\n");
     }
 
     wfc_size = numst * pbasis_noncoll * sizeof(std::complex<double>);
@@ -622,7 +622,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
 }
 void BerryPhase::CalcBP_tddft (Kpoint<double> **Kptr, double &tot_bp_pol, double *mat_glob, Scalapack &Sp)
 {
-    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+    rmg::error(" only support non-gamma point now\n");
 }
 void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &Sp)
 {
@@ -698,7 +698,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
             {
                 rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
-                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+                rmg::error("zgetrf failed\n");
             }
 
             det = 1.0;
@@ -845,7 +845,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
 void BerryPhase::tddft_Xml (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
 {
-    rmg_error_handler(__FILE__, __LINE__," only support non-gamma point now\n");
+    rmg::error(" only support non-gamma point now\n");
 }
 void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
 {
@@ -903,7 +903,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
             {
                 rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
-                rmg_error_handler(__FILE__, __LINE__,"zgetrf failed\n");
+                rmg::error("zgetrf failed\n");
             }
 
             {
@@ -913,7 +913,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
                 {
                     rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
                     fflush (NULL);
-                    rmg_error_handler(__FILE__, __LINE__,"zgetri failed\n");
+                    rmg::error("zgetri failed\n");
                 }
                 memcpy(BP_matrix_cpu, mat, nband_occ * nband_occ * sizeof(std::complex<double>));
             }

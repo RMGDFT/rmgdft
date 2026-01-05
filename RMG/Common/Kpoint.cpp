@@ -167,7 +167,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     {
         repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
         if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )
-                rmg_error_handler (__FILE__, __LINE__, "Fixed occupation for both spin up and down must be specified !!!");
+                rmg::error("Fixed occupation for both spin up and down must be specified !!!");
         tbuf[0] = ct.occupation_str_spin_up;
         tbuf[1] = ct.occupation_str_spin_down;
         num_states_spf[0] = 0;
@@ -195,7 +195,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             {
                 count_states[idx] += n;
                 if (nocc[idx] == MAX_NOCC)
-                    rmg_error_handler (__FILE__, __LINE__, "Too many blocks in repeat count for state occupations");
+                    rmg::error("Too many blocks in repeat count for state occupations");
                 /* two block example  3 1.0  4 0.0*/
                 occ[nocc[idx] + MAX_NOCC * idx].n = n;
                 occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
@@ -212,7 +212,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         if ( (nspin_occ == 2) && (num_states_spf[0] != num_states_spf[1]) )
         {
             rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
-            rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
+            rmg::error("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
         int total_occ_states = std::round(ct.nel / (double)ct.nspin);
@@ -715,7 +715,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
                         nidx++;
                         if (nidx >= num_nonloc_ions)
-                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in nonloc_ions_list for owned ion");
+                            rmg::error("Could not find matching entry in nonloc_ions_list for owned ion");
 
                     } while (nonloc_ions_list[nidx] != oion);
 
@@ -870,7 +870,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
                         nidx++;
                         if (nidx >= num_nonloc_ions)
-                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+                            rmg::error("Could not find matching entry in pct.nonloc_ions_list for owned ion");
 
                     } while (nonloc_ions_list[nidx] != oion);
 
@@ -965,7 +965,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -1046,7 +1046,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -1178,7 +1178,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if(ct.nvme_weights)
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
-        if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
+        if(!this->nl_weight) rmg::error("Error: CreateMmapArray failed for weights. \n");
         madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_NORMAL);
     }
     else
@@ -1315,7 +1315,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     if(ct.nvme_weights)
     {
         this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, stress_factor * this->orbital_weight_size*sizeof(KpointType));
-        if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
+        if(!this->orbital_weight) rmg::error("Error: CreateMmapArray failed for weights. \n");
         madvise(this->orbital_weight, stress_factor * this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
 
     }

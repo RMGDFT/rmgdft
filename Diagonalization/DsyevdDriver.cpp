@@ -43,15 +43,15 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
 
     cu_status = cusolverDnDsyevd_bufferSize(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, &lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevdDriver: provided workspace too small.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
+    if(lwork > worksize) rmg::error(" DsyevdDriver: provided workspace too small.");
 
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     cu_status = cusolverDnDsyevd(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd failed.");
 
     gpuFree(devInfo);
 }
@@ -97,7 +97,7 @@ void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize,
     status = rocsolver_dsyev(ct.roc_handle, jobz, uplo, n, A, n, eigs, work, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsyev failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dsyev failed.");
 
     gpuFree(devInfo);
 }
@@ -138,7 +138,7 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
     dsyevd(jobz, cuplo, &n, A, &n, eigs, work, &lwork, iwork, &liwork, &info);
 
     if(info)
-        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
+        rmg::error(" dsyevd failed.");
 
     delete [] iwork;
 }

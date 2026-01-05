@@ -131,7 +131,7 @@ template <typename OrbitalType> void Relax (
                 simple_lbfgs();
                 break;
             default:
-                rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
+                rmg::error("Undefined MD method");
         }
 
 

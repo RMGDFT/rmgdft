@@ -56,7 +56,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 

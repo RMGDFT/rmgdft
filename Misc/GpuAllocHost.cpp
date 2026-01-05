@@ -84,7 +84,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
     {
         void *tptr = malloc(size);
         if(!tptr)
-            rmg_error_handler (fname, line, "Error: Cannot allocate memory in GpuMallocHost.\n");
+            rmg::error("Error: Cannot allocate memory in GpuMallocHost.\n");
 
         madvise(tptr, size, MADV_HUGEPAGE);
         gpuHostRegister( tptr, size, gpuHostRegisterPortable);
@@ -94,7 +94,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
     size_t new_size, new_block;
 
     if(host_allocated_blocks == MAX_HOSTGPU_BLOCKS) {
-        rmg_error_handler (fname, line, "Error: Too many blocks. Consider increasing MAX_HOSTGPU_BLOCKS.\n");
+        rmg::error("Error: Too many blocks. Consider increasing MAX_HOSTGPU_BLOCKS.\n");
     }
 
     new_block = size / GPU_ALIGNMENT;
@@ -102,7 +102,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
     new_size = host_cur_size + new_block; 
     if(new_size > host_max_size) {
         rmg_printf("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, host_max_size);
-        rmg_error_handler (fname, line, "Error: Reservation too large. Consider increasing reserved GPU host memory.\n");
+        rmg::error("Error: Reservation too large. Consider increasing reserved GPU host memory.\n");
     }
 
     host_block_ptrs[host_allocated_blocks] = host_curptr; 
@@ -126,12 +126,12 @@ void DGpuFreeHost(void *ptr, const char *fname, size_t line)
 
     if(host_allocated_blocks == 0) {
         rmg_printf("DEBUG: allocated_blocks = %d\n", host_allocated_blocks);
-        rmg_error_handler (fname, line, "Error: Attempt to release non reserved block.\n");
+        rmg::error("Error: Attempt to release non reserved block.\n");
     }
 
     if(ptr != host_block_ptrs[host_allocated_blocks-1]) {
         rmg_printf("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, host_block_ptrs[host_allocated_blocks-1]);
-        rmg_error_handler (fname, line, "Error: Attempt to release non reserved block.\n");
+        rmg::error("Error: Attempt to release non reserved block.\n");
     }
 
     host_allocated_blocks--;

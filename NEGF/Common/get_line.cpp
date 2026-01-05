@@ -28,12 +28,12 @@ char *get_line (char *buf, FILE * fh)
         if (NULL == (tptr = fgets (buf, 200, fh)))
         {
 
-            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file");
+            rmg::error("Unexpected end of file");
 
         }                       /* end if */
         len = strlen (buf);
         if (!len)
-            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file");
+            rmg::error("Unexpected end of file");
 
         /* strip the new line character at the end */
         buf[strlen (buf) - 1] = 0;

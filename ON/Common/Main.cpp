@@ -408,7 +408,7 @@ int main(int argc, char **argv)
               //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
                // if (fhand < 0) {
                 //    rmg_printf("Can't open restart file %s", cijname.c_str());
-                 //   rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+                 //   rmg::error("Terminating.");
               //  }
                // 
                // size_t wsize = ct.num_states * ct.num_states * sizeof(double);

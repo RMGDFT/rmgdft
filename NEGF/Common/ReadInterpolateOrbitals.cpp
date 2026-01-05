@@ -120,7 +120,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     if (fhand < 0)
     {
         rmg_printf ("\n %s, st1 = %d", newname, st1);
-        rmg_error_handler (__FILE__, __LINE__, " Unable to open file ");
+        rmg::error(" Unable to open file ");
     }
 
     int idx = states[st1].size * (int) sizeof (double);
@@ -129,7 +129,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     if (nbytes != idx)
     {
         rmg_printf ("\n read %d is different from %d for state %d", nbytes, idx, st1);
-        rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+        rmg::error("Unexpected end of file orbit");
     }
 
     nbytes = read (fhand, ixmin, sizeof (int));
@@ -140,7 +140,7 @@ static void read_one_orbital(double *psi, int st1, int *ixmin, int *ixmax, int *
     {
         rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                 (int) sizeof (int), st1);
-        rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
+        rmg::error("Unexpected end of file orbit");
     }
 
 }
@@ -292,7 +292,7 @@ static void interpolation_orbit (int st, double *psi_old, double *psi_new,
     } 
     else
     {
-        rmg_error_handler (__FILE__, __LINE__, " WARNING: Code may need to modify for num_probe > 4 ");
+        rmg::error(" WARNING: Code may need to modify for num_probe > 4 ");
     }
 
 

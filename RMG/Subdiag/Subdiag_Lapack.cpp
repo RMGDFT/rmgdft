@@ -136,7 +136,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         if (info) {
             rmg_printf ("\n Lapack eigensolver failed, info is %d", info);
-            rmg_error_handler (__FILE__, __LINE__, "Lapack eigensolver failed");
+            rmg::error("Lapack eigensolver failed");
         }
 
         // Reset omp_num_threads

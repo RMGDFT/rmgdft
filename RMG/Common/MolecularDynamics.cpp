@@ -312,7 +312,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
                     }
                     break;
                 case MD_CPT:
-                    rmg_error_handler (__FILE__, __LINE__,"MD_CPT is not programmed yet.");
+                    rmg::error("MD_CPT is not programmed yet.");
                     break;
 
                 default:

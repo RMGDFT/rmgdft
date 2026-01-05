@@ -66,7 +66,7 @@ FILE *open_restart_file (char *filename)
 	if (mkdir (dirname (tmpname), S_IRWXU))
         {
 	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
-            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+            rmg::error("Terminating.");
         }
 #else
         char dirname[_MAX_DIR];
@@ -74,7 +74,7 @@ FILE *open_restart_file (char *filename)
         if (!_mkdir(dirname))
         {
 	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
-            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+            rmg::error("Terminating.");
         }
 #endif
 

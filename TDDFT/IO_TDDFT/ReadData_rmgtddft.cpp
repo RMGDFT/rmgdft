@@ -53,7 +53,7 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
 
    if (fhand < 0) {
         rmg_printf("Can't open restart file %s", filename);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::error("Terminating.");
     }
 
 
@@ -71,7 +71,7 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
 
 
     if(size != numst * numst * sizeof(double)) 
-        rmg_error_handler(__FILE__, __LINE__, "endof file in ReadData_rmgtddft ");
+        rmg::error("endof file in ReadData_rmgtddft ");
 
     close(fhand);
 

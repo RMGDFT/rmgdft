@@ -96,7 +96,7 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
         break;
 
     default:
-        rmg_error_handler(__FILE__, __LINE__, "Lattice type not implemented");
+        rmg::error("Lattice type not implemented");
     }                           /* end switch */
 
     my_free(rptr);

@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
     // Check that MPI grid matches npes
     if(npes != (NODES_X * NODES_Y * NODES_Z))
-        rmg_error_handler(__FILE__, __LINE__, "Check the number of MPI procs you have requested and make sure it matches (NODES_X * NODES_Y * NODES_Z)");
+        rmg::error("Check the number of MPI procs you have requested and make sure it matches (NODES_X * NODES_Y * NODES_Z)");
 
 
     // Print Header

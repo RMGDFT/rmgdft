@@ -403,7 +403,7 @@ void init_wf_gaussian(STATE * states)
                 }
                break;
             default:
-                rmg_error_handler(__FILE__, __LINE__, "Gaussian orbitals > 10 ");
+                rmg::error("Gaussian orbitals > 10 ");
         }
 
     }

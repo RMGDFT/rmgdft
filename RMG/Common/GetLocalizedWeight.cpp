@@ -67,7 +67,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
     std::complex<double> *phase_fftw = new std::complex<double>[max_size];
 
     if (beptr == NULL)
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     gbptr = beptr + max_size;
 
@@ -184,7 +184,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight_xyz (voi
     std::complex<double> *phase_fftw = new std::complex<double>[max_size];
 
     if (beptr == NULL)
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     gbptr = beptr + max_size;
 

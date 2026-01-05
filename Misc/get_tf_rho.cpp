@@ -135,7 +135,7 @@ void get_tf_rho (double * tf_rho)
 				/*if ((idx < 0) || (idx >= FP0_BASIS))
 				{
 				    printf("\n Warning: idx out pf bounds, should be 0-%d, but is %d", FP0_BASIS, idx);
-				    rmg_error_handler ("idx out of bounds");
+				    rmg::error("idx out of bounds");
 				}*/
 				    
 				x[0] = ix * hxxgrid -  tf_iptr->xtal[0];

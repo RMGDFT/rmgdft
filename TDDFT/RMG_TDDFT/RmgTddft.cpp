@@ -264,7 +264,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             scalapack_groups = pct.grid_npes;
             break;
         default:
-            rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type in TDDFT");
+            rmg::error("Invalid subdiag_driver type in TDDFT");
 
     } // end switch
 

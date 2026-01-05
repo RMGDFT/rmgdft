@@ -120,7 +120,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
                 }
                 else
                 {
-                    rmg_error_handler (__FILE__, __LINE__, "haha");
+                    rmg::error("haha");
                 }
 
             }
@@ -233,7 +233,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
                     }
                     else
                     {
-                        rmg_error_handler (__FILE__, __LINE__, "haha");
+                        rmg::error("haha");
                     }
 
 

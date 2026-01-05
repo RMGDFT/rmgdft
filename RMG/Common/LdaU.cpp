@@ -112,7 +112,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     if(first_state != 0) 
     {
         printf("\n first_state in calc_ns_occ must be 0 but it is  %d", first_state);
-        rmg_error_handler(__FILE__, __LINE__, "wrong first_state");
+        rmg::error("wrong first_state");
     }
     boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[num_states][ct.noncoll_factor][this->num_ldaU_ions][pstride]};
 
@@ -479,7 +479,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
                 if (nion >= num_nonloc_ions)
                 {
                     printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                    rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
                 }
 
             } while (nonloc_ions_list[nion] != gion);
@@ -865,7 +865,7 @@ template <class KpointType> void LdaU<KpointType>::Hubbard_matrix()
 
         if(sp.ldaU_l > 3)
         {
-            rmg_error_handler(__FILE__, __LINE__, "wrong ldaU_l");
+            rmg::error("wrong ldaU_l");
         }
 
         int moffset = sp.ldaU_l * sp.ldaU_l;

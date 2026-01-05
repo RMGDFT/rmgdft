@@ -97,7 +97,7 @@ void CheckSetDefault(void)
         }
         if(!pp_has_so)
         {
-            rmg_error_handler (__FILE__, __LINE__, "no pseudopotential has spin-orbit.\n");
+            rmg::error("no pseudopotential has spin-orbit.\n");
         }
         ct.noncoll = true;
     }
@@ -121,7 +121,7 @@ void CheckSetDefault(void)
     }
     if(nc_count && us_count)
     {
-        rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
+        rmg::error("Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
     }
 
     if(us_count && ct.use_rmm_diis)
@@ -183,7 +183,7 @@ void CheckSetDefault(void)
         ct.exx_mode = EXX_LOCAL_FFT;
 
         if(!ct.norm_conserving_pp)
-            rmg_error_handler (__FILE__, __LINE__, "qmcpack restart only worked with norm-conserving pseudopotentials.\n");
+            rmg::error("qmcpack restart only worked with norm-conserving pseudopotentials.\n");
     }
 
     if(ct.AFM)

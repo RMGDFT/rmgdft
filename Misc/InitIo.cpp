@@ -135,7 +135,7 @@ void rmg_mpi_errors(MPI_Comm *comm, int *err, ...)
     Rmg_Q->set_exitflag();
     MPI_Error_string(*err, errmsg, &len);
     printf("RMG MPI error: %s\n", errmsg);fflush(NULL);sleep(5);
-    rmg_error_handler(__FILE__,__LINE__,"MPI error. Terminating.\n");
+    rmg::error("MPI error. Terminating.\n");
 }
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
@@ -157,7 +157,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
 
     // Set error handler to only print to rank 0
-    RmgErrorSetPrint(pct.worldrank == 0);
+    rmg::error_set_print(pct.worldrank == 0);
 
     /* get total mpi core count */
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
@@ -410,7 +410,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(PZ0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
     MPI_Allreduce(MPI_IN_PLACE, &fd_check_err, 1, MPI_INT, MPI_SUM, pct.grid_comm);
     if(fd_check_err) 
-        rmg_error_handler (__FILE__, __LINE__, "The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
+        rmg::error("The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
 
 
 
@@ -553,7 +553,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     if(ct.num_usable_gpu_devices == 0)
-        rmg_error_handler (__FILE__, __LINE__, "No usable GPU devices were found on the system. Exiting.\n");
+        rmg::error("No usable GPU devices were found on the system. Exiting.\n");
 
     // Now we have to decide how to allocate the GPU's to MPI procs if we have more than
     // one GPU/node.
@@ -562,10 +562,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         gpuSetDevice(ct.gpu_device_ids[pct.local_rank]);
 #if CUDA_ENABLED
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+            rmg::error("CUBLAS: Handle not created\n");
         }
         if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
-            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+            rmg::error("CUBLAS: Handle not created\n");
         }
         cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[pct.local_rank]);
         cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
@@ -576,7 +576,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         hipDeviceReset();
         hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
+            rmg::error("HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
 #endif
@@ -593,10 +593,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 gpuSetDevice(ct.gpu_device_ids[next_gpu]);
 #if CUDA_ENABLED
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+                    rmg::error("CUBLAS: Handle not created\n");
                 }
                 if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
-                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+                    rmg::error("CUBLAS: Handle not created\n");
                 }
                 cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[next_gpu]);
                 cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
@@ -607,7 +607,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 hipDeviceReset();
                 hipSetDeviceFlags(hipDeviceScheduleAuto);
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-                    rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
+                    rmg::error("HIPBLAS: Handle not created\n");
                 }
                 ct.gpublas_handle = ct.hipblas_handle;
 #endif
@@ -621,7 +621,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
 #if CUDA_ENABLED
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
-            rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
+            rmg::error("CUDA: Cannot get the device\n");
         }
         gpuSetDevice(ct.cu_dev);
 #endif
@@ -631,7 +631,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         hipDeviceReset();
         hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
+            rmg::error("HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
         hipsolverCreate(&ct.hipsolver_handle);
@@ -642,13 +642,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        rmg_error_handler (__FILE__, __LINE__, "cusolver initialization failed.\n");
+        rmg::error("cusolver initialization failed.\n");
     }
     gpuStreamCreateWithFlags(&ct.cusolver_stream, gpuStreamNonBlocking);
     cusolver_status = cusolverDnSetStream(ct.cusolver_handle, ct.cusolver_stream);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
+        rmg::error("cusolver stream initialization failed.\n");
     }
 #endif
 
@@ -855,11 +855,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(ct.wannier90 && ct.BerryPhase)
     {
-        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+        rmg::error("Berry Phase does not support hybrid functional.\n");
     }
     if(ct.xc_is_hybrid && ct.BerryPhase)
     {
-        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
+        rmg::error("Berry Phase does not support hybrid functional.\n");
     }
 #if HIP_ENABLED || CUDA_ENABLED
     size_t factor = 2;

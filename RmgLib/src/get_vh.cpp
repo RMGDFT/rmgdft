@@ -86,7 +86,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
 
     if(maxlevel >= MAX_MG_LEVELS)
-       rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
+       rmg::error("Too many multigrid levels requested.");
 
     int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 

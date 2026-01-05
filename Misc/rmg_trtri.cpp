@@ -87,7 +87,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
                  n, CUDA_C_64F, (void *)dA, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
 
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZtrtri failed.");
+            rmg::error(" cusolverDnZtrtri failed.");
 
 	delete [] hbuf;
 	gpuFree(dbuf);
@@ -111,7 +111,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
                  n, CUDA_R_64F, (void *)dA, lda, (void *)dbuf, dwork, (void *)hbuf, hwork, dev_info);
 
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDtrtri failed.");
+            rmg::error(" cusolverDnDtrtri failed.");
 
 	delete [] hbuf;
 	gpuFree(dbuf);
@@ -150,7 +150,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
         rocstat = rocsolver_ztrtri(ct.roc_handle, fill_mode, diag_mode, n,
                                    (rocblas_double_complex *)dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_ztrtri");
+            rmg::error("Problem executing rocsolver_ztrtri");
         if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>));
         if(!a_dev) gpuFree(dA);
     }
@@ -160,7 +160,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         rocstat = rocsolver_dtrtri(ct.roc_handle, fill_mode, diag_mode, n, dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_dtrtri");
+            rmg::error("Problem executing rocsolver_dtrtri");
         if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(double));
         if(!a_dev) gpuFree(dA);
     }
@@ -206,7 +206,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
     else
@@ -220,7 +220,7 @@ this should cause a compile error since as I have no access to a machine to test
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
 #else

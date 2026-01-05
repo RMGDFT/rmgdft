@@ -145,7 +145,7 @@ template <typename OrbitalType> bool Scf (
     vh_in = vh;
 
     if(std::isnan(ct.rms))
-        rmg_error_handler(__FILE__, __LINE__, "NaN encountered in computational stream. Terminating.\n");
+        rmg::error("NaN encountered in computational stream. Terminating.\n");
 
     if (ct.scf_steps)
     {

@@ -53,11 +53,11 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     int n_rho = ct.noncoll_factor * ct.noncoll_factor;
 
     if(!ct.norm_conserving_pp) {
-        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
+        rmg::error("\n tddft not programed for ultrasoft \n");
     }
     if(ct.noncoll)
     {
-        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for noncoll \n");
+        rmg::error("\n tddft not programed for noncoll \n");
     }
 
     for (int istate = 0; istate < numst; istate++)
@@ -102,7 +102,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
-        rmg_error_handler (__FILE__, __LINE__, "\n float precision not for CPU \n");
+        rmg::error("\n float precision not for CPU \n");
     }
     KpointType one = 1.0, zero = 0.0;
     RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");

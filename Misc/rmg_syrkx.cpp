@@ -276,7 +276,7 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
     else
@@ -290,7 +290,7 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         catch(cl::sycl::exception const& e) {
             std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
             << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+            rmg::error("Terminating");
         }
     }
 #else

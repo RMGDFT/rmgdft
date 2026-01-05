@@ -67,7 +67,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     {
         std::cout << "Scalalapack dimension not match" << std::endl;
         std::cout << SP.GetN() << "NOT equal " << num_states << std::endl; 
-        rmg_error_handler (__FILE__, __LINE__, "scalapack clase not correct");
+        rmg::error("scalapack clase not correct");
     }
 
     int *desca = SP.GetDistDesca();
@@ -96,7 +96,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
             int retval2 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distBij);
             int retval3 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distSij);
             if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
-                rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag_Scalapack");
+                rmg::error("Memory allocation failure in Subdiag_Scalapack");
             }
             saved_dist_length = dist_length;
         }

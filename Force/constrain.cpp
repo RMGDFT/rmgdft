@@ -145,7 +145,7 @@ void constrain (void)
                 /* check tau tangent vector size */
                 if ( Mag_T == 0 ) {
                     std::string errmsg = "Image collision this(" + std::to_string(pct.thisimg) + ") image.";
-                    rmg_error_handler(__FILE__, __LINE__, errmsg.c_str());
+                    rmg::error(errmsg.c_str());
                 } else {
                     Mag_T = sqrt(Mag_T);
                 }
@@ -235,7 +235,7 @@ void constrain (void)
                 else
                 {
                     if(pct.gridpe==0) printf("Left image(%d) collision in NEB", pct.thisimg);
-                    rmg_error_handler(__FILE__, __LINE__, "Terminating");
+                    rmg::error("Terminating");
                 }
                 if(Mag_R > 0.0)
                 {
@@ -244,7 +244,7 @@ void constrain (void)
                 else
                 {
                     if(pct.gridpe==0) printf("Right image(%d) collision in NEB", pct.thisimg);
-                    rmg_error_handler(__FILE__, __LINE__, "Terminating");
+                    rmg::error("Terminating");
                 }
 
                 if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
@@ -268,7 +268,7 @@ void constrain (void)
                     }
                     else
                     {
-                        rmg_error_handler(__FILE__, __LINE__, "Left/Right image collision in NEB");
+                        rmg::error("Left/Right image collision in NEB");
                     }
                 }
                 else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
@@ -375,7 +375,7 @@ void constrain (void)
 
                 /* check tau tangent vector size */
                 if ( Mag_T == 0 ) {
-                    rmg_error_handler(__FILE__, __LINE__, "Image collision in both left and right images.");
+                    rmg::error("Image collision in both left and right images.");
                 } else {
                     Mag_T = sqrt(Mag_T);
                 }

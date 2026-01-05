@@ -52,7 +52,7 @@ void WriteXyz (char *name)
         FILE *fhandle = fopen (new_file.c_str(), "w");
         if (!fhandle)
         {
-             rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
+             rmg::error("Unable to write atomic coordinate xyz file. Terminating.");
         }
 
         fprintf(fhandle,"%lu\n", Atoms.size());

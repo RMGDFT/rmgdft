@@ -117,7 +117,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     KpointType *block_matrix;
     int retval1 = MPI_Alloc_mem(3*num_states * nb * sizeof(KpointType) , MPI_INFO_NULL, &block_matrix);
     if(retval1 != MPI_SUCCESS) {
-        rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+        rmg::error("Memory allocation failure in HmatrixUpdate");
     }
     KpointType *block_matrix_x = block_matrix;
     KpointType *block_matrix_y = block_matrix_x + num_states * nb;
@@ -344,7 +344,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
             bytes = write(fhand, Pmat[2].data(), sizeof(KpointType) * num_states * num_states);
             if(bytes != sizeof(KpointType) * num_states * num_states)
             {
-                rmg_error_handler (__FILE__, __LINE__, "size of writing epsilon mat is wrong \n");
+                rmg::error("size of writing epsilon mat is wrong \n");
             }
             close(fhand);
         }

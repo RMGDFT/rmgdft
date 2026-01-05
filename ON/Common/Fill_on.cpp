@@ -125,7 +125,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     f = occ_allstates (mu1, occ, eigs, width, nel, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
-        rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
+        rmg::error("root must be bracketed");
 
     if (f < 0.0)
     {
@@ -157,12 +157,12 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     while ((iter < maxit) && (fmid > charge_tol));
 
     if (iter == maxit)
-        rmg_error_handler (__FILE__,__LINE__,"too many bisections");
+        rmg::error("too many bisections");
 
     if (fabs (fmid) > charge_tol)
     {
         rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg_error_handler (__FILE__,__LINE__,"did not converge");
+        rmg::error("did not converge");
     }                           /* end if */
 
     return (mu1);
@@ -278,7 +278,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
             break;
 
         default:
-            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
+            rmg::error("unknown filling procedure");
 
     }                           /* end switch */
 
