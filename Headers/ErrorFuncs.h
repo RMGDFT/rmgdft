@@ -9,7 +9,6 @@
 
 void RmgGpuError(const char *file, int line, const cudaError_t cudaStatus, const char * errorMessage);
 void RmgGpuError(const char *file, int line, const cublasStatus_t status, const char * errorMessage);
-void ProcessGpublasError(cublasStatus_t custat);
 #endif
 
 #if HIP_ENABLED
@@ -17,7 +16,6 @@ void ProcessGpublasError(cublasStatus_t custat);
 #include <hipblas/hipblas.h>
 void RmgGpuError(const char *file, int line, const hipError_t hipStatus, const char * errorMessage);
 void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage);
-void ProcessGpublasError(hipblasStatus_t hipstat);
 #endif
 
 #if SYCL_ENABLED

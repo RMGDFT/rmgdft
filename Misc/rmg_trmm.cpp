@@ -58,7 +58,6 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
 
 #if CUDA_ENABLED
 
-    cublasStatus_t custat;
     cublasOperation_t cu_trans = CUBLAS_OP_N;
     cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
@@ -82,26 +81,22 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
 
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
     {
-        custat = cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex *)A, lda,
                             (cuDoubleComplex *)B, ldb,
-                            (cuDoubleComplex *)B, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZtrmm");
+                            (cuDoubleComplex *)B, ldb));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
-        custat = cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (double *)&alpha,
                             (double *)A, lda,
                             (double *)B, ldb,
-                            (double *)B, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDtrmm");
+                            (double *)B, ldb));
         return;
     }
 
@@ -131,14 +126,12 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex *)dA, lda,
                             (cuDoubleComplex *)dB, ldb,
-                            (cuDoubleComplex *)dB, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZtrmm");
+                            (cuDoubleComplex *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -149,14 +142,12 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (double *)&alpha,
                             (double *)dA, lda,
                             (double *)dB, ldb,
-                            (double *)dB, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDtrmm");
+                            (double *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -166,7 +157,6 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
 
 #elif HIP_ENABLED
 
-    hipblasStatus_t hipstat;
     hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
     hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
     hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
@@ -201,15 +191,13 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
-        hipstat = hipblasZtrmm(ct.hipblas_handle,
+        rmg::error(hipblasZtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex *)dA, lda,
                             (hipDoubleComplex *)dB, ldb,
-                            (hipDoubleComplex *)dB, ldb);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZtrmm");
+                            (hipDoubleComplex *)dB, ldb));
         if(!b_dev) hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>));
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -220,15 +208,13 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        hipstat = hipblasDtrmm(ct.hipblas_handle,
+        rmg::error(hipblasDtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)dB, ldb );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDtrmm");
+                            (double*)dB, ldb ));
         if(!b_dev) hipMemcpyDtoH(B, dB, b_size * sizeof(double));
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);

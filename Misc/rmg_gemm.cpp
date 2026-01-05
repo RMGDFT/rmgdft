@@ -86,7 +86,6 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
 
 #if CUDA_ENABLED
 
-    cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
 
     if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
@@ -109,46 +108,38 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
 
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
     {
-        custat = cublasXtZgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasXtZgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)A, lda,
                             (cuDoubleComplex*)B, ldb,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc ));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<float>)))
     {
-        custat = cublasXtCgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasXtCgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
                             (cuComplex *)&alpha,
                             (cuComplex*)A, lda,
                             (cuComplex*)B, ldb,
-                            (cuComplex*)&beta, (cuComplex*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtCgemm");
+                            (cuComplex*)&beta, (cuComplex*)C, ldc ));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(float)))
     {
-        custat = cublasXtSgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasXtSgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
                             (float*)&alpha,
                             (float*)A, lda,
                             (float*)B, ldb,
-                            (float*)&beta, (float*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtSgemm");
+                            (float*)&beta, (float*)C, ldc ));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
-        custat = cublasXtDgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasXtDgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
                             (double*)&alpha,
                             (double*)A, lda,
                             (double*)B, ldb,
-                            (double*)&beta, (double*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
+                            (double*)&beta, (double*)C, ldc ));
         return;
     }
 
@@ -187,13 +178,11 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)dB, ldb,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -207,13 +196,11 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<float>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<float>), cudaMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<float>), cudaMemcpyDefault);
-        custat = cublasCgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasCgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuComplex *)&alpha,
                             (cuComplex*)dA, lda,
                             (cuComplex*)dB, ldb,
-                            (cuComplex*)&beta, (cuComplex*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasCgemm");
+                            (cuComplex*)&beta, (cuComplex*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<float>), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -227,13 +214,11 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(float), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(float), cudaMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(float), cudaMemcpyDefault);
-        custat = cublasSgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasSgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (float*)&alpha,
                             (float*)dA, lda,
                             (float*)dB, ldb,
-                            (float*)&beta, (float*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+                            (float*)&beta, (float*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(float), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -247,13 +232,11 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+        rmg::error(cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+                            (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -306,7 +289,6 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
     bool c_dev = false;
     if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
 
-    hipblasStatus_t hipstat;
     hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transB = HIPBLAS_OP_N;
 
     if(!strcmp(transa, "t")) hip_transA = HIPBLAS_OP_T;
@@ -339,7 +321,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
-        hipstat = hipblasZgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+        rmg::error(hipblasZgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda,
                             (hipDoubleComplex*)dB, ldb,
@@ -348,8 +330,6 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZgemm");
     }
     else if(typeid(DataType) == typeid(std::complex<float>)) {
         std::complex<float> *dA=(std::complex<float> *)A, *dB=(std::complex<float> *)B, *dC=(std::complex<float> *)C;
@@ -359,7 +339,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<float>));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<float>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<float>));
-        hipstat = hipblasCgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+        rmg::error(hipblasCgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipFloatComplex *)&alpha,
                             (hipFloatComplex*)dA, lda,
                             (hipFloatComplex*)dB, ldb,
@@ -368,8 +348,6 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasCgemm");
     }
     else if(typeid(DataType) == typeid(float)) {
         float *dA=(float *)A, *dB=(float *)B, *dC=(float *)C;
@@ -379,17 +357,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(float));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(float));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(float));
-        hipstat = hipblasSgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+        rmg::error(hipblasSgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (float*)&alpha,
                             (float*)dA, lda,
                             (float*)dB, ldb,
-                            (float*)&beta, (float*)dC, ldc );
+                            (float*)&beta, (float*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(float));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasSgemm");
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
@@ -399,17 +375,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
-        hipstat = hipblasDgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
+        rmg::error(hipblasDgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)&beta, (double*)dC, ldc );
+                            (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hiplasDgemm");
     }
 
     //hipDeviceSynchronize();

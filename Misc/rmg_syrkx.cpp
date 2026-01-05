@@ -61,7 +61,6 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
 
 #if CUDA_ENABLED
 
-    cublasStatus_t custat;
     cublasOperation_t cu_trans = CUBLAS_OP_N;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
 
@@ -75,24 +74,20 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
 
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
     {
-        custat = cublasXtZsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, n, k,
+        rmg::error(cublasXtZsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)A, lda,
                             (cuDoubleComplex*)B, ldb,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZsyrkx");
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc ));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
-        custat = cublasXtDsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, (size_t)n, (size_t)k,
+        rmg::error(cublasXtDsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, (size_t)n, (size_t)k,
                             (double*)&alpha,
                             (double*)A, (size_t)lda,
                             (double*)B, (size_t)ldb,
-                            (double*)&beta, (double*)C, (size_t)ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDsyrkx");
+                            (double*)&beta, (double*)C, (size_t)ldc ));
         return;
     }
 
@@ -131,13 +126,11 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
+        rmg::error(cublasZsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)dB, ldb,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -151,13 +144,11 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
+        rmg::error(cublasDsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
+                            (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -167,7 +158,6 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
     return;
 
 #elif HIP_ENABLED
-    hipblasStatus_t hipstat;
     hipblasOperation_t hip_trans = HIPBLAS_OP_N;
     hipblasFillMode_t fill_mode = HIPBLAS_FILL_MODE_LOWER;
 
@@ -203,13 +193,11 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
         if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
-        hipstat = hipblasZsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
+        rmg::error(hipblasZsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda,
                             (hipDoubleComplex*)dB, ldb,
-                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZsyrkx");
+                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -223,13 +211,11 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
         if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
         if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
-        hipstat = hipblasDsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
+        rmg::error(hipblasDsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)&beta, (double*)dC, ldc );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDsyrkx");
+                            (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
