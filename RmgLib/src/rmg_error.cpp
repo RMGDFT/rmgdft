@@ -143,7 +143,7 @@ void rmg::error(cudaError_t custat, const std::source_location loc)
 void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
 {
 
-    if(hiptat==HIPBLAS_STATUS_SUCCESS)
+    if(hipstat==HIPBLAS_STATUS_SUCCESS)
         return;
 
     std::string msg;
