@@ -35,6 +35,7 @@
 #include "rmg_gemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
 #include "RmgParallelFft.h"
@@ -102,11 +103,11 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
     CalType *work_dev;
 
     static wfobj<CalType> vtot_psi_caltype;
-    static wf_spinobj<CalType> vxc_psi_caltype;
+    static wf_spinobj<CalType> vxc_psi_TypeV;
     CopyAndConvert(pbasis, vtot_psi.data(), vtot_psi_caltype.data());
     if(ct.noncoll)
     {
-        CopyAndConvert(4*pbasis, vxc_psi.data(), vxc_psi_caltype.data());
+        CopyAndConvert(4*pbasis, vxc_psi.data(), vxc_psi_TypeV.data());
     }
     if(typeid(KpointType) == typeid(CalType))
     {
@@ -121,28 +122,23 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
     psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
-    static CalType *v_dev, *vxc_dev;
-    static CalType *mat_dev;
+    static CalType *v_dev, *mat_dev;
+    static TypeV *vxc_dev;
     if(!v_dev)
     {
         gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
         if(ct.noncoll)
         {
-            gpuMalloc((void **)&vxc_dev, 4*pbasis * sizeof(CalType));
+            gpuMalloc((void **)&vxc_dev, 4*pbasis * sizeof(TypeV));
         }
     }
 
+    gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, ct.noncoll_factor*num_states);
     if(ct.noncoll)
     {
-        rmg::error(" failure in HmatrixUpdate");
-        gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-        gpuMemcpy(vxc_dev, vxc_psi_caltype.data(),  4*pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-        Veff_x_psi(psi_dev, work_dev, v_dev, pbasis_noncoll, num_states);
-    }
-    else
-    {
-        gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
-        Veff_x_psi(psi_dev, work_dev, v_dev, pbasis_noncoll, num_states);
+        gpuMemcpy(vxc_dev, vxc_psi_TypeV.data(),  4*pbasis * sizeof(TypeV), gpuMemcpyHostToDevice);
+        GpuVxc_x_psi_noncoll((std::complex<TypeV> *)psi_dev, (std::complex<TypeV> *)work_dev, vxc_dev, pbasis, num_states);
     }
 
     gpublasStatus_t gstat;
