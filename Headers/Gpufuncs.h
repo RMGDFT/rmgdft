@@ -211,6 +211,8 @@ void prolong_hex_gpu_internal(double *full,
                double scale,
                int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+    template <typename TypeV>
+void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
 #endif
 
 #if SYCL_ENABLED
