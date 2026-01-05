@@ -37,6 +37,13 @@
 #include <mpi.h>
 #include <source_location>
 
+
+#if HIP_ENABLED
+#include <hip/hip_runtime_api.h>
+#include <hipblas/hipblas.h>
+#endif
+
+
 #if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>

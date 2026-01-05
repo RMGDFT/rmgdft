@@ -325,7 +325,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda,
                             (hipDoubleComplex*)dB, ldb,
-                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc );
+                            (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
@@ -343,7 +343,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
                             (hipFloatComplex *)&alpha,
                             (hipFloatComplex*)dA, lda,
                             (hipFloatComplex*)dB, ldb,
-                            (hipFloatComplex*)&beta, (hipFloatComplex*)dC, ldc );
+                            (hipFloatComplex*)&beta, (hipFloatComplex*)dC, ldc ));
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<float>));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
