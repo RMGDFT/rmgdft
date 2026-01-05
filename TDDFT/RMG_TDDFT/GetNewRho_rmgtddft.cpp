@@ -72,6 +72,11 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
     // the reduction over numst.
     
+    if(ct.noncoll)
+    {
+        rmg::error ("\n tddft not programed for noncoll \n");
+    }
+
     CalType one = 1.0, zero = 0.0;
     TypeV *rho_temp, *rho_temp_dev;
 
