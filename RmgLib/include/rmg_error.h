@@ -37,10 +37,26 @@
 #include <mpi.h>
 #include <source_location>
 
+#if CUDA_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#endif
+
 namespace rmg
 {
     void error(char const *message, std::source_location loc = std::source_location::current());
     void error_set_print(int doprint);
+
+#if CUDA_ENABLED
+    void error(cublasStatus_t custat, std::source_location loc = std::source_location::current());
+    void error(cudaError_t custat, std::source_location loc = std::source_location::current());
+#endif
+
+#if HIP_ENABLED
+    void error(hipblasStatus_t hipstat, std::source_location loc = std::source_location::current());
+    void error(hipError_t hipstat, std::source_location loc = std::source_location::current());
+#endif
 }
 
 #endif
