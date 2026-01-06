@@ -140,7 +140,7 @@ hipError_t gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags, co
 }
 hipError_t gpuStreamDestroy (hipStream_t stream, const std::source_location loc)
 {
-    rmg::error(hipStreamDestroy (stream);
+    rmg::error(hipStreamDestroy (stream), loc);
     return hipSuccess;
 }
 hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind, const std::source_location loc)
@@ -150,12 +150,12 @@ hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch
 }
 hipError_t gpuDeviceReset (const std::source_location loc)
 {
-    rmg::error(hipDeviceReset();
+    rmg::error(hipDeviceReset(), loc);
     return hipSuccess;
 }
 hipError_t gpuSetDevice (int deviceId, const std::source_location loc)
 {
-    rmg::error(hipSetDevice (deviceId);
+    rmg::error(hipSetDevice (deviceId), loc);
     return hipSuccess;
 }
 hipError_t gpuGetDevice (int *deviceId, const std::source_location loc)
