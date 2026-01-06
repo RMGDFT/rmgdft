@@ -171,6 +171,10 @@ hipError_t gpuGetDeviceCount(int *count, const std::source_location loc)
 {
     return hipGetDeviceCount(count);
 }
+hipError_t gpuStreamSynchronize (hipStream_t stream, const std::source_location loc)
+{
+    return hipStreamSynchronize (stream);
+}
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size, const std::source_location loc)
@@ -286,6 +290,10 @@ cudaError_t gpuHostUnregister(void *hostPtr, const std::source_location loc)
 cudaError_t gpuGetDeviceCount(int *count, const std::source_location loc)
 {
     return cudaGetDeviceCount(count);
+}
+cudaError_t gpuStreamSynchronize (cudaStream_t stream, const std::source_location loc)
+{
+    return cudaStreamSynchronize (stream);
 }
 #elif SYCL_ENABLED
 #include <CL/sycl.hpp>

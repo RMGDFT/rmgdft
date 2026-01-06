@@ -26,7 +26,6 @@
 #include <hip/hip_runtime_api.h>
 #include <hipblas/hipblas.h>
 #include "ErrorFuncs.h"
-#include "GpuAlloc.h"
 
 __global__ void gramsch_update_psi_kernel(
                                      double *V,
@@ -54,6 +53,7 @@ __global__ void gramsch_update_psi_kernel(
 //memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
 
 
+#include "GpuAlloc.h"
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
