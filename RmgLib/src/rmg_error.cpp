@@ -53,8 +53,10 @@ void rmg::error(char const *message, const std::source_location loc)
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
                   << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
         std::cout << "Stacktrace:" << "\n";
         std::cout << boost::stacktrace::stacktrace();
+#endif
     }
     fflush (NULL);
     sleep(1);
@@ -108,8 +110,10 @@ void rmg::error(cublasStatus_t custat, const std::source_location loc)
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
                   << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
         std::cout << "Stacktrace:" << "\n";
         std::cout << boost::stacktrace::stacktrace();
+#endif
     }
     fflush (NULL);
     sleep(1);
@@ -129,8 +133,10 @@ void rmg::error(cudaError_t custat, const std::source_location loc)
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
                   << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
         std::cout << "Stacktrace:" << "\n";
         std::cout << boost::stacktrace::stacktrace();
+#endif
     }
     fflush (NULL);
     sleep(1);
@@ -186,8 +192,10 @@ void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
                   << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
         std::cout << "Stacktrace:" << "\n";
         std::cout << boost::stacktrace::stacktrace();
+#endif
     }
     fflush (NULL);
     sleep(1);
@@ -207,8 +215,10 @@ void rmg::error(hipError_t hipstat, const std::source_location loc)
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
                   << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
         std::cout << "Stacktrace:" << "\n";
         std::cout << boost::stacktrace::stacktrace();
+#endif
     }
     fflush (NULL);
     sleep(1);

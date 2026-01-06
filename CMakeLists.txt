@@ -454,6 +454,11 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 
+if ( CMAKE_BUILD_TYPE MATCHES DEBUG )
+    add_definitions("-DRMG_DEBUG=1")
+endif()
+
+
 
 # This file contains system specific paths. If cmake is unable to find
 # a specific package or library look in this file and uncomment or add
@@ -719,8 +724,8 @@ if(RMG_CUDA_ENABLED)
 
     if (NOT CUDA_INCLUDE_DIRS)
         message( WARNING "Using default CUDA include directory" )
-        set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
-#        set(CUDA_INCLUDE_DIRS "/usr/local/cuda/include")
+#        set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
+        set(CUDA_INCLUDE_DIRS "/usr/local/cuda/include")
     endif()
 
     message( "Using CUDA include directory: ${CUDA_INCLUDE_DIRS}" )
