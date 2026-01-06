@@ -80,7 +80,8 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuProductBr.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_orthorhombic.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_hex.cu
-  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuVxc_x_psi_noncoll.cu)
 
 endif(RMG_CUDA_ENABLED)
 

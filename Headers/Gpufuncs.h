@@ -163,6 +163,8 @@ void prolong_hex_gpu_internal(double *full,
                int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
+template <typename TypeV>
+void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
 
 
 #endif
@@ -182,36 +184,36 @@ void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
 template <typename T>
 void app8_del2_gpu(T * __restrict__ a,
-                   T *b,
-                   const int dimx,
-                   const int dimy,
-                   const int dimz,
-                   const fdparms_o8<T> &c);
+        T *b,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        const fdparms_o8<T> &c);
 hipStream_t getGpuStream(void);
 template <typename T>
 void init_gpu_prolong(int dimx, int dimy, int dimz);
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full,
-               T *half,
-               const int dimx,
-               const int dimy,
-               const int dimz,
-               double scale,
-               int smem_limit,
-               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+        T *half,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        double scale,
+        int smem_limit,
+        double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template <typename T, int images>
 void prolong_hex_gpu_internal(double *full,
-               T *half,
-               const int dimx,
-               const int dimy,
-               const int dimz,
-               const int type,
-               double scale,
-               int smem_limit,
-               double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-    template <typename TypeV>
+        T *half,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        const int type,
+        double scale,
+        int smem_limit,
+        double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template <typename TypeV>
 void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
 #endif
 
