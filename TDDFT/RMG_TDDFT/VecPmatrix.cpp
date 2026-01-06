@@ -35,7 +35,7 @@
 #include "rmg_gemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 #include "blacs.h"
 #include "RmgParallelFft.h"

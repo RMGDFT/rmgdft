@@ -45,7 +45,7 @@
 #include "Subdiag.h"
 #include "Functional.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"

@@ -28,7 +28,7 @@
 #include "RmgParallelFft.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "rmg_complex.h"
 
 //  Applies the A operator to a wavefunction. The A operator is defined as

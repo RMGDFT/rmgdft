@@ -118,7 +118,6 @@ get_dipole.cpp
 get_rho_oppo.cpp
 pack.cpp
 PackMatrix.cpp
-RmgGpuError.cpp
 GpuMem.cpp
 bfgs_module.f90
 basic_algebra_routines.f90

@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -36,7 +36,6 @@
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
 
-    cusolverStatus_t cu_status;
     int lwork, *devInfo;
     const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
@@ -79,9 +78,9 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     int *dev_n_sweeps;
     rocblas_int *devInfo;
     rocblas_status status;
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&devResidual, sizeof(double));
+    gpuMalloc((void **)&dev_n_sweeps, sizeof(int));
 
     double tstart = my_crtc();
     status = rocsolver_dsygvj(ct.roc_handle,

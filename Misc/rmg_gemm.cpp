@@ -10,7 +10,7 @@
 #include "typedefs.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgTimer.h"
 #include "transition.h"
 #include "rmg_error.h"

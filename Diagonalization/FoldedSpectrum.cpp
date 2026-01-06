@@ -35,7 +35,7 @@
 #include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 #include "blas_driver.h"
 
@@ -168,10 +168,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     GpuNegate(G, n_win, Vdiag, 1, n_win);
     int i1=0, ione = 1;
     for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
-    gpublasStatus_t custat;
-    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
+    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n));
     rmg::sync_device();
-    RmgGpuError(__FILE__, __LINE__, custat, "Problem executing gpublasDdgmm.");
 #else
     // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {

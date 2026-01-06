@@ -35,7 +35,7 @@
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 #include "Solvers.h"
 #include "Functional.h"

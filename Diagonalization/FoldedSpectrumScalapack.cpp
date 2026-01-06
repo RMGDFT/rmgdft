@@ -33,7 +33,7 @@
 #include "Subdiag.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgException.h"
 #include "Scalapack.h"
 #include "blas.h"

@@ -34,7 +34,7 @@
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 
 #include "common_prototypes.h"
@@ -62,7 +62,6 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 
 
 #if CUDA_ENABLED
-    cublasStatus_t custat;
     int ione = 1;
     int sizr = n * k;
     double *Y;
@@ -83,12 +82,9 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if CUDA_ENABLED
         double neg_rone = -1.0;
-        custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, X, n, eigs, ione, T, n);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
-        custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, T, ione, Y, ione);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
-        custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Y, ione, X, ione);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+        rmg::error(cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, X, n, eigs, ione, T, n));
+        rmg::error(cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, T, ione, Y, ione));
+        rmg::error(cublasDaxpy(ct.cublas_handle, sizr, &alpha, Y, ione, X, ione));
 #else
         int kcol, ix;
 #pragma omp parallel private(kcol, ix)

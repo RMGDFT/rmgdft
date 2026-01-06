@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -85,14 +85,13 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
     rocblas_status status;
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
-    int info;
     const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
     const rocblas_fill uplo = rocblas_fill_lower;
     const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&ipiv, sizeof(int)*n ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&ipiv, sizeof(int)*n);
 
     status = rocsolver_dgetrf(ct.roc_handle, n, n, A, n, ipiv, devInfo);
 

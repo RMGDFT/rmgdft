@@ -25,7 +25,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 
 #include <complex>
 #include <sys/mman.h>
@@ -40,13 +40,11 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
     hipError_t hipstat;
     if(ct.gpu_managed_memory)
     {
-        hipstat = hipMallocManaged(&ptr, size);
-        RmgGpuError(fname, line, hipstat, "Error: hipMallocManaaged failed.\n");
+        gpuMallocManaged(&ptr, size);
     }
     else
     {
-        hipstat = hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
-        RmgGpuError(fname, line, hipstat, "Error: hipHostMalloc failed.\n");
+        gpuHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
     }
     return ptr;
 }
@@ -73,16 +71,13 @@ void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
-    cudaError_t custat;
     if(ct.gpu_managed_memory)
     {
-        custat = cudaMallocManaged ( &ptr, size+16 );
-        RmgGpuError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
+        gpuMallocManaged ( &ptr, size+16 );
     }
     else
     {
-        custat = cudaMallocHost ( &ptr, size+16 );
-        RmgGpuError(fname, line, custat, "Error: cudaMallocHost failed.\n");
+        gpuMallocHost ( &ptr, size+16 );
     }
     return ptr;
 }
@@ -91,11 +86,11 @@ void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
     if(ct.gpu_managed_memory)
     {
-        cudaFree(ptr);
+        gpuFree(ptr);
     }
     else
     {
-        cudaFreeHost(ptr);
+        gpuFreeHost(ptr);
     }
 }
 

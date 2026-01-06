@@ -41,7 +41,7 @@
 #include "Subdiag.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "blas.h"
 #include "Scalapack.h"

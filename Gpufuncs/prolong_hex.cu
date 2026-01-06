@@ -29,7 +29,7 @@
 #include <cuda_device_runtime_api.h>
 #include <cublas_v2.h>
 #include <vector>
-#include "ErrorFuncs.h"
+
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 

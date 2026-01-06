@@ -11,7 +11,7 @@
 #include "GpuAlloc.h"
 #include "RmgTimer.h"
 #include "main.h"
-#include "ErrorFuncs.h"
+
 #include <iostream>
 //#include "lapacke.h"
 #if CUDA_ENABLED
@@ -48,10 +48,8 @@ void transpose( double *A,  double *B, int *desca)
     {
 #if CUDA_ENABLED || HIP_ENABLED
         double alpha = 1.0, beta = 0.0;
-        gpublasStatus_t gstat;
-        gstat = gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
-                                 A, Nbasis, &beta, B, Nbasis, B, Nbasis);
-        RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgeam.");
+        rmg::error(gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
+                                 A, Nbasis, &beta, B, Nbasis, B, Nbasis));
 
 #else
         int ij=0  ;
@@ -92,10 +90,8 @@ void transpose( std::complex<double> *A,  std::complex<double> *B, int *desca)
     {
 #if CUDA_ENABLED || HIP_ENABLED
         std::complex<double> alpha = 1.0, beta = 0.0;
-        gpublasStatus_t gstat;
-        gstat = gpublasZgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
-                                 A, Nbasis, &beta, B, Nbasis, B, Nbasis);
-        RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgeam.");
+        rmg::error(gpublasZgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
+                                 A, Nbasis, &beta, B, Nbasis, B, Nbasis));
 
 #else
         int ij=0  ;
@@ -123,10 +119,8 @@ void transpose( float *A,  float *B, int *desca)
 #if CUDA_ENABLED || HIP_ENABLED
     int Nbasis = desca[3];
     float alpha = 1.0, beta = 0.0;
-    gpublasStatus_t gstat;
-    gstat = gpublasSgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
-            A, Nbasis, &beta, B, Nbasis, B, Nbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgeam.");
+    rmg::error(gpublasSgeam(ct.gpublas_handle, GPUBLAS_OP_T, GPUBLAS_OP_N, Nbasis, Nbasis, &alpha,
+            A, Nbasis, &beta, B, Nbasis, B, Nbasis));
 #endif
 }
 

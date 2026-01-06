@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -91,8 +91,8 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
     const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&ipiv, sizeof(int)*n ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&ipiv, sizeof(int)*n );
 
     status = rocsolver_zgetrf(ct.roc_handle, n, n,  (rocblas_double_complex *)A, n, ipiv, devInfo);
 

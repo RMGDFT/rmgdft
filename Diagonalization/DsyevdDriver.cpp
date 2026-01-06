@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -46,7 +46,7 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
     if(lwork > worksize) rmg::error(" DsyevdDriver: provided workspace too small.");
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     cu_status = cusolverDnDsyevd(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo);
     int info;
@@ -92,7 +92,7 @@ void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize,
     const rocblas_fill uplo = rocblas_fill_lower;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     status = rocsolver_dsyev(ct.roc_handle, jobz, uplo, n, A, n, eigs, work, devInfo);
     int info;

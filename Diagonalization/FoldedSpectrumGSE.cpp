@@ -33,7 +33,7 @@
 #include "Subdiag.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "blas.h"
 
@@ -153,9 +153,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
             rmg::gemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
             // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
             //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
-            custat = gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_N, GPUBLAS_OP_N, n, istep, &ONE_t, 
-                                 &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
-            RmgGpuError(__FILE__, __LINE__, custat, "Problem executing gpublasDgeam.");
+            rmg::error(gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_N, GPUBLAS_OP_N, n, istep, &ONE_t, 
+                                 &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n));
 //#pragma omp for schedule(static, 1) nowait
 //            for(int st1 = istart;st1 < istop;st1++){
 //                for(int st2 = 0;st2 < n;st2++){

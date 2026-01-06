@@ -39,7 +39,7 @@
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"

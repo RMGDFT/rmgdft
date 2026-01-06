@@ -29,7 +29,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "Subdiag.h"
-#include "ErrorFuncs.h"
+
 #include "transition.h"
 
 

@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
@@ -51,12 +51,9 @@ static size_t max_size;
 void InitGpuMalloc(size_t bufsize)
 {
 
-    gpuError_t custat;
-
     // Add alignment factors
     bufsize += GPU_ALIGNMENT * MAX_GPU_BLOCKS;
-    custat = gpuMalloc((void **)&gpubuffer , bufsize  );
-    //RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed in InitGpuMalloc\n");
+    gpuMalloc((void **)&gpubuffer , bufsize);
     max_size = bufsize;
     curptr = (unsigned char*)gpubuffer;
 

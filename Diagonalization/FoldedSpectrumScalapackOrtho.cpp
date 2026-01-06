@@ -30,7 +30,7 @@
 #include "Subdiag.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 
 
@@ -65,7 +65,6 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     KpointType alpha(1.0);
     KpointType beta(0.0);
 #if CUDA_ENABLED
-    cublasStatus_t custat;
     KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
 #else
@@ -119,11 +118,9 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RT1 = new RmgTimer("4-Diagonalization: fs-Gram-cholesky");
 #if CUDA_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
-    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
-    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 ));
 #elif CUDA_ENABLED
-    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
-    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 ));
     dpotrf(cuplo, &n, C, &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);

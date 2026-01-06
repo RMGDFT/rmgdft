@@ -36,7 +36,7 @@
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 #include "RmgParallelFft.h"
 
@@ -302,49 +302,40 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 #if CUDA_ENABLED || HIP_ENABLED
 void Veff_x_psi(double *psi_dev,  double *work_dev, double *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
-    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis));
 }
 void Veff_x_psi(float *psi_dev,  float *work_dev, float *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
-    gstat = gpublasSdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (float *)psi_dev, pbasis, (float *)v_dev, 1, (float *)work_dev, pbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+    rmg::error(gpublasSdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (float *)psi_dev, pbasis, (float *)v_dev, 1, (float *)work_dev, pbasis));
 }
 void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
 
 #if  HIP_ENABLED
-    gstat = hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (hipDoubleComplex *)psi_dev, pbasis, (hipDoubleComplex *)v_dev, 1, (hipDoubleComplex *)work_dev, pbasis);
+    rmg::error(hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (hipDoubleComplex *)psi_dev, pbasis, (hipDoubleComplex *)v_dev, 1, (hipDoubleComplex *)work_dev, pbasis));
 #endif
 #if  CUDA_ENABLED 
-    gstat = cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+    rmg::error(cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
             reinterpret_cast<cuDoubleComplex*>(psi_dev), pbasis,
             reinterpret_cast<cuDoubleComplex*>(v_dev), 1,
-            reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis);
+            reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis));
 #endif
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }
 void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
-
 #if  HIP_ENABLED
-    gstat = hipblasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (hipFloatComplex *)psi_dev, pbasis, (hipFloatComplex *)v_dev, 1, (hipFloatComplex *)work_dev, pbasis);
+    rmg::error(hipblasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+            (hipFloatComplex *)psi_dev, pbasis, (hipFloatComplex *)v_dev, 1, (hipFloatComplex *)work_dev, pbasis));
 #endif
 #if  CUDA_ENABLED 
-    gstat = cublasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+    rmg::error(cublasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
             reinterpret_cast<cuFloatComplex*>(psi_dev), pbasis,
             reinterpret_cast<cuFloatComplex*>(v_dev), 1,
-            reinterpret_cast<cuFloatComplex*>(work_dev), pbasis);
+            reinterpret_cast<cuFloatComplex*>(work_dev), pbasis));
 #endif
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
 }
 #endif
 

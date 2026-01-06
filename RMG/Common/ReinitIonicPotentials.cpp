@@ -26,7 +26,7 @@
 #include "typedefs.h"
 #include "Kpoint.h"
 #include "Atomic.h"
-#include "ErrorFuncs.h"
+
 #include "GpuAlloc.h"
 #include "transition.h"
 

@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -46,15 +46,15 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     cublasOperation_t trans = CUBLAS_OP_N;
     DataType *Workspace;
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devIpiv, sizeof(int) *n), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devIpiv, sizeof(int) *n);
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     if(typeid(DataType) == typeid(double))
     {
         GpuFill((double *)B, n*n, 0.0);
         cu_status = cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, (double *)A, n, &Lwork);
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrf_bufferSize failed.");
-        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
+        gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n));
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);
@@ -71,7 +71,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         GpuFill((double *)B, 2*n*n, 0.0);
         cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, &Lwork);
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverZnDgetrf_bufferSize failed.");
-        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
+        gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n));
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);

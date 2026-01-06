@@ -48,7 +48,7 @@
 #include "Kpoint.h"
 #include "RmgException.h"
 #include "blas.h"
-#include "ErrorFuncs.h"
+
 #include "GpuAlloc.h"
 #include "OrbitalProfile.h"
 #include "rmgthreads.h"
@@ -1142,8 +1142,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)
     {
-        custat = gpuMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMallocHost failed.\n");
+        gpuMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
     }
     else
     {
@@ -1159,15 +1158,13 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 #else
         int device = _device;
 #endif
-        cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
+//        rmg::error(cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device));
+        gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
 #elif HIP_ENABLED
         int device = -1;
-        gpuGetDevice(&device);
-        hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
+        rmg::error(gpuGetDevice(&device));
+//        rmg::error(hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device));
+        gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
 #elif SYCL_ENABLED
         custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
 

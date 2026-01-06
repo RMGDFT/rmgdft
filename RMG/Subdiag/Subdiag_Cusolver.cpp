@@ -33,7 +33,7 @@
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 
 #include "common_prototypes.h"

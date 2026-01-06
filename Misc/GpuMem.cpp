@@ -34,7 +34,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 #include "rmg_error.h"
-#include "ErrorFuncs.h"
+
 
 
 void MallocHostOrDevice(void **ptr, size_t size)

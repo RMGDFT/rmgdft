@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -49,10 +49,10 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
     if(lwork > worksize) 
     {
-        cudaFree(work);
-        Cuda_error(cudaMalloc((void **)&work, lwork * sizeof(double)));
+        gpuFree(work);
+        gpuMalloc((void **)&work, lwork * sizeof(double));
     }
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     cu_status = cusolverDnDsygvd(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, lwork, devInfo);
     int info;
@@ -100,7 +100,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
     status = rocsolver_dsygvd(ct.roc_handle, itype, jobz, uplo, n, A, ld,
                              B, ld, eigs, work, devInfo);
     int info;

@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
 
@@ -66,10 +66,8 @@ void InitGpuMallocHost(size_t bufsize)
     if (ct.require_huge_pages) return;
 #endif
 
-    gpuError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
-    custat = gpuMallocHost((void **)&host_gpubuffer , bufsize );
-    //RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuHostMalloc failed in InitGpuHostMalloc\n");
+    gpuMallocHost((void **)&host_gpubuffer , bufsize );
     host_max_size = bufsize;
     host_curptr = (unsigned char*)host_gpubuffer;
 
