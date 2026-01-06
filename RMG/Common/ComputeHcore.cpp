@@ -103,13 +103,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if CUDA_ENABLED || HIP_ENABLED
-    // Until the finite difference operators are being applied on the GPU it's faster
-    // to make sure that the result arrays are present on the cpu side.
-    int device = -1;
-    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     rmg::sync_device();
-#endif
 
     int active_threads = rmg_get_active_threads();
     int istop = nstates / active_threads;
