@@ -13,11 +13,6 @@ namespace rmg
     }
 } // end namespace rmg
 
-hipError_t gpuStreamSynchronize (hipStream_t stream)
-{
-    return hipStreamSynchronize (stream);
-}
-
 #elif SYCL_ENABLED
 #include <complex>
 #include <typeinfo>
@@ -49,10 +44,6 @@ namespace rmg
     }
 }
 
-cudaError_t gpuStreamSynchronize (cudaStream_t stream)
-{
-    return cudaStreamSynchronize (stream);
-}
 #else
 namespace rmg
 {
