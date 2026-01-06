@@ -43,25 +43,22 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
     syevjInfo_t dsygvj_params = NULL;
 
-    cu_status = cusolverDnCreateSyevjInfo(&dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnCreateDsygvjInfo failed.");
+    rmg::error(cusolverDnCreateSyevjInfo(&dsygvj_params));
 
-    cu_status = cusolverDnDsygvj_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork, dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
+    rmg::error(cusolverDnDsygvj_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork, dsygvj_params));
     if(lwork > worksize) rmg::error(" DsygvjDriver: provided workspace too small.");
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
     double abstol = 1.0e-5;
     abstol = std::min(abstol, ct.scf_accuracy)/100.0;
-    cusolverDnXsyevjSetTolerance( dsygvj_params, abstol);
+    rmg::error(cusolverDnXsyevjSetTolerance( dsygvj_params, abstol));
 
-    cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
+    rmg::error(cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params));
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsygvj failed.");
 
     gpuFree(devInfo);
-    if (dsygvj_params) cusolverDnDestroySyevjInfo(dsygvj_params);
+    if (dsygvj_params) rmg::error(cusolverDnDestroySyevjInfo(dsygvj_params));
 
 }
 

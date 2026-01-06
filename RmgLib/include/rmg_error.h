@@ -48,6 +48,7 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+#include <cusolverDn.h>
 #endif
 
 namespace rmg
@@ -58,6 +59,7 @@ namespace rmg
 #if CUDA_ENABLED
     void error(cublasStatus_t custat, std::source_location loc = std::source_location::current());
     void error(cudaError_t custat, std::source_location loc = std::source_location::current());
+    void error(cusolverStatus_t custat, std::source_location loc = std::source_location::current());
 #endif
 
 #if HIP_ENABLED

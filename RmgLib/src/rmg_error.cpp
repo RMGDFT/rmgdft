@@ -64,6 +64,21 @@ void rmg::error(char const *message, const std::source_location loc)
 }
 
 #if CUDA_ENABLED
+
+const char* cusolverGetErrorString(cusolverStatus_t error) {
+    switch (error) {
+        case CUSOLVER_STATUS_SUCCESS:           return "CUSOLVER_STATUS_SUCCESS";
+        case CUSOLVER_STATUS_NOT_INITIALIZED:   return "CUSOLVER_STATUS_NOT_INITIALIZED";
+        case CUSOLVER_STATUS_ALLOC_FAILED:      return "CUSOLVER_STATUS_ALLOC_FAILED";
+        case CUSOLVER_STATUS_INVALID_VALUE:     return "CUSOLVER_STATUS_INVALID_VALUE";
+        case CUSOLVER_STATUS_ARCH_MISMATCH:     return "CUSOLVER_STATUS_ARCH_MISMATCH";
+        case CUSOLVER_STATUS_EXECUTION_FAILED:  return "CUSOLVER_STATUS_EXECUTION_FAILED";
+        case CUSOLVER_STATUS_INTERNAL_ERROR:    return "CUSOLVER_STATUS_INTERNAL_ERROR";
+        case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED: return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
+        default:                                return "<unknown cuSOLVER error>";
+    }
+}
+
 void rmg::error(cublasStatus_t custat, const std::source_location loc)
 {
 
@@ -142,6 +157,28 @@ void rmg::error(cudaError_t custat, const std::source_location loc)
     sleep(1);
     raise(SIGTERM);
 }
+
+void rmg::error(cusolverStatus_t custat, const std::source_location loc)
+{
+    if(custat == CUSOLVER_STATUS_SUCCESS) return;
+
+    const char *msg = cusolverGetErrorString(custat);
+    if(do_print)
+    {
+        std::cout << "\nError: " << msg << "\n";
+        std::cout << "Function:  " << loc.function_name() << "\n"
+                  << "File:      " << loc.file_name()     << "\n"
+                  << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
+        std::cout << "Stacktrace:" << "\n";
+        std::cout << boost::stacktrace::stacktrace();
+#endif
+    }
+    fflush (NULL);
+    sleep(1);
+    raise(SIGTERM);
+}
+
 
 #endif
 
