@@ -2,6 +2,7 @@
 #define GPU_ALLOC_H 1
 
 #include "stddef.h"
+#include <source_location>
 
 void *DGpuMallocDevice(size_t size, const char *fname, size_t line);
 void InitGpuMalloc(size_t size);
@@ -109,25 +110,25 @@ hipError_t gpuGetDeviceCount(int *count);
 #define gpuCpuDeviceId cudaCpuDeviceId
 #define gpuStream_t cudaStream_t
 
-cudaError_t gpuMalloc(void **ptr, size_t size);
-cudaError_t gpuMallocManaged(void **ptr, size_t size);
-cudaError_t gpuMallocHost(void **ptr, size_t size);
-cudaError_t gpuFree(void *ptr);
-cudaError_t gpuFreeHost(void *ptr);
-cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind);
-cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream);
-cudaError_t gpuStreamSynchronize (cudaStream_t stream);
-cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream);
-cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags);
-cudaError_t gpuStreamDestroy (cudaStream_t stream);
-cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
-cudaError_t gpuDeviceReset (void);
-cudaError_t gpuSetDevice (int deviceId);
-cudaError_t gpuGetDevice (int *deviceId);
-cudaError_t gpuSetDeviceFlags (unsigned flags);
-cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
-cudaError_t gpuHostUnregister(void *hostPtr);
-cudaError_t gpuGetDeviceCount(int *count); 
+cudaError_t gpuMalloc(void **ptr, size_t size, std::source_location loc = std::source_location::current());
+cudaError_t gpuMallocManaged(void **ptr, size_t size, std::source_location loc = std::source_location::current());
+cudaError_t gpuMallocHost(void **ptr, size_t size, std::source_location loc = std::source_location::current());
+cudaError_t gpuFree(void *ptr, std::source_location loc = std::source_location::current());
+cudaError_t gpuFreeHost(void *ptr, std::source_location loc = std::source_location::current());
+cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, std::source_location loc = std::source_location::current());
+cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream, std::source_location loc = std::source_location::current());
+cudaError_t gpuStreamSynchronize (cudaStream_t stream, std::source_location loc = std::source_location::current());
+cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream, std::source_location loc = std::source_location::current());
+cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags, std::source_location loc = std::source_location::current());
+cudaError_t gpuStreamDestroy (cudaStream_t stream, std::source_location loc = std::source_location::current());
+cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, std::source_location loc = std::source_location::current());
+cudaError_t gpuDeviceReset (std::source_location loc = std::source_location::current());
+cudaError_t gpuSetDevice (int deviceId, std::source_location loc = std::source_location::current());
+cudaError_t gpuGetDevice (int *deviceId, std::source_location loc = std::source_location::current());
+cudaError_t gpuSetDeviceFlags (unsigned flags, std::source_location loc = std::source_location::current());
+cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, std::source_location loc = std::source_location::current());
+cudaError_t gpuHostUnregister(void *hostPtr, std::source_location loc = std::source_location::current());
+cudaError_t gpuGetDeviceCount(int *count, std::source_location loc = std::source_location::current()); 
 
 #define Cuda_error(err)                                                                     \
 {                                                                                           \
