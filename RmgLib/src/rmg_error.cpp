@@ -45,10 +45,10 @@ void rmg::error_set_print(int doprint)
     do_print = doprint;
 }
 
-void rmg::error(char const *message, const std::source_location loc)
+static inline void print_exit(char const *message, const std::source_location& loc)
 {
    if(do_print)
-   {
+   {    
         std::cout << "\nError: " << message << "\n";
         std::cout << "Function:  " << loc.function_name() << "\n"
                   << "File:      " << loc.file_name()     << "\n"
@@ -61,6 +61,11 @@ void rmg::error(char const *message, const std::source_location loc)
     fflush (NULL);
     sleep(1);
     raise(SIGTERM);
+}
+
+void rmg::error(char const *message, const std::source_location loc)
+{
+    print_exit(message, loc);
 }
 
 #if CUDA_ENABLED
@@ -119,21 +124,7 @@ void rmg::error(cublasStatus_t custat, const std::source_location loc)
         msg = "UNKNOWN CUBLAS ERROR";
     }
 
-    if(do_print)
-    {
-        std::cout << "\nError: " << msg << "\n";
-        std::cout << "Function:  " << loc.function_name() << "\n"
-                  << "File:      " << loc.file_name()     << "\n"
-                  << "Line:      " << loc.line()          << "\n\n";
-#ifdef RMG_DEBUG
-        std::cout << "Stacktrace:" << "\n";
-        std::cout << boost::stacktrace::stacktrace();
-#endif
-    }
-    fflush (NULL);
-    sleep(1);
-    raise(SIGTERM);
-
+    print_exit(msg.c_str(), loc);
 }
 
 void rmg::error(cudaError_t custat, const std::source_location loc)
@@ -142,20 +133,7 @@ void rmg::error(cudaError_t custat, const std::source_location loc)
     if(custat == cudaSuccess) return;
 
     const char *msg = cudaGetErrorString(custat);
-    if(do_print)
-    {
-        std::cout << "\nError: " << msg << "\n";
-        std::cout << "Function:  " << loc.function_name() << "\n"
-                  << "File:      " << loc.file_name()     << "\n"
-                  << "Line:      " << loc.line()          << "\n\n";
-#ifdef RMG_DEBUG
-        std::cout << "Stacktrace:" << "\n";
-        std::cout << boost::stacktrace::stacktrace();
-#endif
-    }
-    fflush (NULL);
-    sleep(1);
-    raise(SIGTERM);
+    print_exit(msg, loc);
 }
 
 void rmg::error(cusolverStatus_t custat, const std::source_location loc)
@@ -163,20 +141,7 @@ void rmg::error(cusolverStatus_t custat, const std::source_location loc)
     if(custat == CUSOLVER_STATUS_SUCCESS) return;
 
     const char *msg = cusolverGetErrorString(custat);
-    if(do_print)
-    {
-        std::cout << "\nError: " << msg << "\n";
-        std::cout << "Function:  " << loc.function_name() << "\n"
-                  << "File:      " << loc.file_name()     << "\n"
-                  << "Line:      " << loc.line()          << "\n\n";
-#ifdef RMG_DEBUG
-        std::cout << "Stacktrace:" << "\n";
-        std::cout << boost::stacktrace::stacktrace();
-#endif
-    }
-    fflush (NULL);
-    sleep(1);
-    raise(SIGTERM);
+    print_exit(msg, loc);
 }
 
 
@@ -223,21 +188,7 @@ void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
         msg = "UNKNOWN HIPBLAS ERROR";
     }
 
-    if(do_print)
-    {
-        std::cout << "\nError: " << msg << "\n";
-        std::cout << "Function:  " << loc.function_name() << "\n"
-                  << "File:      " << loc.file_name()     << "\n"
-                  << "Line:      " << loc.line()          << "\n\n";
-#ifdef RMG_DEBUG
-        std::cout << "Stacktrace:" << "\n";
-        std::cout << boost::stacktrace::stacktrace();
-#endif
-    }
-    fflush (NULL);
-    sleep(1);
-    raise(SIGTERM);
-
+    print_exit(msg.c_str(), loc);
 }
 
 void rmg::error(hipError_t hipstat, const std::source_location loc)
@@ -246,22 +197,16 @@ void rmg::error(hipError_t hipstat, const std::source_location loc)
     if(hipstat == hipSuccess) return;
 
     const char *msg = hipGetErrorString(hipstat);
-    if(do_print)
-    {   
-        std::cout << "\nError: " << msg << "\n";
-        std::cout << "Function:  " << loc.function_name() << "\n"
-                  << "File:      " << loc.file_name()     << "\n"
-                  << "Line:      " << loc.line()          << "\n\n";
-#ifdef RMG_DEBUG
-        std::cout << "Stacktrace:" << "\n";
-        std::cout << boost::stacktrace::stacktrace();
-#endif
-    }
-    fflush (NULL);
-    sleep(1);
-    raise(SIGTERM);
+    print_exit(msg, loc);
 }   
-        
 
+void rmg::error(rocblas_status rocstat, const std::source_location loc)
+{
+    if(rocstat == rocblas_status_success) return;
+
+    const char *msg = rocblas_status_to_string(rocstat);
+    print_exit(msg, loc);
+}
+        
 
 #endif

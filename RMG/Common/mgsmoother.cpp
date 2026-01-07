@@ -81,9 +81,9 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     const double theta = 0.5*(lmax + lmin);
     const double delta = 0.5*(lmax - lmin);
     const double sigma = theta / delta;
-    wfobj<CalcType> pp;
     std::vector<CalcType> p;
-    int pbasis = pp.pbasis * ct.noncoll_factor * pct.coalesce_factor;
+    int pbasis = Rmg_G->get_P0_BASIS(1);
+    pbasis *= ct.noncoll_factor * pct.coalesce_factor;
     p.resize(pbasis);
 
     ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);

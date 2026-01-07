@@ -65,6 +65,7 @@ namespace rmg
 #if HIP_ENABLED
     void error(hipblasStatus_t hipstat, std::source_location loc = std::source_location::current());
     void error(hipError_t hipstat, std::source_location loc = std::source_location::current());
+    void error(rocblas_status rocstat, std::source_location loc = std::source_location::current());
 #endif
 }
 
