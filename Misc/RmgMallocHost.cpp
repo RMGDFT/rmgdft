@@ -44,7 +44,7 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
     }
     else
     {
-        gpuHostMalloc( &ptr, size+16, hipHostMallocNumaUser);
+        rmg::error(hipHostMalloc( &ptr, size+16, hipHostMallocNumaUser));
     }
     return ptr;
 }

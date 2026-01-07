@@ -87,7 +87,7 @@ hipError_t gpuMallocHost(void **ptr, size_t size, const std::source_location loc
     }
     else
     {
-        rmg::error(hipHostMalloc(ptr, size, hipHostMallocNumaUser), loc);
+        rmg::error(hipMallocHost(ptr, size), loc);
     }
     return hipSuccess;
 }
