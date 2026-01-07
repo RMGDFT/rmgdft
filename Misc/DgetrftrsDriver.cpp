@@ -82,6 +82,7 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
+    int info;
     rocblas_status status;
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
