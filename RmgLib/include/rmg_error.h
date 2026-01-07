@@ -41,6 +41,7 @@
 #if HIP_ENABLED
 #include <hip/hip_runtime_api.h>
 #include <hipblas/hipblas.h>
+#include <rocblas/rocblas.h>
 #endif
 
 
