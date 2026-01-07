@@ -40,7 +40,7 @@
 #include <ratio>
 #include <chrono>
 #include "BaseThread.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 
 
 class RmgTimer {

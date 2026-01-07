@@ -58,7 +58,7 @@ void ApplySubdiagHamiltonian (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);

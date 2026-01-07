@@ -13,7 +13,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 
-BaseGrid *OG;
+rmg::grid *OG;
 FiniteDiff *MGFD;
 
 void PrecondMg(double *psiR, double *work1, STATE *sp)
@@ -47,7 +47,7 @@ void PrecondMg(double *psiR, double *work1, STATE *sp)
     double hygrid = get_hygrid();
     double hzgrid = get_hzgrid();
 
-    if(OG == NULL) OG = new BaseGrid(ixx, iyy, izz, 1, 1, 1, 0, 1);
+    if(OG == NULL) OG = new rmg::grid(ixx, iyy, izz, 1, 1, 1, 0, 1);
     if(MGFD == NULL) MGFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 2);
     stopp0 = ixx * iyy * izz;
 

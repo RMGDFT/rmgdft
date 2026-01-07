@@ -27,7 +27,7 @@
 #include <vector>
 #include <cstdint>
 #include "rmgtypedefs.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include <boost/multi_array.hpp>
 
@@ -110,7 +110,7 @@ class Symmetry
 
         void symmetrize_grid_object(double *object);
 
-        void setgrid(BaseGrid &G, int density);
+        void setgrid(rmg::grid &G, int density);
         void symmetrize_grid_vector(double *mag_rho);
         void symmetrize_rho_AFM(double *rho, double *rho_oppo);
         void symm_vec(int isy, double *vec);

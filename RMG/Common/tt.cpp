@@ -1,5 +1,5 @@
 template <typename DataType>
-void ScatterGrid(BaseGrid *G, int n, DataType *A, DataType *B, int factor)
+void ScatterGrid(rmg::grid *G, int n, DataType *A, DataType *B, int factor)
 {
     int chunksize = n / factor;
     int my_pe_x, pe_y, pe_z;

@@ -84,7 +84,7 @@ int FiniteDiff::LCkey(double a0h)
 // Constructor for non-periodic boundary conditions. Unlike the case with
 // the standard constructor the non-periodic case is specific to a specific
 // grid density and order of accuracy.
-FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int ztype, int density, int norder)
+FiniteDiff::FiniteDiff(Lattice *lptr, rmg::grid *gptr, int xtype, int ytype, int ztype, int density, int norder)
 {
     L = lptr;
     G = gptr;

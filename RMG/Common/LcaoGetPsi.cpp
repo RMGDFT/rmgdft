@@ -272,7 +272,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         int NX_GRID = get_NX_GRID();
         int NY_GRID = get_NY_GRID();
         int NZ_GRID = get_NZ_GRID();
-        BaseGrid *LG = new BaseGrid(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        rmg::grid *LG = new rmg::grid(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = Rmg_G->get_rank();
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);

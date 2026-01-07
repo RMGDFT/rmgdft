@@ -25,7 +25,7 @@
 #define RMG_Functional_H 1
 
 #include <string>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "vdW.h"
@@ -39,8 +39,8 @@
 class Functional {
 
 private:
-    // BaseGrid class
-    BaseGrid *Grid;
+    // rmg::grid class
+    rmg::grid *Grid;
 
     // TradeImages object to use
     TradeImages *T;
@@ -65,7 +65,7 @@ private:
     void gradcorr_spin(double *rho_up, double *rho_down, double *rho_core, double &etxc, double &vtxc, double *v_up, double *v_down);
 
 public:
-    Functional (BaseGrid &G, 
+    Functional (rmg::grid &G, 
                 Lattice &L, 
                 TradeImages &T, 
                 bool gamma_flag);

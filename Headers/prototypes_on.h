@@ -13,7 +13,7 @@ void PreconditionerOne(double *, int, double);
 template <typename KpointType>
 void WriteCij (std::string& name, KpointType *Cij_dis);
 template <typename KpointType>
-void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
+void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, rmg::grid &BG,
         double *eig, double *occ);
 template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double * vnuc,
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, LocalObject<OrbitalType> &Phi,
@@ -62,7 +62,7 @@ void GenVxPsi (double * psi, int st1, double * work1, double * vtot_global, STAT
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
-void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
+void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, rmg::grid &Rmg_G);
 void mat_local_to_glob(double *, double *, LocalObject<double> &A, LocalObject<double> &B, int, int, int, int, bool);
 void ApplyHphi(LocalObject<double> &A, LocalObject<double> &HB, double *vtot_c);
 void GetNewRho_proj(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);

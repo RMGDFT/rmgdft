@@ -68,7 +68,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     // instead of calculating <psi|i nabla -k |psi>, we calculate <psi |nabla +i k|psi> 
     Kpoint<KpointType>  *kptr;
     kptr = Kptr[0];
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
 
     int num_states = kptr->nstates;

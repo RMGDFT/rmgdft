@@ -92,7 +92,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // We want a clean exit if user terminates early
     CheckShutdown();
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 

@@ -25,7 +25,7 @@
 
 
 #include <complex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -50,8 +50,8 @@ private:
     static double a;
     static double b;
 
-    // BaseGrid class
-    BaseGrid *Grid;
+    // rmg::grid class
+    rmg::grid *Grid;
 
     // Lattice object
     Lattice *L;

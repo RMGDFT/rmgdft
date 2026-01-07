@@ -106,7 +106,7 @@ int get_FG_RATIO(void)
 /// C interface function
 void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
 {
-  Rmg_G = new BaseGrid(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, 0, newFG_RATIO);
+  Rmg_G = new rmg::grid(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, 0, newFG_RATIO);
 }
 /// C interface function
 void set_rank(int newrank, MPI_Comm comm)

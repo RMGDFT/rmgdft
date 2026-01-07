@@ -34,7 +34,7 @@ private:
 public:
     void Init_ddd0_so(void);
     void InitSpinOrbit (void);
-    void InitPseudo (Lattice &L, BaseGrid *G, bool write_flag);
+    void InitPseudo (Lattice &L, rmg::grid *G, bool write_flag);
     void InitSemilocalBessel (void);
     void InitWeights(bool localize)
     {
@@ -351,8 +351,8 @@ public:
     /* Point to plane wave object used for localized projectors */
     Pw *prj_pwave;
 
-    /* Point to local BaseGrid object */
-    BaseGrid *OG;
+    /* Point to local rmg::grid object */
+    rmg::grid *OG;
     
 };
 #endif

@@ -22,7 +22,7 @@
 
 #include "blas.h"
 #include "RmgParallelFft.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 
 extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 

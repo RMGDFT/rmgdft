@@ -159,7 +159,7 @@ void CstrToFortran(char* fstring, std::size_t flen, const char* cstring)
 
 
 Functional::Functional (
-            BaseGrid &G,
+            rmg::grid &G,
             Lattice &L,
             TradeImages &T,
             bool gamma_flag)

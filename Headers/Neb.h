@@ -30,15 +30,15 @@
 #include <set>
 #include <complex>
 #include <mutex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "ION.h"
 #include "Kpoint.h"
 
 template <typename T> class Neb {
 
 private:
-    // BaseGrid class (distributed)
-    BaseGrid &BG;
+    // rmg::grid class (distributed)
+    rmg::grid &BG;
     std::vector<ION> Atoms_initial;
     std::vector<ION> Atoms_final;
     int num_images;
@@ -54,7 +54,7 @@ private:
 
 
 public:
-    Neb( BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
+    Neb( rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
             std::string input_final, double totale_initial, double total_final); 
 
     ~Neb(void);

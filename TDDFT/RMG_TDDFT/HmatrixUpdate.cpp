@@ -72,7 +72,7 @@ template <typename KpointType, typename CalType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, KpointType *Aij, int tddft_start_state, int num_states)
 {
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
     int pbasis = kptr->pbasis;
     int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;

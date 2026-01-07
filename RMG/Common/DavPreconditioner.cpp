@@ -156,7 +156,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     // We want a clean exit if user terminates early
     CheckShutdown();
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
     Mgrid MG(L, T);

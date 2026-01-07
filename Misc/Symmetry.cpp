@@ -1511,7 +1511,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax, std::vector<
 
 }
 
-void Symmetry::setgrid(BaseGrid &G, int density)
+void Symmetry::setgrid(rmg::grid &G, int density)
 {
     px_grid = G.get_PX0_GRID(density);
     py_grid = G.get_PY0_GRID(density);

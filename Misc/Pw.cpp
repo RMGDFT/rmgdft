@@ -46,17 +46,17 @@ auto fft_sycl_exception_handler = [] (sycl::exception_list exceptions) {
 #endif
 #endif
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
+Pw::Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag)
 {
     pw_internal (G, L, ratio, gamma_flag, true);
 }
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+Pw::Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
 {
     pw_internal (G, L, ratio, gamma_flag, create_buffers);
 }
 
-void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
 {
 
   // Grid parameters

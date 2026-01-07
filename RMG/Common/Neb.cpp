@@ -43,11 +43,11 @@
 #include "GlobalSums.h"
 #include "Neb.h"
 
-template Neb<double>::Neb(BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
+template Neb<double>::Neb(rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final);
-template Neb<std::complex<double>>::Neb(BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
+template Neb<std::complex<double>>::Neb(rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final);
-template <class T> Neb<T>::Neb( BaseGrid &G_in, int num_images, int max_steps, std::string input_initial, 
+template <class T> Neb<T>::Neb( rmg::grid &G_in, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final):BG(G_in)
 {
 

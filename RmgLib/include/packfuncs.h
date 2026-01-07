@@ -33,7 +33,7 @@
 #define RMG_packfuncs_H 1
 
 #include <complex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 
 namespace rmg
 {
@@ -50,9 +50,9 @@ void pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
 template <typename RmgType>
 void pack_ptos_convert(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz);
 
-void pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
+void pack_dtos (rmg::grid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
 
-void pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
+void pack_stod (rmg::grid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
 
 void pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
 

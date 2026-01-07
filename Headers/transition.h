@@ -6,7 +6,7 @@
 #include <set>
 #include <list>
 #include <map>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "const.h"
@@ -32,8 +32,8 @@
 extern PulayMixing *Pulay_rho;
 extern PulayMixing *Pulay_ldau;
 extern PulayMixing *Pulay_orbital;
-extern BaseGrid *Rmg_G;
-extern BaseGrid *Rmg_halfgrid;
+extern rmg::grid *Rmg_G;
+extern rmg::grid *Rmg_halfgrid;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
@@ -79,10 +79,10 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, do
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, int, int, int, double, double, double, int, double *kvec);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
 template <typename DataType> void SumGradientKvec (DataType *a, DataType *b, double *kvec, const char *grid);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, rmg::grid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, int order);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, rmg::grid *G, TradeImages *T);
 
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 

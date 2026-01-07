@@ -39,7 +39,7 @@ using boost::math::policies::policy;
 using boost::math::policies::promote_double;
 typedef policy<promote_double<false> > bessel_policy;
 
-void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
+void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
 {
 
     if(!std::strcmp(this->atomic_symbol, "DLO")) return;
@@ -127,8 +127,8 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     if(ct.localize_projectors)
     {
         // Grid object local to this MPI process
-        this->OG = new BaseGrid(this->nldim, this->nldim, this->nldim, 1, 1, 1, 0, 1);
-        BaseGrid *OG = (BaseGrid *)this->OG;
+        this->OG = new rmg::grid(this->nldim, this->nldim, this->nldim, 1, 1, 1, 0, 1);
+        rmg::grid *OG = (rmg::grid *)this->OG;
         OG->set_rank(0, pct.my_comm);
 
         // Lattice object for the localized projector region. Global vectors need to be

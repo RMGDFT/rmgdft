@@ -59,10 +59,10 @@ static int FS_RANK;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrum<double> (BaseGrid *, int, double *, int, double *, int, double *, double *, double *, double *, int, int *, int, int);
+template int FoldedSpectrum<double> (rmg::grid *, int, double *, int, double *, int, double *, double *, double *, double *, int, int *, int, int);
 
 template <typename KpointType>
-int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
+int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
 		double *eigs, double *work, int lwork, int *iwork, int liwork, int driver)
 {
 

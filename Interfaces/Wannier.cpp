@@ -57,8 +57,8 @@ void InitDelocalizedWeight_onek(int kpt, double kvec[3], Pw &pwave);
 void DelocalizedWeight_one(int kpt, double kvec[3], Pw &pwave);        
 
 void transpose(std::complex<double> *m, int w, int h);
-template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
-template Wannier<std::complex<double>>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double>
+template Wannier<double>::Wannier(rmg::grid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
+template Wannier<std::complex<double>>::Wannier(rmg::grid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double>
 *, Kpoint<std::complex<double>> **Kptr);
 
 template Wannier<double>::~Wannier(void);
@@ -68,7 +68,7 @@ template <class T> Wannier<T>::~Wannier ()
 }
 
 template <class T> Wannier<T>::Wannier (
-        BaseGrid &G_in,
+        rmg::grid &G_in,
         Lattice &L_in,
         const std::string &wavefile_in,
         int nstates_in,
@@ -122,7 +122,7 @@ template <class T> void Wannier<T>::AmnMmn(std::string wavefile)
     if(!ct.norm_conserving_pp)
     {
         RmgTimer *RT1 = new RmgTimer("7-Wannier: init_weight");
-        BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        rmg::grid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = Rmg_G->get_rank();
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);

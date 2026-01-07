@@ -91,7 +91,7 @@
 
 #include <complex>
 #include <span>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 
 template <typename T> class fgobj;
@@ -218,7 +218,7 @@ protected:
    int density_;
    int factor = 1;
    T *data_;
-   BaseGrid *G;
+   rmg::grid *G;
    Lattice *L;
 
    void allocate(int components)

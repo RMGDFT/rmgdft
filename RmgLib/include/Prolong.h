@@ -45,7 +45,7 @@
 #include <stdint.h>
 #include "TradeImages.h"
 #include "Lattice.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "rmg_error.h"
 
 
@@ -60,7 +60,7 @@ public:
 class Prolong {
 
 public:
-    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
+    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, rmg::grid &BG);
     ~Prolong(void);
 
     template<typename T>
@@ -126,7 +126,7 @@ private:
     double cmix;
     TradeImages &TR;
     Lattice &L;
-    BaseGrid &BG;
+    rmg::grid &BG;
     int ibrav;
     std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
 

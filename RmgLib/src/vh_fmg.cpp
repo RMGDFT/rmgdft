@@ -67,7 +67,7 @@
 /// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
 /// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
 /// @param density Density of the grid relative to the default grid
-double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
+double vh_fmg (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  double rms_target_in, double global_step, double coarse_step, int boundaryflag, int density,
@@ -225,7 +225,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
 
 template <typename CalcType>
-double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcType *vhartree,
+double coarse_vh (rmg::grid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcType *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps,
                  int dimx, int dimy, int dimz, int level,

@@ -46,10 +46,10 @@ template void ApplyGradient<double>(double *, double *, double *, double *, int,
 template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, const char *grid);
 template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, const char *grid);
 
-template void ApplyGradient<float>(float *, float *, float *, float *, int, const char *grid, BaseGrid *G, TradeImages *T);
-template void ApplyGradient<double>(double *, double *, double *, double *, int, const char *grid, BaseGrid *G, TradeImages *T);
-template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, const char *grid, BaseGrid *G, TradeImages *T);
-template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, const char *grid, BaseGrid *G, TradeImages *T);
+template void ApplyGradient<float>(float *, float *, float *, float *, int, const char *grid, rmg::grid *G, TradeImages *T);
+template void ApplyGradient<double>(double *, double *, double *, double *, int, const char *grid, rmg::grid *G, TradeImages *T);
+template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, const char *grid, rmg::grid *G, TradeImages *T);
+template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, const char *grid, rmg::grid *G, TradeImages *T);
 
 
 // Version required for coalesced grids and complex wavefunctions
@@ -101,7 +101,7 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
 }
 
 template <typename DataType>
-void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T)
+void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, rmg::grid *G, TradeImages *T)
 {
     int density;
     const char *coarse = "Coarse";

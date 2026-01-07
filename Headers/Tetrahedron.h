@@ -27,7 +27,7 @@
 #include <vector>
 #include <cstdint>
 #include "rmgtypedefs.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "Kpoint.h"
 #include <boost/multi_array.hpp>

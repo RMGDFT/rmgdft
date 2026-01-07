@@ -42,7 +42,7 @@ src/FiniteDiff_mehr.cpp
 src/TradeImages.cpp
 src/Lattice.cpp
 src/BaseThread.cpp
-src/BaseGrid.cpp
+src/rmg_grid.cpp
 src/Mgrid.cpp
 src/MpiQueue.cpp
 src/app_cir_driver.cpp

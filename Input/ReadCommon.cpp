@@ -35,7 +35,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "transition.h"
 
 #include "const.h"

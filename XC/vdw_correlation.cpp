@@ -130,7 +130,7 @@ double *Vdw::d2y_dx2;
   
 
 */
-Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
+Vdw::Vdw (rmg::grid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
   bool use_coarsegrid = !ct.use_vdwdf_finegrid;
 

@@ -58,7 +58,7 @@ template <typename KpointType>
 void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l)
 {
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
 
     int num_states = kptr->nstates;

@@ -58,7 +58,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
     int mycol, myrow, nprow, npcol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
 
     int num_states = kptr->nstates - tddft_start_state;

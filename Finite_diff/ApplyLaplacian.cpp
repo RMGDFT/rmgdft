@@ -41,10 +41,10 @@ template double ApplyLaplacian<double>(double *, double *, int, const char *);
 template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, const char *);
 template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, const char *);
 
-template double ApplyLaplacian<float>(float *, float *, int, const char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<double>(double *, double *, int, const char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, const char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, const char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<float>(float *, float *, int, const char *, rmg::grid *, TradeImages *);
+template double ApplyLaplacian<double>(double *, double *, int, const char *, rmg::grid *, TradeImages *);
+template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, const char *, rmg::grid *, TradeImages *);
+template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, const char *, rmg::grid *, TradeImages *);
 
 // Generic version
 template <typename DataType>
@@ -82,7 +82,7 @@ double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid)
 
 // Version that lets you use specific grid and trade image objects
 template <typename DataType>
-double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T)
+double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, rmg::grid *G, TradeImages *T)
 {
     int density;
     const char *coarse = "Coarse";

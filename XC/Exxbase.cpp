@@ -193,15 +193,15 @@ template <class T> void Exxbase<T>::UnpadR2C(float *in, float *out)
 using namespace std;
 //using namespace hdfHelper;
 
-template Exxbase<double>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, double *, int);
-template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
+template Exxbase<double>::Exxbase(rmg::grid &, rmg::grid &, Lattice &, const std::string &, int, double *, double *, int);
+template Exxbase<std::complex<double>>::Exxbase(rmg::grid &, rmg::grid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
 
 template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
 
 template <class T> Exxbase<T>::Exxbase (
-        BaseGrid &G_in,
-        BaseGrid &G_h_in,
+        rmg::grid &G_in,
+        rmg::grid &G_h_in,
         Lattice &L_in,
         const std::string &wavefile_in,
         int nstates_in,
@@ -236,7 +236,7 @@ vxrms.resize(nstates_in);
     }
     else
     {
-        LG = new BaseGrid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        LG = new rmg::grid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = G.get_rank();
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);

@@ -80,7 +80,7 @@ template void TradeImages::trade_imagesx_central_local<double>(double*, double*,
 
 
 // Constructor
-TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images_in)
+TradeImages::TradeImages(rmg::grid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images_in)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);

@@ -31,7 +31,7 @@
 #define RMG_MpiQueue_H 1
 
 #include <mpi.h>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "rmg_error.h"
 #ifdef USE_NUMA
     #include <numa.h>

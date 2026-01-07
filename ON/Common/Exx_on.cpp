@@ -48,8 +48,8 @@
 // K_kl dimension: num_tot * num_thispe for LocalOrbital
 
 
-template Exx_on<double>::Exx_on(BaseGrid &, BaseGrid &, Lattice &, const std::string &, LocalObject<double> &phi, double *, int);
-template Exx_on<std::complex<double>>::Exx_on(BaseGrid &, BaseGrid &, Lattice &, const std::string &, 
+template Exx_on<double>::Exx_on(rmg::grid &, rmg::grid &, Lattice &, const std::string &, LocalObject<double> &phi, double *, int);
+template Exx_on<std::complex<double>>::Exx_on(rmg::grid &, rmg::grid &, Lattice &, const std::string &, 
     LocalObject<std::complex<double>> &phi, double *, int );
 
 template Exx_on<double>::~Exx_on(void);
@@ -59,8 +59,8 @@ template <class T> Exx_on<T>::~Exx_on()
 };
 
 template <class T> Exx_on<T>::Exx_on (
-          BaseGrid &G_in,
-          BaseGrid &G_h_in,
+          rmg::grid &G_in,
+          rmg::grid &G_h_in,
           Lattice &L_in,
           const std::string &wavefile_in,
           LocalObject<T> &Phi_in, double *occ_in, 

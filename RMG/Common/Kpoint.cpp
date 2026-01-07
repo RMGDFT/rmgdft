@@ -55,8 +55,8 @@
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
-template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
-template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template void Kpoint<double>::set_pool(double *pool);
 template void Kpoint<std::complex <double> >::set_pool(std::complex<double> *pool);
 template void Kpoint<double>::init_states(void);
@@ -86,7 +86,7 @@ template void Kpoint<double>::ClearPotentialAcceleration(void);
 template void Kpoint<std::complex <double> >::ClearPotentialAcceleration(void);
 
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
+template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, rmg::grid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
 {
 
     this->grid_comm = newcomm;

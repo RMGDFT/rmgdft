@@ -65,7 +65,7 @@ template <class T> Stress<T>::~Stress(void)
 {
 }
 
-template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
+template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, rmg::grid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
         spinobj<double> &vxc,
         spinobj<double> &rho,
@@ -74,7 +74,7 @@ template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG,
         double *stress_tensor_out,
         bool local_only);
 
-template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
+template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, rmg::grid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
         spinobj<double> &vxc,
         spinobj<double> &rho,
@@ -83,7 +83,7 @@ template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpi
         double *stress_tensor_out,
         bool local_only);
  
-template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
+template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, rmg::grid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
         spinobj<double> &vxc,
         spinobj<double> &rho,
@@ -211,9 +211,9 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     for(int i=0;i < 9;i++) stress_tensor_out[i] = stress_tensor[i];
 }
 
-template void Stress<double>::Kinetic_term_FFT(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
-template void Stress<std::complex<double>>::Kinetic_term_FFT(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
-template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+template void Stress<double>::Kinetic_term_FFT(Kpoint<double> **Kpin, rmg::grid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_FFT(Kpoint<std::complex<double>> **Kpin, rmg::grid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L)
 {
 
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
@@ -296,9 +296,9 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &
     RmgFreeHost(grad_psi);
 }
 
-template void Stress<double>::Kinetic_term_coarse(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
-template void Stress<std::complex<double>>::Kinetic_term_coarse(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
-template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+template void Stress<double>::Kinetic_term_coarse(Kpoint<double> **Kpin, rmg::grid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_coarse(Kpoint<std::complex<double>> **Kpin, rmg::grid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L)
 {
 
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
@@ -367,9 +367,9 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGri
     RmgFreeHost(grad_psi);
 }
 
-template void Stress<double>::Kinetic_term_fine(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
-template void Stress<std::complex<double>>::Kinetic_term_fine(Kpoint<std::complex<double>> **Kpin, BaseGrid &BG, Lattice &L);
-template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L)
+template void Stress<double>::Kinetic_term_fine(Kpoint<double> **Kpin, rmg::grid &BG, Lattice &L);
+template void Stress<std::complex<double>>::Kinetic_term_fine(Kpoint<std::complex<double>> **Kpin, rmg::grid &BG, Lattice &L);
+template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L)
 {
     int ratio = Rmg_G->default_FG_RATIO;
     int dimx = Rmg_G->get_PX0_GRID(ratio);

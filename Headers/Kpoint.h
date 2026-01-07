@@ -30,7 +30,7 @@
 #ifndef RMG_Kpoint_H
 #define RMG_Kpoint_H 1
 
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "State.h"
@@ -80,7 +80,7 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
+    Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, rmg::grid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
 
     void set_pool(KpointType *pool);
     void random_init(void);
@@ -122,8 +122,8 @@ public:
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
 
-    // BaseGrid class
-    BaseGrid *G;
+    // rmg::grid class
+    rmg::grid *G;
 
     // TradeImages object to use
     TradeImages *T;

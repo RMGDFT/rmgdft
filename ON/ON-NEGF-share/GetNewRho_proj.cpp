@@ -22,7 +22,7 @@
 
 #include "blas.h"
 #include "RmgParallelFft.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
 

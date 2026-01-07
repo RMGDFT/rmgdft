@@ -38,20 +38,20 @@
 static void *bufptr_r[MAX_RMG_THREADS];
 static void *bufptr_s[MAX_RMG_THREADS];
 
-template void GatherPsi<double, float>(BaseGrid *, int, int, double *, float *, int);
-template void GatherPsi<double, double>(BaseGrid *, int, int, double *, double *, int);
-template void GatherPsi<std::complex<double>, std::complex<float> >(BaseGrid *, int, int, std::complex<double> *, std::complex<float> *, int);
-template void GatherPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
-template void ScatterPsi<float, double>(BaseGrid *, int, int, float *, double *, int);
-template void ScatterPsi<float, float>(BaseGrid *, int, int, float *, float *, int);
-template void ScatterPsi<double, double>(BaseGrid *, int, int, double *, double *, int);
-template void ScatterPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
-template void ScatterPsi<std::complex<float>, std::complex<double> >(BaseGrid *, int, int, std::complex<float> *, std::complex<double> *, int);
-template void ScatterPsi<std::complex<float>, std::complex<float> >(BaseGrid *, int, int, std::complex<float> *, std::complex<float> *, int);
-template void GatherGrid<double>(BaseGrid *, int, double *, double *);
-template void GatherGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
-template void ScatterGrid<double>(BaseGrid *, int, double *, double *);
-template void ScatterGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
+template void GatherPsi<double, float>(rmg::grid *, int, int, double *, float *, int);
+template void GatherPsi<double, double>(rmg::grid *, int, int, double *, double *, int);
+template void GatherPsi<std::complex<double>, std::complex<float> >(rmg::grid *, int, int, std::complex<double> *, std::complex<float> *, int);
+template void GatherPsi<std::complex<double>, std::complex<double> >(rmg::grid *, int, int, std::complex<double> *, std::complex<double> *, int);
+template void ScatterPsi<float, double>(rmg::grid *, int, int, float *, double *, int);
+template void ScatterPsi<float, float>(rmg::grid *, int, int, float *, float *, int);
+template void ScatterPsi<double, double>(rmg::grid *, int, int, double *, double *, int);
+template void ScatterPsi<std::complex<double>, std::complex<double> >(rmg::grid *, int, int, std::complex<double> *, std::complex<double> *, int);
+template void ScatterPsi<std::complex<float>, std::complex<double> >(rmg::grid *, int, int, std::complex<float> *, std::complex<double> *, int);
+template void ScatterPsi<std::complex<float>, std::complex<float> >(rmg::grid *, int, int, std::complex<float> *, std::complex<float> *, int);
+template void GatherGrid<double>(rmg::grid *, int, double *, double *);
+template void GatherGrid<std::complex<double>>(rmg::grid *, int, std::complex<double> *, std::complex<double> *);
+template void ScatterGrid<double>(rmg::grid *, int, double *, double *);
+template void ScatterGrid<std::complex<double>>(rmg::grid *, int, std::complex<double> *, std::complex<double> *);
 template void GatherEigs<double>(Kpoint<double> *);
 template void GatherEigs<std::complex<double>> (Kpoint<std::complex<double>> *);
 
@@ -127,7 +127,7 @@ void GatherScatterInit(size_t n)
 
 
 template <typename OrbitalType, typename CalcType>
-void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int factor)
+void GatherPsi(rmg::grid *G, int n, int istate, OrbitalType *A, CalcType *B, int factor)
 {
     int chunksize = n / factor;
     int my_pe_x, pe_y, pe_z;
@@ -265,7 +265,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int 
 }
 
 template <typename CalcType, typename OrbitalType>
-void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int factor)
+void ScatterPsi(rmg::grid *G, int n, int istate, CalcType *A, OrbitalType *B, int factor)
 {
     int chunksize = n / factor;
     int my_pe_x, pe_y, pe_z;
@@ -414,7 +414,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
 // A = non coalesced matrix
 // B = coalesced matrix (size = pct.coalesce_factor*n)
 template <typename DataType>
-void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
+void GatherGrid(rmg::grid *G, int n, DataType *A, DataType *B)
 {
     if(!ct.coalesce_states || (pct.coalesce_factor == 1))
     {
@@ -437,7 +437,7 @@ void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
 }
 #if 0
 template <typename DataType>
-void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
+void GatherGrid(rmg::grid *G, int n, DataType *A, DataType *B)
 {
     if(!ct.coalesce_states || (pct.coalesce_factor == 1))
     {
@@ -465,7 +465,7 @@ void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B)
 // A = array of pct.coalesce_factor non coalesced matrices
 // B = coalesced matrix (size = pct.coalesce_factor*n)
 template <typename DataType>
-void ScatterGrid(BaseGrid *G, int n, DataType *A, DataType *B)
+void ScatterGrid(rmg::grid *G, int n, DataType *A, DataType *B)
 {
     if(!ct.coalesce_states || (pct.coalesce_factor == 1))
     {

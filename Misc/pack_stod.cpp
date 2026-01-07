@@ -31,13 +31,13 @@
  * SOURCE
  */
 
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "boundary_conditions.h"
 #include "packfuncs.h"
 
 
 /* This function is used to pack grids when computing the hartree potential */
-void rmg::pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
+void rmg::pack_stod (rmg::grid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     int ix, iy, iz;
     int pex, pey, pez;

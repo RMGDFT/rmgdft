@@ -52,8 +52,8 @@
 #include "Pdos.h"
 #include "Scalapack.h"
 
-template Pdos<double>::Pdos(BaseGrid &, Lattice &, const std::string , int, double *, Kpoint<double> **Kptr);
-template Pdos<std::complex<double>>::Pdos(BaseGrid &, Lattice &, const std::string , int, std::complex<double>
+template Pdos<double>::Pdos(rmg::grid &, Lattice &, const std::string , int, double *, Kpoint<double> **Kptr);
+template Pdos<std::complex<double>>::Pdos(rmg::grid &, Lattice &, const std::string , int, std::complex<double>
 *, Kpoint<std::complex<double>> **Kptr);
 
 template Pdos<double>::~Pdos(void);
@@ -64,7 +64,7 @@ template <class T> Pdos<T>::~Pdos ()
 }
 
 template <class T> Pdos<T>::Pdos(
-        BaseGrid &G_in,
+        rmg::grid &G_in,
         Lattice &L_in,
         const std::string wavefile_in,
         int nstates_in,

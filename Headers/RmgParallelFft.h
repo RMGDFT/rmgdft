@@ -25,7 +25,7 @@
 
 #if __cplusplus
 #include <complex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "Pw.h"
 #include "GridObject.h"
@@ -47,8 +47,8 @@ typedef struct
 
 void FftInitPlans(void);
 
-void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
-void FftInterpolation (BaseGrid &G, std::complex<double> *coarse, std::complex<double> *fine, int ratio, bool use_sqrt);
+void FftInterpolation (rmg::grid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
+void FftInterpolation (rmg::grid &G, std::complex<double> *coarse, std::complex<double> *fine, int ratio, bool use_sqrt);
 
 void FftGradientCoarse(float *x, float *fgx, float *fgy, float *fgz);
 void FftGradientCoarse(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz);

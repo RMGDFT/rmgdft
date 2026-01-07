@@ -43,7 +43,7 @@
 #include "GpuAlloc.h"
 
 
-void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, BaseGrid &Rmg_G)
+void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, rmg::grid &Rmg_G)
 {
 
     double t1 = Rmg_G.get_NX_GRID(A.density);

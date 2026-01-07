@@ -50,12 +50,12 @@
 
 */
 
-template void WriteWavefunctions (std::string&, LocalObject<double> &LO , double *Cij, BaseGrid &BG, 
+template void WriteWavefunctions (std::string&, LocalObject<double> &LO , double *Cij, rmg::grid &BG, 
         double *eig, double *occ);
 //template void WriteWavefunctions (std::string&, LocalObjectt<std::complex<double> > &LO, std::complex<double> &Cij);
 
 template <typename KpointType>
-void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dist, BaseGrid &BG, 
+void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dist, rmg::grid &BG, 
         double *eig, double *occ)
 {
     int sizes_c[3];

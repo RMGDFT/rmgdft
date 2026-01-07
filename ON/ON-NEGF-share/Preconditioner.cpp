@@ -105,7 +105,7 @@ void Preconditioner (double *res, int num_states)
 void PreconditionerOne (double *res, int st, double gamma)
 {
 
-    BaseGrid *G = Rmg_G;
+    rmg::grid *G = Rmg_G;
     TradeImages *T =Rmg_T;
     Lattice *L = &Rmg_L;
     Mgrid MG(L, T);
