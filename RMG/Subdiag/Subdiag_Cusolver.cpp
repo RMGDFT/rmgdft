@@ -45,8 +45,6 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <thrust/fill.h>
-#include <thrust/device_vector.h>
 #endif
 
 
