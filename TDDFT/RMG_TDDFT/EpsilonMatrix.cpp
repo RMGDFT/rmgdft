@@ -77,18 +77,6 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     int pbasis_noncol = pbasis * ct.noncoll_factor;
     int ix, iy, iz;
     Rmg_G->pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    double hxgrid = Rmg_G->get_hxgrid(1);
-    double hygrid = Rmg_G->get_hygrid(1);
-    double hzgrid = Rmg_G->get_hzgrid(1);
-
-    int px0_grid = Rmg_G->get_PX0_GRID(1);
-    int py0_grid = Rmg_G->get_PY0_GRID(1);
-    int pz0_grid = Rmg_G->get_PZ0_GRID(1);
-    double xoff = ix * px0_grid * hxgrid;
-    double yoff = iy * py0_grid * hygrid;
-    double zoff = iz * pz0_grid * hzgrid;
-
-    double xtal[3], xcrt[3];
 
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
     //  alpha take care of i in moment operator
@@ -327,7 +315,7 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
         //          for(int j = 0; j < 10; j++)
         //              rmg_printf(" %f ",std::imag(Pxmat[i * num_states +j]));
         //      }
-        if(pct.gridpe == 0) 
+        if(pct.gridpe == 0 && 0) 
         {
             mkdir("Epsilon", S_IRWXU);
             int amode = S_IREAD | S_IWRITE;
@@ -386,9 +374,13 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
             }
         }
 
+        mkdir("Epsilon", S_IRWXU);
         std::string filename = "Epsilon/epsilon_spin"+std::to_string(pct.spinpe)+".dat";
         FILE *eps_fi = fopen(filename.c_str(), "w");
         fprintf(eps_fi, "&& imag part epsilon2(omega) tensor, xx, yy,zz xy, xz, yz");
+        filename = "Epsilon/absorb_spin"+std::to_string(pct.spinpe)+".dat";
+        FILE *absorb_fi = fopen(filename.c_str(), "w");
+        fprintf(absorb_fi, "&& absorbtion coefficients, E(eV) xx, yy,zz  ");
         for(int ie = 0; ie < Epoints; ie++)
         {
             fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie*delta_e*Ha_eV,epsilon_lorentzian[0][ie], epsilon_lorentzian[4][ie], epsilon_lorentzian[8][ie], epsilon_lorentzian[1][ie], epsilon_lorentzian[2][ie], epsilon_lorentzian[5][ie]);
@@ -414,8 +406,24 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
             fprintf(eps_fi, "\n%f    %e %e %e   %e %e %e", ie1*delta_e*Ha_eV,
                     1.0+eps_tem[0], 1.0+eps_tem[4], 1.0+eps_tem[8], 1.0+eps_tem[1], 1.0+eps_tem[2], 1.0+eps_tem[5]);
 
+            double absorb_coeff[9];
+            for(int i = 0; i < 9; i++)
+            {
+                double eps_r = 1.0 + eps_tem[i];
+                double eps_i = epsilon_lorentzian[i][ie1];
+                absorb_coeff[i] =sqrt((sqrt(eps_r * eps_r + eps_i * eps_i) +eps_r)*0.5);
+                absorb_coeff[i] = ie1 * delta_e * Ha_eV /absorb_coeff[i] * eps_i;
+            }
+
+            fprintf(absorb_fi, "\n%f    %e %e %e  ", ie1*delta_e*Ha_eV, absorb_coeff[0], absorb_coeff[4], absorb_coeff[8]);
+
+
         }
         fclose(eps_fi);
+        fclose(absorb_fi);
+
+
+
     }
 
 
