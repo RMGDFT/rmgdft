@@ -144,6 +144,14 @@ void rmg::error(cusolverStatus_t custat, const std::source_location loc)
     print_exit(msg, loc);
 }
 
+void rmg::error(CUresult custat, const std::source_location loc)
+{
+    if(custat == CUDA_SUCCESS) return;
+
+    const char *msg = "CUresult wrong";
+    print_exit(msg, loc);
+}
+
 
 #endif
 

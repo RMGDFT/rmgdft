@@ -68,6 +68,7 @@ namespace rmg
     void error(cublasStatus_t custat, std::source_location loc = std::source_location::current());
     void error(cudaError_t custat, std::source_location loc = std::source_location::current());
     void error(cusolverStatus_t custat, std::source_location loc = std::source_location::current());
+    void error(CUresult custat, std::source_location loc = std::source_location::current());
 #endif
 
 #if HIP_ENABLED
