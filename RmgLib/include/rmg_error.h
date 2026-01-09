@@ -42,6 +42,9 @@
 #include <hip/hip_runtime_api.h>
 #include <hipblas/hipblas.h>
 #include <rocblas/rocblas.h>
+    #if USE_NCCL
+    #include "rccl/rccl.h"
+    #endif
 #endif
 
 
@@ -50,12 +53,12 @@
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 #include <cusolverDn.h>
-#endif
-#if USE_NCCL
-#include "nccl.h"
-#if NCCL_VERSION_CODE >= NCCL_VERSION(2,28,0)
-#include "nccl_device.h"
-#endif
+    #if USE_NCCL
+    #include "nccl.h"
+        #if NCCL_VERSION_CODE >= NCCL_VERSION(2,28,0)
+        #include "nccl_device.h"
+        #endif
+    #endif
 #endif
 
 
