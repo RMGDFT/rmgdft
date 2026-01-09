@@ -223,8 +223,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         rmg::error(ncclGetUniqueId(&ct.nccl_nd_id));
     }
     MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.local_comm);
+#if CUDA_ENABLED 
     rmg::error(cuDeviceGet( &ct.cu_dev, 0 ));
     rmg::error(cudaSetDevice(ct.cu_dev));
+#endif
     rmg::error(ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.local_rank));
 #endif  
     Kpoint<double> *kptr_d;
