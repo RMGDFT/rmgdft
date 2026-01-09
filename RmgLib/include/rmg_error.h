@@ -51,6 +51,13 @@
 #include <cublas_v2.h>
 #include <cusolverDn.h>
 #endif
+#if USE_NCCL
+#include "nccl.h"
+#if NCCL_VERSION_CODE >= NCCL_VERSION(2,28,0)
+#include "nccl_device.h"
+#endif
+#endif
+
 
 namespace rmg
 {
@@ -67,6 +74,9 @@ namespace rmg
     void error(hipblasStatus_t hipstat, std::source_location loc = std::source_location::current());
     void error(hipError_t hipstat, std::source_location loc = std::source_location::current());
     void error(rocblas_status rocstat, std::source_location loc = std::source_location::current());
+#endif
+#if USE_NCCL
+    void error(ncclResult_t nccl_res, std::source_location loc = std::source_location::current());
 #endif
 }
 

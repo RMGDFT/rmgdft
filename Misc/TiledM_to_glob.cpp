@@ -59,7 +59,7 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     else
     {
 #if (CUDA_ENABLED || HIP_ENABLED) && USE_NCCL
-        ncclAllGather(tiledM, matrix_glob, sendcount, ncclDouble, ct.nccl_local_comm, 0);
+        rmg::error(ncclAllGather(tiledM, matrix_glob, sendcount, ncclDouble, ct.nccl_local_comm, 0));
 //keep those if we have trouble in the future
 //#elif (CUDA_ENABLED) && USE_NCCL
 //   use allreduce instead of allgather

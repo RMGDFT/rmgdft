@@ -148,65 +148,74 @@ void rmg::error(cusolverStatus_t custat, const std::source_location loc)
 #endif
 
 #if HIP_ENABLED
-void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
+    void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
+    {
+
+        if(hipstat==HIPBLAS_STATUS_SUCCESS)
+            return;
+
+        std::string msg;
+        if(hipstat==HIPBLAS_STATUS_NOT_INITIALIZED)
+        {
+            msg = "'HIPBLAS_STATUS_NOT_INITIALIZED'";
+        }
+        else if(hipstat==HIPBLAS_STATUS_ALLOC_FAILED)
+        {
+            msg = "HIPBLAS_STATUS_ALLOC_FAILED";
+        }
+        else if(hipstat==HIPBLAS_STATUS_INVALID_VALUE)
+        {
+            msg = "HIPBLAS_STATUS_INVALID_VALUE";
+        }
+        else if(hipstat==HIPBLAS_STATUS_ARCH_MISMATCH)
+        {
+            msg = "HIPBLAS_STATUS_ARCH_MISMATCH";
+        }
+        else if(hipstat==HIPBLAS_STATUS_MAPPING_ERROR)
+        {
+            msg = "HIPBLAS_STATUS_MAPPING_ERROR";
+        }
+        else if(hipstat==HIPBLAS_STATUS_EXECUTION_FAILED)
+        {
+            msg = "HIPBLAS_STATUS_EXECUTION_FAILED";
+        }
+        else if(hipstat==HIPBLAS_STATUS_INTERNAL_ERROR)
+        {
+            msg = "HIPBLAS_STATUS_INTERNAL_ERROR";
+        }
+        else
+        {
+            msg = "UNKNOWN HIPBLAS ERROR";
+        }
+
+        print_exit(msg.c_str(), loc);
+    }
+
+    void rmg::error(hipError_t hipstat, const std::source_location loc)
+    {
+
+        if(hipstat == hipSuccess) return;
+
+        const char *msg = hipGetErrorString(hipstat);
+        print_exit(msg, loc);
+    }   
+
+    void rmg::error(rocblas_status rocstat, const std::source_location loc)
+    {
+        if(rocstat == rocblas_status_success) return;
+
+        const char *msg = rocblas_status_to_string(rocstat);
+        print_exit(msg, loc);
+    }
+
+
+#endif
+#if USE_NCCL
+void rmg::error(ncclResult_t res, const std::source_location loc)
 {
-
-    if(hipstat==HIPBLAS_STATUS_SUCCESS)
-        return;
-
-    std::string msg;
-    if(hipstat==HIPBLAS_STATUS_NOT_INITIALIZED)
-    {
-        msg = "'HIPBLAS_STATUS_NOT_INITIALIZED'";
+    if (res != ncclSuccess) {
+        const char *msg = ncclGetErrorString(res);
+        print_exit(msg, loc);
     }
-    else if(hipstat==HIPBLAS_STATUS_ALLOC_FAILED)
-    {
-        msg = "HIPBLAS_STATUS_ALLOC_FAILED";
-    }
-    else if(hipstat==HIPBLAS_STATUS_INVALID_VALUE)
-    {
-        msg = "HIPBLAS_STATUS_INVALID_VALUE";
-    }
-    else if(hipstat==HIPBLAS_STATUS_ARCH_MISMATCH)
-    {
-        msg = "HIPBLAS_STATUS_ARCH_MISMATCH";
-    }
-    else if(hipstat==HIPBLAS_STATUS_MAPPING_ERROR)
-    {
-        msg = "HIPBLAS_STATUS_MAPPING_ERROR";
-    }
-    else if(hipstat==HIPBLAS_STATUS_EXECUTION_FAILED)
-    {
-        msg = "HIPBLAS_STATUS_EXECUTION_FAILED";
-    }
-    else if(hipstat==HIPBLAS_STATUS_INTERNAL_ERROR)
-    {
-        msg = "HIPBLAS_STATUS_INTERNAL_ERROR";
-    }
-    else
-    {
-        msg = "UNKNOWN HIPBLAS ERROR";
-    }
-
-    print_exit(msg.c_str(), loc);
 }
-
-void rmg::error(hipError_t hipstat, const std::source_location loc)
-{
-
-    if(hipstat == hipSuccess) return;
-
-    const char *msg = hipGetErrorString(hipstat);
-    print_exit(msg, loc);
-}   
-
-void rmg::error(rocblas_status rocstat, const std::source_location loc)
-{
-    if(rocstat == rocblas_status_success) return;
-
-    const char *msg = rocblas_status_to_string(rocstat);
-    print_exit(msg, loc);
-}
-        
-
 #endif
