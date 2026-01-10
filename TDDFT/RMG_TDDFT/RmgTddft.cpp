@@ -64,129 +64,6 @@ void eldyn_ort(int *desca, int Mdim, int Ndim, std::complex<double> *F,std::comp
 void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
 void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm);
 
-void CalculatePrho(double *, double *);
-
-void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
-    /*    
-          Print the block [0:nblock-1,0:nblock-1]  of an  array of size
-          ldim*ldim.  Array (matrix) is stored as a vector.
-
-     */ 
-
-    int  N  = *nblock ;   // block size to be printed 
-    int  LD = *ldim   ;   // leaading dimension of matrix
-
-    int i,j, ij   ;
-
-    if (pct.gridpe ==0 ) {
-        for     ( i = 0; i< N  ; i++){   // row
-                                         //printf("\n   %d  : ", i);
-            printf("\n"); 
-            for  ( j = 0; j< N  ; j++){   // column
-                ij = i*LD  + j  ;
-                printf(" %14.6e", matrix[ij]) ;
-            }
-        }
-        printf("\n");
-    }
-}
-
-void write_rho_x(double * rho, char *ab)
-{
-
-    int ix, iy, iz, poff;
-    double t1;
-    double *zvec;
-
-    zvec = new double[get_FNX_GRID()]();
-    /* Get this processors offset */
-    poff = get_FPX_OFFSET();
-
-
-
-    /* Zero out result vector */
-    for (ix = 0; ix < get_FNX_GRID(); ix++)
-        zvec[ix] = ZERO;
-
-
-    /* Loop over this processor */
-    for (ix = 0; ix < get_FPX0_GRID(); ix++)
-    {
-        t1 = 0.0;
-        for (iy = 0; iy < get_FPY0_GRID(); iy++)
-            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
-
-                t1 += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
-
-
-        zvec[ix + poff] = t1;
-
-    }                           /* end for */
-
-
-    /* Now sum over all processors */
-    ix = get_FNX_GRID();
-    global_sums(zvec, &ix, pct.grid_comm);
-
-    if (pct.gridpe == 0)
-    {
-        printf("\n\n Planar average of the electrostatic density\n");
-        for (ix = 0; ix < get_FNX_GRID(); ix++)
-        {
-            t1 = ix * get_hxxgrid();
-            printf(" %d %f %s\n", ix, zvec[ix] / get_FNY_GRID() / get_FNZ_GRID(), ab);
-        }
-        printf(" & %s\n", ab);
-        fflush(NULL);
-    }
-
-    delete [] zvec;
-}                               /* end get_avgd */
-
-/******/
-///////////////////////////////////////
-
-void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
-    /*    
-          Print the block [0:nblock-1,0:nblock-1]  of a complex  array of size
-          ldim*ldim.  Array (matrix) is stored as a ldim*ldim vector or real  
-          values followed by ldim*ldim vector of imaginary values
-
-     */ 
-
-    int  N  = *nblock ;   // block size to be printed 
-    int  LD = *ldim   ;   // leaading dimension of matrix
-
-    int i,j, ij   ;
-    int i0_re = 0 ; 
-    int i0_im = i0_re + LD*LD  ; 
-
-    if (pct.gridpe ==0 ) {
-
-        // print  real part  
-        printf("***  real:\n");
-        for     ( i = 0; i< N  ; i++){         // row
-            printf("\n");                      // printf("   %d  : ", i);
-            for  ( j = 0; j< N  ; j++){        // column
-                ij = i*LD  + j  ;
-                printf(" %14.6e", matrix[i0_re+ ij]) ;
-            }
-        }
-        printf("\n") ;   
-
-        // print  imaginary  part  
-        printf("***  imag:\n ") ;   
-        for     ( i = 0; i< N  ; i++){         // row
-            printf("\n");                       // printf("   %d  : ", i);
-            for  ( j = 0; j< N  ; j++){         // column
-                ij = i*LD  + j  ;
-                printf(" %14.6e", matrix[ i0_im+ij ]) ;
-            }
-        }
-        printf("\n");
-    }
-}
-
 
 template void RmgTddft<double, double> ( spinobj<double> &vxc,
                    fgobj<double> &vh,
@@ -401,25 +278,11 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
 
-    if(0)
-    {
-        XyzMatrix(Kptr[0], (OrbitalType *)Hmatrix_0, 1, 0, 0);
-        if(pct.gridpe == 0)
-            for(int i = 0; i < 5; i++) 
-            { printf("xyz\n");
-                for(int j = 0; j < 5; j++) printf(" %10.4e", 0.001* Hmatrix_0[i*numst + j]);
-            }
-    }
-
     RmgTimer *RT0 = new RmgTimer("2-TDDFT");
 
     if(!ct.norm_conserving_pp)
     {
-        rmg_printf(" \n  TDDFT support NCPP only \n");
-
-        fflush(NULL);
-        throw RmgFatalException() << " TDDFT support NCPP only in "<< __FILE__ << " at line " << __LINE__ << "\n";
-        exit(0);
+        rmg::error(" \n  TDDFT support NCPP only \n");
     }
 
     if(pct.kstart == 0 && pct.gridpe == 0)
@@ -1063,6 +926,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                         tot_steps*time_step, dipole_tot[0], dipole_tot[1], dipole_tot[2]);
                 if(tot_steps == 0) 
                 {
+
                     Eterms[0] = E_downfold  ;
                     Eterms[1] = EkinPseudo_0;
                     Eterms[2] = ES_0        ;

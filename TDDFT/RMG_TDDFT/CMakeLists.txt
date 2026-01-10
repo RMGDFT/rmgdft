@@ -1,12 +1,10 @@
 add_library (RmgTddft
-XyzMatrix.cpp
 init_point_charge_pot.cpp
 RmgTddft.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp
 GetNewRho_rmgtddft.cpp
 VecPmatrix.cpp
-CalculatePrho.cpp
 CurrentNlpp.cpp
 CurrentOperator.cpp
 EpsilonMatrix.cpp
