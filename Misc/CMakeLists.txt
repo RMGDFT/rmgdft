@@ -124,7 +124,6 @@ basic_algebra_routines.f90
 invmat.f90
 GetFdFactor.cpp 
 GpuEleMul_sycl.cpp
-rmg_write.cpp
 gauss_solve.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
