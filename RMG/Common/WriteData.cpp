@@ -219,9 +219,7 @@ static void write_double (int fh, double * rp, int count)
     int size;
 
     size = count * sizeof (double);
-    if (size != rmg_write (fh, rp, size))
-        rmg::error("error writing");
-
+    rmg::writefile(fh, rp, size);
     totalsize += size;
 }
 
@@ -231,8 +229,7 @@ static void write_int (int fh, int *ip, int count)
     int size;
 
     size = count * sizeof (int);
-    if (size != rmg_write (fh, ip, size))
-        rmg::error("error writing");
+    rmg::writefile(fh, ip, size);
 
     totalsize += size;
 }
@@ -244,13 +241,9 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     double *out = new double[2*nx*ny*nz];
 
     size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
-    size_t wsize = rmg_write (fh, &csize, sizeof(csize));
-    if(wsize != sizeof(csize))
-        rmg::error("error writing");
+    rmg::writefile(fh, &csize, sizeof(csize));
 
-    wsize = rmg_write (fh, out, csize);
-    if(wsize != csize)
-        rmg::error("error writing");
+    rmg::writefile(fh, out, csize);
 
     totalsize += csize;
     delete [] out;

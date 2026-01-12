@@ -232,11 +232,10 @@ void rmg::error(ncclResult_t res, const std::source_location loc)
 }
 #endif
 
-#include <unistd.h>
 
 // This function is used to provide error checking for all the legacy
 // calls to write in the rmg code base that don't peform error checks.
-void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_location& loc)
+void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_location loc)
 {
     ssize_t rval = block_write(fd, buf, count);
 

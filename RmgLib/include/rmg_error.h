@@ -66,6 +66,7 @@ namespace rmg
 {
     void error(char const *message, std::source_location loc = std::source_location::current());
     void error_set_print(int doprint);
+    void writefile(int fd, const void *buf, ssize_t count, std::source_location loc = std::source_location::current());
 
 #if CUDA_ENABLED
     void error(cublasStatus_t custat, std::source_location loc = std::source_location::current());
@@ -83,7 +84,6 @@ namespace rmg
     void error(ncclResult_t nccl_res, std::source_location loc = std::source_location::current());
 #endif
 
-void writefile(int fd, const void *buf, ssize_t count, const std::source_location& loc);
 
 }
 

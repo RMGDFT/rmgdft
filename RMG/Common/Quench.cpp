@@ -479,7 +479,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
         for(auto it = RMSdV.begin();it != RMSdV.end();it++) {
             snprintf(tbuf, sizeof(tbuf), "%d %12.6f\n", idx, log10(*it));
-            write(fhand, tbuf, strlen(tbuf));
+            rmg::writefile(fhand, tbuf, strlen(tbuf));
             idx++;
         }
 

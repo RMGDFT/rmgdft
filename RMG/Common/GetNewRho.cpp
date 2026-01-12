@@ -74,7 +74,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
     else
     {
-#if HIP_ENABLED
+#if 0 && HIP_ENABLED
         int ibrav = Rmg_L.get_ibrav_type();
         if(ct.prolong_order == 0)
         {

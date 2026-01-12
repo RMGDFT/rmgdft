@@ -90,7 +90,7 @@ void Write_nsocc(char *name, Kpoint<KpointType> * kptr)
         }
 
 
-        write(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
+        rmg::writefile(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
         close(fhand);
     }
 
