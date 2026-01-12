@@ -382,7 +382,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
             if(mycol == ib%npcol)
             {
                 int istart = (ib/npcol) *nb;
-                for(int jb = 0; jb < nblock; jb++)
+                for(int jb = ib; jb < nblock; jb++)
                 {
                     if(myrow == jb%nprow)
                         //  block (jb,ib) in this processor
@@ -393,7 +393,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                Aij[(istart + i) * mxllda + j + jstart] += MyConj(global_matrix1[ (j + (jb-ib) * mb ) * size_row + i]);
+                                Aij[(istart + i) * mxllda + j + jstart] = MyConj(global_matrix1[ (j + (jb-ib) * mb ) * size_row + i]);
                             }
                         }
                     }
