@@ -31,12 +31,16 @@
 #include "rmg_error.h"
 #include <iostream>
 #include <signal.h>
+#include <cstdint>
+#include <unistd.h>
 
 #if HIP_ENABLED
 #include "tiled_mm.hpp"
 #endif  
 
 #include <boost/stacktrace.hpp>
+
+ssize_t block_write(int fd, const void *buf, size_t count);
 
 static int do_print=true;
 
@@ -227,3 +231,50 @@ void rmg::error(ncclResult_t res, const std::source_location loc)
     }
 }
 #endif
+
+#include <unistd.h>
+
+// This function is used to provide error checking for all the legacy
+// calls to write in the rmg code base that don't peform error checks.
+void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_location& loc)
+{
+    ssize_t rval = block_write(fd, buf, count);
+
+    if(rval < 0 || rval != count)
+    {
+        // If any process had an error or incomplete write we want output
+        rmg::error_set_print(true);
+
+        rmg::error("File write failed.", loc);
+    }
+}
+
+
+// Some implementations of write fail for very large buffers so we block it here
+// This should not be called directly but from rmg::writefile which handles
+// the errors.
+#define WBLOCK_SIZE 1073741824
+
+ssize_t block_write(int fd, const void *buf, size_t count)
+{
+
+  size_t nblocks = count / WBLOCK_SIZE;
+  size_t rem = count % WBLOCK_SIZE;
+  uint8_t *bufptr = (uint8_t *)buf;
+
+  for(size_t blocks = 0;blocks < nblocks;blocks++)
+  {
+      size_t written = write(fd, bufptr, WBLOCK_SIZE);
+      if(written != WBLOCK_SIZE) return written;
+      bufptr += WBLOCK_SIZE;
+  }
+
+  if(rem)
+  {
+      size_t written = write(fd, bufptr, rem);
+      if(written != rem) return written;
+  }
+
+  return nblocks*WBLOCK_SIZE + rem;
+}
+

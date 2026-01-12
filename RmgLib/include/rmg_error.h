@@ -82,6 +82,9 @@ namespace rmg
 #if USE_NCCL
     void error(ncclResult_t nccl_res, std::source_location loc = std::source_location::current());
 #endif
+
+void writefile(int fd, const void *buf, ssize_t count, const std::source_location& loc);
+
 }
 
 #endif
