@@ -198,7 +198,6 @@ void SPECIES::InitDelocalizedOrbital (void)
         for(int L = 0; L <  ct.max_l+2; L++) IL[L] = std::pow(-I_t, L);
         std::complex<double> phase = PI * I_t;
         phase = std::exp(phase);
-        int max_pbasis = 0;
 
         int lmax = ct.max_l + 1;
         int num_lm = (lmax + 1) * (lmax + 1);

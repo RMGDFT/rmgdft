@@ -39,8 +39,6 @@ void SPECIES::InitLocalizedWeight (void)
     RmgTimer RT0("Weight");
     // get tot number of projectors and their information
 
-    int nldim_max = ct.max_nldim;
-
     RmgTimer *RT1= new RmgTimer("Weight: phase and set");
 
     int size = this->nldim * this->nldim * this->nldim;
@@ -133,8 +131,6 @@ void SPECIES::InitLocalizedWeight_xyz (void)
 
     RmgTimer RT0("Weight_xyz");
     // get tot number of projectors and their information
-
-    int nldim_max = ct.max_nldim;
 
     RmgTimer *RT1= new RmgTimer("Weight_xyz: phase and set");
 
@@ -241,7 +237,6 @@ void InitWeight_xyz_One (SPECIES * sp, std::complex<double> *rtptr, std::complex
 {
 
     double ax[3];
-    double t1;
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     double scale = 2.0 * PI / sp->prj_pwave->L->celldm[0];

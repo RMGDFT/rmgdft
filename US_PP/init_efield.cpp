@@ -34,14 +34,12 @@
 void init_efield (double * vnuc, double efield[3])
 {
 
-    double norm_field_0;
     int ix, iy, iz;
     int jx, jy, jz;
     int idx;
     int incix, inciy;
     double xoff, yoff, zoff;
     double rx, ry, rz;
-    double d_field;
     double hxxgrid, hyygrid, hzzgrid;
 
     hxxgrid = get_hxxgrid();

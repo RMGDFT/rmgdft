@@ -117,7 +117,7 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
     }
 
     /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
-    if (ct.max_nlpoints < (this->nldim * this->nldim * this->nldim))
+    if (ct.max_nlpoints < (size_t)(this->nldim * this->nldim * this->nldim))
         ct.max_nlpoints = this->nldim * this->nldim * this->nldim;
 
     if(!ct.localize_projectors) {

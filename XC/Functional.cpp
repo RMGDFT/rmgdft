@@ -332,7 +332,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     vtxc = 0.0;
     for(int ix = 0;ix < nspin*this->pbasis;ix++) v_out[ix] = 0.0;
 
-    double rhoneg[2]{0.0,0.0};
     double *rho_up=NULL, *rho_down=NULL;
     double *v_up=NULL, *v_down=NULL;
 
@@ -342,7 +341,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
     if(nspin==1) {
 
-        double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
+        double rhonegl=0.0;
         // spin unpolarized  
         fgobj<double> ex, ec, vx, vc;
         int length = ex.pbasis;
@@ -547,13 +546,10 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v, double *ked, int nspin)
 {
     double eps8 = 1.0e-8, eps12 = 1.0e-12;
-    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     etxc = 0.0;
     vtxc = 0.0;
-    double rhoneg[2];
     int np = 1;
     int ione = 1;
-    int itwo = 2;
     bool gargs = false;
     if(nspin == 2) np=3;
 
@@ -742,7 +738,6 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     const double epsr=1.0e-6;
     const double epsg = 1.0e-10;
-    double epsg_guard = ct.epsg_guard;
     int ione = 1;
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
@@ -763,6 +758,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
     ApplyGradient (rhoout.data(), gx, gy, gz, fd_order, "Fine");
     //FftGradientFine(rhoout.data(), gx, gy, gz);
+    delete RT2;
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
@@ -828,9 +824,9 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
 
-    const double epsr=1.0e-6;
-    const double epsg = 1.0e-10;
-    double epsg_guard = ct.epsg_guard;
+    //const double epsr=1.0e-6;
+    //const double epsg = 1.0e-10;
+    //double epsg_guard = ct.epsg_guard;
 
     double *grho_up = new double[6*this->pbasis];
     double *grho_down = grho_up + 3*this->pbasis;
@@ -875,12 +871,12 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     RmgTimer *RT4 = new RmgTimer("5-Functional: libxc");
 ///#pragma omp parallel for reduction(+:etxcgc,vtxcgc)
     for(int k=0;k < this->pbasis;k++) {
-        double arho_up = fabs(rhoout_up[k]);
-        double arho_down = fabs(rhoout_down[k]);
-        double arho = arho_up + arho_down;
-        double grho2[2];
-        grho2[0] = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
-        grho2[1] = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
+        //double arho_up = fabs(rhoout_up[k]);
+        //double arho_down = fabs(rhoout_down[k]);
+        //double arho = arho_up + arho_down;
+        //double grho2[2];
+        //grho2[0] = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
+        //grho2[1] = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
 
 //        if((arho_up > epsr) && (arho_down > epsr) && (grho2[0] > epsg) && (grho2[1] > epsg))
         {
