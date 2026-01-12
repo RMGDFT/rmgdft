@@ -71,6 +71,9 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
 template <typename OrbitalType, typename CalType> 
 void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, spinobj<double> &rho, OrbitalType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype);
 
+template <typename MatrixType>
+    void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP);
+
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);
 void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int ldim);

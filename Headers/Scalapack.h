@@ -185,6 +185,7 @@ protected:
 
 #define		numroc		RMG_FC_GLOBAL(numroc, NUMROC)
 #define		indxg2p		RMG_FC_GLOBAL(indxg2p, INDXG2P)
+#define		indxl2g		RMG_FC_GLOBAL(indxl2g, INDXL2G)
 #define		descinit	RMG_FC_GLOBAL(descinit, DESCINIT)
 #define		pdsyev		RMG_FC_GLOBAL(pdsyev, PDSYEV)
 #define		pcheev		RMG_FC_GLOBAL(pcheev, PCHEEV)
@@ -238,6 +239,7 @@ MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
 void Cpdgemr2d(int, int, double*, int, int, int*, double*, int, int, int*, int);
 int numroc (int *, int *, int *, int *, int *);
 int indxg2p (int *, int *, int *, int *, int *);
+int indxl2g (int *, int *, int *, int *, int *);
 void pdgetrf( int *, int *, double *, int *, int *, int *, int *, int * );
 void pdgetrs( char *, int *, int *, double *, int *, int *, int *, int *, double *, int *, int *, int *, int *);
 void pzgetrs( char *, int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, int *, int *, int *, int *);

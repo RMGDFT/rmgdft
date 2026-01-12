@@ -216,6 +216,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         }
     }
 
+    std::vector<double> diag_elem(numst);
     MatrixType *matrix_glob = (MatrixType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(MatrixType));
     OrbitalType *matrix_glob_orbitaltype = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
     std::complex<double> *mat_C = (std::complex<double> *) matrix_glob_orbitaltype; 
@@ -436,32 +437,16 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
-            for(int i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0; 
-            for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
+            for(int i = 0; i < numst; i++) diag_elem[i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
+            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, numst, *Sp);
 
-            if(ct.tddft_tiledMM == 1)
-            {
-                memcpy(Kptr[kpt]->Hmatrix_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
-            }
-            else
-            {
-                Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Hmatrix_cpu, numst, desca);
-            }
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
 
 
-            for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
-            for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
-            if(ct.tddft_tiledMM == 1)
-            {
-                memcpy(Kptr[kpt]->Pn0_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
-            }
-            else
-            {
-                Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Pn0_cpu, numst, desca);
-            }
+            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
+            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, numst, *Sp);
         }
 
         rmg_printf("\n  x dipolll  %f ", dipole_tot[0]);
