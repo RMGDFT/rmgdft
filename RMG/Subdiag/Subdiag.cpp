@@ -230,7 +230,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     MPI_Allreduce(MPI_IN_PLACE, (double *)D, 2 * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
     for(int i=0;i < nstates;i++)
     {
-        State<KpointType> *sp = &Kstates[i];
         Hij[i*nstates + i] = D[i];
         //if( ct.scf_steps == (ct.max_scf_steps-1))
         //    Hij[i*nstates + i] = D[i] + sp->vnuc_correction + sp->vxc_correction + sp->vh_correction;

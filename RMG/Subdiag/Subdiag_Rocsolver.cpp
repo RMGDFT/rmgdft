@@ -59,9 +59,9 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
 #endif
 
+    static char *trans_n = "n";
 #if HIP_ENABLED
     static char *trans_t = "t";
-    static char *trans_n = "n";
     static int call_count, folded_call_count;
     int num_states = kptr->nstates;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
@@ -163,8 +163,8 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     } 
 
     if(use_folded) return trans_t;
-    return trans_n;
 #endif
+    return trans_n;
 }
 
 

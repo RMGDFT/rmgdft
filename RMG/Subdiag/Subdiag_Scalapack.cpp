@@ -109,13 +109,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     KpointType *tmp_arrayT = kptr->Kstates[0].psi;
     tmp_arrayT += kptr->nstates * pbasis_noncoll ;
 
-    char *trans_t = "t";
-    char *trans_n = "n";
-    char *trans_c = "c";
-    char *trans_a = trans_t;
-    if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
-
-
     KpointType *psi = kptr->orbital_storage + first_state * pbasis_noncoll;
     KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
@@ -234,6 +227,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 #endif
 
 
+    char *trans_n = "n";
+    //char *trans_t = "t";
     //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
     //    switch to FOLDED_GSE must uncomment
     return trans_n;
