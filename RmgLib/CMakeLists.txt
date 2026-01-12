@@ -40,6 +40,7 @@ src/FiniteDiffGrad2.cpp
 src/FiniteDiff_exp.cpp
 src/FiniteDiff_mehr.cpp
 src/TradeImages.cpp
+src/Prolong.cpp
 src/Lattice.cpp
 src/BaseThread.cpp
 src/rmg_grid.cpp
@@ -60,7 +61,6 @@ src/get_vh.cpp
 src/vh_fmg.cpp
 src/packfuncs.cpp
 src/ZfpCompress.cpp
-src/Prolong.cpp
 )
 
 #if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

@@ -60,11 +60,9 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
 {
     RmgTimer RT0("4-KEd");
 
-    double vel = L->get_omega() / (double)G->get_GLOBAL_BASIS(1);
     wfobj<KpointType> gx, gy, gz;
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
-    BaseThread *T = BaseThread::getBaseThread(0);
     // State array is 4 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
@@ -91,7 +89,6 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
     rmg::sync_device();
 #endif
 
-    int density = 1;
     for(int st = 0; st < nstates; st++) {
         ApplyGradient (Kstates[st].psi, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Coarse");
 

@@ -34,7 +34,6 @@
 
 void WellPotential (double *v)
 {
-    double vector[3];
     double x[3], xtal[3];
     xtal[0] = 0.5;
     xtal[1] = 0.5;
