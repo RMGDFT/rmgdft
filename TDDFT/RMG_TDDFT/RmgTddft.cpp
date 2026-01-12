@@ -489,8 +489,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 init_point_charge_pot(vtot_psi.data(), 1);
             }
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                HmatrixUpdate<OrbitalType, OrbitalType>(Kptr[kpt], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, ct.tddft_start_state, numst);
-                Sp->CopySquareMatrixToDistArray((OrbitalType *)matrix_glob, Kptr[kpt]->Akick_cpu, numst, desca);
+                HmatrixUpdate<OrbitalType, OrbitalType, OrbitalType>(Kptr[kpt], vtot_psi, vxc_psi, (OrbitalType *)Kptr[kpt]->Akick_cpu, ct.tddft_start_state, numst, desca);
                 daxpy ( &n2_C,  &alpha, (double *)Kptr[kpt]->Akick_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu , &ione) ;
                 memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
             }
@@ -808,33 +807,17 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     if(ct.is_gamma)
                     {
                         kptr_d = (Kpoint<double> *)Kptr[kpt];
-                        HmatrixUpdate<double,float>  (kptr_d, vtot_psi, vxc_psi, (double *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                        HmatrixUpdate<double,float, MatrixType>  (kptr_d, vtot_psi, vxc_psi, (MatrixType *)Kptr[kpt]->Hmatrix_m1_cpu, ct.tddft_start_state, numst, desca);                                     
                     }
                     else
                     {
                         kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
-                        HmatrixUpdate<std::complex<double>,std::complex<float>>  (kptr_c, vtot_psi, vxc_psi, (std::complex<double> *)matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
+                        HmatrixUpdate<std::complex<double>,std::complex<float>, std::complex<double>>  (kptr_c, vtot_psi, vxc_psi, (std::complex<double> *)Kptr[kpt]->Hmatrix_m1_cpu, ct.tddft_start_state, numst, desca);                                     
                     }
                 }
                 else
                 {
-                    HmatrixUpdate<OrbitalType,OrbitalType>  (Kptr[kpt], vtot_psi, vxc_psi, matrix_glob_orbitaltype, ct.tddft_start_state, numst);                                     
-                }
-                for(int i = 0; i < numst * numst; i++) matrix_glob[i] = matrix_glob_orbitaltype[i];
-                if(ct.tddft_tiledMM)
-                {
-                    memcpy(Kptr[kpt]->Hmatrix_m1_cpu, &matrix_glob[numst * numst/pct.local_comm_npes * pct.local_rank], matrix_size);
-                }
-                else
-                {
-                    if( scalapack_groups != pct.grid_npes)
-                    {
-                        Sp->CopySquareMatrixToDistArray(matrix_glob, (MatrixType *)Kptr[kpt]->Hmatrix_m1_cpu, numst, desca);
-                    }
-                    else
-                    {
-                        memcpy(Kptr[kpt]->Hmatrix_m1_cpu, matrix_glob, matrix_size);
-                    }
+                    HmatrixUpdate<OrbitalType,OrbitalType, MatrixType>  (Kptr[kpt], vtot_psi, vxc_psi, (MatrixType *)Kptr[kpt]->Hmatrix_m1_cpu, ct.tddft_start_state, numst, desca);                                     
                 }
                 delete(RT2a);
 
