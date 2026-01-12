@@ -39,7 +39,7 @@
 
 
 
-template <class T> diis<T>::diis(int max_Min, int N_in)
+template <class T> diis<T>::diis(size_t max_Min, size_t N_in)
 {
     max_M = max_Min;      // Maximum number of past iterates to use
     N = N_in;             // array length for functions and residuals
@@ -50,7 +50,7 @@ template <class T> diis<T>::diis(int max_Min, int N_in)
 template <class T> void diis<T>::addfunc(T *f)
 {
     std::vector<T> ftmp(N);
-    for(int i=0;i < N;i++) ftmp[i] = f[i];
+    for(size_t i=0;i < N;i++) ftmp[i] = f[i];
     funcs.push_back(ftmp);
 
     // Remove oldest entry if needed
@@ -64,7 +64,7 @@ template <class T> void diis<T>::addfunc(float *f)
     if constexpr (std::is_same_v<T, double>)
     {
         std::vector<T> ftmp(N);
-        for(int i=0;i < N;i++) ftmp[i] = f[i];
+        for(size_t i=0;i < N;i++) ftmp[i] = f[i];
         funcs.push_back(ftmp);
 
         // Remove oldest entry if needed
@@ -79,7 +79,7 @@ template <class T> void diis<T>::addfunc(std::complex<float> *f)
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
         std::vector<T> ftmp(N);
-        for(int i=0;i < N;i++) ftmp[i] = f[i];
+        for(size_t i=0;i < N;i++) ftmp[i] = f[i];
         funcs.push_back(ftmp);
 
         // Remove oldest entry if needed
@@ -95,7 +95,7 @@ template <class T> void diis<T>::addres(T *r)
     if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::complex<double>>)
     {
         std::vector<T> rtmp(N);
-        for(int i=0;i < N;i++) rtmp[i] = r[i];
+        for(size_t i=0;i < N;i++) rtmp[i] = r[i];
         res.push_back(std::move(rtmp));
 
         // Remove oldest entry if needed
@@ -111,7 +111,7 @@ template <class T> void diis<T>::addres(float *r)
     if constexpr (std::is_same_v<T, double>)
     {
         std::vector<T> rtmp(N);
-        for(int i=0;i < N;i++) rtmp[i] = r[i];
+        for(size_t i=0;i < N;i++) rtmp[i] = r[i];
         res.push_back(std::move(rtmp));
 
         // Remove oldest entry if needed
@@ -127,7 +127,7 @@ template <class T> void diis<T>::addres(std::complex<float> *r)
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
         std::vector<T> rtmp(N);
-        for(int i=0;i < N;i++) rtmp[i] = r[i];
+        for(size_t i=0;i < N;i++) rtmp[i] = r[i];
         res.push_back(std::move(rtmp));
 
         // Remove oldest entry if needed
@@ -148,7 +148,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
         double ss[2] = {0.0, 0.0};
-        for(int i=0;i < N;i++)
+        for(size_t i=0;i < N;i++)
         {
             ss[0] += (Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]);
             ss[1] += (Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]);
@@ -161,7 +161,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
     {
         double eig = ComputeEig(N, u0.data(), iHu, u0.data());
         double ss[2] = {0.0, 0.0};
-        for(int i=0;i < N;i++)
+        for(size_t i=0;i < N;i++)
         {
             ss[0] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]));
             ss[1] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]));
@@ -174,18 +174,18 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
 template <class T> void diis<T>::compute_lambda(double eig, float *iHu, float *r0, float *Hr0)
 {
     std::vector<double> t_iHu(N), t_Hr0(N), t_r0(N);
-    for(int i=0;i < N;i++) t_iHu[i] = iHu[i];
-    for(int i=0;i < N;i++) t_Hr0[i] = Hr0[i];
-    for(int i=0;i < N;i++) t_r0[i] = r0[i];
+    for(size_t i=0;i < N;i++) t_iHu[i] = iHu[i];
+    for(size_t i=0;i < N;i++) t_Hr0[i] = Hr0[i];
+    for(size_t i=0;i < N;i++) t_r0[i] = r0[i];
     compute_lambda(eig, t_iHu.data(), t_r0.data(), t_Hr0.data());
 }
 
 template <class T> void diis<T>::compute_lambda(double eig, std::complex<float> *iHu, std::complex<float> *r0, std::complex<float> *Hr0)
 {
     std::vector<std::complex<double>> t_iHu(N), t_Hr0(N), t_r0(N);
-    for(int i=0;i < N;i++) t_iHu[i] = iHu[i];
-    for(int i=0;i < N;i++) t_Hr0[i] = Hr0[i];
-    for(int i=0;i < N;i++) t_r0[i] = r0[i];
+    for(size_t i=0;i < N;i++) t_iHu[i] = iHu[i];
+    for(size_t i=0;i < N;i++) t_Hr0[i] = Hr0[i];
+    for(size_t i=0;i < N;i++) t_r0[i] = r0[i];
     compute_lambda(eig, t_iHu.data(), t_r0.data(), t_Hr0.data());
 }
 
@@ -218,9 +218,9 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
         for (int j = 0; j <= i; j++) {
            T val = 0.0;
            if constexpr (std::is_same_v<T, double>)
-               for (int k = 0; k < N; ++k) val = val + res[i][k] * res[j][k];
+               for (size_t k = 0; k < N; ++k) val = val + res[i][k] * res[j][k];
            else
-               for (int k = 0; k < N; ++k) val = val + std::conj(res[i][k]) * res[j][k];
+               for (size_t k = 0; k < N; ++k) val = val + std::conj(res[i][k]) * res[j][k];
             A[i * M + j] = val;
             A[j * M + i] = val;
         }
@@ -260,7 +260,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
         T c = b[i];
         maxci = std::max(maxci, std::abs(c));
         const auto& t = funcs[i];
-        for (int k = 0; k < N; k++) mixed[k] += c * t[k];
+        for (size_t k = 0; k < N; k++) mixed[k] += c * t[k];
     }
     return mixed;
 }
@@ -279,8 +279,8 @@ template <class T> T diis<T>::dot(std::vector<T>& a, std::vector<T>& b)
 }
 
 
-template diis<double>::diis(int max_Nin, int N_in);
-template diis<std::complex<double>>::diis(int max_Nin, int N_in);
+template diis<double>::diis(size_t max_Nin, size_t N_in);
+template diis<std::complex<double>>::diis(size_t max_Nin, size_t N_in);
 template void diis<double>::addfunc(double *f);
 template void diis<double>::addfunc(float *f);
 template void diis<std::complex<double>>::addfunc(std::complex<double> *f);
