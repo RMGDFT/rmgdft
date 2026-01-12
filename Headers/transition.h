@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_transition_h
 #define RMG_transition_h
 

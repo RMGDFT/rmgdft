@@ -248,6 +248,20 @@ void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_lo
     }
 }
 
+// This function is used to provide error checking for all the legacy
+// calls to read in the rmg code base that don't peform error checks.
+void rmg::readfile(int fd, void *buf, ssize_t count, const std::source_location loc)
+{
+    ssize_t rval = read(fd, buf, count);
+
+    if(rval < 0 || rval != count)
+    {
+        // If any process had an error or incomplete write we want output
+        rmg::error_set_print(true);
+
+        rmg::error("File read failed.", loc);
+    }
+}
 
 // Some implementations of write fail for very large buffers so we block it here
 // This should not be called directly but from rmg::writefile which handles

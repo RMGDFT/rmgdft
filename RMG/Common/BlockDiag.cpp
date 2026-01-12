@@ -62,7 +62,7 @@ template void Kpoint<std::complex<double>>::BlockDiagInternal(double *vtot, doub
 
 template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, double *vxc_psi)
 {
-    RmgTimer RT0("6-BlockDiag"), *RT1;
+    RmgTimer RT0("6-BlockDiag");
 
     // Distance between blocks of eigenvalues in eV
     double gap_thr = 20.0;
@@ -94,13 +94,13 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     if(ct.subdiag_driver != SUBDIAG_SCALAPACK && ct.subdiag_driver != SUBDIAG_ELPA)
     {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-        KpointType *hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-        KpointType *sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-        KpointType *vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
 #else
-        KpointType *hr = new KpointType[Nmax * Nmax]();
-        KpointType *sr = new KpointType[Nmax * Nmax]();
-        KpointType *vr = new KpointType[Nmax * Nmax]();
+        hr = new KpointType[Nmax * Nmax]();
+        sr = new KpointType[Nmax * Nmax]();
+        vr = new KpointType[Nmax * Nmax]();
 #endif
     }
 
@@ -181,7 +181,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     {
         Scalapack *SP;
         static std::unordered_map<uint64_t, Scalapack *> SPS;
-        uint64_t hash = first << 32 + N;
+        uint64_t hash = ((uint64_t)first << 32) + N;
         if(SPS.contains(hash))
         {
             SP = SPS[hash];

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_WaitQueue_H
 #define RMG_WaitQueue_H 1
 

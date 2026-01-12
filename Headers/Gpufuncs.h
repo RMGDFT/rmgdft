@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1

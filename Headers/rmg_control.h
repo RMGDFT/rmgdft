@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_control_H
 #define RMG_control_H 1
 #include <vector>

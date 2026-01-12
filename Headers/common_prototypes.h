@@ -1,3 +1,4 @@
+#pragma once
 /*
   Function prototypes shared by all codes.
 

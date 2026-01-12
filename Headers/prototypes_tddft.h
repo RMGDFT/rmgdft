@@ -1,3 +1,4 @@
+#pragma once
 //#include "typedefs.h"
 //#define eldyn_ eldyn
 void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, double *rho_matrix);

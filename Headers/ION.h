@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_ION_H
 #define RMG_ION_H 1
 

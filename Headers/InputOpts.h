@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_InputOpts_H
 #define RMG_InputOpts_H 1
 

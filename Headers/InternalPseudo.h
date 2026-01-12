@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_InternalPseudo_H
 #define RMG_InternalPseudo_H 1
 

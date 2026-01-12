@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_GlobalSums_h
 #define RMG_GlobalSums_h
 

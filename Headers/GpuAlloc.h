@@ -1,3 +1,4 @@
+#pragma once
 #ifndef GPU_ALLOC_H
 #define GPU_ALLOC_H 1
 

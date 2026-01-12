@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright (c) 2014, Emil Briggs
@@ -27,7 +28,6 @@
  * 
 */
 
-#pragma once
 
 #ifndef RMG_rmg_gemm_H
 #define RMG_rmg_gemm_H 1

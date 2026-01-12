@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_THREADS_H
 #define RMG_THREADS_H 1
 

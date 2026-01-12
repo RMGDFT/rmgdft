@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_CheckValue_H
 #define RMG_CheckValue_H
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_ORBITAL_PROFILE_H
 #define RMG_ORBITAL_PROFILE_H 1
 

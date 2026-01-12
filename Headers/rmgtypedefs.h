@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef RMG_TYPEDEFS_H
 #define RMG_TYPEDEFS_H 1

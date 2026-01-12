@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_BlasWrappers_h
 #define RMG_BlasWrappers_h
 

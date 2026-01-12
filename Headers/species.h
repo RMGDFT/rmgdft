@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_SPECIES_H
 #define RMG_SPECIES_H 1
 

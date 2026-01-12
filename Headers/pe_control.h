@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_pe_control_H
 #define RMG_pe_control_H 1
 

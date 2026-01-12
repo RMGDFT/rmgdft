@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_vdW_params_H
 #define RMG_vdW_params_H 1
 

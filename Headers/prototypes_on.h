@@ -1,3 +1,4 @@
+#pragma once
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_XC_H
 #define RMG_XC_H 1
 

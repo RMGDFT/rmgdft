@@ -1,3 +1,4 @@
+#pragma once
 #ifndef KLIST_H
 #define KLIST_H 1
 #include <vector>
