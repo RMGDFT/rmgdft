@@ -126,7 +126,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
 
         }
 
-        write(fhand_nl, Nlweight, count);
+        rmg::writefile(fhand_nl, Nlweight, count);
 
     }
     close(fhand_nl);

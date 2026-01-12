@@ -36,6 +36,6 @@ void *CreateMmapArray(int &fd, size_t length)
 {
     ftruncate(fd, length);
     lseek(fd, length-1, SEEK_SET);
-    write(fd, "", 1);
+    rmg::writefile(fd, "", 1);
     return mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 }

@@ -210,7 +210,7 @@ std::string GetInternalPseudo_sg15(const char *symbol)
         if(fhand < 0)
             rmg::error(" Error saving pseudopotential file. Terminating.");
 
-        write(fhand, decompressed.c_str(), decompressed.length());
+        rmg::writefile(fhand, decompressed.c_str(), decompressed.length());
         close(fhand);
     }
     return decompressed;

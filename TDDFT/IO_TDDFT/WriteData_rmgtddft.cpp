@@ -88,17 +88,17 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
 
    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
    fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-   write (fhand, vh, fgrid_size * sizeof(double));
-   write (fhand, vxc, n_rho*fgrid_size * sizeof(double));
-   write (fhand, vh_corr, fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vh, fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vxc, n_rho*fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vh_corr, fgrid_size * sizeof(double));
 
-   write (fhand, Pn0, 2*n2 * sizeof(double));
-   write (fhand, Hmatrix, n2_C * sizeof(double));
-   write (fhand, Hmatrix_m1, n2_C * sizeof(double));
-   write (fhand, Hmatrix_0, n2_C * sizeof(double));
-   write (fhand, &tot_steps, sizeof(int));
-   write (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
-   write (fhand, Hcore_tddft, numst * numst * sizeof(double));
+   rmg::writefile (fhand, Pn0, 2*n2 * sizeof(double));
+   rmg::writefile (fhand, Hmatrix, n2_C * sizeof(double));
+   rmg::writefile (fhand, Hmatrix_m1, n2_C * sizeof(double));
+   rmg::writefile (fhand, Hmatrix_0, n2_C * sizeof(double));
+   rmg::writefile (fhand, &tot_steps, sizeof(int));
+   rmg::writefile (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
+   rmg::writefile (fhand, Hcore_tddft, numst * numst * sizeof(double));
    close(fhand);
 
 }                               /* end write_data */
