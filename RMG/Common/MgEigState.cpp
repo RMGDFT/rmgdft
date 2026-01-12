@@ -83,7 +83,6 @@ template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *coarse_vtot, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     BaseThread *Thread = BaseThread::getBaseThread(0);
-    int active_threads = rmg_get_active_threads();
     int tid = Thread->get_thread_tid();
 
     // Save in case needed for variational energy correction term

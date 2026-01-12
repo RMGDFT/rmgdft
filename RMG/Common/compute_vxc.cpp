@@ -68,7 +68,6 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
         {
             for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
 //            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
-            int ratio = Rmg_G->default_FG_RATIO;
             Prolong P(2, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
             int dimx = kdetau_f.dimx;
             int dimy = kdetau_f.dimy;

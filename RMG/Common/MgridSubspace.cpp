@@ -67,7 +67,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
 {
-    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     int bs = ct.non_local_block_size;
 
     for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
@@ -195,7 +194,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 
                 RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
                 int istart = my_pe_offset*active_threads;
-                int nthreads = active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
                     int sindex = bofs + st1 + ist + istart;
                     if(sindex >= mstates)
