@@ -43,7 +43,6 @@ int init_kpoints (int *kmesh, int *kshift)
     int magnetic_sym = 0;
     int time_reversal = true;
     if(!ct.time_reversal) time_reversal = false;
-    int no_z_inv = 0;
 
 
     //double *tau;

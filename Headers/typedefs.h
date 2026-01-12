@@ -210,26 +210,26 @@ typedef struct
 {
 
     /** The index of the k-point for backreferencing */
-    int kidx;
+    int kidx=0;
 
     /** The k-point */
-    double kpt[3];
+    double kpt[3]{};
 
     /** The corresponding vector */
-    double kvec[3];
+    double kvec[3]{};
 
     /** The weight associated with the k-point */
-    double kweight;
+    double kweight=0.0;
 
     /** The magnitude of the k-vector */
-    double kmag;
+    double kmag=0.0;
     
-    char symbol[10];
+    char symbol[10]{};
     std::vector<double> eigs;
 
     /* The orbital structure for this k-point */
     /* Need to get rid of this but still required in a few places */
-    STATE *kstate;
+    STATE *kstate = NULL;
 
 } KSTRUCT;
 
