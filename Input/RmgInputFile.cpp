@@ -338,7 +338,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
     std::string tbuf;
     std::string Msg;
     std::stringstream ifs;
-    char *input_buffer;
+    char *input_buffer=NULL;
     int input_buffer_len;
 
     int rank = pct.imgpe;

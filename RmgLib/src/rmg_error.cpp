@@ -256,7 +256,7 @@ void rmg::readfile(int fd, void *buf, ssize_t count, const std::source_location 
 
     if(rval < 0 || rval != count)
     {
-        // If any process had an error or incomplete write we want output
+        // If any process had an error or incomplete read we want output
         rmg::error_set_print(true);
 
         rmg::error("File read failed.", loc);

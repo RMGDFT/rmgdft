@@ -31,7 +31,7 @@
 void get_qqq ()
 {
     int idx, i, j, ion;
-    int nh, ncount, icount;
+    int nh, ncount;
     double *qqq, sum;
     ION *iptr;
     SPECIES *sp;

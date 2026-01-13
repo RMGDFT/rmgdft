@@ -1192,7 +1192,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
 void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double *a2, double *nalat)
 {
   
-  double e0[3], e1[3], e2[3], celldm_internal[6], omegai;
+  double omegai;
   bool dorotate = (ibrav == CUBIC_FC) ||
       (ibrav == CUBIC_BC) ||
       (ibrav == -CUBIC_BC) ||
@@ -1210,15 +1210,6 @@ void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double
   }
   lat2celldm (ibrav, alat, a0, a1, a2);
 
-  e0[0] = a0[0];
-  e0[1] = a0[1];
-  e0[2] = a0[2];
-  e1[0] = a1[0];
-  e1[1] = a1[1];
-  e1[2] = a1[2];
-  e2[0] = a2[0];
-  e2[1] = a2[1];
-  e2[2] = a2[2];
   latgen (celldm, &omegai, a0, a1, a2, !dorotate);
   for(int i=0;i < 3;i++) a0[i] /= alat;
   for(int i=0;i < 3;i++) a1[i] /= alat;

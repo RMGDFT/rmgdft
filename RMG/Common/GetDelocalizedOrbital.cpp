@@ -44,8 +44,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
 {
 
 
-    double *kvec = kp.kvec;
-
     Projector<KpointType> *P = OrbitalProjector;
     size_t stride = P->get_pstride();
 
@@ -69,7 +67,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
     }
 
     int num_allorbitals_ldaUion = 0;
-    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
+    for (size_t ion = 0; ion < (size_t)this->ldaU->num_ldaU_ions; ++ion)
     {
         /* Generate ion pointer */
         int ion_idx = this->ldaU->ldaU_ion_index[ion];
@@ -82,9 +80,8 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
 
     KpointType *npsi = (KpointType *)RmgMallocHost(num_allorbitals_ldaUion * pbasis * sizeof(KpointType));
 
-    double coeff = 1.0;
     int wave_idx = 0;
-    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
+    for (size_t ion = 0; ion < (size_t)this->ldaU->num_ldaU_ions; ++ion)
     {
         /* Generate ion pointer */
         int ion_idx = this->ldaU->ldaU_ion_index[ion];

@@ -595,7 +595,6 @@ template <typename T> void STS_calc(Kpoint<T> **Kptr, double Ef, int line_start[
     // magnatic rho projected in x, y, z direction
     int factor = ct.noncoll_factor * ct.noncoll_factor;
 
-    double rho_temp[factor];
     double gaus_broad = ct.gaus_broad;
     double Emax = ct.Emax;
     double Emin = ct.Emin;

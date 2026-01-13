@@ -258,7 +258,6 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
 {
 
     int nprow, npcol, myrow, mycol;
-    int lda=desca[8], ldb=descb[8], ldc = descc[8];
     int ictxt = desca[1];
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
@@ -272,6 +271,7 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
     else
     {
 #if CUDA_ENABLED || HIP_ENABLED
+        int lda=desca[8], ldb=descb[8], ldc = descc[8];
 
         if(m != n || m != k)
         {

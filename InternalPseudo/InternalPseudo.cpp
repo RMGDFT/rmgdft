@@ -22,6 +22,8 @@ std::string GetInternalPseudo(const char *symbol)
 
    if(ct.internal_pseudo_type == NORM_CONSERVING_STANDARD)
        return GetInternalPseudo_ncpp_standard(symbol);
+
+   return std::string("");
 }
 
 #endif

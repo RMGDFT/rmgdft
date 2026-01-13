@@ -54,7 +54,6 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
 template <typename KpointType>
 void ApplyBlockedHamiltonian(Kpoint<KpointType> *kptr, KpointType *h_psi, double *vtot_psi, double *vxc_psi)
 {
-    BaseThread *T = BaseThread::getBaseThread(0);
     int active_threads = rmg_get_active_threads();
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
@@ -72,8 +71,6 @@ void ApplyBlockedHamiltonian(Kpoint<KpointType> *kptr, KpointType *h_psi, double
         mstates = mstates * (active_threads * cfac);
         ApplyBlockedHamiltonian (kptr, nb*bs, mstates, mstates,  h_psi,vtot_psi, vxc_psi);
     }
-
-
 }
 
 template <typename KpointType>
@@ -113,8 +110,6 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
     block_size = block_size / (active_threads * cfac);
     block_size = block_size * (active_threads * cfac);
     int nblocks = mstates / block_size;
-    int irem = mstates % block_size;
-    //if(irem) nblocks++;
 
         for(int ib = 0;ib < nblocks;ib++)
         {
