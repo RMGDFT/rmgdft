@@ -233,6 +233,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     int info = GeneralDiag(hr, sr, eigs, vr, N, N, N, ct.subdiag_driver);
     delete RT1;
 
+    if(info) rmg::error("GeneralDiag failed.");
 
     // Rotate orbitals and use h_psi for scratch space
     RT1 = new RmgTimer("6-BlockDiag: rotate orbitals");
