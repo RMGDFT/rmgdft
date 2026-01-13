@@ -61,22 +61,17 @@ void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc,
 
 
     fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-    read (fhand, vh, fgrid_size * sizeof(double));
-    read (fhand, vxc, fgrid_size * sizeof(double));
-    read (fhand, vh_corr, fgrid_size * sizeof(double));
-
-    
-    read (fhand, Pn0, 2* n2 * sizeof(double));
-    read (fhand, Hmatrix, n2 * sizeof(double));
-    read (fhand, Smatrix, n2 * sizeof(double));
-    read (fhand, Cmatrix, n2 * sizeof(double));
-    read (fhand, Hmatrix_m1, n2 * sizeof(double));
-    read (fhand, Hmatrix_0, n2 * sizeof(double));
-    size = read (fhand, tot_steps, sizeof(int));
-    if(size != sizeof(int)) 
-            rmg::error("endof file in ReadData_rmgtddft ");
-    
+    rmg::readfile (fhand, vh, fgrid_size * sizeof(double));
+    rmg::readfile (fhand, vxc, fgrid_size * sizeof(double));
+    rmg::readfile (fhand, vh_corr, fgrid_size * sizeof(double));
+    rmg::readfile (fhand, Pn0, 2* n2 * sizeof(double));
+    rmg::readfile (fhand, Hmatrix, n2 * sizeof(double));
+    rmg::readfile (fhand, Smatrix, n2 * sizeof(double));
+    rmg::readfile (fhand, Cmatrix, n2 * sizeof(double));
+    rmg::readfile (fhand, Hmatrix_m1, n2 * sizeof(double));
+    rmg::readfile (fhand, Hmatrix_0, n2 * sizeof(double));
+    rmg::readfile (fhand, tot_steps, sizeof(int));
     close(fhand);
 
 
-}                               /* end write_data */
+}                               /* end read_data */
