@@ -85,7 +85,6 @@ template void Eigen<std::complex<double>>(std::complex<double> *A, double *eigs,
     template <typename KpointType>
 void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp)
 {
-    int ibtype = 1;
     int ione = 1;
     int info = 0;
 
