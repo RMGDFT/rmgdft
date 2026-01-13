@@ -50,17 +50,15 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
     int amode;
     ION *iptr;
     SPECIES *sp;
-    char stitle[32], sdate[32], stime[32];
+    char stitle[33], sdate[33], stime[33];
+    memset(stitle, ' ', 33);
+    memset(sdate, ' ', 33);
+    memset(stime, ' ', 33);
+
     time_t tt;
     time(&tt);
     char *timeptr;
     timeptr = ctime(&tt);
-    for(int i = 0; i < 32; i++)
-    {
-        strncpy(&sdate[i], " ", 1);
-        strncpy(&stime[i], " ", 1);
-        strncpy(&stitle[i], " ", 1);
-    }
     strncpy(sdate, timeptr, 9);
     strncpy(stime, &timeptr[9], 9);
     strncpy(stitle, "RHO-Complex", 11);

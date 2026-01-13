@@ -82,7 +82,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
         filename = "PROJECTORS/forward_beta_species" + std::to_string(isp) + "_kpt" + std::to_string(kindex);
         int fhand = open(filename.c_str(), O_RDWR, amode);
         size_t count = sizeof(std::complex<double>) * AtomType.nh * pbasis;
-        read(fhand, forward_beta, count);
+        rmg::readfile(fhand, forward_beta, count);
         close(fhand);
 
 
