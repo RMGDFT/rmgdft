@@ -831,7 +831,6 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
 // Destructor
 template <class KpointType> Projector<KpointType>::~Projector(void)
 {
-    this->nlcrds.empty();
     delete [] this->nldims;
     delete [] this->idxptrlen;
     delete [] this->nonloc_ions_list;
