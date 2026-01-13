@@ -495,7 +495,7 @@ void eshdfFile::writeLocalizedOrbitals() {
             exit(0);
         }
 
-        read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
+        rmg::readfile(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
         close(fhand);
         std::string Cij_name = "eigenset_" + std::to_string(ispin);
         hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
@@ -594,7 +594,7 @@ void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
                 exit(0);
             }
 
-            read(fhand, phi.data(), ct.states[chIdx].size * sizeof(double));
+            rmg::readfile(fhand, phi.data(), ct.states[chIdx].size * sizeof(double));
             close(fhand);
 
             int dimx = ct.states[chIdx].orbit_nx;
