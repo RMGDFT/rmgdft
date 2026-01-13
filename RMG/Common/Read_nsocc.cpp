@@ -59,7 +59,7 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
         }
 
 
-        read(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
+        rmg::readfile(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
         close(fhand);
     }
 
