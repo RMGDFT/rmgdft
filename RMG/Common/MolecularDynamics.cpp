@@ -85,39 +85,39 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n ==============================================");
+        rmg::printlog ("\n ==============================================");
 
         /* print out the title */
         switch (ct.forceflag)
         {
             case MD_CVE:
-                rmg_printf ("\n Constant Volume & Energy Molecular Dynamics");
+                rmg::printlog ("\n Constant Volume & Energy Molecular Dynamics");
                 break;
             case MD_CVT:
                 if (ct.tcontrol == T_NOSE_CHAIN)
                 {
-                    rmg_printf ("\n Finite Temperature MD with Nose-Hoover Chains");
+                    rmg::printlog ("\n Finite Temperature MD with Nose-Hoover Chains");
                 }
                 else
                 {
-                    rmg_printf ("\n Finite Temperature MD with Anderson Rescaling");
+                    rmg::printlog ("\n Finite Temperature MD with Anderson Rescaling");
                 }                   /* end of if */
                 break;
             case MD_CPT:
-                rmg_printf ("\n Constant Pressure and Temperature Molecular Dynamics");
+                rmg::printlog ("\n Constant Pressure and Temperature Molecular Dynamics");
                 break;
         }                       /* end of switch */
 
         switch (ct.mdorder)
         {
             case ORDER_2:
-                rmg_printf ("\n Integration with Velocity Verlet");
+                rmg::printlog ("\n Integration with Velocity Verlet");
                 break;
             case ORDER_3:
-                rmg_printf ("\n Integration with 3rd Order Beeman Velocity Verlet");
+                rmg::printlog ("\n Integration with 3rd Order Beeman Velocity Verlet");
                 break;
             case ORDER_5:
-                rmg_printf ("\n Integration with 5th Order Beeman Velocity Verlet");
+                rmg::printlog ("\n Integration with 5th Order Beeman Velocity Verlet");
                 break;
         }                       /* end of switch */
     }                           /* end of if pe */
@@ -141,7 +141,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     {
         if (pct.gridpe == 0)
         {
-            rmg_printf ("\n\n Initializing temperature to %14.10f K\n", ct.nose.temp);
+            rmg::printlog ("\n\n Initializing temperature to %14.10f K\n", ct.nose.temp);
         }
         ranv ();
     }
@@ -164,7 +164,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n ==============================================\n\n");
+        rmg::printlog ("\n ==============================================\n\n");
     }
 
     /*Reset timers, so that they do not count preceeding quench run if any */
@@ -261,7 +261,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* to update them to the next time step */
         velup2 ();
 
-        if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
+        if (pct.gridpe == 0) rmg::printlog ("\n Writing data to output file ...\n");
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
         // Extrapolate orbitals after first step
@@ -294,20 +294,20 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             {
 
                 case MD_CVE:
-                    rmg_printf ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                    rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                             ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
-                    rmg_printf("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
+                    rmg::printlog("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
                     break;
                 case MD_CVT:
                     if (ct.tcontrol == T_NOSE_CHAIN)
                     {
-                        rmg_printf ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                        rmg::printlog ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                                 ct.md_steps, ct.TOTAL, ct.ionke, nosekin + nosepot,
                                 ct.TOTAL + ct.ionke + nosekin + nosepot, iontemp, trms);
                     }
                     if (ct.tcontrol == T_AND_SCALE)
                     {
-                        rmg_printf ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                        rmg::printlog ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                                 ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
                     }
                     break;
@@ -321,7 +321,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             }                   /* end of switch */
 
 
-            rmg_printf ("\n Total number of SCF steps so far %d", ct.total_scf_steps);
+            rmg::printlog ("\n Total number of SCF steps so far %d", ct.total_scf_steps);
 
         }                       /* end of if */
 
@@ -336,7 +336,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
     if (pct.gridpe == 0)
-        rmg_printf ("\n Total number of SCF steps %d", ct.total_scf_steps);
+        rmg::printlog ("\n Total number of SCF steps %d", ct.total_scf_steps);
 
 
 
@@ -396,17 +396,17 @@ void init_nose ()
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n Nose Frequency (THz) = %14.10f ", ct.nose.fNose);
-        rmg_printf ("\n Steps/Oscillation    = %14.10f ", nosesteps);
-        rmg_printf ("\n Target Temp          = %14.10f ", ct.nose.temp);
-        rmg_printf ("\n Initial Temp         = %14.10f ", inittemp);
-        rmg_printf ("\n i        xx        xv         xq     xf ");
+        rmg::printlog ("\n Nose Frequency (THz) = %14.10f ", ct.nose.fNose);
+        rmg::printlog ("\n Steps/Oscillation    = %14.10f ", nosesteps);
+        rmg::printlog ("\n Target Temp          = %14.10f ", ct.nose.temp);
+        rmg::printlog ("\n Initial Temp         = %14.10f ", inittemp);
+        rmg::printlog ("\n i        xx        xv         xq     xf ");
         for (jc = 0; jc < ct.nose.m; jc++)
         {
-            rmg_printf ("\n %d %14.10f %14.10f %16.10f %14.10f", jc,
+            rmg::printlog ("\n %d %14.10f %14.10f %16.10f %14.10f", jc,
                     ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xq[jc], ct.nose.xf[ct.fpt[0]][jc]);
         }
-        rmg_printf ("\n ==============================================");
+        rmg::printlog ("\n ==============================================");
     }
 
 }                               /* end of init_nose */
@@ -453,7 +453,7 @@ void velup1 ()
                 {
                     scale = sqrt (ct.nose.temp / temperature);
                     if (pct.gridpe == 0)
-                        rmg_printf ("\ntscale=%f\n", scale);
+                        rmg::printlog ("\ntscale=%f\n", scale);
                 }
                 else
                 {
@@ -938,7 +938,7 @@ void nose_energy (double * nosekin, double * nosepot)
     if(ct.verbose)
     {
         if (pct.gridpe == 0)
-            rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+            rmg::printlog ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                     0, ct.nose.xx[0], ct.nose.xv[0], ct.nose.xf[ct.fpt[0]][0],
                     ct.nose.xf[ct.fpt[1]][0], ct.nose.xf[ct.fpt[2]][0], ct.nose.xf[ct.fpt[3]][0]);
     }
@@ -950,7 +950,7 @@ void nose_energy (double * nosekin, double * nosepot)
         if(ct.verbose)
         {
             if (pct.gridpe == 0)
-                rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+                rmg::printlog ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                         jc, ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xf[ct.fpt[0]][jc],
                         ct.nose.xf[ct.fpt[1]][jc],
                         ct.nose.xf[ct.fpt[2]][jc], ct.nose.xf[ct.fpt[3]][jc]);
@@ -960,7 +960,7 @@ void nose_energy (double * nosekin, double * nosepot)
 
 #if 0
     if (pct.gridpe == 0)
-        rmg_printf ("\n nose_energy: %20.10f %20.10f %20.10f", *nosekin, *nosepot, *nosekin + *nosepot);
+        rmg::printlog ("\n nose_energy: %20.10f %20.10f %20.10f", *nosekin, *nosepot, *nosekin + *nosepot);
 #endif
 
 }                               /* end of nose_energy */

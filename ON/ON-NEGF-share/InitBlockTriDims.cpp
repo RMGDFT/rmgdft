@@ -25,7 +25,7 @@ void InitBlockTriDims()
 
     ct.num_blocks = (int)nbl;
     if(ct.num_blocks == 0 ) ct.num_blocks = 1;
-    //rmg_printf("\n max radius %f %f %f %d\n", max_orbital_radius, max_nl_radius, nbl, ct.num_blocks );
+    //rmg::printlog("\n max radius %f %f %f %d\n", max_orbital_radius, max_nl_radius, nbl, ct.num_blocks );
     for(int st = 1; st < ct.num_states; st++) {
         if( (states[st].crds[0] - states[st-1].crds[0]) <-1.0e-5)
            throw RmgFatalException() << "orbital x coordinates not sorted  \n";
@@ -51,6 +51,6 @@ void InitBlockTriDims()
         
     }
 
-    rmg_printf("\n number of blocks %d and block dims for orbital and non-local projector", ct.num_blocks);
-    for(int ib = 0; ib <ct.num_blocks; ib++) rmg_printf("\n block %d %d %d", ib, ct.block_dim_phi[ib], ct.block_dim_nl[ib]);
+    rmg::printlog("\n number of blocks %d and block dims for orbital and non-local projector", ct.num_blocks);
+    for(int ib = 0; ib <ct.num_blocks; ib++) rmg::printlog("\n block %d %d %d", ib, ct.block_dim_phi[ib], ct.block_dim_nl[ib]);
 }

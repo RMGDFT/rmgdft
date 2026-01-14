@@ -127,12 +127,12 @@ void init_nonlocal_comm(void)
 
     //   if (pct.gridpe == 0)
     //   {
-    //       rmg_printf("\n initial communication matrix ");
+    //       rmg::printlog("\n initial communication matrix ");
     //       for (i = 0; i < pct.grid_npes; i++)
     //       {
-    //           rmg_printf("\n");
+    //           rmg::printlog("\n");
     //           for (j = 0; j < pct.grid_npes; j++)
-    //               rmg_printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
+    //               rmg::printlog(" %d ", matrix_pairs[i * pct.grid_npes + j]);
     //       }
     //   }
 
@@ -168,13 +168,13 @@ void init_nonlocal_comm(void)
 
 
 //      if(pct.gridpe==0)
-//              rmg_printf("\n  matrix_pairs");
+//              rmg::printlog("\n  matrix_pairs");
 //      if(pct.gridpe==0)
 //          for(proc1=0; proc1<pct.grid_npes; proc1++)
 //          {
-//              rmg_printf("\n");
+//              rmg::printlog("\n");
 //              for(proc2=0; proc2<pct.grid_npes; proc2++)
-//                  rmg_printf("%d", matrix_pairs[proc1 * pct.grid_npes + proc2]);
+//                  rmg::printlog("%d", matrix_pairs[proc1 * pct.grid_npes + proc2]);
 //          }
 
 //      fflush(NULL);

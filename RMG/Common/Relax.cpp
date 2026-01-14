@@ -92,7 +92,7 @@ template <typename OrbitalType> void Relax (
 		rlx_steps++;
 
         if (pct.imgpe == 0)
-            rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
+            rmg::printlog ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
         // Get atomic rho for this ionic configuration and subtract from current rho
         spinobj<double> arho;
@@ -204,18 +204,18 @@ template <typename OrbitalType> void Relax (
     if (ct.max_md_steps > 0 && steps > 0)
     {
 
-        rmg_printf ("\n");
+        rmg::printlog ("\n");
         //progress_tag ();
 
         if (CONV_FORCE)
-            rmg_printf ("force convergence has been achieved. stopping ...\n");
+            rmg::printlog ("force convergence has been achieved. stopping ...\n");
         else
-            rmg_printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
+            rmg::printlog ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
 
     }
 
     if(ct.cell_relax)
-        rmg_printf("        Final volume      = %12.6f\n", Rmg_L.omega);
+        rmg::printlog("        Final volume      = %12.6f\n", Rmg_L.omega);
 
     // Write forcefield info
     std::string ffield = std::string(pct.image_path[pct.thisimg]) + "forcefield.xml";

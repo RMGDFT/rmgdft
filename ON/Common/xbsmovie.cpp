@@ -34,9 +34,9 @@ FILE *open_xbs_movie(char *filename)
 
     /*This check is taken from rmmovie opening, I am not exactly sure what it does */
     if (setvbuf(xbsfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
-        rmg_printf("\n Warning: cant allocate XBS movie io buffer size\n");
+        rmg::printlog("\n Warning: cant allocate XBS movie io buffer size\n");
     if (setvbuf(xbsfp1, (char *) NULL, _IOFBF, 4096 * 16) != 0)
-        rmg_printf("\n Warning: cant allocate XBS movie io buffer size\n");
+        rmg::printlog("\n Warning: cant allocate XBS movie io buffer size\n");
 
     /*output initial info into xbs file */
     init_xbsmovie(xbsfp);

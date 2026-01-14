@@ -143,30 +143,30 @@ void simple_lbfgs (void)
         //        Rmg_L.latgen (celldm, &omega, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, true);
         double nalat;
         Rmg_L.remake_cell(Rmg_L.get_ibrav_type(), 1.0, Rmg_L.a0, Rmg_L.a1, Rmg_L.a2, &nalat);
-        rmg_printf("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
+        rmg::printlog("    bfgs: New volume      = %12.6f\n", Rmg_L.omega);
         if(pct.imgpe == 0)
         {
-            rmg_printf("\n lattice a0: ");
-            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a0[i]);
-            rmg_printf("\n lattice a1: ");
-            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a1[i]);
-            rmg_printf("\n lattice a2: ");
-            for(int i = 0; i < 3; i++) rmg_printf(" %15.8f ", Rmg_L.a2[i]);
-            rmg_printf("\n");
-            rmg_printf("\n New cell volume = %12.6f\n", Rmg_L.omega);
-            rmg_printf("\n");
+            rmg::printlog("\n lattice a0: ");
+            for(int i = 0; i < 3; i++) rmg::printlog(" %15.8f ", Rmg_L.a0[i]);
+            rmg::printlog("\n lattice a1: ");
+            for(int i = 0; i < 3; i++) rmg::printlog(" %15.8f ", Rmg_L.a1[i]);
+            rmg::printlog("\n lattice a2: ");
+            for(int i = 0; i < 3; i++) rmg::printlog(" %15.8f ", Rmg_L.a2[i]);
+            rmg::printlog("\n");
+            rmg::printlog("\n New cell volume = %12.6f\n", Rmg_L.omega);
+            rmg::printlog("\n");
         }
 
     }
 
     if(step_accepted)
-        rmg_printf("    bfgs: step accepted\n");
+        rmg::printlog("    bfgs: step accepted\n");
     else if(ct.md_steps > 0)
-        rmg_printf("    bfgs: step not accepted\n");
+        rmg::printlog("    bfgs: step not accepted\n");
 
-    rmg_printf ("    bfgs: energy error    = %12.6e\n", energy_error);
-    rmg_printf ("    bfgs: gradient error  = %12.6e\n", grad_error);
-    rmg_printf ("    bfgs: cell grad error = %13.6e\n\n", cell_error);
+    rmg::printlog ("    bfgs: energy error    = %12.6e\n", energy_error);
+    rmg::printlog ("    bfgs: gradient error  = %12.6e\n", grad_error);
+    rmg::printlog ("    bfgs: cell grad error = %13.6e\n\n", cell_error);
 
     // Copy back
     for (int ion = 0; ion < ct.num_ions; ion++)

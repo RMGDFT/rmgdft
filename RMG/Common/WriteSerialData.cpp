@@ -157,7 +157,7 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
             {
                 int fhand = open(wfname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
                 if (fhand < 0) {
-                    rmg_printf("Can't open restart file %s", wfname.c_str());
+                    rmg::printlog("Can't open restart file %s", wfname.c_str());
                     rmg::error("Terminating.");
                 }
                 size_t wsize = write (fhand, &H, sizeof(OrbitalHeader));
@@ -188,7 +188,7 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
                 {
                     int fhand = open(wfname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
                     if (fhand < 0) {
-                        rmg_printf("Can't open restart file %s", wfname.c_str());
+                        rmg::printlog("Can't open restart file %s", wfname.c_str());
                         rmg::error("Terminating.");
                     }
                     size_t wsize = write (fhand, &H, sizeof(OrbitalHeader));

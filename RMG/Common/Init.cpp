@@ -139,7 +139,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
         if(ecut < ct.ecutwfc)
         {
-            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+            rmg::printlog("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
         }
         else
         {
@@ -492,7 +492,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 #if !MAGMA_LIBS
     if (ct.subdiag_driver == SUBDIAG_MAGMA)
     {
-        rmg_printf("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
+        rmg::printlog("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
         ct.subdiag_driver = SUBDIAG_AUTO;
     }
 #endif    
@@ -686,7 +686,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
                 Kptr[kpt]->ldaU->calc_energy();
             }
 
-            if(ct.verbose) rmg_printf("Restart ns_occ \n");
+            if(ct.verbose) rmg::printlog("Restart ns_occ \n");
             if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 
         }
@@ -838,7 +838,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(ct.dipole_corr[0]+ct.dipole_corr[1]+ct.dipole_corr[2] >0)
     {
         double dipole[3]{0.0,0.0,0.0};
-        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+        rmg::printlog("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  NULL);
     }
 

@@ -54,7 +54,7 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
         sprintf (newname, "%s_spin%d_nsocc", name, pct.spinpe);
         int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
-            rmg_printf("Can't open data file %s", newname);
+            rmg::printlog("Can't open data file %s", newname);
             rmg::error("Terminating.");
         }
 
@@ -85,7 +85,7 @@ void Write_nsocc(char *name, Kpoint<KpointType> * kptr)
     {
         int fhand = FileOpenAndCreate(newname, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if (fhand < 0) {
-            rmg_printf("Can't open data file %s", newname.c_str());
+            rmg::printlog("Can't open data file %s", newname.c_str());
             rmg::error("Terminating.");
         }
 

@@ -96,7 +96,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
         comm_sums(&converge2, &ione, COMM_EN2);
 
-        /* rmg_printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
+        /* rmg::printlog("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
 
         tem = converge1 - converge2;
         tem = sqrt (tem * tem);
@@ -108,10 +108,10 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     if (tem > 1.0e-7)
     {
-        rmg_printf ("\n green not converge %f \n", tem);
+        rmg::printlog ("\n green not converge %f \n", tem);
         exit (0);
     }
-    /*    rmg_printf("\n %d %f %f converge\n", step, eneR, eneI); */
+    /*    rmg::printlog("\n %d %f %f converge\n", step, eneR, eneI); */
 
     MemcpyDeviceHost(size, green_gpu, green_cpu);
 

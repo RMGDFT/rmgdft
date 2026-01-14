@@ -202,7 +202,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         path_length[0] = sqrt(path_length[0]);
         /* Call fastrelax for max_md_steps steps */
         MPI_Barrier( MPI_COMM_WORLD );
-        if(pct.worldrank == 0) rmg_printf("\tNEB call fast relax.\n");
+        if(pct.worldrank == 0) rmg::printlog("\tNEB call fast relax.\n");
         for (int count = 0; count < ct.num_ions; count++)
         {
             Atoms[count].constraint.forcemask[0] =0.0;

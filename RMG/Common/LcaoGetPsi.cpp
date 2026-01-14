@@ -71,7 +71,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
         /*Make sure that the wavefunctions have been read*/
         if (!AtomType.num_atomic_waves) {
-            rmg_printf("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
+            rmg::printlog("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
             rmg::error("Terminating.");
         }
     }
@@ -83,7 +83,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     if(ct.spinorbit && state_count > nstates)
     {
-        rmg_printf("state_count %d != nstates %d", state_count, nstates);
+        rmg::printlog("state_count %d != nstates %d", state_count, nstates);
         rmg::error(" state_count != nstates Terminating.");
 
     }

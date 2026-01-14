@@ -195,7 +195,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
-        rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
+        rmg::printlog("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
     dcopy(&nfp0, rho, &ione, rho_old, &ione);
     dcopy(&nfp0, rho, &ione, rho_pre, &ione);
@@ -233,7 +233,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
 
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        rmg_printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
+        rmg::printlog("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
 
 
     if(ct.charge_mixing_type == 0)

@@ -141,7 +141,7 @@ void partial_vloc ()
     if (pct.gridpe == 0)
     {
 
-        rmg_printf (" partial_vloc.c  done\n");
+        rmg::printlog (" partial_vloc.c  done\n");
 
     }
     MPI_Barrier(pct.img_comm);

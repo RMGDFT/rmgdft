@@ -232,8 +232,8 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
     if (fabs (fmid) > charge_tol * 10)
     {
-        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg_printf ("error in mixing occupations fmid = %e", fmid);
+        rmg::printlog ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg::printlog ("error in mixing occupations fmid = %e", fmid);
         rmg::error("Terminating.\n");
     }                           /* end if */
 

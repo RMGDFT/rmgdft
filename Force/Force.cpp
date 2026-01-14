@@ -225,7 +225,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
             sumz += fp[2];
         }
 
-        rmg_printf("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
+        rmg::printlog("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
         // Normalize by the number of ions
         sumx /= (double)num_ions;
         sumy /= (double)num_ions;
@@ -260,11 +260,11 @@ void output_force(double *force_tmp, char *desc)
     global_sums (force_tmp, &size1, pct.grid_comm);
     if (pct.imgpe == 0)
     {
-        rmg_printf ("\n\n %s", desc);
+        rmg::printlog ("\n\n %s", desc);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            rmg_printf ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
+            rmg::printlog ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
                     ion, force_tmp[3 * ion],force_tmp[3 * ion + 1],force_tmp[3 * ion + 2]);
         }
     }

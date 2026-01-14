@@ -65,7 +65,7 @@ void AllocatePsi(STATE * states, STATE * states1)
     rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
-        rmg_printf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
+        rmg::printlog("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
         exit(0);
     }
 
@@ -83,7 +83,7 @@ void AllocatePsi(STATE * states, STATE * states1)
     }
 
     if (pct.gridpe == 0)
-        rmg_printf("\n allocate_psi Done! ");
+        rmg::printlog("\n allocate_psi Done! ");
 
     
      if(ct.LocalizedOrbitalLayout == LO_projection)
@@ -157,7 +157,7 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     if(NULL == rptr3) 
     {
-        rmg_printf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
+        rmg::printlog("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
         exit(0);
     }
 

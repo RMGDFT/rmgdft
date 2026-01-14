@@ -113,7 +113,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         zgesv (&n, &n, (double *)A, &n, ipiv, (double *)B, &n, &info);
     }
     if (info) {
-        rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
+        rmg::printlog ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
         rmg::error(" p{d,z}gesv failed");
     }
 

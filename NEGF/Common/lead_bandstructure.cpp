@@ -75,10 +75,10 @@ void lead_bandstructure ()
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n band struture calculations for left lead\n\n ");
-        rmg_printf ("lcr[1].num_states = %d \n", lcr[1].num_states);
-        rmg_printf ("lcr[2].num_states = %d \n", lcr[2].num_states);
-        rmg_printf (" kpoints= %d %d %d\n", kpoints[0], kpoints[1], kpoints[2]);
+        rmg::printlog ("\n band struture calculations for left lead\n\n ");
+        rmg::printlog ("lcr[1].num_states = %d \n", lcr[1].num_states);
+        rmg::printlog ("lcr[2].num_states = %d \n", lcr[2].num_states);
+        rmg::printlog (" kpoints= %d %d %d\n", kpoints[0], kpoints[1], kpoints[2]);
 
     }
 
@@ -262,7 +262,7 @@ void lead_bandstructure ()
         if (info != 0)
         {
 
-            rmg_printf ("\n info = %d %d %f \n", info, ik, kvec);
+            rmg::printlog ("\n info = %d %d %f \n", info, ik, kvec);
             exit (0);
         }
 

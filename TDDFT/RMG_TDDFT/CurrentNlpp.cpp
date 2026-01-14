@@ -239,18 +239,18 @@ void CurrentNlpp (Kpoint<OrbitalType> *kptr, int *desca, int tddft_start_state, 
     }
 
     delete [] block_matrix;
-    //  rmg_printf("kvec %f", kptr->kp.kvec[0] );
+    //  rmg::printlog("kvec %f", kptr->kp.kvec[0] );
     //  for(int i = 0; i < 8; i++)
     //  {
-    //      rmg_printf("\n aaa ");
+    //      rmg::printlog("\n aaa ");
     //      for(int j = 0; j < 8; j++)
-    //          rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+    //          rmg::printlog(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
     //  }
     //  for(int i = 0; i < 8; i++)
     //  {
-    //      rmg_printf("\n bbb ");
+    //      rmg::printlog("\n bbb ");
     //      for(int j = 0; j < 8; j++)
-    //          rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+    //          rmg::printlog(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
     //  }
 
 }

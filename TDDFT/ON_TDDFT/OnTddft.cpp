@@ -158,7 +158,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     // Loop over k-points
     if(ct.num_kpts != 1) 
     {
-        rmg_printf(" \n  TDDFT does not support multiple k-points \n");
+        rmg::printlog(" \n  TDDFT does not support multiple k-points \n");
 
         fflush(NULL);
         throw RmgFatalException() << " TDDFT does not support multiple k-points in "<< __FILE__ << " at line " << __LINE__ << "\n";
@@ -166,7 +166,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     }
     if(!ct.norm_conserving_pp)
     {
-        rmg_printf(" \n  TDDFT support NCPP only \n");
+        rmg::printlog(" \n  TDDFT support NCPP only \n");
 
         fflush(NULL);
         throw RmgFatalException() << " TDDFT support NCPP only in "<< __FILE__ << " at line " << __LINE__ << "\n";
@@ -275,9 +275,9 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         get_dipole(rho, dipole_ele);
 
-        rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
-        rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
-        rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
+        rmg::printlog("\n  x dipolll  %f ", dipole_ele[0]);
+        rmg::printlog("\n  y dipolll  %f ", dipole_ele[1]);
+        rmg::printlog("\n  z dipolll  %f ", dipole_ele[2]);
 
         rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
@@ -377,7 +377,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 
             if(fabs(t2 -1.0) > 1.0e-11 && pct.gridpe == 0)
-                rmg_printf("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
+                rmg::printlog("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
 
             delete(RT2a);
 

@@ -211,7 +211,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
         if ( (nspin_occ == 2) && (num_states_spf[0] != num_states_spf[1]) )
         {
-            rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+            rmg::printlog("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
             rmg::error("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 

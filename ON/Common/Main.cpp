@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 
 
         if (pct.gridpe == 0)
-            rmg_printf("\n  MXLLDA: %d ", MXLLDA);
+            rmg::printlog("\n  MXLLDA: %d ", MXLLDA);
 
         /* allocate memory for matrixs  */
         allocate_matrix();
@@ -319,7 +319,7 @@ int main(int argc, char **argv)
 
 
             default:
-                rmg_printf("\n undifined MD Method");
+                rmg::printlog("\n undifined MD Method");
                 exit(0);
         }
 
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
                 int num_orb = LocalOrbital->num_tot;
                 if(num_orb != LocalOrbital->num_thispe)
                 {
-                    rmg_printf("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
+                    rmg::printlog("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
                     exit(0);
                 }
                 double *Cij_glob = new double[num_orb * num_orb];
@@ -383,7 +383,7 @@ int main(int argc, char **argv)
                 WriteQmcpackRestart(fname);
             }
 #else
-            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
 
         }
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
              //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
               //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
                // if (fhand < 0) {
-                //    rmg_printf("Can't open restart file %s", cijname.c_str());
+                //    rmg::printlog("Can't open restart file %s", cijname.c_str());
                  //   rmg::error("Terminating.");
               //  }
                // 
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
                 WriteQmcpackRestartLocalized(fname);
             }
 #else
-            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
 
         }

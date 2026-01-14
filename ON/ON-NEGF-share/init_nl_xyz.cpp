@@ -73,7 +73,7 @@ void init_nl_xyz (void)
     if (pct.gridpe == 0)
     {
 
-        rmg_printf (" init_nl_xyz.c  done\n");
+        rmg::printlog (" init_nl_xyz.c  done\n");
 
     }                           /* end if */
     MPI_Barrier(pct.img_comm);

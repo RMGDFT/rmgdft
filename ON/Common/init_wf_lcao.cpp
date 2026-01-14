@@ -37,7 +37,7 @@ void init_wf_lcao(STATE * states)
     double *phi = new double[ct.max_orbit_size];
 
     if (pct.gridpe == 0)
-        rmg_printf(" LCAO initial wavefunction \n");
+        rmg::printlog(" LCAO initial wavefunction \n");
     MPI_Barrier(pct.img_comm);
 
     if(ct.LocalizedOrbitalLayout == LO_projection)
@@ -65,7 +65,7 @@ void init_wf_lcao(STATE * states)
     }
     delete [] phi;
     if (pct.gridpe == 0)
-        rmg_printf(" LCAO initial wavefunction  down\n");
+        rmg::printlog(" LCAO initial wavefunction  down\n");
 }
 
 static void get_one_orbital(STATE *states, int state, double *phi)

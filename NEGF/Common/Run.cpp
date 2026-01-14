@@ -90,7 +90,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         delete(RT1);
 
         if (pct.gridpe == 0)
-            rmg_printf ("\nband structrue file: band.dat\n");
+            rmg::printlog ("\nband structrue file: band.dat\n");
     }
     else if (ct.runflag == 110)
     {
@@ -131,7 +131,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
 
         if (pct.imgpe == 0)
-            rmg_printf ("init_soft is done\n");
+            rmg::printlog ("init_soft is done\n");
 
         if (ct.runflag == 200)
         {
@@ -237,7 +237,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         if (ct.runflag == 113) apply_potential_drop( vbias );
 
 
-        if(pct.imgpe == 0) rmg_printf (" apply_potential_drop is done :-) \n");
+        if(pct.imgpe == 0) rmg::printlog (" apply_potential_drop is done :-) \n");
 
 
         /*--------------------------------*/
@@ -250,10 +250,10 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
             case MD_QUENCH:            /* Quench the electrons */
                 if (pct.imgpe == 0)
-                    rmg_printf ("\n quench start...\n");
+                    rmg::printlog ("\n quench start...\n");
                 QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
                 if (pct.imgpe == 0)
-                    rmg_printf ("\n quench done...\n");
+                    rmg::printlog ("\n quench done...\n");
 
                 break;
 
@@ -281,7 +281,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
         MPI_Barrier(pct.img_comm);
         if (pct.imgpe == 0)
-            rmg_printf ("\n Run done...\n");
+            rmg::printlog ("\n Run done...\n");
         fflush (NULL);
 
         MPI_Barrier(pct.img_comm);

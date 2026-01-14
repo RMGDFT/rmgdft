@@ -311,7 +311,7 @@ int main (int argc, char **argv)
                 WriteQmcpackRestart(qmcpack_file);
             }
 #else
-            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
         }
 

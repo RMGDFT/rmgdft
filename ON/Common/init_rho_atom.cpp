@@ -58,7 +58,7 @@ void init_rho_atom(double *rho)
 
 
     if (pct.gridpe == 0)
-        rmg_printf(" initial rho from atom \n");
+        rmg::printlog(" initial rho from atom \n");
     MPI_Barrier(pct.img_comm);
 
     ixdim = 0;
@@ -82,7 +82,7 @@ void init_rho_atom(double *rho)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                rmg_printf("\n unable to open file: %s \n", newname);
+                rmg::printlog("\n unable to open file: %s \n", newname);
                 rmg::error(" Unable to open file ");
             }
 
@@ -174,7 +174,7 @@ void init_rho_atom(double *rho)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                rmg_printf("\n unable to open file: %s \n", newname);
+                rmg::printlog("\n unable to open file: %s \n", newname);
                 rmg::error(" Unable to open file ");
             }
 
@@ -274,7 +274,7 @@ void init_rho_atom(double *rho)
     my_free(rho_out);
     my_free(map);
     if (pct.gridpe == 0)
-        rmg_printf(" initial rho  done  \n");
+        rmg::printlog(" initial rho  done  \n");
 
     delete RT;
 

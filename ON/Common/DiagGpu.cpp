@@ -161,7 +161,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     
     if(pct.gridpe == 0) 
     {
-        rmg_printf("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
+        rmg::printlog("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
         print_matrix(mat_glob, 6, numst);
     }
     mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, CC_res_local);

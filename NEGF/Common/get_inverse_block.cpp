@@ -32,7 +32,7 @@ void get_inverse_block (std::complex<double> *Hii, std::complex<double> *Gii, in
 
     if (info != 0)
     {
-        rmg_printf ("get_inverse_block.c: error in zgesv with INFO = %d \n", info);
+        rmg::printlog ("get_inverse_block.c: error in zgesv with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }

@@ -209,15 +209,15 @@ int open_wave_file (char *filename)
         /*Make a copy of output filename, dirname overwrites it*/
         strcpy(tmpname, filename);
 
-        rmg_printf( "\n write_data: Opening output file '%s' failed\n" 
+        rmg::printlog( "\n write_data: Opening output file '%s' failed\n" 
                 "  Trying to create subdirectory in case it does not exist\n", 
                 filename );
 
 
         if (!mkdir(dirname(tmpname),S_IRWXU))
-            rmg_printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
+            rmg::printlog ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
         else
-            rmg_printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
+            rmg::printlog ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
 
         fflush (NULL);
 

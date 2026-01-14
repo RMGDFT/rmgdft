@@ -20,7 +20,7 @@ void normalize_orbits(STATE * states)
     int ione = 1;
 
     if (pct.gridpe == 0)
-        rmg_printf("\n STATE  NORMALIZATION  ");
+        rmg::printlog("\n STATE  NORMALIZATION  ");
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {

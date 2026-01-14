@@ -63,7 +63,7 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
         f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
-            rmg_printf("kain.c ---Could not allocate memory for x or f \n");
+            rmg::printlog("kain.c ---Could not allocate memory for x or f \n");
             fflush(NULL);
             exit(-1);
         }
@@ -119,13 +119,13 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 
         if (pct.gridpe == 0)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for (i = 0; i < size; i++)
             {
                 sum_ci += b[i];
-                rmg_printf(" KAIN_b[%d] = %f  ", i, b[i]);
+                rmg::printlog(" KAIN_b[%d] = %f  ", i, b[i]);
             }
-            rmg_printf("\n");
+            rmg::printlog("\n");
         }
 
 

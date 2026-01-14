@@ -87,7 +87,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
         if(ecut < ct.ecutwfc)
         {
-            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+            rmg::printlog("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
         }
         else
         {

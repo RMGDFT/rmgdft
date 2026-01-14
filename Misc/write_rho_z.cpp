@@ -49,15 +49,15 @@ void write_rho_z(double * rho, char *ab)
 
     if (pct.gridpe == 0)
     {
-        rmg_printf("\n\n Planar average of the electrostatic density\n");
-        rmg_printf("&& %s\n", ab);
+        rmg::printlog("\n\n Planar average of the electrostatic density\n");
+        rmg::printlog("&& %s\n", ab);
         for (ix = 0; ix < get_FNZ_GRID(); ix++)
         {
             t1 = ix * get_hzzgrid();
-            //rmg_printf(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
-            rmg_printf(" %d %e %s\n", ix, zvec[ix], ab);
+            //rmg::printlog(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
+            rmg::printlog(" %d %e %s\n", ix, zvec[ix], ab);
         }
-        rmg_printf(" & %s\n", ab);
+        rmg::printlog(" & %s\n", ab);
         fflush(NULL);
     }
 

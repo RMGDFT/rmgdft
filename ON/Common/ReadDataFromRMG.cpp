@@ -68,7 +68,7 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     MPI_Barrier(pct.img_comm);	
 
     /* Make the new output file name */
-    rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
@@ -76,7 +76,7 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
 
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg_printf("Can't open data file %s", newname);
+        rmg::printlog("Can't open data file %s", newname);
         rmg::error("Terminating.");
     }
 
@@ -90,7 +90,7 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
         rmg::error("Wrong NY_GRID");
     if (grid[2] != Rmg_G->get_NZ_GRID(1))
         rmg::error("Wrong NZ_GRID");
-    rmg_printf("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
+    rmg::printlog("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
@@ -114,11 +114,11 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    rmg_printf ("read_data: grid_size  = %d\n", grid_size);
-    rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+    rmg::printlog ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    rmg::printlog ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    rmg::printlog ("read_data: grid_size  = %d\n", grid_size);
+    rmg::printlog ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    rmg::printlog ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
@@ -131,8 +131,8 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
         rmg::error("Wrong number of k points");
 
-    rmg_printf ("read_data: gamma = %d\n", gamma);
-    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+    rmg::printlog ("read_data: gamma = %d\n", gamma);
+    rmg::printlog ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
@@ -142,20 +142,20 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     if(ct.compressed_infile)
     {
         read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'vh'\n");
+        rmg::printlog ("read_data: read 'vh'\n");
         read_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'rho'\n");
+        rmg::printlog ("read_data: read 'rho'\n");
         read_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'vxc'\n");
+        rmg::printlog ("read_data: read 'vxc'\n");
     }
     else
     {
         read_double (fhand, vh, fgrid_size);
-        rmg_printf ("read_data: read 'vh'\n");
+        rmg::printlog ("read_data: read 'vh'\n");
         read_double (fhand, rho, fgrid_size);
-        rmg_printf ("read_data: read 'rho'\n");
+        rmg::printlog ("read_data: read 'rho'\n");
         read_double (fhand, vxc, fgrid_size);
-        rmg_printf ("read_data: read 'vxc'\n");
+        rmg::printlog ("read_data: read 'vxc'\n");
     }
 
 

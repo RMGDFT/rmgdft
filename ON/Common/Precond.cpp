@@ -57,8 +57,8 @@ void Precond(double *x, int nstates)
             beta /= 1.5;
 
         if(beta > 1.5) beta = 1.5;
-        rmg_printf("RATIO = %f  %f  %f  %f\n",ratio0, ratio1, ratio2, beta);
-        rmg_printf("HIST  = %f  %f  %f  %f\n",ct.rms,rms_hist[0],rms_hist[1],rms_hist[2]);
+        rmg::printlog("RATIO = %f  %f  %f  %f\n",ratio0, ratio1, ratio2, beta);
+        rmg::printlog("HIST  = %f  %f  %f  %f\n",ct.rms,rms_hist[0],rms_hist[1],rms_hist[2]);
     }
     rms.push_back(ct.rms);
 

@@ -57,7 +57,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
     if(cei.num_probe > 2 ) nkp[1] = 1;
     int nkp_tot = nkp[0] * nkp[1] * nkp[2];
-    rmg_printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
+    rmg::printlog("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
     if (nkp_tot == 0 ) rmg::error("wrong number of kpoints in cond.in");
 
@@ -86,7 +86,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     }
     if (ndim != ct.num_states)
     {
-        rmg_printf (" %d %d ndim not equal to nC in get_cond_frommatrix\n", ndim, ct.num_states);
+        rmg::printlog (" %d %d ndim not equal to nC in get_cond_frommatrix\n", ndim, ct.num_states);
         exit (0);
     }
 
@@ -207,7 +207,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
             for (st1 = 0; st1 < ntot; st1++)
             {
                 Green_store[idx_e + st1] += -std::imag(green_C[st1]) * kweight[kp];
-                /*rmg_printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
+                /*rmg::printlog (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
             }
         }
         idx_e += ntot;
@@ -239,7 +239,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
         tri_to_row (density_matrix, work_matrix, ct.num_blocks, ct.block_dim);
 
-rmg_printf("\n 3Ddos broken now \n");
+rmg::printlog("\n 3Ddos broken now \n");
 exit(0);
 //        GetNewRho_on(states, rho, work_matrix);
 

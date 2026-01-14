@@ -445,9 +445,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Bcast(ct.basename, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
-    rmg_printf ("RMG initialization ...");
-    rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
-    rmg_printf (" %d MPI processes/image. ", status);
+    rmg::printlog ("RMG initialization ...");
+    rmg::printlog (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
+    rmg::printlog (" %d MPI processes/image. ", status);
 
 
 
@@ -474,7 +474,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     // Get cuda version
     cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
-    rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
+    rmg::printlog ("\nCUDA version %d detected.\n", ct.cuda_version);
 #endif
 
 #if HIP_ENABLED
@@ -495,11 +495,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // Get hip version
     hipError_t hiperr =  hipDriverGetVersion ( &ct.hip_version );
     if(hiperr == hipSuccess) {
-        rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
+        rmg::printlog ("\nHIP version %d detected.\n", ct.hip_version);
     }
     else
     {
-        rmg_printf ("\nHIP version NOT detected.\n");
+        rmg::printlog ("\nHIP version NOT detected.\n");
     }
 #endif
 
@@ -507,7 +507,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // we will find the device with the largest memory and use all devices that have just as
     // much memory
     std::vector<size_t> device_mem;
-    rmg_printf("\n");
+    rmg::printlog("\n");
     for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
 #if CUDA_ENABLED
         cuDeviceGet( &cudev, idevice );
@@ -515,7 +515,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cuDeviceTotalMem( &deviceMem, cudev );
         ct.gpu_mem[idevice] = deviceMem;
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, cudev );
-        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        rmg::printlog( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
 
@@ -525,7 +525,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         hipDeviceTotalMem( &deviceMem, hipdev );
         ct.gpu_mem[idevice] = deviceMem;
         hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev );
-        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        rmg::printlog( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
 
@@ -671,7 +671,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     //    ct.host_dev = omp_get_initial_device();
     ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector_v, main_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
     std::string dev_str = ct.sycl_Q.get_device().get_info<sycl::info::device::name>();
-    rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
+    rmg::printlog("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
     for (const auto & p : sycl::platform::get_platforms())
     {
         for (const auto& d: p.get_devices())
@@ -686,12 +686,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // This is placed down here since the IO is not setup yet when provided is obtained above.
     if(provided < ct.mpi_threadlevel) {
 
-        rmg_printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
+        rmg::printlog("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
         MPI_Finalize();
         exit(0);
 
     }
-    rmg_printf("Thread level %d.\n", provided);
+    rmg::printlog("Thread level %d.\n", provided);
     fflush(NULL);
 
     // Allocate storage for trade_images and global sums routines

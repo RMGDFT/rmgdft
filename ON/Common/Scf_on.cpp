@@ -123,7 +123,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(pct.gridpe == 0) write_eigs(states, kpt_xtal);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
-        rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
+        rmg::printlog("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
     dcopy(&nfp0, rho, &ione, rho_old, &ione);
     dcopy(&nfp0, rho, &ione, rho_pre, &ione);
@@ -153,7 +153,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         get_rho_oppo(rho, rho_oppo);
 
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        rmg_printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
+        rmg::printlog("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
@@ -268,9 +268,9 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     *CONVERGENCE = FALSE;
     if (pct.gridpe == 0)
     {
-        rmg_printf(" \nSCF CHECKS: RMS[maxdvh ] = %10.5E", dvh_max);
-        rmg_printf(" [maxdrho] = %10.5E", drho_max);
-        rmg_printf(" [maxdvxc] = %10.5E\n", dvxc_max);
+        rmg::printlog(" \nSCF CHECKS: RMS[maxdvh ] = %10.5E", dvh_max);
+        rmg::printlog(" [maxdrho] = %10.5E", drho_max);
+        rmg::printlog(" [maxdvxc] = %10.5E\n", dvxc_max);
 
 
         fflush(NULL);

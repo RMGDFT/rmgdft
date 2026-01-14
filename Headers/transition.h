@@ -28,6 +28,7 @@
 #include "Tetrahedron.h"
 #include "BerryPhase.h"
 #include "rmgfiles.h"
+#include "rmg_printlog.h"
 
 
 extern PulayMixing *Pulay_rho;
@@ -227,12 +228,5 @@ void Eigen(std::complex<double> *distA, double *eigs, int N, int lda);
 #endif
 #endif
 
-#if !(defined(_WIN32) || defined(_WIN64))
-#define rmg_printf( message... ) \
-        fprintf( ct.logfile, message )
-#else
-#define rmg_printf( message, ... ) \
-        fprintf( ct.logfile, message, __VA_ARGS__ )
-#endif
 
 

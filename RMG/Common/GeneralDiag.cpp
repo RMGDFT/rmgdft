@@ -261,7 +261,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 {
 
 #if !SCALAPACK_LIBS
-    rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
+    rmg::printlog("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
     KpointType *global_matrix1 = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));

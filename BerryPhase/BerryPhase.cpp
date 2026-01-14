@@ -133,9 +133,9 @@ BerryPhase::BerryPhase(void)
 
     if (ct.verbose)
     {
-        rmg_printf("\n num_k %d num_string(pe) %d(%d) k_in_string %d in unit of reciprocal lattice", ct.num_kpts, num_kort, num_kort_pe, num_kpp);
+        rmg::printlog("\n num_k %d num_string(pe) %d(%d) k_in_string %d in unit of reciprocal lattice", ct.num_kpts, num_kort, num_kort_pe, num_kpp);
         for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-            rmg_printf("\n kvec %d  %f %f %f %f \n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+            rmg::printlog("\n kvec %d  %f %f %f %f \n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }
 
 
@@ -246,7 +246,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
             zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
             if (info != 0)
             {
-                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
                 rmg::error("zgetrf failed\n");
             }
@@ -265,7 +265,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
                 zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
                 if (info != 0)
                 {
-                    rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
+                    rmg::printlog ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
                     fflush (NULL);
                     rmg::error("zgetri failed\n");
                 }
@@ -275,7 +275,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 
             if(ct.verbose)
             {
-                rmg_printf("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
+                rmg::printlog("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
             }
             zeta = zeta * det;
 
@@ -292,7 +292,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
             cphik[iort_gl] = std::complex<double>(cos(phik[iort_gl]), sin(phik[iort_gl]));
             if(ct.verbose)
             {
-                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
+                rmg::printlog("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
             }
         }
         delete RT1;
@@ -322,7 +322,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         cphik[iort] = cphik[iort]/cave;
         double dtheta=atan2(std::imag(cphik[iort]), std::real(cphik[iort]));
         phik[iort]=theta0+dtheta;
-        //rmg_printf("kort %d phik after ave %f %f\n", iort,  phik[iort]);
+        //rmg::printlog("kort %d phik after ave %f %f\n", iort,  phik[iort]);
         // take mod so phase is -Pi to Pi
         phik[iort] = phik[iort] - PI * std::round(phik[iort]/PI); 
     }
@@ -338,7 +338,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
         phik_ave=phik_ave+kweight_string[iort]*phik[iort];
         if(ct.verbose)
         {
-            rmg_printf("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
+            rmg::printlog("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
         }
     }
 
@@ -375,9 +375,9 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     double pdl_tot = pdl_elec_tot + pdl_ion_tot;
     pdl_tot = pdl_tot - 2.0 * std::round(pdl_tot/2.0);
 
-    rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
-    rmg_printf("\n  Ionic      phase %f ", pdl_ion_tot);
-    rmg_printf("\n  Total      phase %f ", pdl_tot);
+    rmg::printlog("\n  Electronic phase %f ", pdl_elec_tot);
+    rmg::printlog("\n  Ionic      phase %f ", pdl_ion_tot);
+    rmg::printlog("\n  Total      phase %f ", pdl_tot);
 
     //  Polarization 
 
@@ -403,10 +403,10 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
     pol_ion = pdl_ion_tot * rmod;  
     pol_tot = pdl_tot * rmod;
     enthalpy_elec = -pol_tot * this->efield_mag; 
-    rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
-    rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
-    rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
-    rmg_printf("\n  Electric Enthalpy             = %e Hatree", enthalpy_elec);
+    rmg::printlog("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
+    rmg::printlog("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
+    rmg::printlog("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
+    rmg::printlog("\n  Electric Enthalpy             = %e Hatree", enthalpy_elec);
 
     delete [] ipiv;
 
@@ -426,7 +426,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 void BerryPhase::Calc_Gnk (Kpoint<std::complex<double>> **Kptr)
 {
     std::complex<double> alpha = std::complex<double>(0.0, -this->eai/twoPI/2.0 * num_kpp);
-    //rmg_printf("\n eai alpha %f %f", alpha);
+    //rmg::printlog("\n eai alpha %f %f", alpha);
     std::complex<double> zero(0.0), mone(-1.0);
     std::complex<double> *psi_kp1=NULL, *psi_km1=NULL;
     std::complex<double> *BP_matrix_p1 =NULL, *BP_matrix_m1;
@@ -562,7 +562,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
     int numst = ct.num_states - tddft_start_state;
     if(numst != Sp.GetN())
     {
-        rmg_printf("\n Scalpapack wrong !! numst = %d  N = %d \n", numst, Sp.GetN() );
+        rmg::printlog("\n Scalpapack wrong !! numst = %d  N = %d \n", numst, Sp.GetN() );
         rmg::error(" scalapack wrong\n");
     }
 
@@ -696,7 +696,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
             zgetrf(&nband_occ, &nband_occ, (double *)mat_glob, &numst, ipiv, &info);
             if (info != 0)
             {
-                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
                 rmg::error("zgetrf failed\n");
             }
@@ -711,7 +711,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
             if(ct.verbose)
             {
-                rmg_printf("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
+                rmg::printlog("kort %d kpp %d  det %f %f\n", iort, jpp, std::real(det), std::imag(det));
             }
             zeta = zeta * det;
 
@@ -728,7 +728,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
             cphik[iort_gl] = std::complex<double>(cos(phik[iort_gl]), sin(phik[iort_gl]));
             if(ct.verbose)
             {
-                rmg_printf("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
+                rmg::printlog("kort %d phik  %f %f %f\n", iort,  phik[iort_gl], zeta);
             }
         }
     }
@@ -758,7 +758,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
         cphik[iort] = cphik[iort]/cave;
         double dtheta=atan2(std::imag(cphik[iort]), std::real(cphik[iort]));
         phik[iort]=theta0+dtheta;
-        //rmg_printf("kort %d phik after ave %f %f\n", iort,  phik[iort]);
+        //rmg::printlog("kort %d phik after ave %f %f\n", iort,  phik[iort]);
         // take mod so phase is -Pi to Pi
         phik[iort] = phik[iort] - PI * std::round(phik[iort]/PI); 
     }
@@ -774,7 +774,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
         phik_ave=phik_ave+kweight_string[iort]*phik[iort];
         if(ct.verbose)
         {
-            rmg_printf("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
+            rmg::printlog("\n kstring %d weight %f phase %f", iort, kweight_string[iort], pdl_elec[iort]);
         }
     }
 
@@ -799,9 +799,9 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
     if(ct.verbose)
     {
-        rmg_printf("\n  Electronic phase %f ", pdl_elec_tot);
-        rmg_printf("\n  Ionic      phase %f ", pdl_ion_tot);
-        rmg_printf("\n  Total      phase %f ", pdl_tot);
+        rmg::printlog("\n  Electronic phase %f ", pdl_elec_tot);
+        rmg::printlog("\n  Ionic      phase %f ", pdl_ion_tot);
+        rmg::printlog("\n  Total      phase %f ", pdl_tot);
     }
 
     //  Polarization 
@@ -829,9 +829,9 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
     pol_tot = pdl_tot * rmod;
     if(ct.verbose)
     {
-        rmg_printf("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
-        rmg_printf("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
-        rmg_printf("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
+        rmg::printlog("\n  Polarization at direction %d  = %e (e/Omega)*bohr", BerryPhase_dir, pdl_tot * rmod);
+        rmg::printlog("\n  Polarization at direction %d  = %e e/bohr^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega);
+        rmg::printlog("\n  Polarization at direction %d  = %e C/m^2", BerryPhase_dir, pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI));
     }
 
     tot_bp_pol = pdl_tot * rmod/Rmg_L.omega * e_C /(a0_SI * a0_SI);
@@ -901,7 +901,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
             zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
             if (info != 0)
             {
-                rmg_printf ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
+                rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
                 fflush (NULL);
                 rmg::error("zgetrf failed\n");
             }
@@ -911,7 +911,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
                 zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
                 if (info != 0)
                 {
-                    rmg_printf ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
+                    rmg::printlog ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
                     fflush (NULL);
                     rmg::error("zgetri failed\n");
                 }
@@ -928,7 +928,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
     //
 
     std::complex<double> alpha = std::complex<double>(0.0, -1.0/twoPI/2.0 * num_kpp);
-    //rmg_printf("\n eai alpha %f %f", alpha);
+    //rmg::printlog("\n eai alpha %f %f", alpha);
     std::complex<double> zero(0.0), mone(-1.0);
     std::complex<double> *psi_kp1=NULL, *psi_km1=NULL;
     std::complex<double> *psi=NULL;
@@ -1017,18 +1017,18 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
         Sp.CopySquareMatrixToDistArray(mat_glob,  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
 
         /*
-        rmg_printf("\n kpt %d ", kpt);
+        rmg::printlog("\n kpt %d ", kpt);
         for(int i=0; i < 5; i++)
         {
-            rmg_printf("\n aaa ");
-            for(int j=0; j < 5; j++) rmg_printf(" %e ", std::real(mat_glob[i*numst + j]));
+            rmg::printlog("\n aaa ");
+            for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::real(mat_glob[i*numst + j]));
         }
 
-        rmg_printf("\n");
+        rmg::printlog("\n");
         for(int i=0; i < 5; i++)
         {
-            rmg_printf("\n bbb ");
-            for(int j=0; j < 5; j++) rmg_printf(" %e ", std::imag(mat_glob[i*numst + j]));
+            rmg::printlog("\n bbb ");
+            for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::imag(mat_glob[i*numst + j]));
         }
         */
 

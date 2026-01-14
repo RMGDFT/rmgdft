@@ -55,7 +55,7 @@ void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc,
     fhand = open(newname, O_RDWR, amode);
 
    if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", newname);
+        rmg::printlog("Can't open restart file %s", newname);
         rmg::error("Terminating.");
     }
 

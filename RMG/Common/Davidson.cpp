@@ -420,9 +420,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         delete [] tolerances;
 
         notconv = tnotconv;
-        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg_printf("Davidson: notconv = %d  nbase=%d  occupied_tol=%7.3e\n", notconv, nbase, occupied_tol);
+        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg::printlog("Davidson: notconv = %d  nbase=%d  occupied_tol=%7.3e\n", notconv, nbase, occupied_tol);
         if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
-        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg_printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
+        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg::printlog("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
         if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol);
         if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol);
 
@@ -456,12 +456,12 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
                 // We use a single non update davidson cycle to get a variational value for the total
                 // energy when the multigrid solver is used so we don't want to write any davidson info
                 // in this case
-                rmg_printf("Davidson converged in %d steps\n", steps+1);
+                rmg::printlog("Davidson converged in %d steps\n", steps+1);
                 break;  // done
             }
 
             if(steps == (ct.david_max_steps-1)) {
-                rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
+                rmg::printlog("Davidson incomplete convergence steps = %d\n", steps + 1);
                 break;
             }
 

@@ -28,7 +28,7 @@ void ortho_norm_local (STATE *states)
     
 
     if (pct.gridpe == 0)
-        rmg_printf ("\n LOCAL ORTHONORMALIZATION  ");
+        rmg::printlog ("\n LOCAL ORTHONORMALIZATION  ");
 
 
     for (i = ct.state_begin; i < ct.state_end; i++)

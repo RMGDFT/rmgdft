@@ -389,7 +389,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             rmg::dcopy_driver(Nsq2, C, ione, dP   ,ione)             ;  // dP=C     
             rmg::daxpy_driver(Nsq2, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv(dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
+            if (iprint>0) rmg::printlog("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
             iter ++ ;
@@ -432,7 +432,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
             rmg::daxpy_driver(Nsq2, rone,  dP_dev, ione, P1_dev, ione)       ;  // P1 =P1 +dP
 
             tstconv(dP_dev, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
+            if (iprint>0) rmg::printlog("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
             iter ++ ;
@@ -622,7 +622,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
             //
             rmg::zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv((double *)dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
-            if (iprint>0) rmg_printf("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
+            if (iprint>0) rmg::printlog("ConvergTest: Niter  %d  errmax = %10.5e \n",  iter,err) ;
             if (abs(err) >  errmax)  errmax= abs(err)  ;
 
             iter ++ ;

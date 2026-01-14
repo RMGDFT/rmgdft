@@ -30,7 +30,7 @@ void init_wf_atom(STATE * states)
     RmgTimer *RT1 = new RmgTimer("1-TOTAL: init: aromic orbita");
 
     if (pct.gridpe == 0)
-        rmg_printf(" readin initial wavefunction \n");
+        rmg::printlog(" readin initial wavefunction \n");
     MPI_Barrier(pct.img_comm);
 
     if(ct.LocalizedOrbitalLayout == LO_projection)
@@ -50,8 +50,8 @@ void init_wf_atom(STATE * states)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                rmg_printf("\n ddd %d %d %d", st_glob, ion, species);
-                rmg_printf("\n unable to open file: %s \n", newname);
+                rmg::printlog("\n ddd %d %d %d", st_glob, ion, species);
+                rmg::printlog("\n unable to open file: %s \n", newname);
                 rmg::error(" Unable to open file ");
             }
 
@@ -59,8 +59,8 @@ void init_wf_atom(STATE * states)
             nbytes = read(fhand, phi, idx);
             if (nbytes != idx)
             {
-                rmg_printf("\n read %d is different from %d ", nbytes, idx);
-                rmg_printf("\n file name: %s\n", newname);
+                rmg::printlog("\n read %d is different from %d ", nbytes, idx);
+                rmg::printlog("\n file name: %s\n", newname);
 
                 rmg::error("Unexpected end of file orbit");
             }
@@ -83,8 +83,8 @@ void init_wf_atom(STATE * states)
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
-                rmg_printf("\n ddd %d %d %d", state, ion, species);
-                rmg_printf("\n unable to open file: %s \n", newname);
+                rmg::printlog("\n ddd %d %d %d", state, ion, species);
+                rmg::printlog("\n unable to open file: %s \n", newname);
                 rmg::error(" Unable to open file ");
             }
 
@@ -92,8 +92,8 @@ void init_wf_atom(STATE * states)
             nbytes = read(fhand, states[state].psiR, idx);
             if (nbytes != idx)
             {
-                rmg_printf("\n read %d is different from %d ", nbytes, idx);
-                rmg_printf("\n file name: %s\n", newname);
+                rmg::printlog("\n read %d is different from %d ", nbytes, idx);
+                rmg::printlog("\n file name: %s\n", newname);
 
                 rmg::error("Unexpected end of file orbit");
             }
@@ -105,7 +105,7 @@ void init_wf_atom(STATE * states)
 
 
     if (pct.gridpe == 0)
-        rmg_printf(" readin initial orbitals  done  \n");
+        rmg::printlog(" readin initial orbitals  done  \n");
     delete RT1;
 
 

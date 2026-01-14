@@ -22,7 +22,7 @@ template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst,
     MPI_Comm_rank(tiled_comm, &my_rank);
     if(numst%nprocs != 0) 
     {
-        rmg_printf("\n numst nprocs %d %d", numst, nprocs);
+        rmg::printlog("\n numst nprocs %d %d", numst, nprocs);
         fflush(NULL);
         rmg::error("numst must be divisible by nprocs ");
     }

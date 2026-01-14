@@ -66,7 +66,7 @@ void WriteCij (std::string& name, KpointType *Cij_dist)
     {
         int fhand = open(wfname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
-            rmg_printf("Can't open restart file %s", wfname.c_str());
+            rmg::printlog("Can't open restart file %s", wfname.c_str());
             rmg::error("Terminating.");
         }
         size_t size = ct.num_states * ct.num_states * sizeof(double);

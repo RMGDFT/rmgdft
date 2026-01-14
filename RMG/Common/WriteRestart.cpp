@@ -66,7 +66,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     if ((!strcmp ("/dev/null", name)) || (!strcmp ("/dev/null/", name)) )
     {
 	if (pct.imgpe == 0)
-	    rmg_printf ("WriteRestart: Output file given as /dev/null, no restart data written ...\n");
+	    rmg::printlog ("WriteRestart: Output file given as /dev/null, no restart data written ...\n");
 	return;
     }
 
@@ -89,7 +89,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
         /*This opens restart file, creates a directory if needed */
         fhandle = open_restart_file (name);
-        rmg_printf ("WriteRestart: Restart file %s opened...\n", name);
+        rmg::printlog ("WriteRestart: Restart file %s opened...\n", name);
 
 
         // Absolute coordinates in bohr
@@ -188,7 +188,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     amode = S_IREAD | S_IWRITE;
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
     if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", newname);
+        rmg::printlog("Can't open restart file %s", newname);
         rmg::error("Terminating.");
     }
 
@@ -212,7 +212,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     write_time = my_crtc () - time0;
 
-    rmg_printf ("WriteRestart: writing took %.1f seconds \n", write_time);
+    rmg::printlog ("WriteRestart: writing took %.1f seconds \n", write_time);
 
 
     /* force change mode of output file */

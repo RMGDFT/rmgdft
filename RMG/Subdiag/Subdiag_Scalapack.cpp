@@ -138,11 +138,11 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     static int call_count;
     if(ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        rmg_printf("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        rmg::printlog("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     else
     {
-        rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        rmg::printlog("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     call_count++;
 

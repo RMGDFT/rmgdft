@@ -248,26 +248,26 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     if(pct.gridpe ==0 && ct.verbose)
     {
-        rmg_printf("\n Hcore");
+        rmg::printlog("\n Hcore");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij[i*nstates + j]) );
         }
-        rmg_printf("\n Hkin");
+        rmg::printlog("\n Hkin");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
         }
-        rmg_printf("\n H_localpp");
+        rmg::printlog("\n H_localpp");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
         }
 
     }

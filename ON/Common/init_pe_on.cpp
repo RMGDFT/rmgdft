@@ -61,7 +61,7 @@ void init_pe_on(void)
             &ictxt, &numst, &info);
     if (info != 0)
     {
-        rmg_printf(" init_pe for 1xnpes: descinit, info=%d\n", info);
+        rmg::printlog(" init_pe for 1xnpes: descinit, info=%d\n", info);
         fflush(NULL);
         exit(0);
     }
@@ -110,7 +110,7 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
     if (nprow * npcol > npes)
     {
         if(pct.gridpe==0) 
-            rmg_printf("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
+            rmg::printlog("Insufficient processes to handle scalapack call, have %d, need %d  * %d", npes, nprow, npcol);
         rmg::error("Terminating.\n");
     }
 

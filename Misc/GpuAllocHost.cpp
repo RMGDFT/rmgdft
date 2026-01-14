@@ -99,7 +99,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
     new_block = (new_block + 1) * GPU_ALIGNMENT;
     new_size = host_cur_size + new_block; 
     if(new_size > host_max_size) {
-        rmg_printf("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, host_max_size);
+        rmg::printlog("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, host_max_size);
         rmg::error("Error: Reservation too large. Consider increasing reserved GPU host memory.\n");
     }
 
@@ -123,12 +123,12 @@ void DGpuFreeHost(void *ptr, const char *fname, size_t line)
 #endif
 
     if(host_allocated_blocks == 0) {
-        rmg_printf("DEBUG: allocated_blocks = %d\n", host_allocated_blocks);
+        rmg::printlog("DEBUG: allocated_blocks = %d\n", host_allocated_blocks);
         rmg::error("Error: Attempt to release non reserved block.\n");
     }
 
     if(ptr != host_block_ptrs[host_allocated_blocks-1]) {
-        rmg_printf("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, host_block_ptrs[host_allocated_blocks-1]);
+        rmg::printlog("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, host_block_ptrs[host_allocated_blocks-1]);
         rmg::error("Error: Attempt to release non reserved block.\n");
     }
 

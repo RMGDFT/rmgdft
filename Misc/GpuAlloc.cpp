@@ -72,7 +72,7 @@ void *DGpuMallocDevice(size_t size, const char *fname, size_t line)
     new_block = (new_block + 1) * GPU_ALIGNMENT;
     new_size = cur_size + new_block; 
     if(new_size > max_size) {
-        rmg_printf("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, max_size);
+        rmg::printlog("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, max_size);
         rmg::error("Error: Reservation too large. Consider increasing reserved GPU memory.\n");
     }
 
@@ -87,12 +87,12 @@ void *DGpuMallocDevice(size_t size, const char *fname, size_t line)
 void DGpuFreeDevice(void *ptr, const char *fname, size_t line)
 {
     if(allocated_blocks == 0) {
-        rmg_printf("DEBUG: allocated_blocks = %d\n", allocated_blocks);
+        rmg::printlog("DEBUG: allocated_blocks = %d\n", allocated_blocks);
         rmg::error("Error: Attempt to release non reserved block.\n");
     }
 
     if(ptr != block_ptrs[allocated_blocks-1]) {
-        rmg_printf("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, block_ptrs[allocated_blocks-1]);
+        rmg::printlog("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, block_ptrs[allocated_blocks-1]);
         rmg::error("Error: Attempt to release non reserved block.\n");
     }
 

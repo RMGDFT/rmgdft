@@ -305,15 +305,15 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
 
         //      for(int i = 0; i < 10; i++) 
         //      {
-        //          rmg_printf("\n aaa" );
+        //          rmg::printlog("\n aaa" );
         //          for(int j = 0; j < 10; j++)
-        //              rmg_printf(" %f ",std::real(Pxmat[i * num_states +j]));
+        //              rmg::printlog(" %f ",std::real(Pxmat[i * num_states +j]));
         //      }
         //      for(int i = 0; i < 10; i++) 
         //      {
-        //          rmg_printf("\n bbb");
+        //          rmg::printlog("\n bbb");
         //          for(int j = 0; j < 10; j++)
-        //              rmg_printf(" %f ",std::imag(Pxmat[i * num_states +j]));
+        //              rmg::printlog(" %f ",std::imag(Pxmat[i * num_states +j]));
         //      }
         if(pct.gridpe == 0 && 0) 
         {

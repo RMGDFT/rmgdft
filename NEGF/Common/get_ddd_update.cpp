@@ -26,7 +26,7 @@ void get_ddd_update (double * veff)
 
     if(ct.noncoll) 
     {
-        rmg_printf("\n need to change for noncollinear \n");
+        rmg::printlog("\n need to change for noncollinear \n");
         fflush(NULL);
         exit(0);
     }

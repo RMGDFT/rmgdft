@@ -72,7 +72,7 @@ void OutputBandPlot(double *eig_all)
             snprintf(filename, sizeof(filename) - 1, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.dat");
             bs_f = fopen (filename, "w");
             if(!bs_f) {
-                rmg_printf("Unable to write band plot data.\n");
+                rmg::printlog("Unable to write band plot data.\n");
                 delete [] x;
                 return;
             }
@@ -103,7 +103,7 @@ void OutputBandPlot(double *eig_all)
             snprintf(filename, sizeof(filename) - 1, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.xmgr");
             bs_f = fopen (filename, "w");
             if(!bs_f) {
-                rmg_printf("Unable to write band plot data.\n");
+                rmg::printlog("Unable to write band plot data.\n");
                 delete [] x;
                 return;
             }

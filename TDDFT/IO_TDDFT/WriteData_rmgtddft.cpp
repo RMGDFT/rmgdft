@@ -70,15 +70,15 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
        _splitpath(tmpname, NULL, dirname, NULL, NULL);
        if (!_mkdir(dirname));
 #endif
-        rmg_printf ("\n Creating directory %s succesfull\n\n", tmpname);
+        rmg::printlog ("\n Creating directory %s succesfull\n\n", tmpname);
     else
-        rmg_printf ("\n Creating directory %s FAILED\n\n", tmpname);
+        rmg::printlog ("\n Creating directory %s FAILED\n\n", tmpname);
 
 
     fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", filename);
+        rmg::printlog("Can't open restart file %s", filename);
         rmg::error("Terminating.");
     }
 

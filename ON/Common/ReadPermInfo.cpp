@@ -52,7 +52,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
     fhand = open(newname, O_RDWR);
     if (fhand < 0)
     {
-        rmg_printf("Unable to open file %s", newname);
+        rmg::printlog("Unable to open file %s", newname);
         exit(0);
     }
 
@@ -60,7 +60,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
 
     if(nbytes != (size_t)(ct.num_ions * sizeof(unsigned int)))
     {
-        rmg_printf("read perminfo failed: read %zu != %zu", nbytes, ct.num_ions*sizeof(unsigned int));
+        rmg::printlog("read perminfo failed: read %zu != %zu", nbytes, ct.num_ions*sizeof(unsigned int));
         exit(0);
     }
 

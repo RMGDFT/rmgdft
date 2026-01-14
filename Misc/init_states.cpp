@@ -98,7 +98,7 @@ STATE *init_states ()
     	
         if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
 	{       
-		rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+		rmg::printlog("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
 		rmg::error("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
 	}
         
@@ -177,10 +177,10 @@ STATE *init_states ()
 
 
     /* Print out results to output file */ 
-    rmg_printf ("\n");
-    rmg_printf ("total pseudopotential charge =  %8.3f e\n", ct.ionic_charge);
-    rmg_printf ("total electronic charge      =  %8.3f e\n", -ct.nel);
-    rmg_printf ("total system charge          =  %8.3f e\n", -ct.background_charge);
+    rmg::printlog ("\n");
+    rmg::printlog ("total pseudopotential charge =  %8.3f e\n", ct.ionic_charge);
+    rmg::printlog ("total electronic charge      =  %8.3f e\n", -ct.nel);
+    rmg::printlog ("total system charge          =  %8.3f e\n", -ct.background_charge);
 
     return states;
 }

@@ -181,7 +181,7 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
 
     if (converge1 > 1.0E-7 || converge2 > 1.0E-7)
     {
-        rmg_printf ("bad t-matrix convergence\n");
+        rmg::printlog ("bad t-matrix convergence\n");
         fflush (NULL);
         MPI_Finalize ();
         exit (0);

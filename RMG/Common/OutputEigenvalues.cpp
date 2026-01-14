@@ -79,31 +79,31 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
 
         for(int kpt = 0;kpt < ct.num_kpts;kpt++)
         {
-            rmg_printf ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
+            rmg::printlog ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
                     kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2]);
 
             for (int idx = 0; idx < nspin; idx++)
             {
                 if ( (nspin == 2) && (idx == 0))	
-                    rmg_printf("\n------------- SPIN UP ---------------\n\n");
+                    rmg::printlog("\n------------- SPIN UP ---------------\n\n");
                 else if ( (nspin == 2) && (idx == 1))	
-                    rmg_printf("\n------------ SPIN DOWN --------------\n\n"); 
+                    rmg::printlog("\n------------ SPIN DOWN --------------\n\n"); 
                 int il = 0;
                 for (int is = 0; is < ct.num_states; is++)
                 {
                     if (is % 5 == 0)
-                        rmg_printf ("[kpt %3d %3d %3d]", kpt, iscf, il++);
+                        rmg::printlog ("[kpt %3d %3d %3d]", kpt, iscf, il++);
 
                     if(idx == 0)
-                        rmg_printf ("   %8.4f [%5.3f]%s",
+                        rmg::printlog ("   %8.4f [%5.3f]%s",
                             eigs_up[kpt*ct.num_states+is] * Ha_eV, eigs_up_occ[kpt*ct.num_states+is], ((is % 5 == 4) ? "\n" : ""));
                     else
-                        rmg_printf ("   %8.4f [%5.3f]%s",
+                        rmg::printlog ("   %8.4f [%5.3f]%s",
                             eigs_down[kpt*ct.num_states+is] * Ha_eV, eigs_down_occ[kpt*ct.num_states+is], ((is % 5 == 4) ? "\n" : ""));
                 }
-                rmg_printf ("\n");
+                rmg::printlog ("\n");
            }
-           rmg_printf ("\n\n");
+           rmg::printlog ("\n\n");
         }
 
         double vbm_up = -10000.0;
@@ -120,25 +120,25 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
                 if (std::abs(eigs_down_occ[st]) < 0.05 ) cbm_dn = std::min(cbm_dn, eigs_down[st]);
             }
         }
-        rmg_printf ("spinup:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_up*Ha_eV, cbm_up*Ha_eV);
+        rmg::printlog ("spinup:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_up*Ha_eV, cbm_up*Ha_eV);
         if (cbm_up > vbm_up)
         {
-            rmg_printf ("spinup:  Band gap = %f eV\n", (cbm_up-vbm_up)*Ha_eV);
+            rmg::printlog ("spinup:  Band gap = %f eV\n", (cbm_up-vbm_up)*Ha_eV);
         }
         else
         {
-            rmg_printf ("spinup:  no Band gap, metalic system\n"); 
+            rmg::printlog ("spinup:  no Band gap, metalic system\n"); 
         }
         if(nspin == 2)
         {
-            rmg_printf ("spindn:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_dn*Ha_eV, cbm_dn*Ha_eV);
+            rmg::printlog ("spindn:  valence band maximum = %f eV, conduction band minumm = %f eV\n", vbm_dn*Ha_eV, cbm_dn*Ha_eV);
             if (cbm_up > vbm_up)
             {
-                rmg_printf ("spindn:  Band gap = %f eV\n", (cbm_dn-vbm_dn)*Ha_eV);
+                rmg::printlog ("spindn:  Band gap = %f eV\n", (cbm_dn-vbm_dn)*Ha_eV);
             }
             else
             {
-                rmg_printf ("spindn:  no Band gap, metalic system\n"); 
+                rmg::printlog ("spindn:  no Band gap, metalic system\n"); 
             }
         }
 
@@ -161,27 +161,27 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
             }
 
 
-            rmg_printf ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
+            rmg::printlog ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
                     jk, kptr->kp.kpt[0], kptr->kp.kpt[1], kptr->kp.kpt[2]);
 
             for (int idx = 0; idx < nspin; idx++)
             {
                 if ( (nspin == 2) && (idx == 0))	
-                    rmg_printf("\n------------- SPIN UP ---------------\n\n");
+                    rmg::printlog("\n------------- SPIN UP ---------------\n\n");
                 else if ( (nspin == 2) && (idx == 1))	
-                    rmg_printf("\n------------ SPIN DOWN --------------\n\n"); 
+                    rmg::printlog("\n------------ SPIN DOWN --------------\n\n"); 
                 int il = 0;
                 for (int is = 0; is < ct.num_states; is++)
                 {
                     if (is % 5 == 0)
-                        rmg_printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
+                        rmg::printlog ("[kpt %3d %3d %3d]", jk, iscf, il++);
 
-                    rmg_printf ("   %8.4f [%5.3f]%s",
+                    rmg::printlog ("   %8.4f [%5.3f]%s",
                             kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 5 == 4) ? "\n" : ""));
                 }
-                rmg_printf ("\n");
+                rmg::printlog ("\n");
             }
-            rmg_printf ("\n\n");
+            rmg::printlog ("\n\n");
         }
     }
 }

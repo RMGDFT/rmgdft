@@ -174,7 +174,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
         if (sum < 0.0)
         {
-            rmg_printf ("the %dth state is wrong\n", istate);
+            rmg::printlog ("the %dth state is wrong\n", istate);
             rmg::error("<psi|S|psi> cann't be negative");
         }
 

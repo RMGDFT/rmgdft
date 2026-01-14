@@ -92,7 +92,7 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
             {
                 if((pct.gridpe == 0) && (printed == 0))
                 {
-                    rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    rmg::printlog("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printed++;
                 }
@@ -100,7 +100,7 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
             }
             else if(printed == 0)
             {
-                rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size.\n");
+                rmg::printlog("Warning: localized projectors selected but their diameter exceeds cell size.\n");
                 printf("Warning: localized projectors selected but their diameter exceeds cell size.\n");
                 printed++;
             }
@@ -312,7 +312,7 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
     {
         if(ct.xc_is_hybrid)
         {
-            rmg_printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
+            rmg::printlog("Warning: Core corrections are not consistent with hybrid functionals!\n");
             printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
         }
 
@@ -427,7 +427,7 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
             {
                 if(pct.gridpe == 0) 
                 {
-                    rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    rmg::printlog("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                 }
                 ct.atomic_orbital_type = DELOCALIZED;

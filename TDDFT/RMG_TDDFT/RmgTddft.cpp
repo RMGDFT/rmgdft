@@ -449,9 +449,9 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, numst, *Sp);
         }
 
-        rmg_printf("\n  x dipolll  %f ", dipole_tot[0]);
-        rmg_printf("\n  y dipolll  %f ", dipole_tot[1]);
-        rmg_printf("\n  z dipolll  %f \n", dipole_tot[2]);
+        rmg::printlog("\n  x dipolll  %f ", dipole_tot[0]);
+        rmg::printlog("\n  y dipolll  %f ", dipole_tot[1]);
+        rmg::printlog("\n  z dipolll  %f \n", dipole_tot[2]);
         fflush(NULL);
 
         //   if(pct.gridpe == 0)
@@ -496,7 +496,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         // VecP matrix is <psi| ct.efied_tddft dot gradient | psi> 
         //
         if(ct.verbose) {
-            rmg_printf("\n starting VecP matrix ");
+            rmg::printlog("\n starting VecP matrix ");
             fflush(NULL);
         }
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
@@ -525,7 +525,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             }
         }
         if(ct.verbose) {
-            rmg_printf("\n done VecP matrix ");
+            rmg::printlog("\n done VecP matrix ");
             fflush(NULL);
         }
 
@@ -656,7 +656,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 delete RT2a;
                 RT2a = new RmgTimer("2-TDDFT: ELDYN");
                 if(ct.verbose) {
-                    rmg_printf("\n start magnus and eldyn ");
+                    rmg::printlog("\n start magnus and eldyn ");
                     fflush(NULL);
                 }
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
@@ -666,7 +666,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 RmgMemcpy(Kptr[kpt]->Pn1_cpu, Pn1, 2*n2*sizeof(double));
 
                 if(ct.verbose) {
-                    rmg_printf("\n done magnus and eldyn ");
+                    rmg::printlog("\n done magnus and eldyn ");
                     fflush(NULL);
                 }
                 delete(RT2a);
@@ -710,7 +710,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 }
                 rmg::sync_device();
                 if(ct.verbose) {
-                    rmg_printf("\n start rho calc ");
+                    rmg::printlog("\n start rho calc ");
                     fflush(NULL);
                 }
                 if(ct.tddft_floatprecision)
@@ -732,7 +732,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 }
 
                 if(ct.verbose) {
-                    rmg_printf("\n done rho calc ");
+                    rmg::printlog("\n done rho calc ");
                     fflush(NULL);
                 }
                 int kpt_glob = kpt + pct.kstart;
@@ -850,7 +850,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
             if(pct.imgpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
-            rmg_printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
+            rmg::printlog("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err);  
             //err= -1.0e0 ;  
             iter_scf ++ ;

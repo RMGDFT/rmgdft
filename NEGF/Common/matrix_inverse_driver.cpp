@@ -72,7 +72,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol <1) 
     {
-        rmg_printf ("error in matrix_inverse_driver nprow= %d npcol=%d \n", nprow, npcol);
+        rmg::printlog ("error in matrix_inverse_driver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -81,7 +81,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol != 1)
     {
-        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg::printlog ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -113,7 +113,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     info = 0;
     if (info != 0)
     {
-        rmg_printf ("error in cusolverDnZgetrf with INFO = %d \n", info);
+        rmg::printlog ("error in cusolverDnZgetrf with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -130,7 +130,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     info = 0;
     if (info != 0)
     {
-        rmg_printf ("error in cusolverDnZgetrs with INFO = %d \n", info);
+        rmg::printlog ("error in cusolverDnZgetrs with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -148,7 +148,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol != 1)
     {
-        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg::printlog ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -186,14 +186,14 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         pzgetrf(&nn, &nn, Hii, &ione, &ione, desca, ipiv, &info);
         if (info != 0)
         {
-            rmg_printf ("error in pzgetrf with INFO = %d \n", info);
+            rmg::printlog ("error in pzgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
         pzgetri(&nn, Hii, &ione, &ione, desca, ipiv, work, &lwork, iwork, &liwork, &info);
         if (info != 0)
         {
-            rmg_printf ("error in pzgetri with INFO = %d \n", info);
+            rmg::printlog ("error in pzgetri with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
@@ -215,14 +215,14 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         zgetrf(&nn, &nn, (double *)Hii, &nn, ipiv, &info);
         if (info != 0)
         {
-            rmg_printf ("error in zgetrf with INFO = %d \n", info);
+            rmg::printlog ("error in zgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
         zgetri(&nn, (double *)Hii, &nn, ipiv, (double *)work, &lwork, &info);
         if (info != 0)
         {
-            rmg_printf ("error in zgetri with INFO = %d \n", info);
+            rmg::printlog ("error in zgetri with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }

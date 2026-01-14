@@ -75,13 +75,13 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver folded");
             folded_call_count++;
-            rmg_printf("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+            rmg::printlog("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
         }
         else
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver");
             call_count++;
-            rmg_printf("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+            rmg::printlog("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
         }
 
         // Copy A into eigvectors

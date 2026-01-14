@@ -188,8 +188,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                 }
                 if(ct.mix < 0.02)
                 {
-                    rmg_printf ("\nCharge density mixing has fallen below  %10.4f.\n", ct.mix);
-                    rmg_printf ("and usually means something is wrong with the job.\n");
+                    rmg::printlog ("\nCharge density mixing has fallen below  %10.4f.\n", ct.mix);
+                    rmg::printlog ("and usually means something is wrong with the job.\n");
                 }
 
                 // Should add a check here for a minimum density mixing to trigger an error
@@ -206,7 +206,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             if (ct.write_eigvals_period && (ct.scf_steps % ct.write_eigvals_period == 0))
             {
                 OutputEigenvalues (Kptr, 0, ct.scf_steps);
-                rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+                rmg::printlog ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
             }
 
             /*Perform charge analysis if requested*/
@@ -252,14 +252,14 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
             if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7)
             { 
-                rmg_printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                rmg::printlog(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                rmg_printf(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                rmg::printlog(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
                         ct.scf_steps, exx_step_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
             }
         }
@@ -272,19 +272,19 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     {
         if(ct.rms < ct.thr_rms)
         {
-            rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
+            rmg::printlog("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
             if (pct.imgpe == 0 && pct.images == 1)
                 fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
         }
         else if(fabs(ct.scf_accuracy) < ct.thr_energy)
         {
-            rmg_printf("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);
+            rmg::printlog("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);
             if (pct.imgpe == 0 && pct.images ==1)
                 fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);
         }
 
-        rmg_printf ("\n");
-        rmg_printf ("potential convergence has been achieved. stopping ...\n");
+        rmg::printlog ("\n");
+        rmg::printlog ("potential convergence has been achieved. stopping ...\n");
 
         /*Write PDOS if converged*/
         //	if (ct.pdos_flag)
@@ -293,13 +293,13 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     }
     else
     {
-        rmg_printf("\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
+        rmg::printlog("\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
         if (pct.imgpe == 0 && pct.images ==1)
             fprintf(stdout, "\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
     }
 
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     progress_tag ();
 
     if(0)
@@ -331,7 +331,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
-    rmg_printf ("\nfinal total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
+    rmg::printlog ("\nfinal total energy from eig sum = %16.8f %s\n", efactor*ct.TOTAL, eunits);
 
     // test conditions
     check_tests();
@@ -396,46 +396,46 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         Exx->Vexx(Kptr[0]->vexx, false);
         double E_exchange = Exx->Exxenergy(Kptr[0]->vexx);
 
-        rmg_printf ("\n@@ TOTAL ENEGY Components \n");
-        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-        rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
-        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        rmg::printlog ("\n@@ TOTAL ENEGY Components \n");
+        rmg::printlog ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg::printlog ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg::printlog ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+        rmg::printlog ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg::printlog ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg::printlog ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
         if(ct.vdw_corr)
-            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+            rmg::printlog ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
-        rmg_printf ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
+            rmg::printlog ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+        rmg::printlog ("final total energy from direct =  %16.8f %s\n", efactor*total_e, eunits);
         ct.TOTAL_DIRECT = total_e;
 
         double Madelung = MadelungConstant();
-        rmg_printf ("MadelungConstant      =  %16.8f \n", Madelung);
+        rmg::printlog ("MadelungConstant      =  %16.8f \n", Madelung);
 
         double vme = 0.5 * ct.nel * Madelung;
         total_e = kin_energy + pseudo_energy + ct.ES + E_exchange + ct.II + ct.Evdw + ct.ldaU_E;
         total_e += vme;
-        rmg_printf ("\n Hartree Fock total energy \n");
-        rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-        rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
-        rmg_printf ("@@ Exchange           = %15.6f %s\n", efactor*E_exchange, eunits);
-        rmg_printf ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
-        rmg_printf ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
-        rmg_printf ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
-        rmg_printf ("@@ Madelung           = %15.6f %s\n", efactor*vme, eunits);
+        rmg::printlog ("\n Hartree Fock total energy \n");
+        rmg::printlog ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+        rmg::printlog ("@@ ELECTROSTATIC      = %15.6f %s\n", efactor*ct.ES, eunits);
+        rmg::printlog ("@@ Exchange           = %15.6f %s\n", efactor*E_exchange, eunits);
+        rmg::printlog ("@@ Kinetic            = %15.6f %s\n", efactor*kin_energy, eunits);
+        rmg::printlog ("@@ E_localpp          = %15.6f %s\n", efactor*E_localpp, eunits);
+        rmg::printlog ("@@ E_nonlocalpp       = %15.6f %s\n", efactor*E_nonlocalpp, eunits);
+        rmg::printlog ("@@ Madelung           = %15.6f %s\n", efactor*vme, eunits);
         if(ct.vdw_corr)
-            rmg_printf ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
+            rmg::printlog ("@@ vdw correction     = %15.6f %s\n", efactor*ct.Evdw, eunits);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-            rmg_printf ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
+            rmg::printlog ("@@ LdaU correction    = %15.6f %s\n", efactor*ct.ldaU_E, eunits);
         if(ct.BerryPhase) 
         {
             total_e += Rmg_BP->enthalpy_elec;
-            rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+            rmg::printlog ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
         }
 
-        rmg_printf ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
-        rmg_printf ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
+        rmg::printlog ("total energy Hartree Fock(+Madelung)      =  %16.8f %s\n", efactor*total_e, eunits);
+        rmg::printlog ("\n WARNING: Madelung term should not be included, add it to compare with qmcpack\n" );
 
 
         fflush(NULL);
@@ -459,7 +459,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         EpsilonMatrix(Kptr);
     }
     
-    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+    rmg::printlog ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
     // Output RMSdV for convergence analysis
     if(pct.imgpe == 0) {
@@ -526,7 +526,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     }
 
 
-    rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
+    rmg::printlog (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 
 
     /*Calculate and write dipole moment if requested*/
@@ -540,7 +540,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         /*Now we need to convert to debye units */
         if (pct.imgpe==0)
         {
-            rmg_printf("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
+            rmg::printlog("\n\n Dipole moment [Debye]: (%16.8e,%16.8e, %16.8e)", 
                     DEBYE_CONVERSION *dipole[0], 
                     DEBYE_CONVERSION *dipole[1], 
                     DEBYE_CONVERSION *dipole[2]);
@@ -647,13 +647,13 @@ void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputK
                     Voronoi_charge.LocalCharge(rho.cx.data(), localrho_x);
                     Voronoi_charge.LocalCharge(rho.cy.data(), localrho_y);
                     Voronoi_charge.LocalCharge(rho.cz.data(), localrho_z);
-                    rmg_printf("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
+                    rmg::printlog("\n@ION  Ion  Species      Magnetization_xyz(Voronoi)\n");
                     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
                     {
                         ION &Atom = Atoms[ion];
                         SPECIES &AtomType = Species[Atom.species];
 
-                        rmg_printf ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
+                        rmg::printlog ("@ION  %3lu  %4s        %7.3f  %7.3f  %7.3f\n",
                                 ion + 1, AtomType.atomic_symbol,localrho_x[ion], localrho_y[ion], localrho_z[ion]);
                     }
 
@@ -663,7 +663,7 @@ void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputK
                 }
                 delete [] localrho;
 
-                rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
+                rmg::printlog("\n Vdd took %f seconds\n", my_crtc () - timex);
             }
             WriteChargeAnalysis();
         }

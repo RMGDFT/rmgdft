@@ -127,7 +127,7 @@ void GetNlop_on(void)
         PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
 
 
-        //    rmg_printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
+        //    rmg::printlog("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
         std::string newpath;
 
         if(ct.nvme_weights)
@@ -273,14 +273,14 @@ void GetNlop_on(void)
 
 
 #if	DEBUG
-    rmg_printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
+    rmg::printlog("PE: %d leave  get_nlop ...\n", pct.gridpe);
     fflush(NULL);
 #endif
 
     if (pct.gridpe == 0)
     {
 
-        rmg_printf(" get_nlop.c  done\n");
+        rmg::printlog(" get_nlop.c  done\n");
 
     }                           /* end if */
     /*    MPI_Barrier(pct.img_comm); */

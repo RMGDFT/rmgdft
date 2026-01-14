@@ -202,9 +202,9 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     write_time = my_crtc () - time0;
 
-    rmg_printf ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
+    rmg::printlog ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
             ((double) totalsize) / (1024 * 1024));
-    rmg_printf ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
+    rmg::printlog ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
             ((double) totalsize) / (1024 * 1024) / write_time);
 
 

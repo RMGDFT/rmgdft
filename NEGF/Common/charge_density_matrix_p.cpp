@@ -45,14 +45,14 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     nL = lcr[1].num_states;
     if (nL != ct.block_dim[0])
     {
-        rmg_printf (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
+        rmg::printlog (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
     }
 
     nL = lcr[2].num_states;
 
     if (nL != ct.block_dim[ct.num_blocks - 1])
     {
-        rmg_printf (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
+        rmg::printlog (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
     }
 
     /*  allocate memory for green_C, grenn_C is tri-diagonal */
@@ -301,8 +301,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
 
             //       if(pct.gridpe == 0) 
-            //           rmg_printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
-            //      rmg_printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
+            //           rmg::printlog (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
+            //      rmg::printlog (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
 
             /* Finally, calculates density matrix */ 
 

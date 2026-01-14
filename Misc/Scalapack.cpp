@@ -85,7 +85,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     if(this->NB < 2)
     {
-        rmg_printf("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+        rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
     }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
@@ -514,7 +514,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     pdpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
     if (info)
     {
-       rmg_printf ("\n pdpotrf failed, info is %d", info);
+       rmg::printlog ("\n pdpotrf failed, info is %d", info);
        rmg::error("pdpotrf failed");
     }
 
@@ -535,7 +535,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdsyngst failed, info is %d", info);
+       rmg::printlog ("\n pdsyngst failed, info is %d", info);
        rmg::error("pdsyngst failed");
     }
 
@@ -549,7 +549,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg::printlog ("\n pdsyevd failed, info is %d", info);
        rmg::error("psyevd failed");
     }
 
@@ -558,7 +558,7 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdtrms failed, info is %d", info);
+       rmg::printlog ("\n pdtrms failed, info is %d", info);
        rmg::error("pdtrms failed");
     }
 
@@ -580,7 +580,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-       rmg_printf ("\n pzpotrf failed, info is %d", info);
+       rmg::printlog ("\n pzpotrf failed, info is %d", info);
        rmg::error("pzpotrf failed");
     }
 
@@ -589,7 +589,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-       rmg_printf ("\n pzhegst failed, info is %d", info);
+       rmg::printlog ("\n pzhegst failed, info is %d", info);
        rmg::error("pzhegst failed");
     }
 
@@ -617,7 +617,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-        rmg_printf ("\n pzheevd failed, info is %d", info);
+        rmg::printlog ("\n pzheevd failed, info is %d", info);
         rmg::error("pzheevd failed");
     }
 
@@ -626,7 +626,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-        rmg_printf ("\n pztrsm failed, info is %d", info);
+        rmg::printlog ("\n pztrsm failed, info is %d", info);
         rmg::error("pztrms failed");
     }
 
@@ -676,7 +676,7 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
 
     if (info)
     {
-       rmg_printf ("\n pdsyevd failed, info is %d", info);
+       rmg::printlog ("\n pdsyevd failed, info is %d", info);
        rmg::error("psyevd failed");
     }
 
@@ -724,7 +724,7 @@ void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *
 
     if (info)
     {
-        rmg_printf ("\n pzheevd failed, info is %d", info);
+        rmg::printlog ("\n pzheevd failed, info is %d", info);
         rmg::error("pzheevd failed");
     }
 

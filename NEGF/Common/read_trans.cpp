@@ -123,31 +123,31 @@ void read_trans (complex_energy_integral * cei)
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n  PARAMETERS control the complex energy integral  \n");
+        rmg::printlog ("\n  PARAMETERS control the complex energy integral  \n");
 
-        rmg_printf (" number of probe:                     %d \n", cei->num_probe);
+        rmg::printlog (" number of probe:                     %d \n", cei->num_probe);
         for (idx = 0; idx < cei->num_probe; idx++)
         {
-           rmg_printf (" probe in which block?:   %d \n", cei->probe_in_block[idx]);
+           rmg::printlog (" probe in which block?:   %d \n", cei->probe_in_block[idx]);
         }
-        rmg_printf (" number of subsystem:                     %d \n", cei->num_subsystem);
+        rmg::printlog (" number of subsystem:                     %d \n", cei->num_subsystem);
         for (idx = 0; idx < cei->num_subsystem; idx++)
         {
-           rmg_printf (" Order of subsystem in the input file?:   %d \n", cei->subsystem_idx[idx]);
+           rmg::printlog (" Order of subsystem in the input file?:   %d \n", cei->subsystem_idx[idx]);
         }
-        rmg_printf (" energy point in semicircle:          %d \n", cei->ncircle);
-        rmg_printf (" energy point in strait line:         %d \n", cei->nmax_gq1);
-        rmg_printf (" energy point in noneq calc:          %d \n", cei->nmax_gq2);
-        rmg_printf (" bottom of valance band :             %f eV \n", cei->EB);
-        rmg_printf (" Fermi Dirac temperature :            %f eV \n", cei->KT);
-        rmg_printf (" parameter GAMMA         :            %f eV \n", cei->GAMMA);
-        rmg_printf (" imaginary energy for strait line:    %f eV \n", cei->DELTA2);
-        rmg_printf (" imaginary energy for noneq calc :    %f eV \n", cei->DELTA);
-        rmg_printf (" pulay steps in rho:                  %d \n", cei->Npulaysave);
-        rmg_printf (" pulay refresh steps in rho:          %d \n", cei->Npulayrefresh);
-        rmg_printf (" pulay mixing parameter in rho:       %f \n", cei->pulaymix);
+        rmg::printlog (" energy point in semicircle:          %d \n", cei->ncircle);
+        rmg::printlog (" energy point in strait line:         %d \n", cei->nmax_gq1);
+        rmg::printlog (" energy point in noneq calc:          %d \n", cei->nmax_gq2);
+        rmg::printlog (" bottom of valance band :             %f eV \n", cei->EB);
+        rmg::printlog (" Fermi Dirac temperature :            %f eV \n", cei->KT);
+        rmg::printlog (" parameter GAMMA         :            %f eV \n", cei->GAMMA);
+        rmg::printlog (" imaginary energy for strait line:    %f eV \n", cei->DELTA2);
+        rmg::printlog (" imaginary energy for noneq calc :    %f eV \n", cei->DELTA);
+        rmg::printlog (" pulay steps in rho:                  %d \n", cei->Npulaysave);
+        rmg::printlog (" pulay refresh steps in rho:          %d \n", cei->Npulayrefresh);
+        rmg::printlog (" pulay mixing parameter in rho:       %f \n", cei->pulaymix);
 
-        rmg_printf (" \n parallel matrix grid nrow, ncol:  %d %d \n", pmo.nrow, pmo.ncol);
+        rmg::printlog (" \n parallel matrix grid nrow, ncol:  %d %d \n", pmo.nrow, pmo.ncol);
 
 
 

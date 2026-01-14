@@ -614,7 +614,7 @@ template <typename T> void STS_calc(Kpoint<T> **Kptr, double Ef, int line_start[
             {
                 double energy = Emin + ie * delta_e + Ef;
                 if(ik == 0 && st == 0)
-                    rmg_printf("\n energy %d  %f %f", ie, energy, Ef);
+                    rmg::printlog("\n energy %d  %f %f", ie, energy, Ef);
                 double tem = energy - Kptr[ik]->Kstates[st].eig[0] * Ha_eV;
                 double dos_one = std::exp(-tem * tem/gaus_broad/gaus_broad) / gaus_broad /std::sqrt(PI);
                 if(dos_one < 1.0e-5) continue;

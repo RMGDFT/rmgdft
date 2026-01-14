@@ -100,10 +100,10 @@ void apply_potential_drop (double *vbias)
  
         if(pct.gridpe ==0)
         {
-            rmg_printf (" hello0 %d %d %d %d \n", x1, x2, y1, y2);
-            rmg_printf (" hello2 %d %d %d %d \n", ny1, ny2, ny3, ny4);
-            rmg_printf (" hello3 %d %d %d %d \n", nx1, nx2, nx3, nx4);
-            rmg_printf (" hello4 %d %d %d \n", get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
+            rmg::printlog (" hello0 %d %d %d %d \n", x1, x2, y1, y2);
+            rmg::printlog (" hello2 %d %d %d %d \n", ny1, ny2, ny3, ny4);
+            rmg::printlog (" hello3 %d %d %d %d \n", nx1, nx2, nx3, nx4);
+            rmg::printlog (" hello4 %d %d %d \n", get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
         }
 
 
@@ -257,9 +257,9 @@ void apply_potential_drop (double *vbias)
                     for (j = 0; j < get_FNY_GRID(); j++)
                     {
                         idx = j + i * get_FNY_GRID();
-                        rmg_printf (" %d %d %f \n", i, j, vtemp[idx] );
+                        rmg::printlog (" %d %d %f \n", i, j, vtemp[idx] );
                     }
-                        rmg_printf (" \n");
+                        rmg::printlog (" \n");
                 }
 
 */
@@ -345,7 +345,7 @@ void apply_potential_drop (double *vbias)
                     if( absval > tresh) tresh = absval; 
                 }
             }
-            /*rmg_printf (" hello %d %f %f \n", iter, absval, tresh );*/
+            /*rmg::printlog (" hello %d %f %f \n", iter, absval, tresh );*/
 
 
 
@@ -361,7 +361,7 @@ void apply_potential_drop (double *vbias)
               //          for (j = 0; j < get_FNY_GRID(); j++)
               //          {
               //              idx = j + i * get_FNY_GRID();
-              //              rmg_printf (" hello  %f \n", vtemp[idx] );
+              //              rmg::printlog (" hello  %f \n", vtemp[idx] );
               //          }
               //      }
               // }
@@ -379,7 +379,7 @@ void apply_potential_drop (double *vbias)
 
 
         if(tresh > eps)
-        rmg_printf (" Did not quite converge, tresh, iter = %f %d \n", tresh, iter ); 
+        rmg::printlog (" Did not quite converge, tresh, iter = %f %d \n", tresh, iter ); 
 
 
 

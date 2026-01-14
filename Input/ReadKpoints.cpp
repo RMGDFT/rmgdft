@@ -184,10 +184,10 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     }
 
-    //rmg_printf("\n num_k %d", ct.num_kpts);
+    //rmg::printlog("\n num_k %d", ct.num_kpts);
     //for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-    //   rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
-    //rmg_printf("\n");
+    //   rmg::printlog("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+    //rmg::printlog("\n");
 
     if(ct.is_use_symmetry)
         throw RmgFatalException() << "set use_symmetry=\"0\" to read kpoints " << __FILE__ << " at line " << __LINE__ << "\n";

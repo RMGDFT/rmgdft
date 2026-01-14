@@ -1,3 +1,25 @@
+/*  
+ *  
+ * Copyright 2026 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ *      
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/      
+        
 
 #include <signal.h>
 #include <stdio.h>
@@ -38,7 +60,7 @@ extern "C" void errore(char *where, char *message, int ierr, int where_len, int 
   if(((where_len + message_len) > (int)sizeof(tbuf)) || (where_len < 0) || (message_len < 0)) {
      std::cout << "Unknown issue printing error message from fortran routines" << std::endl;
      printf("Unknown issue printing error message from fortran routines\n");fflush(NULL);
-     rmg_printf("Unknown issue printing error message from fortran routines\n");fflush(NULL);
+     rmg::printlog("Unknown issue printing error message from fortran routines\n");fflush(NULL);
      raise(SIGTERM);
   }
 
@@ -52,7 +74,7 @@ extern "C" void errore(char *where, char *message, int ierr, int where_len, int 
   if(iz >= (int)sizeof(tbuf)) iz = sizeof(tbuf) - 1;
   tbuf[iz] = 0;
   printf("%s\n", tbuf);
-  rmg_printf("%s\n", tbuf);
+  rmg::printlog("%s\n", tbuf);
 
 
   fflush (NULL);

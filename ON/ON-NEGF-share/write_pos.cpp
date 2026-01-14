@@ -44,17 +44,17 @@ void write_pos(void)
     ION *iptr;
 
 
-    rmg_printf("\n\n\n  IONIC POSITIONS AND DISPLACEMENTS:\n");
+    rmg::printlog("\n\n\n  IONIC POSITIONS AND DISPLACEMENTS:\n");
 
 
-    rmg_printf("\nSpecies   X           Y           Z           dX          dY          dZ");
+    rmg::printlog("\nSpecies   X           Y           Z           dX          dY          dZ");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
         iptr = &Atoms[ion];
 
-        rmg_printf("\n  %d   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
+        rmg::printlog("\n  %d   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
                iptr->species + 1,
                iptr->crds[0], iptr->crds[1], iptr->crds[2],
                iptr->crds[0] - iptr->icrds[0],
@@ -62,7 +62,7 @@ void write_pos(void)
 
     }                           /* end for */
 
-    rmg_printf("\n");
+    rmg::printlog("\n");
 
 }                               /* end write_pos */
 

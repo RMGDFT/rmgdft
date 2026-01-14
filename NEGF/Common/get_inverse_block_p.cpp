@@ -26,7 +26,7 @@ void get_inverse_block_p (std::complex<double> *Hii, std::complex<double> *Gii, 
 
     if (info != 0)
     {
-        rmg_printf ("get_inverse_block_p.c: error in pzgesv with INFO = %d \n", info);
+        rmg::printlog ("get_inverse_block_p.c: error in pzgesv with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }

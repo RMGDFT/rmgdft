@@ -233,7 +233,7 @@ void get_dipole (double * rho, double *dipole)
     dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.grid_comm);
     dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.grid_comm);
 
-    rmg_printf("\n electronic dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+    rmg::printlog("\n electronic dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
 
     /*Now we have dipole moment for electrons, need to add ions now */
     for (ion = 0; ion < ct.num_ions; ion++)

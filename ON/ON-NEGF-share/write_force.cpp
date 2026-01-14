@@ -56,9 +56,9 @@ void write_force(void)
     double maxf = 0.0, max_all_f = 0.0;
     double f2;
 
-    rmg_printf("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
+    rmg::printlog("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
 
-    rmg_printf("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
+    rmg::printlog("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -70,7 +70,7 @@ void write_force(void)
         fp = iptr->force[ct.fpt[0]];
         sp = &Species[iptr->species];
 
-        rmg_printf ( "@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %d %d %d\n",
+        rmg::printlog ( "@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %d %d %d\n",
                  ion + 1,
                  sp->atomic_symbol,
                  iptr->species + 1,
@@ -128,45 +128,45 @@ void write_force(void)
     max_all_f = std::max( max_all_f, maxfz );
 
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     progress_tag ();
-    rmg_printf (" mean FX      = %12.8f Ha/a0\n", avfx);
+    rmg::printlog (" mean FX      = %12.8f Ha/a0\n", avfx);
     progress_tag ();
-    rmg_printf (" mean FY      = %12.8f Ha/a0\n", avfy);
+    rmg::printlog (" mean FY      = %12.8f Ha/a0\n", avfy);
     progress_tag ();
-    rmg_printf (" mean FZ      = %12.8f Ha/a0\n", avfz);
+    rmg::printlog (" mean FZ      = %12.8f Ha/a0\n", avfz);
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     progress_tag ();
-    rmg_printf (" max FX       = %12.8f Ha/a0\n", maxfx);
+    rmg::printlog (" max FX       = %12.8f Ha/a0\n", maxfx);
     progress_tag ();
-    rmg_printf (" max FY       = %12.8f Ha/a0\n", maxfy);
+    rmg::printlog (" max FY       = %12.8f Ha/a0\n", maxfy);
     progress_tag ();
-    rmg_printf (" max FZ       = %12.8f Ha/a0\n", maxfz);
+    rmg::printlog (" max FZ       = %12.8f Ha/a0\n", maxfz);
     progress_tag ();
-    rmg_printf (" max F        = %12.8f Ha/a0\n", max_all_f);
+    rmg::printlog (" max F        = %12.8f Ha/a0\n", max_all_f);
     if ((ct.forceflag == MD_FASTRLX) )
     {
         progress_tag ();
-        rmg_printf (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);
+        rmg::printlog (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);
     }
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     progress_tag ();
-    rmg_printf (" sum FX       = %12.8f Ha/a0\n", sumx);
+    rmg::printlog (" sum FX       = %12.8f Ha/a0\n", sumx);
     progress_tag ();
-    rmg_printf (" sum FY       = %12.8f Ha/a0\n", sumy);
+    rmg::printlog (" sum FY       = %12.8f Ha/a0\n", sumy);
     progress_tag ();
-    rmg_printf (" sum FZ       = %12.8f Ha/a0\n", sumz);
+    rmg::printlog (" sum FZ       = %12.8f Ha/a0\n", sumz);
     progress_tag ();
-    rmg_printf (" Average      = %12.8f Ha/a0\n", (fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0);
+    rmg::printlog (" Average      = %12.8f Ha/a0\n", (fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0);
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     progress_tag ();
-    rmg_printf (" sqrt < F^2 > = %12.8f Ha/a0\n", avf);
+    rmg::printlog (" sqrt < F^2 > = %12.8f Ha/a0\n", avf);
     progress_tag ();
-    rmg_printf (" max | F |    = %12.8f Ha/a0\n", maxf);
-    rmg_printf ("\n");
+    rmg::printlog (" max | F |    = %12.8f Ha/a0\n", maxf);
+    rmg::printlog ("\n");
 
 }                               /* end write_force */
 

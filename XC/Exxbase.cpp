@@ -1373,10 +1373,10 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     int ij_tot = ct.qmc_nband * ct.qmc_nband;
     size_t alloc1 = nkpts * Ncho_max * ij_tot * sizeof(std::complex<double>);
     size_t alloc2 = nkpts * ij_tot * coarse_pwaves->pbasis * sizeof(std::complex<double>);
-    rmg_printf("\n Memory usage (Mbytes) in Vexx_integrals");
-    rmg_printf("\n          CholVec:   %8.2f ", (double)alloc1/1000.0/1000.0);
-    rmg_printf("\n          Xaoik:     %8.2f ", (double)alloc2/1000.0/1000.0);
-    rmg_printf("\n          Xaolj:     %8.2f ", (double)alloc2/1000.0/1000.0);
+    rmg::printlog("\n Memory usage (Mbytes) in Vexx_integrals");
+    rmg::printlog("\n          CholVec:   %8.2f ", (double)alloc1/1000.0/1000.0);
+    rmg::printlog("\n          Xaoik:     %8.2f ", (double)alloc2/1000.0/1000.0);
+    rmg::printlog("\n          Xaolj:     %8.2f ", (double)alloc2/1000.0/1000.0);
 
     int pbasis = coarse_pwaves->pbasis;
     // Xaoij, Xaolj are distributed differently, it is not the 3D domain decomposiiont. just 1D even distribution.
@@ -1565,7 +1565,7 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
             }
         }
 
-        if(ct.verbose)rmg_printf("\n residual for Chol: iq %d iv %d maxv %e at k1max %d ij_max %d", iq, iv, maxv, k1max, ij_max);
+        if(ct.verbose)rmg::printlog("\n residual for Chol: iq %d iv %d maxv %e at k1max %d ij_max %d", iq, iv, maxv, k1max, ij_max);
         if(maxv < tol) break;
 
         if(done[k1max][ij_max]) {
@@ -1623,7 +1623,7 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
         }
 
     }
-    rmg_printf("\n residual for Chol: iq %d num_chovec %d maxv %e", iq, iv, maxv);
+    rmg::printlog("\n residual for Chol: iq %d num_chovec %d maxv %e", iq, iv, maxv);
     delete [] Vbuff;
     delete [] Xkl_0;
     return iv;

@@ -65,5 +65,5 @@ void make_mask_grid_state(int level, STATE * states)
                 }
     }
 
-        rmg_printf(" make_mask_grid_state is  done\n");
+        rmg::printlog(" make_mask_grid_state is  done\n");
 }

@@ -133,7 +133,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         delete(RT1);
     }
     MPI_Barrier(pct.img_comm);
-    if(pct.imgpe==0) rmg_printf("\n sigma_all done");
+    if(pct.imgpe==0) rmg::printlog("\n sigma_all done");
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -298,7 +298,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     {
 
         if (pct.imgpe == 0)
-            rmg_printf ("\n\n\n ITERATION     %d\n", ct.scf_steps);
+            rmg::printlog ("\n\n\n ITERATION     %d\n", ct.scf_steps);
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
         {
@@ -319,7 +319,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         {
 
             if (pct.imgpe == 0)
-                rmg_printf ("\n\n     convergence has been achieved. stopping ...\n");
+                rmg::printlog ("\n\n     convergence has been achieved. stopping ...\n");
 
 
             break;
@@ -342,7 +342,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgFreeHost(rho_matrix_local);
 
     if (pct.imgpe == 0)
-        rmg_printf ("\n Quench is done \n");
+        rmg::printlog ("\n Quench is done \n");
 
     write_data_NEGF(ct.outfile, vh, vxc,rho);
 

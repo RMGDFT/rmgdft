@@ -75,7 +75,7 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
             f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
-            rmg_printf("pulay.c ---Could not allocate memory for x or f \n");
+            rmg::printlog("pulay.c ---Could not allocate memory for x or f \n");
             fflush(NULL);
             exit(-1);
         }
@@ -144,10 +144,10 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
 
         if (pct.gridpe == 0)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for (i = 0; i < size; i++)
-                rmg_printf("   pulay_b[%d]: %f  ", i, b[i]);
-            rmg_printf("\n");
+                rmg::printlog("   pulay_b[%d]: %f  ", i, b[i]);
+            rmg::printlog("\n");
         }
 
 
