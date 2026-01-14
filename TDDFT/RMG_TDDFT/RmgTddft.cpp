@@ -495,6 +495,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         // vector potential will be A(t) =  ct.efield_tddft * cos(tddft_frequency * t)
         // VecP matrix is <psi| ct.efied_tddft dot gradient | psi> 
         //
+        if(ct.verbose) {
+            rmg_printf("\n starting VecP matrix ");
+            fflush(NULL);
+        }
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             VecPHmatrix(Kptr[kpt], ct.efield_tddft_crds, desca, ct.tddft_start_state, numst);
 
@@ -519,6 +523,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 }
                 CurrentOperator(Kptr[kpt], desca, ct.tddft_start_state);
             }
+        }
+        if(ct.verbose) {
+            rmg_printf("\n done VecP matrix ");
+            fflush(NULL);
         }
 
     }
@@ -577,6 +585,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             fprintf(dbp_fi, "\n  &&dipole at groud state BeryPhase (C/m^2):  %18.10e  %18.10e  %18.10e ",
                     tot_bp_pol, 0.0,0.0);
         }
+        fflush(NULL);
     }
     //  run rt-td-dft
     RmgTimer *RT2a ;    // timer type  declaration
@@ -646,12 +655,20 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 rmg::sync_device();
                 delete RT2a;
                 RT2a = new RmgTimer("2-TDDFT: ELDYN");
+                if(ct.verbose) {
+                    rmg_printf("\n start magnus and eldyn ");
+                    fflush(NULL);
+                }
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
                 /* --- C++  version:  --*/
 
                 eldyn_ort(desca, Mdim, Ndim,  Hmatrix_m1,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, eldyn_comm) ;
                 RmgMemcpy(Kptr[kpt]->Pn1_cpu, Pn1, 2*n2*sizeof(double));
 
+                if(ct.verbose) {
+                    rmg_printf("\n done magnus and eldyn ");
+                    fflush(NULL);
+                }
                 delete(RT2a);
 
                 // if(pct.gridpe == 0) { printf("**** Pn1 : \n");   print_matrix_z(Pn1,  &nblock, &numst)  ; }
@@ -672,13 +689,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                 {
                     if( scalapack_groups != pct.grid_npes)
                     {
-                        if(Sp->Participates()) 
-                        {
-                            Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
-                            if( scalapack_groups != pct.grid_npes)
-                                Sp->ScalapackBlockAllreduce((double *)matrix_glob, (size_t)numst * (size_t)numst *n2_C/n2);
-                        }
-
+                        Sp->GatherEigvectors(matrix_glob, Pn1);
                         size_t count = numst * numst * sizeof(MatrixType) /sizeof(double);
                         Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
                     }
@@ -698,6 +709,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     for(int i = 0; i < numst * numst; i++) mat_C[i] = matrix_glob[i];
                 }
                 rmg::sync_device();
+                if(ct.verbose) {
+                    rmg_printf("\n start rho calc ");
+                    fflush(NULL);
+                }
                 if(ct.tddft_floatprecision)
                 {
                     if(ct.is_gamma)
@@ -716,6 +731,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     GetNewRho_rmgtddft<OrbitalType, OrbitalType>(Kptr[kpt], rho_k, matrix_glob_orbitaltype, numst, ct.tddft_start_state, (OrbitalType *)matrix_glob);
                 }
 
+                if(ct.verbose) {
+                    rmg_printf("\n done rho calc ");
+                    fflush(NULL);
+                }
                 int kpt_glob = kpt + pct.kstart;
                 for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] += rho_k[idx] * ct.kp[kpt_glob].kweight;
 
