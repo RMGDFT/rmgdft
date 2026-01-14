@@ -366,13 +366,13 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
                     if(mycol == jb%npcol)
                         //  block (ib,jb) in this processor
                     {
-                        int this_block_size_col  = std::min(mb, num_states - mb * jb);
+                        int this_block_size_row  = std::min(mb, num_states - mb * jb);
                         int jstart = (jb/npcol) * mb;
-                        for(int i = 0; i < size_row; i++)
+                        for(int i = 0; i < size_col; i++)
                         {
-                            for(int j = 0; j < this_block_size_col; j++)
+                            for(int j = 0; j < this_block_size_row; j++)
                             {
-                                Aij[(jstart + j) * mxllda + i + istart] =  global_matrix1[ (j + (jb-ib) * mb ) * size_row + i];
+                                Aij[(jstart + j) * mxllda + i + istart] =  global_matrix1[ i* size_row + j + (jb-ib) * mb ];
                             }
                         }
                     }
@@ -387,13 +387,13 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
                     if(myrow == jb%nprow)
                         //  block (jb,ib) in this processor
                     {
-                        int this_block_size_col  = std::min(mb, num_states - mb * jb);
+                        int this_block_size_row  = std::min(mb, num_states - mb * jb);
                         int jstart = (jb/nprow) * mb;
-                        for(int i = 0; i < size_row; i++)
+                        for(int i = 0; i < size_col; i++)
                         {
-                            for(int j = 0; j < this_block_size_col; j++)
+                            for(int j = 0; j < this_block_size_row; j++)
                             {
-                                Aij[(istart + i) * mxllda + j + jstart] = MyConj(global_matrix1[ (j + (jb-ib) * mb ) * size_row + i]);
+                                Aij[(istart + i) * mxllda + j + jstart] = MyConj(global_matrix1[ i * size_row + j + (jb-ib) * mb]);
                             }
                         }
                     }

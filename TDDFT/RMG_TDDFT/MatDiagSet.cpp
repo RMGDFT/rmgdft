@@ -54,7 +54,6 @@ template <typename MatrixType>
     void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP)
 {
 
-    std::cout << "";
     if(ct.tddft_tiledMM)
     {
         int numst_pe = numst/pct.local_comm_npes;
@@ -73,13 +72,15 @@ template <typename MatrixType>
         int izero = 0;
         for(int i = 0; i < SP.GetDistMdim(); i++)
         {
-            int i_glob = indxl2g(&i, &mb, &myrow, &izero, &nprow);
+            int i1 = i+1;
+            int i_glob = indxl2g(&i1, &mb, &myrow, &izero, &nprow);
             for(int j = 0; j < SP.GetDistNdim(); j++)
             {
-                int j_glob = indxl2g(&j, &nb, &mycol, &izero, &npcol);
+                int j1 = j+1;
+                int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol);
                 if(i_glob == j_glob)
                 {
-                    mat[i + j * mxllda] = diag_elem[i_glob];
+                    mat[i + j * mxllda] = diag_elem[i_glob-1];
                 }
                 else
                 {
