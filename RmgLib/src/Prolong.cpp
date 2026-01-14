@@ -94,7 +94,7 @@ Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in,
         for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
             a[i][iy] = c[iy];
- //           rmg_printf("\n acac %d %f", iy, c[iy]);
+ //           rmg::printlog("\n acac %d %f", iy, c[iy]);
             if(fabs(c[iy]) > 1.0e-20) af[i][iy] = (float)c[iy];
         }
     }
@@ -163,12 +163,12 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
     int count_shells = 0;
     for(auto it = dist_list.begin(); it != dist_list.end(); ++it)
     {
- //       rmg_printf("\n dist %f", *it);
+ //       rmg::printlog("\n dist %f", *it);
         if(*it > max_dist + 1.0e-5)
         {
             count_shells++;
             max_dist = *it;
-  //          rmg_printf("\n maxdist %d %f",count_shells, max_dist);
+  //          rmg::printlog("\n maxdist %d %f",count_shells, max_dist);
         }
         if(count_shells == num_shells)
         {
@@ -189,7 +189,7 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
                 double dist = L.metric(xcry);
                 if( dist - max_dist <1.0e-5)
                 {
- //                   rmg_printf("\n dist %f index %d %d %d", dist, ix, iy, iz);
+ //                   rmg::printlog("\n dist %f index %d %d %d", dist, ix, iy, iz);
                     double weight = std::pow(dist, -power_weight);
                     tot_weight += weight;
                     one_item.coeff = weight;
@@ -203,11 +203,11 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
     }
 
 
-    //rmg_printf("\n size of coef %d", coeff_indx.size());
+    //rmg::printlog("\n size of coef %d", coeff_indx.size());
     for(auto it = coeff_indx.begin(); it != coeff_indx.end(); ++it)
     {
         it->coeff /= tot_weight;
-  //      rmg_printf("\n aaa %f %d %d %d", it->coeff, it->ix, it->iy, it->iz);
+  //      rmg::printlog("\n aaa %f %d %d %d", it->coeff, it->ix, it->iy, it->iz);
     }
 }
 
