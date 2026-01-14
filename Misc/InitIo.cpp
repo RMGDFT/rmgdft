@@ -399,22 +399,26 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // For now forces via finite differencing require this so force use of FFT.
     if(Rmg_G->get_PX0_GRID(1) < ct.kohn_sham_fd_order/2) ct.force_grad_order = 0;
 
-    // We do not (currently) coalesce outside of the multigrid solver so the number of grid points on a PE in any
-    // coordinate direction (non-coalesced) must be greater than or equal to the number of points used in the global FD routines.
+    // If coalescing is off the number of grid points per pe in all coordinate directions must be
+    // must be greater than or equal to ct.kohn_sham_fd_order/2 and greater than or equal to
+    // the number of points used for prolongation of the density to the fine grid which is 5 by default.
+    // but only 1 if fast_density is true.
     int cfac = 1;
     if(ct.coalesce_states && pct.coalesce_factor > 1) cfac = pct.coalesce_factor;
     int fd_check_err = false;
+    int pgrid_limit = std::max(ct.kohn_sham_fd_order/2, 5);
+    if(ct.fast_density) pgrid_limit = ct.kohn_sham_fd_order/2;
     PX0_GRID = cfac*Rmg_G->get_PX0_GRID(1);
-    if(PX0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
-    if(PY0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
-    if(PZ0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    if(PX0_GRID < pgrid_limit) fd_check_err = true;
+    if(PY0_GRID < pgrid_limit) fd_check_err = true;
+    if(PZ0_GRID < pgrid_limit) fd_check_err = true;
     MPI_Allreduce(MPI_IN_PLACE, &fd_check_err, 1, MPI_INT, MPI_SUM, pct.grid_comm);
     if(fd_check_err) 
-        rmg::error("The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
-
-
-
-
+        rmg::error(
+"If coalescing is off the number of grid points per pe in all coordinate directions\n"
+"must be greater than or equal to ct.kohn_sham_fd_order/2 and greater than or equal\n"
+"the number of points used for prolongation of the density to the fine grid which is\n"
+"5 by default but only 1 if fast_density is enabled.\n");
 
 
     /* if logname exists, increment until unique filename found */
