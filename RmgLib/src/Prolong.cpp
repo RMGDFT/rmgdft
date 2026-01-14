@@ -1048,7 +1048,6 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
 
-    int dimx = 2 * half_dimx;
     int dimy = 2 * half_dimy;
     int dimz = 2 * half_dimz;
 
