@@ -44,7 +44,7 @@ void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc,
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
         double *Cmatrix, double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2)
 {
-    int fhand, fgrid_size, size;
+    int fhand, fgrid_size;
     char newname[MAX_PATH];
 
 
