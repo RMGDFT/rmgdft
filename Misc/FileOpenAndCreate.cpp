@@ -45,8 +45,8 @@ int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode)
     // that and then try opening again.
     if(fd < 0) 
     {
-        char tmpname[MAX_PATH];
-        strncpy (tmpname, pathname.c_str(), sizeof(tmpname));
+        char tmpname[MAX_PATH+1];
+        strncpy (tmpname, pathname.c_str(), sizeof(tmpname)-1);
         mkdir (dirname (tmpname), S_IRWXU);
     }
 
