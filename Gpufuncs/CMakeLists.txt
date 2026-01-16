@@ -83,7 +83,7 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_hex.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuVxc_x_psi_noncoll.cu
-  ${PROJECT_SOURCE_DIR}/GpuRhomatrixConvert.cuo)
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuRhomatrixConvert.cu)
 
 endif(RMG_CUDA_ENABLED)
 

@@ -167,6 +167,12 @@ void prolong_hex_gpu_internal(double *full,
 template <typename TypeV>
 void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
 
+void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(double *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<double> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
 
 #endif
 
