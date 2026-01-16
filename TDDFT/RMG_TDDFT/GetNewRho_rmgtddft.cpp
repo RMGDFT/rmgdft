@@ -72,14 +72,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     CalType one = 1.0, zero = 0.0;
     TypeV *rho_temp, *rho_temp_dev;
 
-    CalType *rho_matrix_dev;
+    CalType *rho_matrix_dev = (CalType *)ct.get_gmatrix_gpu(numst * numst * sizeof(CalType));
     double *occ_dev;
 
 
     rho_temp = (TypeV *)GpuMallocHost(pbasis*n_rho * sizeof(TypeV));
     rmg::error(gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV)));
     rmg::error(gpuMalloc((void **)&occ_dev, numst * sizeof(double)));
-    rmg::error(gpuMalloc((void **)&rho_matrix_dev, numst * numst * sizeof(CalType)));
     rmg::error(gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice));
 
     //rho_matrix_dev[i,i] = rho_matrix[i,i] - occ_dev[i]
@@ -259,7 +258,6 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     rmg::error(gpuFree(rho_temp_dev));
     (GpuFreeHost(rho_temp));
     rmg::error(gpuFree(occ_dev));
-    rmg::error(gpuFree(rho_matrix_dev));
 #else
     delete [] rho_temp;
 #endif
