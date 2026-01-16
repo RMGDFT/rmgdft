@@ -45,15 +45,6 @@
 #include "rmg_complex.h"
 
 
-template <typename OrbitalType, typename CalcType> void mgsmoother(
-              Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
-              CalcType *u, CalcType *Hu, CalcType *r, 
-              CalcType *iHu, CalcType *ir,
-              double *v, double *vxc, double *dinv,
-              OrbitalType *nv, CalcType *ns,
-              double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
-
-
 // Multigrid fine grid smoothing routine. If is_jacobi is true
 // it performs order iterations of relaxed Jacobi with omega = 2/3.
 // If is_jacobi is false it performs Chebyshev of the requested order.
@@ -71,6 +62,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
                double *dinv,
                OrbitalType *nv,
                CalcType *ns,       // only used for USPP
+               std::span<CalcType> p,
                double &eig, 
                int order,
                bool is_jacobi,
@@ -81,10 +73,8 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     const double theta = 0.5*(lmax + lmin);
     const double delta = 0.5*(lmax - lmin);
     const double sigma = theta / delta;
-    std::vector<CalcType> p;
     int pbasis = Rmg_G->get_P0_BASIS(1);
     pbasis *= ct.noncoll_factor * pct.coalesce_factor;
-    p.resize(pbasis);
 
     ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
     for (int i=0;i<pbasis;i++) iHu[i] = Hu[i];
@@ -187,6 +177,7 @@ template void mgsmoother<double,float>(
               float *u, float *Hu, float *r, float *iHu, float *ir,
               double *v, double *vxc, double *dinv,
               double *nv, float *ns,
+              std::span<float> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<double,double>(
@@ -194,6 +185,7 @@ template void mgsmoother<double,double>(
               double *u, double *Hu, double *r, double *iHu, double *ir,
               double *v, double *vxc, double *dinv,
               double *nv, double *ns,
+              std::span<double> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<float>>(
@@ -202,6 +194,7 @@ template void mgsmoother<std::complex<double>,std::complex<float>>(
               std::complex<float> *r, std::complex<float> *iHu, std::complex<float> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<float> *ns,
+              std::span<std::complex<float>> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<double>>(
@@ -210,5 +203,6 @@ template void mgsmoother<std::complex<double>,std::complex<double>>(
               std::complex<double> *r, std::complex<double> *iHu, std::complex<double> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<double> *ns,
+              std::span<std::complex<double>> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 

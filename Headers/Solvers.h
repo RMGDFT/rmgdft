@@ -65,6 +65,7 @@ template <typename OrbitalType, typename CalcType> void mgsmoother(
               CalcType *ihu, CalcType *ir,
               double *v, double *vxc, double *dinv,
               OrbitalType *nv, CalcType *ns,
+              std::span<CalcType> pp,
               double &eig, int order, bool is_jacobi,
               double lmax, double lmin, int vcycle);
 

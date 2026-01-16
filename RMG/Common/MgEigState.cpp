@@ -191,10 +191,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     bool is_jacobi = true;
     if(ct.norm_conserving_pp) is_jacobi = false;
+    std::span<CalcType> wbuf(work2_t, pbasis_noncoll);
     mgsmoother<OrbitalType,CalcType>(kptr, sp,
               tmp_psi_t, work1_t, res_t, ihu_t, r0_t,
               vtot_psi, vxc_psi, dinv,
               nv_t, res2_t,
+              wbuf,
               sp->eig[0], 3, is_jacobi, ct.lambda_max, ct.lambda_min, vcycle);
 
     if(ct.use_rmm_diis)
