@@ -33,18 +33,19 @@
 #include "Prolong.h"
 #include "GatherScatter.h"
 
-template void GetNewRho_rmgtddft<double, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, double *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<double, float>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, float *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<double> *rho_matrix_caltype);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, std::complex<float> *rho_matrix_caltype);
-template <typename KpointType, typename CalType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, KpointType *rho_matrix, int numst, int tddft_start_state, CalType *rho_matrix_caltype)
+template void GetNewRho_rmgtddft<double, double, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template void GetNewRho_rmgtddft<double, float, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template void GetNewRho_rmgtddft<double, double, std::complex<double>>(Kpoint<double> *,spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template void GetNewRho_rmgtddft<double, float, std::complex<double>>(Kpoint<double> *,spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
+template <typename KpointType, typename CalType, typename MatrixType>
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, MatrixType *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp)
 {
-    int idx;
 
+    // rho_matrix are distributed either in tiledMM or scalpack 
     /* for parallel libraries */
 
-    int st1;
 
     using TypeV = get_scalar_t<CalType>;                // Result: float
     int pbasis = get_P0_BASIS();
@@ -56,24 +57,48 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
         rmg::error("\n tddft not programed for ultrasoft \n");
     }
 
+    std::vector<double> occ_ground(numst);
     for (int istate = 0; istate < numst; istate++)
     {
-        rho_matrix[istate * numst + istate] -=
+        occ_ground[istate] = 
             kptr->Kstates[istate + tddft_start_state].occupation[0];
-
     }
 
-    CopyAndConvert(numst*numst, rho_matrix, rho_matrix_caltype);
 #if CUDA_ENABLED || HIP_ENABLED 
     // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
     // the reduction over numst.
     
+    // rho_matrix is on device, with MatrixType
     CalType one = 1.0, zero = 0.0;
     TypeV *rho_temp, *rho_temp_dev;
 
+    CalType *rho_matrix_dev;
+    double *occ_dev;
+
 
     rho_temp = (TypeV *)GpuMallocHost(pbasis*n_rho * sizeof(TypeV));
-    gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV));
+    rmg::error(gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV)));
+    rmg::error(gpuMalloc((void **)&occ_dev, numst * sizeof(double)));
+    rmg::error(gpuMalloc((void **)&rho_matrix_dev, numst * numst * sizeof(CalType)));
+    rmg::error(gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice));
+
+    //rho_matrix_dev[i,i] = rho_matrix[i,i] - occ_dev[i]
+
+    int nprocs = pct.local_comm_npes;
+    int myrank = pct.local_rank;
+    GpuRhomatrixConvert(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+
+    size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
+    if( typeid(TypeV) == typeid(float) )
+    {
+        rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclFloat, ct.nccl_local_comm, 0));
+    }
+    //else if( typeid(TypeV) == typeid(double) )
+    else
+    {
+        rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclDouble, ct.nccl_local_comm, 0));
+    }
+
 
     CalType *psi_dev;
     CalType *xpsi;
@@ -91,10 +116,10 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
     rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi_dev, pbasis_noncoll, rho_matrix_caltype, numst, zero, xpsi, pbasis_noncoll);
+            psi_dev, pbasis_noncoll, rho_matrix_dev, numst, zero, xpsi, pbasis_noncoll);
 
     GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-    gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
+    rmg::error(gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost));
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
@@ -104,19 +129,68 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
 
     double *rho_temp = new double[n_rho * pbasis]();
+    KpointType *rho_matrix_glob  = (KpointType *)ct.get_gmatrix(numst*numst*sizeof(KpointType));
 
+    
+    if(ct.tddft_tiledMM == 1)
+    {
+        double *rho_R = (double *)rho_matrix_glob;
+        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_glob;
+        size_t recvcount = numst * numst/pct.local_comm_npes * sizeof(KpointType)/sizeof(double);
+        if(typeid(KpointType) == typeid(double))
+        {
+            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
+            {
+                rho_R[pct.local_rank * numst * numst/pct.local_comm_npes + i] = std::real(rho_matrix[i]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
+            {
+                rho_C[pct.local_rank * numst * numst/pct.local_comm_npes + i] = rho_matrix[i];
+            }
+        }
+        MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, 
+                rho_matrix_glob, recvcount, MPI_DOUBLE, pct.local_comm);       
+    }
+    else
+    {
+        std::vector<KpointType> rho_matrix_dist(Sp.GetDistMdim() * Sp.GetDistNdim());
+        double *rho_R = (double *)rho_matrix_dist.data();
+        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_dist.data();
+
+        if(typeid(KpointType) == typeid(double))
+        {
+            for(int i = 0; i < Sp.GetDistMdim() * Sp.GetDistNdim(); i++)
+            {
+                rho_R[i] = std::real(rho_matrix[i]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < Sp.GetDistMdim() * Sp.GetDistNdim(); i++)
+            {
+                rho_C[i] = rho_matrix[i];
+            }
+        }
+
+         Sp.GatherEigvectors(rho_matrix_glob, rho_matrix_dist.data());
+    }
+
+    for(int i = 0; i< numst; i++) rho_matrix_glob[i*numst+i] -= occ_ground[i];
     KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis_noncoll];
     KpointType *xpsi = kptr->work_cpu;
     rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi, pbasis_noncoll, rho_matrix, numst, zero, xpsi, pbasis_noncoll);
+            psi, pbasis_noncoll, rho_matrix_glob, numst, zero, xpsi, pbasis_noncoll);
 
     delete RT;
     RT = new RmgTimer("TDDFT: rho: dot");
     if(!ct.noncoll)
     {
-        for(st1 = 0; st1 < numst; st1++)
+        for(int st1 = 0; st1 < numst; st1++)
         {
-            for(idx = 0; idx < pbasis; idx++)
+            for(int idx = 0; idx < pbasis; idx++)
             {
                 rho_temp[idx] += std::real(psi[st1 * pbasis_noncoll + idx] * std::conj(xpsi[st1 * pbasis_noncoll + idx]));
             }
@@ -124,12 +198,12 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     }
     else
     {
-        for(st1 = 0; st1 < numst; st1++)
+        for(int st1 = 0; st1 < numst; st1++)
         {
 
             KpointType *one_psi = &psi[st1 * pbasis_noncoll];
             KpointType *one_xpsi = &xpsi[st1 * pbasis_noncoll];
-            for(idx = 0; idx < pbasis; idx++)
+            for(int idx = 0; idx < pbasis; idx++)
             {
                 double rho_up = std::real(one_psi[idx] * std::conj(one_xpsi[idx]));
                 double rho_dn = std::real(one_psi[idx + pbasis] * std::conj(one_xpsi[idx + pbasis]));
@@ -167,22 +241,18 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Kpoin
     for(int irho = 0; irho< n_rho; irho++)
     {
         P.prolong(rho_k.data()+irho*fpbasis, rho_k_double.data() + irho*pbasis, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-        
+
     }
 
     delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED 
-    gpuFree(rho_temp_dev);
-    GpuFreeHost(rho_temp);
+    rmg::error(gpuFree(rho_temp_dev));
+    (GpuFreeHost(rho_temp));
+    rmg::error(gpuFree(occ_dev));
+    rmg::error(gpuFree(rho_matrix_dev));
 #else
     delete [] rho_temp;
 #endif
-    for (int istate = 0; istate < numst; istate++)
-    {
-        rho_matrix[istate * numst + istate] +=
-            kptr->Kstates[istate + tddft_start_state].occupation[0];
-
-    }
 }
 

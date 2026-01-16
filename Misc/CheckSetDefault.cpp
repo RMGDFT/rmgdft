@@ -46,6 +46,8 @@ void CheckSetDefault(void)
 {
 #if !(CUDA_ENABLED || HIP_ENABLED)
     ct.tddft_gpu = false;
+#else
+    ct.tddft_tiledMM = 1;
 #endif
 
     if(ct.tddft_noscf || ct.restart_tddft)

@@ -48,19 +48,18 @@
 #include "prototypes_tddft.h"
 
 // set the matrix with diagonal elements to be diag_elem, and others to 0.0
-template void MatDiagSet<double> (double *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
-template void MatDiagSet<std::complex<double>> (std::complex<double> *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
+template void MatDiagSet<double> (double *mat, std::vector<double> diag_elem, double beta, int numst, Scalapack &SP);
+template void MatDiagSet<std::complex<double>> (std::complex<double> *mat, std::vector<double> diag_elem, double beta, int numst, Scalapack &SP);
 template <typename MatrixType>
-    void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP)
+    void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, double beta, int numst, Scalapack &SP)
 {
 
     if(ct.tddft_tiledMM)
     {
         int numst_pe = numst/pct.local_comm_npes;
-        std::memset((void *)mat, 0, numst * numst_pe * sizeof(MatrixType));
         for(int i = 0; i < numst_pe; i++)
         {
-            mat[i * numst + i+pct.local_rank * numst_pe] = diag_elem[i+pct.local_rank * numst_pe];
+            mat[i * numst + i+pct.local_rank * numst_pe] += beta * diag_elem[i+pct.local_rank * numst_pe];
         }
     }
     else
@@ -80,11 +79,7 @@ template <typename MatrixType>
                 int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol);
                 if(i_glob == j_glob)
                 {
-                    mat[i + j * mxllda] = diag_elem[i_glob-1];
-                }
-                else
-                {
-                    mat[i + j * mxllda] = 0.0;
+                    mat[i + j * mxllda] += beta * diag_elem[i_glob-1];
                 }
             }
         }

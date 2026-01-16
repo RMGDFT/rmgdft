@@ -438,7 +438,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
             for(int i = 0; i < numst; i++) diag_elem[i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
-            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, numst, *Sp);
+
+            double one = 1.0;
+            memset(Kptr[kpt]->Hmatrix_cpu, 0, n2*sizeof(MatrixType));
+            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
 
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
@@ -446,7 +449,8 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
 
             for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
-            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, numst, *Sp);
+            memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
+            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
         }
 
         rmg::printlog("\n  x dipolll  %f ", dipole_tot[0]);
@@ -681,33 +685,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
                 /////// <----- update Hamiltonian from  Pn1
                 RT2a = new RmgTimer("2-TDDFT: Rho");
-                if(ct.tddft_tiledMM)
-                {
-                    TiledM_to_glob(matrix_glob, (MatrixType *)Kptr[kpt]->Pn1_cpu, numst, pct.local_comm);
-                }
-                else
-                {
-                    if( scalapack_groups != pct.grid_npes)
-                    {
-                        Sp->GatherEigvectors(matrix_glob, Pn1);
-                        size_t count = numst * numst * sizeof(MatrixType) /sizeof(double);
-                        Sp->BcastRoot((double *)matrix_glob, count, MPI_DOUBLE);
-                    }
-                    else
-                    {
-                        RmgMemcpy(matrix_glob, Pn1, matrix_size);
-                    }
-                }
-
-
-                if(typeid(OrbitalType) == typeid(double))
-                {
-                    for(int i = 0; i < numst * numst; i++) mat_R[i] = std::real(matrix_glob[i]);
-                }
-                else
-                {
-                    for(int i = 0; i < numst * numst; i++) mat_C[i] = matrix_glob[i];
-                }
                 rmg::sync_device();
                 if(ct.verbose) {
                     rmg::printlog("\n start rho calc ");
@@ -718,17 +695,17 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                     if(ct.is_gamma)
                     {
                         kptr_d = (Kpoint<double> *)Kptr[kpt];
-                        GetNewRho_rmgtddft<double, float>(kptr_d, rho_k, (double *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (float *)matrix_glob);
+                        GetNewRho_rmgtddft<double, float, MatrixType>(kptr_d, rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
                     }
                     else
                     {
                         kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
-                        GetNewRho_rmgtddft<std::complex<double>, std::complex<float>>(kptr_c, rho_k, (std::complex<double> *)matrix_glob_orbitaltype, numst, ct.tddft_start_state, (std::complex<float> *)matrix_glob);
+                        GetNewRho_rmgtddft<std::complex<double>, std::complex<float>, std::complex<double> >(kptr_c, rho_k, (std::complex<double> *)Pn1, numst, ct.tddft_start_state, *Sp);
                     }
                 }
                 else
                 {
-                    GetNewRho_rmgtddft<OrbitalType, OrbitalType>(Kptr[kpt], rho_k, matrix_glob_orbitaltype, numst, ct.tddft_start_state, (OrbitalType *)matrix_glob);
+                    GetNewRho_rmgtddft<OrbitalType, OrbitalType, MatrixType>(Kptr[kpt], rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
                 }
 
                 if(ct.verbose) {
