@@ -86,17 +86,26 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     int nprocs = pct.local_comm_npes;
     int myrank = pct.local_rank;
+    if(!ct.tddft_tiledMM)
+    {
+        nprocs = 1;
+        myrank = 0;
+    }
+
     GpuRhomatrixConvert(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 
-    size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
-    if( typeid(TypeV) == typeid(float) )
+    if(ct.tddft_tiledMM)
     {
-        rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclFloat, ct.nccl_local_comm, 0));
-    }
-    //else if( typeid(TypeV) == typeid(double) )
-    else
-    {
-        rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclDouble, ct.nccl_local_comm, 0));
+        size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
+        if( typeid(TypeV) == typeid(float) )
+        {
+            rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclFloat, ct.nccl_local_comm, 0));
+        }
+        //else if( typeid(TypeV) == typeid(double) )
+        else
+        {
+            rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclDouble, ct.nccl_local_comm, 0));
+        }
     }
 
 
@@ -131,7 +140,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     double *rho_temp = new double[n_rho * pbasis]();
     KpointType *rho_matrix_glob  = (KpointType *)ct.get_gmatrix(numst*numst*sizeof(KpointType));
 
-    
+
     if(ct.tddft_tiledMM == 1)
     {
         double *rho_R = (double *)rho_matrix_glob;
@@ -175,7 +184,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             }
         }
 
-         Sp.GatherEigvectors(rho_matrix_glob, rho_matrix_dist.data());
+        Sp.GatherEigvectors(rho_matrix_glob, rho_matrix_dist.data());
     }
 
     for(int i = 0; i< numst; i++) rho_matrix_glob[i*numst+i] -= occ_ground[i];
