@@ -296,6 +296,11 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.init_states = ct.num_states + ct.extra_random_lcao_states;
     }
 
+    // Pad init_states to be an integral multiple of active_threads*pct.coalesce_factor too
+    states_div = (ct.init_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+    states_rem = ct.init_states % (active_threads*pct.coalesce_factor);
+    if(states_rem) ct.init_states = states_div + (active_threads*pct.coalesce_factor);
+
     ct.run_states = ct.num_states;
 
     if(ct.state_block_size > ct.num_states ) ct.state_block_size = ct.num_states;
