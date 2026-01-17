@@ -338,7 +338,6 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
         std::complex<double> *C, int ic, int jc, int *descc)
 {
 
-    std::complex<double> *A_glob = NULL;
     if(m != n || m != k)
     {
         printf ("mgpu_dgemm requires m=n=k! %d %d %d\n", m, n, k);
@@ -347,7 +346,12 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     if(ct.tddft_tiledMM)
     {
-        MallocHostOrDevice((void **)&A_glob,  m*m*sizeof(std::complex<double>));
+        std::complex<double> *A_glob;
+#if CUDA_ENABLED || HIP_ENABLED
+        A_glob = (std::complex<double> *)ct.get_gmatrix_gpu(m*m*sizeof(std::complex<double>));
+#else
+        A_glob = (std::complex<double> *)ct.get_gmatrix(m*m*sizeof(std::complex<double>));
+#endif
         if(strcmp("n", transb) && strcmp("N", transb)) 
         {
             printf ("mgpu_dgemm requires transb = n \n");
@@ -358,7 +362,6 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
         TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
         gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
-        FreeHostOrDevice(A_glob);
         return;
     }
     else 
