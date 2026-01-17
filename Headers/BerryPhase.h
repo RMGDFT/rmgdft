@@ -58,12 +58,12 @@ public:
     void CalcBP(Kpoint<std::complex<double>> **Kptr);
     void CalcBP(Kpoint<double> **Kptr);
     void psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nband);
-    void CalcBP_Skk1(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
-    void CalcBP_Skk1(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
-    void CalcBP_tddft(Kpoint<double> **Kptr, double &tot_bp_pol, double *, Scalapack &);
-    void CalcBP_tddft(Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &);
-    void tddft_Xml(Kpoint<double> **Kptr, int tddft_start_states, double *mat_glob, Scalapack &);
-    void tddft_Xml(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, std::complex<double> *mat_glob, Scalapack &);
+    void CalcBP_Skk1(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, Scalapack &);
+    void CalcBP_Skk1(Kpoint<double> **Kptr, int tddft_start_states, Scalapack &);
+    void CalcBP_tddft(Kpoint<double> **Kptr, double &tot_bp_pol, Scalapack &);
+    void CalcBP_tddft(Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, Scalapack &);
+    void tddft_Xml(Kpoint<double> **Kptr, int tddft_start_states, Scalapack &);
+    void tddft_Xml(Kpoint<std::complex<double>> **Kptr, int tddft_start_states, Scalapack &);
 
 };
 

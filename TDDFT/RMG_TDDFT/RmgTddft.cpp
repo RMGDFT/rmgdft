@@ -217,10 +217,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     }
 
     std::vector<double> diag_elem(numst);
-    MatrixType *matrix_glob = (MatrixType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(MatrixType));
-    OrbitalType *matrix_glob_orbitaltype = (OrbitalType *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(OrbitalType));
-    std::complex<double> *mat_C = (std::complex<double> *) matrix_glob_orbitaltype; 
-    double *mat_R = (double *) matrix_glob_orbitaltype; 
     fgobj<double> vh_old, vh_dipole, vh_dipole_old;
     spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
     // Jacek: 
@@ -419,19 +415,24 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             VhDriver(rho_ground.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
             delete RT1;
 
-            ES_00 = 0.0;
-            for (int idx = 0; idx < FP0_BASIS; idx++) 
-            {
-                ES_00 += (rho_ground[idx] - rhoc[idx]) * vh[idx];
-            }
 
-            ES_00 = 0.5 * vel * rmg::sum_all(ES_00, pct.grid_comm);
-            int ntot2 = numst *numst;
-            int ione = 1;
-            for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
-            for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].occupation[0];
-            EkinPseudo_00 = ddot(&ntot2, (double *)matrix_glob, &ione, Hcore_tddft, &ione);
-            totalE_00 = E_downfold + EkinPseudo_00 + ES_00 + etxc_00 + ct.II;
+            if(ct.tddft_mode != VECTOR_POT)
+            {
+                ES_00 = 0.0;
+                for (int idx = 0; idx < FP0_BASIS; idx++) 
+                {
+                    ES_00 += (rho_ground[idx] - rhoc[idx]) * vh[idx];
+                }
+
+                ES_00 = 0.5 * vel * rmg::sum_all(ES_00, pct.grid_comm);
+                int ntot2 = numst *numst;
+                int ione = 1;
+                double *matrix_glob = (double *)ct.get_gmatrix(numst * numst * sizeof(double));
+                for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
+                for(int i = 0; i < numst; i++) matrix_glob[i * numst + i] = Kptr[0]->Kstates[i + ct.tddft_start_state].occupation[0];
+                EkinPseudo_00 = ddot(&ntot2, (double *)matrix_glob, &ione, Hcore_tddft, &ione);
+                totalE_00 = E_downfold + EkinPseudo_00 + ES_00 + etxc_00 + ct.II;
+            }
 
         }
 
@@ -557,7 +558,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {
             // Rmg_BP->CalcBP_Skk1(Kptr, ct.tddft_start_state, matrix_glob, *Sp);
             // Rmg_BP->CalcBP_tddft(Kptr, tot_bp_pol, matrix_glob, *Sp);
-            Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, (OrbitalType *)matrix_glob, *Sp);
+            Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, *Sp);
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
                 std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
@@ -757,24 +758,30 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
             vxc_diff = vxc - vxc_old;
 
-            ES = 0.0;
-            for (int idx = 0; idx < FP0_BASIS; idx++) 
+            if(ct.tddft_mode != VECTOR_POT)
             {
-                ES += (rho[idx] - rhoc[idx]) * vh[idx];
-            }
+                ES = 0.0;
+                for (int idx = 0; idx < FP0_BASIS; idx++) 
+                {
+                    ES += (rho[idx] - rhoc[idx]) * vh[idx];
+                }
 
-            ES = 0.5 * vel * rmg::sum_all(ES, pct.grid_comm);
-            int ntot2 = numst *numst;
-            int ione = 1;
-            EkinPseudo = ddot(&ntot2, (double *)matrix_glob, &ione, Hcore_tddft, &ione);
-            totalE = E_downfold + EkinPseudo + ES + etxc + ct.II;
+                ES = 0.5 * vel * rmg::sum_all(ES, pct.grid_comm);
+                int ntot2 = numst *numst;
+                int ione = 1;
+                double *matrix_glob = (double *)ct.get_gmatrix(numst * numst * sizeof(double));
 
-            if(tot_steps == 0 )
-            {
-                totalE_0 = totalE;
-                EkinPseudo_0 = EkinPseudo;
-                ES_0 = ES;
-                etxc_0 = etxc;
+                // need copy Pn1, the occupation to the matrix_glob
+                EkinPseudo = ddot(&ntot2, (double *)matrix_glob, &ione, Hcore_tddft, &ione);
+                totalE = E_downfold + EkinPseudo + ES + etxc + ct.II;
+
+                if(tot_steps == 0 )
+                {
+                    totalE_0 = totalE;
+                    EkinPseudo_0 = EkinPseudo;
+                    ES_0 = ES;
+                    etxc_0 = etxc;
+                }
             }
 
 

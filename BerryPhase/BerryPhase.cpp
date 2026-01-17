@@ -543,11 +543,11 @@ void BerryPhase::psi_x_phase(std::complex<double> *psi_k0, double gr[3], int nba
     }
 }
 
-void BerryPhase::CalcBP_Skk1 (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
+void BerryPhase::CalcBP_Skk1 (Kpoint<double> **Kptr, int tddft_start_state, Scalapack &Sp )
 {
     rmg::error(" only support non-gamma point now\n");
 }
-void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
+void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, Scalapack &Sp )
 {
 
     //calculating <Psi_k | Psi_k+1>
@@ -566,6 +566,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
         rmg::error(" scalapack wrong\n");
     }
 
+    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
     wfc_size = numst * pbasis_noncoll * sizeof(std::complex<double>);
     if(psi_k0 != NULL) RmgFreeHost(psi_k0);
     psi_k0 = (std::complex<double> *)RmgMallocHost(wfc_size);
@@ -620,11 +621,11 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
     delete RT1;
 
 }
-void BerryPhase::CalcBP_tddft (Kpoint<double> **Kptr, double &tot_bp_pol, double *mat_glob, Scalapack &Sp)
+void BerryPhase::CalcBP_tddft (Kpoint<double> **Kptr, double &tot_bp_pol, Scalapack &Sp)
 {
     rmg::error(" only support non-gamma point now\n");
 }
-void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, std::complex<double> *mat_glob, Scalapack &Sp)
+void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_bp_pol, Scalapack &Sp)
 {
 
 
@@ -648,7 +649,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
     int Ndim = Sp.GetDistNdim();
     int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
 
-
+    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
     double *eigs = new double[numst];
     std::complex<double> *Cmat = new std::complex<double>[n2];
     std::complex<double> *CijSkk1 = new std::complex<double>[n2];
@@ -843,11 +844,11 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
 }
 
-void BerryPhase::tddft_Xml (Kpoint<double> **Kptr, int tddft_start_state, double *matrix_glob, Scalapack &Sp )
+void BerryPhase::tddft_Xml (Kpoint<double> **Kptr, int tddft_start_state, Scalapack &Sp )
 {
     rmg::error(" only support non-gamma point now\n");
 }
-void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, std::complex<double> *mat_glob, Scalapack &Sp )
+void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start_state, Scalapack &Sp )
 {
 
 
@@ -862,6 +863,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
     std::complex<double> phase;
 
     int numst = ct.num_states - tddft_start_state;
+    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
 
     for(int iort = 0; iort < num_kort_pe; iort++)
     {
