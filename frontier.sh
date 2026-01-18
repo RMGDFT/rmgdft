@@ -15,7 +15,7 @@ export MPICH_GPU_SUPPORT_ENABLED=0
 rm -rf build-frontier-gpu
 mkdir build-frontier-gpu
 cd build-frontier-gpu
-cmake .. -DRMG_HIP_ENABLED=1 -DHIP_PATH="/opt/rocm-6.3.1/"
+cmake .. -DRMG_HIP_ENABLED=1 -DHIP_PATH="/opt/rocm-6.3.1/" -DUSE_NCCL_OR_RCCL=1
 make rmg-gpu -j 20 -k > rmg-gpu.log 2>&1
 make rmg-on-gpu -j 20 -k > rmg-on-gpu.log 2>&1
 make rmg-negf-gpu -j 20 -k > rmg-negf-gpu.log 2>&1

@@ -95,6 +95,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     if(ct.tddft_tiledMM)
     {
+#if USE_NCCL
         size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
         if( typeid(TypeV) == typeid(float) )
         {
@@ -105,6 +106,9 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
         {
             rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclDouble, ct.nccl_local_comm, 0));
         }
+#else
+            rmg::error("set tddft_tiledMM=false in the input file, need use nccl for this option");
+#endif
     }
 
 
