@@ -67,19 +67,17 @@ void FreeHostOrDevice(void *ptr)
 #include <cuda_runtime_api.h>
 #endif
 
-hipError_t gpuMalloc(void **ptr, size_t size, const std::source_location loc)
+void gpuMalloc(void **ptr, size_t size, const std::source_location loc)
 {
     rmg::error(hipMalloc(ptr, size), loc);
-    return hipSuccess;
 }
 
-hipError_t gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
+void gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
 {
     rmg::error(hipMallocManaged(ptr, size), loc);
-    return hipSuccess;
 }
 
-hipError_t gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
+void gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
 {
     if(ct.gpu_managed_memory)
     {
@@ -89,16 +87,14 @@ hipError_t gpuMallocHost(void **ptr, size_t size, const std::source_location loc
     {
         rmg::error(hipMallocHost(ptr, size), loc);
     }
-    return hipSuccess;
 }
 
-hipError_t gpuFree(void *ptr, const std::source_location loc)
+void gpuFree(void *ptr, const std::source_location loc)
 {
     rmg::error(hipFree(ptr), loc);
-    return hipSuccess;
 }
 
-hipError_t gpuFreeHost(void *ptr, const std::source_location loc)
+void gpuFreeHost(void *ptr, const std::source_location loc)
 {
     if(ct.gpu_managed_memory)
     {
@@ -108,120 +104,99 @@ hipError_t gpuFreeHost(void *ptr, const std::source_location loc)
     {
         rmg::error(hipFreeHost(ptr), loc);
     }
-    return hipSuccess;
 }
 
-hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, const std::source_location loc)
+void gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, const std::source_location loc)
 {
     rmg::error(hipMemcpy(dst, src, sizeBytes, kind), loc);
-    return hipSuccess;
 }
 
-hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream, const std::source_location loc)
+void gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream, const std::source_location loc)
 {
     rmg::error(hipMemcpyAsync (dst, src, sizeBytes, kind, stream), loc);
-    return hipSuccess;
 }
 
-hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream, const std::source_location loc)
+void gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream, const std::source_location loc)
 {
     // Bit of a hack until HIP implements this
 #ifdef __HIP_PLATFORM_NVCC__
     rmg::error(cudaMemPrefetchAsync (devPtr, count, dstDevice, stream), loc);
-    return hipSuccess;
-#else
-    return hipSuccess;
 #endif
 }
-hipError_t gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags, const std::source_location loc)
+void gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags, const std::source_location loc)
 {
     rmg::error(hipStreamCreateWithFlags (stream, flags), loc);
-    return hipSuccess;
 }
-hipError_t gpuStreamDestroy (hipStream_t stream, const std::source_location loc)
+void gpuStreamDestroy (hipStream_t stream, const std::source_location loc)
 {
     rmg::error(hipStreamDestroy (stream), loc);
-    return hipSuccess;
 }
-hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind, const std::source_location loc)
+void gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind, const std::source_location loc)
 {
     rmg::error(hipMemcpy2D (dst, dpitch, src, spitch, width, height, kind), loc);
-    return hipSuccess;
 }
-hipError_t gpuDeviceReset (const std::source_location loc)
+void gpuDeviceReset (const std::source_location loc)
 {
     rmg::error(hipDeviceReset(), loc);
-    return hipSuccess;
 }
-hipError_t gpuSetDevice (int deviceId, const std::source_location loc)
+void gpuSetDevice (int deviceId, const std::source_location loc)
 {
     rmg::error(hipSetDevice (deviceId), loc);
-    return hipSuccess;
 }
-hipError_t gpuGetDevice (int *deviceId, const std::source_location loc)
+void gpuGetDevice (int *deviceId, const std::source_location loc)
 {
     rmg::error(hipGetDevice (deviceId), loc);
-    return hipSuccess;
 }
-hipError_t gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
+void gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
 {
     rmg::error(hipSetDeviceFlags (flags), loc);
-    return hipSuccess;
 }
-hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
+void gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
 {
     rmg::error(hipHostRegister(hostPtr, sizeBytes, flags), loc);
-    return hipSuccess;
 }
-hipError_t gpuHostUnregister(void *hostPtr, const std::source_location loc)	
+void gpuHostUnregister(void *hostPtr, const std::source_location loc)	
 {
     rmg::error(hipHostUnregister(hostPtr), loc);
-    return hipSuccess;
 }
-hipError_t gpuGetDeviceCount(int *count, const std::source_location loc)
+void gpuGetDeviceCount(int *count, const std::source_location loc)
 {
     rmg::error(hipGetDeviceCount(count), loc);
-    return hipSuccess;
 }
-hipError_t gpuStreamSynchronize (hipStream_t stream, const std::source_location loc)
+void gpuStreamSynchronize (hipStream_t stream, const std::source_location loc)
 {
     rmg::error(hipStreamSynchronize (stream), loc);
-    return hipSuccess;
 }
 #elif CUDA_ENABLED
 
-cudaError_t gpuMalloc(void **ptr, size_t size, const std::source_location loc)
+void gpuMalloc(void **ptr, size_t size, const std::source_location loc)
 {
     rmg::error(cudaMalloc(ptr, size), loc);
-    return cudaSuccess;
 }
 
-cudaError_t gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
+void gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
 {
     rmg::error(cudaMallocManaged(ptr, size), loc);
-    return cudaSuccess;
 }
 
-cudaError_t gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
+void gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
 {
     if(ct.gpu_managed_memory)
     {
-        rmg::error(gpuMallocManaged(ptr, size), loc);
+        gpuMallocManaged(ptr, size), loc;
     }
     else
     {
         rmg::error(cudaMallocHost(ptr, size), loc);
     }
-    return cudaSuccess;
 }
 
-cudaError_t gpuFree(void *ptr, const std::source_location loc)
+void gpuFree(void *ptr, const std::source_location loc)
 {
     rmg::error(cudaFree(ptr), loc);
-    return cudaSuccess;
 }
 
-cudaError_t gpuFreeHost(void *ptr, const std::source_location loc)
+void gpuFreeHost(void *ptr, const std::source_location loc)
 {
     if(ct.gpu_managed_memory)
     {
@@ -231,22 +206,19 @@ cudaError_t gpuFreeHost(void *ptr, const std::source_location loc)
     {
         rmg::error(cudaFreeHost(ptr), loc);
     }
-    return cudaSuccess;
 }
 
-cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, const std::source_location loc)
+void gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, const std::source_location loc)
 {
     rmg::error(cudaMemcpy(dst, src, sizeBytes, kind), loc);
-    return cudaSuccess;
 }
 
-cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream, const std::source_location loc)
+void gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream, const std::source_location loc)
 {
     rmg::error(cudaMemcpyAsync (dst, src, sizeBytes, kind, stream), loc);
-    return cudaSuccess;
 }
 
-cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevice, cudaStream_t stream, const std::source_location loc)
+void gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevice, cudaStream_t stream, const std::source_location loc)
 {
 #if CUDA_VERSION_MAJOR >= 13
     struct cudaMemLocation dstDevice = {
@@ -257,62 +229,50 @@ cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevi
 #else
     rmg::error(cudaMemPrefetchAsync (devPtr, count, _dstDevice, stream), loc);
 #endif
-    return cudaSuccess;
 }
-cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags, const std::source_location loc)
+void gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags, const std::source_location loc)
 {
     rmg::error(cudaStreamCreateWithFlags (stream, flags), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuStreamDestroy (cudaStream_t stream, const std::source_location loc)
+void gpuStreamDestroy (cudaStream_t stream, const std::source_location loc)
 {
     rmg::error(cudaStreamDestroy (stream), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, const std::source_location loc)
+void gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, const std::source_location loc)
 {
     rmg::error(cudaMemcpy2D (dst, dpitch, src, spitch, width, height, kind), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuDeviceReset (const std::source_location loc)
+void gpuDeviceReset (const std::source_location loc)
 {
     rmg::error(cudaDeviceReset(), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuSetDevice (int deviceId, const std::source_location loc)
+void gpuSetDevice (int deviceId, const std::source_location loc)
 {
     rmg::error(cudaSetDevice (deviceId), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuGetDevice (int *deviceId, const std::source_location loc)
+void gpuGetDevice (int *deviceId, const std::source_location loc)
 {
     rmg::error(cudaGetDevice (deviceId), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
+void gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
 {
     rmg::error(cudaSetDeviceFlags (flags), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
+void gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
 {   
     rmg::error(cudaHostRegister(hostPtr, sizeBytes, flags), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuHostUnregister(void *hostPtr, const std::source_location loc)	
+void gpuHostUnregister(void *hostPtr, const std::source_location loc)	
 {
     rmg::error(cudaHostUnregister(hostPtr), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuGetDeviceCount(int *count, const std::source_location loc)
+void gpuGetDeviceCount(int *count, const std::source_location loc)
 {
     rmg::error(cudaGetDeviceCount(count), loc);
-    return cudaSuccess;
 }
-cudaError_t gpuStreamSynchronize (cudaStream_t stream, const std::source_location loc)
+void gpuStreamSynchronize (cudaStream_t stream, const std::source_location loc)
 {
     rmg::error(cudaStreamSynchronize (stream), loc);
-    return cudaSuccess;
 }
 #elif SYCL_ENABLED
 #include <CL/sycl.hpp>

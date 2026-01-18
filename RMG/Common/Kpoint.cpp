@@ -1169,7 +1169,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
 #elif HIP_ENABLED
         int device = -1;
-        rmg::error(gpuGetDevice(&device));
+        gpuGetDevice(&device);
         if(ct.gpu_managed_memory)
         {
             rmg::error(hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device));

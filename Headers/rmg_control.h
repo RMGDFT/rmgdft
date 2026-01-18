@@ -1114,7 +1114,7 @@ public:
        if(!this->gmatrix)
        {
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-           rmg::error(gpuMallocHost((void **)&this->gmatrix, size));
+           gpuMallocHost((void **)&this->gmatrix, size);
 #else
            this->gmatrix = malloc(size);
 #endif
@@ -1123,8 +1123,8 @@ public:
        else if(size > this->gmatrix_size)
        {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           rmg::error(gpuFreeHost(this->gmatrix));
-           rmg::error(gpuMallocHost((void **)&this->gmatrix, size));
+           gpuFreeHost(this->gmatrix);
+           gpuMallocHost((void **)&this->gmatrix, size);
 #else
            free(this->gmatrix);
            this->gmatrix = malloc(size);
@@ -1138,7 +1138,7 @@ public:
        if(this->gmatrix_size)
        {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           rmg::error(gpuFreeHost(this->gmatrix));
+           gpuFreeHost(this->gmatrix);
 #else
            free(this->gmatrix);
 #endif
@@ -1154,13 +1154,13 @@ public:
    {
        if(!this->gmatrix_gpu)
        {
-           rmg::error(gpuMalloc((void **)&this->gmatrix_gpu, size));
+           gpuMalloc((void **)&this->gmatrix_gpu, size);
            this->gmatrix_size_gpu = size;
        }
        else if(size > this->gmatrix_size_gpu)
        {
-           rmg::error(gpuFree(this->gmatrix_gpu));
-           rmg::error(gpuMalloc((void **)&this->gmatrix_gpu, size));
+           gpuFree(this->gmatrix_gpu);
+           gpuMalloc((void **)&this->gmatrix_gpu, size);
            this->gmatrix_size_gpu = size;
        }
        return gmatrix_gpu;
@@ -1169,7 +1169,7 @@ public:
    {
        if(this->gmatrix_size_gpu)
        {
-           rmg::error(gpuFree(this->gmatrix_gpu));
+           gpuFree(this->gmatrix_gpu);
            this->gmatrix_gpu = NULL;
            this->gmatrix_size_gpu = 0;
        }

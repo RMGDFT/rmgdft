@@ -218,7 +218,7 @@ void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool
 
 #if CUDA_ENABLED
       for (int i = 0; i < num_streams; i++)
-          rmg::error(gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking));
+          gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking);
 
       for (int i = 0; i < num_streams; i++)
       {
@@ -249,16 +249,16 @@ void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool
          cufftSetStream(gpu_plans_c2r[i], streams[i]);
 
          if(use_internal_buffers)
-             rmg::error(gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)));
+             gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
 
          if(use_internal_buffers)
-             rmg::error(gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)));
+             gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
       }
 #elif HIP_ENABLED
       if(num_streams > 1)
       {
           for (int i = 0; i < num_streams; i++)
-              rmg::error(gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking));
+              gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking);
       }
       else
       {
@@ -344,7 +344,7 @@ void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool
           {
               if(use_internal_buffers)
               {
-                 rmg::error(gpuMalloc((void **)&work_bufs[i], work_size));
+                 gpuMalloc((void **)&work_bufs[i], work_size);
                  status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
               }
           }
@@ -352,8 +352,8 @@ void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool
 
           if(use_internal_buffers)
           {
-              rmg::error(gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)));
-              rmg::error(gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)));
+              gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+              gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
            }
 
 #if (VKFFT_BACKEND == 2)
@@ -1407,14 +1407,14 @@ Pw::~Pw(void)
          cufftDestroy(gpu_plans_z2d[i]);
          if(use_internal_buffers)
          {
-             rmg::error(gpuFreeHost(host_bufs[i]));
-             rmg::error(gpuFree(dev_bufs[i]));
+             gpuFreeHost(host_bufs[i]);
+             gpuFree(dev_bufs[i]);
          }
       }
 
       // Gpu streams and plans
       for (int i = 0; i < num_streams; i++)
-          rmg::error(gpuStreamDestroy(streams[i]));
+          gpuStreamDestroy(streams[i]);
 
 #elif HIP_ENABLED
       for (int i = 0; i < num_streams; i++)
@@ -1427,8 +1427,8 @@ Pw::~Pw(void)
          rocfft_plan_destroy(gpu_plans_z2d[i]);
          if(use_internal_buffers)
          {
-             rmg::error(gpuFreeHost(host_bufs[i]));
-             rmg::error(gpuFree(dev_bufs[i]));
+             gpuFreeHost(host_bufs[i]);
+             gpuFree(dev_bufs[i]);
          }
       }
 
@@ -1436,7 +1436,7 @@ Pw::~Pw(void)
       if(num_streams > 1)
       {
           for (int i = 0; i < num_streams; i++)
-              rmg::error(gpuStreamDestroy(streams[i]));
+              gpuStreamDestroy(streams[i]);
       }
 
 #else

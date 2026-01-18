@@ -77,9 +77,9 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
 
     rho_temp = (TypeV *)GpuMallocHost(pbasis*n_rho * sizeof(TypeV));
-    rmg::error(gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV)));
-    rmg::error(gpuMalloc((void **)&occ_dev, numst * sizeof(double)));
-    rmg::error(gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice));
+    gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV));
+    gpuMalloc((void **)&occ_dev, numst * sizeof(double));
+    gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);
 
     //rho_matrix_dev[i,i] = rho_matrix[i,i] - occ_dev[i]
 
@@ -127,7 +127,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             psi_dev, pbasis_noncoll, rho_matrix_dev, numst, zero, xpsi, pbasis_noncoll);
 
     GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-    rmg::error(gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost));
+    gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
@@ -255,9 +255,9 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     delete RT1;
 
 #if CUDA_ENABLED || HIP_ENABLED 
-    rmg::error(gpuFree(rho_temp_dev));
+    gpuFree(rho_temp_dev);
     (GpuFreeHost(rho_temp));
-    rmg::error(gpuFree(occ_dev));
+    gpuFree(occ_dev);
 #else
     delete [] rho_temp;
 #endif
