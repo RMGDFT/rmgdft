@@ -94,7 +94,7 @@ template <class KpointType> void Kpoint<KpointType>::GetFdFactor (void)
 
         /*Temporary pointer to the already calculated forward transform. */
         /* Need to fix up for kpoint parrallelization issues.  */
-        std::complex<double> *fptr = (std::complex<double> *)&sp.forward_orbital[this->kidx*sp.num_orbitals*pbasis];
+        std::complex<double> *fptr = (std::complex<double> *)&sp.forward_orbital[0][this->kidx*sp.num_orbitals*pbasis];
 
         /* Loop over atomic orbitals */
         for (int ip = 0; ip < sp.num_orbitals; ip++)

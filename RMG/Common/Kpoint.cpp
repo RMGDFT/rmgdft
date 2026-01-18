@@ -1071,7 +1071,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
         FindPhaseKpoint (this->kp.kvec, nlxdim, nlydim, nlzdim, this->BetaProjector->nlcrds[ion].data(), fftw_phase, false);
 
         /*Temporary pointer to the already calculated forward transform */
-        fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
+        fptr = (std::complex<double> *)&sp->forward_orbital[0][this->kidx * sp->num_orbitals * pbasis];
 
         /* Loop over atomic orbitals */
         for (int ip = 0; ip < sp->num_orbitals; ip++)
