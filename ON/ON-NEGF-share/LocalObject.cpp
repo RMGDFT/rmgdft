@@ -460,7 +460,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
         /*Temporary pointer to the already calculated forward transform */
         int kpt = 0;
-        fptr = (std::complex<double> *)&sp->forward_orbital[kpt * sp->num_orbitals * pbasis];
+        fptr = (std::complex<double> *)&sp->forward_orbital[0][kpt * sp->num_orbitals * pbasis];
 
 
         /* Loop over radial projectors */
