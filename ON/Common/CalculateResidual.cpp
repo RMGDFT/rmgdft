@@ -91,8 +91,6 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
-    //double *kbpsi_work = (double *) GpuMallocDevice(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
-    //double *kbpsi_work1 = (double *) GpuMallocDevice(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work;
     double *kbpsi_work1;
     //gpuMalloc((void **)&kbpsi_work,  NlProj.num_thispe * Phi.num_thispe*sizeof(double));

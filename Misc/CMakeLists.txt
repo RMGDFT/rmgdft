@@ -82,7 +82,6 @@ rmg_syrk.cpp
 rmg_potrf.cpp
 rmg_trtri.cpp
 rmg_trmm.cpp
-GpuAlloc.cpp
 GpuAllocHost.cpp
 GpuStreams.cpp
 RmgMallocHost.cpp
@@ -91,7 +90,6 @@ GlobalSums_Cbindings.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
 ZgetrftrsDriver.cpp
-#BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp
 packfuncs_Cbindings.cpp
