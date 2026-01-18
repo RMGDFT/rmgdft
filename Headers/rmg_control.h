@@ -1117,6 +1117,8 @@ public:
            gpuMallocHost((void **)&this->gmatrix, size);
 #else
            this->gmatrix = malloc(size);
+           int mpierr = MPI_Alloc_mem(size, MPI_INFO_NULL, &gmatrix);
+           if(mpierr != MPI_SUCCESS) rmg::error("Memory allocation failure in get_gmatrix.");
 #endif
            this->gmatrix_size = size;
        }
@@ -1140,7 +1142,8 @@ public:
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
            gpuFreeHost(this->gmatrix);
 #else
-           free(this->gmatrix);
+           int mpierr = MPI_Free_mem(this->gmatrix);
+           if(mpierr != MPI_SUCCESS) rmg::error("Memory deallocation failure in free_gmatrix.");
 #endif
            this->gmatrix = NULL;
            this->gmatrix_size = 0;
