@@ -78,7 +78,11 @@ set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentia
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
-set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
+if(RMG_HIP_ENABLED)
+    set(USE_NCCL_OR_RCCL ON CACHE BOOL "Experimental support for NCCL or RCCL")
+else()
+    set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
+endif()
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
