@@ -36,6 +36,7 @@
 #include <boost/next_prior.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <immintrin.h>
 #include "BaseThread.h"
 #include "MpiQueue.h"
 
@@ -241,7 +242,7 @@ void MpiQueue::waitall(std::atomic_bool *items, int n)
     {
         for(int i=0;i<n;i++)
         {
-            while(!items[i].load(std::memory_order_acquire)) this->wait(10);
+            while(!items[i].load(std::memory_order_acquire))  _mm_pause();
         }
     }
     else
@@ -267,22 +268,19 @@ void MpiQueue::wait(int n)
 
 void MpiQueue::waitgroup(std::atomic_int &count)
 {
-    while(count.load(std::memory_order_acquire))
+    if(this->spin_workers)
     {
-        if(this->spin_workers)
-        {
-            MpiQueue::spin(5);
-        }
-        else
-        {
-            std::this_thread::yield();
-        }
+        while(count.load(std::memory_order_acquire)) _mm_pause();
+    }
+    else
+    {
+        std::this_thread::yield();
     }
 }
 
 void MpiQueue::spin(int n)
 {
 #if __GNUC__
-    for (int i = 0; i < n; i++) asm volatile ("nop");
+    for (int i = 0; i < n; i++) _mm_pause();
 #endif
 }
