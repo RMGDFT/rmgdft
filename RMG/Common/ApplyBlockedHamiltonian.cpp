@@ -54,7 +54,7 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
 template <typename KpointType>
 void ApplyBlockedHamiltonian(Kpoint<KpointType> *kptr, KpointType *h_psi, double *vtot_psi, double *vxc_psi)
 {
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
     int bs = ct.non_local_block_size;
@@ -95,7 +95,7 @@ void ApplyBlockedHamiltonian (Kpoint<KpointType> *kptr, int first, int N, int bs
 
     // Set trade images coalesce_factor
     kptr->T->set_coalesce_factor(cfac);
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
 
     // When grid coalescing is enabled we need nstates to be an integral
     // multiple of (active_threads * pct.coalesce_factor) in order for the

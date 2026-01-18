@@ -155,7 +155,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int cstride = FP0_BASIS * factor;
     double *work = new double[cfac * cstride]();
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
 
@@ -517,7 +517,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
     init_gpu_prolong(half_dimx, half_dimy, half_dimz, P);
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
 
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)

@@ -257,7 +257,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // Adjust num_states to be an integral multiple of pct.coalesce_factor*active_threas.
     // Whatever value is used for active threads here
     // must match the value used in MgridSubspace
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
     int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
     if(states_rem) ct.num_states = states_div + (active_threads*pct.coalesce_factor);

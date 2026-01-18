@@ -105,7 +105,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
 
     rmg::sync_device();
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
     for(int st1=0;st1 < istop;st1 += active_threads) {

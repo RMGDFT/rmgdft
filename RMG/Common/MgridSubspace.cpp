@@ -128,7 +128,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     // Set trade images coalesce_factor
     this->T->set_coalesce_factor(cfac);
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
 
     // When grid coalescing is enabled we need nstates to be an integral
     // multiple of (active_threads * pct.coalesce_factor) in order for the

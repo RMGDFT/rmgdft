@@ -25,15 +25,19 @@
 #include "typedefs.h"
 #include "transition.h"
 
-
-int rmg_get_active_threads(void)
+namespace rmg
 {
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
-    return active_threads;
-}
 
-int rmg_get_max_threads(void)
-{
-    return ct.MG_THREADS_PER_NODE;
+    int get_active_threads(void)
+    {
+        int active_threads = ct.MG_THREADS_PER_NODE;
+        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+        return active_threads;
+    }
+
+    int get_max_threads(void)
+    {
+        return ct.MG_THREADS_PER_NODE;
+    }
+
 }

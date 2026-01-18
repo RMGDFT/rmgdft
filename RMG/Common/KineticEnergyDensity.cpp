@@ -80,7 +80,7 @@ template <class KpointType> void Kpoint<KpointType>::KineticEnergyDensity (doubl
     rmg::sync_device();
 #endif
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
 

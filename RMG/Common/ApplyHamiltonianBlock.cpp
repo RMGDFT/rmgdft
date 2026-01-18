@@ -52,7 +52,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     int pbasis_noncoll = kptr->pbasis_noncoll;
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    int active_threads = rmg_get_active_threads();
+    int active_threads = rmg::get_active_threads();
     //if(active_threads < 1) active_threads = 1;
 
     int istop = num_states / active_threads;
