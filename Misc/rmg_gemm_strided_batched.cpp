@@ -121,15 +121,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(std::complex<double>), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(std::complex<double>), gpuMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         rmg::error(cublasZgemmStridedBatched(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)dA, lda, strideA,
                             (cuDoubleComplex*)dB, ldb, strideB,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc, strideC, batchCount ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -139,15 +139,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(double), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(double), gpuMemcpyDefault);
+        if(!c_dev && beta != 0.0) gpuMemcpy(dC, C, c_size * sizeof(double), gpuMemcpyDefault);
         rmg::error(cublasDgemmStridedBatched(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda, strideA,
                             (double*)dB, ldb, strideB,
                             (double*)&beta, (double*)dC, ldc, strideC, batchCount ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(double), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -196,15 +196,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>)));
         rmg::error(hipblasZgemmStridedBatched(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda, strideA,
                             (hipDoubleComplex*)dB, ldb, strideB,
                             (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc, strideC, batchCount ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -214,15 +214,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
+        if(!c_dev && beta != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(double)));
         rmg::error(hipblasDgemmStridedBatched(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda, strideA,
                             (double*)dB, ldb, strideB,
                             (double*)&beta, (double*)dC, ldc, strideC,batchCount));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(double)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);

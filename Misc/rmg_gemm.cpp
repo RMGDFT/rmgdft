@@ -197,15 +197,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(std::complex<double>), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(std::complex<double>), gpuMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         rmg::error(cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)dB, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -215,15 +215,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<float>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<float>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<float>));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<float>), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<float>), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<float>), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(std::complex<float>), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(std::complex<float>), gpuMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(std::complex<float>), gpuMemcpyDefault);
         rmg::error(cublasCgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuComplex *)&alpha,
                             (cuComplex*)dA, lda,
                             (cuComplex*)dB, ldb,
                             (cuComplex*)&beta, (cuComplex*)dC, ldc ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<float>), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(std::complex<float>), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -233,15 +233,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(float));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(float));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(float));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(float), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(float), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(float), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(float), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(float), gpuMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(float), gpuMemcpyDefault);
         rmg::error(cublasSgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (float*)&alpha,
                             (float*)dA, lda,
                             (float*)dB, ldb,
                             (float*)&beta, (float*)dC, ldc ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(float), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(float), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -251,15 +251,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
-        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
-        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
+        if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(double), gpuMemcpyDefault);
+        if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(double), gpuMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(double), gpuMemcpyDefault);
         rmg::error(cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc ));
-        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
+        if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(double), gpuMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -340,15 +340,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>)));
         rmg::error(hipblasZgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda,
                             (hipDoubleComplex*)dB, ldb,
                             (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -358,15 +358,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<float>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<float>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<float>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<float>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<float>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<float>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<float>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<float>)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<float>)));
         rmg::error(hipblasCgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipFloatComplex *)&alpha,
                             (hipFloatComplex*)dA, lda,
                             (hipFloatComplex*)dB, ldb,
                             (hipFloatComplex*)&beta, (hipFloatComplex*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<float>));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<float>)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -376,15 +376,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(float));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(float));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(float));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(float));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(float));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(float));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(float)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(float)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(float)));
         rmg::error(hipblasSgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (float*)&alpha,
                             (float*)dA, lda,
                             (float*)dB, ldb,
                             (float*)&beta, (float*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(float));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(float)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -394,15 +394,15 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(double)));
         rmg::error(hipblasDgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(double)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);

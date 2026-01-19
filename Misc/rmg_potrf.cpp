@@ -120,24 +120,24 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
         rocstat = rocsolver_zpotrf(ct.roc_handle, fill_mode, n, (rocblas_double_complex *)dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
             rmg::error("Problem executing rocsolver_zpotrf");
-        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>)));
         if(!a_dev) gpuFree(dA);
     }
     else {
         double *dA=(double *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         rocstat = rocsolver_dpotrf(ct.roc_handle, fill_mode, n, dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
             rmg::error("Problem executing rocsolver_dpotrf");
-        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(double)));
         if(!a_dev) gpuFree(dA);
     }
-    hipMemcpyDtoH(info, dev_info, sizeof(int));
+    rmg::error(hipMemcpyDtoH(info, dev_info, sizeof(int)));
     gpuFree(dev_info);
 #elif SYCL_ENABLED
 
