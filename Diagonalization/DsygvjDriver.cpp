@@ -66,7 +66,6 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
     const rocblas_eform itype = rocblas_eform_ax;
-    const rocblas_esort sortdir = rocblas_esort_ascending;
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_lower;
     double abstol = 1.0e-20;

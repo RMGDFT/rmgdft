@@ -37,7 +37,6 @@
 void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
-    hipError_t hipstat;
     if(ct.gpu_managed_memory)
     {
         gpuMallocManaged(&ptr, size);

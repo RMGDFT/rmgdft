@@ -73,7 +73,6 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_upper;
     const double abstol = 1.0e-9;
-    double *dev_residual = NULL;
     double *residual;
     double *devResidual;
     const rocblas_int max_sweeps = 100;
