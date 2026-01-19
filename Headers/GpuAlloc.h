@@ -125,23 +125,6 @@ void gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, std::s
 void gpuHostUnregister(void *hostPtr, std::source_location loc = std::source_location::current());
 void gpuGetDeviceCount(int *count, std::source_location loc = std::source_location::current()); 
 
-#define Cuda_error(err)                                                                     \
-{                                                                                           \
-    cudaError_t err_ = (err);                                                               \
-    if (err_ != cudaSuccess) {                                                              \
-        printf("CUDA error %d at %s: line %d\n", err_, __FILE__, __LINE__);                       \
-        throw std::runtime_error("CUDA error");                                             \
-    }                                                                                       \
-}
-#define Cusolver_status(custat)                                                             \
-{                                                                                           \
-    cusolverStatus_t custat_ = (custat);                                                    \
-    if (custat_ != CUSOLVER_STATUS_SUCCESS) {                                               \
-        printf("cusolver error %d at %s: line %d\n", custat_, __FILE__, __LINE__);                \
-        throw std::runtime_error("cusolver error");                                         \
-    }                                                                                       \
-}
-
 #elif SYCL_ENABLED
 
 int gpuMalloc(void **ptr, size_t size);

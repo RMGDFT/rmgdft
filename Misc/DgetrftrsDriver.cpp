@@ -42,28 +42,28 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
     int lwork = 0;            /* size of workspace */
     double *d_work = nullptr; /* device workspace for getrf */
 
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
 
     /* query working space of getrf */
-    Cusolver_status(cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, A, n, &lwork));
+    rmg::error(cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, A, n, &lwork));
 
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork));
 
     /*  LU factorization */
-    Cusolver_status(cusolverDnDgetrf(ct.cusolver_handle, n, n, A, n, d_work, d_Ipiv, d_info));
+    rmg::error(cusolverDnDgetrf(ct.cusolver_handle, n, n, A, n, d_work, d_Ipiv, d_info));
 
 
     /*
      *  solve A*X = B
      */
-    Cusolver_status(cusolverDnDgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
+    rmg::error(cusolverDnDgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
                                         A, n, d_Ipiv, B, n, d_info));
 
     /* free resources */
-    Cuda_error(cudaFree(d_Ipiv));
-    Cuda_error(cudaFree(d_info));
-    Cuda_error(cudaFree(d_work));
+    rmg::error(cudaFree(d_Ipiv));
+    rmg::error(cudaFree(d_info));
+    rmg::error(cudaFree(d_work));
 
 }
 
