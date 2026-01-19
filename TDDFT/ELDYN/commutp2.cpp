@@ -404,7 +404,6 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
         int      Nsq_alloc                 ;
         Nsq_alloc = (Mdim + pct.procs_per_host)*Ndim;
         double *Om_dev, *P0_dev, *P1_dev, *W_dev, *C_dev, *dP_dev;
-        gpublasStatus_t gstat;
         gpuMalloc((void **)&Om_dev, Nsq * sizeof(double));
         gpuMalloc((void **)&P0_dev, Nsq2 * sizeof(double));
         gpuMalloc((void **)&P1_dev, Nsq2 * sizeof(double));
@@ -489,7 +488,6 @@ void commutp_s(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndi
 #if CUDA_ENABLED || HIP_ENABLED
     float *work = (float *)RmgMallocHost(Nsq2 * sizeof(float));
     float *Om_dev, *P0_dev, *P1_dev, *W_dev, *C_dev, *dP_dev;
-    gpublasStatus_t gstat;
     gpuMalloc((void **)&Om_dev, Nsq * sizeof(float));
     gpuMalloc((void **)&P0_dev, Nsq2 * sizeof(float));
     gpuMalloc((void **)&P1_dev, Nsq2 * sizeof(float));
