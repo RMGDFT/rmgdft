@@ -376,9 +376,8 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {
             int kpt_glob = kpt + pct.kstart;
 
-            char newname[MAX_PATH + 20];
-            sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", ct.infile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
-            ReadData_rmgtddft(newname, vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
+            std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", ct.infile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+            ReadData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
                     (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, 
                     &pre_steps, n2, n2_C, Eterms, Hcore_tddft, numst);
         }
@@ -935,9 +934,9 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             {
                 int kpt_glob = kpt + pct.kstart;
 
-                char newname[MAX_PATH + 20];
-                sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", ct.outfile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
-                WriteData_rmgtddft(newname, vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
+                std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", 
+                        ct.outfile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+                WriteData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
                         (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, Eterms, Hcore_tddft, numst);
             }
 
@@ -981,9 +980,9 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     {
         int kpt_glob = kpt + pct.kstart;
 
-        char newname[MAX_PATH + 20];
-        sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", ct.outfile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
-        WriteData_rmgtddft(newname, vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
+        std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", 
+                ct.outfile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+        WriteData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
                 (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, Eterms, Hcore_tddft, numst);
     }
     delete RT2a;

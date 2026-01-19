@@ -40,7 +40,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 
-void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
+void ReadData_rmgtddft (const char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix,  
         double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2, int n2_C,
         std::vector<double> &Eterms, double *Hcore_tddft, int numst)
