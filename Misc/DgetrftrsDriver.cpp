@@ -86,9 +86,6 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
     rocblas_status status;
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
-    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
-    const rocblas_fill uplo = rocblas_fill_lower;
-    const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
     gpuMalloc((void **)&devInfo, sizeof(int));

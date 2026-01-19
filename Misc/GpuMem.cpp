@@ -183,7 +183,7 @@ void gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
 {
     if(ct.gpu_managed_memory)
     {
-        gpuMallocManaged(ptr, size), loc;
+        gpuMallocManaged(ptr, size, loc);
     }
     else
     {
