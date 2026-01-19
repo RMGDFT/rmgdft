@@ -65,7 +65,7 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
     timeptr = ctime(&tt);
     strncpy(sdate, timeptr, 9);
     strncpy(stime, &timeptr[9], 9);
-    strncpy(stitle, "WFN-Complex", 11);
+    strncpy(stitle, "WFN-Complex", 12);
 
     wfng_dk1 = 0.0;
     wfng_dk2 = 0.0;

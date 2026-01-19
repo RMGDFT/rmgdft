@@ -1341,9 +1341,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
             "The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.", MD_OPTIONS);
 
-    If.RegisterInputKey("output_rho_xsf", NULL, false,
-            "Generate xsf format for electronic density.", OUTPUT_OPTIONS);
-
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 0.0, 1.0e-3, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the change in the total potential from step to step "

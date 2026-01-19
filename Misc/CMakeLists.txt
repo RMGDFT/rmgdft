@@ -67,7 +67,6 @@ cnpy.cpp
 LinePlot.cpp
 prime_factors.cpp
 InitIo.cpp
-Output_rho_xsf.cpp
 InitHybridModel.cpp
 init_kpoints.cpp
 FileOpenAndCreate.cpp

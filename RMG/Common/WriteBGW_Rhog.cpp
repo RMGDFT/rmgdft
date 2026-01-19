@@ -61,7 +61,7 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
     timeptr = ctime(&tt);
     strncpy(sdate, timeptr, 9);
     strncpy(stime, &timeptr[9], 9);
-    strncpy(stitle, "RHO-Complex", 11);
+    strncpy(stitle, "RHO-Complex", 12);
 
     int cell_symmetry = 0; //for cubic and orthorhobic 
     int nrecord = 1;

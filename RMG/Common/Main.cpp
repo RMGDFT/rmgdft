@@ -493,8 +493,6 @@ template <typename OrbitalType> void run (
     }
 
 
-    if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
-        Output_rho_xsf(rho.data(), pct.grid_comm);
     outcubes(Kptr, vh.data(), rho.data());
 }                               /* end run */
 
