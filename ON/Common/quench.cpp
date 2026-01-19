@@ -63,13 +63,13 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     double exx_step_time;
     int pbasis = Rmg_G->get_P0_BASIS(1);
 
+    double *rho_pre=NULL, *trho=NULL;
+    double *Hij_local=NULL, *Sij_local=NULL, *rho_matrix_local=NULL;
+    double *Hij_glob=NULL, *Sij_glob=NULL,*theta_local=NULL, *CC_res_local=NULL;
+    int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int outer_steps = 1;
-    double *rho_pre, *trho;
-    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local, *CC_res_local;
-    double *Hij_glob, *Sij_glob;
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
-        int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
                 ct.mix, ct.mix, pct.grid_comm); 
         Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
@@ -81,8 +81,8 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
         Pulay_orbital->SetBroyden(pbasis);
 
-        rho_pre = new double[nfp0];
-        trho = new double[nfp0];
+        rho_pre = new double[nfp0]();
+        trho = new double[nfp0]();
         int num_orb = LocalOrbital->num_thispe;
         rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
         theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));

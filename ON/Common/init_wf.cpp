@@ -40,14 +40,11 @@ static void init_wf_gamma(STATE * states)
     int idx1, idx2, idx3, idx4, idx5,idx6;
 
 
-    if (pct.gridpe == 0)
-        rmg::printlog(" Begin init_wf ...\n");
+    rmg::printlog(" Begin init_wf ...\n");
     MPI_Barrier(pct.img_comm);
 
-    if (pct.gridpe == 0)
-        rmg::printlog(" Initialize random functions\n");
+    rmg::printlog(" Initialize random functions\n");
 	
-        printf(" Initialize random functions\n");
 
     /* Initialize the random number generator */
 

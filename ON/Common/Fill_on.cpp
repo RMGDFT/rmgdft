@@ -70,7 +70,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     const double charge_tol = 1.0e-10;
     ct.E_lowbound = *min_element(eigs.begin(), eigs.end());
 
-    int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
+    int iter, st1, idx, nks;
     double mu = 0.0, dmu, mu1, mu2, f, fmid;
 
     nks = eigs.size();
@@ -174,13 +174,11 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
 static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
         std::vector<double> &weight, int occ_flag, int mp_order)
 {
-    int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
+    int st, kpt, st1;
     double t1, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
-
-    nks = ct.num_kpts_pe * ct.num_states;
 
     sumf = 0.0; 
 
@@ -192,7 +190,7 @@ static double occ_allstates (double mu, std::vector<double> & occ, std::vector<d
             eig = eigs[st];
             t1 = (eig - mu) / width;
 
-            occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
+            occ[st] = fac * dist_func(t1, occ_flag, mp_order);
             sumf += occ[st] * weight[kpt];
         }
     }                           /* st1 and kpt */

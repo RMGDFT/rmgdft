@@ -143,10 +143,10 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
                 }           /* end for ion1 and ion2 */
 
             }                   /* end for st1 and st2 */
-        delete [] RT2;
+        delete RT2;
     }                           /* end for idx */
 
-    delete [] RT1;
+    delete RT1;
 
 }
 
