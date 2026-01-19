@@ -73,7 +73,6 @@ template <typename OrbitalType>
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
 
-    char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a;

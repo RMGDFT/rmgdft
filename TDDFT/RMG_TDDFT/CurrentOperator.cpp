@@ -72,7 +72,6 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
 
     std::complex<double> *block_matrix;
 
-    char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a;
@@ -139,7 +138,6 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
         length_block = num_states - ib * nb;
         this_block_size = std::min(nb, length_block);
         int st_start = ib *nb + tddft_start_state;
-        int st_end   = st_start + this_block_size;
 
         for (int st1 = 0; st1 < this_block_size; st1++)
         {

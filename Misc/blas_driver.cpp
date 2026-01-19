@@ -293,7 +293,6 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
         counts.resize(nprocs);
 
         int my_start = 0;
-        int my_stop = 0;
         int my_step = 0;
         int incs = m / nprocs;
         if(m % nprocs) incs++;
@@ -307,7 +306,6 @@ void mgpu_dgemm_driver (char *transa, char *transb, int m, int n, int k,
             if(my_rank == idx)
             {
                 my_start = start[idx];
-                my_stop = stop[idx];
                 my_step = counts[idx];
             }
             ioffset += counts[idx];

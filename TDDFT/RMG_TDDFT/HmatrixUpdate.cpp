@@ -86,9 +86,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
     using TypeV = get_scalar_t<CalType>;
     static CalType *global_matrix1;
 
-    int factor = 1;
-    if(!ct.is_gamma) factor = 2;
-
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
@@ -144,8 +141,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         gpuMemcpy(vxc_dev, vxc_psi_TypeV.data(),  4*pbasis * sizeof(TypeV), gpuMemcpyHostToDevice);
         GpuVxc_x_psi_noncoll((std::complex<TypeV> *)psi_dev, (std::complex<TypeV> *)work_dev, vxc_dev, pbasis, num_states);
     }
-
-    gpublasStatus_t gstat;
 
     int block_size = std::max(1024, ct.scalapack_block_factor);
     //block_size = num_states;
@@ -322,6 +317,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
 
         rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, psi+ib*block_size*pbasis_noncoll, pbasis_noncoll, vpsi, 
                 pbasis_noncoll, beta, (KpointType *)global_matrix1, size_row);
+        int factor = sizeof(KpointType)/sizeof(double);
         BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         if(ct.tddft_tiledMM)

@@ -638,15 +638,10 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
     int info, *ipiv;
     ipiv = new int[nband_occ];
 
-    int nprow = Sp.GetRows();
-    int npcol = Sp.GetCols();
-    int NB = Sp.GetNB();
     int *desca = Sp.GetDistDesca();
     int numst = Sp.GetN();
     int ione = 1;
 
-    int Mdim = Sp.GetDistMdim();
-    int Ndim = Sp.GetDistNdim();
     int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
 
     std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
@@ -867,7 +862,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
 
     for(int iort = 0; iort < num_kort_pe; iort++)
     {
-        int iort_gl = kort_start + iort;
+        //int iort_gl = kort_start + iort;
         // for each string, calculate the Berry Phase
         //psi_k0: the first k point in a string
         // psi_k0 * exp(i b r) for the k+1 of the last k point in a string

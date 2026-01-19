@@ -132,16 +132,18 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
     delete [] beptr;
     delete [] phase_fftw;
-    int stress_factor = 1;
 
     if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
-
     {
         this->GetLocalizedWeight_xyz();
-        stress_factor = 4;
     }
 
 #if HIP_ENABLED || CUDA_ENABLED
+    int stress_factor = 1;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
+    {
+        stress_factor = 4;
+    }
     gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor * nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 

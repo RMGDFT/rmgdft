@@ -23,8 +23,19 @@
 
 #include <float.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <filesystem>
+#if !(defined(_WIN32) || defined(_WIN64))
+    #include <unistd.h>
+#else
+    #include <io.h>
+#endif
+
+
 #include <limits.h>
 #include "transition.h"
 #include "const.h"
@@ -126,7 +137,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
 
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
     int pbasis = Kptr[0]->pbasis;
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
@@ -322,7 +332,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     spinobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
-    size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
     ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
     rho_ground.get_oppo();
 
@@ -331,6 +340,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 #if CUDA_ENABLED || HIP_ENABLED
         // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
         // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
+        size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
         gpuMalloc((void **)&Kptr[kpt]->psi_dev, psi_alloc);
         gpuMalloc((void **)&Kptr[kpt]->work_dev, psi_alloc);
         RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, psi_alloc);
