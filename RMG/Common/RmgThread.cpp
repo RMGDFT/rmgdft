@@ -162,7 +162,6 @@ void *run_threads(void *v) {
     
 #if CUDA_ENABLED
     bool dev_set = false;
-    cudaError_t cuerr;
 #endif
 
     // Set up thread local storage

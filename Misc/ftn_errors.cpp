@@ -35,22 +35,6 @@
 #define         errore          RMG_FC_GLOBAL(errore, ERRORE)
 
 
-void error_handler(char *message)
-{
-
-}
-void rmg_error_handler(char *message)
-{
-    if(pct.gridpe == 0) printf("%s\n", message);
-    fflush (NULL);
-#if (defined(_WIN32) || defined(_WIN64))
-    Sleep(2000);
-#else
-    sleep (2);
-#endif
-
-}
-
 // Here for fortran routines.
 extern "C" void errore(char *where, char *message, int ierr, int where_len, int message_len)
 {

@@ -45,7 +45,6 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     int block_size = 128;
     int nGpus = ct.num_gpu_devices;
     int *device_list = ct.gpu_device_ids;
-    const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
 

@@ -36,8 +36,6 @@
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
 
-    int info = 0;
-
     int *d_Ipiv = nullptr; /* pivoting sequence */
     int *d_info = nullptr; /* error info */
 
