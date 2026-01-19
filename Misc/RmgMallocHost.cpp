@@ -53,11 +53,11 @@ void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
     if(ct.gpu_managed_memory)
     {
-        hipFree(ptr);
+        gpuFree(ptr);
     }
     else
     {
-        hipFreeHost(ptr);
+        gpuFreeHost(ptr);
     }
 }
 

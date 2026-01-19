@@ -473,7 +473,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     gpuGetDeviceCount( &ct.num_gpu_devices);
 
     // Get cuda version
-    cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
+    rmg::error(cudaDriverGetVersion ( &ct.cuda_version ));
     rmg::printlog ("\nCUDA version %d detected.\n", ct.cuda_version);
 #endif
 
@@ -482,13 +482,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(pct.local_rank == 0)
     {
         gpuDeviceReset();
-        hipInit(0);
+        rmg::error(hipInit(0));
         gpuSetDeviceFlags(gpuDeviceScheduleAuto);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if(pct.local_rank != 0)
     {
-        hipInit(0);
+        rmg::error(hipInit(0));
     }
     gpuGetDeviceCount( &ct.num_gpu_devices);
 
@@ -520,11 +520,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 
 #if HIP_ENABLED
-        hipDeviceGet( &hipdev, idevice );
-        hipDeviceGetName( name, sizeof(name), hipdev );
-        hipDeviceTotalMem( &deviceMem, hipdev );
+        rmg::error(hipDeviceGet( &hipdev, idevice ));
+        rmg::error(hipDeviceGetName( name, sizeof(name), hipdev ));
+        rmg::error(hipDeviceTotalMem( &deviceMem, hipdev ));
         ct.gpu_mem[idevice] = deviceMem;
-        hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev );
+        rmg::error(hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev ));
         rmg::printlog( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
@@ -545,9 +545,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             cudaDeviceGetAttribute(&ct.smemSize[idevice], cudaDevAttrMaxSharedMemoryPerBlock, idevice);
 #endif
 #if HIP_ENABLED
-            hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
-            hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
-            hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
+            rmg::error(hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice));
+            rmg::error(hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]));
+            rmg::error(hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice));
             //            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
@@ -577,8 +577,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #if HIP_ENABLED
         ct.hip_dev = ct.gpu_device_ids[pct.local_rank];
-        hipDeviceReset();
-        hipSetDeviceFlags(hipDeviceScheduleAuto);
+        rmg::error(hipDeviceReset());
+        rmg::error(hipSetDeviceFlags(hipDeviceScheduleAuto));
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg::error("HIPBLAS: Handle not created\n");
         }
@@ -608,8 +608,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #if HIP_ENABLED
                 ct.hip_dev = ct.gpu_device_ids[next_gpu];
-                hipDeviceReset();
-                hipSetDeviceFlags(hipDeviceScheduleAuto);
+                gpuDeviceReset();
+                rmg::error(hipSetDeviceFlags(hipDeviceScheduleAuto));
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
                     rmg::error("HIPBLAS: Handle not created\n");
                 }
@@ -632,8 +632,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if HIP_ENABLED
         // Still need to figure out a way to handle this case
         gpuSetDevice(ct.hip_dev);
-        hipDeviceReset();
-        hipSetDeviceFlags(hipDeviceScheduleAuto);
+        gpuDeviceReset();
+        gpuSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg::error("HIPBLAS: Handle not created\n");
         }
