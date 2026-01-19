@@ -89,7 +89,13 @@ endif(RMG_CUDA_ENABLED)
 
 if(RMG_HIP_ENABLED)
 set(MY_HIPCC_OPTIONS "-fPIE -ffast-math -std=c++20")
-include_directories("${MPI_CXX_COMPILER_INCLUDE_DIRS}")
+if(NOT "${MPI_CXX_COMPILER_INCLUDE_DIRS}" STREQUAL "")
+    include_directories("${MPI_CXX_COMPILER_INCLUDE_DIRS}")
+endif()
+if(CRAY_HOST)
+    include_directories("$(MPICH_DIR)/include")
+endif()
+
 set_source_files_properties(
     GpuProductBr.hip.cpp 
     GpuEleMul.hip.cpp 
