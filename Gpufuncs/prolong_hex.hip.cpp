@@ -146,6 +146,8 @@ __global__ void prolong_hex_kernel(double * full,
 }
 
 
+#include "rmg_error.h"
+
 template void prolong_hex_gpu_internal<float,3>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 template void prolong_hex_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
@@ -228,7 +230,7 @@ void prolong_hex_gpu_internal(double *full,
                    dimx, dimy, dimz, scale, agpu);
     }
 
-    hipStreamSynchronize(stream);
+    rmg::error(hipStreamSynchronize(stream));
 
 }
 #endif

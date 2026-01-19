@@ -80,7 +80,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 #if CUDA_ENABLED || HIP_ENABLED
 
-    gpublasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *T1, *D;
     gpuMallocManaged((void **)&D, n * sizeof(DataType));
@@ -113,9 +112,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // (I - D-1 * B)
     double negrone = -1.0;
     double rone = 1.0;
-    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n);
-    custat = gpublasDscal(ct.gpublas_handle, n*n, &negrone, T1, 1);
-    custat = gpublasDaxpy(ct.gpublas_handle, n, &rone, unitvector, 1, T1, n+1);
+    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n));
+    rmg::error(gpublasDscal(ct.gpublas_handle, n*n, &negrone, T1, 1));
+    rmg::error(gpublasDaxpy(ct.gpublas_handle, n, &rone, unitvector, 1, T1, n+1));
 
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = 0;st1 < n;st1++){
@@ -131,7 +130,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
     // Compute D^(-1) * B * I and store in B
-    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n);
+    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n));
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = istart;st1 < istop;st1++){
 //        for(int st2 = 0;st2 < n;st2++){

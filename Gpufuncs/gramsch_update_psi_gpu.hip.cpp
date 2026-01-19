@@ -54,6 +54,7 @@ __global__ void gramsch_update_psi_kernel(
 
 
 #include "GpuAlloc.h"
+#include "rmg_error.h"
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
@@ -72,25 +73,25 @@ void gramsch_update_psi(double *V,
     for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
     //hipblasDcopy(cublasH, N, C, N + 1, darr, 1);
     //for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
-    hipDeviceSynchronize();
+    rmg::error(hipDeviceSynchronize());
     /* apply inverse of cholesky factor to states */
     for (int st = 0; st < N; st++)
     {
 
         /* normalize V[st] */
-        hipblasDscal(cublasH, eig_step, &darr[st], &V[st * N + eig_start], ione);
+        rmg::error(hipblasDscal(cublasH, eig_step, &darr[st], &V[st * N + eig_start], ione));
 
         /* subtract the projection along c[st] from the remaining vectors */
         int idx = N - st - 1;
         if(idx)
         {
-            hipblasDger(cublasH, eig_step, idx, &alpha, &V[st * N + eig_start], ione,
-               &C[(st+1) + N*st], ione, &V[(st+1) * N + eig_start], N);
+            rmg::error(hipblasDger(cublasH, eig_step, idx, &alpha, &V[st * N + eig_start], ione,
+               &C[(st+1) + N*st], ione, &V[(st+1) * N + eig_start], N));
         }
 
     } /* end of for */
 
-    hipDeviceSynchronize();
+    rmg::error(hipDeviceSynchronize());
     gpuFree(darr);
 }
 

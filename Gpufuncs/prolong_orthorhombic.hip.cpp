@@ -159,6 +159,8 @@ template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, 
 template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
+#include "rmg_error.h"
+
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full, 
                    T *half, 
@@ -228,7 +230,7 @@ smem_limit = 65536 - 4092;
                    dimx, dimy, dimz, scale, agpu);
     }
 
-    hipStreamSynchronize(stream);
+    rmg::error(hipStreamSynchronize(stream));
 
 }
 #endif

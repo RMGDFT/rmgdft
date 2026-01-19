@@ -505,13 +505,8 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     int half_dimy = rhop.dimy / 2;
     int half_dimz = rhop.dimz / 2;
 
-    int cfac = 1;
-    if(ct.coalesce_states) cfac = pct.coalesce_factor;
-    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
     int my_pe_x, my_pe_y, my_pe_z;
     Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
-    int my_pe_offset = my_pe_x % cfac;
-
 
     int nstates = Kpts[0]->nstates;
     Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
@@ -619,7 +614,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
     if constexpr (std::is_same_v<OrbitalType, std::complex<double>>)
     {
         std::vector<std::complex<float>> sg_half(sg_hbasis), thalf(hbasis);
-        for(int idx =0;idx < hbasis;idx++) 
+        for(size_t idx =0;idx < hbasis;idx++) 
             thalf[idx] = std::complex<float>(std::real(sp->psi[idx]), std::imag(sp->psi[idx]));
         Rmg_T->trade_imagesx (thalf.data(), sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
         std::complex<float> *hptr = (std::complex<float> *)P->hbufs[tid];

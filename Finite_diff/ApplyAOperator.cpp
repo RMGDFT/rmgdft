@@ -140,10 +140,10 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     {
 #if HIP_ENABLED || CUDA_ENABLED
 #if HIP_ENABLED
-        hipSetDevice(ct.hip_dev);
+        gpuSetDevice(ct.hip_dev);
 #endif
 #if CUDA_ENABLED
-        cudaSetDevice(ct.cu_dev);
+        gpuSetDevice(ct.cu_dev);
 #endif
         gpuMallocHost((void **)&rbufs[tid], alloc);
 #else
