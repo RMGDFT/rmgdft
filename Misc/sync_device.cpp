@@ -1,5 +1,6 @@
 
 #include "blas_driver.h"
+#include "rmg_error.h"
 #include "GpuAlloc.h"
 
 
@@ -9,7 +10,7 @@ namespace rmg
 {
     void sync_device(void)
     {
-        hipDeviceSynchronize();
+        rmg::error(hipDeviceSynchronize());
     }
 } // end namespace rmg
 
@@ -40,7 +41,7 @@ namespace rmg
 {
     void sync_device(void)
     {
-        cudaDeviceSynchronize();
+        rmg::error(cudaDeviceSynchronize());
     }
 }
 

@@ -190,15 +190,15 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
-        if(!c_dev && std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
+        if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>)));
         rmg::error(hipblasZsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex*)dA, lda,
                             (hipDoubleComplex*)dB, ldb,
                             (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
@@ -208,15 +208,15 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
         if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        if(!c_dev && beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
+        if(!c_dev && beta != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(double)));
         rmg::error(hipblasDsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc ));
-        if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
+        if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(double)));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);

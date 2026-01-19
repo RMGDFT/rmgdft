@@ -189,8 +189,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
         rmg::error(hipblasZtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
@@ -198,7 +198,7 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (hipDoubleComplex *)dA, lda,
                             (hipDoubleComplex *)dB, ldb,
                             (hipDoubleComplex *)dB, ldb));
-        if(!b_dev) hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>));
+        if(!b_dev) rmg::error(hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>)));
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
@@ -206,8 +206,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
         double *dA=(double *)A, *dB=(double *)B;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
         if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
         rmg::error(hipblasDtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
@@ -215,7 +215,7 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (double*)dA, lda,
                             (double*)dB, ldb,
                             (double*)dB, ldb ));
-        if(!b_dev) hipMemcpyDtoH(B, dB, b_size * sizeof(double));
+        if(!b_dev) rmg::error(hipMemcpyDtoH(B, dB, b_size * sizeof(double)));
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
 

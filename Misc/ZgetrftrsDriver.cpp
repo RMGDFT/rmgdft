@@ -36,8 +36,6 @@
 void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double> *B)
 {
 
-    int info = 0;
-
     int *d_Ipiv = nullptr; /* pivoting sequence */
     int *d_info = nullptr; /* error info */
 
@@ -86,9 +84,6 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
     int info;
-    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
-    const rocblas_fill uplo = rocblas_fill_lower;
-    const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
     gpuMalloc((void **)&devInfo, sizeof(int));
