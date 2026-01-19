@@ -55,7 +55,6 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 template <typename KpointType>
 void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int pgrid[3];
@@ -82,16 +81,13 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     
     int kstart = pct.kstart;
     if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) kstart = 0;
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
+    std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", name, pct.spinpe, kstart, pct.gridpe);
 
-
-    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(ofile.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg::printlog("Can't open data file %s", newname);
+        rmg::printlog("Can't open data file %s", ofile.c_str());
         rmg::error("Terminating.");
     }
-
-
 
     /* read grid info */
     read_int (fhand, grid, 3);
