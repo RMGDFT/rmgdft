@@ -41,12 +41,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-
-static size_t totalsize;
-
-
-static void write_double (int fh, double * rp, int count);
-static void write_int (int fh, int *ip, int count);
+#include "write_wrapper.h"
 
 
 template void WriteData (int, double *, double *, double *, Kpoint<double> **);
@@ -212,27 +207,6 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 }                               /* end write_data */
 
-
-
-static void write_double (int fh, double * rp, int count)
-{
-    int size;
-
-    size = count * sizeof (double);
-    rmg::writefile(fh, rp, size);
-    totalsize += size;
-}
-
-
-static void write_int (int fh, int *ip, int count)
-{
-    int size;
-
-    size = count * sizeof (int);
-    rmg::writefile(fh, ip, size);
-
-    totalsize += size;
-}
 
 void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {

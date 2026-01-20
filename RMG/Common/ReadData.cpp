@@ -38,9 +38,8 @@
 #include "ZfpCompress.h"
 #include "rmg_gemm.h"
 #include "RmgException.h"
+#include "read_wrapper.h"
 
-static void read_double (int fhand, double * rp, int count);
-static void read_int (int fhand, int *ip, int count);
 
 template void ReadData(char *, double *, double *, double *, Kpoint<double> **);
 template void ReadData(char *, double *, double *, double *, Kpoint<std::complex<double> > **);
@@ -398,28 +397,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     close (fhand);
 
 }                               /* end read_data */
-
-
-static void read_double (int fhand, double * rp, int count)
-{
-    ssize_t wanted = sizeof (double) * (ssize_t)count;
-    ssize_t size = read (fhand, rp, wanted);
-    if(size != wanted)
-    {
-        std::cout << " wanted and readsize " << wanted <<" != " << size << std::endl;
-        rmg::error("error reading");
-    }
-
-
-}
-
-static void read_int (int fhand, int *ip, int count)
-{
-    int size = count * sizeof (int);
-    if (size != read (fhand, ip, size))
-        rmg::error("error reading");
-}
-
 
 
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
