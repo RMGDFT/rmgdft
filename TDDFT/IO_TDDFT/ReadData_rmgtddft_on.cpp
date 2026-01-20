@@ -45,14 +45,13 @@ void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc,
         double *Cmatrix, double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2)
 {
     int fhand, fgrid_size;
-    char newname[MAX_PATH];
 
 
     int amode;
-    sprintf (newname, "%s%d", filename, pct.gridpe);
+    std::string newname = std::format("{}{}", filename, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
-    fhand = open(newname, O_RDWR, amode);
+    fhand = open(newname.c_str(), O_RDWR, amode);
 
    if (fhand < 0) {
         rmg::printlog("Can't open restart file %s", newname);

@@ -450,7 +450,6 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int pgrid[3];
@@ -479,9 +478,9 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     if(ct.verbose) rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
 
     int kstart = pct.kstart;
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
+    std::string newname = std::format("{}_spin{}_kpt{}_gridpe{}_1", name, pct.spinpe, kstart, pct.gridpe);
 
-    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg::printlog("Can't open data file %s for extrapolation.", newname);
         return;

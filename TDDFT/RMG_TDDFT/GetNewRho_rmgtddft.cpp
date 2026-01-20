@@ -187,6 +187,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             }
         }
 
+        for(int i = 0; i < numst * numst; i++) rho_matrix_glob[i] = 0.0;
         Sp.GatherEigvectors(rho_matrix_glob, rho_matrix_dist.data());
     }
 

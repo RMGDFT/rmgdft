@@ -52,7 +52,6 @@ template void WriteRestart (char *, double *, double *, double *, double *, Kpoi
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 20];
     int amode;
     FILE *fhandle;
     int fhand;
@@ -172,12 +171,11 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, pct.kstart, pct.gridpe);
+    std::string new_file = std::format("{}_spin{}_kpt{}_gridpe{}", 
+            name, pct.spinpe, pct.kstart, pct.gridpe);
 
     // Save previous wavefunction file
-    std::string new_file(newname);
-    std::string old_file(newname);
-    old_file = old_file + "_1";
+    std::string old_file = new_file + "_1";
     try {
         std::filesystem::rename(new_file, old_file);
     }
@@ -186,9 +184,9 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     }
 
     amode = S_IREAD | S_IWRITE;
-    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+    fhand = open(new_file.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
     if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", newname);
+        rmg::printlog("Can't open restart file %s", new_file);
         rmg::error("Terminating.");
     }
 
@@ -216,7 +214,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
 
     /* force change mode of output file */
-    chmod (newname, amode);
+    chmod (new_file.c_str(), amode);
 
     if (pct.imgpe == 0)
     {

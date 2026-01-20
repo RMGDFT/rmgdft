@@ -107,9 +107,9 @@ void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
 {
     if(fullpath[0] !='/')
     {
-        char temp[MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pelc.image_path[pelc.thisimg], fullpath);
-        std::strncpy(fullpath, temp, MAX_PATH);
+        std::string temp = std::format("{}{}", 
+                pelc.image_path[pelc.thisimg], fullpath);
+        std::strncpy(fullpath, temp.c_str(), MAX_PATH);
     }
 }
 void MakeFullPath(std::string &fullpath, PE_CONTROL& pelc)

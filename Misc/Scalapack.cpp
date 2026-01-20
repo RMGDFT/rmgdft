@@ -225,7 +225,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 void Scalapack::GatherEigvectors(double *A, double *distA)
 {
     if(!this->participates) return;
-    if(N >= 16000)
+    if(N >= 16000 || 1)
     {
         CopyDistArrayToSquareMatrix(A, distA, N, dist_desca);
         ScalapackBlockAllreduce((double *)A, (size_t)N * (size_t)N);

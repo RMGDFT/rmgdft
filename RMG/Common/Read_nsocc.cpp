@@ -45,14 +45,13 @@ template void Read_nsocc(char *, Kpoint<std::complex<double> > *);
 template <typename KpointType>
 void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
 {
-    char newname[MAX_PATH + 200];
     int pstride = kptr->ldaU->ldaU_m;
     size_t occ_size_bytes = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride * sizeof(std::complex<double>);
 
     if(pct.imgpe == 0)
     {
-        sprintf (newname, "%s_spin%d_nsocc", name, pct.spinpe);
-        int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+        std::string newname = std::format("{}_spin{}_nsocc", name, pct.spinpe);
+        int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
             rmg::printlog("Can't open data file %s", newname);
             rmg::error("Terminating.");
