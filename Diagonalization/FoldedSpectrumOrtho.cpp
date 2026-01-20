@@ -69,7 +69,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType beta(0.0);
 
     double *tarr = new double[n];
-    int info = 0;
+    [[maybe_unused]] int info = 0;
     int eig_step = eig_stop - eig_start;
 
     char *trans_t="t", *trans_n="n", *cuplo = "l";
