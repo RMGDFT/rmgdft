@@ -29,6 +29,7 @@
 #include "init_var.h"
 #include <mpi.h>
 #include "transition.h"
+#include "write_wrapper.h"
 
 
 /* Writes the hartree potential, the wavefunctions, the */
@@ -163,18 +164,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
             if (fhand < 0)
                 rmg::error(" Unable to write file ");
 
-            write(fhand, states[state].psiR, states[state].size * sizeof(double));
+            write_double(fhand, states[state].psiR, states[state].size);
 
-            write(fhand, &states[state].ixmin, sizeof(int));
-            write(fhand, &states[state].ixmax, sizeof(int));
-            write(fhand, &states[state].iymin, sizeof(int));
-            write(fhand, &states[state].iymax, sizeof(int));
-            write(fhand, &states[state].izmin, sizeof(int));
-            write(fhand, &states[state].izmax, sizeof(int));
-            write(fhand, &hxgrid, sizeof(double));
-            write(fhand, &hygrid, sizeof(double));
-            write(fhand, &hzgrid, sizeof(double));
-            write(fhand, &states[state].crds[0], 3 * sizeof(double));
+            write_int(fhand, &states[state].ixmin, 1);
+            write_int(fhand, &states[state].ixmax, 1);
+            write_int(fhand, &states[state].iymin, 1);
+            write_int(fhand, &states[state].iymax, 1);
+            write_int(fhand, &states[state].izmin, 1);
+            write_int(fhand, &states[state].izmax, 1);
+            write_double(fhand, &hxgrid, 1);
+            write_double(fhand, &hygrid, 1);
+            write_double(fhand, &hzgrid, 1);
+            write_double(fhand, &states[state].crds[0], 3);
 
 
 

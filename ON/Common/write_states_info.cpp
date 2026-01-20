@@ -24,58 +24,59 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "write_wrapper.h"
 
 
 
 void write_states_info(char *name, STATE * states)
 {
     int amode;
-    char newname[MAX_PATH + 20];
     int st;
     int fhand;
 
 
     MPI_Barrier(pct.img_comm);
 
+    std::string newname;
     if (pct.gridpe == 0)
     {
-        sprintf(newname, "%s%s", name, ".states_info");
+        newname = std::format("{}{}", name, ".states_info");
 
         amode = S_IREAD | S_IWRITE;
 
-        fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+        fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0)
             rmg::error(" Unable to write file ");
 
         for (st = 0; st < ct.num_states; st++)
         {
-            write(fhand, &states[st].pe, sizeof(int));
-            write(fhand, &states[st].crds[0], sizeof(double));
-            write(fhand, &states[st].crds[1], sizeof(double));
-            write(fhand, &states[st].crds[2], sizeof(double));
-            write(fhand, &states[st].radius, sizeof(double));
-            write(fhand, &states[st].movable, sizeof(int));
-            write(fhand, &states[st].frozen, sizeof(int));
-            write(fhand, &states[st].index, sizeof(int));
-            write(fhand, &states[st].ixmin, sizeof(int));
-            write(fhand, &states[st].iymin, sizeof(int));
-            write(fhand, &states[st].izmin, sizeof(int));
-            write(fhand, &states[st].ixmax, sizeof(int));
-            write(fhand, &states[st].iymax, sizeof(int));
-            write(fhand, &states[st].izmax, sizeof(int));
-            write(fhand, &states[st].xfold, sizeof(int));
-            write(fhand, &states[st].yfold, sizeof(int));
-            write(fhand, &states[st].zfold, sizeof(int));
-            write(fhand, &states[st].ixstart, sizeof(int));
-            write(fhand, &states[st].iystart, sizeof(int));
-            write(fhand, &states[st].izstart, sizeof(int));
-            write(fhand, &states[st].ixend, sizeof(int));
-            write(fhand, &states[st].iyend, sizeof(int));
-            write(fhand, &states[st].izend, sizeof(int));
-            write(fhand, &states[st].orbit_nx, sizeof(int));
-            write(fhand, &states[st].orbit_ny, sizeof(int));
-            write(fhand, &states[st].orbit_nz, sizeof(int));
-            write(fhand, &states[st].size, sizeof(int));
+            write_int(fhand, &states[st].pe, 1);
+            write_double(fhand, &states[st].crds[0], 1);
+            write_double(fhand, &states[st].crds[1], 1);
+            write_double(fhand, &states[st].crds[2], 1);
+            write_double(fhand, &states[st].radius, 1);
+            write_int(fhand, &states[st].movable, 1);
+            write_int(fhand, &states[st].frozen, 1);
+            write_int(fhand, &states[st].index, 1);
+            write_int(fhand, &states[st].ixmin, 1);
+            write_int(fhand, &states[st].iymin, 1);
+            write_int(fhand, &states[st].izmin, 1);
+            write_int(fhand, &states[st].ixmax, 1);
+            write_int(fhand, &states[st].iymax, 1);
+            write_int(fhand, &states[st].izmax, 1);
+            write_int(fhand, &states[st].xfold, 1);
+            write_int(fhand, &states[st].yfold, 1);
+            write_int(fhand, &states[st].zfold, 1);
+            write_int(fhand, &states[st].ixstart, 1);
+            write_int(fhand, &states[st].iystart, 1);
+            write_int(fhand, &states[st].izstart, 1);
+            write_int(fhand, &states[st].ixend, 1);
+            write_int(fhand, &states[st].iyend, 1);
+            write_int(fhand, &states[st].izend, 1);
+            write_int(fhand, &states[st].orbit_nx, 1);
+            write_int(fhand, &states[st].orbit_ny, 1);
+            write_int(fhand, &states[st].orbit_nz, 1);
+            write_int(fhand, &states[st].size, 1);
         }
     }
 
