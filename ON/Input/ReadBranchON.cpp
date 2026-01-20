@@ -125,7 +125,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     }
     else
     {
-        std::strncpy(lc.infile_ON_from_RMG, RMGfile.c_str(), sizeof(lc.infile_ON_from_RMG));
+        lc.infile_ON_from_RMG = RMGfile;
     }
 
     InputKey *Key;

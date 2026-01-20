@@ -45,9 +45,8 @@
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
 /* Reads the hartree potential, charge density, vxc from RMG results for ON part */
-void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
+void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
 {
-    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int fpgrid[3];
@@ -69,10 +68,10 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
+    std::string newname = std::format("{}_spin{}_kpt{}_gridpe{}", name, pct.spinpe, kstart, pct.gridpe);
 
 
-    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg::printlog("Can't open data file %s", newname);
         rmg::error("Terminating.");

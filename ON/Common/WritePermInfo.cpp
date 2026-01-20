@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <format>
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
 #else
@@ -42,14 +43,13 @@
 void WritePermInfo(char *name, unsigned int *perm_index)
 {
     int fhand;
-    char newname[MAX_PATH + 20];
 
-    sprintf (newname, "%s%s", name, ".perm");
+    std::string newname = std::format("{}{}", name, ".perm");
 
-    fhand = open_wave_file (newname);
+    fhand = open_wave_file (newname.c_str());
 
     /* Some control information */
-    write (fhand, perm_index, ct.num_ions*sizeof (unsigned int));
+    rmg::writefile (fhand, perm_index, ct.num_ions * sizeof(int));
 
     close (fhand);
 

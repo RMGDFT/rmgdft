@@ -17,6 +17,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "transition.h"
+#include "read_wrapper.h"
 
 
 
@@ -27,7 +28,6 @@ void init_rho_atom(double *rho)
     int ix1, iy1, iz1;
     int ix0, iy0, iz0;
     int ixx, iyy, izz;
-    char newname[MAX_PATH + 200];
     int ion, species, fhand;
 
     double hxgrid, hygrid, hzgrid;
@@ -86,8 +86,8 @@ void init_rho_atom(double *rho)
                 rmg::error(" Unable to open file ");
             }
 
-            read(fhand, ibuf, 6*sizeof(int));
-            read(fhand, dbuf, 6*sizeof(double));
+            read_int(fhand, ibuf, 6);
+            read_double(fhand, dbuf, 6);
             close(fhand);
         }
 
@@ -160,6 +160,7 @@ void init_rho_atom(double *rho)
 
 
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_rho_value");
+    std::string newname;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -170,22 +171,22 @@ void init_rho_atom(double *rho)
             ION *iptr;
             iptr = &Atoms[ion];
             
-            sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".rho_firstatom");
-            fhand = open(newname, O_RDWR);
+            newname = std::format("{}{}{}", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".rho_firstatom");
+            fhand = open(newname.c_str(), O_RDWR);
             if (fhand < 0)
             {
                 rmg::printlog("\n unable to open file: %s \n", newname);
                 rmg::error(" Unable to open file ");
             }
 
-            read(fhand, ibuf, 6*sizeof(int));
+            read_int(fhand, ibuf, 6);
             ixmin = ibuf[0];
             ixmax = ibuf[1];
             iymin = ibuf[2];
             iymax = ibuf[3];
             izmin = ibuf[4];
             izmax = ibuf[5];
-            read(fhand, dbuf, 6*sizeof(double));
+            read_double(fhand, dbuf, 6);
             hxgrid = dbuf[0];
             hygrid = dbuf[1];
             hzgrid = dbuf[2];
@@ -196,8 +197,8 @@ void init_rho_atom(double *rho)
             ixdim = ixmax - ixmin;
             iydim = iymax - iymin;
             izdim = izmax - izmin;
-            idx = ixdim * iydim * izdim * sizeof(double);
-            read(fhand, rho_tem, idx);
+            idx = ixdim * iydim * izdim;
+            read_double(fhand, rho_tem, idx);
             close(fhand);
 
             /* rho_tem: input old one, output  new interpolated one

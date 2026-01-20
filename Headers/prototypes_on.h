@@ -49,7 +49,7 @@ void DipoleCorrection(double *rho, double *rhoc, double *vcorr, double *vhx, dou
 void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0);
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
 void GetNlop_on(void);
-void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc);
+void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc);
 void DistributeTasks(int active_thread, int num_task, int *task_start, int *task_end);
 void Pulay (int step, int N, double *xm, double *fm, int NsavedSteps,
         int preconditioning);
@@ -135,7 +135,7 @@ void init_pe ( int image );
 void mg_restrict_6 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio);
 
 void fill_orbit_borders4(double * sg, double * pg, int dimx, int dimy, int dimz);
-int open_wave_file (char *filename);
+int open_wave_file (const char  *filename);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void init_nonlocal_comm();
 void normalize_orbits( STATE *states);

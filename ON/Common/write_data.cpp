@@ -255,7 +255,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
     idx = ixdim * iydim * izdim ;
     global_sums(rho_tem, &idx, pct.grid_comm);
-    idx = ixdim * iydim * izdim * sizeof(double);
     if (pct.gridpe == 0)
     {
         newname = std::format("{}{}", name, ".rho_firstatom");
@@ -265,18 +264,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         if (fhand < 0)
             rmg::error(" Unable to write file ");
 
-        write(fhand, &ixmin, sizeof(int));
-        write(fhand, &ixmax, sizeof(int));
-        write(fhand, &iymin, sizeof(int));
-        write(fhand, &iymax, sizeof(int));
-        write(fhand, &izmin, sizeof(int));
-        write(fhand, &izmax, sizeof(int));
-        write(fhand, &hxgrid, sizeof(double));
-        write(fhand, &hygrid, sizeof(double));
-        write(fhand, &hzgrid, sizeof(double));
-        write(fhand, &states[0].crds[0], 3 * sizeof(double));
+        write_int(fhand, &ixmin, 1);
+        write_int(fhand, &ixmax, 1);
+        write_int(fhand, &iymin, 1);
+        write_int(fhand, &iymax, 1);
+        write_int(fhand, &izmin, 1);
+        write_int(fhand, &izmax, 1);
+        write_double(fhand, &hxgrid, 1);
+        write_double(fhand, &hygrid, 1);
+        write_double(fhand, &hzgrid, 1);
+        write_double(fhand, &states[0].crds[0], 3);
 
-        write(fhand, rho_tem, idx);
+        write_double(fhand, rho_tem, idx);
         close(fhand);
     }
 

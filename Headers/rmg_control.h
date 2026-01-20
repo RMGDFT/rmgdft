@@ -1036,7 +1036,7 @@ public:
    bool use_async_allreduce;
 
    bool ON_read_from_RMG;
-   char infile_ON_from_RMG[2*MAX_PATH];
+   std::string infile_ON_from_RMG;
    int freeze_rho_steps;
    bool use_cpdgemr2d;
 
