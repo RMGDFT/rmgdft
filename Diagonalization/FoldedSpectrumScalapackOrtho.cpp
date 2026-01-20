@@ -70,9 +70,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 #else
     KpointType *C = work1;
     KpointType *G = work2;
+    int ione = 1;
 #endif
     double *tarr = new double[n];
-    int info = 0, ione = 1;
+    int info = 0;
     char *trans_t="t", *trans_n="n", *cuplo = "l";
 
     // For mpi routines. Transfer twice as much data for complex orbitals
