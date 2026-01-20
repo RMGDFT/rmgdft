@@ -39,7 +39,6 @@
 
 void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double *vxc_old,  double * rho, STATE *states)
 {
-    char newname[MAX_PATH + 20];
     int amode;
     FILE *fhandle;
     int fhand;
@@ -146,27 +145,12 @@ void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double 
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    if (ct.spin_flag)
-    {   
-	if (pct.spinpe==0)
-	    sprintf (newname, "%s.up%d", name, pct.gridpe);
-	else if(pct.spinpe==1) 
-	    sprintf (newname, "%s.dw%d", name, pct.gridpe);
-
-    }
-    else
-	sprintf (newname, "%s%d", name, pct.gridpe);
-
-
     write_data (name, vh, vxc, vh_old, vxc_old, rho, states);
 
     write_time = my_crtc () - time0;
 
     rmg::printlog ("write_restart: writing took %.1f seconds \n", write_time);
     
-
-    /* force change mode of output file */
-    chmod (newname, amode);
 
 }                               /* end write_data */
 

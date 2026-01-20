@@ -76,10 +76,10 @@ void init_rho_atom(double *rho)
     {
         species = Atoms[ion].species;
 
-        sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".rho_firstatom");
+        std::string newname = std::format("{}{}{}", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
         if(pct.gridpe == 0)
         {
-            fhand = open(newname, O_RDWR);
+            fhand = open(newname.c_str(), O_RDWR);
             if (fhand < 0)
             {
                 rmg::printlog("\n unable to open file: %s \n", newname);
