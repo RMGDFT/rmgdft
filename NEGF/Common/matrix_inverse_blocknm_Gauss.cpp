@@ -47,7 +47,6 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_cpu, std::comple
     std::complex<double> *Gii_cpu, *Gii_gpu, *Gii_ptr;
     std::complex<double> *H_tri_gpu, *H_tri_ptr;
     std::complex<double> *G_tri_gpu, *G_tri_ptr;
-    std::complex<double> *Green_C_gpu, *Green_C_ptr;
 
     std::complex<double> half, mone, one, zero;
     int ione = 1;

@@ -69,7 +69,6 @@ add_library (ON_Common
  write_data.cpp
  write_eigs.cpp
  write_states_info.cpp
- xbsmovie.cpp
  ZeroBoundary.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")

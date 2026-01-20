@@ -436,9 +436,9 @@ void get_cond_frommatrix_kyz ()
         /* calculating the current */
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%s%d%d%s", ct.basename,".current_", iprobe1, iprobe2, ".dat");
-            file = fopen (newname, "w");
-            fprintf(file, "& bias(V)    current (A)", EF1 - EF2, current);
+            std::string newname = std::format("{}{}{}{}{}", ct.basename,".current_", iprobe1, iprobe2, ".dat");
+            file = fopen (newname.c_str(), "w");
+            fprintf(file, "& bias(V)    current (A)");
             for(int i = -E_POINTS/2; i < E_POINTS/2; i++)
             {
                 EF1 = i *de;

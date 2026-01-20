@@ -67,7 +67,7 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
 
 
         if (pct.gridpe == 0)
-            write (file_handle, x_plane, fny * fnz * sizeof (double));
+            rmg::writefile (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 
@@ -120,7 +120,7 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
 
 
         if (pct.gridpe == 0)
-            write (file_handle, x_plane, fny * fnz * sizeof (double));
+            rmg::writefile (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 
