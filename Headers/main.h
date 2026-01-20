@@ -96,8 +96,6 @@
 #include "common_prototypes.h" 
 #include "common_prototypes1.h" 
 
-#include "rmg_xc.h"
-
 // Boundary condition flags
 #include "boundary_conditions.h"
 #include "RmgTimer.h"
