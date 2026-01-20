@@ -40,9 +40,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-
-static void read_double (int fhand, double * rp, int count);
-static void read_int (int fhand, int *ip, int count);
+#include "read_wrapper.h"
 
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
@@ -164,26 +162,6 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
 
 }                               /* end read_data */
 
-
-static void read_double (int fhand, double * rp, int count)
-{
-    ssize_t wanted = sizeof (double) * (ssize_t)count;
-    ssize_t size = read (fhand, rp, wanted);
-    if(size != wanted)
-        rmg::error("error reading");
-
-
-}
-
-static void read_int (int fhand, int *ip, int count)
-{
-    int size = count * sizeof (int);
-    if (size != read (fhand, ip, size))
-        rmg::error("error reading");
-}
-
-
-
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {
 
@@ -207,5 +185,3 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     delete [] in;
 
 }
-/******/
-/******/

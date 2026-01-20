@@ -38,7 +38,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 {
     int amode;
     int state;
-    char newname[MAX_PATH + 20];
     int idx, idx1;
     double hxgrid, hygrid, hzgrid;
     double *rho_tem;
@@ -95,17 +94,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_File mpi_fhand ;
 
     MPI_Barrier(pct.grid_comm);
+    std::string newname;
     if(pct.spinpe == 0)
     {
-        sprintf(newname, "%s%s", name, ".vh");
-        MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+        newname = std::format("{}{}", name, ".vh");
+        MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
         disp=0;
         MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
         MPI_File_write_all(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
         MPI_File_close(&mpi_fhand);
 
-        sprintf(newname, "%s%s", name, ".vh_corr");
-        MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+        newname = std::format("{}{}", name, ".vh_corr");
+        MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
         disp=0;
         MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
         MPI_File_write_all(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
@@ -113,16 +113,16 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     }
     MPI_Barrier(pct.grid_comm);
 
-    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
-    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    newname = std::format("{}_spin{}{}", name, pct.spinpe, ".vxc");
+    MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
     MPI_File_write_all(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
-    sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
-    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    newname = std::format("{}_spin{}{}", name, pct.spinpe, ".rho");
+    MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
     MPI_File_write_all(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
@@ -133,8 +133,8 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     if(pct.gridpe == 0) 
     {
         FILE *fhand_EF;
-        sprintf (newname, "%s%s", name, ".EF");
-        fhand_EF = fopen (newname, "w");
+        newname = std::format("{}{}", name, ".EF");
+        fhand_EF = fopen (newname.c_str(), "w");
         fprintf(fhand_EF, "%15.8f\n", ct.efermi * Ha_eV);
         fprintf(fhand_EF, "%15.8f\n", ct.E_lowbound * Ha_eV);
         fclose(fhand_EF);
@@ -157,9 +157,9 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         for (state = ct.state_begin; state < ct.state_end; state++)
         {
             int state_permuted = perm_state_index[state];
-            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+            newname = std::format("{}_spin{}{}{}", name, pct.spinpe, ".orbit_", state_permuted);
             amode = S_IREAD | S_IWRITE;
-            int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+            int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
             if (fhand < 0)
                 rmg::error(" Unable to write file ");
 
@@ -257,10 +257,10 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     idx = ixdim * iydim * izdim * sizeof(double);
     if (pct.gridpe == 0)
     {
-        sprintf(newname, "%s%s", name, ".rho_firstatom");
+        newname = std::format("{}{}", name, ".rho_firstatom");
         amode = S_IREAD | S_IWRITE;
 
-        int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+        int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0)
             rmg::error(" Unable to write file ");
 
