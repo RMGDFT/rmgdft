@@ -231,7 +231,7 @@ void GetNlop_on(void)
             rmg::error("error open file");
 
         ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
-        write(fhand, beta, size);
+        rmg::writefile(fhand, beta, size);
         close(fhand);
 
         delete [] beta;

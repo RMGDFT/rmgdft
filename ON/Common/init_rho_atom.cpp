@@ -17,7 +17,6 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "transition.h"
-#include "read_wrapper.h"
 
 
 
@@ -86,8 +85,8 @@ void init_rho_atom(double *rho)
                 rmg::error(" Unable to open file ");
             }
 
-            read_int(fhand, ibuf, 6);
-            read_double(fhand, dbuf, 6);
+            rmg::readfile(fhand, ibuf, 6 * sizeof(int));
+            rmg::readfile(fhand, dbuf, 6 * sizeof(double));
             close(fhand);
         }
 
@@ -179,14 +178,14 @@ void init_rho_atom(double *rho)
                 rmg::error(" Unable to open file ");
             }
 
-            read_int(fhand, ibuf, 6);
+            rmg::readfile(fhand, ibuf, 6 * sizeof(int));
             ixmin = ibuf[0];
             ixmax = ibuf[1];
             iymin = ibuf[2];
             iymax = ibuf[3];
             izmin = ibuf[4];
             izmax = ibuf[5];
-            read_double(fhand, dbuf, 6);
+            rmg::readfile(fhand, dbuf, 6 * sizeof(double));
             hxgrid = dbuf[0];
             hygrid = dbuf[1];
             hzgrid = dbuf[2];
@@ -197,8 +196,8 @@ void init_rho_atom(double *rho)
             ixdim = ixmax - ixmin;
             iydim = iymax - iymin;
             izdim = izmax - izmin;
-            idx = ixdim * iydim * izdim;
-            read_double(fhand, rho_tem, idx);
+            idx = ixdim * iydim * izdim * sizeof(double);
+            rmg::readfile(fhand, rho_tem, idx);
             close(fhand);
 
             /* rho_tem: input old one, output  new interpolated one

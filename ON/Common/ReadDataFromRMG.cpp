@@ -40,7 +40,6 @@
 #include "rmg_error.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-#include "read_wrapper.h"
 
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
@@ -80,7 +79,7 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
 
 
     /* read grid info */
-    read_int (fhand, grid, 3);
+    rmg::readfile (fhand, grid, 3 * sizeof(int));
     if (grid[0] != Rmg_G->get_NX_GRID(1))
         rmg::error("Wrong NX_GRID");
     if (grid[1] != Rmg_G->get_NY_GRID(1))
@@ -90,7 +89,7 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
     rmg::printlog("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
 
     /* read grid processor topology */
-    read_int (fhand, pe, 3);
+    rmg::readfile (fhand, pe, 3 * sizeof(int));
     if (pe[0] != Rmg_G->get_PE_X())
         rmg::error("Wrong PE_X");
     if (pe[1] != Rmg_G->get_PE_Y())
@@ -101,7 +100,7 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
     grid_size = Rmg_G->get_P0_BASIS(0);
 
     /* read fine grid info */
-    read_int (fhand, fine, 3);
+    rmg::readfile (fhand, fine, 3 * sizeof(int));
     if (fine[0] != Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PX0_GRID(1))
         rmg::error("Wrong fine grid info");
     if (fine[1] != Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PY0_GRID(1))
@@ -119,12 +118,12 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
 
 
     /* read wavefunction info */
-    read_int (fhand, &gamma, 1);
+    rmg::readfile (fhand, &gamma, sizeof(int));
     //if (gamma != ct.is_gamma)
     //    rmg::error("Wrong gamma data");
 
 
-    read_int (fhand, &nk, 1);
+    rmg::readfile (fhand, &nk, sizeof(int));
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
         rmg::error("Wrong number of k points");
 
@@ -132,7 +131,7 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
     rmg::printlog ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
-    read_int (fhand, &ns, 1);
+    rmg::readfile (fhand, &ns, sizeof(int));
 
 
     /* read the hartree potential, electronic density and xc potential */
@@ -147,11 +146,11 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
     }
     else
     {
-        read_double (fhand, vh, fgrid_size);
+        rmg::readfile (fhand, vh, fgrid_size * sizeof(double));
         rmg::printlog ("read_data: read 'vh'\n");
-        read_double (fhand, rho, fgrid_size);
+        rmg::readfile (fhand, rho, fgrid_size * sizeof(double));
         rmg::printlog ("read_data: read 'rho'\n");
-        read_double (fhand, vxc, fgrid_size);
+        rmg::readfile (fhand, vxc, fgrid_size * sizeof(double));
         rmg::printlog ("read_data: read 'vxc'\n");
     }
 

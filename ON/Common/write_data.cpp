@@ -29,7 +29,6 @@
 #include "init_var.h"
 #include <mpi.h>
 #include "transition.h"
-#include "write_wrapper.h"
 
 
 /* Writes the hartree potential, the wavefunctions, the */
@@ -164,18 +163,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
             if (fhand < 0)
                 rmg::error(" Unable to write file ");
 
-            write_double(fhand, states[state].psiR, states[state].size);
+            rmg::writefile(fhand, states[state].psiR, states[state].size * sizeof(double));
 
-            write_int(fhand, &states[state].ixmin, 1);
-            write_int(fhand, &states[state].ixmax, 1);
-            write_int(fhand, &states[state].iymin, 1);
-            write_int(fhand, &states[state].iymax, 1);
-            write_int(fhand, &states[state].izmin, 1);
-            write_int(fhand, &states[state].izmax, 1);
-            write_double(fhand, &hxgrid, 1);
-            write_double(fhand, &hygrid, 1);
-            write_double(fhand, &hzgrid, 1);
-            write_double(fhand, &states[state].crds[0], 3);
+            rmg::writefile(fhand, &states[state].ixmin, sizeof(int));
+            rmg::writefile(fhand, &states[state].ixmax, sizeof(int));
+            rmg::writefile(fhand, &states[state].iymin, sizeof(int));
+            rmg::writefile(fhand, &states[state].iymax, sizeof(int));
+            rmg::writefile(fhand, &states[state].izmin, sizeof(int));
+            rmg::writefile(fhand, &states[state].izmax, sizeof(int));
+            rmg::writefile(fhand, &hxgrid, sizeof(double));
+            rmg::writefile(fhand, &hygrid, sizeof(double));
+            rmg::writefile(fhand, &hzgrid, sizeof(double));
+            rmg::writefile(fhand, &states[state].crds[0], 3 * sizeof(double));
 
 
 
@@ -264,18 +263,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         if (fhand < 0)
             rmg::error(" Unable to write file ");
 
-        write_int(fhand, &ixmin, 1);
-        write_int(fhand, &ixmax, 1);
-        write_int(fhand, &iymin, 1);
-        write_int(fhand, &iymax, 1);
-        write_int(fhand, &izmin, 1);
-        write_int(fhand, &izmax, 1);
-        write_double(fhand, &hxgrid, 1);
-        write_double(fhand, &hygrid, 1);
-        write_double(fhand, &hzgrid, 1);
-        write_double(fhand, &states[0].crds[0], 3);
+        rmg::writefile(fhand, &ixmin, sizeof(int));
+        rmg::writefile(fhand, &ixmax, sizeof(int));
+        rmg::writefile(fhand, &iymin, sizeof(int));
+        rmg::writefile(fhand, &iymax, sizeof(int));
+        rmg::writefile(fhand, &izmin, sizeof(int));
+        rmg::writefile(fhand, &izmax, sizeof(int));
+        rmg::writefile(fhand, &hxgrid, sizeof(double));
+        rmg::writefile(fhand, &hygrid, sizeof(double));
+        rmg::writefile(fhand, &hzgrid, sizeof(double));
+        rmg::writefile(fhand, &states[0].crds[0], 3*sizeof(double));
 
-        write_double(fhand, rho_tem, idx);
+        rmg::writefile(fhand, rho_tem, idx * sizeof(double));
         close(fhand);
     }
 

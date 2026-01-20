@@ -48,8 +48,6 @@
 #include "LocalObject.h"
 #include "GpuAlloc.h"
 #include "blas.h"
-#include "write_wrapper.h"
-#include "read_wrapper.h"
 
 
 template LocalObject<double>::~LocalObject(void);
@@ -537,8 +535,8 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
         exit(0);
     }
 
-    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType) /sizeof(double);
-    write_double(fhand, (double *)this->storage_cpu, size);
+    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
+    rmg::writefile(fhand, this->storage_cpu, size);
 
     close(fhand);
 }
@@ -859,8 +857,8 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
         exit(0);
     }
 
-    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType)/sizeof(double);
-    read_double(fhand, (double *)this->storage_cpu, size);
+    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
+    rmg::readfile(fhand, (double *)this->storage_cpu, size);
 
     close(fhand);
 }
@@ -1067,8 +1065,8 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             }
 
             size_t size = this->dimx[st_glob] * this->dimy[st_glob] 
-                * this->dimz[st_glob] *sizeof(KpointType)/sizeof(double);
-            write_double(fhand, (double *)phi, size);
+                * this->dimz[st_glob] *sizeof(KpointType);
+            rmg::writefile(fhand, phi, size);
 
             int ix0 = this->ixmin[st_glob];
             int ix1 = this->ixmin[st_glob] + this->dimx[st_glob];
@@ -1076,12 +1074,12 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             int iy1 = this->iymin[st_glob] + this->dimy[st_glob];
             int iz0 = this->izmin[st_glob];
             int iz1 = this->izmin[st_glob] + this->dimz[st_glob];
-            write_int(fhand, &ix0, 1);
-            write_int(fhand, &ix1, 1);
-            write_int(fhand, &iy0, 1);
-            write_int(fhand, &iy1, 1);
-            write_int(fhand, &iz0, 1);
-            write_int(fhand, &iz1, 1);
+            rmg::writefile(fhand, &ix0, sizeof(int));
+            rmg::writefile(fhand, &ix1, sizeof(int));
+            rmg::writefile(fhand, &iy0, sizeof(int));
+            rmg::writefile(fhand, &iy1, sizeof(int));
+            rmg::writefile(fhand, &iz0, sizeof(int));
+            rmg::writefile(fhand, &iz1, sizeof(int));
 
             close(fhand);
         }

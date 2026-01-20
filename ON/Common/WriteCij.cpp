@@ -40,7 +40,6 @@
 #include "LocalObject.h"
 #include "prototypes_on.h"
 #include "blas.h"
-#include "write_wrapper.h"
 
 
 
@@ -70,8 +69,8 @@ void WriteCij (std::string& name, KpointType *Cij_dist)
             rmg::printlog("Can't open restart file %s", wfname.c_str());
             rmg::error("Terminating.");
         }
-        size_t size = ct.num_states * ct.num_states;
-        write_double(fhand, Cij_global, size);
+        size_t size = ct.num_states * ct.num_states * sizeof(double);
+        rmg::writefile(fhand, Cij_global, size);
         close(fhand);
         fflush(NULL);
     }
