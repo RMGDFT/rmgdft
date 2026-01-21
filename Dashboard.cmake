@@ -29,7 +29,7 @@ set(CTEST_CHECKOUT_COMMAND   "git pull")
 # define how to configure (e.g. cmake -DCMAKE_INSTALL_PREFIX=...)
 set(CTEST_CONFIGURE_COMMAND  "cmake ..")
 # the name of the build
-set(CTEST_BUILD_COMMAND      "make -j16 rmg-on-cpu rmg-cpu")
+set(CTEST_BUILD_COMMAND      "make -j16 rmg-on-cpu rmg-cpu rmg-negf-cpu")
 set(CTEST_BUILD_NAME         "rmg")
 # how to build
 # default max time each tests can run (in seconds)
