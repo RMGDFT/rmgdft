@@ -1,8 +1,8 @@
 #  orbitals are read from 
-../lead1/Wave/wave
+../lead1/Waves/wave.out
 
 #  charge density and potentials are read from 
-../3lead_lead1/Wave/wave
+../3lead_lead1/Waves/wave.out
 
 #   lcr[].NX_GRID, NY_GRID, NZ_GRID
 48  72  72

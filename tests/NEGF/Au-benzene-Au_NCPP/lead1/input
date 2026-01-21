@@ -4,9 +4,13 @@ start_mode="LCAO Start"
 #space grid and processor grid control
 
 wavefunction_grid ="48 72 72"
+max_nlradius = "6.00000000"
 num_processor ="8"
 processor_grid="2 2 2"
 Hamiltonia_processor_grid ="2 4"
+test_energy = "-595.09048936"
+
+filter_dpot = "true"
 
 threads_per_node = "1"
 
@@ -16,25 +20,22 @@ max_scf_steps = "100"
 freeze_orbital_step="80"
 rms_convergence_criterion = "1e-7"
 
-# **** MD/Relax controls  **** 
-  
-max_md_steps = "10"
-fast_relax_max_force = "1e-3"
-ionic_time_step = "45"
-relax_dynamic_timestep = "true"
-
 # **** Mixing controls **** 
-  
+orbital_mixing = "0.1"  
+orbital_pulay_refresh="100"
+sqrt_interpolation = "true"
+
 charge_density_mixing = "0.1"
-projector_mixing = "0.1"
 charge_mixing_type = "Pulay"
 charge_pulay_order = "5"
 charge_pulay_scale = "0.1"
-charge_pulay_refresh = "100"
+charge_pulay_refresh = "20"
+drho_precond = "false"
+charge_pulay_Gspace = "false"
 
 # **** Setup  ****
 
-description = "Short description of the input file"
+description = "Au lead1"
 exchange_correlation_type = "LDA"
 bravais_lattice_type = "Orthorhombic Primitive"
 system_charge = "0.0"
@@ -43,35 +44,24 @@ system_charge = "0.0"
 
 occupations_type = "Fermi Dirac"
 occupation_electron_temperature_eV = "0.1"
-occupation_number_mixing = "0.3"
 
 # ****  Multigrid **** 
 
 kohn_sham_mg_levels  = "2"
-poisson_mg_levels    = "2"
 kohn_sham_time_step  = "1.0"
-poisson_time_step    = "1.35"
 
 #  **** IO control  ****
 
 write_eigvals_period = "10"
-md_steps_til_write_waves = "10"
-input_wave_function_file = "Wave/wave"
-output_wave_function_file = "Wave/wave"
 
 # **** Pseudopotential **** 
 pseudopotential = "
 Au ../Au.UPF"
 
-atomic_orbital_files="
- Au    ../Au-atom/Wave/wave 
-"
-
 # **** Units  ****
 
 length_units = "Bohr"
 atomic_coordinate_type = "Absolute"
-
 
 # Lattice constants in (x, y, z) directions
 # a, b, c, cos(alpha), cos(beta), cos(gamma)
@@ -135,14 +125,7 @@ localize_localpp = "true"
 localize_projectors = "true"
 
 
-kpoints_per_processor="1"
 potential_grid_refinement="1"
 number_of_kpoints="1"
 kpoints= "0.0  0.0  0.0   1.0 "
-kohn_sham_pre_smoothing="3"
-kohn_sham_post_smoothing="3"
-poisson_pre_smoothing="2"
-poisson_post_smoothing="2"
-do_write_waves_to_file="true"
-movable_orbital_centers_steps="1"
 LocalizedOrbitalLayout="Projection"
