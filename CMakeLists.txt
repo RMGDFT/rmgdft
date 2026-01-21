@@ -889,7 +889,7 @@ add_subdirectory (TDDFT/IO_TDDFT EXCLUDE_FROM_ALL)
 add_subdirectory (TDDFT/RMG_TDDFT EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/ON_TDDFT EXCLUDE_FROM_ALL) 
 
-add_subdirectory (NEGF EXCLUDE_FROM_ALL) 
+add_subdirectory (NEGF) 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/SelfEnergy EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Input EXCLUDE_FROM_ALL) 
