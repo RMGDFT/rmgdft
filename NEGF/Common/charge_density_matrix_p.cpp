@@ -140,8 +140,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-            maxrow = rmg_max(maxrow, pmo.mxllda_cond[idx_C]);
-            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[idx_C]);
+            maxrow = std::max(maxrow, pmo.mxllda_cond[idx_C]);
+            maxcol = std::max(maxcol, pmo.mxlocc_cond[idx_C]);
         }
 
         sigma = (std::complex<double> *)RmgMallocHost( maxrow * maxcol * sizeof(std::complex<double>) ); 
@@ -154,8 +154,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
         int totcol = 0;
         for(i = 0; i < ct.num_blocks; i++)
         {
-            maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
-            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
+            maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
+            maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
             totrow += pmo.mxllda_cond[i];
             totcol += pmo.mxlocc_cond[i];
         }

@@ -45,11 +45,11 @@ if( RMG_COMPILE_INPLACE )
 endif()
 
 if(RMG_CUDA_ENABLED)
-    enable_language(Fortran CUDA)
     project (RMG CXX C Fortran CUDA) 
+    enable_language(Fortran CUDA)
 else()
-    enable_language(Fortran)
     project (RMG CXX C Fortran) 
+    enable_language(Fortran)
 endif()
 
 

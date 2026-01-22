@@ -71,16 +71,16 @@ void GetOrbitalPairs(STATE * states)
                 i2 = states[st1].ixmax;
                 i3 = states[st2].ixmin;
                 i4 = states[st2].ixmax;
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 onepair.xlow1 = i5;
                 onepair.xhigh1 = i6;
 
                 i3 = states[st2].ixmin + get_NX_GRID();
                 i4 = states[st2].ixmax + get_NX_GRID();
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 if (i6 >= i5)
                 {
@@ -92,8 +92,8 @@ void GetOrbitalPairs(STATE * states)
                 {
                     i3 = states[st2].ixmin - get_NX_GRID();
                     i4 = states[st2].ixmax - get_NX_GRID();
-                    i5 = rmg_max(i1, i3);
-                    i6 = rmg_min(i2, i4);
+                    i5 = std::max(i1, i3);
+                    i6 = std::min(i2, i4);
                     onepair.xlow2 = i5;
                     onepair.xhigh2 = i6;
                     onepair.xshift = -get_NX_GRID();
@@ -103,16 +103,16 @@ void GetOrbitalPairs(STATE * states)
                 i2 = states[st1].iymax;
                 i3 = states[st2].iymin;
                 i4 = states[st2].iymax;
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 onepair.ylow1 = i5;
                 onepair.yhigh1 = i6;
 
                 i3 = states[st2].iymin + get_NY_GRID();
                 i4 = states[st2].iymax + get_NY_GRID();
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 if (i6 >= i5)
                 {
@@ -124,8 +124,8 @@ void GetOrbitalPairs(STATE * states)
                 {
                     i3 = states[st2].iymin - get_NY_GRID();
                     i4 = states[st2].iymax - get_NY_GRID();
-                    i5 = rmg_max(i1, i3);
-                    i6 = rmg_min(i2, i4);
+                    i5 = std::max(i1, i3);
+                    i6 = std::min(i2, i4);
                     onepair.ylow2 = i5;
                     onepair.yhigh2 = i6;
                     onepair.yshift = -get_NY_GRID();
@@ -136,16 +136,16 @@ void GetOrbitalPairs(STATE * states)
                 i2 = states[st1].izmax;
                 i3 = states[st2].izmin;
                 i4 = states[st2].izmax;
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 onepair.zlow1 = i5;
                 onepair.zhigh1 = i6;
 
                 i3 = states[st2].izmin + get_NZ_GRID();
                 i4 = states[st2].izmax + get_NZ_GRID();
-                i5 = rmg_max(i1, i3);
-                i6 = rmg_min(i2, i4);
+                i5 = std::max(i1, i3);
+                i6 = std::min(i2, i4);
 
                 if (i6 >= i5)
                 {
@@ -157,8 +157,8 @@ void GetOrbitalPairs(STATE * states)
                 {
                     i3 = states[st2].izmin - get_NZ_GRID();
                     i4 = states[st2].izmax - get_NZ_GRID();
-                    i5 = rmg_max(i1, i3);
-                    i6 = rmg_min(i2, i4);
+                    i5 = std::max(i1, i3);
+                    i6 = std::min(i2, i4);
 
                     onepair.zlow2 = i5;
                     onepair.zhigh2 = i6;

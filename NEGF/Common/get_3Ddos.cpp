@@ -122,7 +122,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
     my_malloc_init( sigma, idx, std::complex<double> );
 
@@ -146,7 +146,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
     my_malloc_init( work,  12 * idx, std::complex<double> );

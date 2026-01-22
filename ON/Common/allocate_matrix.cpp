@@ -94,12 +94,12 @@ void allocate_matrix()
     item = ct.num_kpts * ct.num_states;
     item1 = item;
     item2 = 2 * get_P0_BASIS() + S0_BASIS + item1;
-    item = rmg_max(13 * S0_BASIS, item2);
+    item = std::max(13 * S0_BASIS, item2);
 
     nproc = pct.scalapack_nprow * pct.scalapack_npcol;
     locr = ((ct.num_states / NB + 1) / nproc + 1) * NB + NB;
     lwork = 10 * (locr * 5 + NB);
-    item1 = rmg_max(lwork, item);
+    item1 = std::max(lwork, item);
 
     nprow = pct.scalapack_nprow;
     npcol = pct.scalapack_npcol;
@@ -111,13 +111,13 @@ void allocate_matrix()
     mpc0 = numroc(&nn, &nb, &myrow, &icrow, &nprow);
     nqc0 = numroc(&nn, &nb, &mycol, &iccol, &npcol);
     nrc = numroc(&nn, &nb, &myrow, &izero, &npes);
-    ldc = rmg_max(1, nrc);
-    sizemqrleft = rmg_max((NB * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
+    ldc = std::max(1, nrc);
+    sizemqrleft = std::max((NB * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
     sizemqrleft *= 2;
     qrmem = 2 * NN - 2;
-    lwork = 5 * NN + NN * ldc + rmg_max(sizemqrleft, qrmem) + 1;
+    lwork = 5 * NN + NN * ldc + std::max(sizemqrleft, qrmem) + 1;
 
-    item = rmg_max(lwork, item1);
+    item = std::max(lwork, item1);
     my_malloc_init( work_memory, item, double );
 
 

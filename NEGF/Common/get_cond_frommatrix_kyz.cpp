@@ -153,7 +153,7 @@ void get_cond_frommatrix_kyz ()
     for(i = 0; i < ct.num_blocks; i++)
     {
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        nC_max = rmg_max(nC_max, idx);
+        nC_max = std::max(nC_max, idx);
     }
     
     Gamma1 = (std::complex<double> *)RmgMallocHost( 5 *nC_max *sizeof( std::complex<double>) ); 
@@ -191,7 +191,7 @@ void get_cond_frommatrix_kyz ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
 
 
@@ -214,7 +214,7 @@ void get_cond_frommatrix_kyz ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
 

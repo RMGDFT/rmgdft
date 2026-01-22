@@ -47,7 +47,7 @@ void  setback_corner_matrix_H()
     for(iprobe = 1; iprobe <= cei.num_probe ; iprobe++)
     {
 
-        nmax = rmg_max (nmax, lcr[iprobe].num_states);
+        nmax = std::max(nmax, lcr[iprobe].num_states);
     }
     
     my_malloc(temp, nmax * nmax, double);

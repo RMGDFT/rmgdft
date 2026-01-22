@@ -87,10 +87,6 @@ void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, double factor);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, int type);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, double factor);
 
-void FftFreqBin(double *x, Pw &pwaves, double *bins);
-
-void FftRestrict(double *fine, double *coarse, int ratio);
-
 void LocalFftForward(double *, std::complex<double> *, Pw &pwaves);
 
 void LocalFftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves);
@@ -98,8 +94,6 @@ void LocalFftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves)
 void LocalFftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
 
 void LocalFftInverse(std::complex<double> *, double *, Pw &pwaves);
-
-void FftSmoother(double *x, Pw &pwaves, double factor);
 
 #endif
 #endif

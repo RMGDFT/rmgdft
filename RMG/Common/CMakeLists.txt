@@ -62,7 +62,6 @@ genvpsi.cpp
 MgEigState.cpp
 GetGamma.cpp
 fastrelax.cpp
-lbfgs_init.cpp
 Nlforce.cpp
 pack_rho_ctof.cpp
 write_force.cpp
@@ -77,7 +76,6 @@ debug_write_rho_z.cpp
 write_pdb.cpp
 xbsmovie.cpp
 write_zstates.cpp
-lbfgs.cpp
 rmg_lbfgs.cpp
 test_overlap.cpp
 write_avgv.cpp

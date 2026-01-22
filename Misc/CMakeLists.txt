@@ -49,18 +49,14 @@ VhPfft.cpp
 VhDriver.cpp
 GetVtotPsi.cpp
 FftInitPlans.cpp
-FftFreqBin.cpp
 FftFilter.cpp
 FftLaplacian.cpp
 FftGradient.cpp
 FftInterpolation.cpp
-FftRestrict.cpp
-FftSmoother.cpp
 fft3d.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
-Smooth.cpp
 Thread_Cbindings.cpp
 open_restart_file.cpp
 cnpy.cpp
@@ -92,8 +88,6 @@ ZgetrftrsDriver.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp
 packfuncs_Cbindings.cpp
-pack_dtos.cpp
-pack_stod.cpp
 rmg_grid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp

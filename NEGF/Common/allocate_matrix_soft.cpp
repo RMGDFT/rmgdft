@@ -80,15 +80,15 @@ void allocate_matrix_soft ()
     /*  allocate memory for other uses  */
 
     item = ct.num_kpts * ct.num_states;
-    item1 = rmg_max (ct.num_states * ct.num_states, item);
+    item1 = std::max(ct.num_states * ct.num_states, item);
     item2 = 2 * get_P0_BASIS() + sbasis + item1;
-    item = rmg_max (13 * sbasis, item2);
+    item = std::max(13 * sbasis, item2);
 
 
     nproc = pct.scalapack_nprow * pct.scalapack_npcol;
     locr = ((ct.num_states / ct.scalapack_block_factor + 1) / nproc + 1) * NB + NB;
     lwork = 10 * (locr * 5 + ct.scalapack_block_factor);
-    item1 = rmg_max (lwork, item);
+    item1 = std::max(lwork, item);
 
     sl_init_on (&ictxt, pct.scalapack_nprow, pct.scalapack_npcol);
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
@@ -100,12 +100,12 @@ void allocate_matrix_soft ()
     mpc0 = numroc (&nn, &nb, &myrow, &icrow, &nprow);
     nqc0 = numroc (&nn, &nb, &mycol, &iccol, &npcol);
     nrc = numroc (&nn, &nb, &myrow, &izero, &npes);
-    ldc = rmg_max (1, nrc);
-    sizemqrleft = rmg_max ((ct.scalapack_block_factor * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
+    ldc = std::max(1, nrc);
+    sizemqrleft = std::max((ct.scalapack_block_factor * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
     sizemqrleft *= 2;
     qrmem = 2 * ct.num_states - 2;
-    lwork = 5 * ct.num_states + ct.num_states * ldc + rmg_max (sizemqrleft, qrmem) + 1;
-    item = rmg_max (lwork, item1);
+    lwork = 5 * ct.num_states + ct.num_states * ldc + std::max(sizemqrleft, qrmem) + 1;
+    item = std::max(lwork, item1);
 
 
 

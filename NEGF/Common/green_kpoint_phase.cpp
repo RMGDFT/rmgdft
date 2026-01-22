@@ -155,8 +155,8 @@ void green_kpoint_phase (std::complex<double> *green, double kvecy, double kvecz
 
     for(n = 0; n < ct.num_blocks; n++)
     {
-        maxrow = rmg_max(maxrow, pmo.mxllda_cond[n]);
-        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[n]);
+        maxrow = std::max(maxrow, pmo.mxllda_cond[n]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[n]);
     }
 
     if(up_and_low == 1)
