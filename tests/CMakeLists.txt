@@ -17,5 +17,6 @@ MESSAGE(STATUS "Tests will use ${num_proc} cores. If this will overload your mac
 SUBDIRS(RMG)
 SUBDIRS(RMG_ON)
 SUBDIRS(NEGF)
+SUBDIRS(RMG_TDDFT)
 
 
