@@ -187,7 +187,7 @@ void lead_bandstructure ()
     dk = (kmax - kmin) / (kpoints[0] - 1);
 
     NP0 = numroc( &nL, &NB, &izero, &izero, &pmo.nrow );
-    LWORK = nL + rmg_max( NB * ( NP0 + 1 ), 3 );
+    LWORK = nL + std::max( NB * ( NP0 + 1 ), 3 );
     LRWORK = 9 * nL;
     LIWORK = 6 * nL;
 

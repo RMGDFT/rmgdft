@@ -55,7 +55,7 @@ void set_energy_weight (std::complex<double> * ene, std::complex<double> * weigh
     ncircle = cei.ncircle;
     nmax_gq1 = cei.nmax_gq1;
 
-    size = rmg_max(ncircle, nmax_gq1); 
+    size = std::max(ncircle, nmax_gq1); 
     my_malloc( xc, size, double );
     my_malloc( wc, size, double );
 

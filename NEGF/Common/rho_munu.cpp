@@ -45,8 +45,8 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
     maxcol = 0;
     for (i = 0; i < N; i++)
     {
-        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
     }
 
     n1 = maxrow * maxcol;

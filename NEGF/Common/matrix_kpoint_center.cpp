@@ -161,8 +161,8 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
 
     for(n = 0; n < ct.num_blocks; n++)
     {
-        maxrow = rmg_max(maxrow, pmo.mxllda_cond[n]);
-        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[n]);
+        maxrow = std::max(maxrow, pmo.mxllda_cond[n]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[n]);
     }
 
     maxsize = maxrow * maxcol;

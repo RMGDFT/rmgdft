@@ -32,28 +32,6 @@
 #define dprintf( format, args...) fprintf (stderr, "\nIMG %d/%d:PE %d, GRID %d/%d:PE %d,\t" format "\n", pct.thisimg+1, pct.images, pct.imgpe, pct.spinpe+1, pct.grids, pct.gridpe,  ##args), fflush(NULL)
 
 
-#define my_strncpy(buf1, buf2, num) strncpy(buf1, buf2, num), buf1[num]=0
-
-#define rmg_min(a,b) (((a)>(b)) ? (b) : (a))
-#define rmg_max(a,b) (((a)>(b)) ? (a) : (b))
-
-
-#if 0
-/* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
-#define error_handler( message... ) \
-    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
-    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
-	fprintf (stderr,  message ), \
-	fprintf (stderr,  "\n\n" ), \
-	printf ( message ), \
-	printf ( "\n\n" ), \
-    fflush (NULL), \
-	fsync ( fileno (ct.logfile) ), \
-    sleep (2), \
-	MPI_Abort( MPI_COMM_WORLD, 0 )
-#endif
-
-
 #define my_fopen(_fhandle_, _filename_, _mode_) do {\
     _fhandle_ = fopen(_filename_, _mode_);\
     if (_fhandle_ == NULL){\

@@ -74,8 +74,8 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_cpu, std::comple
     {
         ntot_row += pmo.mxllda_cond[i];
         ntot_col += pmo.mxlocc_cond[i];
-        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
 
     }
 

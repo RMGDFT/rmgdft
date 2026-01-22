@@ -40,8 +40,8 @@ double kvecy, double kvecz, std::complex<double> *work)
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        maxrow = rmg_max( maxrow, pmo.mxllda_cond[idx_C]);
-        maxcol = rmg_max( maxcol, pmo.mxlocc_lead[iprobe-1]);
+        maxrow = std::max( maxrow, pmo.mxllda_cond[idx_C]);
+        maxcol = std::max( maxcol, pmo.mxlocc_lead[iprobe-1]);
     }
 
 
