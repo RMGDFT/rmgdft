@@ -45,7 +45,6 @@ VhDriver.cpp
 Pw.cpp
 LocalFftForward.cpp
 LocalFftInverse.cpp 
-VhPfft.cpp
 VhDriver.cpp
 GetVtotPsi.cpp
 FftInitPlans.cpp
