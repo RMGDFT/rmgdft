@@ -58,7 +58,6 @@ RmgThread.cpp
 OutputEigenvalues.cpp
 Scf.cpp
 Nscf.cpp
-genvpsi.cpp
 MgEigState.cpp
 GetGamma.cpp
 fastrelax.cpp

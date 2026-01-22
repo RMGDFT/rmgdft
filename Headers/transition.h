@@ -89,15 +89,6 @@ template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, in
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 
 
-// Gamma point float version
-void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
-// complex float version
-void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
-// complex double version
-void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
-// Gamma point double version
-void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
-
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
 double AutoMix (void);
