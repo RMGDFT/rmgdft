@@ -49,7 +49,7 @@
 
 #include "transition.h"
 #include "blas.h"
-#include "ortho.h"
+#include "rmg_ortho.h"
 
 
 
@@ -104,7 +104,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
 #endif
     }
 
-    ortho<KpointType> Ortho(nstates, pbasis_noncoll);
+    rmg::ortho<KpointType> Ortho(nstates, pbasis_noncoll);
 
 
     // Loop over blocks.

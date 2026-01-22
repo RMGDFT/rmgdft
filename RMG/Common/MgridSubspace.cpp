@@ -46,7 +46,7 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "blas.h"
-#include "ortho.h"
+#include "rmg_ortho.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations
@@ -138,7 +138,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(N % (active_threads * cfac)) mstates++;
     mstates = mstates * (active_threads * cfac);
 
-    ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
+    rmg::ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
 
     // We adjust the block size here for threading and coalescing
     int block_size = bs;

@@ -40,16 +40,19 @@
 #include "RmgException.h"
 #include "blas_driver.h"
  
-template <typename T> class ortho {
-public:
-    ortho(int max_states_in, int pbasis_in);
-    ~ortho(void);
-    void orthogonalize(int nbase, int notcon, T *psi, bool dostage2);
+namespace rmg 
+{
+    template <typename T> class ortho {
+    public:
+        ortho(int max_states_in, int pbasis_in);
+        ~ortho(void);
+        void orthogonalize(int nbase, int notcon, T *psi, bool dostage2);
 
-protected:
-    int max_states;
-    int pbasis;
-    T *psi_d;
-};
+    protected:
+        int max_states;
+        int pbasis;
+        T *psi_d;
+    };
+}
 
 #endif

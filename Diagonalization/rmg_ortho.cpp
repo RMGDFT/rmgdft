@@ -20,7 +20,7 @@
  *
 */
 
-#include "ortho.h"
+#include "rmg_ortho.h"
 #include "transition.h"
 #include "RmgMatrix.h"
 
@@ -34,6 +34,8 @@
 //
 
 
+namespace rmg
+{
 template ortho<double>::ortho(int, int);
 template ortho<std::complex<double>>::ortho(int, int);
 template ortho<double>::~ortho(void);
@@ -186,5 +188,5 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << "info = " <<info << ". tritri problem.\n";
 
 }
-
+}
 
