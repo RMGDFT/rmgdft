@@ -1,4 +1,0 @@
-../Diagonalization/ortho.cpp:#include "ortho.h"
-../RMG/Common/BlockDiag.cpp:#include "ortho.h"
-../RMG/Common/Davidson.cpp:#include "ortho.h"
-../RMG/Common/MgridSubspace.cpp:#include "ortho.h"
