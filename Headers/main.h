@@ -86,8 +86,6 @@
 #include "typedefs.h"
 
 
-#include "lbfgs.h"
-
 /* Trade images and finite differencing stuff */
 #include "TradeImages.h"
 #include "FiniteDiff.h"
