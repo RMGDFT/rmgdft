@@ -158,7 +158,6 @@ void get_qqq (void);
 void get_qqq_dk (double dk[3], std::complex<double> *qqq_dk, std::complex<double> *qqq_dk_so);
 void get_rho (STATE * states, double * rho, double * rhocore);
 void get_new_rho (STATE * states, double * rho);
-void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 //void ortho (STATE *states, int kpt);

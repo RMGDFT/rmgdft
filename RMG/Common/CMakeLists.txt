@@ -65,7 +65,6 @@ Nlforce.cpp
 write_force.cpp
 #getpoi_bc.c
 rand0.cpp
-#get_pdos.cpp
 BandStructure.cpp
 #mulliken.c
 write_avgd.cpp
