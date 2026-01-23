@@ -25,9 +25,7 @@ Precond_drho.cpp
 sync_device.cpp
 Dos.cpp
 Pdos.cpp
-write_rho_x.cpp
-write_rho_y.cpp
-write_rho_z.cpp
+write_rho_xyz.cpp
 blas_driver.cpp
 Symmetry.cpp
 OutputCubeFile.cpp
