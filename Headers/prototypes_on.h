@@ -237,7 +237,6 @@ void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
 void write_avgv (double * vh, double * vnuc);
-void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
 void write_eigs (STATE * states, double *kpt);

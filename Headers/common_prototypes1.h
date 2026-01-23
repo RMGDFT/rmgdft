@@ -112,7 +112,6 @@ void getpoi_bc (double *rho, double *vh_bc, int dimx, int dimy, int dimz);
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (double *rho);
 void write_avgv (double *vh, double *vnuc);
-void write_zstates (STATE *states);
 
 void write_header (void);
 void write_force (void);
