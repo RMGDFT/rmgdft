@@ -62,7 +62,6 @@ MgEigState.cpp
 GetGamma.cpp
 fastrelax.cpp
 Nlforce.cpp
-pack_rho_ctof.cpp
 write_force.cpp
 #getpoi_bc.c
 rand0.cpp

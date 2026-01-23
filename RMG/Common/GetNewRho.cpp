@@ -411,9 +411,6 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
     {
         switch (ct.interp_flag)
         {
-            case CUBIC_POLYNOMIAL_INTERPOLATION:
-                pack_rho_ctof (&work[is*pbasis], &rho[is*FP0_BASIS]);
-                break;
             case PROLONG_INTERPOLATION:
                 mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 4);
                 break;

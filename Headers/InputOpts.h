@@ -158,7 +158,6 @@ static std::unordered_map<std::string, int> md_integration_order = {
         {"5th Beeman-Velocity Verlet", 2}};
 
 static std::unordered_map<std::string, int> interpolation_type = {
-        {"Cubic Polynomial", CUBIC_POLYNOMIAL_INTERPOLATION},
         {"prolong", PROLONG_INTERPOLATION},
         {"FFT", FFT_INTERPOLATION}};
 

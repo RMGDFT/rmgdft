@@ -191,7 +191,6 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
 void nlccforce (double *rho, double *vxc, double *force);
-void pack_rho_ctof (double *rhoc, double *rhof);
 void bspline_interp_full (double *rho, double *rho_f);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void get_vxc_exc (double * nrho, double * nrho_oppo,  double * vxc, double * exc, int xctype);
