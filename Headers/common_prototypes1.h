@@ -81,9 +81,7 @@ void symforce (void);
 void rmg_timings (int what, double time);
 double minimage (ION *ip1, ION *ip2, double *xtal_r);
 double my_crtc (void);
-FILE *open_xbs_movie (char *filename);
 FILE *open_restart_file (char *filename);
-void xbsmovie (FILE *movie);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pack_ptos (double *sg, double *pg, int dimx, int dimy, int dimz);
 void pack_stop (double *sg, double *pg, int dimx, int dimy, int dimz);
@@ -199,7 +197,6 @@ void print_density_z_direction (int grid_x, int grid_y, double *density,
                                 int px0_grid, int py0_grid, int pz0_grid,
                                 double zside);
 
-void mulliken (STATE *states);
 double ylm(int l, double *r);
 int listlen (FILE * fh, char *id);
 void print_matrix(double *b, int n, int ldb);
@@ -227,7 +224,6 @@ void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
-void set_pbc(double *position, int num_ions, int num_images);
 void inline progress_tag(void)
 {
     if(pct.gridpe==0)
