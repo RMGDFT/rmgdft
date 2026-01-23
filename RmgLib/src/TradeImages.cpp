@@ -865,12 +865,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     for(int idx = 0;idx < stop;idx++)
         mat[xmax + incx + idx] = swbuf2x_f[tid * stop + idx];
 
-
-    /* For clusters set the boundaries to zero -- this is wrong for the hartree
-     * potential but we'll fix it up later. */
-//    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
-//        set_bc (mat, dimx, dimy, dimz, 1, 0.0);
-
     if(this->timer_mode) delete RT;
 }
 

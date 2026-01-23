@@ -23,7 +23,7 @@
  * OUTPUT
  *   sum over all processors is returned to each processor
  * PARENTS
- *   get_ke.c get_rho.c get_te.c get_vh.c getpoi_bc.c init_nuc.c
+ *   get_ke.c get_rho.c get_te.c get_vh.c init_nuc.c
  *   lforce.c mg_eig_state.c norm_psi.c 
  * CHILDREN
  *   nothing

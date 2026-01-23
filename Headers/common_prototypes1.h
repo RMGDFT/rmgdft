@@ -104,8 +104,6 @@ double double_sum_all (double x, MPI_Comm comm);
 
 
 void sortpsi (STATE *states);
-void set_bc (double *mat, int dimx, int dimy, int dimz, int images, double val);
-void set_bcx (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (double *rho);
 void write_avgv (double *vh, double *vnuc);

@@ -90,7 +90,6 @@ transition.cpp
 init_states.cpp
 get_index.cpp
 blaswrappers.cpp
-set_bc.cpp
 cgen_prolong.cpp
 mg_prolong_MAX10.cpp
 init_pos.cpp
