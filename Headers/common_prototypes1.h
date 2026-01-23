@@ -106,7 +106,6 @@ double double_sum_all (double x, MPI_Comm comm);
 void sortpsi (STATE *states);
 void set_bc (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void set_bcx (double *mat, int dimx, int dimy, int dimz, int images, double val);
-void getpoi_bc (double *rho, double *vh_bc, int dimx, int dimy, int dimz);
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (double *rho);
 void write_avgv (double *vh, double *vnuc);
@@ -192,7 +191,6 @@ void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void get_vxc_exc (double * nrho, double * nrho_oppo,  double * vxc, double * exc, int xctype);
 void betaxpsi (STATE *states);
 void pack_gftoc (SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
-void debug_write_rho_z (double *rhoz);
 void print_density_z_direction (int grid_x, int grid_y, double *density,
                                 int px0_grid, int py0_grid, int pz0_grid,
                                 double zside);

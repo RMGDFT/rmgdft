@@ -63,12 +63,10 @@ GetGamma.cpp
 fastrelax.cpp
 Nlforce.cpp
 write_force.cpp
-#getpoi_bc.c
 rand0.cpp
 BandStructure.cpp
 write_avgd.cpp
 claim_ion.cpp
-debug_write_rho_z.cpp
 write_pdb.cpp
 rmg_lbfgs.cpp
 test_overlap.cpp

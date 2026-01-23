@@ -232,7 +232,6 @@ void trade_images (double * mat, int dimx, int dimy, int dimz, int type);
 void trade_images_mpi (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val);
-void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
