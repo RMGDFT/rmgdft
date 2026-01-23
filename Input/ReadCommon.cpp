@@ -198,26 +198,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
                      "", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("nvme_weights_filepath", &Weightsfile, "Weights/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of projector weights. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_work_filepath", &Workfile, "Work/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of workspace. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for runtime disk storage of orbitals. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("qfunction_filepath", &Qfunctionfile, "Qfunctions/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for runtime disk storage of qfunctions. ",
-                     "", CONTROL_OPTIONS);
-
     If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "afqmc_rmg",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for exact exchange integrals. ", 
@@ -1223,15 +1203,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
             "Flag indicating whether or not  parallel output wavefunction file uses compressed format.", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("nvme_weights", &lc.nvme_weights, false,
-            "Flag indicating whether or not projector weights should be mapped to disk.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_work", &lc.nvme_work, false,
-            "Flag indicating whether or not work arrays should be mapped to disk.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_orbitals", &lc.nvme_orbitals, false,
-            "Flag indicating whether or not orbitals should be mapped to disk.", CONTROL_OPTIONS);
-
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, true,
             "Flag indicating whether or not to use alternate laplacian weights for some operators.", MISC_OPTIONS|EXPERT_OPTION);
 
@@ -1548,22 +1519,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     lc.vdW_kernel_file = VdwKernelfile;
     MakeFullPath(lc.vdW_kernel_file, pelc);
-
-    lc.nvme_weights_path = Weightsfile;
-    if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
-    MakeFullPath(lc.nvme_weights_path, pelc);
-
-    lc.qfunction_path = Qfunctionfile;
-    if(lc.qfunction_path.length()) lc.qfunction_path.append("/");
-    MakeFullPath(lc.qfunction_path, pelc);
-
-    lc.nvme_work_path = Workfile;
-    if(lc.nvme_work_path.length()) lc.nvme_work_path.append("/");
-    MakeFullPath(lc.nvme_work_path, pelc);
-
-    lc.nvme_orbitals_path = Orbitalfile;
-    if(lc.nvme_orbitals_path.length()) lc.nvme_orbitals_path.append("/");
-    MakeFullPath(lc.nvme_orbitals_path, pelc);
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
     std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft)-1);

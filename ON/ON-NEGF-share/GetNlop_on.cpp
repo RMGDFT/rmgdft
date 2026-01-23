@@ -130,25 +130,9 @@ void GetNlop_on(void)
         //    rmg::printlog("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
         std::string newpath;
 
-        if(ct.nvme_weights)
-        {
-            if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
-
-            newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
-                std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-            ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-
-            projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
-            if(!projectors) rmg::error("Error: CreateMmapArray failed for GetNlop_on. \n");
-            madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
-
-        }
-        else
-        {
-            if (projectors != NULL)
-                delete []projectors;
-            projectors = new double[PROJECTOR_SPACE];
-        }
+        if (projectors != NULL)
+            delete []projectors;
+        projectors = new double[PROJECTOR_SPACE];
     }
 
     /*allocate memorry for weight factor of partial_beta/partial_x */

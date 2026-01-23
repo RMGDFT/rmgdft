@@ -64,7 +64,6 @@ InitHybridModel.cpp
 init_kpoints.cpp
 FileOpenAndCreate.cpp
 CreateMmapArray.cpp
-DeleteNvmeArrays.cpp
 MyZgemm.cpp
 rmg_gemm.cpp
 rmg_gemm_strided_batched.cpp

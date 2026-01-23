@@ -101,8 +101,6 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->ldaU = NULL;
     this->newsint_local = NULL;
     this->orbitalsint_local = NULL;
-    this->nvme_weight_fd = -1;
-    this->nvme_ldaU_fd = -1;
     this->G = newG;
     this->T = newT;
     this->L = newL;
@@ -1121,15 +1119,6 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     this->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
 
-    if(ct.nvme_weights)
-    {
-        if(nvme_weight_fd != -1) close(nvme_weight_fd);
-
-        nvme_weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        nvme_weight_fd = FileOpenAndCreate(nvme_weight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-    }
-
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
     ct.beta_alloc[0] = this->nl_weight_size * sizeof(KpointType);
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, grid_comm);
@@ -1182,16 +1171,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
 #else
-    if(ct.nvme_weights)
-    {
-        this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
-        if(!this->nl_weight) rmg::error("Error: CreateMmapArray failed for weights. \n");
-        madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_NORMAL);
-    }
-    else
-    {
-        this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
-    }
+    this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
 #endif
 
     int factor = 2;
@@ -1227,14 +1207,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         if (this->newsint_local)
             RmgFreeHost(this->newsint_local);
 #else
-        if(ct.nvme_weights)
-        {
-            munmap(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(double));
-        }
-        else
-        {
-            delete [] this->nl_weight;
-        }
+        delete [] this->nl_weight;
         if (this->newsint_local)
             delete [] this->newsint_local;
 #endif
@@ -1253,15 +1226,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
         RmgFreeHost(this->orbital_weight);
         RmgFreeHost(this->orbitalsint_local);
 #else
-        if(ct.nvme_weights)
-        {
-            munmap(this->orbital_weight, this->orbital_weight_size* stress_factor * sizeof(double));
-        }
-        else
-        {
-            delete [] this->orbital_weight;
-            delete [] this->orbitalsint_local;
-        }
+        delete [] this->orbital_weight;
+        delete [] this->orbitalsint_local;
 #endif
         this->orbital_weight = NULL;
         this->orbitalsint_local = NULL;
@@ -1283,16 +1249,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     //  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
     this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
-
-    if(ct.nvme_weights)
-    {
-        if(nvme_ldaU_fd != -1) close(nvme_ldaU_fd);
-
-        nvme_ldaU_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        nvme_ldaU_fd = FileOpenAndCreate(nvme_ldaU_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-
-    }
 
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * (size_t)ct.noncoll_factor;
 
@@ -1325,17 +1281,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     for(size_t idx = 0;idx < stress_factor * this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
 #else
-    if(ct.nvme_weights)
-    {
-        this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, stress_factor * this->orbital_weight_size*sizeof(KpointType));
-        if(!this->orbital_weight) rmg::error("Error: CreateMmapArray failed for weights. \n");
-        madvise(this->orbital_weight, stress_factor * this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
-
-    }
-    else
-    {
-        this->orbital_weight = new KpointType[stress_factor * this->orbital_weight_size]();
-    }
+    this->orbital_weight = new KpointType[stress_factor * this->orbital_weight_size]();
 #endif
 
 
@@ -1359,30 +1305,6 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 {
     reset_beta_arrays();
     reset_orbital_arrays();
-    if(nvme_weight_fd > 0)
-    {
-        std::string weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-
-        if(std::filesystem::exists(weight_path.c_str()))
-        {
-            unlink(weight_path.c_str());
-        }
-        nvme_weight_fd = -1;
-    }
-
-    if(nvme_ldaU_fd > 0)
-    {
-        std::string orbital_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-
-        if(std::filesystem::exists(orbital_path.c_str()))
-        {
-            unlink(orbital_path.c_str());
-        }
-        nvme_ldaU_fd = -1;
-    }
-
 }
 
 template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)

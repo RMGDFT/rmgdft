@@ -81,9 +81,6 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     int P0_BASIS, FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
-    ct.nvme_orbital_fd = -1;
-    ct.nvme_work_fd = -1;
-
     OrbitalType *rptr = NULL, *nv, *ns = NULL;
     double *vtot;
     double fac;
@@ -265,38 +262,9 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     // Wavefunctions are actually stored here
     std::string newpath;
 
-    if(ct.nvme_orbitals)
-    {
-        if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
+    rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
 
-        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
-        ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS * ct.noncoll_factor + 1024) * sizeof(OrbitalType));
-        if(!rptr) rmg::error("Error: CreateMmapArray failed for orbitals. \n");
-        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
-    }
-    else
-    {
-        rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
-    }
-
-    if(ct.nvme_work)
-    {
-        if(ct.nvme_work_fd != -1) close(ct.nvme_work_fd);
-
-        newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
-                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS  * ct.noncoll_factor* sizeof(OrbitalType));
-        if(!ns) rmg::error("Error: CreateMmapArray failed for work arrays. \n");
-        madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL);
-    }
-    else
-    {
-        if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor]();
-    }
-
+    if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor]();
     nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
 #endif
 

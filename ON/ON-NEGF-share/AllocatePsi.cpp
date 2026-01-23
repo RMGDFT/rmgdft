@@ -133,25 +133,8 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     alloc_size =  (size_t)tot_recv * item ;
 
-    ct.nvme_orbital_fd = -1;
     // orbitals from other proces  are actually stored here
-
-    if(ct.nvme_orbitals)
-    {
-        std::string newpath;
-        if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
-
-        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) +
-            std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        rptr3 = (double *)CreateMmapArray(ct.nvme_orbital_fd, alloc_size * sizeof(double));
-        if(!rptr3) rmg::error("Error: CreateMmapArray failed for orbitals. \n");
-        madvise(rptr3, alloc_size * sizeof(double), MADV_SEQUENTIAL);
-    }
-    else
-    {
-        rptr3 = new double[alloc_size];
-    }
+    rptr3 = new double[alloc_size];
 
 
 
