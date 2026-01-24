@@ -321,7 +321,6 @@ extern Kpoint<double> **Kptr_g;
 void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v_out, int nspin)
 {
     RmgTimer RT0("5-Functional");
-    RmgTimer RT1("5-Functional: vxc");
     int ione = 1;
     int itwo = 2;
     int ifour = 4;
@@ -338,7 +337,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 
 
     // First get the local exchange and correlation
-    RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
+    RmgTimer *RT2 = new RmgTimer("5-Functional: 1ocal");
     if(nspin==1) {
 
         double rhonegl=0.0;
@@ -463,7 +462,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 
 
     // Next add in any gradient corrections
-    RmgTimer *RT3 = new RmgTimer("5-Functional: vxc grad");
+    RmgTimer *RT3 = new RmgTimer("5-Functional: grad");
     if(nspin == 1) {
         this->gradcorr(rho_in, rho_core, etxc, vtxc, v_out);
     }
@@ -505,7 +504,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     delete RT3;
 
     // And finally any non-local corrections
-    RmgTimer *RT4 = new RmgTimer("5-Functional: vxc nonlocal");
+    RmgTimer *RT4 = new RmgTimer("5-Functional: nonlocal");
     if(this->dft_is_nonlocc_rmg()) {
         if(nspin == 4) 
         {
@@ -529,6 +528,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     }
     delete RT4;
 
+    RmgTimer *RT5 = new RmgTimer("5-Functional: FFT filter");
     vtxc = vtxc * L->omega / (double)this->N;
     etxc = etxc * L->omega / (double)this->N;
 
@@ -540,6 +540,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
         for(int is = 0; is < nspin; is++)
             FftFilter(&v_out[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
     }
+    delete RT5;
 
 }
 
@@ -755,18 +756,19 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int ix=0;ix < this->pbasis;ix++) rhoout[ix] = rho[ix] + rho_core[ix];
 
     // calculate the gradient of rho + rho_core
-    RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
+    RmgTimer *RT2 = new RmgTimer("5-Functional: grad: apply gradient");
     ApplyGradient (rhoout.data(), gx, gy, gz, fd_order, "Fine");
     //FftGradientFine(rhoout.data(), gx, gy, gz);
     delete RT2;
 
     // and the Laplacian
-    RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
+    RmgTimer *RT3 = new RmgTimer("5-Functional: grad: apply laplacian");
     //FftLaplacianFine(rhoout.data(), d2rho.data());
     ApplyLaplacian (rhoout.data(), d2rho.data(), fd_order, "Fine");
     delete RT3;
 
     // Have to convert 2D array to Fortran order for QE routine.
+    RmgTimer *RT4 = new RmgTimer("5-Functional: grad: gcx");
     CToF_2d(this->pbasis, grho, grhof);
     double *v2dummy=NULL;
     xc_gcx( &this->pbasis, &ione, rhoout.data(), grhof, sx.data(), sc.data(), v1x.data(),
@@ -781,16 +783,18 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
         vtxcgc += (v1x[k] + v1c[k]) * (rhoout[k] - rho_core[k]);
         etxcgc += sx[k] + sc[k];
     } 
+    delete RT4;
 
     // 
     // ... second term of the gradient correction :
     // ... \sum_alpha (D / D r_alpha) ( D(rho*Exc)/D(grad_alpha rho) )
     // 
-    RmgTimer *RT5 = new RmgTimer("5-Functional: apply gradient");
+    RmgTimer *RT5 = new RmgTimer("5-Functional: grad: apply gradient");
     double *h = grhof;
     ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
     delete RT5;
 
+    RmgTimer *RT6 = new RmgTimer("5-Functional: grad: others");
     double vtxcgc_1 = 0.0;
 //#pragma omp parallel for reduction(+:vtxcgc_1)
     for(int ix=0;ix < this->pbasis;ix++) {
@@ -809,6 +813,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     vtxc = vtxc + vtxcgc + vtxcgc_1;
     etxc = etxc + etxcgc;
 
+    delete RT6;
     delete [] grhof;
     delete [] grho;
 
@@ -848,12 +853,13 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     for(int ix=0;ix < this->pbasis;ix++) rhoout_down[ix] = rho_down[ix] + 0.5*rho_core[ix];
 
     // calculate the gradient of rho + rho_core up
-    RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
+    RmgTimer *RT2 = new RmgTimer("5-Functional: grad: apply gradient");
     ApplyGradient (rhoout_up, gx_up, gy_up, gz_up, fd_order, "Fine");
     ApplyGradient (rhoout_down, gx_down, gy_down, gz_down, fd_order, "Fine");
 
     delete RT2;
 
+    RmgTimer *RT3 = new RmgTimer("5-Functional: grad: gcx");
     fgobj<double> ex, ec;
     spinobj<double> v1x, v2x, v1c, v2c, trho;
 
@@ -867,8 +873,9 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     xc_gcx(&this->pbasis, &itwo, trho.data(), grhof, ex.data(), ec.data(),
             v1x.data(), v2x.data(), v1c.data(), v2c.data(), v2cud, &gargs);
     delete [] grhof;
+    delete RT3;
 
-    RmgTimer *RT4 = new RmgTimer("5-Functional: libxc");
+    RmgTimer *RT4 = new RmgTimer("5-Functional: grad: libxc");
 ///#pragma omp parallel for reduction(+:etxcgc,vtxcgc)
     for(int k=0;k < this->pbasis;k++) {
         //double arho_up = fabs(rhoout_up[k]);
@@ -920,7 +927,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     }
 
     // second term of the gradient correction
-    RmgTimer *RT5 = new RmgTimer("5-Functional: apply gradient");
+    RmgTimer *RT5 = new RmgTimer("5-Functional: grad: apply gradient");
     ApplyGradient (hx_up, gx_up, gy_up, gz_up, fd_order, "Fine");
     ApplyGradient (hx_dw, gx_down, gy_down, gz_down, fd_order, "Fine");
 #pragma omp parallel for 
