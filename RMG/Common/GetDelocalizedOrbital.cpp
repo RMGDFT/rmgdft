@@ -31,7 +31,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "params.h"
 #include "rmg_error.h"
 #include "rmg_gemm.h"
@@ -171,7 +171,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::norm(orbital_weight[st * pbasis + idx] );
                 }
 
-                GlobalSums(&sum, 1, this->grid_comm);
+                rmg::reduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 // if the sum = 0, this orbital is not a LDA+U orbital and the values are zeros.
                 if(tscale < 1.0e-5) continue;
@@ -208,7 +208,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::real(orbital_weight[st * pbasis + idx] * MyConj(tbuf[st * pbasis + idx]));
                 }
 
-                GlobalSums(&sum, 1, this->grid_comm);
+                rmg::reduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 if(tscale < 1.0e-5) continue;
                 tscale = std::sqrt(1.0/tscale);

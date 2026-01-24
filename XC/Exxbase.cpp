@@ -43,7 +43,7 @@
 #include "blas.h"
 #include "HdfHelpers.h"
 #include "Gpufuncs.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 using namespace hdfHelper;
 // This class implements exact exchange for delocalized orbitals.

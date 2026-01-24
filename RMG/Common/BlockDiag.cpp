@@ -33,7 +33,7 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
 #include "Mgrid.h"
@@ -201,12 +201,12 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     RT1 = new RmgTimer("6-BlockDiag: matrix setup/reduce");
     rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
     PackSqToTr("U", N, hr, N, vr);
-    BlockAllreduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
+    rmg::block_reduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
     UnPackSqToTr("U", N, hr, N, vr);
 
     rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
     PackSqToTr("U", N, sr, N, vr);
-    BlockAllreduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
+    rmg::block_reduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
     UnPackSqToTr("U", N, sr, N, vr);
     delete RT1;
 

@@ -76,7 +76,7 @@ rmg_trmm.cpp
 GpuAllocHost.cpp
 GpuStreams.cpp
 RmgMallocHost.cpp
-GlobalSums.cpp
+rmg_reduce.cpp
 GlobalSums_Cbindings.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp

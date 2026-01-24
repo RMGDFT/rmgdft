@@ -67,7 +67,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "Functional.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "transition.h"
 #include "rmg_sum_all.h"
 #include "RmgParallelFft.h"

@@ -29,7 +29,7 @@
 #include "prototypes_on.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "blacs.h"
 template BlockTriMatrix<double>::BlockTriMatrix(
         int num_block_in, int mtot_in, int ntot_in, 
@@ -155,7 +155,7 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
     //int tot_size = size_diag + size_up_offdiag + size_dn_offdiag;
     //rmg::printlog("\n tot_sie %d", tot_size);
     //MPI_Allreduce(MPI_IN_PLACE, (double *)storage, tot_size, MPI_DOUBLE, MPI_SUM, A.comm);
-    //   GlobalSums(storage_up_offdiag, size_up_offdiag, A.comm);
+    //   rmg::reduce(storage_up_offdiag, size_up_offdiag, A.comm);
     MPI_Barrier(MPI_COMM_WORLD);
     delete RT;
 

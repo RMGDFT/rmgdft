@@ -33,7 +33,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"

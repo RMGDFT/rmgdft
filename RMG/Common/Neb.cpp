@@ -40,7 +40,7 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "prototypes_rmg.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Neb.h"
 
 template Neb<double>::Neb(rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 

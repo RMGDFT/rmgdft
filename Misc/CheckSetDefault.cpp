@@ -37,7 +37,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "RmgException.h"
 #include "InputKey.h"
 #include "InputOpts.h"

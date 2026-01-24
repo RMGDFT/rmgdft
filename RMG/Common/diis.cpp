@@ -30,7 +30,7 @@
 #include <omp.h>
 #include "transition.h"
 #include "const.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "pe_control.h"
 #include "rmg_control.h"
 #include "blas.h"
@@ -153,7 +153,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
             ss[0] += (Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]);
             ss[1] += (Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]);
         }
-        GlobalSums(ss, 2, pct.coalesced_grid_comm);
+        rmg::reduce(ss, 2, pct.coalesced_grid_comm);
         lambda = ss[0]/ss[1];
      }
 
@@ -166,7 +166,7 @@ template <class T> void diis<T>::compute_lambda(double eig, T *iHu, T *ir0, T *H
             ss[0] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(iHu[i] - eig*u0[i]));
             ss[1] += std::real(std::conj(Hr0[i] - eig*pr0[i])*(Hr0[i] - eig*pr0[i]));
         }
-        GlobalSums(ss, 2, pct.coalesced_grid_comm);
+        rmg::reduce(ss, 2, pct.coalesced_grid_comm);
         lambda = ss[0]/ss[1];
     }
 }
@@ -226,7 +226,7 @@ template <class T> std::vector<T> diis<T>::compute_estimate()
         }
     }
 
-    GlobalSums((double *)A.data(), factor*M*M, pct.coalesced_grid_comm);
+    rmg::reduce((double *)A.data(), factor*M*M, pct.coalesced_grid_comm);
 
     // Rescale residual entries for numerical stability
     double maxdiag = 0.0;
@@ -274,7 +274,7 @@ template <class T> T diis<T>::dot(std::vector<T>& a, std::vector<T>& b)
         for (int i = 0; i < N; ++i) sum += std::conj(a[i]) * b[i];
     else
         for (int i = 0; i < N; ++i) sum += a[i] * b[i];
-    GlobalSums((double *)&sum, factor, pct.coalesced_grid_comm);
+    rmg::reduce((double *)&sum, factor, pct.coalesced_grid_comm);
     return sum;
 }
 

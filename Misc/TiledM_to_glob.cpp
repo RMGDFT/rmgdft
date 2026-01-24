@@ -5,7 +5,7 @@
 #include <mpi.h>       
 #include "RmgException.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Atomic.h"
 
 #if HIP_ENABLED

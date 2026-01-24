@@ -28,7 +28,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
@@ -121,7 +121,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
         delete RT1a;
 
         RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-        BlockAllreduce(block_matrix, this_block_size * length_block , pct.grid_comm);
+        rmg::block_reduce(block_matrix, this_block_size * length_block , pct.grid_comm);
         delete RT1a;
 
         //block_matrix to distHij;
@@ -179,7 +179,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
             delete RT1a;
 
             RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-            BlockAllreduce(block_matrix, this_block_size * length_block , pct.grid_comm);
+            rmg::block_reduce(block_matrix, this_block_size * length_block , pct.grid_comm);
             delete RT1a;
 
             //block_matrix to distHij;

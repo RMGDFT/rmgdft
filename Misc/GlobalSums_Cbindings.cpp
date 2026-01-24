@@ -22,16 +22,11 @@
 
 #include <stdlib.h>
 #include <stddef.h>
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "common_prototypes.h"
 
 
-void init_global_sums(void) 
-{
-   GlobalSumsInit();
-}
-
 void global_sums (double * vect, int *length, MPI_Comm comm)
 {
-    GlobalSums<double>(vect, *length, comm);
+    rmg::reduce<double>(vect, *length, comm);
 }

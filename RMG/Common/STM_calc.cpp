@@ -61,7 +61,7 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 
 void OutputSTM(std::vector<double> rho_2d, int NX, int NY, std::string filenamne);
@@ -211,7 +211,7 @@ height_list)
             }
         }
 
-        GlobalSums (rho_xy.data(), NX*NY, pct.grid_comm);
+        rmg::reduce(rho_xy.data(), NX*NY, pct.grid_comm);
         OutputSTM(rho_xy, NX, NY, filename + ".stm");
     }
 

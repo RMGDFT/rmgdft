@@ -54,7 +54,7 @@
 #include "State.h"
 #include "transition.h"
 #include "rmg_sum_all.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 
 static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 

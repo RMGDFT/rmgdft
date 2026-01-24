@@ -9,7 +9,7 @@
 #include "State.h"
 #include "transition.h"
 #include "rmg_sum_all.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "boundary_conditions.h"
 
 

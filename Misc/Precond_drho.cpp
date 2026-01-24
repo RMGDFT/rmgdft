@@ -4,7 +4,7 @@
 #include <math.h>       // std::vector
 #include <mpi.h>       // std::vector
 #include "blas.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
 #include "RmgException.h"

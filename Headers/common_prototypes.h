@@ -48,7 +48,6 @@ void mg_restrict (double *full, double *half, int dimx, int dimy, int dimz, int 
 void mg_prolong (double *full, double *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 double app2_del2 (double *a, double *b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
-void init_global_sums(void);
 
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);

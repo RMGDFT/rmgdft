@@ -40,7 +40,7 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "prototypes_rmg.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include <boost/math/special_functions/erf.hpp>
 #include "GpuAlloc.h"
 #include "rmg_gemm.h"

@@ -41,7 +41,7 @@
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "prototypes_rmg.h"
 
 
@@ -281,9 +281,9 @@ ct.state_block_size);
         delete RT1;
     }
 
-    GlobalSums(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::reduce(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::reduce(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::reduce(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
 
     /*Loop over ions again */

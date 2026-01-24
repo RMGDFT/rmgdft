@@ -28,7 +28,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
@@ -104,7 +104,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
             }
         }
 
-        BlockAllreduce(block_matrix, size_mat, pct.grid_comm);
+        rmg::block_reduce(block_matrix, size_mat, pct.grid_comm);
 //        if(pct.imgpe == 0 && pct.gridpe == 0) 
 //            for(int i = 0; i < this_block_size_row; i++)
 //                for(int j = 0; j < nstates; j++) printf("\n %d %d %f eee", i+ib*nb, j,block_matrix[i*nstates + j]); 

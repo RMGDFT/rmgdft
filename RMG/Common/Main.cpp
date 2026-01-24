@@ -53,7 +53,7 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GridObject.h"
 #include "BerryPhase.h"
 
@@ -427,8 +427,8 @@ template <typename OrbitalType> void run (
                         }
                     }
 
-                    GlobalSums (eig_all, tot_num_eigs, pct.kpsub_comm);
-                    GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
+                    rmg::reduce(eig_all, tot_num_eigs, pct.kpsub_comm);
+                    rmg::reduce(eig_all, tot_num_eigs, pct.spin_comm);
 
                     OutputBandPlot(eig_all);
                     delete [] eig_all;

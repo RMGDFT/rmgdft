@@ -30,7 +30,7 @@
 
 
 #include "RmgException.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Scalapack.h"
 #include "blacs.h"
 #include "transition.h"
@@ -795,13 +795,13 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
 // Block inplace double reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
 {
-    BlockAllreduce(buf, count, this->comm);
+    rmg::block_reduce(buf, count, this->comm);
 }
 
 // Block inplace float reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
 {
-    BlockAllreduce(buf, count, this->comm);
+    rmg::block_reduce(buf, count, this->comm);
 }
 
 // Broadcast to everyone in the root

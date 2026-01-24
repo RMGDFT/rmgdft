@@ -29,7 +29,7 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
 #include "Gpufuncs.h"
@@ -174,9 +174,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (float *)Bij, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        BlockAllreduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_reduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    BlockAllreduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_reduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
     // Compute S matrix
@@ -203,9 +203,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (float *)gmatrix, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        BlockAllreduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_reduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    BlockAllreduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_reduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
 

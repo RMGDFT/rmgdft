@@ -38,7 +38,7 @@
 #include "transition.h"
 #include "rmg_sum_all.h"
 #include "blas.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Functional.h"
 #include <float.h>
 #include <math.h>

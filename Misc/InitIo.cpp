@@ -44,7 +44,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "RmgException.h"
 #include "InputKey.h"
 #include "InputOpts.h"
@@ -722,7 +722,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
-    GlobalSumsInit();
+    rmg::init_reduce();
 
     // Check individual node sizes on all levels for poisson mg solver
     Mgrid MG(&Rmg_L, Rmg_T);

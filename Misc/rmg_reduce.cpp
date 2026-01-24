@@ -25,14 +25,14 @@
 #include "rmg_error.h"
 #include "main.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "transition.h"
 #include <typeinfo>
 #include <complex>
 
-template void GlobalSums<float>(float*, int, MPI_Comm);
-template void GlobalSums<double>(double*, int, MPI_Comm);
-template void GlobalSums<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
+template void rmg::reduce<float>(float*, int, MPI_Comm);
+template void rmg::reduce<double>(double*, int, MPI_Comm);
+template void rmg::reduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
 
 static double *fixed_vector1 = NULL;
 static double *fixed_vector2 = NULL;
@@ -44,7 +44,7 @@ static MPI_Comm *coalesced_local_comm_pool;
 
 size_t block_size = 67103864;
 
-void GlobalSumsInit(void) {
+void rmg::init_reduce(void) {
     int retval;
     BaseThread *T = BaseThread::getBaseThread(0);
 
@@ -85,9 +85,9 @@ MPI_Comm get_unique_coalesced_local_comm(int istate)
    return coalesced_local_comm_pool[comm_index];
 }
 
-template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Comm comm)
+template <typename RmgType> void rmg::reduce(RmgType * vect, int length, MPI_Comm comm)
 {
-    RmgTimer RT0("GlobalSums");
+    RmgTimer RT0("rmg::reduce");
     BaseThread *T = BaseThread::getBaseThread(0);
 
     RmgType *v1, *v2;
@@ -193,17 +193,17 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
     }
 
 
-} // end GlobalSums
+} // end rmg::reduce
 
 
 // Used by subdiag routines to get around integer size limitations for large Allreduce operations.
 // Should only be called from a non-threaded region.
-void BlockAllreduce(double *mat, size_t count, MPI_Comm comm)
+void rmg::block_reduce(double *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("BlockAllReduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
 
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
@@ -217,12 +217,12 @@ void BlockAllreduce(double *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, comm);
 }
 
-void BlockAllreduce(float *mat, size_t count, MPI_Comm comm)
+void rmg::block_reduce(float *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("BlockAllReduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
 
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
@@ -236,12 +236,12 @@ void BlockAllreduce(float *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, comm);
 }
 
-void BlockAllreduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
+void rmg::block_reduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("BlockAllReduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
 
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
@@ -255,12 +255,12 @@ void BlockAllreduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, comm);
 }
 
-void BlockAllreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
+void rmg::block_reduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("BlockAllReduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
 
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;

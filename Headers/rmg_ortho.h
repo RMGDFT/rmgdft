@@ -36,7 +36,7 @@
 
 #include "Gpufuncs.h"
 #include "blas.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "RmgException.h"
 #include "blas_driver.h"
  

@@ -26,7 +26,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "State.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "transition.h"

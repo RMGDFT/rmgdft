@@ -38,7 +38,7 @@
 #include "Kpoint.h"
 #include <complex>
 #include "RmgParallelFft.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Prolong.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
@@ -291,9 +291,9 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         sum1 = 0.0;
         for (int idx = 0; idx < cfac*FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
         if(cfac > 1)
-            GlobalSums(&sum1, 1, pct.coalesced_grid_comm);
+            rmg::reduce(&sum1, 1, pct.coalesced_grid_comm);
         else
-            GlobalSums(&sum1, 1, pct.grid_comm);
+            rmg::reduce(&sum1, 1, pct.grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 

@@ -31,7 +31,7 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "rmg_sum_all.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
@@ -201,11 +201,11 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
 
         if(coalesce_factor==1)
         {
-            GlobalSums (&t1, 1, pct.grid_comm);
+            rmg::reduce(&t1, 1, pct.grid_comm);
         }
         else
         {
-            GlobalSums (&t1, 1, pct.coalesced_grid_comm);
+            rmg::reduce(&t1, 1, pct.coalesced_grid_comm);
         }
 
         t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));

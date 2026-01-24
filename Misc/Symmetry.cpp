@@ -25,7 +25,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Symmetry.h"
 #include "rmg_error.h"
 #include "blas.h"
@@ -759,7 +759,7 @@ void Symmetry::symmetrize_grid_vector(double *object)
 
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis * 3;
-    BlockAllreduce(da, length, pct.grid_comm);
+    rmg::block_reduce(da, length, pct.grid_comm);
 
     for(int ix=0;ix < 3 * pbasis;ix++) object[ix] = 0.0;
 
@@ -870,7 +870,7 @@ void Symmetry::symmetrize_grid_object(double *object)
 
     /* Call global sums to give everyone the full array */
     int length = nbasis;
-    GlobalSums ((double *)da, length, pct.grid_comm);
+    rmg::reduce((double *)da, length, pct.grid_comm);
 
     for(int ix=0;ix < pbasis;ix++) object[ix] = 0.0;
 
@@ -1567,7 +1567,7 @@ void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
 
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis;
-    BlockAllreduce(da1, length, pct.grid_comm);
+    rmg::block_reduce(da1, length, pct.grid_comm);
 
     for(int idx = 0; idx < px_grid * py_grid * pz_grid; idx++) rho_oppo[idx] = 0.0;
     for(int isy = 0; isy < nsym; isy++)

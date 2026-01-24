@@ -31,7 +31,7 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
 #include "Mgrid.h"
@@ -172,9 +172,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
     else
-        BlockAllreduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
+        rmg::block_reduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-    BlockAllreduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
+    rmg::block_reduce((double *)hr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 
 #endif
 
@@ -192,9 +192,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
     else
-        BlockAllreduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
+        rmg::block_reduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-    BlockAllreduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
+    rmg::block_reduce((double *)sr, (size_t)nbase*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -298,9 +298,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         if(ct.use_async_allreduce)
             MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
         else
-            BlockAllreduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
+            rmg::block_reduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-        BlockAllreduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
+        rmg::block_reduce((double *)&hr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
         rmg::gemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*max_states], max_states);
@@ -316,9 +316,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         if(ct.use_async_allreduce)
             MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*max_states], notconv * max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
         else
-            BlockAllreduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
+            rmg::block_reduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #else
-        BlockAllreduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
+        rmg::block_reduce((double *)&sr[nbase*max_states], (size_t)notconv*(size_t)max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE

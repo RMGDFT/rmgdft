@@ -28,7 +28,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"

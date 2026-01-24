@@ -34,7 +34,7 @@
 #include "RmgTimer.h"
 #include "RmgThread.h"
 #include "RmgException.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"

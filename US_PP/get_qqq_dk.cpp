@@ -27,7 +27,7 @@
 #include <math.h>
 #include "main.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<double> *qqq_dk_so)
 {
@@ -103,7 +103,7 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
     }                           /*end for ion */
 
     int count =  Atoms.size() * ct.max_nl * ct.max_nl; 
-    GlobalSums (qqq_dk, count, pct.grid_comm);
+    rmg::reduce(qqq_dk, count, pct.grid_comm);
 
     if(!ct.noncoll) return;
 

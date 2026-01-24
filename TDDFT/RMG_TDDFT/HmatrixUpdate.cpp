@@ -30,7 +30,7 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
 #include "Subdiag.h"
@@ -205,7 +205,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         }
         gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
 
-        BlockAllreduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
+        rmg::block_reduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
 
         if(ct.tddft_tiledMM)
         {
@@ -318,7 +318,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, psi+ib*block_size*pbasis_noncoll, pbasis_noncoll, vpsi, 
                 pbasis_noncoll, beta, (KpointType *)global_matrix1, size_row);
         int factor = sizeof(KpointType)/sizeof(double);
-        BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        rmg::block_reduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         if(ct.tddft_tiledMM)
         {

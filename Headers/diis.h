@@ -31,7 +31,7 @@
 #include <cmath>
 #include <complex>
 #include <typeinfo>
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "blas.h"
  
 template <typename T> class diis {

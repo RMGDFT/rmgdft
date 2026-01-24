@@ -34,7 +34,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Subdiag.h"
 #include "rmgthreads.h"
 #include "packfuncs.h"

@@ -110,7 +110,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         // ortho to the first nbase states
         rmg::gemm(trans_a, trans_n, nbase, notcon, this->pbasis, alphavel, this->psi_d, this->pbasis, psi_extra, this->pbasis, zero, mat, nbase);
         rmg::sync_device();
-        BlockAllreduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
+        rmg::block_reduce((double *)mat, (size_t)notcon*(size_t)nbase * (size_t)factor, pct.grid_comm);
         rmg::sync_device();
         rmg::gemm(trans_n, trans_n, this->pbasis, notcon, nbase, mone, this->psi_d, this->pbasis, mat, nbase, one, psi_extra, this->pbasis);
     }
@@ -153,7 +153,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     RT1 = new RmgTimer("MgridOrtho: allreduce");
     int length = factor * (notcon + 2) * notcon / 2;
     PackSqToTr("U", notcon, mat, notcon, tmat);
-    BlockAllreduce((double *)tmat, length, pct.grid_comm);
+    rmg::block_reduce((double *)tmat, length, pct.grid_comm);
     UnPackSqToTr("U", notcon, mat, notcon, tmat);
     delete RT1;
 

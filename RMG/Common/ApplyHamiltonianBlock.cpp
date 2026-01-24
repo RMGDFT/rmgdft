@@ -26,7 +26,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "State.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "BaseThread.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"

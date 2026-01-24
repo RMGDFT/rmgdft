@@ -33,7 +33,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
@@ -59,7 +59,7 @@ double ComputeEig(int n, T *A, T *B, T *D)
     }
 
     int length = 2;
-    GlobalSums (s1, length, pct.coalesced_grid_comm);
+    rmg::reduce(s1, length, pct.coalesced_grid_comm);
     return  s1[0] / s1[1];
 
 }

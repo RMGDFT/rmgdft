@@ -5,7 +5,7 @@
 #include <mpi.h>       // std::vector
 #include "PulayMixing.h"
 #include "blas.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
 #include "RmgException.h"
@@ -145,8 +145,8 @@ void PulayMixing::Mixing(double *xm, double *fm)
     int s2 = (this->max_order+1)*(this->max_order+1);
 
     dcopy(&s2, A_mat, &ione, A, &ione);
-    GlobalSums(A, s2, comm);
-    GlobalSums(A, s2, pct.spin_comm);
+    rmg::reduce(A, s2, comm);
+    rmg::reduce(A, s2, pct.spin_comm);
 
     int size = num_prev_steps + 1; 
     int A_size = size +1;
@@ -345,8 +345,8 @@ void PulayMixing::Mixing_rhoG(double *xm, double *fm)
     int s2 = (this->max_order+1)*(this->max_order+1);
 
     dcopy(&s2, A_mat, &ione, A, &ione);
-    GlobalSums(A, s2, comm);
-    GlobalSums(A, s2, pct.spin_comm);
+    rmg::reduce(A, s2, comm);
+    rmg::reduce(A, s2, pct.spin_comm);
 
     int size = num_prev_steps + 1; 
     int A_size = size +1;

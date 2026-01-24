@@ -9,7 +9,7 @@
 #include "Pw.h"
 #include "Lattice.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GatherScatter.h"
 
 /*
@@ -213,7 +213,7 @@ void GetFdFactor(int kpt)
             // Make sure the orbital is normalized to 1.0
             double snorm = 0.0;
             for(int idx=0;idx < pbasis;idx++) snorm += std::real(orbital[idx] * std::conj(orbital[idx]));
-            GlobalSums(&snorm, 1, pct.grid_comm);
+            rmg::reduce(&snorm, 1, pct.grid_comm);
             snorm *= get_vel();
             snorm = 1.0 / sqrt(snorm);
             for(int idx=0;idx < pbasis;idx++) orbital[idx] *= snorm;
@@ -265,7 +265,7 @@ void GetFdFactor(int kpt)
                 double snorm_f = 0.0;
                 for(int idx=0;idx < fpbasis;idx++)
                     snorm_f += std::real(pwork2[idx] * std::conj(pwork2[idx]));
-                GlobalSums(&snorm_f, 1, pct.grid_comm);
+                rmg::reduce(&snorm_f, 1, pct.grid_comm);
                 snorm_f *= get_vel_f();
                 snorm_f = 1.0 / sqrt(snorm_f);
                 for(int idx=0;idx < fpbasis;idx++) pwork2[idx] *= snorm_f;

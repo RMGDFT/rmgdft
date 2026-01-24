@@ -34,7 +34,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
@@ -101,7 +101,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         rsum[0] += std::norm(r[i]);
         rsum[1] += std::norm(u[i]);
     }
-    GlobalSums (rsum, 2, pct.coalesced_grid_comm);
+    rmg::reduce(rsum, 2, pct.coalesced_grid_comm);
     sp->res[0] = rsum[0]*get_vel();
     double norm = rsum[1]*get_vel();
     norm = 1.0 / sqrt(norm);
@@ -144,7 +144,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             u[i] += a*p[i];
             rsum[0] += std::norm(u[i]);
         }
-        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
+        rmg::reduce(rsum, 1, pct.coalesced_grid_comm);
         norm = rsum[0]*get_vel();
         norm = 1.0 / sqrt(norm);
         if(ct.norm_conserving_pp)
@@ -166,7 +166,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             rsum[0] += std::norm(r[i]);
         }
 
-        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
+        rmg::reduce(rsum, 1, pct.coalesced_grid_comm);
         sp->res[k+1] = rsum[0]*get_vel();
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }

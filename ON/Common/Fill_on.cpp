@@ -54,7 +54,7 @@
 #include "State.h"
 #include "transition.h"
 #include "rmg_sum_all.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 
 static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
