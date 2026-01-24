@@ -50,9 +50,9 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
                 int ixx = ix + FPX_OFFSET;
                 int iyy = iy + FPY_OFFSET;
                 int izz = iz + FPZ_OFFSET;
-                xc = ixx * hxgrid - dipole_center_xtal[0] +0.5;
-                yc = iyy * hygrid - dipole_center_xtal[1] +0.5;
-                zc = izz * hzgrid - dipole_center_xtal[2] +0.5;
+                xc = ixx * hxgrid - dipole_center_xtal[0];
+                yc = iyy * hygrid - dipole_center_xtal[1];
+                zc = izz * hzgrid - dipole_center_xtal[2];
 
                 if(xc > 1.0) xc -= 1.0;
                 if(yc > 1.0) yc -= 1.0;
