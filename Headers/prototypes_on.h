@@ -231,13 +231,10 @@ void subdiag (STATE * states, double * vh, double * vnuc, double * vxc);
 void trade_images (double * mat, int dimx, int dimy, int dimz, int type);
 void trade_images_mpi (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
-void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val);
-void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
 void write_avgv (double * vh, double * vnuc);
-void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
 void write_eigs (STATE * states, double *kpt);
@@ -336,7 +333,6 @@ char *get_symbol (int atomic_number);
 void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void qnm_beta_betapsi (STATE *sp, int ion2, double * prjptr);
-void pack_rho_ctof (double * rho1, double * rho_f);
 
 void rho_Qnm_mat (double *Aij, double * global_mat_X,
 int *state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,
@@ -455,8 +451,6 @@ void subdiag (STATE * states, double * vh, double * vnuc, double * vxc);
 void trade_images (double * mat, int dimx, int dimy, int dimz, int type);
 void trade_images_mpi (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
-void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val);
-void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
@@ -569,7 +563,6 @@ char *get_symbol (int atomic_number);
 void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void get_qnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
-void pack_rho_ctof (double * rho1, double * rho_f);
 void rho_nm_mat (double *Aij, double * global_mat_X);
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
         int *jlow, int *jhi, int *klow, int *khi, int cdim, int pxgrid,

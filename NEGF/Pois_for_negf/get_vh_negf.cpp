@@ -31,8 +31,8 @@
  * PARENTS
  *   init.c scf.c
  * CHILDREN
- *   getpoi_bc.c pack_vhstod.c pack_ptos.c app_cir.c 
- *   set_bc.c app_cil.c mgrid_solv.c pack_vhdtos.c
+ *   pack_vhstod.c pack_ptos.c app_cir.c 
+ *   app_cil.c mgrid_solv.c pack_vhdtos.c
  * SOURCE
  */
 

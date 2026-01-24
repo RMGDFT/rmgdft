@@ -81,9 +81,7 @@ void symforce (void);
 void rmg_timings (int what, double time);
 double minimage (ION *ip1, ION *ip2, double *xtal_r);
 double my_crtc (void);
-FILE *open_xbs_movie (char *filename);
 FILE *open_restart_file (char *filename);
-void xbsmovie (FILE *movie);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pack_ptos (double *sg, double *pg, int dimx, int dimy, int dimz);
 void pack_stop (double *sg, double *pg, int dimx, int dimy, int dimz);
@@ -106,13 +104,9 @@ double double_sum_all (double x, MPI_Comm comm);
 
 
 void sortpsi (STATE *states);
-void set_bc (double *mat, int dimx, int dimy, int dimz, int images, double val);
-void set_bcx (double *mat, int dimx, int dimy, int dimz, int images, double val);
-void getpoi_bc (double *rho, double *vh_bc, int dimx, int dimy, int dimz);
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (double *rho);
 void write_avgv (double *vh, double *vnuc);
-void write_zstates (STATE *states);
 
 void write_header (void);
 void write_force (void);
@@ -158,7 +152,6 @@ void get_qqq (void);
 void get_qqq_dk (double dk[3], std::complex<double> *qqq_dk, std::complex<double> *qqq_dk_so);
 void get_rho (STATE * states, double * rho, double * rhocore);
 void get_new_rho (STATE * states, double * rho);
-void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 //void ortho (STATE *states, int kpt);
@@ -191,18 +184,15 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
 void nlccforce (double *rho, double *vxc, double *force);
-void pack_rho_ctof (double *rhoc, double *rhof);
 void bspline_interp_full (double *rho, double *rho_f);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void get_vxc_exc (double * nrho, double * nrho_oppo,  double * vxc, double * exc, int xctype);
 void betaxpsi (STATE *states);
 void pack_gftoc (SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
-void debug_write_rho_z (double *rhoz);
 void print_density_z_direction (int grid_x, int grid_y, double *density,
                                 int px0_grid, int py0_grid, int pz0_grid,
                                 double zside);
 
-void mulliken (STATE *states);
 double ylm(int l, double *r);
 int listlen (FILE * fh, char *id);
 void print_matrix(double *b, int n, int ldb);
@@ -214,7 +204,6 @@ void matinit(int *desca, double *dismat, double *globmat, int size);
 int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size);
 void reduce_and_dist_matrix(int n, double *global_matrix, double *dist_matrix, double *work);
 void init_efield (double * vnuc, double efeild[3]);
-void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, double ***hist, double ***rhist, int special_metric, double weight);
 int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count);
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count );
@@ -231,7 +220,6 @@ void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
-void set_pbc(double *position, int num_ions, int num_images);
 void inline progress_tag(void)
 {
     if(pct.gridpe==0)

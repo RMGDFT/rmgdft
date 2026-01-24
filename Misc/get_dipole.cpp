@@ -143,7 +143,7 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
 
 
 
-}                               /* end getpoi_bc.c */
+}
 
 /******/
 void get_dipole (double * rho, double *dipole)
@@ -278,7 +278,7 @@ void get_dipole (double * rho, double *dipole)
 
 
 
-}                               /* end getpoi_bc.c */
+}
 
 /******/
 

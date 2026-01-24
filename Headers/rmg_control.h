@@ -125,18 +125,6 @@ public:
     bool compressed_infile;
     bool compressed_outfile;
 
-    /** whether to mmap the weights for the projectors weights, work space and orbitals */
-    bool nvme_weights;
-    bool nvme_work;
-    bool nvme_orbitals;
-    int nvme_orbital_fd;
-    int nvme_work_fd;
-    int nvme_weight_fd;
-    std::string nvme_weights_path;
-    std::string nvme_work_path;
-    std::string nvme_orbitals_path;
-    std::string qfunction_path;
-
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
 

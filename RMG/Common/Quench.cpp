@@ -286,10 +286,6 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         rmg::printlog ("\n");
         rmg::printlog ("potential convergence has been achieved. stopping ...\n");
 
-        /*Write PDOS if converged*/
-        //	if (ct.pdos_flag)
-        //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
-
     }
     else
     {
