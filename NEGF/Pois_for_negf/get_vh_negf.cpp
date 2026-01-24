@@ -55,6 +55,7 @@
 #include "macros.h"
 #include "FiniteDiff.h"
 #include "transition.h"
+#include "packfuncs.h"
 
 
 
@@ -155,7 +156,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
             {
 
                 /* Transfer res into smoothing grid */
-                pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                rmg::pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                  
                 mgrid_solv_negf (mglhsarr, sg_res, work,
@@ -170,7 +171,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
 
                 /* Transfer solution back to mgresarr array */
-                pack_stop (mglhsarr, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                rmg::pack_stop (mglhsarr, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                 /*  Fix Hartree in some region  */
 

@@ -12,6 +12,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "transition.h"
+#include "packfuncs.h"
 
 void PrecondMg1(double *res, double *work1, double *work2, int istate)
 {
@@ -61,7 +62,7 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
         diag = FD.app_cil_fourth (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         //diag = FD.app8_del2 (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
-        pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
+        rmg::pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
         ZeroBoundary(sg_orbit_res, ixx, iyy, izz, 1);
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -74,7 +75,7 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
                        levels, eig_pre, eig_post, ct.eig_parm.sb_step,
                        1, sp->istate, &sp->inum, Zfac);
 
-            pack_stop(sg_orbit, work2, ixx, iyy, izz);
+            rmg::pack_stop(sg_orbit, work2, ixx, iyy, izz);
             t1 = -1.;
 
         }

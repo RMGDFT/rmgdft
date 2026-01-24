@@ -56,6 +56,7 @@
 #include "LCR.h"
 #include "twoParts.h"
 #include "Mgrid.h"
+#include "packfuncs.h"
 
 
 void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
@@ -126,11 +127,11 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 	/* solve once */
         MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 
-        pack_stop(v_mat, work, dimx, dimy, dimz);
+        rmg::pack_stop(v_mat, work, dimx, dimy, dimz);
          
         confine (work, dimx, dimy, dimz, potentialCompass, level);
 
-        pack_ptos(v_mat, work, dimx, dimy, dimz);
+        rmg::pack_ptos(v_mat, work, dimx, dimy, dimz);
 
         /* trade boundary info */
         Rmg_T->trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -153,11 +154,11 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 /* evaluate residual */
     MG.eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, NULL);
 
-    pack_stop(resid, work, dimx, dimy, dimz);
+    rmg::pack_stop(resid, work, dimx, dimy, dimz);
 
     confine (work, dimx, dimy, dimz, potentialCompass, level);
 
-    pack_ptos(resid, work, dimx, dimy, dimz);
+    rmg::pack_ptos(resid, work, dimx, dimy, dimz);
     
 	Rmg_T->trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
 	
@@ -215,11 +216,11 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
             /* solve once */
             MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 
-            pack_stop(v_mat, work, dimx, dimy, dimz);
+            rmg::pack_stop(v_mat, work, dimx, dimy, dimz);
 
             confine (work, dimx, dimy, dimz, potentialCompass, level);
 
-            pack_ptos(v_mat, work, dimx, dimy, dimz);
+            rmg::pack_ptos(v_mat, work, dimx, dimy, dimz);
 
 
             /* trade boundary info */
