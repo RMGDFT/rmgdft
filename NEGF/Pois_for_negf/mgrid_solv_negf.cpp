@@ -93,7 +93,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
 
 
-    trade_images(f_mat, dimx, dimy, dimz, FULL_TRADE);
+    Rmg_T->trade_images(f_mat, dimx, dimy, dimz, FULL_TRADE);
 
     for (idx = 0; idx < size; idx++)
     {
@@ -133,7 +133,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
         pack_ptos(v_mat, work, dimx, dimy, dimz);
 
         /* trade boundary info */
-        trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
+        Rmg_T->trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
     }
 
 
@@ -159,7 +159,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
     pack_ptos(resid, work, dimx, dimy, dimz);
     
-	trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
+	Rmg_T->trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
 	
 
 
@@ -197,7 +197,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim);
 
-        trade_images(newv, dx2, dy2, dz2, FULL_TRADE);
+        Rmg_T->trade_images(newv, dx2, dy2, dz2, FULL_TRADE);
 
         MG.mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
@@ -207,7 +207,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
         /* re-solve on this grid level */
 
-        trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
+        Rmg_T->trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -223,7 +223,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
 
             /* trade boundary info */
-            trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
+            Rmg_T->trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
         }                       /* end for */
 
         /* evaluate max residual */
@@ -233,7 +233,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
             MG.eval_residual(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, NULL);
 
 
-            trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
+            Rmg_T->trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end if */
 

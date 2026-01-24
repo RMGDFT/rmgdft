@@ -80,7 +80,6 @@ rmg_reduce.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
 ZgetrftrsDriver.cpp
-TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp
 packfuncs_Cbindings.cpp
 rmg_grid_Cbindings.cpp
