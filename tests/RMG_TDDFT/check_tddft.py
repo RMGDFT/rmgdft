@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 import numpy as np
+import sys
+import os.path
+
 
 if __name__ == '__main__':
-    ref_name = 'input.ref_spin0_current.dat'
-    new_name = 'input.00_spin0_current.dat'
+    if os.path.exists('input.ref_spin0_current.dat'):
+        ref_name = 'input.ref_spin0_current.dat'
+        new_name = 'input.00_spin0_current.dat'
+    elif os.path.exists('input.ref_spin0_dipole.dat'):
+        ref_name = 'input.ref_spin0_dipole.dat'
+        new_name = 'input.00_spin0_dipole.dat'
   
     ref_data = np.loadtxt(ref_name, skiprows = 3)
     new_data = np.loadtxt(new_name, skiprows = 3)

@@ -2,6 +2,7 @@ set(tests "Si-8atom-gamma-double-scalapack")
 list(APPEND tests "Si-8atom-gamma-double-tiledMM")
 list(APPEND tests "Si-8atom-2x2x2-double-tiledMM")
 list(APPEND tests "Si-8atom-2x2x2-double-scalapack")
+list(APPEND tests "benzene")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/${rmg}")
 foreach(test ${tests})
