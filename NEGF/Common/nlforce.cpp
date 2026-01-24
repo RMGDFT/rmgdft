@@ -79,7 +79,7 @@ void nlforce (double * veff)
     } /* end for ion loop */
 
     size = 3 * ct.num_ions;
-    global_sums(forces_tem, &size, pct.grid_comm);
+    rmg::reduce(forces_tem, size, pct.grid_comm);
 
 
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -101,7 +101,7 @@ void nlforce (double * veff)
     nlforce_par_D (states, forces_tem);
 
     size = ct.num_ions * 3;
-    global_sums (forces_tem, &size, pct.grid_comm);
+    rmg::reduce(forces_tem, size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

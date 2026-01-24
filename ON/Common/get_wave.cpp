@@ -97,7 +97,7 @@ void get_wave(int st, STATE * states)
 
 	idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
-	global_sums(wave_global, &idx, pct.grid_comm);
+	rmg::reduce(wave_global, idx, pct.grid_comm);
 
         global_to_distribute(wave_global, wave_temp);
 

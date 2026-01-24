@@ -54,7 +54,7 @@ void update_orbit_centers(STATE * states)
         new_centers[st * 3 + 2] = z;
     }
 
-    global_sums(new_centers, &size, pct.grid_comm);
+    rmg::reduce(new_centers, size, pct.grid_comm);
 
     for (st = 0; st < ct.num_states; st++)
     {
@@ -187,7 +187,7 @@ int if_update_centers(STATE * states)
         new_centers[st * 3 + 2] = z;
     }
 
-    global_sums(new_centers, &size, pct.grid_comm);
+    rmg::reduce(new_centers, size, pct.grid_comm);
 
     N_moving_orbits = 0;
     for (st = ct.state_begin; st < ct.state_end; st++)

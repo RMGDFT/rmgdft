@@ -11,6 +11,7 @@
 #include "params.h"
 
 #include "rmgtypedefs.h"
+#include "rmg_reduce.h"
 #include "typedefs.h"
 #include "RmgTimer.h"
 
@@ -38,7 +39,7 @@ void RhoAugmented(double * rho, double * global_mat_X)
     RhoQnmMat(product, global_mat_X);
     delete(RT5);
 
-    global_sums(product, &size, pct.grid_comm);
+    rmg::reduce(product, size, pct.grid_comm);
 
     RmgTimer *RT6 = new RmgTimer("3-get_new_rho: augmented_Q(r)");
     for (ion = 0; ion < ct.num_ions; ion++)

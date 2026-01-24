@@ -260,7 +260,7 @@ exit(0);
 
 
     iene = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    global_sums (rho_energy, &iene, pct.grid_comm);
+    rmg::reduce(rho_energy, iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
         double dx = get_celldm(0) / get_NX_GRID();

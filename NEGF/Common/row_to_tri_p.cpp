@@ -81,7 +81,7 @@ void row_to_tri_p (double * A_tri, double * Aii, int N, int *ni)
             }
 
 
-        global_sums(work_matrix, &n2, pct.grid_comm);
+        rmg::reduce(work_matrix, n2, pct.grid_comm);
 
 
         for(j =0; j < pmo.mxllda_cond[i]; j++)
@@ -133,7 +133,7 @@ void row_to_tri_p (double * A_tri, double * Aii, int N, int *ni)
                 }
             }
 
-        global_sums(work_matrix, &n2, pct.grid_comm);
+        rmg::reduce(work_matrix, n2, pct.grid_comm);
 
         for(j =0; j < pmo.mxllda_cond[i-1]; j++)
         {

@@ -320,8 +320,8 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
 
     }
 
-    global_sums (GHG_tri, &ntot, pct.grid_comm);
-    global_sums (GHG_en_tri, &ntot, pct.grid_comm);
+    rmg::reduce(GHG_tri, ntot, pct.grid_comm);
+    rmg::reduce(GHG_en_tri, ntot, pct.grid_comm);
 
 
     for (idx1 = 0; idx1 < ntot; idx1++)

@@ -66,7 +66,6 @@ void get_zdens (STATE *states, int state, double *zvec);
 
 
 double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
-void global_sums (double *vect, int *length, MPI_Comm comm);
 void init_pe ( int image );
 STATE *init_states (void);
 void init_weight (void);

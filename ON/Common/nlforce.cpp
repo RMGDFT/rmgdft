@@ -65,13 +65,13 @@ void nlforce(double * veff)
             IB, JB, pct.descb, pct.desca[1]);
     partial_Mat_nm_R(part_omega_nm_x, part_omega_nm_y, part_omega_nm_z, work_matrix_row);
 
-    global_sums(rho_nm, &size, pct.grid_comm);
-    global_sums(part_rho_nm_x, &size, pct.grid_comm);
-    global_sums(part_rho_nm_y, &size, pct.grid_comm);
-    global_sums(part_rho_nm_z, &size, pct.grid_comm);
-    global_sums(part_omega_nm_x, &size, pct.grid_comm);
-    global_sums(part_omega_nm_y, &size, pct.grid_comm);
-    global_sums(part_omega_nm_z, &size, pct.grid_comm);
+    rmg::reduce(rho_nm, size, pct.grid_comm);
+    rmg::reduce(part_rho_nm_x, size, pct.grid_comm);
+    rmg::reduce(part_rho_nm_y, size, pct.grid_comm);
+    rmg::reduce(part_rho_nm_z, size, pct.grid_comm);
+    rmg::reduce(part_omega_nm_x, size, pct.grid_comm);
+    rmg::reduce(part_omega_nm_y, size, pct.grid_comm);
+    rmg::reduce(part_omega_nm_z, size, pct.grid_comm);
 
 
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -109,7 +109,7 @@ void nlforce(double * veff)
     }
 
     size = 3 * ct.num_ions;
-    global_sums(forces_tem, &size, pct.grid_comm);
+    rmg::reduce(forces_tem, size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

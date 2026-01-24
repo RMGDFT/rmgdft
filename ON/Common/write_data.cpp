@@ -253,7 +253,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 
     idx = ixdim * iydim * izdim ;
-    global_sums(rho_tem, &idx, pct.grid_comm);
+    rmg::reduce(rho_tem, idx, pct.grid_comm);
     if (pct.gridpe == 0)
     {
         newname = std::format("{}{}", name, ".rho_firstatom");

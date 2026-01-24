@@ -1251,7 +1251,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
             for(int idx = 0; idx < sum_dim_noncoll; idx++)
                 sum[idx] *= get_vel_f();
-            global_sums (sum, &sum_dim_noncoll, pct.grid_comm);
+            rmg::reduce(sum, sum_dim_noncoll, pct.grid_comm);
 
             int nion = -1;
             double *Ia = new double[ct.max_nl * ct.max_nl * 4];

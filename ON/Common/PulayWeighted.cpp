@@ -128,8 +128,8 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
             b[i] = 0.0;
         }
         /*  Real_sum_all ( A, b )  if mutil-processing */
-        global_sums(A, &s2, pct.grid_comm);
-        global_sums(b, &A_size, pct.grid_comm);
+        rmg::reduce(A, s2, pct.grid_comm);
+        rmg::reduce(b, A_size, pct.grid_comm);
 
         b[size] = 1.0;
         for (i = 0; i < size; i++)

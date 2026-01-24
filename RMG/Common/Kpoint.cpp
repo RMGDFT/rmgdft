@@ -753,7 +753,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /*Sum coefficients over all processors */
             if (length)
             {
-                global_sums (&cR[ist1 + 1], &length, grid_comm);
+                rmg::reduce(&cR[ist1 + 1], length, grid_comm);
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
@@ -914,8 +914,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
             /*Sum coefficients over all processors */
             if (length)
             {
-                global_sums (&cR[ist1 + 1], &length, grid_comm);
-                global_sums (&cI[ist1 + 1], &length, grid_comm);
+                rmg::reduce(&cR[ist1 + 1], length, grid_comm);
+                rmg::reduce(&cI[ist1 + 1], length, grid_comm);
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {

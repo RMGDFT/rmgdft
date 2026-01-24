@@ -90,7 +90,7 @@ void get_ddd_update (double * veff)
     if (sum_idx != sum_dim)
         rmg::error("Problem with sum index");
 
-    global_sums (sum, &sum_dim, pct.grid_comm);
+    rmg::reduce(sum, sum_dim, pct.grid_comm);
 
     sum_idx = 0;
 

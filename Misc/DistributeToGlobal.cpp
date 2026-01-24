@@ -59,7 +59,6 @@ void DistributeToGlobal(double * distr_array, double * global_array)
                 global_array[idx2] = distr_array[idx1];
             }
 
-    // global_sums(global_array, &global_basis, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, global_array, global_basis, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
 

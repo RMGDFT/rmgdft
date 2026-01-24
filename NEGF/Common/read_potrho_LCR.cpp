@@ -89,7 +89,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
         }
     }
 
-    global_sums (vtot_xyplane, &FNXY, pct.grid_comm);
+    rmg::reduce(vtot_xyplane, FNXY, pct.grid_comm);
 
 
     if (pct.gridpe == 0)

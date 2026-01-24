@@ -109,8 +109,8 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 
         /*  Real_sum_all ( A, b )  if mutil-processing */
         s2 = size * size;
-        global_sums(A, &s2, pct.grid_comm);
-        global_sums(b, &size, pct.grid_comm);
+        rmg::reduce(A, s2, pct.grid_comm);
+        rmg::reduce(b, size, pct.grid_comm);
 
 
         /*   b = A^(-1) * b     */
