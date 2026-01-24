@@ -93,7 +93,6 @@ cgen_prolong.cpp
 mg_prolong_MAX10.cpp
 init_pos.cpp
 ftn_errors.cpp
-rmg_alloc.cpp
 get_opposite_occupancies.cpp
 get_opposite_eigvals.cpp
 remap.cpp

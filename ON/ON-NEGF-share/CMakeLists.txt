@@ -72,6 +72,7 @@ ThetaPhi.cpp
 ThetaPhiBlock.cpp
 xyz2pe.cpp
 write_TFions.cpp
+rmg_alloc.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

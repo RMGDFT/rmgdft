@@ -343,6 +343,7 @@ if(RMG_HIP_ENABLED)
         if(RMG_VKFFT_ENABLED)
             add_library(VkFFT INTERFACE)
             add_definitions(-DVKFFT_BACKEND=2)
+            list(APPEND RMGLIBS "${HIP_PATH}/lib/libhiprtc.so")
         endif()
     endif()
 
