@@ -87,7 +87,7 @@ MPI_Comm get_unique_coalesced_local_comm(int istate)
 
 template <typename RmgType> void rmg::reduce(RmgType * vect, int length, MPI_Comm comm)
 {
-    RmgTimer RT0("rmg::reduce");
+    RmgTimer RT0("rmg_reduce");
     BaseThread *T = BaseThread::getBaseThread(0);
 
     RmgType *v1, *v2;
