@@ -102,12 +102,12 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     int Lwork;
     int *devIpiv, *devInfo;
     cuDoubleComplex *Workspace;
-    cudaError_t cuerr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
-    cuerr = gpuMalloc((void **)&devInfo, sizeof(int) );
+    gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
+    gpuMalloc((void **)&devInfo, sizeof(int) );
 
     cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf_bufferSize failed.");
-    cuerr = gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
+    gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
     cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf failed.");
     info = 0;
