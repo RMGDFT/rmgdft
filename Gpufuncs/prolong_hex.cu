@@ -203,7 +203,6 @@ void prolong_hex_gpu_internal(double *full,
         //printf("DDDD  %d  %d  %d  %d  %d\n",i, dimz, zstart[i], smem_sizes[i], zlen[i]);fflush(NULL);
     }
 
-    int tid = getThreadId();
     int fbasis = 8*dimx*dimy*dimz;
     int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
@@ -217,7 +216,6 @@ void prolong_hex_gpu_internal(double *full,
         prolong_hex_kernel<T, images>
                 <<<Grid, Block, smem_sizes[i], stream>>>(
                    full,
-                   //(T *)abufs[tid],
                    half,
                    zstart[i],
                    zlen[i],

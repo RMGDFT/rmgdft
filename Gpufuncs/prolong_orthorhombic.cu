@@ -217,7 +217,6 @@ void prolong_ortho_gpu_internal(double *full,
         //printf("DDDD  %d  %d  %d  %d  %d\n",i, dimz, zstart[i], smem_sizes[i], zlen[i]);fflush(NULL);
     }
 
-    int tid = getThreadId();
 
     Grid.x = dimx;
     Grid.y = 1;
@@ -229,7 +228,6 @@ void prolong_ortho_gpu_internal(double *full,
         prolong_ortho_kernel<T, images>
         <<<Grid, Block, smem_sizes[i], stream>>>(
             full,
-            //(T *)abufs[tid],
             half,
             zstart[i],
             zlen[i],
