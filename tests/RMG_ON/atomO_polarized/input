@@ -145,6 +145,6 @@ LocalizedOrbitalLayout="Projection"
 
 
 
-write_qmcpack_restart = "true"
+write_qmcpack_restart = "false"
 
 
