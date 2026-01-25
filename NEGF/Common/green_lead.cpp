@@ -23,6 +23,7 @@
 #include "GpuAlloc.h"
 #include "blas_driver.h"
 #include "transition.h"
+#include "rmg_reduce.h"
 
 #define 	MAX_STEP 	100
 
@@ -170,8 +171,8 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
         rmg::dzasum_driver(n1, &tau[n1], ione, &converge1);
         rmg::dzasum_driver(n1, &taut[n1], ione, &converge2);
 
-        comm_sums(&converge1, &ione, COMM_EN2);
-        comm_sums(&converge2, &ione, COMM_EN2);
+        rmg::reduce(&converge1, ione, COMM_EN2);
+        rmg::reduce(&converge2, ione, COMM_EN2);
 
         if(converge1 > 1.0E06 || converge2 > 1.0E06) 
             printf("\n WARNING Green function in green_lead.c diverging %d %e %e", step, converge1, converge2);

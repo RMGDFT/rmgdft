@@ -15,6 +15,7 @@
 #include "pmo.h"
 #include "GpuAlloc.h"
 #include "transition.h"
+#include "rmg_reduce.h"
 
 
 #define 	LDEBUG 	0
@@ -116,7 +117,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
         }                       /* end for energy points */
 
-        comm_sums (lcr[iprobe].density_matrix_tri, &ntot, COMM_EN1);
+        rmg::reduce (lcr[iprobe].density_matrix_tri, ntot, COMM_EN1);
 
 
         if(cei.probe_noneq > 0) break;
@@ -231,7 +232,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
                     }                   /* end for energy points */
 
-                    comm_sums (lcr[iprobe].lcr_ne[j].density_matrix_ne_tri, &ntot, COMM_EN1);
+                    rmg::reduce (lcr[iprobe].lcr_ne[j].density_matrix_ne_tri, ntot, COMM_EN1);
 
                     j++;	
                 }     /* if statement ends here */	
@@ -346,7 +347,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     for (st1 = 0; st1 < ntot; st1++)
         lcr[0].density_matrix_tri[st1] *= ct.kp[pct.kstart].kweight /PI ;
 
-    comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
+    rmg::reduce (lcr[0].density_matrix_tri, ntot, pct.kpsub_comm);
 
 
     // for off-diagonal parts, we have already average the upper and lower

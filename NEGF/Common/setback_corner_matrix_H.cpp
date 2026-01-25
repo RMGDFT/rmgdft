@@ -13,6 +13,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "rmg_reduce.h"
 
 
 /* 
@@ -75,7 +76,7 @@ void  setback_corner_matrix_H()
         }
         
         n2 = nmax * nmax;
-        comm_sums(temp, &n2, COMM_EN2);
+        rmg::reduce(temp, n2, COMM_EN2);
         /* now temp = S00, not distributed */
 
         ni = cei.probe_in_block[iprobe-1];  /* n0 => block index */

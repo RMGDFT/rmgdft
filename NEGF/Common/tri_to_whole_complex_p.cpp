@@ -11,7 +11,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
-
+#include "rmg_reduce.h"
 
 void tri_to_whole_complex_p (std::complex<double> * A_tri, std::complex<double> * Aii, int N, int *ni)
 {
@@ -124,7 +124,7 @@ void tri_to_whole_complex_p (std::complex<double> * A_tri, std::complex<double> 
     }
 
     i = 2 * ndim * ndim;
-    comm_sums((double *)Aii, &i, COMM_EN2);
+    rmg::reduce((double *)Aii, i, COMM_EN2);
 
 }
 

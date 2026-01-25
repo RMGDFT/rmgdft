@@ -79,12 +79,4 @@ void nlforce_par_Q(double * veff, double * rho_nm, int ion, int nh, double *forc
         my_free(QnmI_R);
     }
 
-/*    size = 3;
- *   global_sums(forces, &size);
- *   iptr->force[ct.fpt[0]][0] += get_vel_f() * forces[0];
- *   iptr->force[ct.fpt[0]][1] += get_vel_f() * forces[1];
- *   iptr->force[ct.fpt[0]][2] += get_vel_f() * forces[2];
-*/
-
-
 }

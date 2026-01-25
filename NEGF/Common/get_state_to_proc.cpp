@@ -74,7 +74,7 @@ void get_state_to_proc (STATE * states)
         }
     }
 
-    global_sums_int (state_to_proc, &ct.num_states);
+    rmg::reduce (state_to_proc, ct.num_states, pct.grid_comm);
     for (st = 0; st < ct.num_states; st++)
         states[st].pe = state_to_proc[st];
 
@@ -114,7 +114,7 @@ void get_state_to_proc (STATE * states)
     state_end[st] = ct.state_end;
 
     st = pct.grid_npes;
-    global_sums_int (state_begin, &st);
-    global_sums_int (state_end, &st);
+    rmg::reduce (state_begin, st, pct.grid_comm);
+    rmg::reduce (state_end, st, pct.grid_comm);
 
 }

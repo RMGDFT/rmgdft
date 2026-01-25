@@ -18,6 +18,7 @@
 #include "pmo.h"
 #include "GpuAlloc.h"
 #include "blas_driver.h"
+#include "rmg_reduce.h"
 
 
 #define 	MAX_STEP 	40
@@ -77,7 +78,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     rmg::dzasum_driver(n1, green_ptr, ione, &converge1);
 
-    comm_sums(&converge1, &ione, COMM_EN2);
+    rmg::reduce(&converge1, ione, COMM_EN2);
 
 
     for (step = 0; step < MAX_STEP; step++)
@@ -94,7 +95,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
         matrix_inverse_driver(green_ptr, desca);
         rmg::dzasum_driver(n1, green_ptr, ione, &converge2);
 
-        comm_sums(&converge2, &ione, COMM_EN2);
+        rmg::reduce(&converge2, ione, COMM_EN2);
 
         /* rmg::printlog("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
 

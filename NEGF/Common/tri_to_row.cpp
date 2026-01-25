@@ -12,6 +12,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "rmg_reduce.h"
 
 
 void tri_to_row (double * A_tri, double * Aii_row, int N, int *ni)
@@ -195,7 +196,7 @@ void tri_to_row (double * A_tri, double * Aii_row, int N, int *ni)
         istart += ct.block_dim[i-1];
     }
 
-    comm_sums(Aii, &size, COMM_EN2);
+    rmg::reduce(Aii, size, COMM_EN2);
 
     //assign Aii to Aii_row, the (ct.state_end - ct.state_begin) * ndim
     //

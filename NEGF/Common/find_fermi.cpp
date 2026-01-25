@@ -21,6 +21,7 @@
 #include "method.h"
 #include "pmo.h"
 #include "transition.h"
+#include "rmg_reduce.h"
 
 
 
@@ -47,7 +48,7 @@ void find_fermi (std::complex<double> * sigma_all)
         ct.tcharge = 0.0;
         for (st1 = pmo.offdiag_begin[0]; st1 < pmo.diag_begin[ct.num_blocks-1]; st1++)
                 ct.tcharge += 6.0 * lcr[0].density_matrix_tri[st1] * lcr[0].Stri[st1];
-         comm_sums(&ct.tcharge, &ione, COMM_EN2);
+        rmg::reduce(&ct.tcharge, ione, COMM_EN2);
 
         if (pct.gridpe == 0)
             rmg::printlog ("\n total charge, %18.12f %18.12f  Fermi energy %16.10f %16.10f",

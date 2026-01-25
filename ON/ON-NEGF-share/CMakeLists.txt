@@ -46,7 +46,6 @@ GetNlop_on.cpp
 GetOrbitalPairs.cpp
 get_orbit_overlap_region.cpp
 get_start.cpp
-global_sums_int.cpp
 global_to_distribute.cpp
 init_comm.cpp
 init_comm_res.cpp
