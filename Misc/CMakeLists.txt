@@ -80,7 +80,6 @@ rmg_reduce.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
 ZgetrftrsDriver.cpp
-RmgSumAll_Cbindings.cpp
 rmg_grid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp

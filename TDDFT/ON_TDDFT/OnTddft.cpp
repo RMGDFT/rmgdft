@@ -57,6 +57,8 @@
 #include "GpuAlloc.h"
 #include "RmgException.h"
 #include "blas_driver.h"
+#include "rmg_sum_all.h"
+
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
 *niter , int *p_iprint, MPI_Comm comm) ;
 
@@ -366,8 +368,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             double tcharge = 0.0;
             for (i = 0; i < get_FP0_BASIS(); i++)
                 tcharge += rho[i];
-            ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
-            ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+            ct.tcharge = rmg::sum_all<double>(tcharge, pct.grid_comm);
+            ct.tcharge = rmg::sum_all<double>(ct.tcharge, pct.spin_comm);
 
 
             ct.tcharge *= get_vel_f();

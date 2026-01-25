@@ -321,7 +321,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
+    if (rmg::sum_all<int> (this->num_owned_ions, pct.grid_comm) != num_ions)
     {
         printf("\n num_owned_ions %d at pe %d num_ion %d\n", this->num_owned_ions, pct.gridpe, num_ions);
         rmg::error("Problem with claimimg ions.");

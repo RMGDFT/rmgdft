@@ -47,6 +47,7 @@
 #include "negf_prototypes.h"
 #include "const.h"
 #include "params.h"
+#include "rmg_sum_all.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -215,7 +216,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
            residual += mgresarr[idx] * mgresarr[idx];
 
 
-        residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
+        residual = sqrt (rmg::sum_all<double>(residual, pct.grid_comm) / ct.psi_fnbasis);
 
 
         //rmg::printlog("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);

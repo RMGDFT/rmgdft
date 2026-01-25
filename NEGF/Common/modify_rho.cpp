@@ -10,6 +10,7 @@
 #include <assert.h>
 
 #include "main.h"
+#include "rmg_sum_all.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
@@ -71,7 +72,7 @@ void modify_rho (double * rho, double * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge, pct.grid_comm);
+        ct.tcharge = rmg::sum_all<double> (tcharge, pct.grid_comm);
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             rho[idx] = rho_old[idx];
 
@@ -86,7 +87,7 @@ void modify_rho (double * rho, double * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * get_vel_f();
+        ct.tcharge = rmg::sum_all<double> (tcharge, pct.grid_comm) * get_vel_f();
         if (pct.gridpe == 0)
             rmg::printlog ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
@@ -137,8 +138,8 @@ void modify_rho (double * rho, double * rho_old)
             }
         }
 
-        t2 = real_sum_all (total_charge, pct.grid_comm) * get_vel_f();
-        t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * get_vel_f();
+        t2 = rmg::sum_all<double> (total_charge, pct.grid_comm) * get_vel_f();
+        t_fixed = rmg::sum_all<double> (tcharge_fixed, pct.grid_comm) * get_vel_f();
 
         if (pct.gridpe == 0)
             rmg::printlog ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",

@@ -45,6 +45,7 @@
 #include "Symmetry.h"
 #include "Functional.h"
 #include "GatherScatter.h"
+#include "rmg_sum_all.h"
 #include "blas_driver.h"
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
@@ -116,9 +117,9 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         ct.tcharge += rho[idx];
 
     if(ct.AFM) ct.tcharge *=2.0;
-    /* ct.tcharge = real_sum_all (ct.tcharge); */
-    ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
-    ct.tcharge = real_sum_all (ct.tcharge, pct.spin_comm);
+    /* ct.tcharge = rmg::sum_all<double> (ct.tcharge); */
+    ct.tcharge = rmg::sum_all<double> (ct.tcharge, pct.grid_comm);
+    ct.tcharge = rmg::sum_all<double> (ct.tcharge, pct.spin_comm);
     ct.tcharge = ct.tcharge * get_vel_f();
 
     /* Renormalize charge, there could be some discrepancy because of interpolation */

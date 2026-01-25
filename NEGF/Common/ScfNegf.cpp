@@ -29,6 +29,7 @@
 #include "prototypes_on.h"
 #include "prototypes_negf.h"
 #include "init_var.h"
+#include "rmg_sum_all.h"
 
 #include "Scalapack.h"
 #include "blas.h"
@@ -203,7 +204,7 @@ void ScfNegf (DoubleC *sigma_all, double *rho_matrix_local, double *vxc,
         tem += (rho[idx] - rho_old[idx]) * (rho[idx] - rho_old[idx]);
     }
 
-    tem = real_sum_all (tem, pct.grid_comm);
+    tem = rmg::sum_all<double> (tem, pct.grid_comm);
     tem = sqrt (tem);
 
     if (pct.imgpe == 0)

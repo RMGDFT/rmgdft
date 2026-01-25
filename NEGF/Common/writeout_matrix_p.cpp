@@ -12,6 +12,7 @@
 #include <assert.h>
 
 #include "main.h"
+#include "rmg_sum_all.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"

@@ -43,6 +43,7 @@
 #include "AtomicInterpolate.h"
 #include "Atomic.h"
 #include "RmgException.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 
 // This is used to initialize 4 types of atomic data structures that live
@@ -364,8 +365,8 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     if(object_type == ATOMIC_RHO) {
         double t2 = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
-        t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
-        t2 = real_sum_all (t2, pct.spin_comm);
+        t2 = get_vel_f() *  rmg::sum_all<double> (t2, pct.grid_comm);
+        t2 = rmg::sum_all<double> (t2, pct.spin_comm);
         if(ct.AFM) t2 *= 2.0;
 
         double t1 = ct.nel / t2;
@@ -400,7 +401,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for (int idx = 0; idx < FP0_BASIS; idx++) ct.crho += sumobject[idx];
 
         ct.crho = ct.crho * get_vel_f();
-        ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
+        ct.crho = rmg::sum_all<double> (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
         if (ct.verbose)
         {

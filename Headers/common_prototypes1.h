@@ -98,9 +98,6 @@ void write_pdb (void);
 int read_atom_line(char *species, double *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);
 
-double real_sum_all (double x, MPI_Comm comm);
-double double_sum_all (double x, MPI_Comm comm);
-
 
 void sortpsi (STATE *states);
 void vol_wf (STATE *states, int state, int step);

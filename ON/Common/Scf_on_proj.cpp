@@ -224,8 +224,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     double tcharge = 0.0;
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         tcharge += rho[idx];
-    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
-    ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+    ct.tcharge = rmg::sum_all<double>(tcharge, pct.grid_comm);
+    ct.tcharge = rmg::sum_all<double>(ct.tcharge, pct.spin_comm);
     ct.tcharge *= get_vel_f();
 
     double t2 = ct.nel / ct.tcharge;

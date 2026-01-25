@@ -15,6 +15,7 @@ Get a particular wave st and store it in wave_global
 #include "main.h"
 #include "prototypes_on.h"
 #include "transition.h"
+#include "rmg_sum_all.h"
 #include "init_var.h"
 
 
@@ -110,7 +111,7 @@ void get_wave(int st, STATE * states)
 	for (idx = 0; idx < get_P0_BASIS(); idx++)
 		tcharge += wave_temp[idx] * wave_temp[idx];
 
-	charge_from_wave = real_sum_all(tcharge, pct.grid_comm);
+	charge_from_wave = rmg::sum_all<double>(tcharge, pct.grid_comm);
 
 
 	charge_from_wave *= get_vel();

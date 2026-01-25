@@ -44,6 +44,7 @@
 #include "blas.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
+#include "rmg_sum_all.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
 #include "RmgParallelFft.h"
@@ -384,8 +385,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
                 tcharge += rho[idx];
 
 
-            ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
-            ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+            ct.tcharge = rmg::sum_all<double>(tcharge, pct.grid_comm);
+            ct.tcharge = rmg::sum_all<double>(ct.tcharge, pct.spin_comm);
 
 
             ct.tcharge *= get_vel_f();

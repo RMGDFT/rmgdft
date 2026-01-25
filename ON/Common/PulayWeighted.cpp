@@ -127,7 +127,7 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
 
             b[i] = 0.0;
         }
-        /*  Real_sum_all ( A, b )  if mutil-processing */
+        /*  rmg::sum_all<double> ( A, b )  if mutil-processing */
         rmg::reduce(A, s2, pct.grid_comm);
         rmg::reduce(b, A_size, pct.grid_comm);
 

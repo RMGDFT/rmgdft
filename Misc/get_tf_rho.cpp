@@ -6,6 +6,7 @@
 #include "rmg_error.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "rmg_sum_all.h"
 #include "AtomicInterpolate.h"
 
 
@@ -169,7 +170,7 @@ void get_tf_rho (double * tf_rho)
     }
 
 
-    t1 = real_sum_all (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
+    t1 = rmg::sum_all<double> (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
     
     
     if (pct.imgpe==0)
@@ -187,7 +188,7 @@ void get_tf_rho (double * tf_rho)
     for (idx = 0; idx < FP0_BASIS; idx++)
 	t1 += tf_rho[idx];
     
-    t1 = real_sum_all (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
+    t1 = rmg::sum_all<double> (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
     
     if (pct.imgpe==0)
 	printf("\nTotal TF charge after adjustment is %.8e\n", t1*get_vel_f());
