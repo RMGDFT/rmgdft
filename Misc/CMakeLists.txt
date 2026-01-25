@@ -1,4 +1,5 @@
 add_library (Misc
+rmg_vector.cpp
 rmg_threadutils.cpp
 TiledM_to_glob.cpp
 GatherScatter.cpp
