@@ -35,6 +35,7 @@ recv_from[loop * (ct.num_state_per_proc +2) ]:
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "rmg_reduce.h"
 
 
 void init_comm(STATE * states)
@@ -95,7 +96,7 @@ void init_comm(STATE * states)
     }
 
     idx = pct.grid_npes * pct.grid_npes;
-    global_sums_int(matrix_pairs, &idx);
+    rmg::reduce(matrix_pairs, idx, pct.grid_comm);
 
 
     /*

@@ -97,7 +97,7 @@ proc1 = pct.gridpe;
         }
 
         idx = pct.grid_npes * pct.grid_npes;
-        global_sums_int(matrix_pairs, &idx);
+        rmg::reduce(matrix_pairs, idx, pct.grid_comm);
 
         /*
          *if (pct.gridpe == 0)

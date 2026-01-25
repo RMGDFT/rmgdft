@@ -30,6 +30,7 @@
 #include <typeinfo>
 #include <complex>
 
+template void rmg::reduce<int>(int*, int, MPI_Comm);
 template void rmg::reduce<float>(float*, int, MPI_Comm);
 template void rmg::reduce<double>(double*, int, MPI_Comm);
 template void rmg::reduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);

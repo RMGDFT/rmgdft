@@ -27,6 +27,7 @@ This should be called after get_nlop.c
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "rmg_reduce.h"
 
 
 
@@ -42,7 +43,7 @@ void init_nonlocal_comm(void)
     for (idx = 0; idx < pct.grid_npes; idx++)
         num_nonlocal_ion[idx] = 0;
     num_nonlocal_ion[pct.gridpe] = pct.n_ion_center;
-    global_sums_int(num_nonlocal_ion, &pct.grid_npes);
+    rmg::reduce(num_nonlocal_ion, pct.grid_npes, pct.grid_comm);
 
     max_ion_nonlocal = 0;
     for (idx = 0; idx < pct.grid_npes; idx++)
@@ -65,7 +66,7 @@ void init_nonlocal_comm(void)
         ionidx_allproc[pct.gridpe * max_ion_nonlocal + ion] = pct.ionidx[ion];
 
     item = max_ion_nonlocal * pct.grid_npes;
-    global_sums_int(ionidx_allproc, &item);
+    rmg::reduce(ionidx_allproc, item, pct.grid_comm);
 
     size = (size_t)ct.state_per_proc * (size_t)max_ion_nonlocal * (size_t)ct.max_nl;
 
@@ -122,7 +123,7 @@ void init_nonlocal_comm(void)
     }
 
     item = pct.grid_npes * pct.grid_npes;
-    global_sums_int(matrix_pairs, &item);
+    rmg::reduce(matrix_pairs, item, pct.grid_comm);
 
 
     //   if (pct.gridpe == 0)
