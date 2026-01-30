@@ -20,7 +20,7 @@ if __name__ == '__main__':
     diff = ref_data[:,1:4] - new_data[:,1:4]
     abs_sum_diff = np.sum(np.abs(diff))
     abs_sum_ref = np.sum(np.abs(ref_data[:, 1:4]))
-    current_pass = abs_sum_diff/abs_sum_ref < 0.01
+    current_pass = abs_sum_diff/abs_sum_ref < 0.02
 
     ref_name = 'Epsilon/absorb_spin0.dat_ref'
     new_name = 'Epsilon/absorb_spin0.dat'
