@@ -35,6 +35,7 @@
 #include "Kpoint.h"
 #include "GpuAlloc.h"
 #include "blas.h"
+#include "rmg_hvector.h"
 
 //#include "TradeImages.h"
 #include "RmgException.h"
@@ -111,10 +112,10 @@ template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint
     
     size =  num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
-    OrbitalType *sint_der = (OrbitalType *)RmgMallocHost(3*size * sizeof(OrbitalType));
-    OrbitalType *sint_derx = sint_der + 0 * size;
-    OrbitalType *sint_dery = sint_der + 1 * size;
-    OrbitalType *sint_derz = sint_der + 2 * size;
+    rmg::hvector<OrbitalType> sint_der(3*size);
+    OrbitalType *sint_derx = sint_der.data() + 0 * size;
+    OrbitalType *sint_dery = sint_der.data() + 1 * size;
+    OrbitalType *sint_derz = sint_der.data() + 2 * size;
 
 
 //  determine the number of occupied states for all kpoints.
@@ -350,7 +351,6 @@ ct.state_block_size);
     delete[] gamma_allions;
     delete[] par_gamma_allions;
     delete[] par_omega_allions;
-    RmgFreeHost(sint_der);
 
     delete[] tmp_force_omega;
     delete[] tmp_force_gamma;

@@ -50,6 +50,7 @@
 #include "RmgException.h"
 #include "Functional.h"
 #include "blas.h"
+#include "rmg_hvector.h"
 
 #include "rmg_mangling.h"
 #define get_inlc                RMG_FC_MODULE(funct,get_inlc,mod_FUNCT,GET_INLC)
@@ -222,8 +223,8 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, rmg::grid 
     double scale = sqrt(1.0 / (double)coarse_pwaves->global_basis);
 
 
-    std::complex<double> *grad_psi = (std::complex<double> *)RmgMallocHost(4*pbasis_noncol*sizeof(std::complex<double>));
-    std::complex<double> *psi_x = grad_psi;
+    rmg::hvector<std::complex<double>> grad_psi(4*pbasis_noncol);
+    std::complex<double> *psi_x = grad_psi.data();
     std::complex<double> *psi_y = psi_x + pbasis_noncol;
     std::complex<double> *psi_z = psi_x + 2*pbasis_noncol;
     std::complex<double> *psi_fft = psi_x + 3*pbasis_noncol;
@@ -280,8 +281,8 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, rmg::grid 
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
-                    grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi.data(), pbasis_noncol,
+                    grad_psi.data(), pbasis_noncol, one, stress_tensor_T, 3);
 
         }
     }
@@ -293,7 +294,6 @@ template <class T> void Stress<T>::Kinetic_term_FFT(Kpoint<T> **Kpin, rmg::grid 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
-    RmgFreeHost(grad_psi);
 }
 
 template void Stress<double>::Kinetic_term_coarse(Kpoint<double> **Kpin, rmg::grid &BG, Lattice &L);
@@ -305,8 +305,8 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, rmg::gr
     int pbasis = P0_BASIS;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 
-    T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
-    T *psi_x = grad_psi;
+    rmg::hvector<T> grad_psi(3*pbasis_noncol);
+    T *psi_x = grad_psi.data();
     T *psi_y = psi_x + pbasis_noncol;
     T *psi_z = psi_x + 2*pbasis_noncol;
 
@@ -352,8 +352,8 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, rmg::gr
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
-                    grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi.data(), pbasis_noncol,
+                    grad_psi.data(), pbasis_noncol, one, stress_tensor_T, 3);
 
         }
     }
@@ -364,7 +364,6 @@ template <class T> void Stress<T>::Kinetic_term_coarse(Kpoint<T> **Kpin, rmg::gr
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
-    RmgFreeHost(grad_psi);
 }
 
 template void Stress<double>::Kinetic_term_fine(Kpoint<double> **Kpin, rmg::grid &BG, Lattice &L);
@@ -385,9 +384,9 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid
     int pbasis = FP0_BASIS;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
 
-    T *psi_f = (T *)RmgMallocHost(pbasis_noncol*sizeof(T));
-    T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
-    T *psi_x = grad_psi;
+    rmg::hvector<T> psi_f(pbasis_noncol);
+    rmg::hvector<T> grad_psi(3*pbasis_noncol);
+    T *psi_x = grad_psi.data();
     T *psi_y = psi_x + pbasis_noncol;
     T *psi_z = psi_x + 2*pbasis_noncol;
 
@@ -409,25 +408,25 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid
 
             T *psi = kptr->Kstates[st].psi;
             if(ct.prolong_order == 0)
-                FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
+                FftInterpolation(*Rmg_G, psi, psi_f.data(), ratio, false);
             else
-                P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-            ApplyGradient(psi_f, psi_x, psi_y, psi_z, ct.force_grad_order, "Fine");
+                P.prolong(psi_f.data(), psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+            ApplyGradient(psi_f.data(), psi_x, psi_y, psi_z, ct.force_grad_order, "Fine");
             if(ct.noncoll)
             {
                 psi = kptr->Kstates[st].psi + pbasis;
                 if(ct.prolong_order == 0)
-                    FftInterpolation(*Rmg_G, psi, psi_f+pbasis, ratio, false);
+                    FftInterpolation(*Rmg_G, psi, psi_f.data()+pbasis, ratio, false);
                 else
-                    P.prolong(psi_f+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-                ApplyGradient(psi_f+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Fine");
+                    P.prolong(psi_f.data()+pbasis, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+                ApplyGradient(psi_f.data()+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Fine");
             }
 
             if(!ct.is_gamma)
             {
                 std::complex<double> I_t(0.0, 1.0);
                 std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
-                psi_C = (std::complex<double> *) psi_f;
+                psi_C = (std::complex<double> *) psi_f.data();
                 psi_xC = (std::complex<double> *) psi_x;
                 psi_yC = (std::complex<double> *) psi_y;
                 psi_zC = (std::complex<double> *) psi_z;
@@ -441,8 +440,8 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid
 
 
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi, pbasis_noncol,
-                    grad_psi, pbasis_noncol, one, stress_tensor_T, 3);
+            rmg::gemm("C", "N", 3, 3, pbasis_noncol, alpha, grad_psi.data(), pbasis_noncol,
+                    grad_psi.data(), pbasis_noncol, one, stress_tensor_T, 3);
 
         }
     }
@@ -453,8 +452,6 @@ template <class T> void Stress<T>::Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
-    RmgFreeHost(grad_psi);
-    RmgFreeHost(psi_f);
 }
 
 template void Stress<double>::Hartree_term(spinobj<double> &rho, Pw &pwaves);
@@ -730,14 +727,14 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     size_t size = num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
     //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
-    T *sint_der = (T *)RmgMallocHost(size * sizeof(T));
+    rmg::hvector<T> sint_der(size);
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     int num_proj_noncoll = num_proj * ct.noncoll_factor;
-    T *proj_mat = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    rmg::hvector<T> proj_mat(num_proj_noncoll * num_proj_noncoll);
 
     //  proj_mat_q: for US pseudopotenital only = sum_i  <beta_n *r[] |partial_ psi_i> eig[i] <psi_i|beta_n>
-    T *proj_mat_q = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    rmg::hvector<T> proj_mat_q(num_proj_noncoll * num_proj_noncoll);
 
     //  determine the number of occupied states for all kpoints.
 
@@ -828,7 +825,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 #else                                   
                     T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
 #endif   
-                    kptr->BetaProjector->project(kptr, sint_der, first_state *ct.noncoll_factor, 
+                    kptr->BetaProjector->project(kptr, sint_der.data(), first_state *ct.noncoll_factor, 
                             num_state_thisblock *ct.noncoll_factor, nlweight);
                     delete RT1;
 
@@ -853,8 +850,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     T one(1.0);
                     T zero(0.0);
 
-                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
-                            sint, num_proj_noncoll, zero, proj_mat, num_proj_noncoll); 
+                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der.data(), num_proj_noncoll,
+                            sint, num_proj_noncoll, zero, proj_mat.data(), num_proj_noncoll); 
 
                     for(int st = state_start[ib]; st < state_end[ib]; st++)
                     {
@@ -864,8 +861,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                             sint_der[ (st-state_start[ib]) * num_proj_noncoll + iproj] *= t1;
                         }
                     }
-                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der, num_proj_noncoll,
-                            sint, num_proj_noncoll, zero, proj_mat_q, num_proj_noncoll); 
+                    rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_state_thisblock, one, sint_der.data(), num_proj_noncoll,
+                            sint, num_proj_noncoll, zero, proj_mat_q.data(), num_proj_noncoll); 
 
                     delete RT1;
 
@@ -939,9 +936,6 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     delete [] state_end;
     delete [] state_start;
-    RmgFreeHost(proj_mat);
-    RmgFreeHost(proj_mat_q);
-    RmgFreeHost(sint_der);
 
     for(int i = 0; i < 9; i++) stress_tensor_nl[i] = stress_tensor_nl[i]/Rmg_L.omega;
 
@@ -1107,7 +1101,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     int num_proj_noncoll = num_proj * ct.noncoll_factor;
-    T *proj_mat = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    rmg::hvector<T> proj_mat(num_proj_noncoll * num_proj_noncoll);
 
     //  determine the number of occupied states for all kpoints.
 
@@ -1128,7 +1122,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     size_t size = num_nonloc_ions * ct.max_nl * num_occupied * ct.noncoll_factor; 
     size += 1;
     //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
-    T *sint_der = (T *)RmgMallocHost(size * sizeof(T));
+    rmg::hvector<T> sint_der(size);
 
 
     // proj_mat = Sum_stm kpt (kpweigth *  <beta_n|psi_i> occ[i] <psi_i|beta_m>) eq 27 in PRB 61, 8433
@@ -1150,8 +1144,8 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
         T one(1.0);
 
-        rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_occupied, one, sint_der, num_proj_noncoll,
-                sint, num_proj_noncoll, one, proj_mat, num_proj_noncoll); 
+        rmg::gemm("N", "C", num_proj_noncoll, num_proj_noncoll, num_occupied, one, sint_der.data(), num_proj_noncoll,
+                sint, num_proj_noncoll, one, proj_mat.data(), num_proj_noncoll); 
     }
 
 
@@ -1342,8 +1336,6 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
     delete [] sum;
     delete [] veff_grad;
-    RmgFreeHost(sint_der);
-    RmgFreeHost(proj_mat);
 
 
 }
