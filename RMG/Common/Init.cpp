@@ -225,29 +225,6 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    // Blocks of pinned host memory
-    if(ct.kohn_sham_solver == DAVIDSON_SOLVER)
-    {
-        size_t palloc = (size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType);
-        palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
-        InitGpuMallocHost(palloc);
-    }
-    else
-    {
-        if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid && !ct.write_qmcpack_restart)
-        {
-            size_t palloc = (size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType);
-            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
-            InitGpuMallocHost(palloc);
-        }
-        else
-        {
-            size_t palloc = (size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType);
-            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
-            InitGpuMallocHost(palloc);
-        }
-    }
-
     // Wavefunctions are actually stored here
     size_t galloc = ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType);
 

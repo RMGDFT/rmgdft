@@ -5,15 +5,9 @@
 #include "stddef.h"
 #include <source_location>
 
-void *DGpuMallocHost(size_t size, const char *fname, size_t line);
-void InitGpuMallocHost(size_t size);
-void DGpuFreeHost( void *ptr, const char *fname, size_t line);
-
 void *DRmgMallocHost(size_t size, const char *fname, size_t line);
 void DRmgFreeHost( void *ptr, const char *fname, size_t line);
 
-#define  GpuMallocHost(x) DGpuMallocHost (x,__FILE__,__LINE__)
-#define  GpuFreeHost(x) DGpuFreeHost (x,__FILE__,__LINE__)
 #define  RmgMallocHost(x) DRmgMallocHost (x,__FILE__,__LINE__)
 #define  RmgFreeHost(x) DRmgFreeHost (x,__FILE__,__LINE__)
 

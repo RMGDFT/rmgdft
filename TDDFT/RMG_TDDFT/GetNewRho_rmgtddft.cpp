@@ -22,6 +22,7 @@
 #include "Kbpsi.h"
 #include "Gpufuncs.h"
 #include "Kpoint.h"
+#include "rmg_hvector.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -70,13 +71,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     
     // rho_matrix is on device, with MatrixType
     CalType one = 1.0, zero = 0.0;
-    TypeV *rho_temp, *rho_temp_dev;
+    TypeV *rho_temp_dev;
 
     CalType *rho_matrix_dev = (CalType *)ct.get_gmatrix_gpu(numst * numst * sizeof(CalType));
     double *occ_dev;
 
 
-    rho_temp = (TypeV *)GpuMallocHost(pbasis*n_rho * sizeof(TypeV));
+    rmg::hvector<TypeV> rho_temp(pbasis*n_rho);
     gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV));
     gpuMalloc((void **)&occ_dev, numst * sizeof(double));
     gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);
@@ -131,7 +132,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             psi_dev, pbasis_noncoll, rho_matrix_dev, numst, zero, xpsi, pbasis_noncoll);
 
     GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-    gpuMemcpy(rho_temp, rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
+    gpuMemcpy(rho_temp.data(), rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
@@ -140,7 +141,8 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     KpointType one = 1.0, zero = 0.0;
     RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
 
-    double *rho_temp = new double[n_rho * pbasis]();
+    rmg::hvector<double> rho_temp(pbasis*n_rho);
+    rho_temp.set(0.0);
     KpointType *rho_matrix_glob  = (KpointType *)ct.get_gmatrix(numst*numst*sizeof(KpointType));
 
 
@@ -250,7 +252,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     spinobj<double> rho_k_double;
     int fpbasis = dimx * dimy * dimz;
-    CopyAndConvert(n_rho * pbasis, rho_temp, rho_k_double.data());
+    CopyAndConvert(n_rho * pbasis, rho_temp.data(), rho_k_double.data());
     for(int irho = 0; irho< n_rho; irho++)
     {
         P.prolong(rho_k.data()+irho*fpbasis, rho_k_double.data() + irho*pbasis, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
@@ -261,10 +263,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
 #if CUDA_ENABLED || HIP_ENABLED 
     gpuFree(rho_temp_dev);
-    (GpuFreeHost(rho_temp));
     gpuFree(occ_dev);
-#else
-    delete [] rho_temp;
 #endif
 }
 

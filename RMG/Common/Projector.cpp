@@ -46,6 +46,7 @@
 #include "GpuAlloc.h"
 #include "Projector.h"
 #include "RmgException.h"
+#include "rmg_hvector.h"
 
 
 
@@ -658,13 +659,10 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     if(this->num_tot_proj == 0) return;
     int pbasis = kptr->pbasis;
 
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    KpointType *nlarray = (KpointType *)RmgMallocHost(sizeof(KpointType) * this->num_tot_proj * num_states);
-#else
-    KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
-#endif
+    rmg::hvector<KpointType> nlarray(this->num_tot_proj * num_states);
+
     rmg::gemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
-            weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
+            weight, pbasis, psi, pbasis, rzero, nlarray.data(), this->num_tot_proj);
 
     for (int nion = 0; nion < this->num_nonloc_ions; nion++)
     {
@@ -680,12 +678,6 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
             }
         }
     }
-
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    RmgFreeHost(nlarray);
-#else
-    delete [] nlarray;
-#endif
 
 }
 
