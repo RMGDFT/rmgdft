@@ -36,6 +36,7 @@
 #include "rmg_error.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
+#include "rmg_hvector.h"
 
 // Used to generate LDA+U orbital projectors that span the full space
 template void Kpoint<double>::GetDelocalizedOrbital(int ixyz);
@@ -78,7 +79,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
         num_allorbitals_ldaUion += AtomType.num_orbitals;
     }
 
-    KpointType *npsi = (KpointType *)RmgMallocHost(num_allorbitals_ldaUion * pbasis * sizeof(KpointType));
+    rmg::hvector<KpointType> npsi(num_allorbitals_ldaUion * pbasis);
 
     int wave_idx = 0;
     for (size_t ion = 0; ion < (size_t)this->ldaU->num_ldaU_ions; ++ion)
@@ -150,8 +151,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
         }
 
     }
-
-    RmgFreeHost(npsi);
 
     //  normalize the LDA+U orbitals
     //  for ixyz = 1,2,3, no normalization for x*orbital, y*orbital, z*orbital

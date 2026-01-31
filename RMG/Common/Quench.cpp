@@ -51,6 +51,7 @@
 #include "rmg_sum_all.h"
 #include "FDOpt.h"
 #include "BerryPhase.h"
+#include "rmg_hvector.h"
 
 
 
@@ -318,9 +319,9 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     v_psi = new double[pbasis];
     vxc_psi = new double[pbasis]();
     int nstates = Kptr[0]->nstates;
-    OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
-    OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
-    OrbitalType *Hcore_localpp = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+    rmg::hvector<OrbitalType> Hcore(ct.num_kpts_pe * nstates * nstates);
+    rmg::hvector<OrbitalType> Hcore_kin(ct.num_kpts_pe * nstates * nstates);
+    rmg::hvector<OrbitalType> Hcore_localpp(ct.num_kpts_pe * nstates * nstates);
 
     bool compute_direct = (ct.write_qmcpack_restart ||
             ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
@@ -382,7 +383,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         if(ct.qmc_nband > ct.num_states)
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
 
-        Exx->SetHcore(Hcore, Hcore_kin, nstates);
+        Exx->SetHcore(Hcore.data(), Hcore_kin.data(), nstates);
         if(ct.exx_int_flag)
         {
             Exx->Vexx_integrals(ct.exx_int_file);
@@ -439,10 +440,6 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     }
 
-
-    RmgFreeHost(Hcore);
-    RmgFreeHost(Hcore_kin);
-    RmgFreeHost(Hcore_localpp);
     delete [] v_psi;
     delete [] vxc_psi;
 

@@ -29,6 +29,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
+#include "rmg_hvector.h"
 #include "GpuAlloc.h"
 #include "transition.h"
 
@@ -238,7 +239,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
 
         // Now generate a random mix
-        KpointType *rmatrix = (KpointType *)RmgMallocHost(state_count * nstates * sizeof(KpointType));
+        rmg::hvector<KpointType> rmatrix(state_count * nstates);
 
         for(int st = 0;st < state_count;st++) {
             for(int idx = 0;idx < nstates;idx++) {
@@ -253,14 +254,13 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
         int lda = pbasis * ct.noncoll_factor;
         rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
-                npsi, pbasis, rmatrix, state_count, beta, states[0].psi, lda);
+                npsi, pbasis, rmatrix.data(), state_count, beta, states[0].psi, lda);
 
         if(ct.noncoll)
             rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
-                    npsi, pbasis, rmatrix, state_count, beta, states[state_count].psi+pbasis, lda);
+                    npsi, pbasis, rmatrix.data(), state_count, beta, states[state_count].psi+pbasis, lda);
 
 
-        RmgFreeHost(rmatrix);
         delete [] aidum;
     }
 
