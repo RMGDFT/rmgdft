@@ -34,17 +34,11 @@
 #include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
-#include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
-#include "GpuAlloc.h"
 #include "rmg_hvector.h"
-
-#include "RmgParallelFft.h"
 #include "TradeImages.h"
-#include "packfuncs.h"
-
 #include "transition.h"
 #include "blas.h"
 #include "rmg_ortho.h"
@@ -420,18 +414,9 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-            KpointType *npsi = (KpointType *)RmgMallocHost(nstates*pbasis_noncoll*sizeof(KpointType));
-#else
-            KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
-#endif
-            rmg::gemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr.data(), max_states, beta, npsi, pbasis_noncoll);
+            rmg::hvector<KpointType> npsi(nstates*pbasis_noncoll);
+            rmg::gemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr.data(), max_states, beta, npsi.data(), pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-            RmgFreeHost(npsi);
-#else
-            delete [] npsi;
-#endif
             delete RT1;
 
 

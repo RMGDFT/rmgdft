@@ -36,6 +36,7 @@
 #include "blas.h"
 #include "RmgMatrix.h"
 #include "Functional.h"
+#include "rmg_hvector.h"
 
 
 #include "common_prototypes.h"
@@ -128,12 +129,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     HS_Scalapack (num_states, pbasis_noncoll, psi_dev, &hpsi[first_state * pbasis_noncoll], &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij, use_symmetric);
 
 
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    double *eigs;
-    eigs = (double *)GpuMallocHost(2*num_states * sizeof(double));
-#else
-    double *eigs = new double[2*num_states];
-#endif
+    rmg::hvector<double> eigs(2*num_states);
 
     static int call_count;
     if(ct.subdiag_driver == SUBDIAG_ELPA)
@@ -153,14 +149,14 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 
         if(use_symmetric && ct.norm_conserving_pp)
         {
-            SP.symherm_eigenvectors(distAij, eigs, distBij);
+            SP.symherm_eigenvectors(distAij, eigs.data(), distBij);
             for(int ix=0;ix < dist_length;ix++) distAij[ix] = distBij[ix];
         }
         else
         {
             // Copy Aij into Bij to pass to eigensolver
             for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
-            SP.generalized_eigenvectors(distAij, distSij, eigs, distBij);
+            SP.generalized_eigenvectors(distAij, distSij, eigs.data(), distBij);
         }
         delete RT2;
 
@@ -168,7 +164,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 
     // Finally send eigenvalues and vectors to everyone 
     RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
-    SP.BcastRoot(eigs, num_states, MPI_DOUBLE);
+    SP.BcastRoot(eigs.data(), num_states, MPI_DOUBLE);
     delete RT1;
 
     // If subspace diagonalization is used every step, use eigenvalues obtained here 
@@ -217,13 +213,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     // End rotation
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    GpuFreeHost(eigs);
     if(ct.gpu_managed_memory == false)
     {
         gpuFree(psi_dev);
     }
-#else
-    delete [] eigs;
 #endif
 
 
