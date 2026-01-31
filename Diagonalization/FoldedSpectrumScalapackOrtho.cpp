@@ -30,6 +30,7 @@
 #include "Subdiag.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
+#include "rmg_hvector.h"
 
 #include "blas.h"
 
@@ -64,14 +65,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     KpointType ONE_t(1.0);
     KpointType alpha(1.0);
     KpointType beta(0.0);
-#if CUDA_ENABLED
-    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-#else
-    KpointType *C = work1;
-    KpointType *G = work2;
-    int ione = 1;
-#endif
+    rmg::hvector<KpointType> C(n*n);
+    rmg::hvector<KpointType> G(n*n);
+
+    [[maybe_unused]] int ione = 1;
     double *tarr = new double[n];
     int info = 0;
     char *trans_t="t", *trans_n="n", *cuplo = "l";
@@ -99,7 +96,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs-Gram-overlaps");
     if(!B) {
 #if CUDA_ENABLED
-        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
+        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C.data(), n);
 
 #else
 //        dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
@@ -108,9 +105,9 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-        rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+        rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G.data(), n);
         // Multiply G by V and leave result in C for the magma_dpotrf_gpu call coming up next
-        rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
+        rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G.data(), n, ZERO_t, C.data(), n);
     }
     delete(RT1);
 
@@ -119,18 +116,18 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RT1 = new RmgTimer("4-Diagonalization: fs-Gram-cholesky");
 #if CUDA_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
-    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 ));
+    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C.data(), 1, C.data(), 1 ));
 #elif CUDA_ENABLED
-    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 ));
-    dpotrf(cuplo, &n, C, &n, &info);
+    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C.data(), 1, C.data(), 1 ));
+    dpotrf(cuplo, &n, C.data(), &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);
     pdpotrf( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
     for(int i=0;i<n*n;i++)C[i]=0.0;
-    MainSp->GatherMatrix(C, m_distC);
+    MainSp->GatherMatrix(C.data(), m_distC);
 
 #endif
-    MainSp->BcastRoot(C, factor * n * n, MPI_DOUBLE);
+    MainSp->BcastRoot(C.data(), factor * n * n, MPI_DOUBLE);
     delete(RT1);
 
 
@@ -201,16 +198,12 @@ for(int st1 = 0;st1 < n;st1++) {
         G[st1*n + st2] = V[st1 + st2*n];
     }
 }
-    MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
+    MainSp->CopySquareMatrixToDistArray(G.data(), Vdist, n, m_f_desca);
 
 #endif
 
     delete(RT1);
     delete [] tarr;
-#if CUDA_ENABLED
-    GpuFreeHost(G);
-    GpuFreeHost(C);
-#endif
 }
 
 
