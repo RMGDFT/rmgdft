@@ -28,10 +28,12 @@
 */
 
 
-#include "rvector.h"
+#include "rmg_hvector.h"
 
+namespace rmg
+{
 template<typename T>
-rvector<T>::rvector(size_t pbasis_in)
+hvector<T>::hvector(size_t pbasis_in)
 {
     pbasis_ = pbasis_in;
 #if CUDA_ENABLED || HIP_ENABLED
@@ -42,7 +44,7 @@ rvector<T>::rvector(size_t pbasis_in)
 }
 
 template<typename T>
-rvector<T>::~rvector(void)
+hvector<T>::~hvector(void)
 {
 #if CUDA_ENABLED || HIP_ENABLED
     hpool.free(data_);
@@ -53,17 +55,17 @@ rvector<T>::~rvector(void)
 
 
 // Instantiate all versions
-template rvector<float>::rvector(size_t);
-template rvector<double>::rvector(size_t);
-template rvector<std::complex<float>>::rvector(size_t);
-template rvector<std::complex<double>>::rvector(size_t);
-template rvector<float>::~rvector(void);
-template rvector<double>::~rvector(void);
-template rvector<std::complex<float>>::~rvector(void);
-template rvector<std::complex<double>>::~rvector(void);
+template hvector<float>::hvector(size_t);
+template hvector<double>::hvector(size_t);
+template hvector<std::complex<float>>::hvector(size_t);
+template hvector<std::complex<double>>::hvector(size_t);
+template hvector<float>::~hvector(void);
+template hvector<double>::~hvector(void);
+template hvector<std::complex<float>>::~hvector(void);
+template hvector<std::complex<double>>::~hvector(void);
 
-template void rvector<float>::multiply(const float&);
-template void rvector<double>::multiply(const double&);
-template void rvector<std::complex<float>>::multiply(const std::complex<float>&);
-template void rvector<std::complex<double>>::multiply(const std::complex<double>&);
-
+template void hvector<float>::multiply(const float&);
+template void hvector<double>::multiply(const double&);
+template void hvector<std::complex<float>>::multiply(const std::complex<float>&);
+template void hvector<std::complex<double>>::multiply(const std::complex<double>&);
+}

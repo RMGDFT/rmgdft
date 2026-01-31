@@ -23,6 +23,7 @@
 #include "rmg_ortho.h"
 #include "transition.h"
 #include "RmgMatrix.h"
+#include "rmg_hvector.h"
 
 // Gram-Schmidt ortho for extra eigenvectors in Davidson solver.
 // nbase: number of wavefunctions alreadt orthogonalized
@@ -82,7 +83,8 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 
     size_t tlength = ((notcon + 2) * notcon / 2);
     size_t alloc = (notcon+nbase)*(notcon+nbase);
-    T *mat = (T *)ct.get_gmatrix((alloc + tlength + 8192)*sizeof(T));
+    rmg::hvector<T> gmatrix(alloc + tlength + 8192);
+    T *mat = gmatrix.data();
     size_t offset = 4096 * (alloc / 4096 + 1);
     T *tmat = mat + offset;
 

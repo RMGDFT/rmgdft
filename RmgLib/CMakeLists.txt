@@ -34,6 +34,8 @@ include_directories("${PROJECT_BINARY_DIR}/include")
 endif (SEPARATE_BUILD)
 
 set (RmgLibSources 
+src/rmg_allocate.cpp
+src/rmg_hvector.cpp
 src/FiniteDiff.cpp
 src/FiniteDiffGrad1.cpp
 src/FiniteDiffGrad2.cpp

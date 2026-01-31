@@ -34,9 +34,6 @@
 #include <stack>
 #include "rmg_error.h"
 
-// 256 Tbytes for virtial space
-#define MAX_ALLOCATOR_SIZE  68719476736
-
 namespace rmg
 {
 

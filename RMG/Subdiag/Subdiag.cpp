@@ -45,6 +45,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
+#include "rmg_hvector.h"
 
 #if CUDA_ENABLED
 #include <cuda.h>
@@ -105,18 +106,15 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     }
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
-    KpointType *gmatrix = (KpointType *)ct.get_gmatrix(nstates * nstates * sizeof(KpointType));
+    rmg::hvector<KpointType> gmatrix(nstates*nstates);
+    rmg::hvector<KpointType> Hij(nstates*nstates);
+    rmg::hvector<KpointType> Bij(nstates*nstates);
+    rmg::hvector<KpointType> Sij(nstates*nstates);
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    KpointType *Hij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
-    KpointType *Bij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
-    KpointType *Sij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
     double *eigs;
     gpuMallocHost((void **)&eigs, 2*nstates * sizeof(double));
 #else
-    KpointType *Hij = new KpointType[nstates * nstates];
-    KpointType *Bij = new KpointType[nstates * nstates];
-    KpointType *Sij = new KpointType[nstates * nstates];
     double *eigs = new double[2*nstates];
 #endif
 
@@ -154,15 +152,15 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     KpointType beta(0.0);
 
     if(ct.is_gamma)
-        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij.data(), nstates);
     else
-        rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij.data(), nstates);
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
     if(typeid(KpointType) == typeid(std::complex<double>))
-        PackSqToTr("L", nstates, (std::complex<double> *)Hij, nstates, (std::complex<float> *)Bij);
+        PackSqToTr("L", nstates, (std::complex<double> *)Hij.data(), nstates, (std::complex<float> *)Bij.data());
     else
-        PackSqToTr("L", nstates, (double *)Hij, nstates, (float *)Bij);
+        PackSqToTr("L", nstates, (double *)Hij.data(), nstates, (float *)Bij.data());
 
     // Save diagonal elements
     for(int i=0;i < nstates;i++) D[i] = Hij[i*nstates + i];
@@ -172,21 +170,21 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     MPI_Request MPI_reqHij;
     MPI_Request MPI_reqSij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (float *)Bij, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqHij);
+        MPI_Iallreduce(MPI_IN_PLACE, (float *)Bij.data(), (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        rmg::block_reduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_reduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    rmg::block_reduce((float *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_reduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
     // Compute S matrix
     if(ct.norm_conserving_pp && ct.is_gamma)
     {
-        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, Sij, nstates);
+        rmg::syrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, Sij.data(), nstates);
     }
     else
     {
-        rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
+        rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij.data(), nstates);
     }
 
     // Save diagonal elements
@@ -194,18 +192,18 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Sij is symmetric or Hermetian so pack into triangular array for reduction call. Use gmatrix for scratch space
     if(typeid(KpointType) == typeid(std::complex<double>))
-        PackSqToTr("L", nstates, (std::complex<double> *)Sij, nstates, (std::complex<float> *)gmatrix);
+        PackSqToTr("L", nstates, (std::complex<double> *)Sij.data(), nstates, (std::complex<float> *)gmatrix.data());
     else
-        PackSqToTr("L", nstates, (double *)Sij, nstates, (float *)gmatrix);
+        PackSqToTr("L", nstates, (double *)Sij.data(), nstates, (float *)gmatrix.data());
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (float *)gmatrix, (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (float *)gmatrix.data(), (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        rmg::block_reduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_reduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    rmg::block_reduce((float *)gmatrix, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_reduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
 
@@ -217,13 +215,13 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     if(typeid(KpointType) == typeid(std::complex<double>))
     {
-        UnPackSqToTr("L", nstates, (std::complex<double> *)Hij, nstates, (std::complex<float> *)Bij);
-        UnPackSqToTr("L", nstates, (std::complex<double> *)Sij, nstates, (std::complex<float> *)gmatrix);
+        UnPackSqToTr("L", nstates, (std::complex<double> *)Hij.data(), nstates, (std::complex<float> *)Bij.data());
+        UnPackSqToTr("L", nstates, (std::complex<double> *)Sij.data(), nstates, (std::complex<float> *)gmatrix.data());
     }
     else
     {
-        UnPackSqToTr("L", nstates, (double *)Hij, nstates, (float *)Bij);
-        UnPackSqToTr("L", nstates, (double *)Sij, nstates, (float *)gmatrix);
+        UnPackSqToTr("L", nstates, (double *)Hij.data(), nstates, (float *)Bij.data());
+        UnPackSqToTr("L", nstates, (double *)Sij.data(), nstates, (float *)gmatrix.data());
     }
 
     // Reduce diagonal elements in double precision
@@ -237,7 +235,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     for(int i=0;i < nstates;i++) Sij[i*nstates + i] = D[i+nstates];
 
     // Fill in upper triangle of S
-    Scalapack::FillUpper(Sij, nstates);
+    Scalapack::FillUpper(Sij.data(), nstates);
     delete(RT1);
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and gmatrix will hold the eigenvectors.
@@ -248,21 +246,21 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
-            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, gmatrix);
+            trans_b = Subdiag_Lapack (this, Hij.data(), Bij.data(), Sij.data(), eigs, gmatrix.data());
             break;
 #if MAGMA_LIBS
         case SUBDIAG_MAGMA:
-            trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, gmatrix);
+            trans_b = Subdiag_Magma (this, Hij.data(), Bij.data(), Sij.data(), eigs, gmatrix.data());
             break;
 #endif
 #if CUDA_ENABLED
         case SUBDIAG_CUSOLVER:
-            trans_b = Subdiag_Cusolver (this, Hij, Bij, Sij, eigs, gmatrix);
+            trans_b = Subdiag_Cusolver (this, Hij.data(), Bij.data(), Sij.data(), eigs, gmatrix.data());
             break;
 #endif
 #if HIP_ENABLED
         case SUBDIAG_ROCSOLVER:
-            trans_b = Subdiag_Rocsolver (this, Hij, Bij, Sij, eigs, gmatrix);
+            trans_b = Subdiag_Rocsolver (this, Hij.data(), Bij.data(), Sij.data(), eigs, gmatrix.data());
             break;
 #endif
         default:
@@ -283,7 +281,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
     rmg::gemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
-            psi_d, pbasis_noncoll, gmatrix, nstates, beta, tmp_arrayT, pbasis_noncoll);
+            psi_d, pbasis_noncoll, gmatrix.data(), nstates, beta, tmp_arrayT, pbasis_noncoll);
 
     // And finally copy them back
     size_t istart = 0;
@@ -319,7 +317,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
         // vexx is not in managed memory yet so that might create an issue
         rmg::gemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
-                this->vexx, pbasis_noncoll, gmatrix, nstates, beta, tmp_arrayT, pbasis_noncoll);
+                this->vexx, pbasis_noncoll, gmatrix.data(), nstates, beta, tmp_arrayT, pbasis_noncoll);
         memcpy(this->vexx, tmp_arrayT, tlen);
     }
 
@@ -338,19 +336,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     gpuFree(psi_d);
 #endif
     gpuFreeHost(eigs);
-    GpuFreeHost(Sij);
-    GpuFreeHost(Bij);
-    GpuFreeHost(Hij);
 #else
     delete [] eigs;
-    delete [] Sij;
-    delete [] Bij;
-    delete [] Hij;
-#endif
-
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    // After the first step this matrix does not need to be as large
-    if(ct.scf_steps == 0) {gpuFreeHost(ct.gmatrix);ct.gmatrix = NULL;}
 #endif
 
 }

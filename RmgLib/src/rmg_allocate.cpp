@@ -31,6 +31,8 @@
 #include "rmg_allocate.h"
 #include "GpuAlloc.h"
 #include <sys/mman.h>
+#include <sys/sysinfo.h>
+#include <sys/resource.h>
 #include <complex>
 
 // This allocator is used for pinned host memory. The initial mmap call reserves
@@ -40,6 +42,7 @@
 // and return a pointer to it. If it does exceed the number of currently mapped and
 // pinned pages then we have to expand the space.
 // 
+
 namespace rmg
 {
     size_t allocate::reserved_pages;
@@ -51,12 +54,17 @@ namespace rmg
 
     allocate::allocate(void)
     {
+
+        struct sysinfo info;
+        if (sysinfo(&info) != 0) rmg::error("Error determining system ram limit.");
+        size_t total_ram = (size_t)info.totalram * (size_t)info.mem_unit;
+
         // Construction mmap a large contigous space
         if(!baseptr)
         {
-            baseptr = (std::byte *)mmap(NULL, MAX_ALLOCATOR_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            baseptr = (std::byte *)mmap(NULL, total_ram, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
             if(baseptr == MAP_FAILED) rmg::error("Error reserving memory");
-            reserved_pages = MAX_ALLOCATOR_SIZE / pagesize;
+            reserved_pages = total_ram / pagesize;
             plist.push(std::pair<std::byte *, size_t>(baseptr, 0));
         }
     }
@@ -80,6 +88,7 @@ namespace rmg
                 gpuHostUnregister(baseptr);
             }
             gpuHostRegister(baseptr, totalpages*pagesize, gpuHostRegisterPortable);
+            mapped_pages = totalpages;
 #endif
         }
         
@@ -103,6 +112,7 @@ namespace rmg
             rmg::error("Out of order allocation or free."); 
         allocated_pages -= tpair.second; 
     }
+
     template void allocate::malloc(double **, size_t);
     template void allocate::malloc(float **, size_t);
     template void allocate::malloc(std::complex<double> **, size_t);
