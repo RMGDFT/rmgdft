@@ -37,6 +37,7 @@
 #include "blacs.h"
 #include "RmgMatrix.h"
 #include "Functional.h"
+#include "rmg_hvector.h"
 
 
 #include "common_prototypes.h"
@@ -82,13 +83,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
     char *trans_a = trans_t;
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
-    KpointType *block_matrix;
-#if HIP_ENABLED || CUDA_ENABLED
-    block_matrix = (KpointType *)GpuMallocHost( mb * nstates * sizeof(KpointType));
-#else
-    block_matrix = new KpointType[nstates * mb];
-#endif
-
+    rmg::hvector<KpointType> block_matrix(mb*nstates);
 
     //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
     //  for HIP its a GPU buffer.
@@ -117,11 +112,11 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
         RmgTimer *RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
         rmg::gemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll, 
-                &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
+                &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix.data(), this_block_size);
         delete RT1a;
 
         RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-        rmg::block_reduce(block_matrix, this_block_size * length_block , pct.grid_comm);
+        rmg::block_reduce(block_matrix.data(), this_block_size * length_block , pct.grid_comm);
         delete RT1a;
 
         //block_matrix to distHij;
@@ -175,11 +170,11 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
             RT1a = new RmgTimer("4-Diagonalization: matrix: Gemm");
 
             rmg::gemm(trans_a, trans_n, this_block_size, length_block, pbasis_noncoll, alphavel, &psi_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, 
-                    &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix, this_block_size);
+                    &ns_dev[ib*nb*pbasis_noncoll], pbasis_noncoll, beta, block_matrix.data(), this_block_size);
             delete RT1a;
 
             RT1a = new RmgTimer("4-Diagonalization: matrix: Allreduce");
-            rmg::block_reduce(block_matrix, this_block_size * length_block , pct.grid_comm);
+            rmg::block_reduce(block_matrix.data(), this_block_size * length_block , pct.grid_comm);
             delete RT1a;
 
             //block_matrix to distHij;
@@ -230,10 +225,5 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
 
     delete RT1;
-#if HIP_ENABLED || CUDA_ENABLED
-    GpuFreeHost(block_matrix);
-#else
-    delete [] block_matrix;
-#endif
 
 }
