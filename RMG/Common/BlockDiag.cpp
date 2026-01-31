@@ -42,10 +42,9 @@
 #include "Solvers.h"
 #include "GpuAlloc.h"
 
-#include "RmgParallelFft.h"
 #include "TradeImages.h"
-#include "packfuncs.h"
 #include "RmgMatrix.h"
+#include "rmg_hvector.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -90,28 +89,16 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     gaps.push_back(std::make_pair(start, this->nstates - start));
     Nmax = std::max(Nmax, this->nstates - start);
 
-    KpointType *hr=NULL, *sr=NULL, *vr=NULL;
-    if(ct.subdiag_driver != SUBDIAG_SCALAPACK && ct.subdiag_driver != SUBDIAG_ELPA)
-    {
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-        hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-        sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-        vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
-#else
-        hr = new KpointType[Nmax * Nmax]();
-        sr = new KpointType[Nmax * Nmax]();
-        vr = new KpointType[Nmax * Nmax]();
-#endif
-    }
-
     rmg::ortho<KpointType> Ortho(nstates, pbasis_noncoll);
 
-
     // Loop over blocks.
+    rmg::hvector<KpointType> hr(Nmax*Nmax);
+    rmg::hvector<KpointType> sr(Nmax*Nmax);
+    rmg::hvector<KpointType> vr(Nmax*Nmax);
     for(auto &gap: gaps)
     {
         if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
-        this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
+        this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr.data(), sr.data(), vr.data());
         if(gaps.size() > 1)
         {
             RmgTimer RT2("6-BlockDiag: ortho");
@@ -120,16 +107,6 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     }
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;
-
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    GpuFreeHost(vr);
-    GpuFreeHost(sr);
-    GpuFreeHost(hr);
-#else
-    delete [] vr;
-    delete [] sr;
-    delete [] hr;
-#endif
 
 }
 
