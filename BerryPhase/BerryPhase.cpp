@@ -31,6 +31,7 @@
 #include "blas.h"
 #include "blas_driver.h"
 #include "Scalapack.h"
+#include "rmg_hvector.h"
 
 BerryPhase *Rmg_BP;
 
@@ -566,7 +567,7 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
         rmg::error(" scalapack wrong\n");
     }
 
-    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
+    rmg::hvector<std::complex<double>> mat_glob(numst*numst);
     wfc_size = numst * pbasis_noncoll * sizeof(std::complex<double>);
     if(psi_k0 != NULL) RmgFreeHost(psi_k0);
     psi_k0 = (std::complex<double> *)RmgMallocHost(wfc_size);
@@ -611,10 +612,10 @@ void BerryPhase::CalcBP_Skk1 (Kpoint<std::complex<double>> **Kptr, int tddft_sta
                 psi_k1 = Kptr[ik_index+1]->orbital_storage;
             }
 
-            rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat_glob, numst);
-            rmg::block_reduce(mat_glob, numst * numst, pct.grid_comm);
+            rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi_k, pbasis_noncoll, psi_k1, pbasis_noncoll, beta, mat_glob.data(), numst);
+            rmg::block_reduce(mat_glob.data(), numst * numst, pct.grid_comm);
 
-            Sp.CopySquareMatrixToDistArray(mat_glob, Kptr[ik_index]->BP_Skk1_cpu, numst, desca);
+            Sp.CopySquareMatrixToDistArray(mat_glob.data(), Kptr[ik_index]->BP_Skk1_cpu, numst, desca);
 
         }
     }
@@ -644,7 +645,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
     int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
 
-    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
+    rmg::hvector<std::complex<double>> mat_glob(numst*numst);
     double *eigs = new double[numst];
     std::complex<double> *Cmat = new std::complex<double>[n2];
     std::complex<double> *CijSkk1 = new std::complex<double>[n2];
@@ -687,9 +688,9 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
             rmg::zgemm_driver ("N", "N", numst, numst, numst, alpha, CijSkk1, ione, ione, desca,
                     Cij_k1, ione, ione, desca, beta, Cmat, ione, ione, desca);
 
-            Sp.GatherEigvectors(mat_glob, Cmat);
+            Sp.GatherEigvectors(mat_glob.data(), Cmat);
 
-            zgetrf(&nband_occ, &nband_occ, (double *)mat_glob, &numst, ipiv, &info);
+            zgetrf(&nband_occ, &nband_occ, (double *)mat_glob.data(), &numst, ipiv, &info);
             if (info != 0)
             {
                 rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
@@ -858,7 +859,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
     std::complex<double> phase;
 
     int numst = ct.num_states - tddft_start_state;
-    std::complex<double> *mat_glob = (std::complex<double> *)ct.get_gmatrix(numst*numst*sizeof(std::complex<double>));
+    rmg::hvector<std::complex<double>> mat_glob(numst*numst);
 
     for(int iort = 0; iort < num_kort_pe; iort++)
     {
@@ -1008,10 +1009,10 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
         rmg::gemm("N", "N", pbasis_noncoll, numst, nband_occ, one,
                 psi, pbasis_noncoll, mat, nband_occ, 
                 one, h_psi, pbasis_noncoll);
-        rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob, numst);
+        rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob.data(), numst);
 
-        rmg::block_reduce(mat_glob, (size_t)numst * numst, pct.grid_comm);
-        Sp.CopySquareMatrixToDistArray(mat_glob,  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
+        rmg::block_reduce(mat_glob.data(), (size_t)numst * numst, pct.grid_comm);
+        Sp.CopySquareMatrixToDistArray(mat_glob.data(),  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
 
         /*
         rmg::printlog("\n kpt %d ", kpt);
