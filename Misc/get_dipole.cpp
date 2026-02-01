@@ -109,9 +109,9 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
             icharge = Species[iptr->species].zvalence;
 
             /*Difference vector between center of the cell and ionic position */
-            ax[0] = iptr->xtal[0] - dipole_center_xtal[0] +0.5;
-            ax[1] = iptr->xtal[1] - dipole_center_xtal[1] +0.5;
-            ax[2] = iptr->xtal[2] - dipole_center_xtal[2] +0.5;
+            ax[0] = iptr->xtal[0] - dipole_center_xtal[0];
+            ax[1] = iptr->xtal[1] - dipole_center_xtal[1];
+            ax[2] = iptr->xtal[2] - dipole_center_xtal[2];
 
             if(ax[0] > 1.0) ax[0] -= 1.0;
             if(ax[1] > 1.0) ax[1] -= 1.0;
