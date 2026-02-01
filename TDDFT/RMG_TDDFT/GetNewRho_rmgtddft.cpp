@@ -143,13 +143,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     rmg::hvector<double> rho_temp(pbasis*n_rho);
     rho_temp.set(0.0);
-    KpointType *rho_matrix_glob  = (KpointType *)ct.get_gmatrix(numst*numst*sizeof(KpointType));
+    rmg::hvector<KpointType> rho_matrix_glob(numst*numst);
 
 
     if(ct.tddft_tiledMM == 1)
     {
-        double *rho_R = (double *)rho_matrix_glob;
-        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_glob;
+        double *rho_R = (double *)rho_matrix_glob.data();
+        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_glob.data();
         size_t recvcount = numst * numst/pct.local_comm_npes * sizeof(KpointType)/sizeof(double);
         if(typeid(KpointType) == typeid(double))
         {
@@ -166,7 +166,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             }
         }
         MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, 
-                rho_matrix_glob, recvcount, MPI_DOUBLE, pct.local_comm);       
+                rho_matrix_glob.data(), recvcount, MPI_DOUBLE, pct.local_comm);       
     }
     else
     {
@@ -190,14 +190,14 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
         }
 
         for(int i = 0; i < numst * numst; i++) rho_matrix_glob[i] = 0.0;
-        Sp.GatherEigvectors(rho_matrix_glob, rho_matrix_dist.data());
+        Sp.GatherEigvectors(rho_matrix_glob.data(), rho_matrix_dist.data());
     }
 
     for(int i = 0; i< numst; i++) rho_matrix_glob[i*numst+i] -= occ_ground[i];
     KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis_noncoll];
     KpointType *xpsi = kptr->work_cpu;
     rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi, pbasis_noncoll, rho_matrix_glob, numst, zero, xpsi, pbasis_noncoll);
+            psi, pbasis_noncoll, rho_matrix_glob.data(), numst, zero, xpsi, pbasis_noncoll);
 
     delete RT;
     RT = new RmgTimer("TDDFT: rho: dot");
