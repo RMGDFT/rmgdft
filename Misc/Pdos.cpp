@@ -50,6 +50,7 @@
 #include "GpuAlloc.h"
 #include "blas.h"
 #include "Pdos.h"
+#include "rmg_hvector.h"
 #include "Scalapack.h"
 
 template Pdos<double>::Pdos(rmg::grid &, Lattice &, const std::string , int, double *, Kpoint<double> **Kptr);
@@ -195,7 +196,7 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     int num_q = ct.klist.num_k_all;
 
     size_t length = nstates * pbasis_noncoll * sizeof(T);
-    T *psi_k_read = (T *)RmgMallocHost(length);
+    rmg::hvector<T> psi_k_read(length);
     T *psi_k;
 
     //  total rho projected in x,y,z direction
@@ -233,8 +234,8 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         }
         else
         {
-            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k_read);
-            psi_k = psi_k_read;
+            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k_read.data());
+            psi_k = psi_k_read.data();
         }
         //    delete RT1;
 
@@ -427,7 +428,6 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         }
     }
 
-    // RmgFreeHost(psi_k);
 }
 
 template  void Ldos_calc(Kpoint<double> **Kptr, std::vector<double> eigs, double Ef);
