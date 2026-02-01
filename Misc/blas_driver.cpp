@@ -27,6 +27,7 @@
 
 #include "Gpufuncs.h"
 #include "rmg_error.h"
+#include "rmg_hvector.h"
 
 
 namespace rmg
@@ -344,12 +345,6 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
     }
     if(ct.tddft_tiledMM)
     {
-        std::complex<double> *A_glob;
-#if CUDA_ENABLED || HIP_ENABLED
-        A_glob = (std::complex<double> *)ct.get_gmatrix_gpu(m*m*sizeof(std::complex<double>));
-#else
-        A_glob = (std::complex<double> *)ct.get_gmatrix(m*m*sizeof(std::complex<double>));
-#endif
         if(strcmp("n", transb) && strcmp("N", transb)) 
         {
             printf ("mgpu_dgemm requires transb = n \n");
@@ -357,9 +352,17 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
             rmg::error("wrong transb ");
         }
 
-        TiledM_to_glob(A_glob, A, m, pct.local_comm);
         int my_step = n/pct.local_comm_npes;
+#if CUDA_ENABLED || HIP_ENABLED
+        std::complex<double> *A_glob;
+        A_glob = (std::complex<double> *)ct.get_gmatrix_gpu(m*m*sizeof(std::complex<double>));
+        TiledM_to_glob(A_glob, A, m, pct.local_comm);
         gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
+#else
+        rmg::hvector<std::complex<double>> A_glob(m*m);
+        TiledM_to_glob(A_glob.data(), A, m, pct.local_comm);
+        gemm(transa, transb, m, my_step, k, alpha, A_glob.data(), m, B, m, beta, C, m);
+#endif
         return;
     }
     else 
