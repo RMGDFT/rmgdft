@@ -40,7 +40,8 @@
 
 /* This class implements hvectors for RMG. An hvector is a memory block that is allocated using an upstream
    memory resource when the hvector is created. It is automatically deallocated when the object goes out
-   of scope.
+   of scope. For CPU runs the upstream memory resource is just new/delete but for GPU runs it is pinned
+   host memory.
 
 
    Constructor examples:
@@ -132,7 +133,7 @@ namespace rmg
           data_[i] += c.data_[i];
         }
       } else {
-        throw "Grid objects are not the same size!";
+        throw "hvector objects are not the same size!";
       }
     }
 
