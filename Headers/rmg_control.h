@@ -1093,51 +1093,6 @@ public:
    double lambda_max;
    double lambda_min;
 
-   // Global matrix used for diag and ortho routines. We use a global here that is
-   // only allocated once since allocation on GPU architectures can be so slow.
-   void *gmatrix;
-   size_t gmatrix_size;
-
-   void *get_gmatrix(size_t size)
-   {
-       if(!this->gmatrix)
-       {
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-           gpuMallocHost((void **)&this->gmatrix, size);
-#else
-           this->gmatrix = malloc(size);
-           int mpierr = MPI_Alloc_mem(size, MPI_INFO_NULL, &gmatrix);
-           if(mpierr != MPI_SUCCESS) rmg::error("Memory allocation failure in get_gmatrix.");
-#endif
-           this->gmatrix_size = size;
-       }
-       else if(size > this->gmatrix_size)
-       {
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           gpuFreeHost(this->gmatrix);
-           gpuMallocHost((void **)&this->gmatrix, size);
-#else
-           free(this->gmatrix);
-           this->gmatrix = malloc(size);
-#endif
-           this->gmatrix_size = size;
-       }
-       return gmatrix;
-   }
-   void free_gmatrix(void)
-   {
-       if(this->gmatrix_size)
-       {
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           gpuFreeHost(this->gmatrix);
-#else
-           int mpierr = MPI_Free_mem(this->gmatrix);
-           if(mpierr != MPI_SUCCESS) rmg::error("Memory deallocation failure in free_gmatrix.");
-#endif
-           this->gmatrix = NULL;
-           this->gmatrix_size = 0;
-       }
-   }
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
    void *gmatrix_gpu;
    size_t gmatrix_size_gpu;
