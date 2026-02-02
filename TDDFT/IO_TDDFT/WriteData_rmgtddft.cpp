@@ -44,8 +44,7 @@
 
 void WriteData_rmgtddft (const char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, 
-        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2, int n2_C,
-        std::vector<double> &Eterms,double *Hcore_tddft, int numst)
+        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2, int n2_C,int numst)
 
 {
     int fhand;
@@ -97,8 +96,6 @@ void WriteData_rmgtddft (const char *filename, double * vh, double * vxc,
    rmg::writefile (fhand, Hmatrix_m1, n2_C * sizeof(double));
    rmg::writefile (fhand, Hmatrix_0, n2_C * sizeof(double));
    rmg::writefile (fhand, &tot_steps, sizeof(int));
-   rmg::writefile (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
-   rmg::writefile (fhand, Hcore_tddft, numst * numst * sizeof(double));
    close(fhand);
 
 }                               /* end write_data */

@@ -238,6 +238,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "use floatprecision for TDDFT matrix update", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
                         "TDDFT run read data directly from the last scf job", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_energy", &lc.tddft_energy, false, 
+                        "flag to calculate total energy at each tddft step", TDDFT_OPTIONS);
 
     If.RegisterInputKey("stress", &lc.stress, false, 
                         "flag to control stress cacluation", CONTROL_OPTIONS);

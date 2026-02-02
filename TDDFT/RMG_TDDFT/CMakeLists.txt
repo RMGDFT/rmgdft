@@ -9,6 +9,7 @@ CurrentNlpp.cpp
 CurrentOperator.cpp
 EpsilonMatrix.cpp
 MatDiagSet.cpp
+TddftEnergy.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${RMG_BINARY_DIR}/TDDFT/Headers/")

@@ -139,6 +139,7 @@ public:
     bool tddft_gpu =1;
     bool tddft_tiledMM =0;
     bool tddft_floatprecision =0;
+    bool tddft_energy = 0;
     int tddft_mode;
     double tddft_frequency;
     double tddft_qpos[3];

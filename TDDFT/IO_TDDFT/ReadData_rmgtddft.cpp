@@ -43,7 +43,7 @@
 void ReadData_rmgtddft (const char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix,  
         double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2, int n2_C,
-        std::vector<double> &Eterms, double *Hcore_tddft, int numst)
+        int numst)
 {
     int fhand, fgrid_size;
 
@@ -68,8 +68,6 @@ void ReadData_rmgtddft (const char *filename, double * vh, double * vxc,
     rmg::readfile (fhand, Hmatrix_m1, n2_C * sizeof(double));
     rmg::readfile (fhand, Hmatrix_0, n2_C * sizeof(double));
     rmg::readfile (fhand, tot_steps, sizeof(int));
-    rmg::readfile (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
-    rmg::readfile (fhand, Hcore_tddft, numst * numst * sizeof(double));
     close(fhand);
 
 }                               /* end read_data */
