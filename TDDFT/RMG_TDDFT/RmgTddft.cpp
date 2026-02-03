@@ -277,6 +277,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
     double vtxc, etxc;
     std::vector<double> Eterms_ground(6, 0.0);
+    std::vector<double> Eterms_1step(6, 0.0);
     std::vector<double> Eterms(6, 0.0);
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
@@ -342,7 +343,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  II  Edownfold%s", eunits);
             fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at Ground state", Eterms_ground[0], 
                     Eterms_ground[1],Eterms_ground[2],Eterms_ground[3],Eterms_ground[4],Eterms_ground[5]);
-            fprintf(efi, "\n&&time  totalE_diff, EkinPseudo_diff, Vh_diff, Exc_diff  %s", eunits);
         }
     }
 
@@ -776,11 +776,23 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {
             Eterms[3] = etxc;
             TddftEnergy<OrbitalType, MatrixType>(vh, rho, rhoc, Kptr, Mdim, Ndim, Eterms, eldyn_comm);
+            if(tot_steps == 0)
+            {
+
+                Eterms_1step = Eterms;
+                if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
+                {
+                    fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at 1st TDDFT step", Eterms_1step[0],
+                            Eterms_1step[1],Eterms_1step[2],Eterms_1step[3],Eterms_1step[4],Eterms_1step[5]);
+                    fprintf(efi, "\n&&time  totalE_diff, EkinPseudo_diff, Vh_diff, Exc_diff  %s", eunits);
+                }
+                //for(int i = 0; i < 6; i++) Eterms_1step[i] = Eterms[i];
+            }
             if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
             {
                 fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
-                        tot_steps*time_step, (Eterms[0] - Eterms_ground[0]) * efactor, (Eterms[1] - Eterms_ground[1]) * efactor, 
-                        (Eterms[2] - Eterms_ground[2]) * efactor, (Eterms[3] - Eterms_ground[3]) * efactor);
+                        tot_steps*time_step, (Eterms[0] - Eterms_1step[0]) * efactor, (Eterms[1] - Eterms_1step[1]) * efactor, 
+                        (Eterms[2] - Eterms_1step[2]) * efactor, (Eterms[3] - Eterms_1step[3]) * efactor);
             }
         }
 
@@ -883,10 +895,13 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         else
         {
             fclose(dfi);
-            fclose(efi);
         }
         if(ct.BerryPhase)
             fclose(dbp_fi);
+    }
+    if(ct.tddft_energy && pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
+    {
+        fclose(efi);
     }
 
     RT2a = new RmgTimer("2-TDDFT: Write");
