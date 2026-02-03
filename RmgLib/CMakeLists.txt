@@ -36,6 +36,8 @@ endif (SEPARATE_BUILD)
 set (RmgLibSources 
 src/rmg_allocate.cpp
 src/rmg_hvector.cpp
+src/rmg_dev_allocate.cpp
+src/rmg_dvector.cpp
 src/FiniteDiff.cpp
 src/FiniteDiffGrad1.cpp
 src/FiniteDiffGrad2.cpp
