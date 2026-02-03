@@ -35,6 +35,11 @@
 #include <sys/resource.h>
 #include <complex>
 
+#if CUDA_ENABLED
+#include <cuda_runtime_api.h>
+#include <cuda.h>
+#endif
+
 // This allocator is used for pinned host memory. The initial mmap call reserves
 // a large contiguous address space but the pages are not initially mapped and pinned.
 // When a malloc call is made we check to see if the new allocation would exceed the
@@ -56,7 +61,40 @@ namespace rmg
     dev_allocate::dev_allocate(int deviceId, size_t initial_size)
     {
 
-#if HIP_ENABLED
+#if CUDA_ENABLED
+        device_id = deviceId;    // save for later
+        rmg::error(cudaSetDevice(device_id));
+        rmg::error(cuDeviceTotalMem( &deviceMem, device_id));
+
+        CUmemAllocationProp props = {};
+        props.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+        props.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+        props.location.id = device_id;
+        rmg::error(cuMemGetAllocationGranularity(&gpu_pagesize, &props, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
+
+        // Construction reserve a large contigous space
+        if(!baseptr)
+        {
+            size_t rmem = initial_size / gpu_pagesize;
+            rmem *= gpu_pagesize;
+            size_t dmem = deviceMem / gpu_pagesize;
+            dmem *= gpu_pagesize;
+            CUmemGenericAllocationHandle_v1 handle1;
+            rmg::error(cuMemAddressReserve((CUdeviceptr *)&baseptr, dmem, 0, 0, 0));
+            rmg::error(cuMemCreate(&handle1, rmem, &props, 0));
+            rmg::error(cuMemMap((CUdeviceptr)baseptr, rmem, 0, handle1, 0));
+
+            CUmemAccessDesc accessDesc = {};
+            accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+            accessDesc.location.id = device_id;
+            accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE; 
+
+            rmg::error(cuMemSetAccess((CUdeviceptr)baseptr, rmem, (CUmemAccessDesc *)&accessDesc, 1));
+            rmg::error(cuMemRelease(handle1));
+            mapped_pages = rmem / gpu_pagesize;
+            plist.push(std::pair<std::byte *, size_t>(baseptr, 0));
+        }
+#elif HIP_ENABLED
         device_id = deviceId;    // save for later
         rmg::error(hipSetDevice(device_id));
         rmg::error(hipDeviceTotalMem( &deviceMem, device_id));
@@ -65,7 +103,7 @@ namespace rmg
         props.type = hipMemAllocationTypePinned;
         props.location.type = hipMemLocationTypeDevice;
         props.location.id = device_id;
-        rmg::error(hipMemGetAllocationGranularity(&gpu_pagesize, &props, hipMemAllocationGranularityMinimum));
+        rmg::error(hipMemGetAllocationGranularity(&gpu_pagesize, &props, hipMemAllocationGranularityRecommended));
 
         // Construction reserve a large contigous space
         if(!baseptr)
@@ -101,7 +139,24 @@ namespace rmg
         size_t totalpages = allocated_pages + newpages;
         if(totalpages > mapped_pages)
         {
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED
+            rmg::error(cudaSetDevice(device_id));
+            CUmemAllocationProp props = {};
+            props.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+            props.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+            props.location.id = device_id;
+            CUmemGenericAllocationHandle_v1 handle1;
+            rmg::error(cuMemCreate(&handle1, newpages*gpu_pagesize, &props, 0));
+            rmg::error(cuMemMap((CUdeviceptr)baseptr+mapped_pages*gpu_pagesize, newpages*gpu_pagesize, 0, handle1, 0));
+
+            CUmemAccessDesc accessDesc = {};
+            accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+            accessDesc.location.id = device_id;
+            accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE; 
+            mapped_pages += newpages;
+            rmg::error(cuMemSetAccess((CUdeviceptr)baseptr, mapped_pages*gpu_pagesize, (CUmemAccessDesc *)&accessDesc, 1));
+            rmg::error(cuMemRelease(handle1));
+#elif HIP_ENABLED
             rmg::error(hipSetDevice(device_id));
             hipMemAllocationProp props = {};
             props.type = hipMemAllocationTypePinned;
