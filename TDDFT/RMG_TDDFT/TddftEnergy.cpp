@@ -99,7 +99,8 @@ template <typename OrbitalType> void TddftEnergyInit ( spinobj<double> &vxc,
 
     numst = ct.num_states - ct.tddft_start_state; 
 
-    double ES_0 = 0.0, EkinPseudo_0 = 0.0, totalE_0=0.0;
+    double ES_0 = 0.0, ES_0a = 0.0, ES_0b = 0.0; 
+    double EkinPseudo_0 = 0.0, totalE_0=0.0;
     double E_downfold = 0.0;
     double vtxc, etxc, etxc_0=0.0;
 
@@ -115,13 +116,19 @@ template <typename OrbitalType> void TddftEnergyInit ( spinobj<double> &vxc,
     VhDriver(rho_ground.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
     delete RT1;
 
-    ES_0 = 0.0;
+    ct.II = IonIonEnergy_Ewald();
+    // vh -> rho-rhoc
+    // ES_0a:  (rho + rhoc ) * (rho-rhoc)
+    // ES_0b:  (rho  * (rho-rhoc)
+    // ct.ES_rhoc:  rhoc * rhoc/(r-r)
+    // canceling part  from vnuc + compensating charge potential
     if (ct.nspin==2)
     {   
         /* Add the compensating charge to total charge to calculation electrostatic energy */
         for (int idx = 0; idx < FP0_BASIS; idx++) 
         {
-            ES_0 += (rho_ground.up[idx] + rho_ground.dw[idx]+ rhoc[idx]) * vh[idx];
+            ES_0a += (rho_ground.up[idx] + rho_ground.dw[idx] + rhoc[idx]) * vh[idx];
+            ES_0b += (rho_ground.up[idx] + rho_ground.dw[idx] ) * vh[idx];
         }
 
     }
@@ -129,18 +136,20 @@ template <typename OrbitalType> void TddftEnergyInit ( spinobj<double> &vxc,
     {
         for (int idx = 0; idx < FP0_BASIS; idx++) 
         {
-            ES_0 += (rho_ground[idx] + rhoc[idx]) * vh[idx];
+            ES_0a += (rho_ground[idx] + rhoc[idx]) * vh[idx];
+            ES_0b += rho_ground[idx] * vh[idx];
         }
     }
 
-    ES_0 = 0.5 * vel * rmg::sum_all(ES_0, pct.grid_comm);
+    ES_0a = 0.5 * vel * rmg::sum_all(ES_0a, pct.grid_comm);
+    ES_0b =  vel * rmg::sum_all(ES_0b, pct.grid_comm);
 
+    ES_0 = ES_0b - ES_0a + ct.ES_rhoc;
     int nstates = Kptr[0]->nstates;
     rmg::hvector<OrbitalType> Hcore(nstates * nstates);
 
     wfobj<double> vtot_psi;
     wf_spinobj<double> vxc_psi;
-
     GetVtotPsi (vtot_psi.data(), vnuc.data(), Rmg_G->default_FG_RATIO);
     EkinPseudo_0 = 0.0;
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
@@ -200,7 +209,6 @@ template <typename OrbitalType> void TddftEnergyInit ( spinobj<double> &vxc,
     EkinPseudo_0 = rmg::sum_all(EkinPseudo_0, pct.kpsub_comm);
     EkinPseudo_0 = rmg::sum_all(EkinPseudo_0, pct.spin_comm);
 
-    ct.II = IonIonEnergy_Ewald();
     totalE_0 = E_downfold + EkinPseudo_0 + ES_0 + etxc_0 + ct.II;
 
     Eterms[0] = totalE_0     ;
@@ -230,25 +238,36 @@ template <typename OrbitalType, typename MatrixType> void TddftEnergy (fgobj<dou
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     double ES = 0.0, EkinPseudo = 0.0, totalE=0.0;
-
+    double ES_0a = 0.0, ES_0b = 0.0;
+       // vh -> rho-rhoc
+    // ES_0a:  (rho + rhoc ) * (rho-rhoc)
+    // ES_0b:  (rho  * (rho-rhoc)
+    // ct.ES_rhoc:  rhoc * rhoc/(r-r)
+    // canceling part  from vnuc + compensating charge potential
     if (ct.nspin==2)
-    {   
+    {
         /* Add the compensating charge to total charge to calculation electrostatic energy */
-        for (int idx = 0; idx < FP0_BASIS; idx++) 
+        for (int idx = 0; idx < FP0_BASIS; idx++)
         {
-            ES+= (rho.up[idx] + rho.dw[idx]+ rhoc[idx]) * vh[idx];
+            ES_0a += (rho.up[idx] + rho.dw[idx] + rhoc[idx]) * vh[idx];
+            ES_0b += (rho.up[idx] + rho.dw[idx] ) * vh[idx];
         }
 
     }
     else
     {
-        for (int idx = 0; idx < FP0_BASIS; idx++) 
+        for (int idx = 0; idx < FP0_BASIS; idx++)
         {
-            ES += (rho[idx] + rhoc[idx]) * vh[idx];
+            ES_0a += (rho[idx] + rhoc[idx]) * vh[idx];
+            ES_0b += rho[idx] * vh[idx];
         }
     }
 
-    ES = 0.5 * vel * rmg::sum_all(ES, pct.grid_comm);
+    ES_0a = 0.5 * vel * rmg::sum_all(ES_0a, pct.grid_comm);
+    ES_0b =  vel * rmg::sum_all(ES_0b, pct.grid_comm);
+
+    ES = ES_0b - ES_0a + ct.ES_rhoc;
+
 
     int n2 = Mdim * Ndim, ione = 1, itwo = 2;
     int n22 = n2 * sizeof(OrbitalType)/sizeof(double);
@@ -278,7 +297,7 @@ template <typename OrbitalType, typename MatrixType> void TddftEnergy (fgobj<dou
     EkinPseudo = rmg::sum_all(EkinPseudo, pct.spin_comm);
 
     Eterms[1] = EkinPseudo ;
-    Eterms[2] = ES         ;
+    Eterms[2] = ES;
     totalE = 0.0;
     for(int i = 1; i < 6; i++) totalE += Eterms[i];
     Eterms[0] = totalE     ;
