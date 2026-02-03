@@ -1093,37 +1093,6 @@ public:
    double lambda_max;
    double lambda_min;
 
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-   void *gmatrix_gpu;
-   size_t gmatrix_size_gpu;
-
-   void *get_gmatrix_gpu(size_t size)
-   {
-       if(!this->gmatrix_gpu)
-       {
-           gpuMalloc((void **)&this->gmatrix_gpu, size);
-           this->gmatrix_size_gpu = size;
-       }
-       else if(size > this->gmatrix_size_gpu)
-       {
-           gpuFree(this->gmatrix_gpu);
-           gpuMalloc((void **)&this->gmatrix_gpu, size);
-           this->gmatrix_size_gpu = size;
-       }
-       return gmatrix_gpu;
-   }
-   void free_gmatrix_gpu(void)
-   {
-       if(this->gmatrix_size_gpu)
-       {
-           gpuFree(this->gmatrix_gpu);
-           this->gmatrix_gpu = NULL;
-           this->gmatrix_size_gpu = 0;
-       }
-   }
-
-#endif
-
 };
 
 
