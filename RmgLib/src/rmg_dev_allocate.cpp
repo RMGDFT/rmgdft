@@ -110,8 +110,10 @@ namespace rmg
         {
             size_t rmem = initial_size / gpu_pagesize;
             rmem *= gpu_pagesize;
+            size_t dmem = deviceMem / gpu_pagesize;
+            dmem *= gpu_pagesize;
             hipMemGenericAllocationHandle_t handle1;
-            rmg::error(hipMemAddressReserve((void **)&baseptr, deviceMem, 0, 0, 0));
+            rmg::error(hipMemAddressReserve((void **)&baseptr, dmem, 0, 0, 0));
             rmg::error(hipMemCreate(&handle1, rmem, &props, 0));
             rmg::error(hipMemMap(baseptr, rmem, 0, handle1, 0));
             hipMemAccessDesc accessDesc = {};
