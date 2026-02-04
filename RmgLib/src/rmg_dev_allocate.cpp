@@ -40,6 +40,10 @@
 #include <cuda.h>
 #endif
 
+#if HIP_ENABLED
+#include <rocm-core/rocm_version.h>
+#endif
+
 // This allocator is used for pinned host memory. The initial mmap call reserves
 // a large contiguous address space but the pages are not initially mapped and pinned.
 // When a malloc call is made we check to see if the new allocation would exceed the
@@ -94,7 +98,7 @@ namespace rmg
             mapped_pages = rmem / gpu_pagesize;
             plist.push(std::pair<std::byte *, size_t>(baseptr, 0));
         }
-#elif HIP_ENABLED
+#elif HIP_ENABLED && (ROCM_VERSION_MAJOR > 6)
         device_id = deviceId;    // save for later
         rmg::error(hipSetDevice(device_id));
         rmg::error(hipDeviceTotalMem( &deviceMem, device_id));
@@ -136,6 +140,11 @@ namespace rmg
     void dev_allocate::malloc(T **ptr, size_t size)
     {
         size_t nsize = sizeof(T) * size;
+#if HIP_ENABLED && (ROCM_VERSION_MAJOR < 7)
+        rmg::error(hipSetDevice(device_id));
+        rmg::error(hipMalloc(ptr, nsize));
+        return;
+#endif
         size_t newpages = nsize / gpu_pagesize;
         if(nsize % gpu_pagesize) newpages++;
         size_t totalpages = allocated_pages + newpages;
@@ -177,7 +186,6 @@ namespace rmg
             rmg::error(hipMemRelease(handle1));
 #endif
         }
-//printf("AAAA  %lu  %lu  %lu  %lu\n",gpu_pagesize,totalpages, newpages, mapped_pages);
         
         std::pair<std::byte *, size_t> tpair = plist.top();
         T *nptr = (T *)tpair.first;
@@ -189,6 +197,10 @@ namespace rmg
 
     void dev_allocate::free(void *ptr)
     {
+#if HIP_ENABLED && (ROCM_VERSION_MAJOR < 7)
+        rmg::error(hipFree(ptr));
+        return;
+#endif
         if(plist.empty())
             rmg::error("Attempt to free non-existent allocation.");
         std::pair<std::byte *, size_t> tpair = plist.top();
