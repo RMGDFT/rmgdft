@@ -6,6 +6,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "rmg_gemm.h"
+#include "rmg_dev_allocate.h"
 #include "GpuAlloc.h"
 
 #include "transition.h"
@@ -138,9 +139,9 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
@@ -150,9 +151,9 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     rmg::sync_device();
     return;
@@ -205,9 +206,13 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+//        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
+//        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+//        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
+
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
         if(!c_dev && beta != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(double)));
@@ -217,9 +222,13 @@ template <typename DataType> void rmg::syrkx(char *uplo, char *trans, int n, int
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc ));
         if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(double)));
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
+
+//        if(!c_dev) gpuFree(dC);
+//        if(!b_dev) gpuFree(dB);
+//        if(!a_dev) gpuFree(dA);
 
     }
 #elif SYCL_ENABLED
