@@ -58,6 +58,7 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
+    #include "rmg_dev_allocate.h"
 #endif
 
 #if HIP_ENABLED
@@ -68,6 +69,7 @@
     #if MAGMA_LIBS
         #include <magma_v2.h>
     #endif
+    #include "rmg_dev_allocate.h"
 #endif
 
 #if SYCL_ENABLED
@@ -680,6 +682,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             if(pct.gridpe == 0)
                 std::cout << "SYCL device name: " << d.get_info<sycl::info::device::name>() << std::endl;
         }
+    }
+#endif
+
+#if HIP_ENABLED
+    if(ct.num_usable_gpu_devices == 1)
+    {
+        rmg_device_pool = new rmg::dev_allocate(ct.hip_dev, 1024*4096);
+    }
+#endif
+#if CUDA_ENABLED
+    if(ct.num_usable_gpu_devices == 1)
+    {
+        rmg_device_pool = new rmg::dev_allocate(ct.cu_dev, 1024*4096);
     }
 #endif
 
