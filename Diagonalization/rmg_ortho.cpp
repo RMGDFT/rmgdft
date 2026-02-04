@@ -62,6 +62,7 @@ template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
 template <class T> ortho<T>::~ortho(void)
 {
 #if HIP_ENABLED || CUDA_ENABLED
+    if(!ct.norm_conserving_pp) return;
     rmg::sync_device();
     gpuFree(this->psi_d);
 #endif
