@@ -28,6 +28,7 @@
 #include "Gpufuncs.h"
 #include "rmg_error.h"
 #include "rmg_hvector.h"
+#include "rmg_dvector.h"
 
 
 namespace rmg
@@ -353,16 +354,9 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
         }
 
         int my_step = n/pct.local_comm_npes;
-#if CUDA_ENABLED || HIP_ENABLED
-        std::complex<double> *A_glob;
-        A_glob = (std::complex<double> *)ct.get_gmatrix_gpu(m*m*sizeof(std::complex<double>));
-        TiledM_to_glob(A_glob, A, m, pct.local_comm);
-        gemm(transa, transb, m, my_step, k, alpha, A_glob, m, B, m, beta, C, m);
-#else
-        rmg::hvector<std::complex<double>> A_glob(m*m);
+        rmg::dvector<std::complex<double>> A_glob(m*m);
         TiledM_to_glob(A_glob.data(), A, m, pct.local_comm);
         gemm(transa, transb, m, my_step, k, alpha, A_glob.data(), m, B, m, beta, C, m);
-#endif
         return;
     }
     else 

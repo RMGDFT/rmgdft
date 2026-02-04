@@ -23,6 +23,7 @@
 #include "Gpufuncs.h"
 #include "Kpoint.h"
 #include "rmg_hvector.h"
+#include "rmg_dvector.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -71,16 +72,13 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     
     // rho_matrix is on device, with MatrixType
     CalType one = 1.0, zero = 0.0;
-    TypeV *rho_temp_dev;
 
-    CalType *rho_matrix_dev = (CalType *)ct.get_gmatrix_gpu(numst * numst * sizeof(CalType));
-    double *occ_dev;
-
+    rmg::dvector<CalType> rho_matrix_dev(numst * numst);
+    rmg::dvector<TypeV> rho_temp_dev(pbasis * n_rho);
+    rmg::dvector<double> occ_dev(pbasis * n_rho);
 
     rmg::hvector<TypeV> rho_temp(pbasis*n_rho);
-    gpuMalloc((void **)&rho_temp_dev, pbasis*n_rho * sizeof(TypeV));
-    gpuMalloc((void **)&occ_dev, numst * sizeof(double));
-    gpuMemcpy(occ_dev, occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);
+    gpuMemcpy(occ_dev.data(), occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);
 
     //rho_matrix_dev[i,i] = rho_matrix[i,i] - occ_dev[i]
 
@@ -92,7 +90,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
         myrank = 0;
     }
 
-    GpuRhomatrixConvert(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+    GpuRhomatrixConvert(rho_matrix_dev.data(), rho_matrix, occ_dev.data(), numst, myrank, nprocs);
 
     if(ct.tddft_tiledMM)
     {
@@ -100,12 +98,12 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
         size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
         if( typeid(TypeV) == typeid(float) )
         {
-            rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclFloat, ct.nccl_local_comm, 0));
+            rmg::error(ncclAllGather(rho_matrix_dev.data() + numst*numst/nprocs*myrank, rho_matrix_dev.data(), sendcount, ncclFloat, ct.nccl_local_comm, 0));
         }
         //else if( typeid(TypeV) == typeid(double) )
         else
         {
-            rmg::error(ncclAllGather(&rho_matrix_dev[numst*numst/nprocs*myrank], rho_matrix_dev, sendcount, ncclDouble, ct.nccl_local_comm, 0));
+            rmg::error(ncclAllGather(rho_matrix_dev.data() + numst*numst/nprocs*myrank, rho_matrix_dev.data(), sendcount, ncclDouble, ct.nccl_local_comm, 0));
         }
 #else
             rmg::error("set tddft_tiledMM=false in the input file, need use nccl for this option");
@@ -129,10 +127,10 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
 
     rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi_dev, pbasis_noncoll, rho_matrix_dev, numst, zero, xpsi, pbasis_noncoll);
+            psi_dev, pbasis_noncoll, rho_matrix_dev.data(), numst, zero, xpsi, pbasis_noncoll);
 
-    GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
-    gpuMemcpy(rho_temp.data(), rho_temp_dev,  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
+    GpuProductBr(psi_dev, xpsi, rho_temp_dev.data(), numst, pbasis);
+    gpuMemcpy(rho_temp.data(), rho_temp_dev.data(),  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
 #else
     if(typeid(KpointType) != typeid(CalType))
     {
@@ -261,9 +259,5 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     delete RT1;
 
-#if CUDA_ENABLED || HIP_ENABLED 
-    gpuFree(rho_temp_dev);
-    gpuFree(occ_dev);
-#endif
 }
 
