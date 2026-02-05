@@ -10,6 +10,7 @@
 
 #include "transition.h"
 #include "rmg_error.h"
+#include "rmg_dev_allocate.h"
 
 
 #if CUDA_ENABLED
@@ -122,8 +123,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
     rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         rmg::error(cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
@@ -133,13 +134,13 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (cuDoubleComplex *)dB, ldb,
                             (cuDoubleComplex *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
         rmg::error(cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
@@ -149,8 +150,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (double *)dB, ldb,
                             (double *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(double), cudaMemcpyDefault);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     rmg::sync_device();
     return;
@@ -187,8 +188,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
         if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
         rmg::error(hipblasZtrmm(ct.hipblas_handle,
@@ -199,13 +200,13 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (hipDoubleComplex *)dB, ldb,
                             (hipDoubleComplex *)dB, ldb));
         if(!b_dev) rmg::error(hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>)));
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
         rmg::error(hipblasDtrmm(ct.hipblas_handle,
@@ -216,8 +217,8 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
                             (double*)dB, ldb,
                             (double*)dB, ldb ));
         if(!b_dev) rmg::error(hipMemcpyDtoH(B, dB, b_size * sizeof(double)));
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
 
     }
 #elif SYCL_ENABLED
