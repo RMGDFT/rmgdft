@@ -7,6 +7,7 @@
 #include "typedefs.h"
 #include "rmg_gemm.h"
 #include "GpuAlloc.h"
+#include "rmg_dev_allocate.h"
 
 #include "RmgTimer.h"
 #include "transition.h"
@@ -118,9 +119,9 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
     rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
         if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(std::complex<double>), gpuMemcpyDefault);
         if(!c_dev && std::abs(beta) != 0.0) gpuMemcpy(dC, C, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
@@ -130,15 +131,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
                             (cuDoubleComplex*)dB, ldb, strideB,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc, strideC, batchCount ));
         if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(std::complex<double>), gpuMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
         if(!a_dev) gpuMemcpy(dA, A, a_size * sizeof(double), gpuMemcpyDefault);
         if(!b_dev) gpuMemcpy(dB, B, b_size * sizeof(double), gpuMemcpyDefault);
         if(!c_dev && beta != 0.0) gpuMemcpy(dC, C, c_size * sizeof(double), gpuMemcpyDefault);
@@ -148,9 +149,9 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
                             (double*)dB, ldb, strideB,
                             (double*)&beta, (double*)dC, ldc, strideC, batchCount ));
         if(!c_dev) gpuMemcpy(C, dC, c_size * sizeof(double), gpuMemcpyDefault);
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     rmg::sync_device();
     return;
@@ -193,9 +194,9 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
         if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
         if(!c_dev && std::abs(beta) != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>)));
@@ -205,15 +206,15 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
                             (hipDoubleComplex*)dB, ldb, strideB,
                             (hipDoubleComplex*)&beta, (hipDoubleComplex*)dC, ldc, strideC, batchCount ));
         if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>)));
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!c_dev) rmg_device_pool->malloc(&dC, c_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
         if(!c_dev && beta != 0.0) rmg::error(hipMemcpyHtoD(dC, C, c_size * sizeof(double)));
@@ -223,9 +224,9 @@ template <typename DataType> void rmg::gemm_strided_batched(char *transa, char *
                             (double*)dB, ldb, strideB,
                             (double*)&beta, (double*)dC, ldc, strideC,batchCount));
         if(!c_dev) rmg::error(hipMemcpyDtoH(C, dC, c_size * sizeof(double)));
-        if(!c_dev) gpuFree(dC);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!c_dev) rmg_device_pool->free(dC);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
 
 #elif SYCL_ENABLED
