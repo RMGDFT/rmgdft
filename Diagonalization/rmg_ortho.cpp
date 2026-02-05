@@ -24,6 +24,7 @@
 #include "transition.h"
 #include "RmgMatrix.h"
 #include "rmg_hvector.h"
+#include "rmg_dev_allocate.h"
 
 // Gram-Schmidt ortho for extra eigenvectors in Davidson solver.
 // nbase: number of wavefunctions alreadt orthogonalized
@@ -54,8 +55,7 @@ template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
 #if HIP_ENABLED || CUDA_ENABLED
     size_t dfactor = 1;
     if(ct.kohn_sham_solver == DAVIDSON_SOLVER) dfactor = (size_t)ct.davidx;
-    gpuMalloc((void **)&this->psi_d, dfactor * (size_t)this->max_states * 
-              (size_t)this->pbasis * sizeof(T));
+    rmg_device_pool->malloc(&this->psi_d, dfactor*(size_t)this->max_states*(size_t)this->pbasis);
 #endif
 }
 
@@ -64,7 +64,7 @@ template <class T> ortho<T>::~ortho(void)
 #if HIP_ENABLED || CUDA_ENABLED
     if(!ct.norm_conserving_pp) return;
     rmg::sync_device();
-    gpuFree(this->psi_d);
+    rmg_device_pool->free(this->psi_d);
 #endif
 }
 
@@ -131,7 +131,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     RmgTimer *RT1 = new RmgTimer("MgridOrtho: 2nd stage overlaps");
 #if HIP_ENABLED || CUDA_ENABLED
     T *mat_d;
-    gpuMalloc((void **)&mat_d, (size_t)notcon * (size_t)notcon * sizeof(T));
+    rmg_device_pool->malloc(&mat_d, (size_t)notcon * (size_t)notcon);
 #else   
     T *mat_d = mat;
 #endif
@@ -181,7 +181,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED
     gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
           (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
-    gpuFree(mat_d);
+    rmg_device_pool->free(mat_d);
 #endif
 
     if (info != 0)
