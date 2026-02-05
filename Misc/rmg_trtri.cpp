@@ -6,6 +6,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "rmg_gemm.h"
+#include "rmg_dev_allocate.h"
 #include "GpuAlloc.h"
 
 #include "transition.h"
@@ -77,7 +78,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
 	void *dbuf;
 
         std::complex<double> *dA=(std::complex<double> *)A;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         custat = cusolverDnXtrtri_bufferSize(ct.cusolver_handle, fill_mode, diag_mode,
             n, CUDA_C_64F, (void *)dA, lda, &dwork, &hwork);
@@ -92,7 +93,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
 	delete [] hbuf;
 	gpuFree(dbuf);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!a_dev) gpuFree(dA);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         size_t dwork;
@@ -101,7 +102,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
 	void *dbuf;
 
         double *dA=(double *)A;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         custat = cusolverDnXtrtri_bufferSize(ct.cusolver_handle, fill_mode, diag_mode,
             n, CUDA_R_64F, (void *)dA, lda, &dwork, &hwork);
@@ -116,7 +117,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
 	delete [] hbuf;
 	gpuFree(dbuf);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
-        if(!a_dev) gpuFree(dA);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
     rmg::sync_device();
@@ -145,24 +146,24 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
         rocstat = rocsolver_ztrtri(ct.roc_handle, fill_mode, diag_mode, n,
                                    (rocblas_double_complex *)dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
             rmg::error("Problem executing rocsolver_ztrtri");
         if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>)));
-        if(!a_dev) gpuFree(dA);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
         if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         rocstat = rocsolver_dtrtri(ct.roc_handle, fill_mode, diag_mode, n, dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
             rmg::error("Problem executing rocsolver_dtrtri");
         if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(double)));
-        if(!a_dev) gpuFree(dA);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     rmg::error(hipMemcpyDtoH(info, dev_info, sizeof(int)));
     gpuFree(dev_info);
