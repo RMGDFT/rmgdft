@@ -38,13 +38,16 @@
 
 const int nTPB = 128; // Only 1 block but 128 threads per block
 
-void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
+    template <typename T1, typename T2 >
+__global__ void RhomatrixConvert(T1 *rho_matrix_dev, const T2 *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
 {
-
+  //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
     size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
+    size_t pidx = blockIdx.x*nTPB;
+    int j = pidx + threadIdx.x;
+    if(j < numst)
     {
-        for(int j = 0; j < numst; j++)
+        for(int i = 0; i < numst/nprocs; i++)
         {
             if(myrank * numst/nprocs + i == j) 
             {
@@ -56,114 +59,77 @@ void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ
             }
         }
     }
+}
+
+    template <typename T >
+__global__ void RhomatrixConvertGamma(T *rho_matrix_dev, const std::complex<double> *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
+{
+  //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
+    size_t tile_size = numst * numst/nprocs;
+    size_t pidx = blockIdx.x*nTPB;
+    int j = pidx + threadIdx.x;
+    if(j < numst)
+    {
+        for(int i = 0; i < numst/nprocs; i++)
+        {
+            if(myrank * numst/nprocs + i == j) 
+            {
+                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]) - occ_dev[j];
+            }
+            else
+            {
+                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]);
+            }
+        }
+    }
+}
+
+void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
+{
+
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 
 }
+
 
 void GpuRhomatrixConvert(float *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
-    size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
-    {
-        for(int j = 0; j < numst; j++)
-        {
-            if(myrank * numst/nprocs + i == j) 
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j] - occ_dev[j];
-            }
-            else
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j];
-            }
-        }
-    }
-
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
+
+
 
 
 void GpuRhomatrixConvert(double *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
-    size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
-    {
-        for(int j = 0; j < numst; j++)
-        {
-            if(myrank * numst/nprocs + i == j) 
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]) - occ_dev[j];
-            }
-            else
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]);
-            }
-        }
-    }
-
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvertGamma<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 void GpuRhomatrixConvert(float *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
-    size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
-    {
-        for(int j = 0; j < numst; j++)
-        {
-            if(myrank * numst/nprocs + i == j) 
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]) - occ_dev[j];
-            }
-            else
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = std::real(rho_matrix[i * numst + j]);
-            }
-        }
-    }
-
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvertGamma<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 
 void GpuRhomatrixConvert(std::complex<double> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
-    size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
-    {
-        for(int j = 0; j < numst; j++)
-        {
-            if(myrank * numst/nprocs + i == j) 
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j] - occ_dev[j];
-            }
-            else
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j];
-            }
-        }
-    }
-
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
-    size_t tile_size = numst * numst/nprocs;
-    for(int i = 0; i < numst/nprocs; i++)
-    {
-        for(int j = 0; j < numst; j++)
-        {
-            if(myrank * numst/nprocs + i == j) 
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j] - occ_dev[j];
-            }
-            else
-            {
-                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j];
-            }
-        }
-    }
-
+    int nblocks = numst / nTPB + 1;
+    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 
