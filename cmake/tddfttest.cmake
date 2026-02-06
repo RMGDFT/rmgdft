@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE "${WORKDIR}")
 EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRC_DIR}" "${WORKDIR}" )
 
-execute_process(COMMAND mpirun -n ${PROCS} ${RMG_EXE} input WORKING_DIRECTORY ${WORKDIR})
+execute_process(COMMAND ${MPIEXEC} -n ${PROCS} ${RMG_EXE} input WORKING_DIRECTORY ${WORKDIR})
 execute_process(COMMAND python3 ${CHECK_TDDFT}  WORKING_DIRECTORY ${WORKDIR})
+file(REMOVE_RECURSE "${WORKDIR}/Waves")

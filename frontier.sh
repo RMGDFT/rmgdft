@@ -15,8 +15,9 @@ export MPICH_GPU_SUPPORT_ENABLED=0
 rm -rf build-frontier-gpu
 mkdir build-frontier-gpu
 cd build-frontier-gpu
+export HIP_PATH=/opt/rocm-7.0.2/
 export CXX=/opt/cray/pe/craype/2.7.33/bin/CC
-cmake .. -DRMG_HIP_ENABLED=1 -DUSE_NCCL_OR_RCCL=1 -DHIP_PATH="/opt/rocm-7.0.2/" -DHDF5_ROOT="/sw/frontier/spack-envs/cpe24.11-cpu/opt/gcc-13.2/hdf5-1.14.5-57zeysxape7ysd5yxefpxrew4kqjpuyn/cmake"
+cmake .. -DRMG_HIP_ENABLED=1 -DUSE_NCCL_OR_RCCL=1 
 make rmg-gpu -j 20 -k > rmg-gpu.log_1 2>&1
 make rmg-gpu -j 20 -k > rmg-gpu.log_2 2>&1
 make rmg-on-gpu -j 20 -k > rmg-on-gpu.log 2>&1
