@@ -39,7 +39,5 @@ export https_proxy=http://proxy.ccs.ornl.gov:3128
 
 ./frontier.sh
 cd $SLURM_SUBMIT_DIR/build-frontier-gpu
-ctest -R TDDFT
-ctest -R NEGF
-#ctest -D ExperimentalTest
-#ctest -D ExperimentalSubmit
+ctest -D ExperimentalTest
+ctest -D ExperimentalSubmit
