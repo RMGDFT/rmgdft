@@ -990,12 +990,6 @@ public:
    // of std::complex. In that case setting this flag lets you use an alternate implementation.
    bool use_alt_zgemm;
 
-   // Default is false. RMG will still be able to use transparent huge pages but
-   // certain special optimizations will be disabled. If you set this to true then
-   // RMG assumes that sufficient huge pages are available to meet all memory
-   // requirements and bad results may occur if that is not true.
-   bool require_huge_pages;
-
    // Controls how far below the Nyquist frequency potentials are cutoff. Default is 0.25
    double filter_factor;
 

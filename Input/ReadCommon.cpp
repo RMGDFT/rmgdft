@@ -1286,10 +1286,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
             "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.", PERF_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
-            "If set RMG assumes that sufficient huge pages are available. "
-            "Bad things may happen if this is not true.", PERF_OPTIONS|EXPERIMENTAL_OPTION);
-
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
             "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ", MD_OPTIONS);
 
