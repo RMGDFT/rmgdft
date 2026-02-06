@@ -85,8 +85,6 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
     rmg::hvector<KpointType> block_matrix(mb*nstates);
 
-    //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
-    //  for HIP its a GPU buffer.
     KpointType *ns_dev = ns;
     if(ct.norm_conserving_pp)
     {

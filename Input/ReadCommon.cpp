@@ -1144,12 +1144,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
 
     // Booleans next. Booleans are never required.
-#if CUDA_ENABLED
-    // If GPU memory is constrained this one should be set to true.
-    If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
-            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS|EXPERT_OPTION);
-
-#endif
 
 #if CUDA_ENABLED || HIP_ENABLED
     If.RegisterInputKey("use_cublasxt", &lc.use_cublasxt, false,
@@ -1256,10 +1250,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "substantially faster than standard diagonalization. It also tends "
             "to converge better for metallic systems. It works with the "
             "multigrid kohn_sham_solver but not the davidson solver. ", DIAG_OPTIONS|EXPERT_OPTION);
-
-    If.RegisterInputKey("gpu_managed_memory", &lc.gpu_managed_memory, false, 
-            "Some AMD and Nvidia GPUs support managed gou memory which is "
-            "useful when GPU memory limits are exceeded. ", CONTROL_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("use_energy_correction", &lc.use_energy_correction, false, 
             "Experimental energy correction term ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);

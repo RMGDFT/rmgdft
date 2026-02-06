@@ -120,23 +120,12 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     KpointType *D = new KpointType[2*nstates];
 
-    //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
-    //  for HIP its a GPU buffer.
+    //  For CPU only case psi_d is the same as orbital_storage but
+    //  for HIP or CUDA its a GPU buffer.
     KpointType *psi_d = orbital_storage;
-#if HIP_ENABLED
-    // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
-    // and use it repeatedly to compute the matrix elements. This is much faster but puts
-    // more pressure on GPU memory. A blas implementation that overlapped communication and
-    // computation would make this unnecessary.
+#if HIP_ENABLED || CUDA_ENABLED
     gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
     gpuMemcpy(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-#endif
-#if CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
-        gpuMemcpy(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-    }
 #endif
 
     char *trans_t = "t";
@@ -315,7 +304,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
-        // vexx is not in managed memory yet so that might create an issue
         rmg::gemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
                 this->vexx, pbasis_noncoll, gmatrix.data(), nstates, beta, tmp_arrayT, pbasis_noncoll);
         memcpy(this->vexx, tmp_arrayT, tlen);
@@ -326,13 +314,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     delete [] D;
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-#if CUDA_ENABLED
-    if(ct.gpu_managed_memory == false && ct.use_cublasxt == false)
-    {
-        gpuFree(psi_d);
-    }
-#endif
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     gpuFree(psi_d);
 #endif
     gpuFreeHost(eigs);

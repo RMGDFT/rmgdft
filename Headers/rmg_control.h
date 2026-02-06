@@ -762,10 +762,6 @@ public:
     // GPU memory for the usable devices
     size_t gpu_mem[MAX_GPU_DEVICES];
 
-    // Default is to use managed memory for non-local weights but if GPU memory
-    // is constrained performance is much better using pinned memory.
-    bool pin_nonlocal_weights;
-
     // Flag indicating whether all of the gpu devices we plan on using support managed memory
     bool gpus_support_managed_memory;
 

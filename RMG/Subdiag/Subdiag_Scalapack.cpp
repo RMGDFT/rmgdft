@@ -113,15 +113,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     KpointType *psi = kptr->orbital_storage + first_state * pbasis_noncoll;
     KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    if(ct.gpu_managed_memory == false)
-    {
-        gpuMalloc((void **)&psi_dev, num_states * pbasis_noncoll * sizeof(KpointType));
-        gpuMemcpy(psi_dev, psi, num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-    }
-    else
-    {
-        psi_dev = psi;
-    }
+    gpuMalloc((void **)&psi_dev, num_states * pbasis_noncoll * sizeof(KpointType));
+    gpuMemcpy(psi_dev, psi, num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #else
     psi_dev = psi;
 #endif
@@ -192,14 +185,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     {
         tlen = (size_t)num_states * (size_t)pbasis_noncoll * sizeof(KpointType);
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-        if(ct.gpu_managed_memory == false)
-        {
-            gpuMemcpy(psi_dev, &kptr->vexx[first_state * pbasis_noncoll], num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-        }
-        else
-        {
-            psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
-        }
+        gpuMemcpy(psi_dev, &kptr->vexx[first_state * pbasis_noncoll], num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #else
         psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
 #endif
@@ -211,14 +197,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 
     delete RT1;
     // End rotation
-
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    if(ct.gpu_managed_memory == false)
-    {
-        gpuFree(psi_dev);
-    }
-#endif
-
 
     char *trans_n = "n";
     //char *trans_t = "t";

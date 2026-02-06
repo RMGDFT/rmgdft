@@ -1131,44 +1131,8 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    // Managed memory is faster when gpu memory is not constrained but 
-    // pinned memory works better when it is constrained.
-    if(ct.pin_nonlocal_weights)
-    {
-        gpuMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
-    }
-    else
-    {
-        this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
-#if CUDA_ENABLED
-        int _device = -1;
-        gpuGetDevice(&_device);
-#if CUDA_VERSION_MAJOR >= 13
-        struct cudaMemLocation device = {
-                .type = cudaMemLocationTypeDevice,
-                .id = _device,
-        };
-#else
-        int device = _device;
-#endif
-        if(ct.gpu_managed_memory)
-        {
-            rmg::error(cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device));
-        }
-        gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-#elif HIP_ENABLED
-        int device = -1;
-        gpuGetDevice(&device);
-        if(ct.gpu_managed_memory)
-        {
-            rmg::error(hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device));
-        }
-        gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-#elif SYCL_ENABLED
-        gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-
-#endif
-    }
+    this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
+    gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
 #else
     this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
@@ -1195,15 +1159,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
 
     if (this->nl_weight != NULL) {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-        if(ct.pin_nonlocal_weights)
-        {
-            gpuFreeHost(this->nl_weight);
-        }
-        else
-        {
-            gpuFreeHost(this->nl_weight);
-            gpuFree(this->nl_weight_gpu);
-        }
+        gpuFreeHost(this->nl_weight);
+        gpuFree(this->nl_weight_gpu);
         if (this->newsint_local)
             RmgFreeHost(this->newsint_local);
 #else
@@ -1254,29 +1211,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->orbital_weight = (KpointType *)RmgMallocHost(stress_factor * this->orbital_weight_size * sizeof(KpointType));
-#if CUDA_ENABLED
-    int _device = -1;
-    gpuGetDevice(&_device);
-#if CUDA_VERSION_MAJOR >= 13
-    struct cudaMemLocation device = {
-        .type = cudaMemLocationTypeDevice,
-        .id = _device,
-    };
-#else
-    int device = _device;
-#endif
-    if(ct.gpu_managed_memory)
-    {
-        rmg::error(cudaMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device));
-    }
-#elif HIP_ENABLED
-    int device = -1;
-    gpuGetDevice(&device);
-    if(ct.gpu_managed_memory)
-    {
-        rmg::error(hipMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device));
-    }
-#endif
 
     for(size_t idx = 0;idx < stress_factor * this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
