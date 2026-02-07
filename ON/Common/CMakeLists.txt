@@ -1,7 +1,6 @@
 add_library (ON_Common
     MatrixKpoint.cpp
  Exx_on.cpp
- GetNewRho_on.cpp
  Scf_on_proj.cpp
  WriteWaveFunctions.cpp
  WriteCij.cpp
@@ -56,7 +55,6 @@ add_library (ON_Common
  rand0.cpp
  read_data.cpp
  rmg_timings.cpp
- Scf_on.cpp
  sd.cpp
  tools_submat.cpp
  update_orbit_centers.cpp
@@ -64,6 +62,7 @@ add_library (ON_Common
  write_eigs.cpp
  write_states_info.cpp
  ZeroBoundary.cpp
+ CheckConvergence.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

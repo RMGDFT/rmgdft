@@ -146,8 +146,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                 }
                 else
                 {
-                    Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                            rhocore, vxc_old, vh_old, &CONVERGENCE);
+                    rmg::error("only projection method for ON now");
                 }
             }
             step_time = my_crtc() - step_time;

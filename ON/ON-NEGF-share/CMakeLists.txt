@@ -17,7 +17,6 @@ RmgThread.cpp
 make_mask_grid_state.cpp
 GetNewRho_proj.cpp
 FillOrbitalBorders.cpp
-KbpsiUpdate.cpp
 RhoQnmMat.cpp
 RhoAugmented_proj.cpp
 RhoAugmented.cpp
@@ -39,7 +38,6 @@ DotProductOrbitNl.cpp
 duplicate_states_info.cpp
 fill_orbit_borders4.cpp
 GenVxPsi.cpp
-GetAllKbpsi.cpp
 get_all_partial_kbpsi.cpp
 get_ion_orbit_overlap_nl.cpp
 GetNlop_on.cpp
