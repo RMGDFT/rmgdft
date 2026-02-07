@@ -160,7 +160,7 @@ void CheckShutdown(void);
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm, unsigned int *);
+void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h, PE_CONTROL& pelc);

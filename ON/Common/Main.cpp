@@ -92,7 +92,6 @@ CONTROL ct;
 PE_CONTROL pct;
 
 KBPSI Kbpsi_str;
-unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 
 std::vector<int> num_nonlocal_ion;
@@ -200,35 +199,8 @@ int main(int argc, char **argv)
         states = init_states();
         allocate_states();
         get_state_to_proc(states);
-        perm_ion_index = new unsigned int[ct.num_ions + 1];
-        for(int i = 0; i < ct.num_ions + 1; i++) perm_ion_index[i] = i;
 
-        perm_state_index = new unsigned int[ct.num_states];
-        rev_perm_state_index = new unsigned int[ct.num_states];
-
-        switch(ct.runflag)
-        {
-            //case 1:
-            //    if(pct.gridpe == 0) 
-            //    {
-            //        ReadPermInfo(ct.infile, perm_ion_index);
-            //        WritePermInfo(ct.outfile, perm_ion_index);
-            //    }
-            //    MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-            //    break;
-            default:
-                if(pct.gridpe == 0) 
-                {
-                    if(ct.bandwidthreduction)
-                        BandwidthReduction(ct.num_ions, Atoms, perm_ion_index);
-                    WritePermInfo(ct.outfile, perm_ion_index);
-                }
-                MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-                PermAtoms(ct.num_ions, Atoms, perm_ion_index);
-                break;
-        }
-        ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm, perm_ion_index);
-        GetPermStateIndex(ct.num_ions, Atoms, perm_ion_index, perm_state_index, rev_perm_state_index);
+        ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm);
 
         MPI_Barrier(pct.img_comm);
 

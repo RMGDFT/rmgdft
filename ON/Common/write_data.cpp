@@ -156,8 +156,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
         for (state = ct.state_begin; state < ct.state_end; state++)
         {
-            int state_permuted = perm_state_index[state];
-            newname = std::format("{}_spin{}{}{}", name, pct.spinpe, ".orbit_", state_permuted);
+            newname = std::format("{}_spin{}{}{}", name, pct.spinpe, ".orbit_", state);
             amode = S_IREAD | S_IWRITE;
             int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
             if (fhand < 0)

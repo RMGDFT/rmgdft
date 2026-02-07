@@ -128,8 +128,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     {
         for (state = ct.state_begin; state < ct.state_end; state++)
         {
-            int state_permuted = perm_state_index[state];
-            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state);
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {
