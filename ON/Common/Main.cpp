@@ -144,10 +144,6 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
-#if ELEMENTAL_LIBS
-#include "El.hpp"
-using namespace El;
-#endif
 using namespace std;
 
 MPI_Comm COMM_PEX, COMM_PEY, COMM_PEZ, COMM_3D;
@@ -188,11 +184,6 @@ int main(int argc, char **argv)
         double A[1], B[1],C[1];
         rmg::gemm("N", "N", 1, 1, 1, 0.5, A, 1, B, 1, 0.0, C, 1);
 
-
-        //  initialize for ELEMENTAl lib
-#if ELEMENTAL_LIBS
-        Initialize( argc, argv );
-#endif
 
         ReadBranchON(ct.cfile, ct, ControlMap);
         WriteXyz(ct.cfile);

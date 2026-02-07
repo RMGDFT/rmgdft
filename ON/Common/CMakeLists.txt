@@ -13,7 +13,6 @@ add_library (ON_Common
  OrbitalOptimize.cpp
  DiagScalapack.cpp
  DiagGpu.cpp
- DiagElemental.cpp
  write_restart.cpp
  init_wf_lcao.cpp
  add_orbit_to_wave.cpp

@@ -34,42 +34,6 @@ void get_state_to_proc(STATE * states)
     {
         states[st].index = st;
     }
-#if ELEMENTAL_LIBS
-    //  first proc_extra processor will have one more orbitals than other processors.
-    proc_extra = ct.num_states%pct.grid_npes;
-    if (proc_extra == 0)
-    {
-        for(pe = 0; pe < pct.grid_npes; pe++)
-        {
-            state_begin[pe] = ct.state_per_proc * pe;
-            state_end[pe] = ct.state_per_proc * (pe+1);
-        }
-
-    }
-    else
-    {
-        for(pe = 0; pe < proc_extra; pe++)
-        {
-            state_begin[pe] = ct.state_per_proc * pe;
-            state_end[pe] = ct.state_per_proc * (pe+1);
-        }
-
-        for(pe = proc_extra; pe < pct.grid_npes; pe++)
-        {
-            state_begin[pe] = state_end[pe-1];
-            state_end[pe] = state_begin[pe] + ct.num_states/pct.grid_npes;
-        }
-    }
-
-    ct.state_begin = state_begin[pct.gridpe];
-    ct.state_end = state_end[pct.gridpe];
-    if(ct.state_end > ct.num_states)
-    {
-        printf("\n something wroth in get_state_to_proc  %d %d", ct.state_end, pct.gridpe);
-        exit(0);
-    }
-
-#else
 
     ct.state_begin = ct.state_per_proc * pct.gridpe;
     ct.state_end = ct.state_begin + ct.state_per_proc;
@@ -86,7 +50,6 @@ void get_state_to_proc(STATE * states)
         if(state_begin[st] > ct.num_states ) state_begin[st] = ct.num_states;
         if(state_end[st] > ct.num_states ) state_end[st] = ct.num_states;
     }
-#endif
 
     for(pe = 0; pe < pct.grid_npes; pe++)
         for (st = state_begin[pe]; st < state_end[pe]; st++)
