@@ -118,7 +118,6 @@ void allocate_matrix()
     lwork = 5 * NN + NN * ldc + std::max(sizemqrleft, qrmem) + 1;
 
     item = std::max(lwork, item1);
-    my_malloc_init( work_memory, item, double );
 
 
 

@@ -56,8 +56,8 @@ void nlforce(double * veff)
 
 
 
-    rho_Qnm_mat(rho_nm, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
-            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+    rho_Qnm_mat(rho_nm, work_matrix_row, state_begin, state_end, num_nonlocal_ion.data(),
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc.data());
 
     partial_Mat_nm_R(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, work_matrix_row);
 

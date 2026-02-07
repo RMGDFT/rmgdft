@@ -39,11 +39,12 @@ void init_nonlocal_comm(void)
     int ion1, ion2, ion_global1, ion_global2;
 
 
-    my_malloc(num_nonlocal_ion, pct.grid_npes, int);
+    num_nonlocal_ion.resize(pct.grid_npes);
+
     for (idx = 0; idx < pct.grid_npes; idx++)
         num_nonlocal_ion[idx] = 0;
     num_nonlocal_ion[pct.gridpe] = pct.n_ion_center;
-    rmg::reduce(num_nonlocal_ion, pct.grid_npes, pct.grid_comm);
+    rmg::reduce(num_nonlocal_ion.data(), pct.grid_npes, pct.grid_comm);
 
     max_ion_nonlocal = 0;
     for (idx = 0; idx < pct.grid_npes; idx++)
@@ -56,17 +57,13 @@ void init_nonlocal_comm(void)
        from all processors */
 
 
-    if (ionidx_allproc != NULL)
-        my_free(ionidx_allproc);
-    my_malloc( ionidx_allproc, max_ion_nonlocal * pct.grid_npes, int );
-    for (idx = 0; idx < max_ion_nonlocal * pct.grid_npes; idx++)
-        ionidx_allproc[idx] = 0.0;
+    ionidx_allproc.resize(max_ion_nonlocal * pct.grid_npes, 0);
 
     for (ion = 0; ion < pct.n_ion_center; ion++)
         ionidx_allproc[pct.gridpe * max_ion_nonlocal + ion] = pct.ionidx[ion];
 
     item = max_ion_nonlocal * pct.grid_npes;
-    rmg::reduce(ionidx_allproc, item, pct.grid_comm);
+    rmg::reduce(ionidx_allproc.data(), item, pct.grid_comm);
 
     size = (size_t)ct.state_per_proc * (size_t)max_ion_nonlocal * (size_t)ct.max_nl;
 

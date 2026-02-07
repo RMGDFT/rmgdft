@@ -42,8 +42,7 @@ void get_cholesky_real(double *matS)
     char uplo = 'l';
     int info, lwork;
     double rcond, anorm = 1.;
-    double *work;
-    int *iwork, liwork, locr;
+    int liwork, locr;
     int nb, nproc;
     int mxllda2;
     char *char_fcd1;
@@ -86,11 +85,11 @@ void get_cholesky_real(double *matS)
         liwork = locr;
         liwork *= 20;
         lwork *= 20;
-        my_malloc( iwork, (size_t) (liwork), int );
+        std::vector<int> iwork(liwork, 0);
 
-        work = work_memory;
+        std::vector<double> work(lwork);
         pdpocon(char_fcd1, &numst, l_s, &ione, &ione, pct.desca,
-                &anorm, &rcond, work, &lwork, iwork, &liwork, &info);
+                &anorm, &rcond, work.data(), &lwork, iwork.data(), &liwork, &info);
         if (info != 0)
         {
 	    rmg::printlog("\n work space %f %d \n", work[0], lwork);
@@ -100,12 +99,6 @@ void get_cholesky_real(double *matS)
         }
 
 
-        my_free(iwork);
-
-/*
- *     RELEASE THE PROCESS GRID
- *     Free the BLACS context
- */
     }
 
 

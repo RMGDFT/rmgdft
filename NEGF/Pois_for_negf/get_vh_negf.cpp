@@ -48,7 +48,6 @@
 #include "const.h"
 #include "params.h"
 #include "rmg_sum_all.h"
-#include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
@@ -76,30 +75,23 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
     int idx, its, nits, sbasis, pbasis;
     double t1, diag=1.0;
-    double *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
+    double residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
-
-    /*Taken from ON code, seems to help a lot with convergence*/
-    poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
-
-    k_vh = 0.0;
 
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
     pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
 
+    std::vector<double> mgrhsarr(sbasis), mglhsarr(sbasis), mgresarr(sbasis);
+    std::vector<double> sg_rho(sbasis), sg_vh(sbasis), sg_res(sbasis);
+    std::vector<double> nrho(sbasis), work(4*sbasis);
+    /*Taken from ON code, seems to help a lot with convergence*/
+    poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
-    /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, sbasis, double);
-    my_malloc (mglhsarr, sbasis, double);
-    my_malloc (mgresarr, sbasis, double);
-    my_malloc (work, 4*sbasis, double);
-    my_malloc (sg_rho, sbasis, double);
-    my_malloc (sg_vh, sbasis, double);
-    my_malloc (sg_res, sbasis, double);
-    my_malloc (nrho, sbasis, double);
+    k_vh = 0.0;
+
+
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -107,14 +99,14 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+    pack_vhstod (work.data(), nrho.data(), get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
-    CPP_app_cir_driver (&Rmg_L, Rmg_T, nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
+    CPP_app_cir_driver (&Rmg_L, Rmg_T, nrho.data(), mgrhsarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
 
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
-    QMD_dscal (pbasis, t1, mgrhsarr, incx);
+    QMD_dscal (pbasis, t1, mgrhsarr.data(), incx);
 
 
     its = 0;
@@ -134,7 +126,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
             {
         
                 /* Apply operator */
-                diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
@@ -150,17 +142,17 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
             }
 
          /*  Fix Hartree in some region  */
-            confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
+            confine (mgresarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
             /* Pre and Post smoothings and multigrid */
             if (cycles == ct.poi_parm.gl_pre)
             {
 
                 /* Transfer res into smoothing grid */
-                rmg::pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                rmg::pack_ptos (sg_res.data(), mgresarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                  
-                mgrid_solv_negf (mglhsarr, sg_res, work,
+                mgrid_solv_negf (mglhsarr.data(), sg_res.data(), work.data(),
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, get_hxxgrid(),
                             get_hyygrid(), get_hzzgrid(),
                             0, get_neighbors(), ct.poi_parm.levels, poi_pre,
@@ -172,15 +164,15 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
 
                 /* Transfer solution back to mgresarr array */
-                rmg::pack_stop (mglhsarr, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                rmg::pack_stop (mglhsarr.data(), mgresarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                 /*  Fix Hartree in some region  */
 
-                confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
+                confine (mgresarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_daxpy (pbasis, t1, mgresarr.data(), incx, ct.vh_ext, incx);
 
             }
             else
@@ -188,7 +180,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_daxpy (pbasis, t1, mgresarr.data(), incx, ct.vh_ext, incx);
 
             }                   /* end if */
 
@@ -197,7 +189,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
         }                       /* end for */
 
         /*Get residual*/
-        diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+        diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
 
@@ -209,7 +201,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 
         }                   /* end for */
 
-        confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
+        confine (mgresarr.data(), ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
         residual = 0.0;
         for (idx = 0; idx < pbasis; idx++)
@@ -233,17 +225,6 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
     pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-
-    /* Release our memory */
-    my_free (nrho);
-    my_free (sg_res);
-    my_free (sg_vh);
-    my_free (sg_rho);
-    my_free (work);
-    my_free (mgresarr);
-    my_free (mglhsarr);
-    my_free (mgrhsarr);
-
 
 }                               /* end get_vh */
 
