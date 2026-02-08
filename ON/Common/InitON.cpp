@@ -123,12 +123,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     delete(RT);
 
-    RmgTimer *RT1 = new RmgTimer("1-TOTAL: init: init_comm");
 
-    init_comm(states);
-
-    init_comm_res(states);
-    delete(RT1);
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     RmgTimer *RTa = new RmgTimer("1-TOTAL: init: init_nuc: LocalObject");
     AllocatePsi(states, states1);
@@ -304,14 +299,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     MPI_Barrier(pct.img_comm);
     delete(RT2);
 
-    RmgTimer *RT3 = new RmgTimer("1-TOTAL: init: init_commi_nonlo");
-
-    init_nonlocal_comm();
-    InitNonlocalComm();
-    delete(RT3);
-
-    fflush(NULL);
-
     /* Initialize qfuction in Cartesin coordinates */
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
     fflush(NULL);
@@ -398,7 +385,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             dscal(&iii, &t2, &rho[0], &ione);
 
             //    get_vxc(rho, rho_oppo, rhocore, vxc);
-            RT1 = new RmgTimer("2-Init: exchange/correlation");
+            RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
             Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
             F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
             delete F;

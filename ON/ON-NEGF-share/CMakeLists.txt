@@ -20,7 +20,6 @@ FillOrbitalBorders.cpp
 RhoQnmMat.cpp
 RhoAugmented_proj.cpp
 RhoAugmented.cpp
-InitNonlocalComm.cpp
 GetHvnlij_proj.cpp
 ReadOrbitals.cpp
 allocate_masks.cpp
@@ -42,11 +41,8 @@ GetOrbitalPairs.cpp
 get_orbit_overlap_region.cpp
 get_start.cpp
 global_to_distribute.cpp
-init_comm.cpp
-init_comm_res.cpp
 init_dimension.cpp
 init_nl_xyz.cpp
-init_nonlocal_comm.cpp
 init_parameter.cpp
 init_state_size.cpp
 int_max_all.cpp
