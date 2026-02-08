@@ -57,8 +57,8 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "",
                      CHECK_AND_TERMINATE, REQUIRED, start_mode,
-                     "Type of run. Choices are \"Random Start\", \"Restart From File\", \"FIREBALL Start\", \"Gaussian Start\", or \"Restart TDDFT\".\n", 
-                     "start_mode must be one of  \"Random Start\", \"Restart From File\", \"FIREBALL Start\", \"Gaussian Start\", or \"Restart TDDFT\". Terminating.\n");
+                     "Type of run. Choices are \"Random Start\", \"Restart From File\", \"FIREBALL Start\",  or \"Restart TDDFT\".\n", 
+                     "start_mode must be one of  \"Random Start\", \"Restart From File\", \"FIREBALL Start\",  or \"Restart TDDFT\". Terminating.\n");
 
     If.RegisterInputKey("freeze_orbital_step", &lc.freeze_orbital_step, 0, 100000, 90, 
                      CHECK_AND_FIX, OPTIONAL, 

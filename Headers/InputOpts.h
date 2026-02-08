@@ -166,7 +166,6 @@ static std::unordered_map<std::string, int> start_mode = {
         {"Restart From File", RESTART},
         {"LCAO Start", LCAO_START},
         {"FIREBALL Start", INIT_FIREBALL},
-        {"Gaussian Start", INIT_GAUSSIAN},
         {"Start TDDFT", Start_TDDFT},
         {"Restart TDDFT", Restart_TDDFT},
         {"Modified LCAO Start", MODIFIED_LCAO_START}

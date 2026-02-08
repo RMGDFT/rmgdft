@@ -317,10 +317,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     switch(ct.runflag)
     {
         case 0:
-            init_wf(states);
-
-            dcopy(&FP0_BASIS, rhoc, &ione, rho, &ione);
-
+            rmg::error("no random start for ON");
             break;
         case LCAO_START:
             init_wf_lcao(states);
@@ -328,14 +325,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
             break;
         case INIT_FIREBALL:
-            init_wf_atom(states);
-            init_rho_atom(rho);
-
-            break;
-
-        case INIT_GAUSSIAN:
-            init_wf_gaussian(states);
-            dcopy(&FP0_BASIS, rhoc, &ione, rho, &ione);
+            rmg::error("no support fireball start for ON");
 
             break;
 

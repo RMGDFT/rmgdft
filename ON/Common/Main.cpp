@@ -189,7 +189,6 @@ int main(int argc, char **argv)
         WriteXyz(ct.cfile);
         states = init_states();
         allocate_states();
-        get_state_to_proc(states);
 
         ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm);
 

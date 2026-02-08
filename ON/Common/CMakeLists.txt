@@ -13,41 +13,17 @@ add_library (ON_Common
  DiagGpu.cpp
  write_restart.cpp
  init_wf_lcao.cpp
- add_orbit_to_wave.cpp
  allocate_matrix.cpp
- change_states_crds.cpp
  CMakeLists.txt
  Fill_on.cpp
- genvpsi.cpp
- get_cholesky_real.cpp
- get_orbit_center.cpp
- get_state_to_proc.cpp
  get_sum_eig.cpp
- get_wave.cpp
  InitON.cpp
  init_pe_on.cpp
- init_rho_atom.cpp
- init_wf_atom.cpp
- init_wf.cpp
- init_wf_gaussian.cpp
- interpolate_atom_density.cpp
- md_fastrelax.cpp
- movie.cpp
- nlforce.cpp
- nlforce_par_omega.cpp
- normalize_orbits.cpp
- ortho_norm_local.cpp
- print_status.cpp
- print_wave.cpp
- qnm_beta_betapsi.cpp
  quench.cpp
  rand0.cpp
  read_data.cpp
- sd.cpp
- update_orbit_centers.cpp
  write_data.cpp
  write_eigs.cpp
- write_states_info.cpp
  ZeroBoundary.cpp
  CheckConvergence.cpp
 )
