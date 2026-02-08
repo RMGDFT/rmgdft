@@ -2,8 +2,6 @@ add_library (NEGF_Common
 write_data_NEGF.cpp
 ReadInterpolateOrbitals.cpp
 InitNegf.cpp
-#SetEnergyWeight.cpp
-#SetEnergyWeightNoneq.cpp
 matrix_inverse_blocknm_Gauss.cpp
 matrix_inverse_rowcol.cpp
 zgesv_driver.cpp
@@ -39,7 +37,6 @@ init_ext.cpp
 init_loc_xyz.cpp
 init_pe_on.cpp
 interpolation_orbit.cpp
-is_vloc_state_overlap.cpp
 kpoints.cpp
 lead_bandstructure.cpp
 lead_mat_distribute.cpp
@@ -49,8 +46,6 @@ green_kpoint_phase.cpp
 matrix_kpoint_lead.cpp
 min_distance_index.cpp
 modify_rho.cpp
-multi_GHG_munu.cpp
-nlforce.cpp
 plane_average_rho.cpp
 pmo_init.cpp
 pmo_trace.cpp
@@ -69,7 +64,6 @@ read_rho_and_pot.cpp
 read_trans.cpp
 rho_munu.cpp
 rho_nm_mat.cpp
-rmg_timings.cpp
 Run.cpp
 scale_orbital.cpp
 ScfNegf.cpp

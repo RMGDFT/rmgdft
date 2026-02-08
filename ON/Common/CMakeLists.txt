@@ -47,7 +47,6 @@ add_library (ON_Common
  quench.cpp
  rand0.cpp
  read_data.cpp
- rmg_timings.cpp
  sd.cpp
  update_orbit_centers.cpp
  write_data.cpp
