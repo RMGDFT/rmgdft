@@ -108,17 +108,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     state_corner_xyz(states);
 
 
-
-
-    int size = (ct.state_end - ct.state_begin) * ct.num_states;
-
-    state_overlap_or_not = new char[size];
-    //my_malloc( state_overlap_or_not, size,  char);
-
-    is_state_overlap(states, state_overlap_or_not);
-
-
-    get_orbit_overlap_region(states);
     GetOrbitalPairs(states);
 
     delete(RT);
@@ -223,7 +212,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     /* Initialize Non-local operators */
     init_nl_xyz();
-    get_ion_orbit_overlap_nl(states);
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: get_nlop");

@@ -190,9 +190,6 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
-            case HYBRID_THETA_PHI:       // Performs Theta_ij * Phi_j
-                ThetaPhiBlock(ss.basetag, ss.extratag2,(double *)ss.nv);
-                break;
             case HYBRID_ON_PRECOND:       // Performs Theta_ij * Phi_j
                 PreconditionerOne((double *)ss.p1, ss.istate, ss.gamma);
                 break;
