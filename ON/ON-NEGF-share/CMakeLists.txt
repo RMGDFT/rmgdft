@@ -2,7 +2,6 @@ add_library (ON_NEGF_share
 InitBlockTriDims.cpp
 Preconditioner.cpp
 get_gamma_precond.cpp
-real_max_all.cpp
 BlockTriMatrix.cpp
 WriteXyz.cpp
 ApplyHphi.cpp
@@ -26,19 +25,16 @@ assign_weight_on.cpp
 duplicate_states_info.cpp
 GenVxPsi.cpp
 GetNlop_on.cpp
-GetOrbitalPairs.cpp
 get_start.cpp
 global_to_distribute.cpp
 init_dimension.cpp
 init_nl_xyz.cpp
 init_parameter.cpp
 init_state_size.cpp
-int_max_all.cpp
 minimage1.cpp
 open_wave_file.cpp
 print_matrix.cpp
 state_corner_xyz.cpp
-write_pos.cpp
 xyz2pe.cpp
 write_TFions.cpp
 rmg_alloc.cpp

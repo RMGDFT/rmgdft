@@ -29,7 +29,6 @@ get_inverse_block.cpp
 get_inverse_block_p.cpp
 get_ion_orbit_overlap_loc.cpp
 get_line.cpp
-get_state_to_proc.cpp
 global_to_distribute3.cpp
 H01_to_HCL.cpp
 init_comp.cpp

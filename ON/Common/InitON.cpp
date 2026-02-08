@@ -107,9 +107,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     state_corner_xyz(states);
 
-
-    GetOrbitalPairs(states);
-
     delete(RT);
 
 
@@ -300,7 +297,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     fflush(NULL);
 
 
-    int FP0_BASIS = get_FP0_BASIS();
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     switch(ct.runflag)
     {
