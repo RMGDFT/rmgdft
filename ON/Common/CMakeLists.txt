@@ -15,15 +15,11 @@ add_library (ON_Common
  init_wf_lcao.cpp
  add_orbit_to_wave.cpp
  allocate_matrix.cpp
- app_cil_orbital6.cpp
- app_cil_orbital.cpp
  change_states_crds.cpp
  CMakeLists.txt
- diag_eig_matrix.cpp
  Fill_on.cpp
  genvpsi.cpp
  get_cholesky_real.cpp
- get_mat_Omega.cpp
  get_orbit_center.cpp
  get_state_to_proc.cpp
  get_sum_eig.cpp
