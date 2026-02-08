@@ -9,7 +9,6 @@ add_library (ON_Common
  get_te.cpp
  ReadDataFromRMG.cpp
  UpdatePot.cpp
- OrbitalOptimize.cpp
  DiagScalapack.cpp
  DiagGpu.cpp
  write_restart.cpp
@@ -36,7 +35,6 @@ add_library (ON_Common
  init_wf.cpp
  init_wf_gaussian.cpp
  interpolate_atom_density.cpp
- Kain.cpp
  md_fastrelax.cpp
  mgrid_solv_local.cpp
  MgridSolvLocal.cpp
@@ -45,9 +43,6 @@ add_library (ON_Common
  nlforce_par_omega.cpp
  normalize_orbits.cpp
  ortho_norm_local.cpp
- Precond.cpp
- PrecondMg.cpp
- PrecondMg1.cpp
  print_status.cpp
  print_wave.cpp
  qnm_beta_betapsi.cpp

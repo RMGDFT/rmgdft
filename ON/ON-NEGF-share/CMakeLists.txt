@@ -20,10 +20,7 @@ FillOrbitalBorders.cpp
 RhoQnmMat.cpp
 RhoAugmented_proj.cpp
 RhoAugmented.cpp
-KbpsiComm.cpp
 InitNonlocalComm.cpp
-GetHS.cpp
-GetHvnlij.cpp
 GetHvnlij_proj.cpp
 ReadOrbitals.cpp
 allocate_masks.cpp
