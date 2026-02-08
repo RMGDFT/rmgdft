@@ -36,8 +36,6 @@ add_library (ON_Common
  init_wf_gaussian.cpp
  interpolate_atom_density.cpp
  md_fastrelax.cpp
- mgrid_solv_local.cpp
- MgridSolvLocal.cpp
  movie.cpp
  nlforce.cpp
  nlforce_par_omega.cpp
@@ -51,7 +49,6 @@ add_library (ON_Common
  read_data.cpp
  rmg_timings.cpp
  sd.cpp
- tools_submat.cpp
  update_orbit_centers.cpp
  write_data.cpp
  write_eigs.cpp

@@ -11,7 +11,6 @@ MyCpdgemr2d.cpp
 LdaU_on.cpp
 LO_x_LO.cpp
 LocalObject.cpp
-OrbitalComm.cpp
 DistributeTasks.cpp
 RmgThread.cpp
 make_mask_grid_state.cpp
@@ -29,8 +28,6 @@ app_grad6.cpp
 app_mask.cpp
 assign_weight_on.cpp
 density_orbit_X_orbit.cpp
-DotProductOrbitOrbit.cpp
-DotProductOrbitNl.cpp
 duplicate_states_info.cpp
 fill_orbit_borders4.cpp
 GenVxPsi.cpp
@@ -50,8 +47,6 @@ is_state_overlap.cpp
 minimage1.cpp
 nlforce_par_rho.cpp
 open_wave_file.cpp
-OrbitDotOrbit.cpp
-OrbitDotOrbitBlock.cpp
 partial_Mat_nm_R.cpp
 print_matrix.cpp
 rho_Qnm_mat.cpp

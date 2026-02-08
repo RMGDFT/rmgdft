@@ -89,7 +89,6 @@ spline.cpp
 splint.cpp
 split_matrix_center.cpp
 split_matrix_lead.cpp
-tools_submat.cpp
 trace_AB_tri.cpp
 tri_to_local.cpp
 tri_to_row.cpp
