@@ -91,12 +91,8 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
-KBPSI Kbpsi_str;
-double *projectors, *projectors_x, *projectors_y, *projectors_z;
 
 std::vector<int> num_nonlocal_ion;
-double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
-int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
 std::vector<int> ionidx_allproc;
 int max_ion_nonlocal;
 STATE *states;
@@ -108,14 +104,8 @@ double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
 double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
-double *orbit_tem;
-double *sg_orbit;
-double *sg_orbit_res;
 int *state_begin;
 int *state_end;
-double *vtot_global;
-double *wave_global;
-double *rho_global;
 double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z;
 
 
@@ -181,7 +171,6 @@ int main(int argc, char **argv)
         ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm);
 
         MPI_Barrier(pct.img_comm);
-
 
         RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
 

@@ -118,12 +118,7 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 
 COMPASS potentialCompass, chargeDensityCompass;
 
-
-unsigned int *perm_ion_index;
-double *projectors, *projectors_x, *projectors_y, *projectors_z;
 std::vector<int> num_nonlocal_ion;
-double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
-double *kbpsi_res;
 std::vector<int> ionidx_allproc;
 int max_ion_nonlocal;
 int NPES;
@@ -136,16 +131,11 @@ double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
 double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
-double *orbit_tem;
-double *sg_orbit;
-double *sg_orbit_res;
 int *state_begin;
 int *state_end;
-double *wave_global;
 double *vh_old, *vxc_old;
 
 double *vcomp, *peaks, *vext ;
-ION_ORBIT_OVERLAP    *ion_orbit_overlap_region_loc;
 
 double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
@@ -156,8 +146,6 @@ std::complex<double> *sigma_all;
 NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
 
 complex_energy_integral cei;
-
-KBPSI Kbpsi_str;
 
 
 MPI_Comm COMM_PEX, COMM_PEY, COMM_PEZ, COMM_3D;
