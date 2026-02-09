@@ -12,14 +12,11 @@ LO_x_LO.cpp
 LocalObject.cpp
 DistributeTasks.cpp
 RmgThread.cpp
-make_mask_grid_state.cpp
 GetNewRho_proj.cpp
 RhoAugmented_proj.cpp
 GetHvnlij_proj.cpp
 ReadOrbitals.cpp
-allocate_masks.cpp
 allocate_states.cpp
-app_mask.cpp
 assign_weight_on.cpp
 duplicate_states_info.cpp
 GetNlop_on.cpp

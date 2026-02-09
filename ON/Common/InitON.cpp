@@ -159,10 +159,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: InitPseudo");
-    allocate_masks(states);
-
-    for (level = 0; level < ct.eig_parm.levels + 1; level++)
-        make_mask_grid_state(level, states);
 
     // Initialize some commonly used plans
     FftInitPlans();
