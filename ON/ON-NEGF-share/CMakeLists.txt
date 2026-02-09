@@ -18,12 +18,10 @@ RhoAugmented_proj.cpp
 GetHvnlij_proj.cpp
 ReadOrbitals.cpp
 allocate_masks.cpp
-AllocatePsi.cpp
 allocate_states.cpp
 app_mask.cpp
 assign_weight_on.cpp
 duplicate_states_info.cpp
-GenVxPsi.cpp
 GetNlop_on.cpp
 get_start.cpp
 global_to_distribute.cpp

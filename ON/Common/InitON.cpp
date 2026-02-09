@@ -112,7 +112,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     RmgTimer *RTa = new RmgTimer("1-TOTAL: init: init_nuc: LocalObject");
-    AllocatePsi(states, states1);
 
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
