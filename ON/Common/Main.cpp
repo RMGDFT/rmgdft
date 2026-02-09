@@ -106,7 +106,7 @@ double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
 int *state_begin;
 int *state_end;
-double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z;
+double *vxc_old, *vh_old, *vh_corr;
 
 
 int mpi_nprocs;
@@ -175,8 +175,6 @@ int main(int argc, char **argv)
         RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
 
         init_dimension(&MXLLDA, &MXLCOL);
-        init_pe_on();
-
 
         if (pct.gridpe == 0)
             rmg::printlog("\n  MXLLDA: %d ", MXLLDA);
@@ -190,9 +188,6 @@ int main(int argc, char **argv)
         vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
         vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
-        vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
-        vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
-        vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
 
 
         InitON(vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, vh_old, vxc_old, ControlMap);
@@ -211,11 +206,6 @@ int main(int argc, char **argv)
                 quench(states, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
             case TDDFT:
-                if(ct.LocalizedOrbitalLayout != LO_projection)
-                {   
-                    throw RmgFatalException() << " TDDFT only works with LO_Projection in "
-                        << __FILE__ << " at line " << __LINE__ << "\n";
-                }
 
                 if(!ct.restart_tddft) 
                 {
@@ -268,32 +258,29 @@ int main(int argc, char **argv)
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
 
-        if(ct.LocalizedOrbitalLayout == LO_projection)
+        RmgTimer *RTO = new RmgTimer("WriteOrbitals");
+        LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+        if(ct.num_ions == 1)
         {
-            RmgTimer *RTO = new RmgTimer("WriteOrbitals");
-            LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
-            if(ct.num_ions == 1)
+            int pbasis = Rmg_G->get_P0_BASIS(1);
+            int num_orb = LocalOrbital->num_tot;
+            if(num_orb != LocalOrbital->num_thispe)
             {
-                int pbasis = Rmg_G->get_P0_BASIS(1);
-                int num_orb = LocalOrbital->num_tot;
-                if(num_orb != LocalOrbital->num_thispe)
-                {
-                    rmg::printlog("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
-                    exit(0);
-                }
-                double *Cij_glob = new double[num_orb * num_orb];
-                mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
-
-                double one = 1.0, zero = 0.0;
-                dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_cpu, &pbasis, 
-                        Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_cpu, &pbasis);
-
-                for(int idx = 0; idx < num_orb * pbasis; idx++) 
-                    LocalOrbital->storage_cpu[idx] = H_LocalOrbital->storage_cpu[idx];
-                LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+                rmg::printlog("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
+                exit(0);
             }
-            delete RTO;
+            double *Cij_glob = new double[num_orb * num_orb];
+            mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+
+            double one = 1.0, zero = 0.0;
+            dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_cpu, &pbasis, 
+                    Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_cpu, &pbasis);
+
+            for(int idx = 0; idx < num_orb * pbasis; idx++) 
+                LocalOrbital->storage_cpu[idx] = H_LocalOrbital->storage_cpu[idx];
+            LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
         }
+        delete RTO;
 
         // test conditions
         check_tests();
@@ -335,25 +322,25 @@ int main(int argc, char **argv)
             int rank;
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);
             std::string fname(ct.outfile);
-          //  double *Cij_glob = new double[num_orb * num_orb];
-          //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+            //  double *Cij_glob = new double[num_orb * num_orb];
+            //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
 
             WriteCij(fname, zz_dis);
 
-           // if(pct.gridpe == 0)
+            // if(pct.gridpe == 0)
             //{
-             //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
-              //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
-               // if (fhand < 0) {
-                //    rmg::printlog("Can't open restart file %s", cijname.c_str());
-                 //   rmg::error("Terminating.");
-              //  }
-               // 
-               // size_t wsize = ct.num_states * ct.num_states * sizeof(double);
-               // write (fhand, Cij_glob, wsize);
-               // close(fhand);
-               // fflush(NULL);
-          //  }
+            //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
+            //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+            // if (fhand < 0) {
+            //    rmg::printlog("Can't open restart file %s", cijname.c_str());
+            //   rmg::error("Terminating.");
+            //  }
+            // 
+            // size_t wsize = ct.num_states * ct.num_states * sizeof(double);
+            // write (fhand, Cij_glob, wsize);
+            // close(fhand);
+            // fflush(NULL);
+            //  }
 
             MPI_Barrier(MPI_COMM_WORLD);
             if(rank == 0)

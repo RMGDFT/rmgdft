@@ -65,7 +65,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 {
 
     int ic, idx, ion;
-    int level;
     int ione = 1;
 
 
@@ -116,43 +115,36 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     MPI_Barrier(pct.img_comm);
 
     //std::cout << "LocalizedObitalLayout "<< ct.LocalizedOrbitalLayout <<std::endl;
-    if(ct.LocalizedOrbitalLayout == LO_projection)
+    std::vector<int> ixmin(ct.num_states);
+    std::vector<int> iymin(ct.num_states);
+    std::vector<int> izmin(ct.num_states);
+    std::vector<int> dimx(ct.num_states);
+    std::vector<int> dimy(ct.num_states);
+    std::vector<int> dimz(ct.num_states);
+
+    for(int st = 0; st < ct.num_states; st++)
     {
-        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-        ixmin = new int[3*ct.num_states];
-        iymin = ixmin + ct.num_states;
-        izmin = iymin + ct.num_states;
-        dimx = new int[3*ct.num_states];
-        dimy = dimx + ct.num_states;
-        dimz = dimy + ct.num_states;
+        ixmin[st] = states[st].ixmin;
+        iymin[st] = states[st].iymin;
+        izmin[st] = states[st].izmin;
+        dimx[st] = states[st].orbit_nx;
+        dimy[st] = states[st].orbit_ny;
+        dimz[st] = states[st].orbit_nz;
 
-        for(int st = 0; st < ct.num_states; st++)
-        {
-            ixmin[st] = states[st].ixmin;
-            iymin[st] = states[st].iymin;
-            izmin[st] = states[st].izmin;
-            dimx[st] = states[st].orbit_nx;
-            dimy[st] = states[st].orbit_ny;
-            dimz[st] = states[st].orbit_nz;
-
-        }
-
-
-        int density = 1;
-        LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
-        H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
-        LocalOrbital->SetOrbitalProjToSingle(*Rmg_G);
-        LocalOrbital->ReAssign(*Rmg_G);
-        H_LocalOrbital->ReAssign(*Rmg_G);
-
-        LocalOrbital->SetZeroBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order);
-        LocalOrbital->SetBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order, states);
-        delete [] ixmin;
-        delete [] dimx;
-//        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
     }
+
+
+    int density = 1;
+    LocalOrbital = new LocalObject<double>(ct.num_states, ixmin.data(), iymin.data(), izmin.data(),
+            dimx.data(), dimy.data(), dimz.data(), 0, *Rmg_G, density, pct.grid_comm);
+    H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin.data(), iymin.data(), izmin.data(),
+            dimx.data(), dimy.data(), dimz.data(), 0, *Rmg_G, density, pct.grid_comm);
+    LocalOrbital->SetOrbitalProjToSingle(*Rmg_G);
+    LocalOrbital->ReAssign(*Rmg_G);
+    H_LocalOrbital->ReAssign(*Rmg_G);
+
+    LocalOrbital->SetZeroBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order);
+    LocalOrbital->SetBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order, states);
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: InitPseudo");
@@ -163,7 +155,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     /* Initialize the radial potential stuff */
     for(auto &sp : Species) sp.InitPseudo (Rmg_L, Rmg_G, ct.write_pp_flag);
     if(ct.ldaU_mode != LDA_PLUS_U_NONE && ct.max_ldaU_orbitals == 0)
-         throw RmgFatalException() << "LDA+U: no U assigned" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+        throw RmgFatalException() << "LDA+U: no U assigned" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
 
 
@@ -215,56 +207,50 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
     }
-    if(ct.LocalizedOrbitalLayout == LO_projection)
-    {
-        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-        int tot_prj = 0;
-        for (int ion=0; ion < ct.num_ions; ion++)
-        {
-            tot_prj += Species[Atoms[ion].species].num_projectors;
-        }
-        ixmin = new int[3*tot_prj];
-        iymin = ixmin + tot_prj;
-        izmin = iymin + tot_prj;
-        dimx = new int[3*tot_prj];
-        dimy = dimx + tot_prj;
-        dimz = dimy + tot_prj;
-        int proj_count = 0;
-        int *proj_per_ion = new int[ct.num_ions];
-        for (int ion=0; ion < ct.num_ions; ion++)
-        {
-            ION *iptr = &Atoms[ion];
-            SPECIES *sp = &Species[iptr->species];
-            proj_per_ion[ion] = sp->num_projectors;
-            for (int ip = 0; ip < sp->num_projectors; ip++)
-            {
-                ixmin[proj_count] = iptr->ixstart;
-                iymin[proj_count] = iptr->iystart;
-                izmin[proj_count] = iptr->izstart;
-                dimx[proj_count] = sp->nldim;
-                dimy[proj_count] = sp->nldim;
-                dimz[proj_count] = sp->nldim;
-                proj_count++;
-            }
-        }
 
-        int density = 1;
-        LocalProj = new LocalObject<double>(tot_prj, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
-        delete [] ixmin;
-        delete [] dimx;
-        LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
+    int tot_prj = 0;
+    for (int ion=0; ion < ct.num_ions; ion++)
+    {
+        tot_prj += Species[Atoms[ion].species].num_projectors;
+    }
+    ixmin.resize(tot_prj);
+    iymin.resize(tot_prj);
+    izmin.resize(tot_prj);
+    dimx.resize(tot_prj);
+    dimy.resize(tot_prj);
+    dimz.resize(tot_prj);
+    int proj_count = 0;
+    int *proj_per_ion = new int[ct.num_ions];
+    for (int ion=0; ion < ct.num_ions; ion++)
+    {
+        ION *iptr = &Atoms[ion];
+        SPECIES *sp = &Species[iptr->species];
+        proj_per_ion[ion] = sp->num_projectors;
+        for (int ip = 0; ip < sp->num_projectors; ip++)
+        {
+            ixmin[proj_count] = iptr->ixstart;
+            iymin[proj_count] = iptr->iystart;
+            izmin[proj_count] = iptr->izstart;
+            dimx[proj_count] = sp->nldim;
+            dimy[proj_count] = sp->nldim;
+            dimz[proj_count] = sp->nldim;
+            proj_count++;
+        }
+    }
+
+    LocalProj = new LocalObject<double>(tot_prj, ixmin.data(), iymin.data(), izmin.data(),
+            dimx.data(), dimy.data(), dimz.data(), 0, *Rmg_G, density, pct.grid_comm);
+    LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-        MemcpyHostDevice(LocalProj->storage_size, LocalProj->storage_cpu, LocalProj->storage_gpu);
+    MemcpyHostDevice(LocalProj->storage_size, LocalProj->storage_cpu, LocalProj->storage_gpu);
 #endif
-        delete [] proj_per_ion;
-        Kbpsi_mat = (double *)RmgMallocHost(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
-        Kbpsi_mat_local = (double *) RmgMallocHost(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
+    delete [] proj_per_ion;
+    Kbpsi_mat = (double *)RmgMallocHost(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
+    Kbpsi_mat_local = (double *) RmgMallocHost(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
 
 
-        InitBlockTriDims();
-    }
+    InitBlockTriDims();
 
     delete RTa;
 

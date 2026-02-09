@@ -176,9 +176,6 @@ typedef struct
     /* The size of local orbitals on this PE */
     int psi_size;
 
-    /* pointer to former step solution, used in pulay and KAIN mixing  */
-    int descb[DLEN];
-
     double *psi1, *psi2;
     int num_local_orbit;
 

@@ -120,34 +120,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
     MPI_Barrier(pct.img_comm);
 
-    if(ct.LocalizedOrbitalLayout == LO_projection)
-    {
-        LocalOrbital->ReadProjectedOrbitals(name, *Rmg_G);
-    }
-    else
-    {
-        for (state = ct.state_begin; state < ct.state_end; state++)
-        {
-            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state);
-            fhand = open(newname, O_RDWR);
-            if (fhand < 0)
-            {
-                printf("\n  unable to open file %s", newname);
-                exit(0);
-            }
-
-            nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
-            idx = states[state].size * sizeof(double);
-            if (nbytes != (size_t)idx)
-            {
-                rmg::printlog("\n read %zd is different from %d for state %d", nbytes, idx, state);
-                rmg::error("Unexpected end of file orbit");
-            }
-
-            close(fhand);
-        }
-    }
-
+    LocalOrbital->ReadProjectedOrbitals(name, *Rmg_G);
 
     if(ct.num_ldaU_ions > 0)
     {

@@ -17,7 +17,6 @@ add_library (ON_Common
  CMakeLists.txt
  Fill_on.cpp
  InitON.cpp
- init_pe_on.cpp
  quench.cpp
  rand0.cpp
  read_data.cpp
