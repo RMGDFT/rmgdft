@@ -37,14 +37,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, double *vh_corr, STATE * states)
 {
     int amode;
-    int state;
-    int idx, idx1;
-    double hxgrid, hygrid, hzgrid;
-    double *rho_tem;
-    int ix, iy, iz, ixdim, iydim, izdim;
-    int ixmin, ixmax, iymin, iymax, izmin, izmax;
-    int ixx, iyy, izz;
-    int PNX0, PNY0, PNZ0;
     int pex, pey, pez;
 
 

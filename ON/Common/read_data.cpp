@@ -38,11 +38,7 @@
 void read_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, double *vh_corr, STATE * states)
 {
-    int fhand;
-    int state;
-    size_t nbytes;
     char newname[MAX_PATH + 200];
-    int idx;
     int pex, pey, pez;
 
     /* Wait until everybody gets here */

@@ -374,7 +374,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     print_state_sum(states);
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
     print_state(&states[0]);
-    print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
 #endif
 
     /* some utilities, used in debuging */

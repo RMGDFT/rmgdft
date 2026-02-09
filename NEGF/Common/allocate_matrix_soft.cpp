@@ -43,12 +43,8 @@ void allocate_matrix_soft ()
 {
     int ispin;
     
-
-    int sbasis;
-
     ispin = ct.nspin;
 
-    sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
     my_malloc_init( peaks, 100, double );
 
     my_malloc_init( rho, get_FP0_BASIS() * ispin, double );
@@ -68,9 +64,6 @@ void allocate_matrix_soft ()
     }
 
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, double );
-
-    my_malloc_init( sg_res, sbasis, double );
-
 
 }                               /* end allocate_matrix */
 

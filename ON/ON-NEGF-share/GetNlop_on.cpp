@@ -50,15 +50,12 @@ static void init_alloc_nonloc_mem (void);
 void GetNlop_on(void)
 {
     int ion, idx, ip;
-    int tot_prj, index;
-    size_t PROJECTOR_SPACE;
     size_t prjcount;
     double *beta;
     SPECIES *sp;
     ION *iptr;
     fftw_plan p2;
-    int overlap;
-    int coarse_size, st1;
+    int coarse_size;
     double vect[3], nlcrds[3];
 
     /*Pointer to the result of forward transform on the coarse grid */

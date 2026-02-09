@@ -20,7 +20,6 @@ find_fermi.cpp
 find_new_energy_point.cpp
 find_new_energy_point_sharp_peak.cpp
 gauleg.cpp
-get_3Ddos.cpp
 get_cond_frommatrix_kyz.cpp
 get_ddd_update.cpp
 get_dos.cpp
@@ -88,7 +87,6 @@ tri_to_row.cpp
 tri_to_whole_complex.cpp
 tri_to_whole_complex_p.cpp
 whole_to_tri_complex.cpp
-row_to_tri_p.cpp
 whole_to_tri_real.cpp
 whole_to_tri_update.cpp
 write_data_lead.cpp

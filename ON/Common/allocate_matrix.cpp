@@ -38,8 +38,6 @@ void allocate_matrix()
 {
     int sizeofmatrix;
 
-    int S0_BASIS = (get_PX0_GRID()+2) * (get_PY0_GRID()+2) * (get_PZ0_GRID()+2);
-
     my_malloc_init( rho, get_FP0_BASIS() *2, double );
     rho_oppo = rho + get_FP0_BASIS() ;
     my_malloc_init( rho_tot, get_FP0_BASIS(), double );
@@ -52,8 +50,6 @@ void allocate_matrix()
     my_malloc_init( rhocore, get_FP0_BASIS(), double );
     my_malloc_init( eig_rho, get_FP0_BASIS(), double );
     my_malloc_init( rho_old, get_FP0_BASIS() , double );
-
-    my_malloc_init( sg_res, S0_BASIS, double );
 
     sizeofmatrix = MXLLDA * MXLCOL;
 

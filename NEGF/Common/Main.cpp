@@ -126,10 +126,8 @@ STATE *states;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c, *rho_tf;
 double *rho_oppo, *rho_tot;
 int MXLLDA, MXLCOL;
-double *sg_twovpsi, *sg_res;
 double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
-double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
 int *state_begin;
 int *state_end;
@@ -137,7 +135,6 @@ double *vh_old, *vxc_old;
 
 double *vcomp, *peaks, *vext ;
 
-double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
 int peakNum;
 

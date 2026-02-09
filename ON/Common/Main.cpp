@@ -99,10 +99,8 @@ STATE *states;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
 double *rho_oppo, *rho_tot;
 int MXLLDA, MXLCOL;
-double *sg_twovpsi, *sg_res;
 double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
-double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
 int *state_begin;
 int *state_end;
@@ -260,26 +258,6 @@ int main(int argc, char **argv)
 
         RmgTimer *RTO = new RmgTimer("WriteOrbitals");
         LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
-        if(ct.num_ions == 1)
-        {
-            int pbasis = Rmg_G->get_P0_BASIS(1);
-            int num_orb = LocalOrbital->num_tot;
-            if(num_orb != LocalOrbital->num_thispe)
-            {
-                rmg::printlog("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
-                exit(0);
-            }
-            double *Cij_glob = new double[num_orb * num_orb];
-            mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
-
-            double one = 1.0, zero = 0.0;
-            dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_cpu, &pbasis, 
-                    Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_cpu, &pbasis);
-
-            for(int idx = 0; idx < num_orb * pbasis; idx++) 
-                LocalOrbital->storage_cpu[idx] = H_LocalOrbital->storage_cpu[idx];
-            LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
-        }
         delete RTO;
 
         // test conditions
@@ -326,21 +304,6 @@ int main(int argc, char **argv)
             //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
 
             WriteCij(fname, zz_dis);
-
-            // if(pct.gridpe == 0)
-            //{
-            //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
-            //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
-            // if (fhand < 0) {
-            //    rmg::printlog("Can't open restart file %s", cijname.c_str());
-            //   rmg::error("Terminating.");
-            //  }
-            // 
-            // size_t wsize = ct.num_states * ct.num_states * sizeof(double);
-            // write (fhand, Cij_glob, wsize);
-            // close(fhand);
-            // fflush(NULL);
-            //  }
 
             MPI_Barrier(MPI_COMM_WORLD);
             if(rank == 0)

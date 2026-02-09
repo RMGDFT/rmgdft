@@ -126,9 +126,6 @@ void Run (STATE * states, std::unordered_map<std::string, InputKey *>& ControlMa
         for (i = 0; i < ct.num_blocks; i++) size = std::max(size, ct.block_dim[i] * ct.block_dim[i]);
         size = std::max(size, ct.num_states * (ct.state_end - ct.state_begin));
 
-        work_matrix = new double[size];
-
-
 
         if (pct.imgpe == 0)
             rmg::printlog ("init_soft is done\n");
@@ -148,28 +145,6 @@ void Run (STATE * states, std::unordered_map<std::string, InputKey *>& ControlMa
             get_dos(states);
             return;
         }
-        if (ct.runflag == 300)
-        {
-
-            RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-            for(int ib = 0; ib < ct.num_blocks; ib++)
-            {
-                LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
-                mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
-                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot, true);
-            }
-            delete(RTk);
-
-
-            get_cond_frommatrix_kyz ();
-            /* it will automatically calculate and plot 3Ddos for each peak */
-            for (i = 0; i < peakNum; i++)
-            {
-                get_3Ddos (states, peaks[i]-0.0002 , peaks[i]+0.0002, 3, i);
-            }
-            return;
-        }
-
 
         /* total energy point = # of poles + ncircle + nmax_gq1 */
 
