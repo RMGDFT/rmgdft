@@ -81,7 +81,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 #include "FiniteDiff.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
-          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
+          STATE * states, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
 void PrecondMg(double *psiR, double *work1, STATE *sp);
 void Precond(double *x, int);
@@ -113,7 +113,7 @@ void nlforce_par_Q(double *, double *, int, int, double *);
 int prime_factors(int, int *);
 void get_vxc(double*, double *, double *, double*);
 void assign_weight_on(SPECIES *, fftw_complex *, double *);
-void quench(STATE *, STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
+void quench(STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
 void app10_del2(double *, double *, int, int, int, double, double, double);
 void sl_init_comm(int *, int, int, MPI_Comm comm);
 void read_data(char *, double *, double *, double *, double *, double *, double *, STATE *);

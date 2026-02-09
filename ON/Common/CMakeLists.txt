@@ -16,7 +16,6 @@ add_library (ON_Common
  allocate_matrix.cpp
  CMakeLists.txt
  Fill_on.cpp
- get_sum_eig.cpp
  InitON.cpp
  init_pe_on.cpp
  quench.cpp

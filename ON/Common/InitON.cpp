@@ -60,7 +60,7 @@
 #include "GpuAlloc.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
-          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
+          STATE * states, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
@@ -112,9 +112,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     RmgTimer *RTa = new RmgTimer("1-TOTAL: init: init_nuc: LocalObject");
-
-    duplicate_states_info(states, states1);
-    duplicate_states_info(states, states_tem);
 
     MPI_Barrier(pct.img_comm);
 

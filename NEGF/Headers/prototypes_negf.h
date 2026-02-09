@@ -4,7 +4,7 @@
 void write_data_NEGF(char *name, double *vh, double *vxc, double *rho);
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
-void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias);
 
 void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10, 
@@ -15,9 +15,9 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 #include "InputKey.h"
 
 void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
-                STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
+                STATE * states, double * vnuc, double * vext, double * vxc, double * vh_old,
                 double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
-void Run(STATE *, STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
+void Run(STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
 
 void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMPASS& potcompass, COMPASS& rhocompass);
 void ReadMatrix2Systems();

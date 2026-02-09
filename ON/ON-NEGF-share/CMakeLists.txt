@@ -16,7 +16,6 @@ GetNewRho_proj.cpp
 RhoAugmented_proj.cpp
 GetHvnlij_proj.cpp
 ReadOrbitals.cpp
-allocate_states.cpp
 assign_weight_on.cpp
 duplicate_states_info.cpp
 GetNlop_on.cpp

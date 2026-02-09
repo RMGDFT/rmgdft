@@ -97,16 +97,9 @@ double *projectors, *projectors_x, *projectors_y, *projectors_z;
 std::vector<int> num_nonlocal_ion;
 double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
 int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
-int *send_to, *recv_from, num_sendrecv_loop;
-int *send_to1, *recv_from1, num_sendrecv_loop1;
 std::vector<int> ionidx_allproc;
 int max_ion_nonlocal;
-STATE *states_tem;
-int *state_to_proc;
-char *state_overlap_or_not;
 STATE *states;
-STATE *states1;
-ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
 double *rho_oppo, *rho_tot;
 int MXLLDA, MXLCOL;
@@ -115,9 +108,6 @@ double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
 double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
-ORBIT_ORBIT_OVERLAP *orbit_overlap_region;
-std::vector<ORBITAL_PAIR> OrbitalPairs;
-char *vloc_state_overlap_or_not;
 double *orbit_tem;
 double *sg_orbit;
 double *sg_orbit_res;
@@ -188,8 +178,6 @@ int main(int argc, char **argv)
         ReadBranchON(ct.cfile, ct, ControlMap);
         WriteXyz(ct.cfile);
         states = init_states();
-        allocate_states();
-
         ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm);
 
         MPI_Barrier(pct.img_comm);
@@ -218,7 +206,7 @@ int main(int argc, char **argv)
         vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
 
 
-        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
+        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
         MPI_Barrier(pct.img_comm);
 
@@ -231,7 +219,7 @@ int main(int argc, char **argv)
             case MD_QUENCH:            /* Quench the electrons */
             case BAND_STRUCTURE:
 
-                quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                quench(states, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
             case TDDFT:
                 if(ct.LocalizedOrbitalLayout != LO_projection)
@@ -242,7 +230,7 @@ int main(int argc, char **argv)
 
                 if(!ct.restart_tddft) 
                 {
-                    quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                    quench(states, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                     write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
 
                 }

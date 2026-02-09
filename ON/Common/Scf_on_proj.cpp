@@ -151,7 +151,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                         if(i == j ) CC_res_local[i*num_orb + j] = 1.0;
                         else CC_res_local[i*num_orb + j] = 0.0;
                     }
-		}
+                }
                 delete RT0;
                 break;
             }

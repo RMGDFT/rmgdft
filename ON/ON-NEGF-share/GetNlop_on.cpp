@@ -103,38 +103,6 @@ void GetNlop_on(void)
     /*  pct.n_ion_center: number of ions whose nl projector overlap
      *  with the states on this processor */
 
-    if(ct.LocalizedOrbitalLayout != LO_projection)
-    {
-        pct.n_ion_center = 0;
-        tot_prj = 0;
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-            overlap = 0;
-            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-            {
-                index = (st1 - ct.state_begin) * ct.num_ions + ion;
-                if (ion_orbit_overlap_region_nl[index].flag == 1)
-                    overlap = 1;
-            }
-            if (overlap == 1)
-            {
-                pct.ionidx[pct.n_ion_center] = ion;
-                pct.n_ion_center += 1;
-                tot_prj += Species[Atoms[ion].species].num_projectors;
-            }
-        }
-
-        PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
-
-
-        //    rmg::printlog("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
-        std::string newpath;
-
-        if (projectors != NULL)
-            delete []projectors;
-        projectors = new double[PROJECTOR_SPACE];
-    }
-
     /*allocate memorry for weight factor of partial_beta/partial_x */
 
 
@@ -227,33 +195,6 @@ void GetNlop_on(void)
     delete [] fftw_phase;
     // Must fix this EMIL
     //
-
-    if(ct.LocalizedOrbitalLayout != LO_projection)
-    {
-        beta = projectors;
-        prjcount = 0;
-        for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
-        {
-            ion = pct.ionidx[ion1];
-            /* Generate ion pointer */
-            iptr = &Atoms[ion];
-
-            /* Get species type */
-            sp = &Species[iptr->species];
-            std::string newname;
-            newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
-            int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
-            ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
-            ssize_t read_size = read(fhand, &beta[prjcount], size);
-            if(read_size != size)
-            {
-                rmg::error("error reading");
-            }
-            prjcount += sp->num_projectors * ct.max_nlpoints;
-        }
-
-        MPI_Barrier(pct.img_comm);
-    }
 
 
 #if	DEBUG

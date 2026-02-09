@@ -69,7 +69,7 @@
 #include "GpuAlloc.h"
 
 
-void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias)
 {
 

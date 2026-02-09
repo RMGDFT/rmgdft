@@ -61,7 +61,7 @@
 
 extern double *vh_old, *vxc_old;
 
-void Run (STATE * states, STATE * states1, std::unordered_map<std::string, InputKey *>& ControlMap)
+void Run (STATE * states, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     int size, iprobe, idx_delta, i, j;
     double *vbias;
@@ -119,7 +119,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
 
         RmgTimer *RT3 = new RmgTimer("1-TOTAL: init");
-        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, ControlMap);
+        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, vnuc, vext, vxc, vh_old, vxc_old, ControlMap);
         delete(RT3);
 
         size = 1;
@@ -251,7 +251,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             case MD_QUENCH:            /* Quench the electrons */
                 if (pct.imgpe == 0)
                     rmg::printlog ("\n quench start...\n");
-                QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
+                QuenchNegf (states, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
                 if (pct.imgpe == 0)
                     rmg::printlog ("\n quench done...\n");
 
