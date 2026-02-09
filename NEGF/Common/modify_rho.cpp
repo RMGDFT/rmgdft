@@ -145,33 +145,6 @@ void modify_rho (double * rho, double * rho_old)
             rmg::printlog ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
 
-        /*
-           t2 = (ct.nel - t_fixed) / (t2 * get_vel_f());
-           t2 = 1.0 / get_vel_f();
-
-           for (i = 0; i < get_FPX0_GRID(); i++)
-           {
-           for (j = 0; j < get_FPY0_GRID(); j++)
-           {
-           for (k = 0; k < get_FPZ0_GRID(); k++)
-           {
-           idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j * get_FPZ0_GRID() + k;
-           test = (((i + xoff) < chargeDensityCompass.box1.x1)
-           || ((i + xoff) >= chargeDensityCompass.box1.x2)
-           || ((j + yoff) < chargeDensityCompass.box1.y1)
-           || ((j + yoff) >= chargeDensityCompass.box1.y2)
-           || ((k + zoff) < chargeDensityCompass.box1.z1)
-           || ((k + zoff) >= chargeDensityCompass.box1.z2));
-           if (!test)
-           {
-           rho[i * get_FPY0_GRID() * get_FPZ0_GRID() + j * get_FPZ0_GRID() + k] *= t2;
-
-           }
-           }
-           }
-           }
-         */
-
     }
     MPI_Barrier(pct.img_comm);
 

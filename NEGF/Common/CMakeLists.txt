@@ -24,15 +24,12 @@ get_cond_frommatrix_kyz.cpp
 get_ddd_update.cpp
 get_dos.cpp
 HijUpdate.cpp
-get_inverse_block.cpp
 get_inverse_block_p.cpp
-get_ion_orbit_overlap_loc.cpp
 get_line.cpp
 global_to_distribute3.cpp
 H01_to_HCL.cpp
 init_comp.cpp
 init_ext.cpp
-init_loc_xyz.cpp
 init_pe_on.cpp
 interpolation_orbit.cpp
 kpoints.cpp
@@ -69,7 +66,6 @@ setback_corner_matrix_H.cpp
 setback_corner_matrix_S.cpp
 set_energy_weight.cpp
 set_energy_weight_ne.cpp
-Sgreen_c.cpp
 Sgreen_c_noneq_p.cpp
 Sgreen_cond_p.cpp
 Sgreen_c_p.cpp
@@ -83,12 +79,6 @@ split_matrix_center.cpp
 split_matrix_lead.cpp
 trace_AB_tri.cpp
 tri_to_local.cpp
-tri_to_row.cpp
-tri_to_whole_complex.cpp
-tri_to_whole_complex_p.cpp
-whole_to_tri_complex.cpp
-whole_to_tri_real.cpp
-whole_to_tri_update.cpp
 write_data_lead.cpp
 write_global_data.cpp
 writeout_matrix_p.cpp

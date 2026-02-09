@@ -20,7 +20,6 @@ assign_weight_on.cpp
 duplicate_states_info.cpp
 GetNlop_on.cpp
 get_start.cpp
-global_to_distribute.cpp
 init_dimension.cpp
 init_nl_xyz.cpp
 init_parameter.cpp
