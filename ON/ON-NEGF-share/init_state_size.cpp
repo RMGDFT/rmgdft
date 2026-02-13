@@ -95,12 +95,6 @@ void init_state_size(STATE * states)
     ct.max_orbit_nz = max_nz;
     ct.max_orbit_size = max_nx * max_ny * max_nz;
 
-    pct.psi_size = 0;
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-    {
-        pct.psi_size += states[st1].size;
-    }
-
     if (pct.gridpe == 0)
         rmg::printlog("\n init_state_size Done! ");
 

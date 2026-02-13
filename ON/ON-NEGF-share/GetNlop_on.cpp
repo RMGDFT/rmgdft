@@ -45,8 +45,6 @@
 #include "RmgException.h"
 
 
-static void init_alloc_nonloc_mem (void);
-
 void GetNlop_on(void)
 {
     int ion, idx, ip;
@@ -61,9 +59,6 @@ void GetNlop_on(void)
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
     std::complex<double> *beptr, *gbptr;
-
-    init_alloc_nonloc_mem ();
-
 
     /*Do forward transform for each species and store results on the coarse grid */
     if(ct.localize_projectors)
@@ -93,19 +88,6 @@ void GetNlop_on(void)
 
     MPI_Barrier(pct.img_comm);
 
-
-
-
-    /*  get total number of projectors on this processor */
-    /*  pct.n_ion_center: number of ions whose nl projector overlap
-     *  with the states on this processor */
-
-    /*allocate memorry for weight factor of partial_beta/partial_x */
-
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-        pct.prj_per_ion[ion] = Species[Atoms[ion].species].num_projectors;
-
     /* Loop over all the ions on this processor */
 
     mkdir("PROJECTORS",S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -115,12 +97,12 @@ void GetNlop_on(void)
     for (ion = pct.imgpe; ion < ct.num_ions; ion+=pct.image_npes[pct.thisimg])
     {
 
-        beta = new double[pct.prj_per_ion[ion] * ct.max_nlpoints];
         /* Generate ion pointer */
         iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &Species[iptr->species];
+        beta = new double[sp->num_projectors * ct.max_nlpoints];
 
         p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(gbptr), 
                 reinterpret_cast<fftw_complex*>(beptr), FFTW_BACKWARD, FFTW_ESTIMATE);
@@ -209,26 +191,3 @@ void GetNlop_on(void)
     fflush(NULL);
 
 }                               /* end get_nlop */
-
-
-static void init_alloc_nonloc_mem (void)
-{
-    int ion;
-
-
-    pct.ionidx = new int[ct.num_ions];
-    pct.prj_per_ion = new int[ct.num_ions];
-
-    pct.ionidx_loc = new int[ct.num_ions];
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        pct.ionidx[ion] = 0;
-        pct.ionidx_loc[ion] = 0;
-        pct.prj_per_ion[ion] = 0;
-
-    }                           /*end for(ion=0; ion<ct.num_ions; ion++) */
-
-}                               /*end init_alloc_nonloc_mem */
-
-

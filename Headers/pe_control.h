@@ -129,15 +129,6 @@ typedef struct
     /** Processor z-coordinate for domain decomposition */
     int pe_z;
 
-    /** points to start of DnmI function storage for this ion*/
-//    double **dnmI;
-//    double **dnmI_x;
-//    double **dnmI_y;
-//    double **dnmI_z;
-
-    /** points to start of qqq storage for this ion*/
-//    double **qqq;
-
     int num_owned_ions;
     int num_loc_ions;
     int *loc_ions_list;
@@ -161,23 +152,6 @@ typedef struct
 
     /*  processor coordinates in COMM_KP communicator */
     int coords[2];
-
-    /* Number of ions centered on this processor */
-    int n_ion_center;
-    int n_ion_center_loc;
-
-    /* Projectors per ion in a given region */
-    int *prj_per_ion;
-
-    /* Indices of the ions within non-local range */
-    int *ionidx;
-    int *ionidx_loc;
-
-    /* The size of local orbitals on this PE */
-    int psi_size;
-
-    double *psi1, *psi2;
-    int num_local_orbit;
 
 } PE_CONTROL;
 

@@ -58,9 +58,7 @@ read_potrho_LCR.cpp
 read_rho_and_pot.cpp
 read_trans.cpp
 rho_munu.cpp
-rho_nm_mat.cpp
 Run.cpp
-scale_orbital.cpp
 ScfNegf.cpp
 setback_corner_matrix_H.cpp
 setback_corner_matrix_S.cpp
