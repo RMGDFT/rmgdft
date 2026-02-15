@@ -43,6 +43,8 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
+#include "rmg_dvector.h"
+
 
 #include "Scalapack.h"
 
@@ -113,7 +115,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     KpointType *psi = kptr->orbital_storage + first_state * pbasis_noncoll;
     KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    gpuMalloc((void **)&psi_dev, num_states * pbasis_noncoll * sizeof(KpointType));
+    rmg::dvector<KpointType> psi_dvector(num_states * pbasis_noncoll);
+    psi_dev = psi_dvector.data();
     gpuMemcpy(psi_dev, psi, num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #else
     psi_dev = psi;
