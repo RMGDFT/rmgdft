@@ -853,6 +853,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum number of molecular dynamics steps to perform.",
             "max_md_steps must be a positive value. Terminating. ", MD_OPTIONS);
 
+    If.RegisterInputKey("max_tddft_md_steps", &lc.max_tddft_md_steps, 0, INT_MAX, 1,
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "Maximum number of tddft molecular dynamics steps to perform.",
+            "max_tddft md_steps must be a positive value. Terminating. ", MD_OPTIONS);
+
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Maximum number of hartree iterations to perform per scf step. ",
