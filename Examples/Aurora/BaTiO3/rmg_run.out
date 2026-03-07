@@ -1,0 +1,56 @@
+You have selected Pulay or Broyden mixing so potential acceleration is disabled.
+RMG running with 1 MPI procs per host.
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+SYCL device name: Intel(R) Data Center GPU Max 1550
+Running with 5 Open MP threads.
+Running with 5 RMG threads.
+SYCL device name: Intel(R) Data Center GPU Max 1550
+
+               * * * * * * * * * *
+               *    R   M   G    *
+               * * * * * * * * * *
+
+ -- A Real Space Multigrid Electronic structure code --
+ --      More information at www.rmgdft.org          --
+
+
+
+NOTICE: RMG internal pseudopotentials have switched to
+ONCVP from Ultrasoft. You can revert to Ultrasoft by
+adding the input tag internal_pseudo_type="ultrasoft" to
+your input files.
+
+
+ write_data: Opening output file 'Waves/wave.out_init.restart' failed
+  Trying to create subdirectory in case it does not exist
+
+ Creating directory Waves successfully
+
+
+ quench: [md:   0/100  scf:   0/20  step time:  10.24  scf time:    10.92 secs  RMS[dV]: ******** ]
+ quench: [md:   0/100  scf:   1/20  step time:   4.42  scf time:    15.34 secs  RMS[dV]: 1.52e-01 ]
+ quench: [md:   0/100  scf:   2/20  step time:   4.67  scf time:    20.01 secs  RMS[dV]: 8.67e-02 ]
+ quench: [md:   0/100  scf:   3/20  step time:   3.72  scf time:    23.73 secs  RMS[dV]: 3.66e-02 ]
+ quench: [md:   0/100  scf:   4/20  step time:   4.60  scf time:    28.33 secs  RMS[dV]: 1.93e-02 ]
+ quench: [md:   0/100  scf:   5/20  step time:   3.58  scf time:    32.22 secs  RMS[dV]: 2.64e-02 ]
+ quench: [md:   0/100  scf:   6/20  step time:   7.75  scf time:    39.97 secs  RMS[dV]: 2.47e-03 ]
+ quench: [md:   0/100  scf:   7/20  step time:   3.65  scf time:    43.63 secs  RMS[dV]: 2.24e-03 ]
+ quench: [md:   0/100  scf:   8/20  step time:   3.91  scf time:    47.53 secs  RMS[dV]: 7.07e-04 ]
+ quench: [md:   0/100  scf:   9/20  step time:   3.62  scf time:    51.16 secs  RMS[dV]: 3.87e-04 ]
+ quench: [md:   0/100  scf:  10/20  step time:   5.65  scf time:    57.13 secs  RMS[dV]: 7.14e-05 ]
+ quench: [md:   0/100  scf:  11/20  step time:   4.38  scf time:    61.51 secs  RMS[dV]: 8.65e-05 ]
+ quench: [md:   0/100  scf:  12/20  step time:   4.65  scf time:    66.15 secs  RMS[dV]: 6.04e-05 ]
+ quench: [md:   0/100  scf:  13/20  step time:   4.04  scf time:    70.19 secs  RMS[dV]: 9.54e-06 ]
+ quench: [md:   0/100  scf:  14/20  step time:   4.37  scf time:    74.57 secs  RMS[dV]: 1.27e-05 ]
+ quench: [md:   0/100  scf:  15/20  step time:   4.68  scf time:    80.26 secs  RMS[dV]: 5.66e-06 ]
+ quench: [md:   0/100  scf:  16/20  step time:   5.68  scf time:    85.94 secs  RMS[dV]: 7.55e-06 ]
+ Convergence criterion reached: Energy variation (1.77e-11) is lower than threshold (1.00e-10)
