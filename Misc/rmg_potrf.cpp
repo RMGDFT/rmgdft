@@ -34,9 +34,10 @@ void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
 */
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
+    #include <cstring>        // For strcmp
+    #include <oneapi/mkl/lapack.hpp>			      
 #endif
 
 template void rmg_potrf<double>(char *, int, double *, int, int *);
@@ -139,63 +140,36 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
     }
     hipMemcpyDtoH(info, dev_info, sizeof(int));
     gpuFree(dev_info);
+
 #elif SYCL_ENABLED
-
-this should cause a compile error since as I have no access to a machine to test this on right now
+    // Determine upper/lower fill mode
     oneapi::mkl::uplo fill_mode = oneapi::mkl::uplo::lower;
-    if(!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
-    if(!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
 
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans, sycl_transB;
+    // Allocate scratchpad memory with the correct type
+    std::int64_t scratchpad_size = oneapi::mkl::lapack::potrf_scratchpad_size<DataType>(ct.sycl_Q, fill_mode, n, lda);
+    DataType *scratchpad = sycl::malloc_device<DataType>(scratchpad_size, ct.sycl_Q);
 
-    if(!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(sycl_transA == oneapi::mkl::transpose::nontrans)
-    {
-	    if(!strcmp(trans, "t")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "T")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-	    if(!strcmp(trans, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    // POTRF: Cholesky factorization
+    // Computes L or U such that A = L * L^T or A = U^T * U
+    try {
+        // Use USM pointer-based API; returns a sycl::event
+        sycl::event potrf_event = oneapi::mkl::lapack::potrf(
+            ct.sycl_Q, fill_mode, n, A, lda, scratchpad, scratchpad_size);
+        // Wait for completion
+        potrf_event.wait();
     }
-    else
-    {
-        sycl_transB = oneapi::mkl::transpose::nontrans;
+    catch (sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during POTRF:\n"
+                  << e.what() << std::endl << std::endl;
+        rmg_error_handler(__FILE__, __LINE__, "Terminating");
     }
 
-    size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
+    // Free scratchpad memory
+    sycl::free(scratchpad, ct.sycl_Q);
 
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
-    if(A == B)
-    {
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufA, ldb, beta, bufC, ldc);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
-    else
-    {
-        cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-        bufB.set_final_data(nullptr);
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufB, ldb, beta, bufC, ldc);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
+
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
