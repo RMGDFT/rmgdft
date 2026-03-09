@@ -288,7 +288,7 @@ cudaError_t gpuGetDeviceCount(int *count)
     return cudaGetDeviceCount(count);
 }
 #elif SYCL_ENABLED
-#include <sycl/sycl.hpp>
+#include <CL/sycl.hpp>
 #include "GpuAlloc.h"
 #include <omp.h>
 

@@ -30,8 +30,9 @@
 
 
 #if SYCL_ENABLED
-    #include <sycl/sycl.hpp>
+    #include <CL/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
+    #include "mkl.h"
 #endif
 
 template void RmgSyrkx<double>(char *, char *, int, int, double, double *, int, double *, int, 

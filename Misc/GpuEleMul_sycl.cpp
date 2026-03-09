@@ -23,7 +23,7 @@
 
 
 #if SYCL_ENABLED
-    #include <sycl/sycl.hpp>
+    #include <CL/sycl.hpp>
     #include <sycl/queue.hpp>
     #include "Gpufuncs.h"
 

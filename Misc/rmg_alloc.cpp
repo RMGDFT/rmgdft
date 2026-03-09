@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <complex>
+#include <complex.h>
 #include "rmg_error.h"
 #include "fftw3.h"
 

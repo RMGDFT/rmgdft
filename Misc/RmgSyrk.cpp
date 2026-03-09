@@ -31,9 +31,9 @@
 
 
 #if SYCL_ENABLED
-    #include <sycl/sycl.hpp>
+    #include <CL/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-//    #include "mkl.h"
+    #include "mkl.h"
 #else
 extern "C" {
 void dsyrk(const char *, const char *, int *, int *, double *, double *, int *, double *, double *, int *);
@@ -214,40 +214,61 @@ template <typename DataType> void RmgSyrk(char *uplo, char *trans, int n, int k,
     }
 #elif SYCL_ENABLED
 
-    // Determine upper/lower fill mode
+this should cause a compile error since as I have no access to a machine to test this on right now
     oneapi::mkl::uplo fill_mode = oneapi::mkl::uplo::lower;
     if(!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
     if(!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
 
-    // Determine transpose operation
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
+    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans, sycl_transB;
 
     if(!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
     if(!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
     if(!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
     if(!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-
-    // SYRK: C = alpha * op(A) * op(A)^T + beta * C
-    // No separate B matrix needed — SYRK uses A for both operands
-    try {
-        sycl::event syrk_event = oneapi::mkl::blas::column_major::syrk(
-            ct.sycl_Q,
-            fill_mode,
-            sycl_transA,
-            n, k,
-            alpha,
-            A, lda,
-            beta,
-            C, ldc);
-        // Wait for completion
-        syrk_event.wait();
+    if(sycl_transA == oneapi::mkl::transpose::nontrans)
+    {
+	    if(!strcmp(trans, "t")) sycl_transB = oneapi::mkl::transpose::trans;
+	    if(!strcmp(trans, "T")) sycl_transB = oneapi::mkl::transpose::trans;
+	    if(!strcmp(trans, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+	    if(!strcmp(trans, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
     }
-    catch(sycl::exception const& e) {
-        std::cout << "\t\tCaught synchronous SYCL exception during SYRK:\n"
-                  << e.what() << std::endl << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "Terminating");
+    else
+    {
+        sycl_transB = oneapi::mkl::transpose::nontrans;
     }
 
+    size_t a_size = (size_t)lda * (size_t)n;
+    size_t c_size = (size_t)ldc * (size_t)n;
+
+    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
+    bufA.set_final_data(nullptr);
+    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
+    if(A == B)
+    {
+        try {
+            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
+                                    bufA, lda, bufA, ldb, beta, bufC, ldc);
+        }
+        catch(cl::sycl::exception const& e) {
+            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
+            << e.what() << std::endl << std::endl;
+            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+        }
+    }
+    else
+    {
+        cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
+        bufB.set_final_data(nullptr);
+        try {
+            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
+                                    bufA, lda, bufB, ldb, beta, bufC, ldc);
+        }
+        catch(cl::sycl::exception const& e) {
+            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
+            << e.what() << std::endl << std::endl;
+            rmg_error_handler (__FILE__, __LINE__, "Terminating");
+        }
+    }
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
