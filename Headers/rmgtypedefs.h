@@ -25,7 +25,11 @@
     typedef boost::multi_array<std::complex<double>, 3> doubleC_3d_array;
     typedef boost::multi_array<std::complex<double>, 4> doubleC_4d_array;
 #else
+    #ifdef __cplusplus
+    #include <complex>
+#else
     #include <complex.h>
+#endif
     typedef complex double   DoubleC;
 #endif
 

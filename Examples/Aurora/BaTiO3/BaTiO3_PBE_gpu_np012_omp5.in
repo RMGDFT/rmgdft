@@ -1,0 +1,55 @@
+# Description of run.
+description="BaTiO3 SCF bench np12 omp5"
+
+localize_localpp = "false"
+localize_projectors = "false"
+
+compressed_infile = "false"
+compressed_outfile = "false"
+
+wavefunction_grid="36 36 36"
+processor_grid = "1 1 1"
+kpoint_distribution = "12"
+potential_grid_refinement = "2"
+
+occupations_type = "Fermi Dirac"
+states_count_and_occupation = "20 2.0 24 0.0"
+
+crds_units="Angstrom"
+
+kpoint_mesh = "12 12 12"
+kpoint_is_shift = "0 0 0"
+
+bravais_lattice_type="Cubic Primitive"
+a_length="4.00768164"
+b_length="4.00768164"
+c_length="4.00768164"
+
+start_mode="LCAO Start"
+lattice_units="Angstrom"
+
+calculation_mode="Quench Electrons"
+
+kohn_sham_solver="davidson"
+subdiag_driver="lapack"
+charge_mixing_type = "Broyden"
+charge_density_mixing = "0.1"
+kohn_sham_mucycles = "3"
+max_scf_steps="20"
+potential_acceleration_constant_step="1.0"
+
+energy_convergence_criterion="1.0e-10"
+rms_convergence_criterion = "1.0e-8"
+
+atomic_coordinate_type="Cell Relative"
+
+atoms = "
+Ba  0.5  0.5  0.5   0
+Ti  0.0  0.0  0.0   0
+O   0.5  0.0  0.0   0
+O   0.0  0.5  0.0   0
+O   0.0  0.0  0.5   0
+"
+
+exchange_correlation_type="pbe"
+internal_pseudo_type = "sg15"

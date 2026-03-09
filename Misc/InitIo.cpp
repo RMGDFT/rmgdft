@@ -71,9 +71,9 @@
 #endif
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
+//    #include "mkl.h"
     #include <omp.h>
 auto main_sycl_exception_handler = [] (sycl::exception_list exceptions) {
     for (std::exception_ptr const& e : exceptions) {
