@@ -383,11 +383,12 @@ template <typename OrbitalType> void run (
         case MD_CVE:               /* molecular dynamics */
         case MD_CVT:
         case MD_CPT:
+        case TDDFT_CVE:            /* Ehrenfest dynamics */
             ct.fpt[0] = 0;  // Eventually fix all references to fpt in the code and this will not be needed
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
             ct.fpt[3] = 3;
-            MolecularDynamics (Kptr, vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhoc.data(), rhocore.data());
+            MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
             break;
 
         case BAND_STRUCTURE:

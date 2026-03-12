@@ -150,7 +150,7 @@
 #define		NEB_RELAX       8
 #define		TDDFT       10
 #define     Exx_only    11
-#define     BAND_WANNIER    12
+#define     TDDFT_CVE    12
 #define     STM    13
 #define     NSCF    14
 

@@ -36,6 +36,8 @@
 #include "rmg_sum_all.h"
 #include "Atomic.h"
 #include "transition.h"
+#include "prototypes_tddft.h"
+
 
 
 /* Local function prototypes */
@@ -53,13 +55,16 @@ void velup2 (void);
 void rms_disp (double *, double *);
 
 
-template void MolecularDynamics<double>(Kpoint<double> **, double *, double *, double *, double *, double *, double *, double *);
-template void MolecularDynamics<std::complex<double> >(Kpoint<std::complex<double>> **, double *, double *, double *, double *, double *, double *, double *);
+template void MolecularDynamics<std::complex<double> >(Kpoint<std::complex<double>> **, spinobj<double> &vxc,
+             fgobj<double> &vh, fgobj<double> &vnuc, spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
+
+template void MolecularDynamics (Kpoint<double> **Kptr, spinobj<double> &vxc, fgobj<double> &vh,
+                        fgobj<double> &vnuc, spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
 
 
 template <typename KpointType>
-void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
-             double * rho, double * rho_oppo, double * rhoc, double * rhocore)
+void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
+             spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore)
 {
     double rms[3], trms;
     double nosekin, nosepot;
@@ -72,7 +77,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     if(ct.runflag != RESTART)
     {
         Quench (Kptr, false);
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
 
@@ -236,14 +241,29 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT1 = new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
-        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
         delete RT1;
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
 
-        /* converge to the ground state at the final positions */
-        Quench (Kptr, true);
+        if(ct.forceflag == TDDFT_CVE)
+        {
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                RmgTddft<KpointType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+            else
+            {
+                RmgTddft<KpointType,KpointType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+        }
+        else
+        {
+            /* converge to the ground state at the final positions */
+            Quench (Kptr, true);
+        }
+
 
 
         /* zero out the non-moving atoms */
@@ -262,7 +282,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         velup2 ();
 
         if (pct.gridpe == 0) rmg::printlog ("\n Writing data to output file ...\n");
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);
@@ -332,7 +352,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     // Final quench at these ionic positions without computing forces so the
     // final wavefunctions are converged. Write the restart file then compute
     Quench (Kptr, false);
-    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+    WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
 
     if (pct.gridpe == 0)

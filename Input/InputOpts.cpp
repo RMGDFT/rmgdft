@@ -100,6 +100,7 @@
         {"Dimer Relax", 9},
         {"TDDFT", 10},
         {"Exx Only", 11},
+        {"TDDFT CVE", 12},
         {"STM", 13},
         {"NSCF", 14}
         };

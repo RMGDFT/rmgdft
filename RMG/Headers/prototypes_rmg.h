@@ -42,9 +42,8 @@ extern MpiQueue *Rmg_Q;
 
 
 template <typename KpointType>
-void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
-             double * rho, double * rho_oppo, double * rhoc, double * rhocore);
-
+void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
+             spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
 template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, State<OrbitalType> *psi, Prolong *P, double *work, double scale);
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho);
