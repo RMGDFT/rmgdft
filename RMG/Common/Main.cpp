@@ -388,6 +388,10 @@ template <typename OrbitalType> void run (
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
             ct.fpt[3] = 3;
+            if(!ct.restart_tddft && !ct.tddft_noscf) 
+            {   
+                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
             MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
             break;
 

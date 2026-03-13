@@ -149,6 +149,9 @@ void WriteHeader (void)
     case TDDFT:
         if(pct.imgpe==0) fprintf(ct.logfile, "Time dependent DFT (TDDFT) calculation \n");
         break;
+    case TDDFT_CVE:
+        if(pct.imgpe==0) fprintf(ct.logfile, "Time dependent DFT (TDDFT) calculation with Ehrenfest dynamics. \n");
+        break;
     case Exx_only:
         if(pct.imgpe==0) fprintf(ct.logfile, "calculate Exx integral's from saveed wave functions \n");
         break;

@@ -76,7 +76,21 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     // Prime the pump for extrapolations if this is an initial run.
     if(ct.runflag != RESTART)
     {
-        Quench (Kptr, false);
+        if(ct.forceflag == TDDFT_CVE)
+        {
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                RmgTddft<KpointType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+            else
+            {
+                RmgTddft<KpointType,KpointType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+        }
+        else
+        {
+            Quench (Kptr, false);
+        }
         WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
@@ -257,6 +271,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             {
                 RmgTddft<KpointType,KpointType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
+            write_force();
         }
         else
         {
@@ -313,6 +328,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             switch (ct.forceflag)
             {
 
+                case TDDFT_CVE:
+                    rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                            ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
+                    rmg::printlog("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
+                    break;
                 case MD_CVE:
                     rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                             ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);

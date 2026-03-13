@@ -200,18 +200,12 @@ public:
     /* Maximum number of MD steps */
     int max_md_steps;
 
-    /* Maximum number of TDDFT MD steps */
-    int max_tddft_md_steps=1;
-
     /* Maximum number of rmg meta loops (NEB, ARTS, etc.) */
     int max_neb_steps;
 
     /* MD steps iterator */
     int md_steps;
 
-    /* TDDFT MD steps iterator */
-    int tddft_md_steps;
- 
     /* Emin when get_dos */
     double Emin;
 
