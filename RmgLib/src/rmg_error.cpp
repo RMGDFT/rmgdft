@@ -41,6 +41,7 @@
 #include <boost/stacktrace.hpp>
 
 ssize_t block_write(int fd, const void *buf, size_t count);
+ssize_t block_read(int fd, const void *buf, size_t count);
 
 static int do_print=true;
 
@@ -252,7 +253,7 @@ void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_lo
 // calls to read in the rmg code base that don't peform error checks.
 void rmg::readfile(int fd, void *buf, ssize_t count, const std::source_location loc)
 {
-    ssize_t rval = read(fd, buf, count);
+    ssize_t rval = block_read(fd, buf, count);
 
     if(rval < 0 || rval != count)
     {
@@ -286,6 +287,29 @@ ssize_t block_write(int fd, const void *buf, size_t count)
   {
       size_t written = write(fd, bufptr, rem);
       if(written != rem) return written;
+  }
+
+  return nblocks*WBLOCK_SIZE + rem;
+}
+
+ssize_t block_read(int fd, const void *buf, size_t count)
+{
+
+  size_t nblocks = count / WBLOCK_SIZE;
+  size_t rem = count % WBLOCK_SIZE;
+  uint8_t *bufptr = (uint8_t *)buf;
+
+  for(size_t blocks = 0;blocks < nblocks;blocks++)
+  {
+      size_t readsize = read(fd, bufptr, WBLOCK_SIZE);
+      if(readsize != WBLOCK_SIZE) return readsize;
+      bufptr += WBLOCK_SIZE;
+  }
+
+  if(rem)
+  {
+      size_t readsize = read(fd, bufptr, rem);
+      if(readsize != rem) return readsize;
   }
 
   return nblocks*WBLOCK_SIZE + rem;
