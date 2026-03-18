@@ -193,12 +193,17 @@ void CheckSetDefault(void)
         ct.is_use_symmetry = 1;
     }
 
-    if(ct.forceflag== TDDFT)
+    if((ct.forceflag == TDDFT) || (ct.forceflag == TDDFT_CVE))
     {
         if(ct.checkpoint <= 0) ct.checkpoint = 500;
         ct.potential_acceleration_constant_step = 0.0;
         ct.interp_flag = PROLONG_INTERPOLATION;
-
+        if(ct.forceflag == TDDFT_CVE)
+        {
+            ct.iondt = ct.tddft_steps * ct.tddft_time_step;
+            if(pct.gridpe==0) printf("Ionic timestep adjusted to an integral number of tddft time steps.\n");
+            if(pct.gridpe==0) printf("Ionic = %14.8f,  tddft = %14.8f\n", ct.iondt, ct.tddft_time_step);
+        }
     }
     if(ct.checkpoint <= 0) ct.checkpoint = 5;
     if(ct.wannier90) {
