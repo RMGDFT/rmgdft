@@ -21,6 +21,7 @@
  */
 
 #include "rmg_tddft.h"
+#include "../Headers/prototypes_tddft.h"
 
 template rmg::tddft<double, double>::tddft(spinobj<double> &vxc_in,
              fgobj<double> &vh_in,
@@ -30,6 +31,21 @@ template rmg::tddft<double, double>::tddft(spinobj<double> &vxc_in,
              fgobj<double> &rhoc_in,
              Kpoint<double> **Kptr_in);
 
+template rmg::tddft<double, std::complex<double>>::tddft(spinobj<double> &vxc_in,
+             fgobj<double> &vh_in,
+             fgobj<double> &vnuc_in,
+             spinobj<double> &rho_in,
+             fgobj<double> &rhocore_in,
+             fgobj<double> &rhoc_in,
+             Kpoint<double> **Kptr_in);
+
+template rmg::tddft<std::complex<double>, std::complex<double>>::tddft(spinobj<double> &vxc_in,
+             fgobj<double> &vh_in,
+             fgobj<double> &vnuc_in,
+             spinobj<double> &rho_in,
+             fgobj<double> &rhocore_in,
+             fgobj<double> &rhoc_in,
+             Kpoint<std::complex<double>> **Kptr_in);
 
 template <typename OrbitalType, typename MatrixType>
 rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
@@ -225,6 +241,95 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         }
     }
 
+    ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
+    rho_ground.get_oppo();
+
+    if(ct.tddft_energy)
+    {
+
+        TddftEnergyInit(vxc, vh, vnuc, rho_ground, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms_ground);
+        for(int i = 0; i < 6; i++) Eterms[i] = Eterms_ground[i];
+        if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
+        {
+            filename = std::string(ct.basename) + "_totalE";
+            efi = fopen(filename.c_str(), "w");
+
+            fprintf(efi, " && totalE_0, EkinPseudo_0, Vh_0, Exc_0  II  Edownfold%s", eunits);
+            fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at Ground state", Eterms_ground[0],
+                    Eterms_ground[1],Eterms_ground[2],Eterms_ground[3],Eterms_ground[4],Eterms_ground[5]);
+        }
+    }
+
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+#if CUDA_ENABLED || HIP_ENABLED
+        // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
+        // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
+        size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
+        gpuMalloc((void **)&Kptr[kpt]->psi_dev, psi_alloc);
+        gpuMalloc((void **)&Kptr[kpt]->work_dev, psi_alloc);
+        RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, psi_alloc);
+        if(ct.tddft_floatprecision)
+        {
+            gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
+            gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
+            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
+            if(typeid(OrbitalType) == typeid(double))
+            {
+                float *work_conv = new float[count];
+                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
+                delete [] work_conv;
+            }
+            else if(typeid(OrbitalType) == typeid(std::complex<double>))
+            {
+                std::complex<float> *work_conv = new std::complex<float>[count];
+                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
+                delete [] work_conv;
+            }
+
+        }
+#else
+        Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis_noncoll];
+#endif
+    }
+
+    if(ct.restart_tddft)
+    {
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            int kpt_glob = kpt + pct.kstart;
+
+            std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", ct.infile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+            ReadData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu,
+                    (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu,
+                    &pre_steps, n2, n2_C, numst);
+        }
+    }
+    else
+    {
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+
+            for(int i = 0; i < numst; i++) diag_elem[i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
+
+            double one = 1.0;
+            memset(Kptr[kpt]->Hmatrix_cpu, 0, n2*sizeof(MatrixType));
+            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
+
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
+
+
+            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
+            memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
+            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
+        }
+
+    }
 
 }
 

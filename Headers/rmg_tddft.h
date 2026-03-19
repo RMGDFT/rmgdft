@@ -22,6 +22,29 @@ namespace rmg
               fgobj<double> &rhoc_in,
               Kpoint<OrbitalType> **Kptr_in);
 
+        void TddftEnergyInit (
+             spinobj<double> &vxc,
+             fgobj<double> &vh,
+             fgobj<double> &vnuc,
+             spinobj<double> &rho_ground,
+             fgobj<double> &rhocore,
+             fgobj<double> &rhoc,
+             Kpoint<OrbitalType> **Kptr,
+             Scalapack &SP,
+             int Mdim,
+             int Ndim,
+             std::vector<double> &Eterms);
+
+        void TddftEnergy (
+             fgobj<double> &vh,
+             spinobj<double> &rho,
+             fgobj<double> &rhoc,
+             Kpoint<OrbitalType> **Kptr,
+             int Mdim,
+             int Ndim,
+             std::vector<double> &Eterms,
+             MPI_Comm mat_comm);
+
         ~tddft(void);
 
     private:
@@ -33,6 +56,12 @@ namespace rmg
         fgobj<double> &rhoc;
         fgobj<double> vh_old, vh_dipole, vh_dipole_old;
         spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
+        wfobj<double> vtot_psi;
+        wf_spinobj<double> vxc_psi;
+        fgobj<double> vtot;
+        spinobj<double> rho_ground;
+        double time_step = ct.tddft_time_step;
+
         Kpoint<OrbitalType> **Kptr;
         double dipole_tot[3];
         FILE *dfi = NULL, *efi = NULL, *current_fi = NULL, *dbp_fi = NULL;
