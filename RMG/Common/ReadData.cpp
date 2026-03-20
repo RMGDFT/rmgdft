@@ -459,7 +459,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 
     int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg::printlog("Can't open data file %s for extrapolation.", newname);
+        rmg::printlog("Can't open data file %s for extrapolation.", newname.c_str());
         return;
     }
 

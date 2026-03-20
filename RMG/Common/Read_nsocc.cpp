@@ -53,7 +53,7 @@ void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
         std::string newname = std::format("{}_spin{}_nsocc", name, pct.spinpe);
         int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
-            rmg::printlog("Can't open data file %s", newname);
+            rmg::printlog("Can't open data file %s", newname.c_str());
             rmg::error("Terminating.");
         }
 

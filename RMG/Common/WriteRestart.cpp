@@ -186,7 +186,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     amode = S_IREAD | S_IWRITE;
     fhand = open(new_file.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
     if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", new_file);
+        rmg::printlog("Can't open restart file %s", new_file.c_str());
         rmg::error("Terminating.");
     }
 
