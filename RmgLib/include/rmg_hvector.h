@@ -98,7 +98,6 @@ namespace rmg
         hvector(hvector& t) // copy constructor
         {
             this->pbasis_   = t.pbasis;
-            this->allocate();
             std::copy(t.data_, t.data_ + this->pbasis_, this->data_);
         }
         ~hvector(void);
