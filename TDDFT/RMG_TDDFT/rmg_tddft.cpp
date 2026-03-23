@@ -22,6 +22,7 @@
 
 #include "rmg_tddft.h"
 #include "../Headers/prototypes_tddft.h"
+#include "GatherScatter.h"
 
 template rmg::tddft<double, double>::tddft(spinobj<double> &vxc_in,
              fgobj<double> &vh_in,
