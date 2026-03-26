@@ -110,7 +110,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     }
     else if(typeid(DataType) == typeid(std::complex<double>))
     {
-        zgesv (&n, &n, (double *)A, &n, ipiv, (double *)B, &n, &info);
+        zgesv (&n, &n, (std::complex<double> *)A, &n, ipiv, (std::complex<double> *)B, &n, &info);
     }
     if (info) {
         rmg::printlog ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);

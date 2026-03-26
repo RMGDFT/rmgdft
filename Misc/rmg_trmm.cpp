@@ -32,9 +32,8 @@
 
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
 #else
 extern "C" {
 void dtrmm(const char *side, const char *uplo, const char *transa, const char *diag,
@@ -223,61 +222,51 @@ template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans,
     }
 #elif SYCL_ENABLED
 
-this should cause a compile error since as I have no access to a machine to test this on right now
+        // Determine side (left or right)
+    oneapi::mkl::side side_mode = oneapi::mkl::side::left;
+    if (!strcmp(side, "r")) side_mode = oneapi::mkl::side::right;
+    if (!strcmp(side, "R")) side_mode = oneapi::mkl::side::right;
+
+    // Determine upper/lower fill mode
     oneapi::mkl::uplo fill_mode = oneapi::mkl::uplo::lower;
-    if(!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
-    if(!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
 
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans, sycl_transB;
+    // Determine transpose operation
+    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
+    if (!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
+    if (!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
+    if (!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans; 
+    if (!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
 
-    if(!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(sycl_transA == oneapi::mkl::transpose::nontrans)
-    {
-	    if(!strcmp(trans, "t")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "T")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-	    if(!strcmp(trans, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    // Determine whether the matrix is unit triangular
+    oneapi::mkl::diag diag_mode = oneapi::mkl::diag::nonunit;
+    if (!strcmp(diag, "u")) diag_mode = oneapi::mkl::diag::unit;
+    if (!strcmp(diag, "U")) diag_mode = oneapi::mkl::diag::unit;
+
+    // TRMM: Triangular matrix-matrix multiplication
+    // B = alpha * op(A) * B  or  B = alpha * B * op(A)
+    try {
+        sycl::event trmm_event = oneapi::mkl::blas::column_major::trmm(
+            ct.sycl_Q,
+            side_mode,
+            fill_mode,
+            sycl_transA,
+            diag_mode,
+            m, n,
+            alpha,
+            A, lda,
+            B, ldb);
+        // Wait for completion
+        trmm_event.wait();
     }
-    else
-    {
-        sycl_transB = oneapi::mkl::transpose::nontrans;
+    catch (sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during TRMM:\n"
+                  << e.what() << std::endl << std::endl;
+        rmg::error("Terminating");
     }
 
-    size_t a_size = (size_t)lda * (size_t)n;
-    size_t b_size = (size_t)ldb * (size_t)n;
 
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-    if(A == B)
-    {
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufA, ldb, beta, bufB, ldb);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg::error("Terminating");
-        }
-    }
-    else
-    {
-        cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-        bufB.set_final_data(nullptr);
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufB, ldb, beta, bufB, ldb);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg::error("Terminating");
-        }
-    }
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {

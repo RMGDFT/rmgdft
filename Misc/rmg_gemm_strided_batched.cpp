@@ -23,7 +23,7 @@
 #define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
 #else

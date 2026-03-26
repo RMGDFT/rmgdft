@@ -244,7 +244,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
 
             //calculate determinant of mat <psi_k |psi_(k+1)>
 
-            zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
+            zgetrf(&nband_occ, &nband_occ, (std::complex<double> *)mat, &nband_occ, ipiv, &info);
             if (info != 0)
             {
                 rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
@@ -263,7 +263,7 @@ void BerryPhase::CalcBP (Kpoint<std::complex<double>> **Kptr)
             if(std::abs(efield_mag) > eps )
             {
                 int lwork = nband_occ * nband_occ;
-                zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
+                zgetri(&nband_occ, (std::complex<double> *)mat, &nband_occ, ipiv, (std::complex<double> *)BP_matrix_cpu, &lwork, &info);
                 if (info != 0)
                 {
                     rmg::printlog ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);
@@ -690,7 +690,7 @@ void BerryPhase::CalcBP_tddft (Kpoint<std::complex<double>> **Kptr, double &tot_
 
             Sp.GatherEigvectors(mat_glob.data(), Cmat);
 
-            zgetrf(&nband_occ, &nband_occ, (double *)mat_glob.data(), &numst, ipiv, &info);
+            zgetrf(&nband_occ, &nband_occ, (std::complex<double> *)mat_glob.data(), &numst, ipiv, &info);
             if (info != 0)
             {
                 rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
@@ -896,7 +896,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
 
             //calculate determinant of mat <psi_k |psi_(k+1)>
 
-            zgetrf(&nband_occ, &nband_occ, (double *)mat, &nband_occ, ipiv, &info);
+            zgetrf(&nband_occ, &nband_occ, (std::complex<double> *)mat, &nband_occ, ipiv, &info);
             if (info != 0)
             {
                 rmg::printlog ("error in zgetrf BerryPhase.cpp with INFO = %d \n", info);
@@ -906,7 +906,7 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
 
             {
                 int lwork = nband_occ * nband_occ;
-                zgetri(&nband_occ, (double *)mat, &nband_occ, ipiv, (double *)BP_matrix_cpu, &lwork, &info);
+                zgetri(&nband_occ, (std::complex<double> *)mat, &nband_occ, ipiv, (std::complex<double> *)BP_matrix_cpu, &lwork, &info);
                 if (info != 0)
                 {
                     rmg::printlog ("error in zgetri BerryPhase.cpp with INFO = %d \n", info);

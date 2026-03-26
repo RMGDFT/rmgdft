@@ -135,6 +135,12 @@
 extern "C" {
 #endif
 
+#if SYCL_ENABLED
+    #define MKL_Complex8  std::complex<float>
+    #define MKL_Complex16 std::complex<double>
+    #include <mkl.h>
+#else
+
 void rrr(int n);
 void my_copy(double *in, double *out, int length);
 void my_scal(double alpha, double *vect, int length);
@@ -210,25 +216,25 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 
 void dgetrf( int *, int *, double *, int *, int *, int *);
 void dgetri(int *, double *, int *, int *, double *, int *, int *);
-void zgetrf( int *, int *, double *, int *, int *, int *);
-void zgetri(int *, double *, int *, int *, double *, int *, int *);
+void zgetrf( int *, int *, std::complex<double> *, int *, int *, int *);
+void zgetri(int *, std::complex<double> *, int *, int *, std::complex<double> *, int *, int *);
 void zhegst(int *, const char *, int *, double *, int *, double *, int *, int *);
 void zheevd(const char *, const char *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dgesv (int *, int*, double *, int *, int *, double *, int *, int *);
-void zgesv (int *, int*, double *, int *, int *, double *, int *, int *);
+void zgesv (int *, int*, std::complex<double> *, int *, int *, std::complex<double> *, int *, int *);
 void dgesvd(char *, char *, int *, int *, double *, int *, double *, double *,
             int *, double *, int *, double *, int *, int *);
 void dgemv ( char *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void dsygvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
              int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, int *iwork, int *ifail, int *info);
-void zhegvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
-             int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, double *rwork, int *iwork, int *ifail, int *info);
+void zhegvx (int *itype, char *jobz, char *range, char *uplo, int *n, std::complex<double> *A, int *lda, std::complex<double> *B, int *ldb, double *vl, double *vu, 
+             int *il, int *iu, double *tol, int *m, double *w, std::complex<double> *z, int *ldz, std::complex<double> *work, int *lwork, double *rwork, int *iwork, int *ifail, int *info);
 void dsyev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, int *info);
 void dsyevd (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, int *iwork, int *liwork, int *info);
-void zheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
-            double * work1, double * work2, int *lwork, double *rwork, int *info);
+void zheev (char *jobz, char *uplo, int *numm, std::complex<double> * ss, int *numn,
+            double * work1, std::complex<double> * work2, int *lwork, double *rwork, int *info);
 void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, int *, double *, int *, int *, int *, int *);
 
@@ -236,9 +242,9 @@ void dsygvj(int *, char *, char *, int *, double *, int *, double *, int *, doub
 
 void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
 void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
-double dzasum(int *, double *A, int *);
+double dzasum(int *, std::complex<double> *A, int *);
 void dsygvd(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, int *iwork, int *liwork, int *info);
-void zhegvd(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, double
+void zhegvd(int *itype, char *jobz, char *uplo, int *n, DoubleC *a, int *lda, DoubleC *b, int *ldb, double *eigs, DoubleC *work, int *lwork, double
 *rwork, int *lrwork, int *iwork, int *liwork, int *info);
 void zscal (int *n, DoubleC * alpha, DoubleC * x, int *incx);
 void zcopy(int *, DoubleC *, int *, DoubleC *, int *);
@@ -286,6 +292,7 @@ void dgecon(char *norm, int *n, double *A, int *lda, double *anorm, double *rcon
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 DoubleC zdotu(int*, DoubleC *, int*, DoubleC *, int*);
 
+#endif
 void openblas_set_num_threads(int nthreads);
 
 #if __cplusplus

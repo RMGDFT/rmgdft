@@ -80,7 +80,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     int lrwork = 2*n*n + 6*n; 
     double *rwork = new double[lrwork];
 
-    zhegvd(&itype, jobz, cuplo, &n, (double *)A, &n, (double *)B, &n, eigs, work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
+    zhegvd(&itype, jobz, cuplo, &n, A, &n, B, &n, eigs, (std::complex<double> *)work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
 
     if(info)
         rmg::error(" zhegvd failed.");

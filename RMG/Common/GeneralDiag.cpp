@@ -189,12 +189,12 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             else
             {
                 if(M == N) {
-                    zhegvd (&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    zhegvd (&itype, "V", "U", &N, (std::complex<double> *)A, &ld, (std::complex<double> *)B, &ld, eigs, (std::complex<double> *)work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
-                    zhegvx (&itype, "V", "I", "U", &N, (double *)A, &ld, (double *)B, &ld,
-                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (double *)V, &ld, work2,
+                    zhegvx (&itype, "V", "I", "U", &N, (std::complex<double> *)A, &ld, (std::complex<double> *)B, &ld,
+                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (std::complex<double> *)V, &ld, (std::complex<double> *)work2,
                             &lwork, &work2[lwork], iwork, ifail, &info);
 
                     //printf("\n %d infooo ", info);
@@ -207,7 +207,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
                 for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
                 int info1;
                 double *rwork = new double[3*N];
-                zheev("V", "L", &N, (double *)B, &ld,(double *)A, work2,&lwork, rwork, &info1);
+                zheev("V", "L", &N, (std::complex<double> *)B, &ld,(double *)A, (std::complex<double> *)work2,&lwork, rwork, &info1);
                 delete [] rwork;
 
                 if(pct.gridpe == 0)

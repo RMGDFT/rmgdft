@@ -53,7 +53,6 @@
 #include "OrbitalProfile.h"
 #include "rmgthreads.h"
 
-extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
 template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);

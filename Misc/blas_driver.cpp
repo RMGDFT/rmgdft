@@ -74,7 +74,7 @@ void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
     if(!ct.tddft_gpu)
     {
-        *sum = dzasum(&n, (double *)A, &ia);
+        *sum = dzasum(&n, A, &ia);
     }
     else
     {

@@ -69,7 +69,7 @@ void Eigen(std::complex<double> *mat, double *eigs, int N, int lda)
     int lwork = 2 * N * N;  // this function is for LDA+U diag, so N is small
     double *rwork = new double[3*N];
     double *work = new double[lwork];
-    zheev("V", "L", &N, (double *)mat, &N, eigs, work,&lwork, rwork, &info);
+    zheev("V", "L", &N, mat, &N, eigs, (std::complex<double> *)work,&lwork, rwork, &info);
     delete [] rwork;
     delete [] work;
     if(info != 0)

@@ -53,9 +53,8 @@
 
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
 #else
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
@@ -445,7 +444,7 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
     bufB.set_final_data(nullptr);
     cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
     try {
-        oneapi::mkl::blas::gemm(ct.sycl_Q, sycl_transA, sycl_transB, m, n, k, alpha, 
+        oneapi::mkl::blas::gemm(ct.sycl_Q, sycl_transA, sycl_transB, m, n, k, alpha,
                                 bufA, lda, bufB, ldb, beta, bufC, ldc);
     }
     catch(cl::sycl::exception const& e) {
