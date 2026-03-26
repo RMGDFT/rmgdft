@@ -104,7 +104,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         d_ipiv = nn;
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
 
-        zgesv(&nn, &nhrs, (double *)A, &nn, ipiv, (double *)B, &nn, &info );
+        zgesv(&nn, &nhrs, A, &nn, ipiv, B, &nn, &info );
         if (info != 0)
         {
             rmg::printlog ("error in zgesv with INFO = %d \n", info);

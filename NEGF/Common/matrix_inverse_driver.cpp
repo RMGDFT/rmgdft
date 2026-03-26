@@ -212,14 +212,14 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
         work = (std::complex<double> *)malloc(lwork * sizeof(std::complex<double>));
 
-        zgetrf(&nn, &nn, (double *)Hii, &nn, ipiv, &info);
+        zgetrf(&nn, &nn, Hii, &nn, ipiv, &info);
         if (info != 0)
         {
             rmg::printlog ("error in zgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
-        zgetri(&nn, (double *)Hii, &nn, ipiv, (double *)work, &lwork, &info);
+        zgetri(&nn, Hii, &nn, ipiv, work, &lwork, &info);
         if (info != 0)
         {
             rmg::printlog ("error in zgetri with INFO = %d \n", info);

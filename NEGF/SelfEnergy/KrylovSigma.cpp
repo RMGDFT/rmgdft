@@ -102,7 +102,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     zcopy(&nn, H01, &ione, VR, &ione);
 
 
-    zgesv(&n, &n2, (double *)A, &n, ipiv, (double *)VR, &n, &info );
+    zgesv(&n, &n2, A, &n, ipiv, VR, &n, &info );
     if (info != 0)
     {
         rmg::printlog ("error in zgesv in Krylov with INFO = %d \n", info);
@@ -180,7 +180,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
         for(j = 0; j < n; j++)
             A[num_modes * n + j * num_modes + i] = std::conj(A[i * n + j]);
 
-    zgesv(&num_modes, &n, (double *)VR, &num_modes, ipiv, (double *)&A[num_modes*n], &num_modes, &info );
+    zgesv(&num_modes, &n, VR, &num_modes, ipiv, &A[num_modes*n], &num_modes, &info );
     if (info != 0)
     {
         rmg::printlog ("error in zgesv in dual vector with INFO = %d \n", info);
