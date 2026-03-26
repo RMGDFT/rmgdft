@@ -103,6 +103,10 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                    fgobj<double> &rhoc,Kpoint<OrbitalType> **Kptr)
 {
 
+#if SYCL_ENABLED
+    rmg::error("TDDFT not functional yet for SYCL builds");
+#else
+
 #if USE_NCCL
     int nlocal_ranks;
     MPI_Comm_size(pct.local_comm, &nlocal_ranks);
@@ -923,5 +927,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     }
     delete RT2a;
     delete RT0;
+#endif
 }
 
