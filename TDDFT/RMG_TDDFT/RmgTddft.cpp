@@ -103,10 +103,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
                    fgobj<double> &rhoc,Kpoint<OrbitalType> **Kptr)
 {
 
-#if SYCL_ENABLED
-    rmg::error("TDDFT not functional yet for SYCL builds");
-#else
-
 #if USE_NCCL
     int nlocal_ranks;
     MPI_Comm_size(pct.local_comm, &nlocal_ranks);
@@ -504,11 +500,11 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         }
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+            std::complex<double> tem_x = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
             current0[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+            std::complex<double> tem_y = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
             current0[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-            std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+            std::complex<double> tem_z = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
             current0[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
         }
         if(ct.BerryPhase)
@@ -518,7 +514,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
             Rmg_BP->tddft_Xml(Kptr, ct.tddft_start_state, *Sp);
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -820,11 +816,11 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 
             if(ct.tddft_mode == VECTOR_POT )
             {
-                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
+                std::complex<double> tem_x = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pxmatrix_cpu, &ione);
                 current[0] += std::real(tem_x) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_y = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
+                std::complex<double> tem_y = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pymatrix_cpu, &ione);
                 current[1] += std::real(tem_y) * Kptr[kpt]->kp.kweight;
-                std::complex<double> tem_z = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
+                std::complex<double> tem_z = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->Pzmatrix_cpu, &ione);
                 current[2] += std::real(tem_z) * Kptr[kpt]->kp.kweight;
             }
         }
@@ -837,7 +833,7 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         {
             tot_bp_pol = 0.0;
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-                std::complex<double> tem_x = zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
+                std::complex<double> tem_x = rmg_zdotc(&n2, (std::complex<double> *)Kptr[kpt]->Pn0_cpu, &ione, (std::complex<double> *)Kptr[kpt]->BP_Xml, &ione);
                 tot_bp_pol += std::real(tem_x) * Kptr[kpt]->kp.kweight;
             }
             MPI_Allreduce(MPI_IN_PLACE, &tot_bp_pol, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
@@ -927,6 +923,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     }
     delete RT2a;
     delete RT0;
-#endif
+
 }
 

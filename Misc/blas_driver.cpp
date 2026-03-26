@@ -367,5 +367,31 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
                 C, ic, jc, descc);
     }
 }
-
 } // end namespace rmg
+
+#if SYCL_ENABLED
+    #define MKL_Complex8  std::complex<float>
+    #define MKL_Complex16 std::complex<double>
+    #include <mkl.h>
+#endif
+
+DoubleC rmg_zdotc(int *N, DoubleC *x, int *incx, DoubleC *y, int *incy)
+{
+#if SYCL_ENABLED
+    DoubleC rval;
+    cblas_zdotc_sub (*N, (void *)x, *incx, (void *)y, *incy, (void *)&rval);
+    return rval;
+#else
+    return zdotc(N, x, incx, y, incy);
+#endif
+}
+DoubleC rmg_zdotu(int *N, DoubleC *x, int *incx, DoubleC *y, int *incy)
+{
+#if SYCL_ENABLED
+    DoubleC rval;
+    cblas_zdotu_sub (*N, (void *)x, *incx, (void *)y, *incy, (void *)&rval);
+    return rval;
+#else
+    return zdotu(N, x, incx, y, incy);
+#endif
+}

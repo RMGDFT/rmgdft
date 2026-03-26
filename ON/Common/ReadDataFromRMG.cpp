@@ -72,7 +72,7 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
 
     int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg::printlog("Can't open data file %s", newname);
+        rmg::printlog("Can't open data file %s", newname.c_str());
         rmg::error("Terminating.");
     }
 

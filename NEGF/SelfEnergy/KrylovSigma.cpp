@@ -156,7 +156,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
             zgemv ("N", &n, &n, &W[i], H01, &n, &VR[i*n2], &ione, &zero, &VR[i*n2 + n], &ione);
 
-            alpha = -zdotc(&n, &VR[i*n2], &ione, &VR[i*n2+n], &ione);
+            alpha = -rmg_zdotc(&n, &VR[i*n2], &ione, &VR[i*n2+n], &ione);
             if(alpha.imag() < 0.0)
             {
                 lamda[num_modes] = W[i];

@@ -41,8 +41,6 @@
 #include "rmgtypedefs.h"
 #include "rmg_mangling.h"
 
-#define		rrr		RMG_FC_GLOBAL(rrr, RRR)
-
 #define		sger		RMG_FC_GLOBAL(sger, SGER)
 #define		dger		RMG_FC_GLOBAL(dger, DGER)
 #define		saxpy		RMG_FC_GLOBAL(saxpy, SAXPY)
@@ -141,7 +139,6 @@ extern "C" {
     #include <mkl.h>
 #else
 
-void rrr(int n);
 void my_copy(double *in, double *out, int length);
 void my_scal(double alpha, double *vect, int length);
 void my_axpy(double alpha, double *in, double *out, int length);
@@ -293,9 +290,14 @@ DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 DoubleC zdotu(int*, DoubleC *, int*, DoubleC *, int*);
 
 #endif
+
 void openblas_set_num_threads(int nthreads);
 
 #if __cplusplus
 }
 #endif
+
+// Used for portability because of different ways of handling complex return values
+DoubleC rmg_zdotc(int*, DoubleC *, int*, DoubleC *, int*);
+DoubleC rmg_zdotu(int*, DoubleC *, int*, DoubleC *, int*);
 /******/
