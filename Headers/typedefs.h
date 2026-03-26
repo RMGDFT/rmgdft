@@ -207,7 +207,7 @@ typedef struct
  *  It is used to hold info needed by multiple branches of the code
  *  while the Kpoint class is used primarily by the base branch
 */
-typedef struct
+struct KSTRUCT
 {
 
     /** The index of the k-point for backreferencing */
@@ -232,7 +232,7 @@ typedef struct
     /* Need to get rid of this but still required in a few places */
     STATE *kstate = NULL;
 
-} KSTRUCT;
+};
 
 /* multigrid-parameter structure */
 typedef struct
