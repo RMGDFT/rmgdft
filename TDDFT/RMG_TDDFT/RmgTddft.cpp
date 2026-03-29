@@ -66,6 +66,7 @@
 #include "rmg_sum_all.h"
 #include "GatherScatter.h"
 
+#include "rmg_dev_allocate.h"
 
 void  init_point_charge_pot(double *vtot_psi, int density);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
@@ -225,11 +226,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         }
     }
 
-    std::vector<double> diag_elem(numst);
-    fgobj<double> vh_old, vh_dipole, vh_dipole_old;
-    spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
-    // Jacek: 
-    //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
     MatrixType *Pn1        ;
     MatrixType *Hmatrix_1  ;
 
@@ -237,21 +233,71 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     MatrixType *Pn0         = NULL;
     MatrixType *Hmatrix_m1  = NULL;
     MatrixType *Hmatrix_0   = NULL;
+    OrbitalType *psi_dev_pool;
     size_t matrix_size = n2*sizeof(MatrixType);
-    if(ct.tddft_gpu)
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->malloc(&Hmatrix, n2);
+    rmg_device_pool->malloc(&Hmatrix_m1, n2);
+    rmg_device_pool->malloc(&Hmatrix_0, n2);
+    rmg_device_pool->malloc(&Hmatrix_1, n2);
+    if(typeid(MatrixType) == typeid(double) )
     {
-        gpuMalloc((void **)&Hmatrix, n2*sizeof(MatrixType));
-        gpuMalloc((void **)&Hmatrix_m1, n2*sizeof(MatrixType));
-        gpuMalloc((void **)&Hmatrix_0, n2*sizeof(MatrixType));
-        gpuMalloc((void **)&Pn0, 2*n2*sizeof(double));
-
-        gpuMalloc((void **)&Hmatrix_1, n2*sizeof(MatrixType));
-        gpuMalloc((void **)&Pn1, 2*n2*sizeof(double));
+        rmg_device_pool->malloc(&Pn0, 2*n2);
+        rmg_device_pool->malloc(&Pn1, 2*n2);
     }
     else
     {
-        Pn1  = (MatrixType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+        rmg_device_pool->malloc(&Pn0, n2);
+        rmg_device_pool->malloc(&Pn1, n2);
     }
+
+
+    size_t num_psik = ct.num_kpts_pe * ct.num_states * (size_t)pbasis_noncoll;
+    rmg_device_pool->malloc(&psi_dev_pool, num_psik * 2);
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        Kptr[kpt]->psi_dev  = psi_dev_pool + 2 * kpt * ct.num_states * pbasis_noncoll;
+        Kptr[kpt]->work_dev = Kptr[kpt]->psi_dev + ct.num_states * pbasis_noncoll;
+        // even for tddft_floatprecision, psi_dev is still used in VecPHmatrix and CurrentNlpp
+        RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, ct.num_states * pbasis_noncoll * sizeof(OrbitalType));
+
+        if(ct.tddft_floatprecision)
+        {
+
+            size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
+            gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
+            gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
+
+            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
+            if(typeid(OrbitalType) == typeid(double))
+            {
+                float *work_conv = new float[count];
+                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(float));
+                delete [] work_conv;
+            }
+            else if(typeid(OrbitalType) == typeid(std::complex<double>))
+            {
+                std::complex<float> *work_conv = new std::complex<float>[count];
+                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(std::complex<float>));
+                delete [] work_conv;
+            }
+
+        }
+    }
+
+#else
+    Pn1  = (MatrixType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis_noncoll];
+    }
+#endif
+
+    std::vector<double> diag_elem(numst);
+    fgobj<double> vh_old, vh_dipole, vh_dipole_old;
+    spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
 
 
     double    err        ;
@@ -346,40 +392,6 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
         }
     }
 
-    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-    {
-#if CUDA_ENABLED || HIP_ENABLED
-        // Wavefunctions are unchanged through TDDFT loop so leave a copy on the GPUs for efficiency.
-        // We also need an array of the same size for workspace in HmatrixUpdate and GetNewRho
-        size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
-        gpuMalloc((void **)&Kptr[kpt]->psi_dev, psi_alloc);
-        gpuMalloc((void **)&Kptr[kpt]->work_dev, psi_alloc);
-        RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, psi_alloc);
-        if(ct.tddft_floatprecision)
-        {
-            gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
-            gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
-            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
-            if(typeid(OrbitalType) == typeid(double))
-            {
-                float *work_conv = new float[count];
-                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
-                delete [] work_conv;
-            }
-            else if(typeid(OrbitalType) == typeid(std::complex<double>))
-            {
-                std::complex<float> *work_conv = new std::complex<float>[count];
-                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, psi_alloc/2);
-                delete [] work_conv;
-            }
-
-        }
-#else
-        Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis_noncoll];
-#endif
-    }
     if(ct.restart_tddft)
     {
 
@@ -525,6 +537,37 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, eldyn_comm);
     Rmg_Symm->symm_vec(current0);
+
+#if CUDA_ENABLED || HIP_ENABLED
+    if(ct.tddft_floatprecision)
+    {
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+
+            // psi_dev is no longer needed, so psi_dev_float and work_dev_float use these memory
+            Kptr[kpt]->psi_dev_float = Kptr[kpt]->psi_dev;
+            Kptr[kpt]->work_dev_float = Kptr[kpt]->work_dev;
+
+            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
+            if(typeid(OrbitalType) == typeid(double))
+            {
+                float *work_conv = new float[count];
+                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(float));
+                delete [] work_conv;
+            }
+            else if(typeid(OrbitalType) == typeid(std::complex<double>))
+            {
+                std::complex<float> *work_conv = new std::complex<float>[count];
+                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(std::complex<float>));
+                delete [] work_conv;
+            }
+
+        }
+    }
+#endif
+
 
     if(pct.kstart == 0 && pct.gridpe == 0)
     {
@@ -892,8 +935,13 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     } // end tddft md loop
 
 #if CUDA_ENABLED || HIP_ENABLED
-    gpuFree(Kptr[0]->work_dev);
-    gpuFree(Kptr[0]->psi_dev);
+    rmg_device_pool->free(psi_dev_pool);
+    rmg_device_pool->free(Pn1);
+    rmg_device_pool->free(Pn0);
+    rmg_device_pool->free(Hmatrix_1);
+    rmg_device_pool->free(Hmatrix_0);
+    rmg_device_pool->free(Hmatrix_m1);
+    rmg_device_pool->free(Hmatrix);
 #endif
     if(pct.kstart == 0 && pct.gridpe == 0)
     {
