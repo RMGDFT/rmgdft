@@ -178,6 +178,7 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
     
     // TRTRI: Triangular matrix inversion
     // Computes the inverse of a triangular matrix
+    info = 0;
     try {
         // Use USM pointer-based API; returns a sycl::event
         sycl::event trtri_event = oneapi::mkl::lapack::trtri(

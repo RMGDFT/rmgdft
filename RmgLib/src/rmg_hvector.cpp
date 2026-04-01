@@ -38,6 +38,8 @@ hvector<T>::hvector(size_t pbasis_in)
     pbasis_ = pbasis_in;
 #if CUDA_ENABLED || HIP_ENABLED
     hpool.malloc(&data_, pbasis_in);
+#elif SYCL_ENABLED
+    data_ = sycl::malloc_host<T>(pbasis_in, hpool.sycl_Q);
 #else
     data_ = new T[pbasis_in];
 #endif
@@ -48,6 +50,8 @@ hvector<T>::~hvector(void)
 {
 #if CUDA_ENABLED || HIP_ENABLED
     hpool.free(data_);
+#elif SYCL_ENABLED
+    sycl::free(data_, hpool.sycl_Q);
 #else
     delete [] data_;
 #endif

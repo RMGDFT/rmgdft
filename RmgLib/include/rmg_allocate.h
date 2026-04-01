@@ -34,6 +34,10 @@
 #include <stack>
 #include "rmg_error.h"
 
+#if SYCL_ENABLED
+    #include <sycl/sycl.hpp>
+#endif
+
 namespace rmg
 {
 
@@ -55,7 +59,9 @@ namespace rmg
         template<typename T>
         void malloc(T **ptr, size_t size);
         void free(void *ptr);
-
+#if SYCL_ENABLED
+        sycl::queue sycl_Q;
+#endif
     };
 }
 

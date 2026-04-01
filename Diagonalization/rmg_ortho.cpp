@@ -26,6 +26,11 @@
 #include "rmg_hvector.h"
 #include "rmg_dev_allocate.h"
 
+#if SYCL_ENABLED
+    #include <sycl/sycl.hpp>
+    #include "GpuAlloc.h"
+#endif
+
 // Gram-Schmidt ortho for extra eigenvectors in Davidson solver.
 // nbase: number of wavefunctions alreadt orthogonalized
 // notcon: number of extra wavefunctions 
@@ -51,20 +56,23 @@ template <class T> ortho<T>::ortho(int max_states_in, int pbasis_in)
     if(!ct.norm_conserving_pp) return;
     this->max_states = max_states_in;
     this->pbasis = pbasis_in; 
-
-#if HIP_ENABLED || CUDA_ENABLED
     size_t dfactor = 1;
     if(ct.kohn_sham_solver == DAVIDSON_SOLVER) dfactor = (size_t)ct.davidx;
+#if HIP_ENABLED || CUDA_ENABLED
     rmg_device_pool->malloc(&this->psi_d, dfactor*(size_t)this->max_states*(size_t)this->pbasis);
+#elif SYCL_ENABLED
+    gpuMalloc((void **)&this->psi_d, dfactor*(size_t)this->max_states*(size_t)this->pbasis*sizeof(T));
 #endif
 }
 
 template <class T> ortho<T>::~ortho(void)
 {
-#if HIP_ENABLED || CUDA_ENABLED
     if(!ct.norm_conserving_pp) return;
+#if HIP_ENABLED || CUDA_ENABLED
     rmg::sync_device();
     rmg_device_pool->free(this->psi_d);
+#elif SYCL_ENABLED
+    gpuFree(this->psi_d);
 #endif
 }
 
@@ -97,7 +105,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     T one(1.0);
     T mone(-1.0);
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     T *psi_extra = &this->psi_d[nbase * this->pbasis];
     gpuMemcpy(this->psi_d, psi,
               (size_t)(notcon + nbase) * (size_t)this->pbasis * sizeof(T), gpuMemcpyHostToDevice);
@@ -121,7 +129,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 
     if(!dostage2)
     {
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
               (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
 #endif
@@ -132,6 +140,9 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED
     T *mat_d;
     rmg_device_pool->malloc(&mat_d, (size_t)notcon * (size_t)notcon);
+#elif SYCL_ENABLED
+    T *mat_d;
+    gpuMalloc((void **)&mat_d, (size_t)notcon * (size_t)notcon * sizeof(T));
 #else   
     T *mat_d = mat;
 #endif
@@ -160,7 +171,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     UnPackSqToTr("U", notcon, mat, notcon, tmat);
     delete RT1;
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     gpuMemcpy(mat_d, mat,
               (size_t)notcon * (size_t)notcon * sizeof(T), gpuMemcpyHostToDevice);
 #endif
@@ -178,10 +189,14 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     rmg::trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi_extra, this->pbasis);
     delete RT1;
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
           (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
+#if HIP_ENABLED || CUDA_ENABLED
     rmg_device_pool->free(mat_d);
+#elif SYCL_ENABLED
+    gpuFree(mat_d);
+#endif
 #endif
 
     if (info != 0)

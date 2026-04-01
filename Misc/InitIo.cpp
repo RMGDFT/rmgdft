@@ -74,6 +74,7 @@
 
 #if SYCL_ENABLED
     #include <CL/sycl.hpp>
+    #include "rmg_allocate.h"
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
     #include <omp.h>
@@ -672,6 +673,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if SYCL_ENABLED
     //    ct.host_dev = omp_get_initial_device();
     ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector_v, main_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
+    hpool.sycl_Q = ct.sycl_Q;
     std::string dev_str = ct.sycl_Q.get_device().get_info<sycl::info::device::name>();
     rmg::printlog("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
     for (const auto & p : sycl::platform::get_platforms())

@@ -145,6 +145,7 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
 
     // POTRF: Cholesky factorization
     // Computes L or U such that A = L * L^T or A = U^T * U
+    info = 0;
     try {
         // Use USM pointer-based API; returns a sycl::event
         sycl::event potrf_event = oneapi::mkl::lapack::potrf(
