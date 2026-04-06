@@ -89,6 +89,25 @@ namespace rmg
             }
             gpuHostRegister(baseptr, totalpages*pagesize, gpuHostRegisterPortable);
             mapped_pages = totalpages;
+#elif SYCL_ENABLED
+            if(mapped_pages)
+            {
+                try {
+                    sycl::ext::oneapi::experimental::release_from_device_copy(baseptr, sycl_Q);
+                }
+                catch (sycl::exception const& e) {
+                    std::cout << "SYCL exception: " << e.what() << std::endl;
+                    rmg::error("Error releasing pinned allocation.");
+                }
+            }
+            try {
+                sycl::ext::oneapi::experimental::prepare_for_device_copy(baseptr, totalpages*pagesize, sycl_Q);
+            }
+            catch (sycl::exception const& e) {
+                std::cout << "SYCL exception: " << e.what() << std::endl;
+                rmg::error("Error pinning mmap allocation.");
+            }
+            mapped_pages = totalpages;
 #endif
         }
         
