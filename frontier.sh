@@ -9,13 +9,13 @@ module load boost/1.85.0
 module load craype-x86-milan
 module load cray-fftw
 module load cray-hdf5-parallel
-module load rocm/7.0.2
+module load rocm/6.2.4
 export MPICH_GPU_SUPPORT_ENABLED=0
 
 rm -rf build-frontier-gpu
 mkdir build-frontier-gpu
 cd build-frontier-gpu
-export HIP_PATH=/opt/rocm-7.0.2/
+export HIP_PATH=/opt/rocm-6.2.4/
 export CXX=/opt/cray/pe/craype/2.7.33/bin/CC
 cmake .. -DRMG_HIP_ENABLED=1 -DUSE_NCCL_OR_RCCL=1 
 make rmg-gpu -j 20 -k > rmg-gpu.log_1 2>&1
