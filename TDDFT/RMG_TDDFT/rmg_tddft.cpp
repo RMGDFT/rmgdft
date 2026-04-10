@@ -540,6 +540,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     Kpoint<std::complex<double>> *kptr_c;
     int ij_err;
     double vtxc, etxc;
+    int *desca = Sp->GetDistDesca();
 
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
