@@ -30,6 +30,8 @@
 #include <transition.h>
 #include <BaseThread.h>
 #include <unordered_set>
+#include <cstdlib>
+#include <string>
 
 #ifdef USE_NUMA
     #include <numa.h>
@@ -112,6 +114,15 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
 
     delete [] ranks;
     delete [] hnames; 
+
+    // Get relative node ID (0, 1, 2...)
+    const char* node_id_env = std::getenv("SLURM_NODEID");
+    int node_id = (node_id_env) ? std::stoi(node_id_env) : 0;
+    color = node_id/pct.nccl_num_nodes;
+    // Split based on node-group color, using localrank to maintain ordering
+    MPI_Comm_split(comm, color, localrank, &pct.nccl_comm);
+    MPI_Comm_rank(pct.nccl_comm, &pct.nccl_rank);
+    MPI_Comm_size(pct.nccl_comm, &pct.nccl_comm_npes);
 
     if(pct.worldrank == 0)
         std::cout << "RMG running with " << pct.procs_per_host << " MPI procs per host." << std::endl;

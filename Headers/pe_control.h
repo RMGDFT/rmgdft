@@ -104,6 +104,11 @@ typedef struct
     int desca[DLEN];
     int ictxt;
 
+    MPI_Comm nccl_comm;
+    int nccl_comm_npes;
+    int nccl_rank;
+    int nccl_num_nodes;
+
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
     int scalapack_npes;

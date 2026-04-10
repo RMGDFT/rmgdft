@@ -105,18 +105,16 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
 {
 
 #if USE_NCCL
-    int nlocal_ranks;
-    MPI_Comm_size(pct.local_comm, &nlocal_ranks);
-    if(pct.local_rank == 0)
+    if(pct.nccl_rank == 0)
     {
         rmg::error(ncclGetUniqueId(&ct.nccl_nd_id));
     }
-    MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.local_comm);
+    MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.nccl_comm);
 #if CUDA_ENABLED 
     rmg::error(cuDeviceGet( &ct.cu_dev, 0 ));
     rmg::error(cudaSetDevice(ct.cu_dev));
 #endif
-    rmg::error(ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.local_rank));
+    rmg::error(ncclCommInitRank(&ct.nccl_local_comm, pct.nccl_comm_npes, ct.nccl_nd_id, pct.nccl_rank));
 #endif  
     Kpoint<double> *kptr_d;
     Kpoint<std::complex<double>> *kptr_c;
@@ -174,10 +172,15 @@ template <typename OrbitalType, typename MatrixType> void RmgTddft ( spinobj<dou
     {
         if(!ct.tddft_gpu)
         {
-            pct.local_rank = pct.gridpe;
             pct.local_comm = pct.grid_comm;
         }
+        else
+        {
+            pct.local_comm = pct.nccl_comm;
+        }
+
         MPI_Comm_size(pct.local_comm, &pct.local_comm_npes);
+        MPI_Comm_rank(pct.local_comm, &pct.local_rank);
 
         eldyn_comm = pct.local_comm;
 

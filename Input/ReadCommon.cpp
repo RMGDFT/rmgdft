@@ -1011,6 +1011,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
+    If.RegisterInputKey("nccl_num_nodes", &pelc.nccl_num_nodes, 1, INT_MAX, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "number of nodes used in nccl operations",
+            "1: only do nccl within the node", CONTROL_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 24, 4,
             CHECK_AND_FIX, OPTIONAL,
             "Grid coalescing factor.",
