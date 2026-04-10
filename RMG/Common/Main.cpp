@@ -44,6 +44,7 @@
 #include "blas.h"
 #include "RmgThread.h"
 #include "rmgthreads.h"
+#include "rmg_tddft.h"
 #include "../Interfaces/WriteEshdf.h"
 
 
@@ -455,11 +456,15 @@ template <typename OrbitalType> void run (
             ct.cube_rho = false;
             if(ct.tddft_mode == VECTOR_POT)
             {
-                RmgTddft<OrbitalType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //RmgTddft<OrbitalType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                rmg::tddft<OrbitalType, std::complex<double>> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj.tddft_md(); 
             }
             else
             {
-                RmgTddft<OrbitalType,OrbitalType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //RmgTddft<OrbitalType,OrbitalType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                rmg::tddft<OrbitalType, OrbitalType> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj.tddft_md(); 
             }
             break;
 

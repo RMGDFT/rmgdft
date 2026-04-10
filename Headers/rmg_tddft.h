@@ -93,6 +93,7 @@ namespace rmg
         double tot_bp_pol;
         double current[3], current0[3];
                 
+        OrbitalType *psi_dev_pool;
         MatrixType *Pn1         = NULL;
         MatrixType *Hmatrix_1   = NULL;
         MatrixType *Hmatrix     = NULL;

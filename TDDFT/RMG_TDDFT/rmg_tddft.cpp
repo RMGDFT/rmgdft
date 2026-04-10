@@ -39,6 +39,9 @@ void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_
 template void rmg::tddft<double, double>::tddft_md(void);
 template void rmg::tddft<double, std::complex<double>>::tddft_md(void);
 template void rmg::tddft<std::complex<double>, std::complex<double>>::tddft_md(void);
+template rmg::tddft<double, double>::~tddft(void);
+template rmg::tddft<double, std::complex<double>>::~tddft(void);
+template rmg::tddft<std::complex<double>, std::complex<double>>::~tddft(void);
 
 template rmg::tddft<double, double>::tddft(spinobj<double> &vxc_in,
              fgobj<double> &vh_in,
@@ -74,7 +77,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
              Kpoint<OrbitalType> **Kptr_in) : vxc(vxc_in), vh(vh_in), vnuc(vnuc_in),
                                             rho(rho_in), rhocore(rhocore_in), rhoc(rhoc_in)
 {
-
+    RmgTimer RT0("2-TDDFT: Initialization");
     Kptr = Kptr_in;
 
 #if USE_NCCL
@@ -182,7 +185,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         }
     }
 
-    OrbitalType *psi_dev_pool;
     matrix_size = n2*sizeof(MatrixType);
 #if CUDA_ENABLED || HIP_ENABLED
     rmg_device_pool->malloc(&Hmatrix, n2);
@@ -878,4 +880,47 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
 
     } // end tddft md loop
+}
+
+template <typename OrbitalType, typename MatrixType>
+rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
+{
+    RmgTimer *RT2a;
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->free(psi_dev_pool);
+    rmg_device_pool->free(Pn1);
+    rmg_device_pool->free(Pn0);
+    rmg_device_pool->free(Hmatrix_1);
+    rmg_device_pool->free(Hmatrix_0);
+    rmg_device_pool->free(Hmatrix_m1);
+    rmg_device_pool->free(Hmatrix);
+#endif  
+    if(pct.kstart == 0 && pct.gridpe == 0)
+    {
+        if(ct.tddft_mode == VECTOR_POT )
+            fclose(current_fi);
+        else
+        {
+            fclose(dfi);
+        }
+        if(ct.BerryPhase)
+            fclose(dbp_fi);
+    }
+    if(ct.tddft_energy && pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
+    {
+        fclose(efi);
+    }
+
+    RT2a = new RmgTimer("2-TDDFT: Write");
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        int kpt_glob = kpt + pct.kstart;
+
+        std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}",
+                ct.outfile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+        WriteData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu,
+                (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, tot_steps+1, n2, n2_C, numst);
+    }
+    delete RT2a;
+
 }
