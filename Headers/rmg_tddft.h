@@ -22,6 +22,8 @@ namespace rmg
               fgobj<double> &rhoc_in,
               Kpoint<OrbitalType> **Kptr_in);
 
+        void tddft_md(void);
+
         void TddftEnergyInit (
              spinobj<double> &vxc,
              fgobj<double> &vh,
@@ -48,6 +50,7 @@ namespace rmg
         ~tddft(void);
 
     private:
+        int Mdim, Ndim;
         spinobj<double> &vxc;
         fgobj<double> &vh;
         fgobj<double> &vnuc;
@@ -69,7 +72,6 @@ namespace rmg
         int n2, n22, n2_C, numst, ione =1;
         int tot_steps = 0;
         int pre_steps = 0;
-        int tddft_steps;
         int Ieldyn = 1;    // BCH  
                         //int Ieldyn = 2;    // Diagev
         int iprint;
@@ -88,8 +90,15 @@ namespace rmg
 
         double efactor;
         const char *eunits;
+        double tot_bp_pol;
+        double current[3], current0[3];
                 
-
+        MatrixType *Pn1         = NULL;
+        MatrixType *Hmatrix_1   = NULL;
+        MatrixType *Hmatrix     = NULL;
+        MatrixType *Pn0         = NULL;
+        MatrixType *Hmatrix_m1  = NULL;
+        MatrixType *Hmatrix_0   = NULL;
 
     };
 }
