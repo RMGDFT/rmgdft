@@ -456,15 +456,15 @@ template <typename OrbitalType> void run (
             ct.cube_rho = false;
             if(ct.tddft_mode == VECTOR_POT)
             {
-                //RmgTddft<OrbitalType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                rmg::tddft<OrbitalType, std::complex<double>> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                tddftobj.tddft_md(); 
+                RmgTddft<OrbitalType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //rmg::tddft<OrbitalType, std::complex<double>> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //tddftobj.tddft_md(); 
             }
             else
             {
-                //RmgTddft<OrbitalType,OrbitalType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                rmg::tddft<OrbitalType, OrbitalType> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                tddftobj.tddft_md(); 
+                RmgTddft<OrbitalType,OrbitalType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //rmg::tddft<OrbitalType, OrbitalType> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                //tddftobj.tddft_md(); 
             }
             break;
 
