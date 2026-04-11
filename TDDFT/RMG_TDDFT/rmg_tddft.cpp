@@ -27,7 +27,6 @@
 #include "blas_driver.h"
 
 void  init_point_charge_pot(double *vtot_psi, int density);
-void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
         *niter , int *p_iprint, MPI_Comm comm) ;
 void eldyn_ort(int *desca, int Mdim, int Ndim, std::complex<double> *F,std::complex<double> *Po0,std::complex<double> *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
@@ -530,7 +529,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     RmgTimer *RT2a;
     Kpoint<double> *kptr_d;
     Kpoint<std::complex<double>> *kptr_c;
-    int ij_err;
+    int ij_err=0;
     double vtxc, etxc;
     int *desca = Sp->GetDistDesca();
 
@@ -916,4 +915,98 @@ rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
     }
     delete RT2a;
 
+}
+
+
+template <typename OrbitalType, typename MatrixType>
+void rmg::tddft<OrbitalType, MatrixType>::tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm) 
+{
+    int     M     = *(p_M)    ;  //  [in]  :  total  size of matrix (2*Nbasis*Nbasis)
+    double  thrs  = *(p_thrs) ;  //  [in]  :  convergence threshold
+    double  err               ;  //  [out] :   error= abs of max element in the matrix
+    int    ierr   =   0       ;  //  [out] :   location of err in matrix/vector
+    bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
+
+    rmg::sync_device();
+    if(!ct.tddft_gpu)
+    { 
+        err = abs(C[0]); 
+        for (int i=0; i <M ;i++) {
+            double err_tmp = abs(C[i]) ; 
+            if (err_tmp > err) {
+                err  = err_tmp ;
+                ierr = i       ;
+            }
+        }
+    }
+    else
+    {
+#if CUDA_ENABLED || HIP_ENABLED
+        int idx;
+#if HIP_ENABLED
+        hipblasIdamax(ct.gpublas_handle, M, C, 1, &idx);
+#endif
+#if CUDA_ENABLED
+        cublasIdamax(ct.gpublas_handle, M, C, 1, &idx);
+#endif
+        idx -=1;    
+        // hipblasIdamax return the index in fortran way, starting from 1
+        gpuMemcpy(&err, &C[idx], sizeof(double), gpuMemcpyDeviceToHost);
+        err = abs(err);
+        ierr = idx;
+#endif
+    }
+
+    rmg::sync_device();
+    MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_DOUBLE, MPI_MAX, comm);
+
+    if (err < thrs)  tconv = true ;
+    /*-- return values **/
+    *(p_err )  =  err  ;
+    *(p_ierr)  =  ierr ;
+    *(p_tconv) =  tconv ;
+}
+
+
+template <typename OrbitalType, typename MatrixType>
+void rmg::tddft<OrbitalType, MatrixType>::tstconv(float *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm) 
+{
+    int     M     = *(p_M)    ;  //  [in]  :  total  size of matrix (2*Nbasis*Nbasis)
+    double  thrs  = *(p_thrs) ;  //  [in]  :  convergence threshold
+    float  err               ;  //  [out] :   error= abs of max element in the matrix
+    int    ierr   =   0       ;  //  [out] :   location of err in matrix/vector
+    bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
+
+
+    rmg::sync_device();
+#if CUDA_ENABLED || HIP_ENABLED
+    int idx;
+#if HIP_ENABLED
+    hipblasIsamax(ct.gpublas_handle, M, C, 1, &idx);
+#endif
+#if CUDA_ENABLED
+    cublasIsamax(ct.gpublas_handle, M, C, 1, &idx);
+#endif
+    idx -=1;    
+    gpuMemcpy(&err, &C[idx], sizeof(float), gpuMemcpyDeviceToHost);
+    err = abs(err);
+    ierr = idx;
+#else
+    err = abs(C[0]); 
+    for (int i=0; i <M ;i++) {
+        double err_tmp = abs(C[i]) ; 
+        if (err_tmp > err) {
+            err  = err_tmp ;
+            ierr = i       ;
+        }
+    }
+#endif
+
+    MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_FLOAT, MPI_MAX, comm);
+
+    if (err < thrs)  tconv = true ;
+    /*-- return values **/
+    *(p_err )  =  (double)err  ;
+    *(p_ierr)  =  ierr ;
+    *(p_tconv) =  tconv ;
 }

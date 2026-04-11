@@ -47,6 +47,24 @@ namespace rmg
              std::vector<double> &Eterms,
              MPI_Comm mat_comm);
 
+        void  tstconv(
+              double *C,
+              int *p_M,
+              double *p_thrs,
+              int *p_ierr,
+              double *p_err,
+              bool *p_tconv,
+              MPI_Comm comm);
+
+        void tstconv(
+             float *C,
+             int *p_M,
+             double *p_thrs,
+             int *p_ierr,
+             double *p_err,
+             bool *p_tconv,
+             MPI_Comm comm);
+
         ~tddft(void);
 
     private:
