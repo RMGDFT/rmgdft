@@ -163,7 +163,8 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     int *desca = Sp->GetDistDesca();
 
     n22 = 2* n2;
-    int n2_C = n2 * sizeof(MatrixType)/sizeof(double);
+    n2_C = n2 * sizeof(MatrixType)/sizeof(double);
+
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         Kptr[kpt]->Hmatrix_cpu     = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
@@ -247,8 +248,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
 #endif
 
     std::vector<double> diag_elem(numst);
-    fgobj<double> vh_old, vh_dipole, vh_dipole_old;
-    spinobj<double> vxc_old, rho_k, rho_ksum, vxc_diff;
 
     if(pct.gridpe == 0) {
         printf("\n Number of states used for TDDFT: Nbasis =  %d \n",numst);
@@ -304,13 +303,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     }
 
 
-
-    /* allocate memory for eigenvalue send array and receive array */
-
-    wfobj<double> vtot_psi;
-    wf_spinobj<double> vxc_psi;
-    fgobj<double> vtot;
-    spinobj<double> rho_ground;
     double time_step = ct.tddft_time_step;
 
     ReadData (ct.infile, vh.data(), rho_ground.data(), vxc.data(), Kptr);
