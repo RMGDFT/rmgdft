@@ -37,6 +37,7 @@
 #include "Atomic.h"
 #include "transition.h"
 #include "prototypes_tddft.h"
+#include "rmg_tddft.h"
 
 
 
@@ -73,6 +74,22 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     std::vector<double> RMSdV;
     static double *rhodiff;
 
+    // If tddft dynamics create tddft object
+    rmg::tddft<KpointType, KpointType> *tddftobj = NULL;
+    rmg::tddft<KpointType, std::complex<double>> *tddftobj_vp = NULL;
+    if(ct.forceflag == TDDFT_CVE)
+    {
+        if(ct.tddft_mode == VECTOR_POT)
+        {
+            tddftobj_vp = new rmg::tddft<KpointType, std::complex<double>>(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+        }
+        else
+        {
+            tddftobj = new rmg::tddft<KpointType, KpointType>(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+        }
+    }
+
+
     // Prime the pump for extrapolations if this is an initial run.
     if(ct.runflag != RESTART)
     {
@@ -80,11 +97,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         {
             if(ct.tddft_mode == VECTOR_POT)
             {
-                RmgTddft<KpointType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj_vp->tddft_md();
             }
             else
             {
-                RmgTddft<KpointType,KpointType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj->tddft_md();
             }
         }
         else
@@ -192,7 +209,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     /*Also reset number of scf steps */
     ct.total_scf_steps = 0;
 
-
     /* begin the md loop */
     for (ct.md_steps = 1; ct.md_steps < ct.max_md_steps; ct.md_steps++)
     {
@@ -265,11 +281,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         {
             if(ct.tddft_mode == VECTOR_POT)
             {
-                RmgTddft<KpointType,std::complex<double> > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj_vp->tddft_md();
             }
             else
             {
-                RmgTddft<KpointType,KpointType > (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+                tddftobj->tddft_md();
             }
             write_force();
         }

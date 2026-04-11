@@ -2,7 +2,6 @@ add_library (RmgTddft
 rmg_tddft.cpp
 rmg_tddft_energy.cpp
 init_point_charge_pot.cpp
-RmgTddft.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp
 GetNewRho_rmgtddft.cpp
