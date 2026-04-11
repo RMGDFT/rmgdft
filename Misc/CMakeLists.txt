@@ -24,7 +24,6 @@ MixLdaU.cpp
 Precond_drho.cpp
 sync_device.cpp
 Dos.cpp
-Pdos.cpp
 write_rho_xyz.cpp
 blas_driver.cpp
 Symmetry.cpp

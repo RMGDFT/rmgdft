@@ -75,6 +75,7 @@ move_ions.cpp
 print_density_z_direction.cpp
 PartialGamma.cpp
 fire.cpp
+Pdos.cpp
 Write_Wfs_forWannier.cpp
 WellPotential.cpp
 write_ffield.cpp
