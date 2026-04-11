@@ -90,7 +90,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     rmg::error(cuDeviceGet( &ct.cu_dev, 0 ));
     rmg::error(cudaSetDevice(ct.cu_dev));
 #endif
-    rmg::error(ncclCommInitRank(&ct.nccl_local_comm, nlocal_ranks, ct.nccl_nd_id, pct.nccl_rank));
+    rmg::error(ncclCommInitRank(&ct.nccl_local_comm, pct.nccl_comm_npes, ct.nccl_nd_id, pct.nccl_rank));
 #endif  
     iprint = ct.verbose;
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
