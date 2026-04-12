@@ -310,7 +310,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     if(ct.tddft_energy)
     {
 
-        TddftEnergyInit(vxc, vh, vnuc, rho_ground, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms_ground);
+        tddft_energy_init(vxc, vh, vnuc, rho_ground, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms_ground);
         for(int i = 0; i < 6; i++) Eterms[i] = Eterms_ground[i];
         if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
         {
@@ -765,7 +765,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         if(ct.tddft_energy)
         {
             Eterms[3] = etxc;
-            TddftEnergy(vh, rho, rhoc, Kptr, Mdim, Ndim, Eterms, eldyn_comm);
+            tddft_energy(vh, rho, rhoc, Kptr, Mdim, Ndim, Eterms, eldyn_comm);
             if(tot_steps == 0)
             {
 

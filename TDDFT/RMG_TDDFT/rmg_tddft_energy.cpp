@@ -71,21 +71,21 @@
 
 
 
-template void rmg::tddft<double, double>::TddftEnergyInit ( spinobj<double> &vxc,
+template void rmg::tddft<double, double>::tddft_energy_init ( spinobj<double> &vxc,
         fgobj<double> &vh, fgobj<double> &vnuc,
         spinobj<double> &rho_ground,
         fgobj<double> &rhocore, fgobj<double> &rhoc,
         Kpoint<double> **Kptr, 
         Scalapack &SP, int Mdim, int Ndim, std::vector<double> &Eterms);
 
-template void rmg::tddft<double, std::complex<double>>::TddftEnergyInit ( spinobj<double> &vxc,
+template void rmg::tddft<double, std::complex<double>>::tddft_energy_init ( spinobj<double> &vxc,
         fgobj<double> &vh, fgobj<double> &vnuc,
         spinobj<double> &rho_ground,
         fgobj<double> &rhocore, fgobj<double> &rhoc, 
         Kpoint<double> **, 
         Scalapack &SP, int Mdim, int Ndim, std::vector<double> &Eterms);
 
-template void rmg::tddft<std::complex<double>, std::complex<double>>::TddftEnergyInit ( spinobj<double> &vxc,
+template void rmg::tddft<std::complex<double>, std::complex<double>>::tddft_energy_init ( spinobj<double> &vxc,
         fgobj<double> &vh, fgobj<double> &vnuc,
         spinobj<double> &rho_ground,
         fgobj<double> &rhocore, fgobj<double> &rhoc, 
@@ -94,7 +94,7 @@ template void rmg::tddft<std::complex<double>, std::complex<double>>::TddftEnerg
 
 
 
-template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType, MatrixType>::TddftEnergyInit ( spinobj<double> &vxc,
+template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType, MatrixType>::tddft_energy_init ( spinobj<double> &vxc,
         fgobj<double> &vh, fgobj<double> &vnuc,
         spinobj<double> &rho_ground,
         fgobj<double> &rhocore, fgobj<double> &rhoc,
@@ -234,10 +234,10 @@ template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType
 }
 
 
-template void rmg::tddft<double, double>::TddftEnergy ( fgobj<double> &vh, spinobj<double> &rho,fgobj<double> &rhoc,
+template void rmg::tddft<double, double>::tddft_energy ( fgobj<double> &vh, spinobj<double> &rho,fgobj<double> &rhoc,
         Kpoint<double> **Kptr, int Mdim, int Ndim, std::vector<double> &Eterms, MPI_Comm mat_comm);
 
-template void rmg::tddft<double, std::complex<double>>::TddftEnergy (
+template void rmg::tddft<double, std::complex<double>>::tddft_energy (
          fgobj<double> &vh,
          spinobj<double> &rho,
          fgobj<double> &rhoc,
@@ -246,7 +246,7 @@ template void rmg::tddft<double, std::complex<double>>::TddftEnergy (
          int Ndim, std::vector<double> &Eterms,
          MPI_Comm mat_comm);
 
-template void rmg::tddft<std::complex<double>, std::complex<double>>::TddftEnergy(
+template void rmg::tddft<std::complex<double>, std::complex<double>>::tddft_energy(
          fgobj<double> &vh,
          spinobj<double> &rho,
          fgobj<double> &rhoc,
@@ -255,7 +255,7 @@ template void rmg::tddft<std::complex<double>, std::complex<double>>::TddftEnerg
          int Ndim, std::vector<double> &Eterms,
          MPI_Comm mat_comm);
 
-template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType, MatrixType>::TddftEnergy (
+template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType, MatrixType>::tddft_energy (
         fgobj<double> &vh,
         spinobj<double> &rho,
         fgobj<double> &rhoc,

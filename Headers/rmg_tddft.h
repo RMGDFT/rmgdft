@@ -24,7 +24,7 @@ namespace rmg
 
         void tddft_md(void);
 
-        void TddftEnergyInit (
+        void tddft_energy_init (
              spinobj<double> &vxc,
              fgobj<double> &vh,
              fgobj<double> &vnuc,
@@ -37,7 +37,7 @@ namespace rmg
              int Ndim,
              std::vector<double> &Eterms);
 
-        void TddftEnergy (
+        void tddft_energy (
              fgobj<double> &vh,
              spinobj<double> &rho,
              fgobj<double> &rhoc,
