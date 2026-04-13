@@ -98,7 +98,7 @@ namespace rmg
         int pbasis;
         int pbasis_noncoll;
         int scalapack_groups = 1;
-        Scalapack *Sp;
+        Scalapack *Sp = NULL;
         int *desca;
         size_t matrix_size;
         double   thrs_dHmat =1.0e-5 ;

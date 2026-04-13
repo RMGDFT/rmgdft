@@ -915,6 +915,28 @@ rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
     }
     delete RT2a;
 
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        RmgFreeHost(Kptr[kpt]->Hmatrix_cpu);
+        RmgFreeHost(Kptr[kpt]->Pn0_cpu);
+        RmgFreeHost(Kptr[kpt]->Pn1_cpu);
+        RmgFreeHost(Kptr[kpt]->Hmatrix_m1_cpu);
+        RmgFreeHost(Kptr[kpt]->Hmatrix_1_cpu);
+        RmgFreeHost(Kptr[kpt]->Hmatrix_0_cpu);
+        if(ct.tddft_mode == VECTOR_POT)
+        {
+            RmgFreeHost(Kptr[kpt]->Pxmatrix_cpu);
+            RmgFreeHost(Kptr[kpt]->Pymatrix_cpu);
+            RmgFreeHost(Kptr[kpt]->Pzmatrix_cpu);
+
+        }
+        else
+        {
+            RmgFreeHost(Kptr[kpt]->Akick_cpu);
+        }
+    }
+
+    if(Sp) delete Sp;
 }
 
 
