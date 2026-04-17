@@ -19,6 +19,7 @@ void FreeHostOrDevice(void *ptr);
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
 
+#define DoubleComplex hipDoubleComplex
 #define gpublasDcopy hipblasDcopy
 #define gpublasDdgmm hipblasDdgmm
 #define gpublasDgeam hipblasDgeam
@@ -44,6 +45,7 @@ void FreeHostOrDevice(void *ptr);
 #define GPUBLAS_SIDE_RIGHT HIPBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N HIPBLAS_OP_N
 #define GPUBLAS_OP_T HIPBLAS_OP_T
+#define GPUBLAS_OP_C HIPBLAS_OP_C
 #define gpuCpuDeviceId hipCpuDeviceId
 #define gpuStream_t hipStream_t
 
@@ -71,6 +73,7 @@ void gpuGetDeviceCount(int *count, std::source_location loc = std::source_locati
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 
+#define DoubleComplex cuDoubleComplex
 #define gpublasDcopy cublasDcopy
 #define gpublasDdgmm cublasDdgmm
 #define gpublasDgeam cublasDgeam
@@ -96,6 +99,7 @@ void gpuGetDeviceCount(int *count, std::source_location loc = std::source_locati
 #define GPUBLAS_SIDE_RIGHT CUBLAS_SIDE_RIGHT
 #define GPUBLAS_OP_N CUBLAS_OP_N
 #define GPUBLAS_OP_T CUBLAS_OP_T
+#define GPUBLAS_OP_C CUBLAS_OP_C
 #define gpuCpuDeviceId cudaCpuDeviceId
 #define gpuStream_t cudaStream_t
 
