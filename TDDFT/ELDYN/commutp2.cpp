@@ -605,18 +605,31 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
         rmg::zcopy_driver(Nsq,  P0, ione, P1   ,ione) ;   // P1 =P0:  saves P0 into P1 (for updates) 
         rmg::zcopy_driver(Nsq,  P0, ione, dP   ,ione) ;   // dP =P0:  saves P0 into dP (for commutator )
         while ( iter  <= maxiter && tConv ==  false ) {
+
             std::complex<double> alpha(0.0, -1.0e0 /iter) ;
             std::complex<double> beta (0.0,0.0) ;
+            if(ct.tddft_gpu && ct.tddft_tiledMM)
+            {
+                //C = Om * dP
+                rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, rone, Om, ione, ione, desca,
+                        dP, ione, ione, desca, beta, C, ione, ione, desca);
+                // dP = alpha * (C - C^dagger)
+                rmg::zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
+                rmg::zcommute_driver(alpha, Mglob, dP);
 
-            rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
-                    dP, ione, ione, desca, beta, C, ione, ione, desca);
-            // C = -i * Om * dP
+            }
+            else
+            {
+                rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
+                        dP, ione, ione, desca, beta, C, ione, ione, desca);
+                // C = -i * Om * dP
 
-            rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
-                    Om, ione, ione, desca, mone, C, ione, ione, desca);
-            // C = -i (dP * OM - Om * dP)
+                rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, dP, ione, ione, desca,
+                        Om, ione, ione, desca, mone, C, ione, ione, desca);
+                // C = -i (dP * OM - Om * dP)
 
-            rmg::zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
+                rmg::zcopy_driver(Nsq,  C, ione, dP   ,ione) ;  
+            }
             //
             rmg::zaxpy_driver(Nsq, rone,  dP, ione, P1, ione)       ;  // P1 =P1 +dP
             tstconv((double *)dP, &Nsq2, &thrs,&ierr,&err,&tConv, comm)  ;  // tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)

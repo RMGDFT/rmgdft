@@ -153,6 +153,21 @@ void dscal_driver(int n, double beta, double *A, int ione)
 
 }
 
+void zscal_driver(int n, std::complex<double> beta, std::complex<double> *A, int ione)
+{
+    if(!ct.tddft_gpu)
+    {
+        zscal(&n, &beta, A, &ione);
+    }
+    else
+    {
+#if CUDA_ENABLED || HIP_ENABLED
+        gpublasZscal (ct.gpublas_handle, n, (DoubleComplex *)&beta, (DoubleComplex *)A, ione);
+#endif
+    }
+
+}
+
 void dgemm_driver (char *transa, char *transb, int m, int n, int k, 
         double alpha, double *A, int ia, int ja, int *desca,
         double *B, int ib, int jb, int *descb, double beta, 
@@ -367,12 +382,45 @@ void mgpu_zgemm_driver (char *transa, char *transb, int m, int n, int k,
                 C, ic, jc, descc);
     }
 }
+
+
+// 
+// 
+void zcommute_driver (std::complex<double> alpha, int Mglob, std::complex<double> *dP)
+{
+
+#if CUDA_ENABLED || HIP_ENABLED
+    if(ct.tddft_tiledMM)
+    {
+
+        int my_step = Mglob/pct.local_comm_npes;
+        size_t dim_mat = my_step * Mglob;
+        int ione = 1;
+        DoubleComplex one(1.0, 0.0);
+        DoubleComplex zero(0.0, 0.0);
+        std::complex<double> malpha(-alpha);
+        rmg::dvector<std::complex<double>> C_glob(Mglob*Mglob);
+        rmg::dvector<std::complex<double>> B_glob(Mglob*Mglob);
+        TiledM_to_glob(C_glob.data(), dP, Mglob, pct.local_comm);
+
+        rmg::error(gpublasZgeam(ct.gpublas_handle, GPUBLAS_OP_C, GPUBLAS_OP_N, Mglob, Mglob, &one,
+                    (DoubleComplex *)C_glob.data(), Mglob, &zero, (DoubleComplex *)B_glob.data(), Mglob, (DoubleComplex *)B_glob.data(), Mglob));
+        zscal_driver(dim_mat, alpha, dP, ione);
+        zaxpy_driver (dim_mat, malpha, B_glob.data() + dim_mat * pct.local_rank, ione, dP, ione);
+        return;
+    }
+    else 
+    {
+        rmg::error("set tddft_tiledMM true ");
+    }
+#endif
+}
 } // end namespace rmg
 
 #if SYCL_ENABLED
-    #define MKL_Complex8  std::complex<float>
-    #define MKL_Complex16 std::complex<double>
-    #include <mkl.h>
+#define MKL_Complex8  std::complex<float>
+#define MKL_Complex16 std::complex<double>
+#include <mkl.h>
 #endif
 
 DoubleC rmg_zdotc(int *N, DoubleC *x, int *incx, DoubleC *y, int *incy)
