@@ -155,7 +155,6 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->num_atomic_waves_m = GetNumberOrbitalsM(sp->atomic_symbol);
     std::vector<int> pqn;
     sp->atomic_wave.resize(sp->num_atomic_waves);
-    sp->atomic_wave_l.resize(sp->num_atomic_waves);
     SetupAllElectonOrbitals(sp->atomic_symbol,
                             pqn,
                             sp->atomic_wave_l,
@@ -168,6 +167,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++)
     {
         sp->atomic_wave[iwf] = new double[sp->rg_points]();
+        if(sp->atomic_wave_l[iwf] > ct.max_l) ct.max_l = sp->atomic_wave_l[iwf];
     }
     ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
     sp->num_orbitals = sp->num_atomic_waves_m;
@@ -186,7 +186,6 @@ void LoadAllElectronPseudo(SPECIES *sp)
            sp->atomic_wave_oc.data(), rpk, &nc, &ncv, &its,
                        rhoc, sp->atomic_rho, sp->r, vi,
                        &sp->zvalence, &sp->rg_points, &iexc, &aenergy, &ierr, uu);
-printf("IIII  %d  %d\n", its, ierr);
     // Normalize rho for 3D grid
     for(int idx = 0;idx < sp->rg_points;idx++)
     {
@@ -200,6 +199,7 @@ printf("IIII  %d  %d\n", its, ierr);
         {
             double ut = uu[i*sp->rg_points+idx] / sp->r[idx];
             //printf("RRRR  %14.8e  %14.8e\n", sp->r[idx], ut);
+            if(i == (sp->num_atomic_waves-1)) ut *= sp->r[idx]; 
             sp->atomic_wave[i][idx] = ut;
         }
     }
