@@ -268,11 +268,10 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
     /*Initialize any additional states to random start*/
     if ( nstates > state_count)
     {
-
-        int NX_GRID = get_NX_GRID();
-        int NY_GRID = get_NY_GRID();
-        int NZ_GRID = get_NZ_GRID();
-        rmg::grid *LG = new rmg::grid(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        int NX_GRID = get_NX_GRID() / 2;
+        int NY_GRID = get_NY_GRID() / 2;
+        int NZ_GRID = get_NZ_GRID() / 2;
+        rmg::grid *LG = new rmg::grid(NX_GRID, NY_GRID, NZ_GRID, 1, 1, 1, 0, 1);
         int rank = Rmg_G->get_rank();
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
