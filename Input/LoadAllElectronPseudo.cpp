@@ -155,6 +155,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     sp->num_atomic_waves_m = GetNumberOrbitalsM(sp->atomic_symbol);
     std::vector<int> pqn;
     sp->atomic_wave.resize(sp->num_atomic_waves);
+    sp->atomic_wave_l.resize(sp->num_atomic_waves);
     SetupAllElectonOrbitals(sp->atomic_symbol,
                             pqn,
                             sp->atomic_wave_l,

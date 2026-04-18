@@ -164,6 +164,7 @@ void CheckSetDefault(void)
     {
         ct.kohn_sham_fd_order = 12;
         ct.afd_cfac = 0.5;
+        ct.localize_projectors = false;
         if( ct.force_grad_order != 0)  
         {
             ct.force_grad_order = 12;
