@@ -82,7 +82,6 @@ Atomic::Atomic(void)
 
         // Set up bessel roots
         J_roots.resize(8);
-        if(ct.internal_pseudo_type == ALL_ELECTRON) NUM_BESSEL_ROOTS = 2000;
         for(int i = 0;i < 8;i++)
         {
             J_roots[i] = new double[NUM_BESSEL_ROOTS];
@@ -494,6 +493,7 @@ void Atomic::InitBessel(
     gvec[0] = LOGGRID_START;
     // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
     double gmax = PI / 0.02;
+    if(ct.internal_pseudo_type == ALL_ELECTRON) gmax = PI / 0.005;
 
     double gmesh = (log (gmax) - log (gvec[0])) / gnum;
     t1 = exp (gmesh);
