@@ -532,6 +532,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     int ij_err=0;
     double vtxc, etxc;
     int *desca = Sp->GetDistDesca();
+    static double total_time = 0.0;
 
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
@@ -764,24 +765,25 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         /*  done with propagation,  save Pn1 ->  Pn0 */
         if(ct.tddft_energy)
         {
+            static int header_once;
             Eterms[3] = etxc;
             tddft_energy(vh, rho, rhoc, Kptr, Mdim, Ndim, Eterms, eldyn_comm);
             if(tot_steps == 0)
             {
-
-                Eterms_1step = Eterms;
-                if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
+                if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0 && header_once == 0)
                 {
+                    Eterms_1step = Eterms;
                     fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at 1st TDDFT step", Eterms_1step[0],
                             Eterms_1step[1],Eterms_1step[2],Eterms_1step[3],Eterms_1step[4],Eterms_1step[5]);
                     fprintf(efi, "\n&&time  totalE_diff, EkinPseudo_diff, Vh_diff, Exc_diff  %s", eunits);
+                    header_once++;
                 }
                 //for(int i = 0; i < 6; i++) Eterms_1step[i] = Eterms[i];
             }
             if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
             {
                 fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
-                        tot_steps*time_step, (Eterms[0] - Eterms_1step[0]) * efactor, (Eterms[1] - Eterms_1step[1]) * efactor, 
+                        total_time, (Eterms[0] - Eterms_1step[0]) * efactor, (Eterms[1] - Eterms_1step[1]) * efactor, 
                         (Eterms[2] - Eterms_1step[2]) * efactor, (Eterms[3] - Eterms_1step[3]) * efactor);
             }
         }
@@ -871,6 +873,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             delete RT2a;
         }
 
+        total_time += time_step;
     } // end tddft md loop
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
