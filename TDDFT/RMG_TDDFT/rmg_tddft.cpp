@@ -872,6 +872,35 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
 
     } // end tddft md loop
+
+    /*When running MD, force pointers need to be rotated before calculating new forces */
+    if(ct.forceflag == TDDFT_CVE)
+    {
+        ct.fpt[0] = 0;
+        ct.fpt[1] = 1;
+        ct.fpt[2] = 2;
+        ct.fpt[3] = 3;
+        ct.sqrt_interpolation = false;
+
+        spinobj<double> trho;
+        trho = rho;
+
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        {
+            Atoms[ion].RotateForces();
+        }
+        Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
+        fgobj<double> vtot;
+#if 0
+        for(int idx = 0; idx < vtot.pbasis; idx++)
+        {
+            vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+        }
+
+        get_ddd (vtot.data(), vxc.data(), true);
+#endif
+    }
+
 }
 
 template <typename OrbitalType, typename MatrixType>
