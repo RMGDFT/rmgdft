@@ -226,7 +226,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_mode", NULL, &lc.tddft_mode, "electric field",
                      CHECK_AND_TERMINATE, OPTIONAL,tddft_mode, 
                      "TDDFT mode ", 
-                     "either electric field kick or point charge kick", TDDFT_OPTIONS);
+                     "either 'electric field', 'point charge' or 'vector potential'", TDDFT_OPTIONS);
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT", TDDFT_OPTIONS);
