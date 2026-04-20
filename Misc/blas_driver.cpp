@@ -393,20 +393,10 @@ void zcommute_driver (std::complex<double> alpha, int Mglob, std::complex<double
     if(ct.tddft_tiledMM)
     {
 
-        int my_step = Mglob/pct.local_comm_npes;
-        size_t dim_mat = my_step * Mglob;
-        int ione = 1;
-        DoubleComplex one(1.0, 0.0);
-        DoubleComplex zero(0.0, 0.0);
-        std::complex<double> malpha(-alpha);
+        int num_rows = Mglob/pct.local_comm_npes;
         rmg::dvector<std::complex<double>> C_glob(Mglob*Mglob);
-        rmg::dvector<std::complex<double>> B_glob(Mglob*Mglob);
         TiledM_to_glob(C_glob.data(), dP, Mglob, pct.local_comm);
-
-        rmg::error(gpublasZgeam(ct.gpublas_handle, GPUBLAS_OP_C, GPUBLAS_OP_N, Mglob, Mglob, &one,
-                    (DoubleComplex *)C_glob.data(), Mglob, &zero, (DoubleComplex *)B_glob.data(), Mglob, (DoubleComplex *)B_glob.data(), Mglob));
-        zscal_driver(dim_mat, alpha, dP, ione);
-        zaxpy_driver (dim_mat, malpha, B_glob.data() + dim_mat * pct.local_rank, ione, dP, ione);
+        GpuCommuteMatrix(Mglob, num_rows, pct.local_rank, alpha, dP, C_glob.data());
         return;
     }
     else 
