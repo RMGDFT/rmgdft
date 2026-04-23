@@ -212,7 +212,8 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             rmg::error("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
-        int total_occ_states = std::round(ct.nel / (double)ct.nspin);
+        double divisor = 2.0;
+        int total_occ_states = std::round(ct.nel / divisor);
         if(num_states_spf[0] < (total_occ_states + P.rec_unoccupied))
         {
             num_states_spf[0] = total_occ_states + P.rec_unoccupied;
