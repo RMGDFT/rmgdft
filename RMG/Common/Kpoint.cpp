@@ -83,6 +83,10 @@ template void Kpoint<double>::DeleteNvmeArrays(void);
 template void Kpoint<std::complex <double> >::DeleteNvmeArrays(void);
 template void Kpoint<double>::ClearPotentialAcceleration(void);
 template void Kpoint<std::complex <double> >::ClearPotentialAcceleration(void);
+template void Kpoint<std::complex <double> >::save_sint(void);
+template void Kpoint<double>::save_sint(void);
+template void Kpoint<std::complex <double> >::restore_sint(void);
+template void Kpoint<double>::restore_sint(void);
 
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, rmg::grid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
@@ -99,6 +103,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->OrbitalProjector = NULL;
     this->ldaU = NULL;
     this->newsint_local = NULL;
+    this->oldsint_local = NULL;
     this->orbitalsint_local = NULL;
     this->G = newG;
     this->T = newT;
@@ -431,6 +436,17 @@ template <class KpointType> int Kpoint<KpointType>::get_nstates(void)
 template <class KpointType> int Kpoint<KpointType>::get_index(void)
 {
     return this->kidx;
+}
+
+template <class KpointType> void Kpoint<KpointType>::save_sint(void)
+{   
+    if(oldsint_local)
+        std::copy(this->newsint_local, this->newsint_local, this->oldsint_local);
+}
+template <class KpointType> void Kpoint<KpointType>::restore_sint(void)
+{   
+    if(oldsint_local)
+        std::copy(this->oldsint_local, this->oldsint_local, this->newsint_local);
 }
 
 
@@ -1140,13 +1156,17 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
+    sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->newsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
+    if(ct.forceflag == TDDFT_CVE)
+        this->oldsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->newsint_local = new KpointType[sint_alloc]();
+    if(ct.forceflag == TDDFT_CVE)
+        this->oldsint_local = new KpointType[sint_alloc]();
 #endif
 
     MPI_Barrier(grid_comm);
@@ -1163,13 +1183,17 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         gpuFree(this->nl_weight_gpu);
         if (this->newsint_local)
             RmgFreeHost(this->newsint_local);
+        if (this->oldsint_local)
+            RmgFreeHost(this->oldsint_local);
 #else
         delete [] this->nl_weight;
         if (this->newsint_local)
             delete [] this->newsint_local;
+        if (this->oldsint_local)
+            delete [] this->oldsint_local;
 #endif
         this->nl_weight = NULL;
-        this->newsint_local = NULL;
+        this->oldsint_local = NULL;
     }
 
 }

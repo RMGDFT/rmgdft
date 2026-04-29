@@ -115,6 +115,8 @@ public:
     void DeleteNvmeArrays(void);
     void ClearPotentialAcceleration(void);
     void GetFdFactor(void);
+    void save_sint(void);
+    void restore_sint(void);
     std::vector<double> fd_factors;
 
     // Minimal kpoint structure
@@ -159,14 +161,15 @@ public:
     // The orbital structure for this k-point
     std::vector<State<KpointType>> Kstates;
 
-    // Pointer to sint arrays (Betaxpsi)
-    KpointType *newsint_local;
+    // Pointers to sint arrays (Betaxpsi)
+    KpointType *newsint_local=NULL;
+    KpointType *oldsint_local=NULL;
 
     // Pointer to orbital sint arrays (Orbital projectors)
     KpointType *orbitalsint_local;
 
     // Size of the sint arrays
-    //size_t sint_size;
+    size_t sint_alloc;
 
     // Pointers to nv, ns. Each of these arrays is dimensioned (NL_BLOCK_SIZE, P0_BASIS).
     // since we apply the non-local operators in blocks for efficiency and to save memory
@@ -218,8 +221,8 @@ public:
     spinobj<double> *rho;
     spinobj<double> *vxc;
     void *Hmatrix_cpu    ;
-    void *Pn0_cpu        ;
-    void *Pn1_cpu        ;
+    void *Pn0_cpu=NULL   ;
+    void *Pn1_cpu=NULL   ;
     void *Hmatrix_1_cpu ;
     void *Hmatrix_m1_cpu ;
     void *Hmatrix_0_cpu  ;
