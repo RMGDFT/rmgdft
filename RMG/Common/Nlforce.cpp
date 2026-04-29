@@ -36,6 +36,7 @@
 #include "GpuAlloc.h"
 #include "blas.h"
 #include "rmg_hvector.h"
+#include "rmg_gemm.h"
 
 //#include "TradeImages.h"
 #include "RmgException.h"
@@ -44,6 +45,7 @@
 #include "transition.h"
 #include "rmg_reduce.h"
 #include "prototypes_rmg.h"
+#include "prototypes_tddft.h"
 
 
 
@@ -207,6 +209,37 @@ ct.state_block_size);
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_derx, st_start, st_thisblock, weight);
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_dery, st_start + st_block, st_thisblock, weight);
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_derz, st_start + 2*st_block, st_thisblock, weight);
+
+            if(ct.forceflag == TDDFT_CVE && Kptr[kpt]->Pn1_cpu)
+            {
+                if constexpr (std::is_same_v<OrbitalType, double>)
+                {
+                    if(ct.tddft_mode == VECTOR_POT )
+                    {
+                        std::complex<double> *rho_matrix = (std::complex<double> *)Kptr[kpt]->Pn1_cpu;
+                        rmg::rotate_sint(Kptr[kpt], sint_derx, rho_matrix, st_start, st_thisblock);
+                        rmg::rotate_sint(Kptr[kpt], sint_dery, rho_matrix, st_start + st_block, st_thisblock);
+                        rmg::rotate_sint(Kptr[kpt], sint_derz, rho_matrix, st_start + 2*st_block, st_thisblock);
+                    }
+                    else
+                    {
+                        double *rho_matrix = (double *)Kptr[kpt]->Pn1_cpu;
+                        rmg::rotate_sint(Kptr[kpt], sint_derx, rho_matrix, st_start, st_thisblock);
+                        rmg::rotate_sint(Kptr[kpt], sint_dery, rho_matrix, st_start + st_block, st_thisblock);
+                        rmg::rotate_sint(Kptr[kpt], sint_derz, rho_matrix, st_start + 2*st_block, st_thisblock);
+                    }
+ 
+                }
+                if constexpr (std::is_same_v<OrbitalType, std::complex<double>>)
+                {
+                    std::complex<double> *rho_matrix = (std::complex<double> *)Kptr[kpt]->Pn1_cpu;
+                    rmg::rotate_sint(Kptr[kpt], sint_derx, rho_matrix, st_start, st_thisblock);
+                    rmg::rotate_sint(Kptr[kpt], sint_dery, rho_matrix, st_start + st_block, st_thisblock);
+                    rmg::rotate_sint(Kptr[kpt], sint_derz, rho_matrix, st_start + 2*st_block, st_thisblock);
+                }
+
+            }
+
 
             for(int i = 0; i < num_nonloc_ions * st_thisblock * ct.max_nl; i++)
             {

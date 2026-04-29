@@ -86,3 +86,13 @@ template <typename OrbitalType, typename MatrixType> void TddftEnergy (fgobj<dou
         Kpoint<OrbitalType> **Kptr, int Mdim, int Ndim, std::vector<double> &Eterms, MPI_Comm mat_comm);
 
 
+namespace rmg
+{
+    template <typename OrbitalType, typename MatrixType> 
+    void rotate_sint(Kpoint<OrbitalType> *Kptr,
+                     OrbitalType *sint,
+                     MatrixType *rho_matrix,
+                     int offset,
+                     int nstates);
+}
+
