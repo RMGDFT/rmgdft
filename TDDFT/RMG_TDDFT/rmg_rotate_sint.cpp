@@ -37,6 +37,9 @@ template <typename OrbitalType, typename MatrixType>
 void rmg::rotate_sint(
             Kpoint<OrbitalType> *Kptr, OrbitalType *sint, MatrixType *rho_matrix)
 {
+    // No sint to rotate in this case
+    if(ct.internal_pseudo_type == ALL_ELECTRON) return;
+
     char *transt = "t", *transn = "n", *transc = "c";
     char *transa;
 
