@@ -91,8 +91,6 @@ namespace rmg
     template <typename OrbitalType, typename MatrixType> 
     void rotate_sint(Kpoint<OrbitalType> *Kptr,
                      OrbitalType *sint,
-                     MatrixType *rho_matrix,
-                     int offset,
-                     int nstates);
+                     MatrixType *rho_matrix);
 }
 

@@ -23,16 +23,39 @@
 #include "rmg_tddft.h"
 #include "../Headers/prototypes_tddft.h"
 #include "rmg_dev_allocate.h"
+#include "rmg_hvector.h"
 #include "Kpoint.h"
 #include "blas_driver.h"
+#include "rmg_gemm.h"
 
 
-template void rmg::rotate_sint<double, double>(Kpoint<double> *, double *, double *, int, int);
-template void rmg::rotate_sint<double, std::complex<double>>(Kpoint<double> *, double *, std::complex<double> *, int, int);
-template void rmg::rotate_sint<std::complex<double>, std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, int, int);
+template void rmg::rotate_sint<double, double>(Kpoint<double> *, double *, double *);
+template void rmg::rotate_sint<double, std::complex<double>>(Kpoint<double> *, double *, std::complex<double> *);
+template void rmg::rotate_sint<std::complex<double>, std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *);
 template <typename OrbitalType, typename MatrixType>
 
 void rmg::rotate_sint(
-            Kpoint<OrbitalType> *Kptr, OrbitalType *sint, MatrixType *rho_matrix, int offset, int nstates)
+            Kpoint<OrbitalType> *Kptr, OrbitalType *sint, MatrixType *rho_matrix)
 {
+    char *transt = "t", *transn = "n", *transc = "c";
+    char *transa;
+
+    transa = transc;
+    if(ct.is_gamma) transa = transt;
+    int num_nonloc_ions = Kptr->BetaProjector->get_num_nonloc_ions();
+    int pstride = Kptr->BetaProjector->get_pstride();
+
+    // Vector potential at gamma case
+    if constexpr (std::is_same_v<OrbitalType, double> && std::is_same_v<MatrixType, std::complex<double>>)
+    {
+        double rzero(0.0);
+        double alpha(1.0);
+        OrbitalType *oldsint = Kptr->oldsint_local;
+        rmg::hvector<double> real_rho_matrix(ct.num_states*ct.num_states); 
+        for(int i=0;i < ct.num_states*ct.num_states;i++) real_rho_matrix[i] = std::real(rho_matrix[i]);
+        rmg::gemm (transn, transt, ct.num_states, num_nonloc_ions*pstride, ct.num_states, alpha,
+            oldsint, num_nonloc_ions*pstride, real_rho_matrix.data(), ct.num_states, rzero, sint, num_nonloc_ions*pstride);
+        //for(int i=0;i < ct.num_states*num_nonloc_ions*pstride;i++) sint[i] *= 0.5;
+    }
+
 }

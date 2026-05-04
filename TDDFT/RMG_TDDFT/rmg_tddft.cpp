@@ -534,6 +534,18 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     int *desca = Sp->GetDistDesca();
     static double total_time = 0.0;
 
+    // Recompute sint arrays which is necessary for dynamics.
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+#if HIP_ENABLED || CUDA_ENABLED
+        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+#else
+        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+#endif
+    }
+
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -893,15 +905,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             Atoms[ion].RotateForces();
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
-        fgobj<double> vtot;
-#if 0
-        for(int idx = 0; idx < vtot.pbasis; idx++)
-        {
-            vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-        }
-
         get_ddd (vtot.data(), vxc.data(), true);
-#endif
+
     }
 
 }
