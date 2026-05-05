@@ -909,15 +909,21 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         {
             Atoms[ion].RotateForces();
         }
-        rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states); 
-        gather_rho_matrix(rho_matrix_global.data(), Pn1);
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+
+        if(ct.internal_pseudo_type != ALL_ELECTRON)
         {
-            Kptr[kpt]->save_sint();
-            rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
+            rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states); 
+            gather_rho_matrix(rho_matrix_global.data(), Pn1);
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                Kptr[kpt]->save_sint();
+                rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
+            }
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->restore_sint();
+        if(ct.internal_pseudo_type != ALL_ELECTRON)
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->restore_sint();
+
         get_ddd (vtot.data(), vxc.data(), true);
 
     }
