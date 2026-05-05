@@ -441,12 +441,12 @@ template <class KpointType> int Kpoint<KpointType>::get_index(void)
 template <class KpointType> void Kpoint<KpointType>::save_sint(void)
 {   
     if(oldsint_local)
-        std::copy(this->newsint_local, this->newsint_local, this->oldsint_local);
+        std::copy(this->newsint_local, this->newsint_local+this->sint_alloc, this->oldsint_local);
 }
 template <class KpointType> void Kpoint<KpointType>::restore_sint(void)
 {   
     if(oldsint_local)
-        std::copy(this->oldsint_local, this->oldsint_local, this->newsint_local);
+        std::copy(this->oldsint_local, this->oldsint_local+this->sint_alloc, this->newsint_local);
 }
 
 

@@ -65,6 +65,8 @@ namespace rmg
              bool *p_tconv,
              MPI_Comm comm);
 
+        void gather_rho_matrix(OrbitalType *rho_matrix_global, MatrixType *rho_matrix);
+
         ~tddft(void);
 
     private:

@@ -47,7 +47,6 @@ void rmg::rotate_sint(
     if(ct.is_gamma) transa = transt;
     int num_nonloc_ions = Kptr->BetaProjector->get_num_nonloc_ions();
     int pstride = Kptr->BetaProjector->get_pstride();
-
     // Vector potential at gamma case
     if constexpr (std::is_same_v<OrbitalType, double> && std::is_same_v<MatrixType, std::complex<double>>)
     {
@@ -56,9 +55,16 @@ void rmg::rotate_sint(
         OrbitalType *oldsint = Kptr->oldsint_local;
         rmg::hvector<double> real_rho_matrix(ct.num_states*ct.num_states); 
         for(int i=0;i < ct.num_states*ct.num_states;i++) real_rho_matrix[i] = std::real(rho_matrix[i]);
-        rmg::gemm (transn, transt, ct.num_states, num_nonloc_ions*pstride, ct.num_states, alpha,
+        rmg::gemm (transn, transt, num_nonloc_ions*pstride, ct.num_states, ct.num_states, alpha,
             oldsint, num_nonloc_ions*pstride, real_rho_matrix.data(), ct.num_states, rzero, sint, num_nonloc_ions*pstride);
-        //for(int i=0;i < ct.num_states*num_nonloc_ions*pstride;i++) sint[i] *= 0.5;
+    }
+    if constexpr (std::is_same_v<OrbitalType, double> && std::is_same_v<MatrixType, double>)
+    {
+        double rzero(0.0);
+        double alpha(1.0);
+        OrbitalType *oldsint = Kptr->oldsint_local;
+        rmg::gemm (transn, transt, num_nonloc_ions*pstride, ct.num_states, ct.num_states, alpha,
+            oldsint, num_nonloc_ions*pstride, rho_matrix, ct.num_states, rzero, sint, num_nonloc_ions*pstride);
     }
 
 }

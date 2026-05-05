@@ -24,6 +24,7 @@
 #include "../Headers/prototypes_tddft.h"
 #include "GatherScatter.h"
 #include "rmg_dev_allocate.h"
+#include "rmg_hvector.h"
 #include "blas_driver.h"
 
 void  init_point_charge_pot(double *vtot_psi, int density);
@@ -41,6 +42,10 @@ template void rmg::tddft<std::complex<double>, std::complex<double>>::tddft_md(v
 template rmg::tddft<double, double>::~tddft(void);
 template rmg::tddft<double, std::complex<double>>::~tddft(void);
 template rmg::tddft<std::complex<double>, std::complex<double>>::~tddft(void);
+
+template void rmg::tddft<double, double>::gather_rho_matrix(double *, double *);
+template void rmg::tddft<double, std::complex<double>>::gather_rho_matrix(double *, std::complex<double> *);
+template void rmg::tddft<std::complex<double>, std::complex<double>>::gather_rho_matrix(std::complex<double> *, std::complex<double> *);
 
 template rmg::tddft<double, double>::tddft(spinobj<double> &vxc_in,
              fgobj<double> &vh_in,
@@ -904,7 +909,15 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         {
             Atoms[ion].RotateForces();
         }
+        rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states); 
+        gather_rho_matrix(rho_matrix_global.data(), Pn1);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            Kptr[kpt]->save_sint();
+            rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
+        }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->restore_sint();
         get_ddd (vtot.data(), vxc.data(), true);
 
     }
@@ -1068,4 +1081,59 @@ void rmg::tddft<OrbitalType, MatrixType>::tstconv(float *C,int *p_M, double *p_t
     *(p_err )  =  (double)err  ;
     *(p_ierr)  =  ierr ;
     *(p_tconv) =  tconv ;
+}
+
+
+template <typename OrbitalType, typename MatrixType>
+void rmg::tddft<OrbitalType, MatrixType>::gather_rho_matrix(OrbitalType *rho_matrix_global, MatrixType *rho_matrix)
+{   
+
+    if(ct.tddft_tiledMM == 1)
+    {
+        double *rho_R = (double *)rho_matrix_global;
+        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_global;
+        size_t recvcount = numst * numst/pct.local_comm_npes * sizeof(OrbitalType)/sizeof(double);
+        if(typeid(OrbitalType) == typeid(double))
+        {
+            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
+            {
+                rho_R[pct.local_rank * numst * numst/pct.local_comm_npes + i] = std::real(rho_matrix[i]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
+            {
+                rho_C[pct.local_rank * numst * numst/pct.local_comm_npes + i] = rho_matrix[i];
+            }
+        }
+        MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, 
+                rho_matrix_global, recvcount, MPI_DOUBLE, pct.local_comm);       
+    }
+    else
+    {
+        int Mdim = Sp->GetDistMdim();
+        int Ndim = Sp->GetDistNdim();
+        std::vector<OrbitalType> rho_matrix_dist(Mdim * Ndim);
+        double *rho_R = (double *)rho_matrix_dist.data();
+        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_dist.data();
+        if(typeid(OrbitalType) == typeid(double))
+        {
+            for(int i = 0; i < Mdim * Ndim; i++)
+            {
+                rho_R[i] = std::real(rho_matrix[i]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < Mdim * Ndim; i++)
+            {
+                rho_C[i] = rho_matrix[i];
+            }
+        }
+
+        for(int i = 0; i < numst * numst; i++) rho_matrix_global[i] = 0.0;
+        Sp->GatherEigvectors(rho_matrix_global, rho_matrix_dist.data());
+    }
+
 }

@@ -161,29 +161,6 @@ ct.state_block_size);
     
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        // For Ehrenfest saves newsint_local into oldsint_local
-        Kptr[kpt]->save_sint();
-        // For Ehrenfest we need to rotate the full sint matrix
-        if(ct.forceflag == TDDFT_CVE && Kptr[kpt]->Pn1_cpu)
-        {   
-            if constexpr (std::is_same_v<OrbitalType, double>)
-            {   
-                if(ct.tddft_mode == VECTOR_POT )
-                {   
-                    std::complex<double> *rho_matrix = (std::complex<double> *)Kptr[kpt]->Pn1_cpu;
-                    rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix);
-                }
-                else
-                {   
-                    double *rho_matrix = (double *)Kptr[kpt]->Pn1_cpu;
-                }
-            
-            }
-            if constexpr (std::is_same_v<OrbitalType, std::complex<double>>)
-            {
-            }
-        }
-
         for(int ib = 0; ib < num_state_block; ib++)
         {
             for(int st = state_start[ib]; st < state_end[ib]; st++)
@@ -371,9 +348,6 @@ ct.state_block_size);
         output_force(tmp_force_gamma, "Non-local forces: der_gamma term");
         output_force(tmp_force_omega, "Non-local forces: der_omega term");
     }
-
-    // Does nothing for non TDDFT
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->restore_sint();
 
     //    delete[] par_gamma;
     delete[] gamma_allions;
