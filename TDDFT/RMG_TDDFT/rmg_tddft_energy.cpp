@@ -331,6 +331,8 @@ template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType
 
     Eterms[1] = EkinPseudo ;
     Eterms[2] = ES;
+    ct.II = IonIonEnergy_Ewald();
+    Eterms[4] = ct.II;
     totalE = 0.0;
     for(int i = 1; i < 6; i++) totalE += Eterms[i];
     Eterms[0] = totalE     ;
