@@ -27,6 +27,9 @@
 #include "rmg_hvector.h"
 #include "blas_driver.h"
 
+template <typename KpointType>
+void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat);
+
 void  init_point_charge_pot(double *vtot_psi, int density);
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
         *niter , int *p_iprint, MPI_Comm comm) ;
@@ -539,6 +542,18 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     int *desca = Sp->GetDistDesca();
     static double total_time = 0.0;
 
+            //get_vxc(rho, rho_oppo, rhocore, vxc);
+            RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
+            //vxc_in = vxc;
+            compute_vxc(rho.data(), rhocore.data(), etxc, vtxc, vxc.data(), ct.nspin);
+            delete RT1;
+
+            RT1 = new RmgTimer("2-TDDFT: Vh");
+            //vh_in = vh;
+            VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
+            delete RT1;
+
+    rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -549,8 +564,13 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
                 Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 #endif
+        HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+        OrbitalType *hptr = (OrbitalType *)this->Kptr[kpt]->Hmatrix_cpu;
+        for(int i=0;i<n2;i++) hptr[i] = Hmat[i];
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
     }
-
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {

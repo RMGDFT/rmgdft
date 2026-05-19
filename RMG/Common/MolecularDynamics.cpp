@@ -238,24 +238,26 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         // Get atomic rho for this ionic configuration and subtract from current rho
         int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
         double *arho = new double[FP0_BASIS];
-        LcaoGetAtomicRho(arho);
-
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
-
-        if(rhodiff == NULL)
+        if(ct.forceflag != TDDFT_CVE)
         {
-            rhodiff = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
-        }
-        else
-        {
-            double *trho = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
-            delete [] trho;
-        }
+            LcaoGetAtomicRho(arho);
 
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+
+            if(rhodiff == NULL)
+            {
+                rhodiff = new double[FP0_BASIS];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+            }
+            else
+            {
+                double *trho = new double[FP0_BASIS];
+                for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+                delete [] trho;
+            }
+        }
 
         /* Update the positions a full timestep */
         //posup ();
@@ -265,8 +267,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
 
         // Get atomic rho for new configuration and add back to rho
-        LcaoGetAtomicRho(arho);
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        if(ct.forceflag != TDDFT_CVE)
+        {
+            LcaoGetAtomicRho(arho);
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        }
         delete [] arho;
 
         /* Update items that change when the ionic coordinates change */
@@ -316,7 +321,10 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
-        ExtrapolateOrbitals(ct.outfile, Kptr);
+        if(ct.forceflag != TDDFT_CVE)
+        {
+            ExtrapolateOrbitals(ct.outfile, Kptr);
+        }
 
         /* calculate the nose thermostat energies */
         if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
