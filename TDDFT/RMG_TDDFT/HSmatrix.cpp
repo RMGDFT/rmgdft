@@ -91,91 +91,10 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
-
-    // Apply Nls
-    AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, 0, std::min(ct.non_local_block_size, nstates));
-    delete RT2;
-    int first_nls = 0;
-
-    // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
-
-#if CUDA_ENABLED || HIP_ENABLED
-    // Until the finite difference operators are being applied on the GPU it's faster
-    // to make sure that the result arrays are present on the cpu side.
-    int device = -1;
-    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
+    ApplyBlockedHamiltonian(kptr, h_psi, vtot_eig, vxc_psi);
     rmg::sync_device();
-#endif
-
-    int active_threads = rmg::get_active_threads();
-    int istop = nstates / active_threads;
-    istop = istop * active_threads;
-    for(int st1=0;st1 < istop;st1 += active_threads) {
-        SCF_THREAD_CONTROL thread_control;
-        // Make sure the non-local operators are applied for the next block if needed
-         int check = first_nls + active_threads;
-         if(check > ct.non_local_block_size) {
-             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-             rmg::sync_device();
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
-                    st1, std::min(ct.non_local_block_size, nstates - st1));
-             rmg::sync_device();
-             first_nls = 0;
-             delete RT3;
-         }
-
-        for(int ist = 0;ist < active_threads;ist++) {
-            thread_control.job = HYBRID_APPLY_HAMILTONIAN;
-            thread_control.vtot = vtot_eig;
-            thread_control.vxc_psi = vxc_psi;
-            thread_control.extratag1 = potential_acceleration;
-            thread_control.istate = st1 + ist;
-            thread_control.sp = &kptr->Kstates[st1 + ist];
-            thread_control.p1 = (void *)kptr->Kstates[st1 + ist].psi;
-            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis_noncoll];
-            thread_control.p3 = (void *)kptr;
-            thread_control.nv = (void *)&nv[(first_nls + ist) * pbasis_noncoll];
-            thread_control.ns = (void *)&ns[(st1 + ist) * pbasis_noncoll];  // ns is not blocked!
-            thread_control.basetag = kptr->Kstates[st1 + ist].istate;
-            QueueThreadTask(ist, thread_control);
-        }
-
-        // Thread tasks are set up so wake them
-        if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
-        if((check >= ct.non_local_block_size) && ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-        // Increment index into non-local block
-        first_nls += active_threads;
-
-    }
-
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-
-    // Process any remaining orbitals serially
-    for(int st1 = istop;st1 < nstates;st1++) {
-        // Make sure the non-local operators are applied for the next state if needed
-         int check = first_nls + 1;
-         if(check > ct.non_local_block_size) {
-             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-             rmg::sync_device();
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-             rmg::sync_device();
-             first_nls = 0;
-             delete RT3;
-         }
-        ApplyHamiltonian<KpointType, KpointType> (kptr, &kptr->Kstates[st1], st1, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], 
-                      vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
-
-        first_nls++;
-    }
-    delete(RT1);
-    /* Operators applied and we now have
-         tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
-         tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
-
-    rmg::sync_device();
+    delete RT1;
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
