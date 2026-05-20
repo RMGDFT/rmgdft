@@ -107,7 +107,7 @@ public:
     int istate;
 
     // Occupation of the orbital
-    double occupation[2];
+    double occupation[4];
 
     bool skip;
 

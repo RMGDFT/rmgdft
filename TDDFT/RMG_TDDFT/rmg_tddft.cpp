@@ -546,12 +546,19 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
             //vxc_in = vxc;
             compute_vxc(rho.data(), rhocore.data(), etxc, vtxc, vxc.data(), ct.nspin);
+            GetVtotPsi(vxc_psi.data(), vxc.data(), Rmg_G->default_FG_RATIO);
             delete RT1;
 
             RT1 = new RmgTimer("2-TDDFT: Vh");
             //vh_in = vh;
             VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
             delete RT1;
+
+            for (int idx = 0; idx < vtot.pbasis; idx++)
+            {   
+                vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+            }
+            GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
     rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
@@ -564,13 +571,19 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
                 Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 #endif
-        HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
-        OrbitalType *hptr = (OrbitalType *)this->Kptr[kpt]->Hmatrix_cpu;
-        for(int i=0;i<n2;i++) hptr[i] = Hmat[i];
+        static int first_step;
+        if(first_step)
+        {
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+            OrbitalType *hptr = (OrbitalType *)this->Kptr[kpt]->Hmatrix_cpu;
+            this->Sp->DistributeMatrix(Hmat.data(), hptr);
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
+            first_step++;
+        }
     }
+
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
@@ -937,13 +950,21 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             {
                 Kptr[kpt]->save_sint();
+                for(int is=0;is < ct.num_states;is++)
+                    Kptr[kpt]->Kstates[is].occupation[3] = Kptr[kpt]->Kstates[is].occupation[0];
                 rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
             }
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
         if(ct.internal_pseudo_type != ALL_ELECTRON)
-            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) Kptr[kpt]->restore_sint();
-
+        {
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                Kptr[kpt]->restore_sint();
+                for(int is=0;is < ct.num_states;is++)
+                    Kptr[kpt]->Kstates[is].occupation[0] = Kptr[kpt]->Kstates[is].occupation[3];
+            }
+        }
         get_ddd (vtot.data(), vxc.data(), true);
 
     }
