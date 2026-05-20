@@ -580,6 +580,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
+            if(ct.tddft_energy)
+            {
+                tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
+            }
             first_step++;
         }
     }
@@ -825,16 +829,16 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                     Eterms_1step = Eterms;
                     fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at 1st TDDFT step", Eterms_1step[0],
                             Eterms_1step[1],Eterms_1step[2],Eterms_1step[3],Eterms_1step[4],Eterms_1step[5]);
-                    fprintf(efi, "\n&&time  totalE_diff, EkinPseudo_diff, Vh_diff, Exc_diff  %s", eunits);
+                    fprintf(efi, "\n&&time  totalE     , EkinPseudo     , Vh     , Exc    , II   %s", eunits);
                     header_once++;
                 }
                 //for(int i = 0; i < 6; i++) Eterms_1step[i] = Eterms[i];
             }
             if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
             {
-                fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e   ",
-                        total_time, (Eterms[0] - Eterms_1step[0]) * efactor, (Eterms[1] - Eterms_1step[1]) * efactor, 
-                        (Eterms[2] - Eterms_1step[2]) * efactor, (Eterms[3] - Eterms_1step[3]) * efactor);
+                fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e,%16.8e   ",
+                        total_time, Eterms[0]*efactor, Eterms[1]*efactor, 
+                        Eterms[2]*efactor, Eterms[3]*efactor, Eterms[4]*efactor);
             }
         }
 
