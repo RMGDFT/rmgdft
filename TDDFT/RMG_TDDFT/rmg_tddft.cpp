@@ -951,7 +951,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 Kptr[kpt]->save_sint();
                 for(int is=0;is < ct.num_states;is++)
+                {
                     Kptr[kpt]->Kstates[is].occupation[3] = Kptr[kpt]->Kstates[is].occupation[0];
+                    Kptr[kpt]->Kstates[is].occupation[0] = 1.0;
+                }
                 rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
             }
         }
