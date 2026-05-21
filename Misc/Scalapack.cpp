@@ -457,8 +457,8 @@ void Scalapack::DistributeMatrix(std::complex<double> *A, std::complex<double> *
 
     // Call pdgeadd_ to distribute matrix (i.e. copy A into A_dist)
     int ione = 1;
-    double rone = 1.0, rzero = 0.0;
-    pzgeadd( "N", &this->N, &this->N, &rone, (double *)A, &ione, &ione, this->local_desca, &rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
+    double rone[2](1.0,0.0), rzero[2](0.0, 0.0);
+    pzgeadd( "N", &this->N, &this->N, rone, (double *)A, &ione, &ione, this->local_desca, rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
 }
 
 

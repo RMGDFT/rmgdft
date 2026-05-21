@@ -395,7 +395,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
     // Final quench at these ionic positions without computing forces so the
     // final wavefunctions are converged. Write the restart file then compute
-    Quench (Kptr, false);
+    Quench (Kptr, true);
     WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
 

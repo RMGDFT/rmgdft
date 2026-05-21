@@ -561,7 +561,9 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
     rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
+    rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
+    static int first_step;
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 #if HIP_ENABLED || CUDA_ENABLED
@@ -571,12 +573,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
                 Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 #endif
-        static int first_step;
         if(first_step)
         {
             HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
-            OrbitalType *hptr = (OrbitalType *)this->Kptr[kpt]->Hmatrix_cpu;
-            this->Sp->DistributeMatrix(Hmat.data(), hptr);
+            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+            for(int i = 0; i < numst * numst; i++) Hmat_mtype[i] = Hmat[i];
+            this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
@@ -585,8 +587,9 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
             }
         }
-        first_step++;
     }
+
+    first_step++;
 
     //  run rt-td-dft
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
