@@ -584,8 +584,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
             }
-            first_step++;
         }
+        first_step++;
     }
 
     //  run rt-td-dft

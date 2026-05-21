@@ -336,6 +336,7 @@ template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType
     totalE = 0.0;
     for(int i = 1; i < 6; i++) totalE += Eterms[i];
     Eterms[0] = totalE     ;
+    ct.TOTAL = totalE;
 
 
 }
