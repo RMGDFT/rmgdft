@@ -88,9 +88,9 @@ template <typename OrbitalType, typename MatrixType> void TddftEnergy (fgobj<dou
 
 namespace rmg
 {
-    template <typename OrbitalType, typename MatrixType> 
+    template <typename OrbitalType>
     void rotate_sint(Kpoint<OrbitalType> *Kptr,
                      OrbitalType *sint,
-                     MatrixType *rho_matrix);
+                     OrbitalType *rho_matrix);
 }
 

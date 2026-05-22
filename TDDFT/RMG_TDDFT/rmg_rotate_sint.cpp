@@ -29,13 +29,12 @@
 #include "rmg_gemm.h"
 
 
-template void rmg::rotate_sint<double, double>(Kpoint<double> *, double *, double *);
-template void rmg::rotate_sint<double, std::complex<double>>(Kpoint<double> *, double *, std::complex<double> *);
-template void rmg::rotate_sint<std::complex<double>, std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *);
-template <typename OrbitalType, typename MatrixType>
+template void rmg::rotate_sint<double>(Kpoint<double> *, double *, double *);
+template void rmg::rotate_sint<std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *);
+template <typename OrbitalType>
 
 void rmg::rotate_sint(
-            Kpoint<OrbitalType> *Kptr, OrbitalType *sint, MatrixType *rho_matrix)
+        Kpoint<OrbitalType> *Kptr, OrbitalType *sint, OrbitalType *rho_matrix)
 {
     // No sint to rotate in this case
     if(ct.internal_pseudo_type == ALL_ELECTRON) return;
@@ -47,24 +46,12 @@ void rmg::rotate_sint(
     if(ct.is_gamma) transa = transt;
     int num_nonloc_ions = Kptr->BetaProjector->get_num_nonloc_ions();
     int pstride = Kptr->BetaProjector->get_pstride();
-    // Vector potential at gamma case
-    if constexpr (std::is_same_v<OrbitalType, double> && std::is_same_v<MatrixType, std::complex<double>>)
-    {
-        double rzero(0.0);
-        double alpha(1.0);
-        OrbitalType *oldsint = Kptr->oldsint_local;
-        rmg::hvector<double> real_rho_matrix(ct.num_states*ct.num_states); 
-        for(int i=0;i < ct.num_states*ct.num_states;i++) real_rho_matrix[i] = std::real(rho_matrix[i]);
-        rmg::gemm (transn, transt, num_nonloc_ions*pstride, ct.num_states, ct.num_states, alpha,
-            oldsint, num_nonloc_ions*pstride, real_rho_matrix.data(), ct.num_states, rzero, sint, num_nonloc_ions*pstride);
-    }
-    if constexpr (std::is_same_v<OrbitalType, double> && std::is_same_v<MatrixType, double>)
-    {
-        double rzero(0.0);
-        double alpha(1.0);
-        OrbitalType *oldsint = Kptr->oldsint_local;
-        rmg::gemm (transn, transt, num_nonloc_ions*pstride, ct.num_states, ct.num_states, alpha,
+
+    OrbitalType rzero(0.0);
+    OrbitalType alpha(1.0);
+
+    OrbitalType *oldsint = Kptr->oldsint_local;
+    rmg::gemm (transn, transa, num_nonloc_ions*pstride, ct.num_states, ct.num_states, alpha,
             oldsint, num_nonloc_ions*pstride, rho_matrix, ct.num_states, rzero, sint, num_nonloc_ions*pstride);
-    }
 
 }

@@ -953,9 +953,9 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         if(ct.internal_pseudo_type != ALL_ELECTRON)
         {
             rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states); 
-            gather_rho_matrix(rho_matrix_global.data(), Pn1);
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             {
+                gather_rho_matrix(rho_matrix_global.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
                 Kptr[kpt]->save_sint();
                 for(int is=0;is < ct.num_states;is++)
                 {
