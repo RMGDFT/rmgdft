@@ -26,6 +26,7 @@
 #include "rmg_dev_allocate.h"
 #include "rmg_hvector.h"
 #include "blas_driver.h"
+#include "rmg_reduce.h"
 
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat);
@@ -541,24 +542,26 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     double vtxc, etxc;
     int *desca = Sp->GetDistDesca();
     static double total_time = 0.0;
+    spinobj<double> trho;
+    trho.set(0.0);
 
-            //get_vxc(rho, rho_oppo, rhocore, vxc);
-            RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
-            //vxc_in = vxc;
-            compute_vxc(rho.data(), rhocore.data(), etxc, vtxc, vxc.data(), ct.nspin);
-            GetVtotPsi(vxc_psi.data(), vxc.data(), Rmg_G->default_FG_RATIO);
-            delete RT1;
+    //get_vxc(rho, rho_oppo, rhocore, vxc);
+    RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
+    //vxc_in = vxc;
+    compute_vxc(rho.data(), rhocore.data(), etxc, vtxc, vxc.data(), ct.nspin);
+    GetVtotPsi(vxc_psi.data(), vxc.data(), Rmg_G->default_FG_RATIO);
+    delete RT1;
 
-            RT1 = new RmgTimer("2-TDDFT: Vh");
-            //vh_in = vh;
-            VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
-            delete RT1;
+    RT1 = new RmgTimer("2-TDDFT: Vh");
+    //vh_in = vh;
+    VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
+    delete RT1;
 
-            for (int idx = 0; idx < vtot.pbasis; idx++)
-            {   
-                vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-            }
-            GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
+    for (int idx = 0; idx < vtot.pbasis; idx++)
+    {   
+	vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+    }
+    GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
     rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
     rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
@@ -723,7 +726,6 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
             rho.get_oppo();
 
-
             //write_rho_x(rho, "update rho");
             //write_rho_x(rho_ground.data(), "groumd rho");
 
@@ -815,6 +817,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             iter_scf ++ ;
         } //---- end of  SCF/while loop 
 
+        // Save rho for averaging and force calculation
+        for(int i=0;i < trho.pbasis;i++) trho[i] += rho[i];
 
         RT2a = new RmgTimer("2-TDDFT: current and dipole");
         //  extract dipole from rho(Pn1)
@@ -933,6 +937,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         total_time += time_step;
     } // end tddft md loop
 
+    double rscale = 1.0 / (double)ct.tddft_steps;
+    for(int i=0;i < trho.pbasis;i++) trho[i] *= rscale;
+    trho.get_oppo();
+
     /*When running MD, force pointers need to be rotated before calculating new forces */
     if(ct.forceflag == TDDFT_CVE)
     {
@@ -941,9 +949,6 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         ct.fpt[2] = 2;
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
-
-        spinobj<double> trho;
-        trho = rho;
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
