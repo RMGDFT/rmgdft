@@ -208,6 +208,15 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     }
 
+    // Zero forces on constrained ions if gamma point
+    for (int ion = 0; ion < num_ions; ion++)
+    {
+        double *fp = Atoms[ion].force[ct.fpt[0]];
+        if(Atoms[ion].movable[0] == 0) fp[0] = 0.0;
+        if(Atoms[ion].movable[1] == 0) fp[1] = 0.0;
+        if(Atoms[ion].movable[2] == 0) fp[2] = 0.0;
+    }
+
     if (!ct.is_gamma) {
         RmgTimer *RT5 = new RmgTimer("2-Force: symmetrization");
         if(Rmg_Symm) Rmg_Symm->symforce ();

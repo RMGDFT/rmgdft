@@ -211,4 +211,11 @@ void CheckSetDefault(void)
         ct.frac_symm = false;
         ct.time_reversal = false;
     }
+
+    for(auto& Atom : Atoms)
+    {
+        if((!Atom.movable[0] || !Atom.movable[1] || !Atom.movable[2]) && !ct.is_gamma)
+            rmg::error("Constrained dynamics is currently implemented for gamma only. Terminating.");
+    }
+
 }
