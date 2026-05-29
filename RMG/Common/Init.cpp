@@ -245,6 +245,21 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
 #endif
 
+    if(ct.forceflag == TDDFT_CVE)
+    {
+        OrbitalType *tptr;    
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+        gpuMallocHost((void **)&tptr, galloc);
+#else
+        tptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
+#endif
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            Kptr[kpt]->prev_orbital_storage = tptr;
+            tptr += (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024;
+        }
+    }
+
     ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024;
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
