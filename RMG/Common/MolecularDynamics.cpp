@@ -282,6 +282,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         if(ct.forceflag == TDDFT_CVE)
         {
             for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+            //ct.mix = 0.0;
+            //Quench (Kptr, false);
         }
 
         // Reset mixing
