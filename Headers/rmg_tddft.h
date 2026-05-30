@@ -9,6 +9,8 @@
 #include "Kpoint.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
+#include "rmg_gemm.h"
+
 
 namespace rmg
 {

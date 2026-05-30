@@ -44,6 +44,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     int nstates = kptr->nstates;
     MPI_Comm grid_comm = kptr->grid_comm;
     KpointType *orbital_storage = kptr->orbital_storage;
+    KpointType *prev_orbital_storage = kptr->prev_orbital_storage;
     KpointType *ns = kptr->ns;
     KpointType *nv = kptr->nv;
     KpointType *newsint_local = kptr->newsint_local;
@@ -120,7 +121,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     // Compute S matrix
     KpointType alpha1(vel);
-    rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
+    rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, prev_orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
 
 
 #if HAVE_ASYNC_ALLREDUCE

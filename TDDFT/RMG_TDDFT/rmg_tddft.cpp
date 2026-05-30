@@ -177,6 +177,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     {
         Kptr[kpt]->Hmatrix_cpu     = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         Kptr[kpt]->Pn0_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+        Kptr[kpt]->Pn0_mean         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
         Kptr[kpt]->Pn1_cpu         = (void *)RmgMallocHost((size_t)n2*sizeof(double)*2);
         Kptr[kpt]->Hmatrix_m1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         Kptr[kpt]->Hmatrix_1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
@@ -544,7 +545,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     static double total_time = 0.0;
     spinobj<double> trho;
     trho.set(0.0);
-
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
+        for(int i = 0; i < n2; i++) p_mean[i] = 0.0;
+    }
     //get_vxc(rho, rho_oppo, rhocore, vxc);
     RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
     //vxc_in = vxc;
@@ -559,11 +563,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
     for (int idx = 0; idx < vtot.pbasis; idx++)
     {   
-	vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     }
     GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
     rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
+    rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
     rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
     static int first_step;
@@ -589,6 +594,28 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
             }
+
+#if 1
+            // Smat == <pre_psi |psi> == <psi_t0 | psi_t1> 
+
+            //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
+            //
+            for(int i = 0; i < numst * numst; i++) Hmat_mtype[i] = Smat[i];
+            this->Sp->GatherEigvectors(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+            MatrixType one(1.0), zero(0.0);
+            char *trans_t = "t";
+            char *trans_n = "n";
+            char *trans_c = "c";
+            char *trans_a = trans_t;
+            if(typeid(MatrixType) == typeid(std::complex<double>)) trans_a = trans_c;
+
+            //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
+            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
+            rmg::gemm (trans_a, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
+            //for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e", i, Pmat_t0[i + i * numst]);
+            this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
+#endif
+
         }
     }
 
@@ -723,7 +750,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             }
 
             MPI_Allreduce(MPI_IN_PLACE, rho_ksum.data(), FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+            //for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx];
             rho.get_oppo();
 
             //write_rho_x(rho, "update rho");
@@ -819,6 +847,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
         // Save rho for averaging and force calculation
         for(int i=0;i < trho.pbasis;i++) trho[i] += rho[i];
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
+            double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
+            for(int i = 0; i < n2; i++) p_mean[i] += p0[i];
+        }
 
         RT2a = new RmgTimer("2-TDDFT: current and dipole");
         //  extract dipole from rho(Pn1)
@@ -940,6 +974,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     double rscale = 1.0 / (double)ct.tddft_steps;
     for(int i=0;i < trho.pbasis;i++) trho[i] *= rscale;
     trho.get_oppo();
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
+        for(int i = 0; i < n2; i++) p_mean[i] *= rscale;
+    }
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
     if(ct.forceflag == TDDFT_CVE)
@@ -986,7 +1024,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
 }
 
-template <typename OrbitalType, typename MatrixType>
+    template <typename OrbitalType, typename MatrixType>
 rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
 {
     RmgTimer *RT2a;
@@ -1052,7 +1090,7 @@ rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
 }
 
 
-template <typename OrbitalType, typename MatrixType>
+    template <typename OrbitalType, typename MatrixType>
 void rmg::tddft<OrbitalType, MatrixType>::tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm) 
 {
     int     M     = *(p_M)    ;  //  [in]  :  total  size of matrix (2*Nbasis*Nbasis)
@@ -1102,7 +1140,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tstconv(double *C,int *p_M, double *p_
 }
 
 
-template <typename OrbitalType, typename MatrixType>
+    template <typename OrbitalType, typename MatrixType>
 void rmg::tddft<OrbitalType, MatrixType>::tstconv(float *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, bool *p_tconv, MPI_Comm comm) 
 {
     int     M     = *(p_M)    ;  //  [in]  :  total  size of matrix (2*Nbasis*Nbasis)
@@ -1146,7 +1184,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tstconv(float *C,int *p_M, double *p_t
 }
 
 
-template <typename OrbitalType, typename MatrixType>
+    template <typename OrbitalType, typename MatrixType>
 void rmg::tddft<OrbitalType, MatrixType>::gather_rho_matrix(OrbitalType *rho_matrix_global, MatrixType *rho_matrix)
 {   
 

@@ -226,6 +226,7 @@ public:
     spinobj<double> *vxc;
     void *Hmatrix_cpu    ;
     void *Pn0_cpu=NULL   ;
+    void *Pn0_mean=NULL   ;
     void *Pn1_cpu=NULL   ;
     void *Hmatrix_1_cpu ;
     void *Hmatrix_m1_cpu ;

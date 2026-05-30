@@ -508,6 +508,9 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             Atoms[ion].RotateForces();
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh_in.data(), vxc.data(), vxc_in.data(), vnuc.data(), Kptr);
+        /* output the forces */
+        if (pct.imgpe == 0)
+            write_force ();
         fgobj<double> vtot;
         for(int idx = 0; idx < vtot.pbasis; idx++)
         {
@@ -559,9 +562,6 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
     }
 
-    /* output the forces */
-    if (pct.imgpe == 0)
-        write_force ();
 
     if(ct.verbose) {
         printf("PE: %d  done Quench \n", pct.gridpe);

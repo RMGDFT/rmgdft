@@ -62,8 +62,8 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     std::vector<double> occ_ground(numst);
     for (int istate = 0; istate < numst; istate++)
     {
-        occ_ground[istate] = 
-            kptr->Kstates[istate + tddft_start_state].occupation[0];
+        occ_ground[istate] = 0.0;
+    //        kptr->Kstates[istate + tddft_start_state].occupation[0];
     }
 
 #if CUDA_ENABLED || HIP_ENABLED 
