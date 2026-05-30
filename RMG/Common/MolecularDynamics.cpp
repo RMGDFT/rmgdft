@@ -209,6 +209,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     /*Also reset number of scf steps */
     ct.total_scf_steps = 0;
 
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    fgobj<double> arho, trho;
+
     /* begin the md loop */
     for (ct.md_steps = 1; ct.md_steps < ct.max_md_steps; ct.md_steps++)
     {
@@ -236,11 +239,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         velup1 ();
 
         // Get atomic rho for this ionic configuration and subtract from current rho
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-        double *arho = new double[FP0_BASIS];
         if(ct.forceflag != TDDFT_CVE)
         {
-            LcaoGetAtomicRho(arho);
+            LcaoGetAtomicRho(arho.data());
 
             for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
 
@@ -251,11 +252,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             }
             else
             {
-                double *trho = new double[FP0_BASIS];
                 for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
                 for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
                 for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
-                delete [] trho;
             }
         }
 
@@ -269,10 +268,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         // Get atomic rho for new configuration and add back to rho
         if(ct.forceflag != TDDFT_CVE)
         {
-            LcaoGetAtomicRho(arho);
+            LcaoGetAtomicRho(arho.data());
             for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
         }
-        delete [] arho;
 
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT1 = new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
