@@ -461,8 +461,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         ConvergenceFile = ConvergenceFile + ".rmsdv.xmgr";
         mode_t mode = O_CREAT |O_TRUNC |O_RDWR;
         //  if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
-
-        int fhand = open(ConvergenceFile.c_str(), mode, S_IREAD | S_IWRITE);
+        static int fhand;
+        if(!fhand) fhand = open(ConvergenceFile.c_str(), mode, S_IREAD | S_IWRITE);
         if (fhand < 0)
             throw RmgFatalException() <<  "Unable to write file in " << __FILE__ << " at line " << __LINE__ << "\n";
         char tbuf[100];
