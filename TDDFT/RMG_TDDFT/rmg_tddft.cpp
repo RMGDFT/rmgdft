@@ -547,7 +547,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     trho.set(0.0);
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-        for(int i = 0; i < n2; i++) p_mean[i] = 0.0;
+        for(int i = 0; i < n2_C; i++) p_mean[i] = 0.0;
     }
     //get_vxc(rho, rho_oppo, rhocore, vxc);
     RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
@@ -851,7 +851,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
             double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-            for(int i = 0; i < n2; i++) p_mean[i] += p0[i];
+            for(int i = 0; i < n2_C; i++) p_mean[i] += p0[i];
         }
 
         RT2a = new RmgTimer("2-TDDFT: current and dipole");
@@ -976,7 +976,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     trho.get_oppo();
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-        for(int i = 0; i < n2; i++) p_mean[i] *= rscale;
+        for(int i = 0; i < n2_C; i++) p_mean[i] *= rscale;
     }
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
@@ -998,7 +998,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states); 
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             {
-                gather_rho_matrix(rho_matrix_global.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+                gather_rho_matrix(rho_matrix_global.data(), (MatrixType *)Kptr[kpt]->Pn0_mean);
                 Kptr[kpt]->save_sint();
                 for(int is=0;is < ct.num_states;is++)
                 {
