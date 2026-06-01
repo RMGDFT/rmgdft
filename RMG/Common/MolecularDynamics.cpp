@@ -281,7 +281,12 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         {
             for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
             //ct.mix = 0.0;
+            spinobj<double> rho_save;
+            rho_save = *Kptr[0]->rho;
+            //for(int idx = 0; idx < ct.nspin * FP0_BASIS; idx++) rho_save[idx] = Kptr[0]->rho[idx];
             Quench (Kptr, false);
+            *Kptr[0]->rho = rho_save;
+            //for(int idx = 0; idx < ct.nspin * FP0_BASIS; idx++) Kptr[0]->rho[idx] = rho_save[idx]; 
         }
 
         // Reset mixing
