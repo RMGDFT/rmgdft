@@ -545,6 +545,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     static double total_time = 0.0;
     spinobj<double> trho;
     trho.set(0.0);
+    ReadData (ct.infile, vh_old.data(), rho_ground.data(), vxc_old.data(), Kptr);
+    rho_ground.get_oppo();
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
         for(int i = 0; i < n2_C; i++) p_mean[i] = 0.0;
@@ -583,6 +585,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 #endif
         if(first_step)
         {
+
             HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
             MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
             for(int i = 0; i < numst * numst; i++) Hmat_mtype[i] = Hmat[i];
@@ -614,6 +617,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             rmg::gemm (trans_a, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
             //for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e", i, Pmat_t0[i + i * numst]);
             this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
+
 #endif
 
         }
@@ -655,9 +659,9 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         double err =1.0e0   ;
-        thrs_dHmat  = 1e-7  ;
+        thrs_dHmat  = 1e-8  ;
 
-        double  thrs_bch =1.0e-7; 
+        double  thrs_bch =1.0e-8; 
         int     maxiter_bch  =100;
         double  errmax_bch ;
         int     niter_bch ;
@@ -750,8 +754,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             }
 
             MPI_Allreduce(MPI_IN_PLACE, rho_ksum.data(), FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-            //for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
-            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx];
+            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+            //for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx];
             rho.get_oppo();
 
             //write_rho_x(rho, "update rho");
