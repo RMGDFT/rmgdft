@@ -111,7 +111,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->pbasis = this->G->get_P0_BASIS(1);
     this->pbasis_noncoll = ct.noncoll_factor * this->pbasis;
     this->stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) this->stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE) this->stress_factor = 4;
 
     // This is a boost pool per thread allocator used in MgEigState. It makes it easy
     // to change the type of the underlying memory (cpu, cuda, hip) by modifying

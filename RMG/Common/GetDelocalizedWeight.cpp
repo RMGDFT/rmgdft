@@ -157,13 +157,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
 
 #if HIP_ENABLED || CUDA_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE)stress_factor = 4;
 
     gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 #if SYCL_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE)stress_factor = 4;
     //    memcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType));
 #endif
 
