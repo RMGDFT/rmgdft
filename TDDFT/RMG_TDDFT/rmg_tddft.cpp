@@ -225,9 +225,9 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         if(ct.tddft_floatprecision)
         {
 
-            size_t psi_alloc = (size_t)ct.num_states * (size_t)pbasis_noncoll * sizeof(OrbitalType);
-            gpuMalloc((void **)&Kptr[kpt]->psi_dev_float, psi_alloc/2);
-            gpuMalloc((void **)&Kptr[kpt]->work_dev_float, psi_alloc/2);
+            // psi_dev_float and work_dev_float use the same memory as psi_dev
+            Kptr[kpt]->psi_dev_float = Kptr[kpt]->psi_dev;
+            Kptr[kpt]->work_dev_float = Kptr[kpt]->work_dev;
 
             size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
             if(typeid(OrbitalType) == typeid(double))
@@ -478,36 +478,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     MPI_Allreduce(MPI_IN_PLACE, current0, 3, MPI_DOUBLE, MPI_SUM, eldyn_comm);
     Rmg_Symm->symm_vec(current0);
 
-#if CUDA_ENABLED || HIP_ENABLED
-    if(ct.tddft_floatprecision)
-    {
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-
-            // psi_dev is no longer needed, so psi_dev_float and work_dev_float use these memory
-            Kptr[kpt]->psi_dev_float = Kptr[kpt]->psi_dev;
-            Kptr[kpt]->work_dev_float = Kptr[kpt]->work_dev;
-
-            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
-            if(typeid(OrbitalType) == typeid(double))
-            {
-                float *work_conv = new float[count];
-                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(float));
-                delete [] work_conv;
-            }
-            else if(typeid(OrbitalType) == typeid(std::complex<double>))
-            {
-                std::complex<float> *work_conv = new std::complex<float>[count];
-                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
-                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(std::complex<float>));
-                delete [] work_conv;
-            }
-
-        }
-    }
-#endif
-
 
     if(pct.kstart == 0 && pct.gridpe == 0)
     {
@@ -547,6 +517,34 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     trho.set(0.0);
     ReadData (ct.infile, vh_old.data(), rho_ground.data(), vxc_old.data(), Kptr);
     rho_ground.get_oppo();
+
+#if HIP_ENABLED || CUDA_ENABLED
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        RmgMemcpy(Kptr[kpt]->psi_dev, Kptr[kpt]->orbital_storage, ct.num_states * pbasis_noncoll * sizeof(OrbitalType));
+
+        if(ct.tddft_floatprecision)
+        {
+            size_t count = (size_t)ct.num_states * (size_t)pbasis_noncoll;
+            if(typeid(OrbitalType) == typeid(double))
+            {
+                float *work_conv = new float[count];
+                CopyAndConvert(count, (double *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(float));
+                delete [] work_conv;
+            }
+            else if(typeid(OrbitalType) == typeid(std::complex<double>))
+            {
+                std::complex<float> *work_conv = new std::complex<float>[count];
+                CopyAndConvert(count, (std::complex<double> *)Kptr[kpt]->orbital_storage, work_conv);
+                RmgMemcpy(Kptr[kpt]->psi_dev_float, work_conv, count * sizeof(std::complex<float>));
+                delete [] work_conv;
+            }
+
+        }
+    }
+#endif
+
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
         for(int i = 0; i < n2_C; i++) p_mean[i] = 0.0;
