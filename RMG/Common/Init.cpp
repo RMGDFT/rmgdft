@@ -247,16 +247,20 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
     if(ct.forceflag == TDDFT_CVE)
     {
-        OrbitalType *tptr;    
+        OrbitalType *tptr, *tptr1;    
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
         gpuMallocHost((void **)&tptr, galloc);
+        gpuMallocHost((void **)&tptr1, galloc);
 #else
         tptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
+        tptr1 = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
 #endif
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             Kptr[kpt]->prev_orbital_storage = tptr;
+            Kptr[kpt]->next_orbital_storage = tptr1;
             tptr += (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024;
+            tptr1 += (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024;
         }
     }
 

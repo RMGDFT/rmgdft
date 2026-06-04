@@ -158,6 +158,9 @@ public:
     // Block of contiguous storage for the orbitals from the previous step which is needed in some cases
     KpointType *prev_orbital_storage;
 
+    // Block of contiguous storage for the orbitals for a projected next step which might be needed
+    KpointType *next_orbital_storage;
+
     // Pointers to blocks of memory the same size as orbital_storage for
     // holding wavefunctions at previous ionic coordinates. Used in TDDFT dynamics.
     std::vector<KpointType> *psi_history;
@@ -248,6 +251,18 @@ public:
     {
         std::copy(this->orbital_storage, this->orbital_storage+pbasis_noncoll*this->nstates,
                   this->prev_orbital_storage);
+    }
+
+    void restore_wavefunctions(void)
+    {
+        std::copy(this->prev_orbital_storage, this->prev_orbital_storage+pbasis_noncoll*this->nstates,
+                  this->orbital_storage);
+    }
+
+    void save_nextwavefunctions(void)
+    {
+        std::copy(this->orbital_storage, this->orbital_storage+pbasis_noncoll*this->nstates,
+                  this->next_orbital_storage);
     }
 
 

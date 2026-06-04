@@ -38,7 +38,7 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 #include "rmg_tddft.h"
-
+#include "rmg_ortho.h"
 
 
 /* Local function prototypes */
@@ -74,6 +74,35 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     std::vector<double> RMSdV;
     static double *rhodiff;
 
+    auto tddft_predictor = [&]()
+    {
+        spinobj<double> vxc_save = vxc;
+        spinobj<double> rho_save = rho;
+        fgobj<double> vh_save = vh;
+        // Save initial wavefunctions and atomic positions
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+        std::vector<ION> Atoms1 = Atoms;
+        /* Do a halfstep update of the velocities */
+        velup1 ();
+        /* Update the positions a full timestep and requench */
+        move_ions (ct.iondt);
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
+        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+        if(pct.gridpe==0)printf("Predictor quench start.\n");
+        Quench (Kptr, false);
+        if(pct.gridpe==0)printf("Predictor quench finish.\n");
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_nextwavefunctions();
+
+        // Restore wavefunctions, atoms and ionic potentials
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->restore_wavefunctions();
+        Atoms = Atoms1;
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
+        vxc = vxc_save;
+        rho = rho_save;
+        vh = vh_save;
+        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+    };
+
     // If tddft dynamics create tddft object
     rmg::tddft<KpointType, KpointType> *tddftobj = NULL;
     rmg::tddft<KpointType, std::complex<double>> *tddftobj_vp = NULL;
@@ -95,6 +124,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     {
         if(ct.forceflag == TDDFT_CVE)
         {
+            //tddft_predictor();
             if(ct.tddft_mode == VECTOR_POT)
             {
                 tddftobj_vp->tddft_md();
@@ -279,6 +309,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
         if(ct.forceflag == TDDFT_CVE)
         {
+
             for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
             //ct.mix = 0.0;
             spinobj<double> rho_save;
@@ -294,6 +325,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
         if(ct.forceflag == TDDFT_CVE)
         {
+            //tddft_predictor();
             if(ct.tddft_mode == VECTOR_POT)
             {
                 tddftobj_vp->tddft_md();
