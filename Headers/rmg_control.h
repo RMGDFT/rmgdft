@@ -136,10 +136,11 @@ public:
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
     bool tddft_noscf;
-    bool tddft_gpu =1;
-    bool tddft_tiledMM =0;
-    bool tddft_floatprecision =0;
+    bool tddft_gpu = 1;
+    bool tddft_tiledMM = 0;
+    bool tddft_floatprecision = 0;
     bool tddft_energy = 0;
+    bool tddft_predictor = 0;
     int tddft_mode;
     double tddft_frequency;
     double tddft_qpos[3];
