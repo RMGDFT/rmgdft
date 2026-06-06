@@ -76,11 +76,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
     auto tddft_predictor = [&]()
     {
-        if(!ct.tddft_predictor)
-        {
-            for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
-            return;
-        }
         int pbasis_noncoll = Kptr[0]->pbasis_noncoll;
         rmg::ortho<KpointType> MGOrtho(N, pbasis_noncoll);
         for(int kpt=0;kpt < ct.num_kpts_pe;kpt++)
@@ -329,7 +324,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
         if(ct.forceflag == TDDFT_CVE)
         {
-            tddft_predictor();
+            if(ct.tddft_predictor) tddft_predictor();
             if(ct.tddft_mode == VECTOR_POT)
             {
                 tddftobj_vp->tddft_md();
