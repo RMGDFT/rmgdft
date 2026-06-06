@@ -872,18 +872,18 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0 && header_once == 0)
                 {
                     Eterms_1step = Eterms;
-                    fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e at 1st TDDFT step", Eterms_1step[0],
-                            Eterms_1step[1],Eterms_1step[2],Eterms_1step[3],Eterms_1step[4],Eterms_1step[5]);
-                    fprintf(efi, "\n&&time  totalE     , EkinPseudo     , Vh     , Exc    , II   %s", eunits);
+                    fprintf(efi, "\n&& %16.8e  %16.8e  %16.8e  %16.8e %16.8e %16.8e %16.8e at 1st TDDFT step", Eterms_1step[0],
+                            Eterms_1step[1],Eterms_1step[2],Eterms_1step[3],Eterms_1step[4],Eterms_1step[5], ct.ionke);
+                    fprintf(efi, "\n&&time  totalE     , EkinPseudo     , Vh     , Exc    , II   , Ionic %s", eunits);
                     header_once++;
                 }
                 //for(int i = 0; i < 6; i++) Eterms_1step[i] = Eterms[i];
             }
             if(pct.kstart == 0 && pct.gridpe == 0 && pct.spinpe == 0)
             {
-                fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e,%16.8e   ",
+                fprintf(efi, "\n  %f  %16.8e %16.8e,%16.8e,%16.8e,%16.8e,%16.8e   ",
                         total_time, Eterms[0]*efactor, Eterms[1]*efactor, 
-                        Eterms[2]*efactor, Eterms[3]*efactor, Eterms[4]*efactor);
+                        Eterms[2]*efactor, Eterms[3]*efactor, Eterms[4]*efactor, ct.ionke*efactor);
             }
         }
 
