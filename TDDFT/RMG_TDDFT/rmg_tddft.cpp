@@ -620,7 +620,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
         }
           // Save T=0 basis
-          for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+          this->Kptr[kpt]->save_wavefunctions();
     }
 
     first_step++;
