@@ -77,35 +77,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     auto tddft_predictor = [&]()
     {
         if(!ct.tddft_predictor) return;
-        spinobj<double> vxc_save = vxc;
-        spinobj<double> rho_save = rho;
-        fgobj<double> vh_save = vh;
-        // Save initial wavefunctions and atomic positions
-        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
-        std::vector<ION> Atoms1 = Atoms;
-        /* Do a halfstep update of the velocities */
-        velup1 ();
-        /* Update the positions a full timestep and requench */
-        move_ions (ct.iondt);
-        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
-        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
-        if(pct.gridpe==0)printf("Predictor quench start.\n");
-        Quench (Kptr, false);
-        if(pct.gridpe==0)printf("Predictor quench finish.\n");
-        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_nextwavefunctions();
-
-        // Restore wavefunctions, atoms and ionic potentials
-        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->restore_wavefunctions();
-        Atoms = Atoms1;
-        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
-        vxc = vxc_save;
-        rho = rho_save;
-        vh = vh_save;
-        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
-        // Not at all clear why a restorer quench is needed here but it is
-        if(pct.gridpe==0)printf("Restorer quench start.\n");
-        Quench (Kptr, false);
-        if(pct.gridpe==0)printf("Restorer quench finish.\n");
         int pbasis_noncoll = Kptr[0]->pbasis_noncoll;
         rmg::ortho<KpointType> MGOrtho(N, pbasis_noncoll);
         for(int kpt=0;kpt < ct.num_kpts_pe;kpt++)
@@ -113,12 +84,24 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             int N = Kptr[kpt]->nstates;
             KpointType *base = Kptr[kpt]->orbital_storage;
             KpointType *mid  = base + pbasis_noncoll*N / 2;
-            KpointType *next_base = Kptr[kpt]->next_orbital_storage;
-            KpointType *next_mid  = next_base + pbasis_noncoll*N / 2;
-            std::copy(next_base, next_mid, mid);
+            KpointType *prev_base = Kptr[kpt]->prev_orbital_storage;
+            KpointType *prev_mid  = prev_base + pbasis_noncoll*N / 2;
+            std::copy(prev_base, prev_mid, mid);
             MGOrtho.orthogonalize(N/2, N, base, false);
         }
-        //for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        { 
+    #if HIP_ENABLED || CUDA_ENABLED
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+    #else
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+    #endif
+        }
+        // Save T=0 basis
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+
     };
 
     // If tddft dynamics create tddft object
@@ -142,7 +125,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     {
         if(ct.forceflag == TDDFT_CVE)
         {
-            tddft_predictor();
+            //tddft_predictor();
             if(ct.tddft_mode == VECTOR_POT)
             {
                 tddftobj_vp->tddft_md();
@@ -328,7 +311,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         if(ct.forceflag == TDDFT_CVE)
         {
 
-            for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
             //ct.mix = 0.0;
             spinobj<double> rho_save;
             rho_save = *Kptr[0]->rho;
