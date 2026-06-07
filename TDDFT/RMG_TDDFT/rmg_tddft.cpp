@@ -1004,10 +1004,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         ct.fpt[3] = 3;
         ct.sqrt_interpolation = false;
 
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            Atoms[ion].RotateForces();
-        }
+        allatoms.rotate_forces();
 
         if(ct.internal_pseudo_type != ALL_ELECTRON)
         {
