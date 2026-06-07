@@ -214,19 +214,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
 
 
     /* init nose variables */
-    if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
-        init_nose ();
+    if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN) init_nose ();
 
     /* zero out the non-moving atoms */
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-        ION &Atom = Atoms[ion];
-        if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-        {
-            Atom.ZeroForces();
-            Atom.ZeroVelocity();
-        }
-    }
+    allatoms.zero_forces();
+    allatoms.zero_velocities();
 
     if (pct.gridpe == 0)
     {
@@ -247,14 +239,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     {
 
         /* enforce periodic boundary conditions on the ions */
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ION &Atom = Atoms[ion];
-
-            /* to_crystal enforces periodic boundary conditions */
-            to_crystal (Atom.xtal, Atom.crds);
-            to_cartesian (Atom.xtal, Atom.crds);
-        }
+        allatoms.enforce_pbc();
 
         /* Save coordinates */
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
@@ -341,18 +326,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             Quench (Kptr, true);
         }
 
-
-
         /* zero out the non-moving atoms */
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ION &Atom = Atoms[ion];
-            if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-            {
-                Atom.ZeroForces();
-                Atom.ZeroVelocity();
-            }
-        }
+        allatoms.zero_forces();
+        allatoms.zero_velocities();
 
         /* Do another halfstep update of the velocities */
         /* to update them to the next time step */
@@ -479,11 +455,7 @@ void init_nose ()
     }
 
     /* calculate ion KE */
-    ct.ionke = 0.0;
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-        ct.ionke += Atoms[ion].GetKineticEnergy();
-    }
+    ct.ionke = allatoms.kinetic_energy();
 
     inittemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
 
@@ -545,13 +517,7 @@ void velup1 ()
             if (ct.tcontrol == T_AND_SCALE)
             {
 
-                ct.ionke = 0.0;
-                /* Loop over ions */
-                for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-                {
-                    ct.ionke += Atoms[ion].GetKineticEnergy();
-                }
-
+                ct.ionke = allatoms.kinetic_energy();
                 temperature = ct.ionke * 2.0 / (3.0 * ct.nose.N * kB);
 
                 if (ct.ionke > 0.0)
@@ -570,7 +536,6 @@ void velup1 ()
     }
 
     /* Loop over ions */
-    ct.ionke = 0.0;
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
@@ -634,11 +599,10 @@ void velup1 ()
 
             }                   /* end of switch */
 
-            ct.ionke += Atoms[ion].GetKineticEnergy();
-
         }                       /* if */
 
     }                           /* end for */
+    ct.ionke = allatoms.kinetic_energy();
 
 }                               /* end of velup1 */
 
@@ -713,8 +677,6 @@ void velup2 ()
 
     }                           /* end of switch */
 
-    ct.ionke = 0.0;
-
     /* Loop over ions */
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
@@ -775,6 +737,8 @@ void velup2 ()
         ct.ionke += Atom.GetKineticEnergy();
 
     }                           /* end for */
+
+    ct.ionke = allatoms.kinetic_energy();
 
     /* perform second half update of nose coords */
     if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
@@ -1172,11 +1136,7 @@ void ranv (void)
         }                       /* end of for ion */
 
         /* find kinetic energy */
-        ek = 0.0;
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ek += Atoms[ion].GetKineticEnergy();
-        }                       /* end of for ion */
+        ek = allatoms.kinetic_energy();
         scale = sqrt (1.5 * N * kB * ct.nose.temp / ek);
 
         ek = 0.0;

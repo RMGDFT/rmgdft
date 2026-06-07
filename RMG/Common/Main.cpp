@@ -78,6 +78,7 @@ void finish (void);
 
 std::vector<ION> Atoms;
 std::vector<SPECIES> Species;
+rmg::ions allatoms(Atoms);
 
 
 // Pointer to Kpoint class arrays for gamma and non-gamma

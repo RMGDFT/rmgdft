@@ -1090,5 +1090,6 @@ public:
 /* Extern declaration for the main control structure */
 extern CONTROL ct;
 extern std::vector<ION> Atoms;
+extern rmg::ions allatoms;
 extern std::vector<SPECIES> Species;
 #endif

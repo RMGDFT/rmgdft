@@ -6,6 +6,9 @@
 #include "species.h"
 #include "const.h"
 
+void to_cartesian (double crystal[], double cartesian[]);
+void to_crystal (double crystal[], double cartesian[]);
+
 // This structure holds information about a separable q-function component which is
 // required to generate the augmentation charges when ultrasoft pseudopotentials are used.
 class qongrid
@@ -244,6 +247,69 @@ public:
     std::complex<double> *qqq_so=NULL;
 
 };
+
+namespace rmg
+{
+    class ions
+    {
+        public:
+           std::vector<ION> &Atoms; 
+           ions(std::vector<ION>& v) : Atoms(v) {}
+           void rotate_forces(void)
+           {
+               for (auto& Atom : Atoms)
+               {
+                   Atom.RotateForces();
+               }
+           }
+
+           void zero_forces(void)
+           {
+               for (auto& Atom : Atoms)
+               {       
+                   if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
+                   {
+                       Atom.ZeroForces();
+                   }   
+               }       
+           }
+
+           void zero_velocities(void)
+           {
+               for (auto& Atom : Atoms)
+               {       
+                   if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
+                   {
+                       Atom.ZeroVelocity();
+                   }   
+               }       
+           }
+
+           /* enforce periodic boundary conditions on the ions */
+           void enforce_pbc(void)
+           {
+               for (auto& Atom : Atoms)
+               {
+                   /* to_crystal enforces periodic boundary conditions */
+                   to_crystal (Atom.xtal, Atom.crds);
+                   to_cartesian (Atom.xtal, Atom.crds);
+               }
+           } 
+
+           double kinetic_energy(void)
+           {
+               double ke = 0.0;
+               for(auto& Atom : Atoms)
+               {
+                   if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
+                   {
+                       ke += Atom.GetKineticEnergy();
+                   }
+               }
+               return ke;
+           }
+    };
+}
 
 static inline double GetAugcharge(int ih, int jh, int icount, double *cg, ION *iptr)
 {

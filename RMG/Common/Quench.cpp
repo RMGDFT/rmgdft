@@ -503,10 +503,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         trho = rho;
         GetNewRho(Kptr, trho.data());
 
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            Atoms[ion].RotateForces();
-        }
+        allatoms.rotate_forces();
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh_in.data(), vxc.data(), vxc_in.data(), vnuc.data(), Kptr);
         /* output the forces */
         if (pct.imgpe == 0)
