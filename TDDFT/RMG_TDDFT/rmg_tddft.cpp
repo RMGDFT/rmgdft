@@ -39,6 +39,7 @@ void eldyn_ort(int *desca, int Mdim, int Ndim, std::complex<double> *F,std::comp
 void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
 
 
+#define AVERAGE_FORCES 0
 
 template void rmg::tddft<double, double>::tddft_md(void);
 template void rmg::tddft<double, std::complex<double>>::tddft_md(void);
@@ -986,7 +987,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
 
         total_time += time_step;
-#if 0
+#if AVERAGE_FORCES
         allatoms.save_forces();
 
         if(ct.internal_pseudo_type != ALL_ELECTRON)
@@ -1001,7 +1002,14 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                     Kptr[kpt]->Kstates[is].occupation[3] = Kptr[kpt]->Kstates[is].occupation[0];
                     Kptr[kpt]->Kstates[is].occupation[0] = 1.0;
                 }
+
                 rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
+            }
+
+            Force (rho.up.data(), rho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
+
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+            {
                 Kptr[kpt]->restore_sint();
                 for(int is=0;is < ct.num_states;is++)
                 {
@@ -1010,9 +1018,9 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             }
         }
 
-        Force (rho.up.data(), rho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
         allatoms.update_avg_forces();
         allatoms.restore_forces();
+        get_ddd (vtot.data(), vxc.data(), true);
 #endif
     } // end tddft md loop
 
@@ -1052,7 +1060,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
 
-#if 0
+#if AVERAGE_FORCES
 int ion=0;
 for(auto& Atom : Atoms)
 {
