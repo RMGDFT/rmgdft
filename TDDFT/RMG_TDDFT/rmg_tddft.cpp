@@ -988,6 +988,28 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         total_time += time_step;
 #if 0
         allatoms.save_forces();
+
+        if(ct.internal_pseudo_type != ALL_ELECTRON)
+        {
+            rmg::hvector<OrbitalType> rho_matrix_global(ct.num_states*ct.num_states);
+            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                gather_rho_matrix(rho_matrix_global.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+                Kptr[kpt]->save_sint();
+                for(int is=0;is < ct.num_states;is++)
+                {
+                    Kptr[kpt]->Kstates[is].occupation[3] = Kptr[kpt]->Kstates[is].occupation[0];
+                    Kptr[kpt]->Kstates[is].occupation[0] = 1.0;
+                }
+                rmg::rotate_sint(Kptr[kpt], Kptr[kpt]->newsint_local, rho_matrix_global.data());
+                Kptr[kpt]->restore_sint();
+                for(int is=0;is < ct.num_states;is++)
+                {
+                    Kptr[kpt]->Kstates[is].occupation[0] = Kptr[kpt]->Kstates[is].occupation[3];
+                }
+            }
+        }
+
         Force (rho.up.data(), rho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
         allatoms.update_avg_forces();
         allatoms.restore_forces();
