@@ -567,7 +567,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
     GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
-    rmg::hvector<OrbitalType> Hmat(numst*numst), Smat(numst*numst);
+    rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
     rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
     rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
@@ -586,7 +586,13 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
             HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
             MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
-            for(int i = 0; i < numst * numst; i++) Hmat_mtype[i] = Hmat[i];
+            for(int i = 0; i < numst; i++) 
+            {
+                for(int j = 0; j < numst; j++) 
+                {
+                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                }
+            }
             this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
@@ -601,7 +607,13 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
             //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
             //
-            for(int i = 0; i < numst * numst; i++) Hmat_mtype[i] = Smat[i];
+            for(int i = 0; i < numst; i++) 
+            {
+                for(int j = 0; j < numst; j++) 
+                {
+                    Hmat_mtype[i * numst + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                }
+            }
             this->Sp->GatherEigvectors(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
             MatrixType one(1.0), zero(0.0);
             char *trans_t = "t";
@@ -619,8 +631,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 #endif
 
         }
-          // Save T=0 basis
-          this->Kptr[kpt]->save_wavefunctions();
+        // Save T=0 basis
+        this->Kptr[kpt]->save_wavefunctions();
     }
 
     first_step++;
