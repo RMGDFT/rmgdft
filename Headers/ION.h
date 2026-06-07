@@ -160,6 +160,10 @@ public:
 
     /* Forces on the ion */
     double force[4][3];
+    double saved_force[4][3];
+
+    // Average force over an interval
+    double avg_force[3];
 
     /* Current velocity of the ion */
     double velocity[3];
@@ -253,6 +257,7 @@ namespace rmg
     class ions
     {
         public:
+           size_t force_avg_counter;
            std::vector<ION> &Atoms; 
            ions(std::vector<ION>& v) : Atoms(v) {}
            void rotate_forces(void)
@@ -260,6 +265,32 @@ namespace rmg
                for (auto& Atom : Atoms)
                {
                    Atom.RotateForces();
+               }
+           }
+
+           void save_forces(void)
+           {
+               for (auto& Atom : Atoms)
+               {
+                   for(int i=0;i < 4;i++)
+                   {
+                       Atom.saved_force[i][0] = Atom.force[i][0];
+                       Atom.saved_force[i][1] = Atom.force[i][1];
+                       Atom.saved_force[i][2] = Atom.force[i][2];
+                   }
+               }
+           }
+
+           void restore_forces(void)
+           {
+               for (auto& Atom : Atoms)
+               {
+                   for(int i=0;i < 4;i++)
+                   {
+                       Atom.force[i][0] = Atom.saved_force[i][0];
+                       Atom.force[i][1] = Atom.saved_force[i][1];
+                       Atom.force[i][2] = Atom.saved_force[i][2];
+                   }
                }
            }
 
@@ -272,6 +303,30 @@ namespace rmg
                        Atom.ZeroForces();
                    }   
                }       
+           }
+
+           void zero_avg_forces(void)
+           {
+               force_avg_counter = 0;
+               for (auto& Atom : Atoms)
+               {       
+                   Atom.avg_force[0] = 0.0;
+                   Atom.avg_force[1] = 0.0;
+                   Atom.avg_force[2] = 0.0;
+               }       
+           }
+
+           void update_avg_forces(void)
+           {
+               double count = (double)force_avg_counter;
+               double count_next = count + 1.0;
+               for (auto& Atom : Atoms)
+               {       
+                   Atom.avg_force[0] = (Atom.avg_force[0] * count + Atom.force[0][0]) / count_next;
+                   Atom.avg_force[1] = (Atom.avg_force[1] * count + Atom.force[0][1]) / count_next; 
+                   Atom.avg_force[2] = (Atom.avg_force[2] * count + Atom.force[0][2]) / count_next;
+               }
+               force_avg_counter++;
            }
 
            void zero_velocities(void)

@@ -638,6 +638,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     first_step++;
 
     //  run rt-td-dft
+    allatoms.zero_avg_forces();
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
@@ -985,6 +986,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
 
         total_time += time_step;
+#if 0
+        allatoms.save_forces();
+        Force (rho.up.data(), rho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
+        allatoms.update_avg_forces();
+        allatoms.restore_forces();
+#endif
     } // end tddft md loop
 
     double rscale = 1.0 / (double)ct.tddft_steps;
@@ -1022,6 +1029,16 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             }
         }
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
+
+#if 0
+int ion=0;
+for(auto& Atom : Atoms)
+{
+    if(pct.gridpe==0)
+        printf("FDIS%d   %15.9e   %15.9e  %15.9e\n",ion,Atom.force[0][0] - Atom.avg_force[0], Atom.force[0][1] - Atom.avg_force[1], Atom.force[0][2] - Atom.avg_force[2]);
+    ion++;
+}
+#endif
         if(ct.internal_pseudo_type != ALL_ELECTRON)
         {
             for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
