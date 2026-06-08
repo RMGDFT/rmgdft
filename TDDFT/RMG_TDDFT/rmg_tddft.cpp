@@ -626,6 +626,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
             rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
             rmg::gemm (trans_a, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
+            double tem = 0.0;
+            for(int i = 0; i < numst; i++) tem += std::real(Pmat_t0[i * numst + i]);
+            rmg::printlog("\n PPP %e", tem);
+            //for(int i = 0; i < numst; i++) Pmat_t0[i * numst + i] *= ct.nel/tem;
             //for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e", i, Pmat_t0[i + i * numst]);
             this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
 
