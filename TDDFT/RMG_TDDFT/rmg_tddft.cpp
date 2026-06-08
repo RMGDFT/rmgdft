@@ -863,14 +863,6 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             iter_scf ++ ;
         } //---- end of  SCF/while loop 
 
-        // Save rho for averaging and force calculation
-        for(int i=0;i < trho.pbasis;i++) trho[i] += rho[i];
-
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
-            double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-            for(int i = 0; i < n2_C; i++) p_mean[i] += p0[i];
-        }
 
         RT2a = new RmgTimer("2-TDDFT: current and dipole");
         //  extract dipole from rho(Pn1)
@@ -987,6 +979,14 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         }
 
         total_time += time_step;
+        // Save rho for averaging and force calculation
+        for(int i=0;i < trho.pbasis;i++) trho[i] += rho[i];
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
+            double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
+            for(int i = 0; i < n2_C; i++) p_mean[i] += p0[i];
+        }
 #if AVERAGE_FORCES
         allatoms.save_forces();
 
