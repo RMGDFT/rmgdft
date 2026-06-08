@@ -1024,7 +1024,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             }
         }
 
-        allatoms.update_avg_forces();
+        allatoms.update_avg_forces(tddft_steps, ct.tddft_steps);
         allatoms.restore_forces();
         get_ddd (vtot.data(), vxc.data(), true);
 #endif
@@ -1067,6 +1067,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         Force (trho.up.data(), trho.dw.data(), rhoc.data(), vh.data(), vh.data(), vxc.data(), vxc.data(), vnuc.data(), Kptr);
 
 #if AVERAGE_FORCES
+    allatoms.finalize_avg_forces(ct.tddft_steps);
 int ion=0;
 for(auto& Atom : Atoms)
 {

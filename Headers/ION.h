@@ -316,17 +316,30 @@ namespace rmg
                }       
            }
 
-           void update_avg_forces(void)
+           void update_avg_forces(int tddft_step, int total_tddft_steps)
            {
-               double count = (double)force_avg_counter;
-               double count_next = count + 1.0;
+               double iweight;
+               // Trapezoidal rule for averaging rho and P0
+               iweight = 1.0;
+               if((tddft_step == 0) || (tddft_step == (total_tddft_steps - 1))) iweight = 0.5;
+
                for (auto& Atom : Atoms)
                {       
-                   Atom.avg_force[0] = (Atom.avg_force[0] * count + Atom.force[0][0]) / count_next;
-                   Atom.avg_force[1] = (Atom.avg_force[1] * count + Atom.force[0][1]) / count_next; 
-                   Atom.avg_force[2] = (Atom.avg_force[2] * count + Atom.force[0][2]) / count_next;
+                   Atom.avg_force[0] = Atom.avg_force[0] + iweight*Atom.force[0][0];
+                   Atom.avg_force[1] = Atom.avg_force[1] + iweight*Atom.force[0][1];
+                   Atom.avg_force[2] = Atom.avg_force[2] + iweight*Atom.force[0][2];
                }
-               force_avg_counter++;
+           }
+
+           void finalize_avg_forces(int total_tddft_steps)
+           {
+               double rscale = 1.0 / (double)(total_tddft_steps-1);
+               for (auto& Atom : Atoms)
+               {       
+                   Atom.avg_force[0] *= rscale; 
+                   Atom.avg_force[1] *= rscale; 
+                   Atom.avg_force[2] *= rscale; 
+               }
            }
 
            void zero_velocities(void)
