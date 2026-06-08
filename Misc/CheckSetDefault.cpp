@@ -201,8 +201,8 @@ void CheckSetDefault(void)
         ct.interp_flag = PROLONG_INTERPOLATION;
         if(ct.forceflag == TDDFT_CVE)
         {
-            ct.iondt = ct.tddft_steps * ct.tddft_time_step;
-            if(pct.gridpe==0) printf("Ionic timestep adjusted to an integral number of tddft time steps.\n");
+            ct.tddft_time_step = ct.iondt / (double)(ct.tddft_steps-1);
+            if(pct.gridpe==0) printf("Tddft timestep adjusted to an integral divisor of ionic time step.\n");
             if(pct.gridpe==0) printf("Ionic = %14.8f,  tddft = %14.8f\n", ct.iondt, ct.tddft_time_step);
         }
     }

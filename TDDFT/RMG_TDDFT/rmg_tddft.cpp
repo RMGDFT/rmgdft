@@ -642,6 +642,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     allatoms.zero_avg_forces();
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
+        double iweight;
+
+        // Trapezoidal rule for averaging rho and P0
+        iweight = 1.0;
+        if((tddft_steps == 0) || (tddft_steps == (ct.tddft_steps - 1))) iweight = 0.5;
+
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
 
         tot_steps = pre_steps + tddft_steps;
@@ -980,12 +986,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
         total_time += time_step;
         // Save rho for averaging and force calculation
-        for(int i=0;i < trho.pbasis;i++) trho[i] += rho[i];
+        for(int i=0;i < trho.pbasis;i++) trho[i] += iweight*rho[i];
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
             double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-            for(int i = 0; i < n2_C; i++) p_mean[i] += p0[i];
+            for(int i = 0; i < n2_C; i++) p_mean[i] += iweight*p0[i];
         }
 #if AVERAGE_FORCES
         allatoms.save_forces();
@@ -1024,7 +1030,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 #endif
     } // end tddft md loop
 
-    double rscale = 1.0 / (double)ct.tddft_steps;
+    double rscale = 1.0 / (double)(ct.tddft_steps-1);
     for(int i=0;i < trho.pbasis;i++) trho[i] *= rscale;
     trho.get_oppo();
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
@@ -1064,8 +1070,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 int ion=0;
 for(auto& Atom : Atoms)
 {
-    if(pct.gridpe==0)
-        printf("FDIS%d   %15.9e   %15.9e  %15.9e\n",ion,Atom.force[0][0] - Atom.avg_force[0], Atom.force[0][1] - Atom.avg_force[1], Atom.force[0][2] - Atom.avg_force[2]);
+    rmg::printlog("FDIS%d   %15.9e   %15.9e  %15.9e\n",ion,Atom.force[0][0] - Atom.avg_force[0], Atom.force[0][1] - Atom.avg_force[1], Atom.force[0][2] - Atom.avg_force[2]);
+    Atom.force[0][0] = Atom.avg_force[0];
+    Atom.force[0][1] = Atom.avg_force[1];
+    Atom.force[0][2] = Atom.avg_force[2];
     ion++;
 }
 #endif
