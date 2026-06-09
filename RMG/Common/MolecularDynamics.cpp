@@ -74,6 +74,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     std::vector<double> RMSdV;
     static double *rhodiff;
 
+    // Save T=0 basis
+    for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
     auto tddft_predictor = [&]()
     {
         int pbasis_noncoll = Kptr[0]->pbasis_noncoll;

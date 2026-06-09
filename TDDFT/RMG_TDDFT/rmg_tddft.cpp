@@ -550,6 +550,125 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
         for(int i = 0; i < n2_C; i++) p_mean[i] = 0.0;
     }
+
+    rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
+    rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+    rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+    // Recompute sint arrays which is necessary for dynamics.
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+#if HIP_ENABLED || CUDA_ENABLED
+        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+#else
+        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+#endif
+
+        HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+
+#if 1
+        // Smat == <pre_psi |psi> == <psi_t0 | psi_t1> 
+
+        //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
+        //
+        for(int i = 0; i < numst; i++) 
+        {
+            for(int j = 0; j < numst; j++) 
+            {
+                Hmat_mtype[i * numst + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+            }
+        }
+        this->Sp->GatherEigvectors(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+        MatrixType one(1.0), zero(0.0);
+        char *trans_t = "t";
+        char *trans_n = "n";
+        char *trans_c = "c";
+        char *trans_a = trans_t;
+        if(typeid(MatrixType) == typeid(std::complex<double>)) trans_a = trans_c;
+
+        //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
+        rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
+
+        int lwork = numst * numst;
+        int *ipiv = new int[numst];
+        std::complex<double> *work = new std::complex<double>[numst * numst];
+
+        int info;
+        zgetrf(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, &info);
+        if (info != 0)
+        {   
+            rmg::printlog ("error in zgetrf with INFO = %d \n", info);
+            fflush (NULL);
+            exit (0);
+        }
+        zgetri(&numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, work, &lwork, &info);
+        if (info != 0)
+        {   
+            rmg::printlog ("error in zgetri with INFO = %d \n", info);
+            fflush (NULL);
+            exit (0);
+        }
+
+        delete [] ipiv;
+        delete [] work;
+
+        rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
+        this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
+
+#endif
+
+    }
+    // Save T=0 basis
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) this->Kptr[kpt]->save_wavefunctions();
+
+
+
+    //  run rt-td-dft
+    allatoms.zero_avg_forces();
+
+    rmg::sync_device();
+    RT2a = new RmgTimer("2-TDDFT: Rho");
+    if(ct.verbose) {
+        rmg::printlog("\n start rho_0 calc ");
+        fflush(NULL);
+    }
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        Pn1 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
+        if(ct.tddft_floatprecision)
+        {
+            if(ct.is_gamma)
+            {
+                kptr_d = (Kpoint<double> *)Kptr[kpt];
+                GetNewRho_rmgtddft<double, float, MatrixType>(kptr_d, rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
+            }
+            else
+            {
+                kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
+                GetNewRho_rmgtddft<std::complex<double>, std::complex<float>, std::complex<double> >(kptr_c, rho_k, (std::complex<double> *)Pn1, numst, ct.tddft_start_state, *Sp);
+            }
+        }
+        else
+        {
+            GetNewRho_rmgtddft<OrbitalType, OrbitalType, MatrixType>(Kptr[kpt], rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
+        }
+
+        if(ct.verbose) {
+            rmg::printlog("\n done rho_0 calc ");
+            fflush(NULL);
+        }
+        int kpt_glob = kpt + pct.kstart;
+        for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] += rho_k[idx] * ct.kp[kpt_glob].kweight;
+
+
+    }
+    delete(RT2a);
+
+    MPI_Allreduce(MPI_IN_PLACE, rho_ksum.data(), FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+    //for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx];
+    rho.get_oppo();
+
     //get_vxc(rho, rho_oppo, rhocore, vxc);
     RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
     //vxc_in = vxc;
@@ -568,24 +687,11 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
     GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
-    rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
-    rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
-    rmg::hvector<MatrixType> Pmat_t2(numst*numst);
-    rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
-    // Recompute sint arrays which is necessary for dynamics.
     static int first_step;
-    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    if(first_step)
     {
-#if HIP_ENABLED || CUDA_ENABLED
-        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
-                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
-#else
-        this->Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
-                Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
-#endif
-        if(first_step)
-        {
 
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
             MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
             for(int i = 0; i < numst; i++) 
@@ -599,87 +705,27 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
-            if(ct.tddft_energy)
-            {
-                tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
-            }
-
-#if 1
-            // Smat == <pre_psi |psi> == <psi_t0 | psi_t1> 
-
-            //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
-            //
-            for(int i = 0; i < numst; i++) 
-            {
-                for(int j = 0; j < numst; j++) 
-                {
-                    Hmat_mtype[i * numst + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
-                }
-            }
-            this->Sp->GatherEigvectors(Pmat_t2.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
-            MatrixType one(1.0), zero(0.0);
-            char *trans_t = "t";
-            char *trans_n = "n";
-            char *trans_c = "c";
-            char *trans_a = trans_t;
-            if(typeid(MatrixType) == typeid(std::complex<double>)) trans_a = trans_c;
-
-            //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
-            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t2.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
-
-            int lwork = numst * numst;
-            int *ipiv = new int[numst];
-            std::complex<double> *work = new std::complex<double>[numst * numst];
-
-            int info;
-            zgetrf(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, &info);
-            if (info != 0)
-            {   
-                rmg::printlog ("error in zgetrf with INFO = %d \n", info);
-                fflush (NULL);
-                exit (0);
-            }
-            zgetri(&numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, work, &lwork, &info);
-            if (info != 0)
-            {   
-                rmg::printlog ("error in zgetri with INFO = %d \n", info);
-                fflush (NULL);
-                exit (0);
-            }
-
-            delete [] ipiv;
-            delete [] work;
-
-
-
-            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
-            double tem = 0.0;
-            for(int i = 0; i < numst; i++) tem += std::real(Pmat_t0[i * numst + i]);
-            for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e   %e %e", i, Pmat_t0[i + i * numst], Pmat_t2[i+i*numst]);
-            rmg::printlog("\n PPP %e", tem - 16.0);
-            for(int i = 0; i < numst * numst; i++) Pmat_t0[i] *= ct.nel/tem;
-            this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
-
-#endif
-
         }
-        // Save T=0 basis
-        this->Kptr[kpt]->save_wavefunctions();
     }
-
     first_step++;
 
-    //  run rt-td-dft
-    allatoms.zero_avg_forces();
-
+    if(ct.tddft_energy)
+    {
+        tddft_energy_init(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr, *Sp, Mdim, Ndim, Eterms);
+    }
+    for(int i=0;i < trho.pbasis;i++) trho[i] = 0.5*rho[i];
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
+        double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
+        for(int i = 0; i < n2_C; i++) p_mean[i] += 0.5*p0[i];
+    }
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         double iweight;
 
         // Trapezoidal rule for averaging rho and P0
         iweight = 1.0;
-        if((tddft_steps == 0) || (tddft_steps == (ct.tddft_steps - 1))) iweight = 0.5;
-
+        if( tddft_steps == (ct.tddft_steps - 1)) iweight = 0.5;
 
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
 
@@ -1063,7 +1109,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 #endif
     } // end tddft md loop
 
-    double rscale = 1.0 / (double)(ct.tddft_steps - 1);
+    double rscale = 1.0 / (double)(ct.tddft_steps);
     for(int i=0;i < trho.pbasis;i++) trho[i] *= rscale;
     trho.get_oppo();
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
