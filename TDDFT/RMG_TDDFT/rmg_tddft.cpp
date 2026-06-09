@@ -671,20 +671,15 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
     //  run rt-td-dft
     allatoms.zero_avg_forces();
-    for(int i=0;i < trho.pbasis;i++) trho[i] = 0.5*rho[i];
 
-    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-        double *p0 = (double *)Kptr[kpt]->Pn0_cpu;
-        double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
-        for(int i = 0; i < n2_C; i++) p_mean[i] += 0.5*p0[i];
-    }
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         double iweight;
 
         // Trapezoidal rule for averaging rho and P0
         iweight = 1.0;
-        if( tddft_steps == (ct.tddft_steps - 1)) iweight = 0.5;
+        if((tddft_steps == 0) || (tddft_steps == (ct.tddft_steps - 1))) iweight = 0.5;
+
 
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
 
@@ -1068,7 +1063,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 #endif
     } // end tddft md loop
 
-    double rscale = 1.0 / (double)(ct.tddft_steps);
+    double rscale = 1.0 / (double)(ct.tddft_steps - 1);
     for(int i=0;i < trho.pbasis;i++) trho[i] *= rscale;
     trho.get_oppo();
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
