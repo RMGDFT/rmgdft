@@ -261,7 +261,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
     for(int i = 0; i < fpbasis; i++) tem += rho_k[i];
 
     MPI_Allreduce(MPI_IN_PLACE, &tem, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    rmg::printlog("\n TDDFT normla %e", tem *get_vel_f());
+    rmg::printlog("\n TDDFT normalization %e\n", tem *get_vel_f());
 
 
     delete RT1;
