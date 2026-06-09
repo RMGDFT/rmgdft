@@ -570,6 +570,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
     rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
     rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+    rmg::hvector<MatrixType> Pmat_t2(numst*numst);
     rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
     // Recompute sint arrays which is necessary for dynamics.
     static int first_step;
@@ -615,7 +616,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                     Hmat_mtype[i * numst + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
                 }
             }
-            this->Sp->GatherEigvectors(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+            this->Sp->GatherEigvectors(Pmat_t2.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
             MatrixType one(1.0), zero(0.0);
             char *trans_t = "t";
             char *trans_n = "n";
@@ -624,13 +625,39 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             if(typeid(MatrixType) == typeid(std::complex<double>)) trans_a = trans_c;
 
             //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
-            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
-            rmg::gemm (trans_a, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
+            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t2.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
+
+            int lwork = numst * numst;
+            int *ipiv = new int[numst];
+            std::complex<double> *work = new std::complex<double>[numst * numst];
+
+            int info;
+            zgetrf(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, &info);
+            if (info != 0)
+            {   
+                rmg::printlog ("error in zgetrf with INFO = %d \n", info);
+                fflush (NULL);
+                exit (0);
+            }
+            zgetri(&numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, work, &lwork, &info);
+            if (info != 0)
+            {   
+                rmg::printlog ("error in zgetri with INFO = %d \n", info);
+                fflush (NULL);
+                exit (0);
+            }
+
+            delete [] ipiv;
+            delete [] work;
+
+
+
+            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
             double tem = 0.0;
             for(int i = 0; i < numst; i++) tem += std::real(Pmat_t0[i * numst + i]);
-            rmg::printlog("\n PPP %e", tem);
-            //for(int i = 0; i < numst; i++) Pmat_t0[i * numst + i] *= ct.nel/tem;
-            //for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e", i, Pmat_t0[i + i * numst]);
+            for(int i = 0; i<numst; i++) rmg::printlog("\n bbb  %d %e %e   %e %e", i, Pmat_t0[i + i * numst], Pmat_t2[i+i*numst]);
+            rmg::printlog("\n PPP %e", tem - 16.0);
+            for(int i = 0; i < numst * numst; i++) Pmat_t0[i] *= ct.nel/tem;
             this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
 
 #endif
