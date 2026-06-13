@@ -350,14 +350,22 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     else
     {
 
+        rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
+        rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+        rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
-            for(int i = 0; i < numst; i++) diag_elem[i] = Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
-
             double one = 1.0;
-            memset(Kptr[kpt]->Hmatrix_cpu, 0, n2*sizeof(MatrixType));
-            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
-
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+            for(int i = 0; i < numst; i++)
+            {
+                for(int j = 0; j < numst; j++)
+                {
+                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                }
+            }
+            this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
@@ -687,27 +695,21 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
     GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
 
-    static int first_step;
-    if(first_step)
-    {
-
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
-            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
-            for(int i = 0; i < numst; i++) 
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+        MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+        for(int i = 0; i < numst; i++) 
+        {
+            for(int j = 0; j < numst; j++) 
             {
-                for(int j = 0; j < numst; j++) 
-                {
-                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
-                }
+                Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
             }
-            this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
-            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
         }
+        this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
+        memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+        memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+        memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
     }
-    first_step++;
 
     if(ct.tddft_energy)
     {
