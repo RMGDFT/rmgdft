@@ -190,6 +190,11 @@ template <typename OrbitalType> bool Scf (
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
                 Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                // For tddft CVE on the first step make sure we have a good starting point
+                if(ct.forceflag == TDDFT_CVE && ct.md_steps < 1)
+                {
+                    Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                }
                 delete RT1;
             }
             else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
