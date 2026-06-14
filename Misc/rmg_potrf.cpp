@@ -34,9 +34,15 @@
 
 template void rmg::potrf<double>(char *, int, double *, int, int *);
 template void rmg::potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
-
+template void rmg::potrf<double>(char *, int, double *, int, int *, MPI_Comm);
+template void rmg::potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *, MPI_Comm);
 
 template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info)
+{
+    rmg::potrf(uplo, n, A, lda, info, MPI_COMM_NULL);
+}
+
+template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info, MPI_Comm comm)
 {
 
 #if CUDA_ENABLED
@@ -165,13 +171,19 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
 
 #else
 
+    int factor = 1;
     if(typeid(DataType) == typeid(std::complex<double>)) {
         zpotrf(uplo, &n, (std::complex<double> *)A, &n, info);
+        factor = 2;
     }
     else {
         dpotrf(uplo, &n, (double *)A, &n, info);
     }
 
+    if(comm != MPI_COMM_NULL)
+    {
+        MPI_Bcast(A, factor*n*n, MPI_DOUBLE, 0, comm);
+    }
 #endif
 }
 

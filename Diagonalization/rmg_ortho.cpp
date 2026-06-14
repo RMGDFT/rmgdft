@@ -180,7 +180,11 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     RT1 = new RmgTimer("MgridOrtho: cholesky");
     int info, info_trtri;
     T inv_vel(1.0/sqrt(vel));
+#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     rmg::potrf(uplo, notcon, mat_d, notcon, &info);
+#else
+    rmg::potrf(uplo, notcon, mat_d, notcon, &info, pct.grid_comm);
+#endif
     delete RT1;
     RT1 = new RmgTimer("MgridOrtho: inverse");
     rmg::trtri(uplo, diag, notcon, mat_d, notcon, &info_trtri);

@@ -35,6 +35,7 @@
 #if __cplusplus
 
 #include "blas_driver.h"
+#include "mpi.h"
 
 namespace rmg
 {
@@ -56,6 +57,7 @@ template <typename DataType> void syrk(char *uplo, char *trans, int n, int k,
                              DataType *C, int ldc);
 
 template <typename DataType> void potrf(char *uplo, int n, DataType *A, int lda, int *info);
+template <typename DataType> void potrf(char *uplo, int n, DataType *A, int lda, int *info, MPI_Comm comm);
 template <typename DataType> void trtri(char *uplo, char *diag, int n, DataType *A, int lda, int *info);
 template <typename DataType> void trmm(char *side, char *uplo, char *trans, char *diag,
                              int m, int n, DataType alpha, DataType *A, int lda,
