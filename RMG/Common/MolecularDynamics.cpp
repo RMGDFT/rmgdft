@@ -91,8 +91,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
             KpointType *prev_base = Kptr[kpt]->prev_orbital_storage;
             KpointType *prev_mid  = prev_base + pbasis_noncoll*N / 2;
             std::copy(prev_base, prev_mid, mid);
-            //MGOrtho.orthogonalize(N/2, N, base, false);
-            MGOrtho.orthogonalize(0, N, base, true);
+            MGOrtho.orthogonalize(N/2, N, base, false);
         }
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         { 
