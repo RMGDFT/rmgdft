@@ -27,6 +27,8 @@
 #include "rmg_hvector.h"
 #include "blas_driver.h"
 #include "rmg_reduce.h"
+#include "blacs.h"
+
 
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat);
@@ -1354,52 +1356,85 @@ void rmg::tddft<OrbitalType, MatrixType>::tstconv(float *C,int *p_M, double *p_t
 void rmg::tddft<OrbitalType, MatrixType>::gather_rho_matrix(OrbitalType *rho_matrix_global, MatrixType *rho_matrix)
 {   
 
+    double *rho_R = (double *)rho_matrix_global;
+    std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_global;
+    for(int i = 0; i < ct.num_states * ct.num_states; i++) rho_matrix_global[i] = 0.0;
     if(ct.tddft_tiledMM == 1)
     {
-        double *rho_R = (double *)rho_matrix_global;
-        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_global;
-        size_t recvcount = numst * numst/pct.local_comm_npes * sizeof(OrbitalType)/sizeof(double);
+        int numst_pe = numst/pct.local_comm_npes;
+
         if(typeid(OrbitalType) == typeid(double))
         {
-            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
-            {
-                rho_R[pct.local_rank * numst * numst/pct.local_comm_npes + i] = std::real(rho_matrix[i]);
+            for(int st1 = 0; st1 < numst_pe; st1++) {
+                for(int st2 = 0; st2 < numst; st2++) {
+                    int st1g = st1 + numst_pe * pct.local_rank;
+                    rho_R[(st1g+ct.tddft_start_state) * ct.num_states + st2 + ct.tddft_start_state]
+                        =std::real(rho_matrix[st1 * numst + st2] );
+                }
             }
         }
         else
         {
-            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
-            {
-                rho_C[pct.local_rank * numst * numst/pct.local_comm_npes + i] = rho_matrix[i];
-            }
-        }
-        MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, 
-                rho_matrix_global, recvcount, MPI_DOUBLE, pct.local_comm);       
-    }
-    else
-    {
-        int Mdim = Sp->GetDistMdim();
-        int Ndim = Sp->GetDistNdim();
-        std::vector<OrbitalType> rho_matrix_dist(Mdim * Ndim);
-        double *rho_R = (double *)rho_matrix_dist.data();
-        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_dist.data();
-        if(typeid(OrbitalType) == typeid(double))
-        {
-            for(int i = 0; i < Mdim * Ndim; i++)
-            {
-                rho_R[i] = std::real(rho_matrix[i]);
-            }
-        }
-        else
-        {
-            for(int i = 0; i < Mdim * Ndim; i++)
-            {
-                rho_C[i] = rho_matrix[i];
+            for(int st1 = 0; st1 < numst_pe; st1++) {
+                for(int st2 = 0; st2 < numst; st2++) {
+                    int st1g = st1 + numst_pe * pct.local_rank;
+                    rho_C[(st1g+ct.tddft_start_state) * ct.num_states + st2 + ct.tddft_start_state]
+                        =rho_matrix[st1 * numst + st2];
+                }
             }
         }
 
-        for(int i = 0; i < numst * numst; i++) rho_matrix_global[i] = 0.0;
-        Sp->GatherEigvectors(rho_matrix_global, rho_matrix_dist.data());
     }
+    else
+    {
+
+        int *desca = Sp->GetDistDesca();
+        int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
+        int mycol, myrow, nprow, npcol;
+        Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
+        int izero = 0;
+        if(typeid(OrbitalType) == typeid(double))
+        {
+            for(int i = 0; i < Sp->GetDistMdim(); i++)
+            {
+                int i1 = i+1;
+                int i_glob = indxl2g(&i1, &mb, &myrow, &izero, &nprow) + ct.tddft_start_state;
+                i_glob -=1;
+                for(int j = 0; j < Sp->GetDistNdim(); j++)
+                {
+                    int j1 = j+1;
+                    int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol) + ct.tddft_start_state;
+                    j_glob -=1;
+
+                    rho_R[i_glob + j_glob * ct.num_states] = std::real(rho_matrix[i + j * mxllda]) ;
+                }
+            }
+        }
+        else
+        {
+            for(int i = 0; i < Sp->GetDistMdim(); i++)
+            {
+                int i1 = i+1;
+                int i_glob = indxl2g(&i1, &mb, &myrow, &izero, &nprow) + ct.tddft_start_state;
+                i_glob -=1;
+                for(int j = 0; j < Sp->GetDistNdim(); j++)
+                {
+                    int j1 = j+1;
+                    int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol) + ct.tddft_start_state;
+                    j_glob -=1;
+
+                    rho_C[i_glob + j_glob * ct.num_states] = rho_matrix[i + j * mxllda] ;
+                }
+            }
+        }
+
+
+    }
+
+    rmg::block_reduce(rho_matrix_global, ct.num_states * ct.num_states, Sp->GetComm());
+
+    double occ = 1.0;
+    if(ct.nspin == 1) occ = 2.0;
+    for(int i = 0; i < ct.tddft_start_state; i++) rho_matrix_global[i * ct.num_states + i] = occ;
 
 }
