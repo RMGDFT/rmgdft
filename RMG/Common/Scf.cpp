@@ -194,6 +194,7 @@ template <typename OrbitalType> bool Scf (
                 if(ct.forceflag == TDDFT_CVE && ct.md_steps < 1)
                 {
                     Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                    Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                 }
                 delete RT1;
             }
