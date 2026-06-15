@@ -105,11 +105,8 @@ template <typename OrbitalType, typename MatrixType> void rmg::tddft<OrbitalType
 
     double vel = get_vel_f();
     std::string filename;
-    int numst;
 
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-
-    numst = ct.num_states - ct.tddft_start_state; 
 
     double ES_0 = 0.0, ES_0a = 0.0, ES_0b = 0.0; 
     double EkinPseudo_0 = 0.0, totalE_0=0.0;

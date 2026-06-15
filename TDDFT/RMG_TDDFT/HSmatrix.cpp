@@ -37,7 +37,6 @@ template void HSmatrix<std::complex<double> >(Kpoint<std::complex<double>> *, do
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat) 
 {
     RmgTimer RT0("4-Diagonalization");
-    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0) && (ct.scf_steps > 0);
 
     double vel = kptr->L->get_omega() / ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
 
@@ -45,17 +44,12 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     MPI_Comm grid_comm = kptr->grid_comm;
     KpointType *orbital_storage = kptr->orbital_storage;
     KpointType *prev_orbital_storage = kptr->prev_orbital_storage;
-    KpointType *ns = kptr->ns;
-    KpointType *nv = kptr->nv;
-    KpointType *newsint_local = kptr->newsint_local;
     int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
 
     // For MPI routines
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
-
     
-    BaseThread *T = BaseThread::getBaseThread(0);
     // State array is 4 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
