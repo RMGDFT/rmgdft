@@ -84,6 +84,7 @@
 #define		dgesv		RMG_FC_GLOBAL(dgesv, DGESV)
 #define		dgesvd		RMG_FC_GLOBAL(dgesvd, DGESVD)
 #define		zgesv		RMG_FC_GLOBAL(zgesv, ZGESV)
+#define		zgesvx		RMG_FC_GLOBAL(zgesvx, ZGESVX)
 #define		dgemv		RMG_FC_GLOBAL(dgemv, DGEMV)
 #define		dsygvx		RMG_FC_GLOBAL(dsygvx, DSYGVX)
 #define		dsygvd		RMG_FC_GLOBAL(dsygvd, DSYGVD)
@@ -219,6 +220,31 @@ void zhegst(int *, const char *, int *, double *, int *, double *, int *, int *)
 void zheevd(const char *, const char *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dgesv (int *, int*, double *, int *, int *, double *, int *, int *);
 void zgesv (int *, int*, std::complex<double> *, int *, int *, std::complex<double> *, int *, int *);
+void zgesvx(
+    char* fact,
+    char* trans,
+    int* n,
+    int* nrhs,
+    std::complex<double> *a,
+    const int* lda,
+    std::complex<double> *af,
+    int* ldaf,
+    int* ipiv,
+    char* equed,
+    double* r,
+    double* c,
+    std::complex<double> *b,
+    const int* ldb,
+    std::complex<double> *x,
+    int* ldx,
+    double* rcond,
+    double* ferr,
+    double* berr,
+    std::complex<double> *work,
+    double* rwork,
+    int* info
+);
+
 void dgesvd(char *, char *, int *, int *, double *, int *, double *, double *,
             int *, double *, int *, double *, int *, int *);
 void dgemv ( char *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
