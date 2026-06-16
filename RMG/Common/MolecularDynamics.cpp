@@ -85,7 +85,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         rmg::ortho<KpointType> MGOrtho(N, pbasis_noncoll);
         for(int kpt=0;kpt < ct.num_kpts_pe;kpt++)
         {
-            int N = Kptr[kpt]->nstates;
+            int N = ((ct.num_states - ct.tddft_start_state)/pct.local_comm_npes ) * pct.local_comm_npes; 
             KpointType *base = Kptr[kpt]->orbital_storage;
             KpointType *mid  = base + pbasis_noncoll*N / 2;
             KpointType *prev_base = Kptr[kpt]->prev_orbital_storage;
