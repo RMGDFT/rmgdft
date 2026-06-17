@@ -157,6 +157,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         Mdim = numst;
         Ndim = numst/pct.local_comm_npes;
 
+        scalapack_groups = pct.grid_npes;
         Sp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
             ct.scalapack_block_factor, last, pct.grid_comm);
     }
@@ -640,10 +641,11 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
 
 
-    rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+    rmg::hvector<MatrixType> Pmat_t0(ct.num_states*ct.num_states), Pmat_t1(ct.num_states*ct.num_states);
     rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
-    rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+    rmg::hvector<MatrixType> Hmat_mtype(ct.num_states*ct.num_states);
     Pmat_t1.set(0.0);
+    Pmat_t0.set(0.0);
     Smat.set(0.0);
     Hmat_mtype.set(0.);
 
@@ -668,50 +670,66 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
             //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
             //
-            for(int i = 0; i < numst; i++) 
+            for(int i = 0; i < ct.num_states; i++) 
             {
-                for(int j = 0; j < numst; j++) 
+                for(int j = 0; j < ct.num_states; j++) 
                 {
-                    Hmat_mtype[i * numst + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                    Hmat_mtype[i * ct.num_states + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
                 }
             }
             if(ct.tddft_tiledMM == 1)
             {
-                TiledM_to_glob(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu, numst, eldyn_comm);
+                TiledM_to_glob(Pmat_t1.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu, numst, eldyn_comm);
             }
             else
             {
-                this->Sp->GatherEigvectors(Pmat_t0.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+                this->Sp->GatherEigvectors(Pmat_t1.data(), (MatrixType *)Kptr[kpt]->Pn0_cpu);
+            }
+
+            Pmat_t0.set(0.0);
+            for(int i = 0; i < numst; i++) 
+            {
+                for(int j = 0; j < numst; j++) 
+                {
+                    Pmat_t0[i * ct.num_states + j] = Pmat_t1[i * numst + j];
+                }
             }
 
             MatrixType one(1.0), zero(0.0);
             char *trans_n = "n";
 
-            //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
-            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
+            rmg::gemm (trans_n, trans_n, ct.num_states, ct.num_states, ct.num_states, one, Pmat_t0.data(), ct.num_states, Hmat_mtype.data(), ct.num_states, zero, Pmat_t1.data(), ct.num_states);
 
             int info;
-            int *ipiv = new int[numst];
+            int *ipiv = new int[ct.num_states];
 
             // Solve AX = B for X
-            MPI_Bcast(Pmat_t1.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Pmat_t0.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Hmat_mtype.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
-            for(int i=0;i < numst*numst;i++) Pmat_t0[i] = Pmat_t1[i];
-            zgesv(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv,
-                  (std::complex<double> *)Pmat_t0.data(), &numst, &info);
+            MPI_Bcast(Pmat_t1.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Hmat_mtype.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            for(int i=0;i < ct.num_states*ct.num_states;i++) Pmat_t0[i] = Pmat_t1[i];
+            zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
+                  (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
 
-            MPI_Bcast(Pmat_t0.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             delete [] ipiv;
 
 
+            for(int i = 0; i < numst; i++) 
+            {
+                for(int j = 0; j < numst; j++) 
+                {
+                    Pmat_t1[i * numst + j] = 
+                    Pmat_t0[i * ct.num_states + j];
+                }
+            }
             if(ct.tddft_tiledMM == 1)
             {
                 MatrixType *pn0 = (MatrixType *)this->Kptr[kpt]->Pn0_cpu;
                 int numst_pe = numst/pct.local_comm_npes;
                 for(int idx = 0; idx < numst_pe * numst; idx++)
                 {
-                    pn0[idx] = Pmat_t0[pct.local_rank * numst_pe * numst + idx];
+                    pn0[idx] = Pmat_t1[pct.local_rank * numst_pe * numst + idx];
                 }
 
             }
@@ -835,6 +853,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         double *p_mean = (double *)Kptr[kpt]->Pn0_mean;
         for(int i = 0; i < n2_C; i++) p_mean[i] += 0.5*p0[i];
     }
+
     for(int tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         double iweight;
@@ -914,6 +933,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 }
                 magnus ((double *)Hmatrix_0,    (double *)Hmatrix_1 , time_step, (double *)Hmatrix_m1 , n2_C) ; 
                 /* --- C++  version:  --*/
+
 
                 eldyn_ort(desca, Mdim, Ndim,  Hmatrix_m1,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, eldyn_comm) ;
                 RmgMemcpy(Kptr[kpt]->Pn1_cpu, Pn1, 2*n2*sizeof(double));

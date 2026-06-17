@@ -593,7 +593,6 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
 
     std::complex<double>   rone(1.0, 0.0)           ;
     std::complex<double>   mone(-1.0,0.0)           ;
-    int Mglob = desca[3];
 
     //if(!ct.tddft_gpu)
     {
@@ -611,6 +610,7 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
             if(ct.tddft_gpu && ct.tddft_tiledMM)
             {
                 //C = Om * dP
+                int Mglob = std::max(Mdim, Ndim);
                 rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, rone, Om, ione, ione, desca,
                         dP, ione, ione, desca, beta, C, ione, ione, desca);
                 // dP = alpha * (C - C^dagger)
@@ -620,6 +620,8 @@ void commutp(std::complex<double> *P0, std::complex<double> *P1, std::complex<do
             }
             else
             {
+                int Mglob = desca[3];
+                if(ct.tddft_tiledMM) Mglob = std::max(Mdim, Ndim);
                 rmg::mgpu_zgemm_driver ("N", "N", Mglob, Mglob, Mglob, alpha, Om, ione, ione, desca,
                         dP, ione, ione, desca, beta, C, ione, ione, desca);
                 // C = -i * Om * dP
