@@ -185,6 +185,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         Kptr[kpt]->Hmatrix_m1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         Kptr[kpt]->Hmatrix_1_cpu  = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
         Kptr[kpt]->Hmatrix_0_cpu   = (void *)RmgMallocHost((size_t)n2*sizeof(MatrixType));
+
         if(ct.tddft_mode == VECTOR_POT)
         {
             Kptr[kpt]->Pxmatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
@@ -252,7 +253,8 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     }
 
 #else
-    Pn1  = (MatrixType *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+    Pn1  = (MatrixType *)RmgMallocHost((size_t)(n2*sizeof(double)*2));
+    for(int i=0;i < n2;i++) Pn1[i] = 0.0;
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         Kptr[kpt]->work_cpu = new OrbitalType[(size_t)ct.num_states * (size_t)pbasis_noncoll];
@@ -638,10 +640,13 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
 
 
-
     rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
     rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
     rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+    Pmat_t1.set(0.0);
+    Smat.set(0.0);
+    Hmat_mtype.set(0.);
+
     if(ct.forceflag == TDDFT_CVE)
     {
         RT2a = new RmgTimer("2-TDDFT: P transfer between basis set");
@@ -685,30 +690,21 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             //for(int i = 0; i<numst; i++) rmg::printlog("\n aaa  %d %e %e", i, Pmat_t0[i + i * numst]);
             rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Pmat_t0.data(), numst, Hmat_mtype.data(), numst, zero, Pmat_t1.data(), numst);
 
-            int lwork = numst * numst;
-            int *ipiv = new int[numst];
-            std::complex<double> *work = new std::complex<double>[numst * numst];
-
             int info;
-            zgetrf(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, &info);
-            if (info != 0)
-            {   
-                rmg::printlog ("error in zgetrf with INFO = %d \n", info);
-                fflush (NULL);
-                exit (0);
-            }
-            zgetri(&numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv, work, &lwork, &info);
-            if (info != 0)
-            {   
-                rmg::printlog ("error in zgetri with INFO = %d \n", info);
-                fflush (NULL);
-                exit (0);
-            }
+            int *ipiv = new int[numst];
 
+            // Solve AX = B for X
+            MPI_Bcast(Pmat_t1.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Hmat_mtype.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
+            for(int i=0;i < numst*numst;i++) Pmat_t0[i] = Pmat_t1[i];
+            zgesv(&numst, &numst, (std::complex<double> *)Hmat_mtype.data(), &numst, ipiv,
+                  (std::complex<double> *)Pmat_t0.data(), &numst, &info);
+
+            MPI_Bcast(Pmat_t0.data(), 2*numst*numst, MPI_DOUBLE, 0, pct.grid_comm);
             delete [] ipiv;
-            delete [] work;
 
-            rmg::gemm (trans_n, trans_n, numst, numst, numst, one, Hmat_mtype.data(), numst, Pmat_t1.data(), numst, zero, Pmat_t0.data(), numst);
+
             if(ct.tddft_tiledMM == 1)
             {
                 MatrixType *pn0 = (MatrixType *)this->Kptr[kpt]->Pn0_cpu;
