@@ -85,3 +85,49 @@ template <typename MatrixType>
 
     }
 }
+// set the matrix with diagonal elements to be diag_elem, and others to 0.0
+template void MatDiagGet<double> (double *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
+template void MatDiagGet<std::complex<double>> (std::complex<double> *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
+template <typename MatrixType>
+    void MatDiagGet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP)
+{
+
+    std::fill(diag_elem.begin(), diag_elem.end(), 0.0);
+    if(ct.tddft_tiledMM)
+    {
+        int numst_pe = numst/pct.local_comm_npes;
+        for(int i = 0; i < numst_pe; i++)
+        {
+            diag_elem[i+pct.local_rank * numst_pe] = 
+                std::real(mat[i * numst + i+pct.local_rank * numst_pe]);
+        }
+
+        rmg::reduce(diag_elem.data(), numst, pct.local_comm);
+
+    }
+    else
+    {
+        int *desca = SP.GetDistDesca();
+        int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
+        int mycol, myrow, nprow, npcol;
+        Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
+        int izero = 0;
+        for(int i = 0; i < SP.GetDistMdim(); i++)
+        {
+            int i1 = i+1;
+            int i_glob = indxl2g(&i1, &mb, &myrow, &izero, &nprow);
+            for(int j = 0; j < SP.GetDistNdim(); j++)
+            {
+                int j1 = j+1;
+                int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol);
+                if(i_glob == j_glob)
+                {
+                    diag_elem[i_glob-1] = std::real(mat[i + j * mxllda]);
+                }
+            }
+        }
+
+        rmg::reduce(diag_elem.data(), numst, SP.GetComm());
+
+    }
+}

@@ -308,13 +308,16 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
                 fprintf(dbp_fi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
             }
         }
-        else
+        else if(ct.tddft_mode == EFIELD || ct.tddft_mode == POINT_CHARGE)
         {
             filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_dipole.dat";
 
             dfi = fopen(filename.c_str(), "w");
 
             fprintf(dfi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
+        }
+        else if(ct.tddft_mode == EH_PAIR)
+        {
         }
     }
 
@@ -513,7 +516,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             fprintf(current_fi, "\n  &&current at groud state:  %18.10e  %18.10e  %18.10e nonzero due to kpoint sampling",
                     current0[0], current0[1], current0[2]);
         }
-        else
+        else if(ct.tddft_mode == EFIELD || ct.tddft_mode == POINT_CHARGE)
         {
             fprintf(dfi, "\n  &&dipole at groud state:  %18.10e  %18.10e  %18.10e ",
                     dipole_tot[0], dipole_tot[1], dipole_tot[2]);
@@ -526,10 +529,66 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         fflush(NULL);
     }
 
+    if(ct.tddft_mode == EH_PAIR)
+    {
+        int kpt_eh = ct.tddft_ehpair[0] - pct.kstart;
+        int vbm = ct.nel/2 -1;
+        int h_state = vbm - ct.tddft_ehpair[1];
+        int e_state = vbm + 1 + ct.tddft_ehpair[2];
+        if(h_state < 0 || e_state >= ct.num_states)
+        {
+            rmg::error("elecrton hole states are not correct");
+        }
+        if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
+        {
+            if(Kptr[kpt_eh]->Kstates[h_state].occupation[0] < 1.0 - 1.0e-5)
+            {
+                rmg::printlog("\n electron hole pair info wrong kpt %d valance state %d\n", kpt_eh, vbm-ct.tddft_ehpair[1]);
+                rmg::error("state is not a valance band");
+            }
+            if(Kptr[kpt_eh]->Kstates[e_state].occupation[0] > 0.1 )
+            {
+                rmg::printlog("\n electron hole pair info wrong kpt %d conduction state %d\n", kpt_eh, vbm+1+ct.tddft_ehpair[2]);
+                rmg::error("state is not a conduction band");
+            }
+        }
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            int kpt_glob = kpt + pct.kstart;
+            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
+            if(kpt_glob == ct.tddft_ehpair[0])
+            {
+                diag_elem[h_state -ct.tddft_start_state] -=1.0;
+                diag_elem[e_state -ct.tddft_start_state] +=1.0;
+            }
+
+            memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
+            double one = 1.0;
+            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
+            
+        }
+
+        if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
+        {
+            filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_occ.dat";
+
+            occ_fi = fopen(filename.c_str(), "w");
+
+            fprintf(occ_fi, "\n  && electron-pair exitation at kpoint %d from VBM %d to CBM %d", ct.tddft_ehpair[0], ct.tddft_ehpair[1], ct.tddft_ehpair[2]);
+            MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
+            fprintf(occ_fi, "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
+            for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +3; i++) 
+                if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
+                    
+        }
+
+    }
+
 }
 
-    // TDDFT MD loop
-template <typename OrbitalType, typename MatrixType>
+// TDDFT MD loop
+    template <typename OrbitalType, typename MatrixType>
 void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 {
 
@@ -578,11 +637,11 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
         for(int i = 0; i < n2_C; i++) p_mean[i] = 0.0;
     }
 
-    
 
-        rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
-        rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
-        rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+
+    rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+    rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
+    rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
     if(ct.forceflag == TDDFT_CVE)
     {
         RT2a = new RmgTimer("2-TDDFT: P transfer between basis set");

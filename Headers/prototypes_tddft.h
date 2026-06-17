@@ -72,6 +72,8 @@ void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, spinobj<double> &rho, Matrix
 
 template <typename MatrixType>
     void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, double beta, int numst, Scalapack &SP);
+template <typename MatrixType>
+    void MatDiagGet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);

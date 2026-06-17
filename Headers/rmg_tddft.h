@@ -90,6 +90,7 @@ namespace rmg
         Kpoint<OrbitalType> **Kptr;
         double dipole_tot[3];
         FILE *dfi = NULL, *efi = NULL, *current_fi = NULL, *dbp_fi = NULL;
+        FILE *occ_fi = NULL;
         std::string filename;
         int n2, n22, n2_C, numst, ione =1;
         int tot_steps = 0;
