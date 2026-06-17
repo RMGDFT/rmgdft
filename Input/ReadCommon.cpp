@@ -1365,7 +1365,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "You must specify a triplet of (X,Y,Z) dimensions. ", TDDFT_OPTIONS);
     Ri::ReadVector<int> def_tddft_ehpair({{0,0,0}});
     Ri::ReadVector<int> tddft_ehpair;
-    If.RegisterInputKey("tddft_qpos", &tddft_ehpair, &def_tddft_ehpair, 3, OPTIONAL,
+    If.RegisterInputKey("tddft_ehpair", &tddft_ehpair, &def_tddft_ehpair, 3, OPTIONAL,
             "information for excitation in tddft",
             "the three ints are kpoint, vbm - ?, cbm + ? . [0,0,0] means ehpair at first kpoint  from vbm to cbm", TDDFT_OPTIONS);
 
