@@ -190,7 +190,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 #if USE_ELPA
     if(ct.subdiag_driver != SUBDIAG_ELPA) return;
     int error;
-    int api_version = 20221109;
+    int api_version = 20260202;
     if(!once)
     {
         elpa_init(api_version);
@@ -203,6 +203,9 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     }
 
+    elpa_set((elpa_t)this->elpa_handle, "solver", ELPA_SOLVER_2STAGE, &error);
+    elpa_set((elpa_t)this->elpa_handle, "real_kernel", ELPA_2STAGE_REAL_GENERIC, &error);
+    elpa_set((elpa_t)this->elpa_handle, "complex_kernel", ELPA_2STAGE_COMPLEX_GENERIC, &error);
     elpa_set((elpa_t)this->elpa_handle, "na", this->N, &error);
     elpa_set((elpa_t)this->elpa_handle, "nev", this->N, &error);
     elpa_set((elpa_t)this->elpa_handle, "local_nrows", this->m_dist, &error);
@@ -640,9 +643,15 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 void Scalapack::symherm_eigenvectors(double *a, double *ev, double *q)
 {
 #if USE_ELPA
-    not programmed so this will throw a compile error
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        int error;
+        elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
+        size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+        for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+        return;
+    }
 #endif    
-
     this->symherm_eigenvectors_scalapack(a, ev, q);
 }
 
@@ -689,7 +698,14 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
 void Scalapack::symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q)
 {
 #if USE_ELPA
-    not programmed so this will throw a compile error
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        int error;
+        elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
+        size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+        for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+        return;
+    }
 #endif    
     this->symherm_eigenvectors_scalapack(a, ev, q);
 }
