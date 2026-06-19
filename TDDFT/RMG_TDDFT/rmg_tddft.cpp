@@ -113,6 +113,9 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         case SUBDIAG_LAPACK:
             scalapack_groups = pct.grid_npes;
             break;
+#if USE_ELPA
+        case SUBDIAG_ELPA:
+#endif
         case SUBDIAG_SCALAPACK:
             scalapack_groups = 1;
             if(ct.scalapack_block_factor >= ct.num_states - ct.tddft_start_state)
