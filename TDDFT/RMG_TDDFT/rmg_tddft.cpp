@@ -319,9 +319,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
 
             fprintf(dfi, "\n  &&electric field in cartesian unit:  %e  %e  %e ",ct.efield_tddft_crds[0], ct.efield_tddft_crds[1], ct.efield_tddft_crds[2]);
         }
-        else if(ct.tddft_mode == EH_PAIR)
-        {
-        }
     }
 
 
@@ -368,7 +365,8 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
             double one = 1.0;
-            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+            OrbitalType *Snull = NULL;
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
             for(int i = 0; i < numst; i++)
             {
                 for(int j = 0; j < numst; j++)
@@ -663,7 +661,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                     Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
 #endif
 
-            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+            OrbitalType *Hnull = NULL;
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(), Hnull, Smat.data());
 
 #if 1
             // Smat == <pre_psi |psi> == <psi_t0 | psi_t1> 
@@ -812,7 +811,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
 
         RT1 = new RmgTimer("2-TDDFT: Hmatrix");
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Smat.data());
+            OrbitalType *Snull = NULL;
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
             MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
             for(int i = 0; i < numst; i++) 
             {
@@ -1166,6 +1166,20 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
                         tot_steps*time_step, dipole_tot[0], dipole_tot[1], dipole_tot[2]);
+            }
+        }
+        if(ct.tddft_mode == EH_PAIR)
+        {
+            int kpt_eh = ct.tddft_ehpair[0] - pct.kstart;
+            int vbm = ct.nel/2 -1;
+
+            if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
+            {
+                std::vector<double> diag_elem(numst);
+                MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
+                for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +3; i++) 
+                    if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
+
             }
         }
 

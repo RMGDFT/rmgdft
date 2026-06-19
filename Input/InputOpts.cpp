@@ -24,7 +24,7 @@
         {"electric field", EFIELD},
         {"point charge", POINT_CHARGE},
         {"vector potential", VECTOR_POT},
-        {"electron hole excitation", EH_PAIR}
+        {"EH pair", EH_PAIR}
         };
 
  std::unordered_map<std::string, int> atomic_orbital_type = {

@@ -36,7 +36,6 @@ template void HSmatrix<std::complex<double> >(Kpoint<std::complex<double>> *, do
     template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat) 
 {
-    RmgTimer RT0("4-Diagonalization");
 
     double vel = kptr->L->get_omega() / ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
 
@@ -56,26 +55,6 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     KpointType *tmp_arrayT = kptr->Kstates[0].psi;
     tmp_arrayT += kptr->nstates * pbasis_noncoll;
 
-    static KpointType *global_matrix1;
-
-#if CUDA_ENABLED
-
-    KpointType *Aij = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));
-    KpointType *Sij = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));
-    if(!global_matrix1) global_matrix1 = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));     
-    GpuFill((double *)Aij, factor*nstates * nstates, 0.0);
-    GpuFill((double *)Sij, factor*nstates * nstates, 0.0);
-
-#else
-    KpointType *Aij = new KpointType[nstates * nstates]();
-    KpointType *Sij = new KpointType[nstates * nstates];
-    if(!global_matrix1) {
-        int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        if(retval1 != MPI_SUCCESS) rmg::error("Memory allocation failure in Subdiag");
-    }
-    for(int ix=0;ix < nstates*nstates;ix++)global_matrix1[ix] = 0.0;
-#endif
-
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -83,76 +62,38 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     char *trans_a = trans_t;
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
-
-    // Apply operators on each wavefunction
-    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-    KpointType *h_psi = (KpointType *)tmp_arrayT;
-    ApplyBlockedHamiltonian(kptr, h_psi, vtot_eig, vxc_psi);
-    rmg::sync_device();
-    delete RT1;
-
-    // Compute A matrix
-    RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
     KpointType alpha(vel);
     KpointType beta(0.0);
-
-    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce it
-    MPI_Request MPI_reqAij;
-    MPI_Request MPI_reqSij;
-    if(ct.use_async_allreduce)
-       MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
-    else
-       //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-       rmg::block_reduce((double *)Aij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
-#else
-    //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-    rmg::block_reduce((double *)Aij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
-
-#endif
-
-    // Compute S matrix
-    KpointType alpha1(vel);
-    rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, prev_orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Sij, nstates);
-
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce Sij request
-    if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
-    else
-        //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-        rmg::block_reduce((double *)Sij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
-#else
-    //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-    rmg::block_reduce((double *)Sij, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
-#endif
-
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for S request to finish and when done store copy in Sij
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-#endif
-
-    delete(RT1);
-
-    for(int i = 0; i < nstates * nstates; i++)
+    if(Hmat != NULL)
     {
-        Hmat[i] = Aij[i];
-        Smat[i] = Sij[i];
-    }
-    // free memory
-#if CUDA_ENABLED
-    RmgFreeHost(Sij);
-    RmgFreeHost(Aij);
-#else
-    delete [] Sij;
-    delete [] Aij;
-#endif
+        // Apply operators on each wavefunction
+        RmgTimer *RT1 = new RmgTimer("2-TDDFT: apply operators");
+        KpointType *h_psi = (KpointType *)tmp_arrayT;
+        ApplyBlockedHamiltonian(kptr, h_psi, vtot_eig, vxc_psi);
+        rmg::sync_device();
+        delete RT1;
 
+        // Compute A matrix
+        RT1 = new RmgTimer("2-TDDFT: Hmatrix setup/reduce");
+
+        rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hmat, nstates);
+
+        //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        rmg::block_reduce((double *)Hmat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
+        delete(RT1);
+    }
+
+
+    if(Smat != NULL)
+    {
+        RmgTimer *RT1 = new RmgTimer("2-TDDFT: Smatrix setup/reduce");
+        // Compute S matrix
+        rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, prev_orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Smat, nstates);
+
+        //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        rmg::block_reduce((double *)Smat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
+        delete(RT1);
+    }
 
 
 }
