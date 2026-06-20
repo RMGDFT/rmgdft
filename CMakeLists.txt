@@ -505,10 +505,14 @@ endif()
 
 #experimental
 if(USE_ELPA_LIBS)
-    message(WARNING "ELPA is experimental and requires manual editing of CMakeLists.txt to enable.")
-    #add_definitions(-DUSE_ELPA=1)
+list(APPEND CMAKE_PREFIX_PATH "/home/emil/usr/local/")
+    find_package(ELPA)
+    if(ELPA_FOUND)
+        add_definitions(-DUSE_ELPA=1)
+    endif()
     #list(APPEND RMGLIBS /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
-    #list(APPEND RMGLIBS /usr/lib64/libelpa.so)
+    list(APPEND RMGLIBS ${ELPA_LIBRARIES})
+    include_directories(${ELPA_INCLUDE_DIRS})
 endif()
 
 
