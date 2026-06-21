@@ -75,7 +75,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     rmg::dvector<CalType> rho_matrix_dev(numst * numst);
     rmg::dvector<TypeV> rho_temp_dev(pbasis * n_rho);
-    rmg::dvector<double> occ_dev(pbasis * n_rho);
+    rmg::dvector<double> occ_dev(numst);
 
     rmg::hvector<TypeV> rho_temp(pbasis*n_rho);
     gpuMemcpy(occ_dev.data(), occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);

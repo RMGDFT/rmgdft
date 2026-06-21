@@ -365,36 +365,45 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
         rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
         rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+        double one = 1.0;
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
-            double one = 1.0;
-            OrbitalType *Snull = NULL;
-            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
-            for(int i = 0; i < numst; i++)
+            if(ct.forceflag == TDDFT_CVE)
             {
-                for(int j = 0; j < numst; j++)
+                OrbitalType *Snull = NULL;
+                HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
+                for(int i = 0; i < numst; i++)
                 {
-                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                    for(int j = 0; j < numst; j++)
+                    {
+                        Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                    }
                 }
-            }
 
-            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
-            if(ct.tddft_tiledMM == 1)
-            {
-                int numst_pe = numst/pct.local_comm_npes;
-                for(int idx = 0; idx < numst_pe * numst; idx++)
+                MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+                if(ct.tddft_tiledMM == 1)
                 {
-                    hptr[idx] = Hmat_mtype[pct.local_rank * numst_pe * numst + idx];
+                    int numst_pe = numst/pct.local_comm_npes;
+                    for(int idx = 0; idx < numst_pe * numst; idx++)
+                    {
+                        hptr[idx] = Hmat_mtype[pct.local_rank * numst_pe * numst + idx];
+                    }
+                }
+                else
+                {
+                    this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
                 }
             }
             else
             {
-                this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
+
+                memset(Kptr[kpt]->Hmatrix_cpu, 0, matrix_size);
+                for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
+                MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
             }
             memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
             memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
-
 
             for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
             memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
@@ -570,7 +579,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
             double one = 1.0;
             MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
-            
+
         }
 
         if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
@@ -584,7 +593,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             fprintf(occ_fi, "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
             for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +3; i++) 
                 if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
-                    
+
         }
 
     }
@@ -642,16 +651,16 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     }
 
 
-    rmg::hvector<MatrixType> Pmat_t0(ct.num_states*ct.num_states), Pmat_t1(ct.num_states*ct.num_states);
-    rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
-    rmg::hvector<MatrixType> Hmat_mtype(ct.num_states*ct.num_states);
-    Pmat_t1.set(0.0);
-    Pmat_t0.set(0.0);
-    Smat.set(0.0);
-    Hmat_mtype.set(0.);
 
     if(ct.forceflag == TDDFT_CVE)
     {
+        rmg::hvector<MatrixType> Pmat_t0(ct.num_states*ct.num_states), Pmat_t1(ct.num_states*ct.num_states);
+        rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
+        rmg::hvector<MatrixType> Hmat_mtype(ct.num_states*ct.num_states);
+        Pmat_t1.set(0.0);
+        Pmat_t0.set(0.0);
+        Smat.set(0.0);
+        Hmat_mtype.set(0.);
         RT2a = new RmgTimer("2-TDDFT: P transfer between basis set");
         // Recompute sint arrays which is necessary for dynamics.
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -667,7 +676,6 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             OrbitalType *Hnull = NULL;
             HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(), Hnull, Smat.data());
 
-#if 1
             // Smat == <pre_psi |psi> == <psi_t0 | psi_t1> 
 
             //P_t1 = <psi_t1 | psi_t0> P_t0 <psi_t0 |psi_t1>  
@@ -711,7 +719,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             MPI_Bcast(Hmat_mtype.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             for(int i=0;i < ct.num_states*ct.num_states;i++) Pmat_t0[i] = Pmat_t1[i];
             zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
-                  (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
+                    (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
 
             MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             delete [] ipiv;
@@ -722,7 +730,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 for(int j = 0; j < numst; j++) 
                 {
                     Pmat_t1[i * numst + j] = 
-                    Pmat_t0[i * ct.num_states + j];
+                        Pmat_t0[i * ct.num_states + j];
                 }
             }
             if(ct.tddft_tiledMM == 1)
@@ -740,7 +748,6 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 this->Sp->DistributeMatrix(Pmat_t0.data(), (MatrixType *)this->Kptr[kpt]->Pn0_cpu);
             }
 
-#endif
 
         }
         // Save T=0 basis
