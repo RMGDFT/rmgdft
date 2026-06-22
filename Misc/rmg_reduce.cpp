@@ -276,3 +276,80 @@ void rmg::block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
 }
 
 
+void rmg::block_reduce(double *mat, size_t count, int root, MPI_Comm comm)
+{
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    if(T->is_loop_over_states())
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
+
+    size_t blocks = count / block_size;
+    size_t rem = count % block_size;
+    double *tptr = mat;
+    for(size_t ib=0;ib < blocks;ib++)
+    {
+        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        tptr += block_size;
+    }
+    if(rem)
+        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+}
+
+void rmg::block_reduce(float *mat, size_t count, int root, MPI_Comm comm)
+{
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    if(T->is_loop_over_states())
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
+
+    size_t blocks = count / block_size;
+    size_t rem = count % block_size;
+    float *tptr = mat;
+    for(size_t ib=0;ib < blocks;ib++)
+    {
+        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        tptr += block_size;
+    }
+    if(rem)
+        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+}
+
+void rmg::block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Comm comm)
+{
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    if(T->is_loop_over_states())
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
+
+    size_t blocks = (2 * count) / block_size;
+    size_t rem = (2 * count) % block_size;
+    double *tptr = (double *)mat;
+    for(size_t ib=0;ib < blocks;ib++)
+    {
+        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        tptr += block_size;
+    }
+    if(rem)
+        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+}
+
+void rmg::block_reduce(std::complex<float> *mat, size_t count, int root, MPI_Comm comm)
+{
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    if(T->is_loop_over_states())
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
+
+    size_t blocks = (2 * count) / block_size;
+    size_t rem = (2 * count) % block_size;
+    float *tptr = (float *)mat;
+    for(size_t ib=0;ib < blocks;ib++)
+    {
+        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        tptr += block_size;
+    }
+    if(rem)
+        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+}
+
+

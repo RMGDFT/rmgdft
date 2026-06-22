@@ -23,7 +23,7 @@ namespace rmg {
     void block_reduce(double *mat, size_t count, int root, MPI_Comm comm);
     void block_reduce(float *mat, size_t count, int root, MPI_Comm comm);
     void block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Comm comm);
-    void block_reduce(std::complex<float> *mat, size_t count, MPI_Comm comm);
+    void block_reduce(std::complex<float> *mat, size_t count, int root, MPI_Comm comm);
 }
 
 #endif
