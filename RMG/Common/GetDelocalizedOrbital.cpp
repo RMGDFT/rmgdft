@@ -170,7 +170,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::norm(orbital_weight[st * pbasis + idx] );
                 }
 
-                rmg::all_reduce(&sum, 1, this->grid_comm);
+                rmg::allreduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 // if the sum = 0, this orbital is not a LDA+U orbital and the values are zeros.
                 if(tscale < 1.0e-5) continue;
@@ -207,7 +207,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::real(orbital_weight[st * pbasis + idx] * MyConj(tbuf[st * pbasis + idx]));
                 }
 
-                rmg::all_reduce(&sum, 1, this->grid_comm);
+                rmg::allreduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 if(tscale < 1.0e-5) continue;
                 tscale = std::sqrt(1.0/tscale);

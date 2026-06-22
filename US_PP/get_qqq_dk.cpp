@@ -103,7 +103,7 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
     }                           /*end for ion */
 
     int count =  Atoms.size() * ct.max_nl * ct.max_nl; 
-    rmg::all_reduce(qqq_dk, count, pct.grid_comm);
+    rmg::allreduce(qqq_dk, count, pct.grid_comm);
 
     if(!ct.noncoll) return;
 

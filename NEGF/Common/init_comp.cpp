@@ -77,7 +77,7 @@ void init_comp (double *vh)
 
     /* Now sum over all processors */
     ix = get_FNX_GRID();
-    rmg::all_reduce(zvec, ix, pct.grid_comm);
+    rmg::allreduce(zvec, ix, pct.grid_comm);
 
 
     rmg::printlog(" vcomp_Lbegin = %d  and vcomp_Lend = %d  on FINE GRID \n", lb, le);   

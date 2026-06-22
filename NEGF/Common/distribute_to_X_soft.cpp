@@ -46,6 +46,6 @@ void distribute_to_X_soft (double * distr_array, double * global_array)
         }
 
     idx1 = get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-    rmg::all_reduce(global_array, idx1, COMM_PEX);
+    rmg::allreduce(global_array, idx1, COMM_PEX);
 
 }

@@ -86,7 +86,7 @@ double vdw_d2_energy(Lattice &L,  std::vector<ION>& Atoms_in)
 
         }
 
-    rmg::all_reduce(&energy, 1, pct.grid_comm);
+    rmg::allreduce(&energy, 1, pct.grid_comm);
 
     return energy;
 }
@@ -188,7 +188,7 @@ void vdw_d2_stress(Lattice &L,  std::vector<ION>& Atoms_in, double *stress_d2)
         }
 
     for(int idx = 0; idx < 9; idx++) stress_d2[idx] = -stress_d2[idx]/(2.0 * L.omega);
-    rmg::all_reduce(stress_d2, 9, pct.grid_comm);
+    rmg::allreduce(stress_d2, 9, pct.grid_comm);
 
 }
 

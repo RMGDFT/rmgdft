@@ -870,7 +870,7 @@ void Symmetry::symmetrize_grid_object(double *object)
 
     /* Call global sums to give everyone the full array */
     int length = nbasis;
-    rmg::all_reduce((double *)da, length, pct.grid_comm);
+    rmg::allreduce((double *)da, length, pct.grid_comm);
 
     for(int ix=0;ix < pbasis;ix++) object[ix] = 0.0;
 

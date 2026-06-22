@@ -125,7 +125,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlforce (vtott, vxc, Kptr, force_tmp);
-    rmg::all_reduce (force_tmp, size1, pct.spin_comm);
+    rmg::allreduce (force_tmp, size1, pct.spin_comm);
 
     for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT3;
@@ -137,7 +137,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     RmgTimer *RT4 = new RmgTimer("2-Force: core correction");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlccforce (rho, vxc, force_tmp);
-    rmg::all_reduce (force_tmp, size1, pct.spin_comm);
+    rmg::allreduce (force_tmp, size1, pct.spin_comm);
     for(int i = 0; i < num_ions * 3; i++) force_sum[i] += fac_spin * force_tmp[i];
     delete RT4;
 
@@ -185,8 +185,8 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
                 force_tmp[idx] += force_ldau[idx] * Kptr[kpt]->kp.kweight; 
         }
 
-        rmg::all_reduce (force_tmp, size1, pct.kpsub_comm);
-        rmg::all_reduce (force_tmp, size1, pct.spin_comm);
+        rmg::allreduce (force_tmp, size1, pct.kpsub_comm);
+        rmg::allreduce (force_tmp, size1, pct.spin_comm);
         for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
         if(ct.verbose) output_force(force_tmp, "LDA+U force:");
         delete [] force_ldau;
@@ -197,7 +197,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     //                      nlforce for other ions on the proc is  zero
     //  sum over grid_comm for lforce and other parts are due to the integration over grid space.
 
-    rmg::all_reduce (force_sum, size1, pct.grid_comm);
+    rmg::allreduce (force_sum, size1, pct.grid_comm);
 
     for (ion = 0; ion < num_ions; ion++)
     {
@@ -268,7 +268,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 void output_force(double *force_tmp, char *desc)    
 {
     int size1 = 3 * Atoms.size();
-    rmg::all_reduce (force_tmp, size1, pct.grid_comm);
+    rmg::allreduce (force_tmp, size1, pct.grid_comm);
     if (pct.imgpe == 0)
     {
         rmg::printlog ("\n\n %s", desc);

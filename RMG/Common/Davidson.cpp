@@ -338,7 +338,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         RT1 = new RmgTimer("6-Davidson: diagonalization");
         int info = GeneralDiag(hr.data(), sr.data(), eigsw, vr.data(), nbase, nstates, max_states, ct.subdiag_driver);
-        //rmg::all_reduce(&info, 1, pct.grid_comm);
+        //rmg::allreduce(&info, 1, pct.grid_comm);
         delete RT1;
         if(info) {
             if(pct.gridpe == 0) printf("\n WARNING: Davidson GeneralDiag info = %d", info);

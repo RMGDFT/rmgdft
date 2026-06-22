@@ -30,10 +30,10 @@
 #include <typeinfo>
 #include <complex>
 
-template void rmg::all_reduce<int>(int*, int, MPI_Comm);
-template void rmg::all_reduce<float>(float*, int, MPI_Comm);
-template void rmg::all_reduce<double>(double*, int, MPI_Comm);
-template void rmg::all_reduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
+template void rmg::allreduce<int>(int*, int, MPI_Comm);
+template void rmg::allreduce<float>(float*, int, MPI_Comm);
+template void rmg::allreduce<double>(double*, int, MPI_Comm);
+template void rmg::allreduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
 
 static double *fixed_vector1 = NULL;
 static double *fixed_vector2 = NULL;
@@ -86,7 +86,7 @@ MPI_Comm get_unique_coalesced_local_comm(int istate)
    return coalesced_local_comm_pool[comm_index];
 }
 
-template <typename RmgType> void rmg::all_reduce(RmgType * vect, int length, MPI_Comm comm)
+template <typename RmgType> void rmg::allreduce(RmgType * vect, int length, MPI_Comm comm)
 {
     RmgTimer RT0("rmg_reduce");
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -194,7 +194,7 @@ template <typename RmgType> void rmg::all_reduce(RmgType * vect, int length, MPI
     }
 
 
-} // end rmg::all_reduce
+} // end rmg::allreduce
 
 
 // Used by subdiag routines to get around integer size limitations for large Allreduce operations.

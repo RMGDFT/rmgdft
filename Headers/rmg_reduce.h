@@ -13,11 +13,17 @@ MPI_Comm get_unique_coalesced_local_comm(int istate);
 namespace rmg {
     void init_reduce(void);
     template <typename RmgType>
-    void all_reduce (RmgType * vect, int length, MPI_Comm comm);
+    void allreduce (RmgType * vect, int length, MPI_Comm comm);
     void block_allreduce(double *mat, size_t count, MPI_Comm comm);
     void block_allreduce(float *mat, size_t count, MPI_Comm comm);
     void block_allreduce(std::complex<double> *mat, size_t count, MPI_Comm comm);
     void block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm);
+    template <typename RmgType>
+    void reduce (RmgType * vect, int length, int root, MPI_Comm comm);
+    void block_reduce(double *mat, size_t count, int root, MPI_Comm comm);
+    void block_reduce(float *mat, size_t count, int root, MPI_Comm comm);
+    void block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Comm comm);
+    void block_reduce(std::complex<float> *mat, size_t count, MPI_Comm comm);
 }
 
 #endif

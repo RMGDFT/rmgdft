@@ -171,8 +171,8 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
         rmg::dzasum_driver(n1, &tau[n1], ione, &converge1);
         rmg::dzasum_driver(n1, &taut[n1], ione, &converge2);
 
-        rmg::all_reduce(&converge1, ione, COMM_EN2);
-        rmg::all_reduce(&converge2, ione, COMM_EN2);
+        rmg::allreduce(&converge1, ione, COMM_EN2);
+        rmg::allreduce(&converge2, ione, COMM_EN2);
 
         if(converge1 > 1.0E06 || converge2 > 1.0E06) 
             printf("\n WARNING Green function in green_lead.c diverging %d %e %e", step, converge1, converge2);

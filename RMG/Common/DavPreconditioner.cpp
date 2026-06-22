@@ -201,11 +201,11 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
 
         if(coalesce_factor==1)
         {
-            rmg::all_reduce(&t1, 1, pct.grid_comm);
+            rmg::allreduce(&t1, 1, pct.grid_comm);
         }
         else
         {
-            rmg::all_reduce(&t1, 1, pct.coalesced_grid_comm);
+            rmg::allreduce(&t1, 1, pct.coalesced_grid_comm);
         }
 
         t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));

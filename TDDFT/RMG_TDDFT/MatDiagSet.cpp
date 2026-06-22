@@ -102,7 +102,7 @@ template <typename MatrixType>
                 std::real(mat[i * numst + i+pct.local_rank * numst_pe]);
         }
 
-        rmg::all_reduce(diag_elem.data(), numst, pct.local_comm);
+        rmg::allreduce(diag_elem.data(), numst, pct.local_comm);
 
     }
     else
@@ -127,7 +127,7 @@ template <typename MatrixType>
             }
         }
 
-        rmg::all_reduce(diag_elem.data(), numst, SP.GetComm());
+        rmg::allreduce(diag_elem.data(), numst, SP.GetComm());
 
     }
 }

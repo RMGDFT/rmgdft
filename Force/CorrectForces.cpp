@@ -88,7 +88,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     }
 
     int count = 3 * ct.num_ions;
-    rmg::all_reduce(force, count, pct.spin_comm);
+    rmg::allreduce(force, count, pct.spin_comm);
 
     delete [] dvh;
     delete [] force_tmp;

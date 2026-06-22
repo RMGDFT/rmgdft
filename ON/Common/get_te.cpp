@@ -181,13 +181,13 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     /*Sum emergies over all processors */
     if (ct.spin_flag)
     {
-        rmg::all_reduce (esum, two, pct.grid_comm);
-        rmg::all_reduce (&esum[2], one, pct.img_comm);  
-        rmg::all_reduce (&mag, one, pct.grid_comm); 
-        rmg::all_reduce (&absmag, one, pct.grid_comm); 
+        rmg::allreduce (esum, two, pct.grid_comm);
+        rmg::allreduce (&esum[2], one, pct.img_comm);  
+        rmg::allreduce (&mag, one, pct.grid_comm); 
+        rmg::allreduce (&absmag, one, pct.grid_comm); 
     }
     else
-        rmg::all_reduce (esum, three, pct.grid_comm);
+        rmg::allreduce (esum, three, pct.grid_comm);
 
 
     /*Electrostatic E */
