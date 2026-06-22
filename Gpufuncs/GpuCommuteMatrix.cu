@@ -38,8 +38,7 @@
 #include "Gpufuncs.h"
 
 
-#define TILE_DIM 32
-#define BLOCK_ROWS 4
+const int nTPB = 128; // Only 1 block but 128 threads per block
 
 __global__ void commutematrix_simple(int M,
                                      int num_rows,
@@ -48,22 +47,22 @@ __global__ void commutematrix_simple(int M,
                                      cuDoubleComplex* dP,
                                      const cuDoubleComplex* C)
 {
-    int j = blockIdx.x * blockDim.x + threadIdx.x; // column
-    int i = blockIdx.y * blockDim.y + threadIdx.y; // local row
-
-    if (i < num_rows && j < M) {
-        int global_i = i + row_offset;
-
-        int idx = i * M + j;
-
-        cuDoubleComplex a = dP[idx];
-
-        // direct access (no transpose buffer)
-        cuDoubleComplex c = C[j * M + global_i];
-
-        // conjugate + update
-        dP[idx] = cuCmul(alpha, cuCsub(a, cuConj(c)));
+  //for(size_t j = 0;j < M; j += nTPB)
+    size_t j = blockIdx.x*nTPB + threadIdx.x;
+    
+    if(j < M)
+    {
+        for(int i = 0; i < num_rows; i++)
+        {
+            size_t idx = i * M + j;
+            size_t idx_g =j * M + (i + row_offset);
+            cuDoubleComplex a = dP[idx];
+            cuDoubleComplex c = C[idx_g];
+            // conjugate + update
+            dP[idx] = cuCmul(alpha, cuCsub(a, hipConj(c)));
+        }
     }
+
 }
 
 void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alpha, std::complex<double> *dP, std::complex<double> *C)
@@ -72,7 +71,7 @@ void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alp
     dim3 block(TILE_DIM, BLOCK_ROWS);
     dim3 grid((M + TILE_DIM - 1) / TILE_DIM,
           (M + TILE_DIM - 1) / TILE_DIM);
-    commutematrix_simple<<<grid, block>>>(M, num_rows, my_rank * num_rows, 
+    commutematrix_simple<<<nblocks, nTPB>>>(M, num_rows, my_rank * num_rows, 
              make_cuDoubleComplex(alpha.real(), alpha.imag()),
             (cuDoubleComplex *)dP, (cuDoubleComplex *)C);
 }

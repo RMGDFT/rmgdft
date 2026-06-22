@@ -765,8 +765,17 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             rmg::printlog("\n start rho_0 calc ");
             fflush(NULL);
         }
+        for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] =0.0;
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            Pn1 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
+           
+            if(ct.tddft_gpu)
+            {
+                RmgMemcpy(Pn1, Kptr[kpt]->Pn0_cpu, 2*n2*sizeof(double));
+            }
+            else
+            {
+                Pn1 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
+            }
             if(ct.tddft_floatprecision)
             {
                 if(ct.is_gamma)

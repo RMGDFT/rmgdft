@@ -43,8 +43,7 @@
 #include <hip/hip_runtime.h>
 #include <hip/hip_complex.h>
 
-#define TILE_DIM 32
-#define BLOCK_ROWS 4
+const int nTPB = 128; // Only 1 block but 128 threads per block
 
 __global__ void commutematrix_simple(int M,
                                      int num_rows,
@@ -53,32 +52,30 @@ __global__ void commutematrix_simple(int M,
                                      hipDoubleComplex* dP,
                                      const hipDoubleComplex* C)
 {
-    int j = blockIdx.x * blockDim.x + threadIdx.x; // column
-    int i = blockIdx.y * blockDim.y + threadIdx.y; // local row
-
-    if (i < num_rows && j < M) {
-        int global_i = i + row_offset;
-
-        int idx = i * M + j;
-
-        hipDoubleComplex a = dP[idx];
-
-        // direct access (no transpose buffer)
-        hipDoubleComplex c = C[j * M + global_i];
-
-        // conjugate + update
-        dP[idx] = hipCmul(alpha, hipCsub(a, hipConj(c)));
+  //for(size_t j = 0;j < M; j += nTPB)
+    size_t j = blockIdx.x*nTPB + threadIdx.x;
+    
+    if(j < M)
+    {
+        for(int i = 0; i < num_rows; i++)
+        {
+            size_t idx = i * M + j;
+            size_t idx_g =j * M + (i + row_offset);
+            hipDoubleComplex a = dP[idx];
+            hipDoubleComplex c = C[idx_g];
+            // conjugate + update
+            dP[idx] = hipCmul(alpha, hipCsub(a, hipConj(c)));
+        }
     }
+
 }
 
 void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alpha, std::complex<double> *dP, std::complex<double> *C)
 {
 
-    dim3 block(TILE_DIM, BLOCK_ROWS);
-    dim3 grid((M + TILE_DIM - 1) / TILE_DIM,
-          (M + TILE_DIM - 1) / TILE_DIM);
-    commutematrix_simple<<<grid, block>>>(M, num_rows, my_rank * num_rows, 
-             make_hipDoubleComplex(alpha.real(), alpha.imag()),
+    int nblocks = M / nTPB + 1;
+    commutematrix_simple<<<nblocks, nTPB>>>(M, num_rows, my_rank * num_rows, 
+            make_hipDoubleComplex(alpha.real(), alpha.imag()),
             (hipDoubleComplex *)dP, (hipDoubleComplex *)C);
 }
 #endif
