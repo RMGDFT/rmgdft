@@ -171,7 +171,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     }                           /*end for ion */
 
-    rmg::reduce(augrho, pbasis * factor, pct.kpsub_comm);
+    rmg::all_reduce(augrho, pbasis * factor, pct.kpsub_comm);
 
     delete [] sint;
     delete [] product;

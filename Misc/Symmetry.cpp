@@ -759,7 +759,7 @@ void Symmetry::symmetrize_grid_vector(double *object)
 
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis * 3;
-    rmg::block_reduce(da, length, pct.grid_comm);
+    rmg::block_allreduce(da, length, pct.grid_comm);
 
     for(int ix=0;ix < 3 * pbasis;ix++) object[ix] = 0.0;
 
@@ -870,7 +870,7 @@ void Symmetry::symmetrize_grid_object(double *object)
 
     /* Call global sums to give everyone the full array */
     int length = nbasis;
-    rmg::reduce((double *)da, length, pct.grid_comm);
+    rmg::all_reduce((double *)da, length, pct.grid_comm);
 
     for(int ix=0;ix < pbasis;ix++) object[ix] = 0.0;
 
@@ -1567,7 +1567,7 @@ void Symmetry::symmetrize_rho_AFM(double *rho,double *rho_oppo)
 
     /* Call global sums to give everyone the full array */
     size_t length = (size_t)nbasis;
-    rmg::block_reduce(da1, length, pct.grid_comm);
+    rmg::block_allreduce(da1, length, pct.grid_comm);
 
     for(int idx = 0; idx < px_grid * py_grid * pz_grid; idx++) rho_oppo[idx] = 0.0;
     for(int isy = 0; isy < nsym; isy++)

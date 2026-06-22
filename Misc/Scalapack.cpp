@@ -811,13 +811,13 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
 // Block inplace double reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
 {
-    rmg::block_reduce(buf, count, this->comm);
+    rmg::block_allreduce(buf, count, this->comm);
 }
 
 // Block inplace float reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
 {
-    rmg::block_reduce(buf, count, this->comm);
+    rmg::block_allreduce(buf, count, this->comm);
 }
 
 // Broadcast to everyone in the root

@@ -204,7 +204,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         }
         gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
 
-        rmg::block_reduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
+        rmg::block_allreduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
 
         if(ct.tddft_tiledMM)
         {
@@ -317,7 +317,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj
         rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, psi+ib*block_size*pbasis_noncoll, pbasis_noncoll, vpsi, 
                 pbasis_noncoll, beta, (KpointType *)global_matrix1, size_row);
         int factor = sizeof(KpointType)/sizeof(double);
-        rmg::block_reduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        rmg::block_allreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
 
         if(ct.tddft_tiledMM)
         {

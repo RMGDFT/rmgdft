@@ -77,7 +77,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNY_GRID() * get_FNZ_GRID();
-        rmg::reduce (zvec, ix, pct.grid_comm);
+        rmg::all_reduce (zvec, ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -120,7 +120,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNX_GRID() * get_FNZ_GRID();
-        rmg::reduce (zvec, ix, pct.grid_comm);
+        rmg::all_reduce (zvec, ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -164,7 +164,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNX_GRID() * get_FNY_GRID();
-        rmg::reduce (zvec, ix, pct.grid_comm);
+        rmg::all_reduce (zvec, ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {

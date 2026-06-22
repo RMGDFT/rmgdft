@@ -161,9 +161,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (float *)Bij.data(), (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        rmg::block_reduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_allreduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    rmg::block_reduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_allreduce((float *)Bij.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
     // Compute S matrix
@@ -190,9 +190,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (float *)gmatrix.data(), (nstates+2) * nstates * factor / 2, MPI_FLOAT, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        rmg::block_reduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+        rmg::block_allreduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    rmg::block_reduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
+    rmg::block_allreduce((float *)gmatrix.data(), (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
 

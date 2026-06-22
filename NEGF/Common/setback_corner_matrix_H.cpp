@@ -76,7 +76,7 @@ void  setback_corner_matrix_H()
         }
         
         n2 = nmax * nmax;
-        rmg::reduce(temp, n2, COMM_EN2);
+        rmg::all_reduce(temp, n2, COMM_EN2);
         /* now temp = S00, not distributed */
 
         ni = cei.probe_in_block[iprobe-1];  /* n0 => block index */

@@ -292,9 +292,9 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         sum1 = 0.0;
         for (int idx = 0; idx < cfac*FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
         if(cfac > 1)
-            rmg::reduce(&sum1, 1, pct.coalesced_grid_comm);
+            rmg::all_reduce(&sum1, 1, pct.coalesced_grid_comm);
         else
-            rmg::reduce(&sum1, 1, pct.grid_comm);
+            rmg::all_reduce(&sum1, 1, pct.grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 

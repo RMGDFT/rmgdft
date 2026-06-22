@@ -285,9 +285,9 @@ ct.state_block_size);
         delete RT1;
     }
 
-    rmg::reduce(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    rmg::reduce(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    rmg::reduce(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::all_reduce(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::all_reduce(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::all_reduce(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
 
     /*Loop over ions again */

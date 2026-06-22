@@ -188,7 +188,7 @@ double Atomic::BesselToLogGrid (
         }
         bcof[i] = JNorm * radint1 (work1, r, rab, rg_points) / (JN_i * JN_i);
     }
-    rmg::reduce(bcof, N, pct.img_comm);
+    rmg::all_reduce(bcof, N, pct.img_comm);
 
 
     /* Now we reconstruct the filtered function */
@@ -205,7 +205,7 @@ double Atomic::BesselToLogGrid (
             }
         }
     }
-    rmg::reduce(ffil, MAX_LOGGRID, pct.img_comm);
+    rmg::all_reduce(ffil, MAX_LOGGRID, pct.img_comm);
 
     /* Release memory */
     delete [] bcof;
@@ -437,7 +437,7 @@ void Atomic::RLogGridToGLogGrid (
         f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
     
     }
-    rmg::reduce(f_g, gnum, pct.grid_comm);
+    rmg::all_reduce(f_g, gnum, pct.grid_comm);
 
     /* Release memory */
     delete [] work1;
@@ -529,7 +529,7 @@ void Atomic::InitBessel(
     }
 
     int size = (lmax+1) * gnum * rg_points; 
-    rmg::reduce(bessel_rg, size, pct.grid_comm); 
+    rmg::all_reduce(bessel_rg, size, pct.grid_comm); 
 
 } 
 
@@ -557,7 +557,7 @@ void Atomic::Der_Localpp_g(
         f_g[ift] = 4.0 * PI * radint1 (work, r, rab, rg_points)/(2.0 * gvec[ift]);
 
     }
-    rmg::reduce(f_g, gnum, pct.grid_comm);
+    rmg::all_reduce(f_g, gnum, pct.grid_comm);
 
     /* Release memory */
     delete [] work;

@@ -30,10 +30,10 @@
 #include <typeinfo>
 #include <complex>
 
-template void rmg::reduce<int>(int*, int, MPI_Comm);
-template void rmg::reduce<float>(float*, int, MPI_Comm);
-template void rmg::reduce<double>(double*, int, MPI_Comm);
-template void rmg::reduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
+template void rmg::all_reduce<int>(int*, int, MPI_Comm);
+template void rmg::all_reduce<float>(float*, int, MPI_Comm);
+template void rmg::all_reduce<double>(double*, int, MPI_Comm);
+template void rmg::all_reduce<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
 
 static double *fixed_vector1 = NULL;
 static double *fixed_vector2 = NULL;
@@ -86,7 +86,7 @@ MPI_Comm get_unique_coalesced_local_comm(int istate)
    return coalesced_local_comm_pool[comm_index];
 }
 
-template <typename RmgType> void rmg::reduce(RmgType * vect, int length, MPI_Comm comm)
+template <typename RmgType> void rmg::all_reduce(RmgType * vect, int length, MPI_Comm comm)
 {
     RmgTimer RT0("rmg_reduce");
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -194,17 +194,17 @@ template <typename RmgType> void rmg::reduce(RmgType * vect, int length, MPI_Com
     }
 
 
-} // end rmg::reduce
+} // end rmg::all_reduce
 
 
 // Used by subdiag routines to get around integer size limitations for large Allreduce operations.
 // Should only be called from a non-threaded region.
-void rmg::block_reduce(double *mat, size_t count, MPI_Comm comm)
+void rmg::block_allreduce(double *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
 
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
@@ -218,12 +218,12 @@ void rmg::block_reduce(double *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, comm);
 }
 
-void rmg::block_reduce(float *mat, size_t count, MPI_Comm comm)
+void rmg::block_allreduce(float *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
 
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
@@ -237,12 +237,12 @@ void rmg::block_reduce(float *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, comm);
 }
 
-void rmg::block_reduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
+void rmg::block_allreduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
 
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
@@ -256,12 +256,12 @@ void rmg::block_reduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
         MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, comm);
 }
 
-void rmg::block_reduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
+void rmg::block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
 
     if(T->is_loop_over_states())
-        rmg::error("rmg::block_reduce cannot be called from a threaded region.\n");
+        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
 
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;

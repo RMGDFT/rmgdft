@@ -99,7 +99,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
             }
         }
 
-        rmg::block_reduce(block_matrix.data(), size_mat, pct.grid_comm);
+        rmg::block_allreduce(block_matrix.data(), size_mat, pct.grid_comm);
 //        if(pct.imgpe == 0 && pct.gridpe == 0) 
 //            for(int i = 0; i < this_block_size_row; i++)
 //                for(int j = 0; j < nstates; j++) printf("\n %d %d %f eee", i+ib*nb, j,block_matrix[i*nstates + j]); 

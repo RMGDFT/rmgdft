@@ -79,7 +79,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
         rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hmat, nstates);
 
         //MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-        rmg::block_reduce((double *)Hmat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
+        rmg::block_allreduce((double *)Hmat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
         delete(RT1);
     }
 
@@ -91,7 +91,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
         rmg::gemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, prev_orbital_storage, pbasis_noncoll, orbital_storage, pbasis_noncoll, beta, Smat, nstates);
 
         //MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-        rmg::block_reduce((double *)Smat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
+        rmg::block_allreduce((double *)Smat, (size_t)nstates * (size_t)nstates * (size_t)factor , grid_comm);
         delete(RT1);
     }
 

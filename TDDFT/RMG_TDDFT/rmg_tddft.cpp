@@ -1584,7 +1584,7 @@ void rmg::tddft<OrbitalType, MatrixType>::gather_rho_matrix(OrbitalType *rho_mat
 
     }
 
-    rmg::block_reduce(rho_matrix_global, ct.num_states * ct.num_states, eldyn_comm);
+    rmg::block_allreduce(rho_matrix_global, ct.num_states * ct.num_states, eldyn_comm);
 
     double occ = 1.0;
     if(ct.nspin == 1) occ = 2.0;

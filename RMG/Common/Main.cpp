@@ -434,8 +434,8 @@ template <typename OrbitalType> void run (
                         }
                     }
 
-                    rmg::reduce(eig_all, tot_num_eigs, pct.kpsub_comm);
-                    rmg::reduce(eig_all, tot_num_eigs, pct.spin_comm);
+                    rmg::all_reduce(eig_all, tot_num_eigs, pct.kpsub_comm);
+                    rmg::all_reduce(eig_all, tot_num_eigs, pct.spin_comm);
 
                     OutputBandPlot(eig_all);
                     delete [] eig_all;

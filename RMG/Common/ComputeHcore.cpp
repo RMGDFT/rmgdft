@@ -185,7 +185,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
-    rmg::block_reduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
     if(Hij_kin == NULL && Hij_localpp == NULL)
     {
         ct.xc_is_hybrid = is_xc_hybrid;
@@ -220,7 +220,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_kin, nstates);
 
-    rmg::block_reduce((double *)Hij_kin, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij_kin, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
     delete(RT1);
 
@@ -244,7 +244,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     alphavel = vel;
     rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_localpp, nstates);
-    rmg::block_reduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
     if(pct.gridpe ==0 && ct.verbose)
     {

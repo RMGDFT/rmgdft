@@ -351,7 +351,7 @@ void get_cond_frommatrix_kyz ()
 
             MPI_Barrier(pct.img_comm);
 
-            rmg::reduce(cond_temp, EP, pct.grid_comm);
+            rmg::all_reduce(cond_temp, EP, pct.grid_comm);
 
             tot_energy_point += EP;
             for(i=0; i< EP; i++)

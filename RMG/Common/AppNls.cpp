@@ -526,7 +526,7 @@ template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T *nv
     rmg::gemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
             psi, pbasis, beta, overlaps, N);
 
-    rmg::block_reduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
+    rmg::block_allreduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
 
     // Update nv
     rmg::gemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,

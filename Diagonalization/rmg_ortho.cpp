@@ -133,14 +133,14 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         if constexpr (std::is_same_v<T, double>)
         {
             for(size_t i=0;i < stop;i++) fmatrix[i] = mat[i];
-            rmg::block_reduce(fmatrix.data(), stop, pct.grid_comm);
+            rmg::block_allreduce(fmatrix.data(), stop, pct.grid_comm);
             for(size_t i=0;i < stop;i++) mat[i] = fmatrix[i];
         }
         if constexpr (std::is_same_v<T, std::complex<double>>)
         {
             std::complex<float> *fptr = (std::complex<float> *)fmatrix.data();
             for(size_t i=0;i < stop;i++) fptr[i] = mat[i];
-            rmg::block_reduce(fptr, stop, pct.grid_comm);
+            rmg::block_allreduce(fptr, stop, pct.grid_comm);
             for(size_t i=0;i < stop;i++) mat[i] = fptr[i];
         }
         delete RT1;
@@ -198,17 +198,17 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     for(int i=0;i < notcon;i++) D[i] = mat[i + i*notcon];
     if constexpr (std::is_same_v<T, double>)
     {
-        rmg::block_reduce(D.data(), notcon, pct.grid_comm);
+        rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
         PackSqToTr("U", notcon, mat, notcon, (float *)fmatrix.data());
-        rmg::block_reduce(fmatrix.data(), length, pct.grid_comm);
+        rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
         UnPackSqToTr("U", notcon, mat, notcon, fmatrix.data());
         for(int i=0;i < notcon;i++) mat[i + i*notcon] = D[i];
     }
     if constexpr (std::is_same_v<T, std::complex<double>>)
     {
-        rmg::block_reduce(D.data(), notcon, pct.grid_comm);
+        rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
         PackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
-        rmg::block_reduce(fmatrix.data(), length, pct.grid_comm);
+        rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
         UnPackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
         for(int i=0;i < notcon;i++) mat[i + i*notcon] = D[i];
     }

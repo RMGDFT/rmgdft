@@ -304,7 +304,7 @@ void get_dos (STATE * states)
 
 
     iene = E_POINTS * get_FNX_GRID();
-    rmg::reduce(rho_energy, iene, pct.grid_comm);
+    rmg::all_reduce(rho_energy, iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
         double dx = get_celldm(0) / get_NX_GRID();
@@ -331,7 +331,7 @@ void get_dos (STATE * states)
     {
 
         iene = E_POINTS * get_FNY_GRID();
-        rmg::reduce(rho_energy2, iene, pct.grid_comm);
+        rmg::all_reduce(rho_energy2, iene, pct.grid_comm);
         if (pct.gridpe == 0)
         {
             double y = get_celldm(1) * get_celldm(0);

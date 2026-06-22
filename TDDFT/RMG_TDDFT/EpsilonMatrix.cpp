@@ -225,14 +225,14 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
 
             rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev, 
                     pbasis_noncol, beta, block_matrix_x, this_block_size);
-            rmg::block_reduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+            rmg::block_allreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
             rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev, 
                     pbasis_noncol, beta, block_matrix_y, this_block_size);
-            rmg::block_reduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+            rmg::block_allreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
             rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev, 
                     pbasis_noncol, beta, block_matrix_z, this_block_size);
-            rmg::block_reduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+            rmg::block_allreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
             for(int j = 0; j < num_states; j++)
             {
@@ -338,8 +338,8 @@ void EpsilonMatrix (Kpoint<KpointType> **Kptr)
     }
     for(int i = 0; i < 9; i++)
     {
-        rmg::block_reduce(epsilon[i].data(), (size_t)Epoints , pct.grid_comm);
-        rmg::block_reduce(epsilon[i].data(), (size_t)Epoints , pct.kpsub_comm);
+        rmg::block_allreduce(epsilon[i].data(), (size_t)Epoints , pct.grid_comm);
+        rmg::block_allreduce(epsilon[i].data(), (size_t)Epoints , pct.kpsub_comm);
     }
 
     double eps_tem[9];

@@ -55,7 +55,7 @@ void write_rho_x(double * rho, char *ab)
 
     /* Now sum over all processors */
     ix = get_FNX_GRID();
-    rmg::reduce(zvec.data(), ix, pct.grid_comm);
+    rmg::all_reduce(zvec.data(), ix, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {
@@ -98,7 +98,7 @@ void write_rho_y(double * rho, char *ab)
 
     /* Now sum over all processors */
     ix = get_FNY_GRID();
-    rmg::reduce(zvec.data(), ix, pct.grid_comm);
+    rmg::all_reduce(zvec.data(), ix, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {
@@ -143,7 +143,7 @@ void write_rho_z(double * rho, char *ab)
 
     /* Now sum over all processors */
     ix = get_FNZ_GRID();
-    rmg::reduce(zvec.data(), ix, pct.grid_comm);
+    rmg::all_reduce(zvec.data(), ix, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {

@@ -211,7 +211,7 @@ height_list)
             }
         }
 
-        rmg::reduce(rho_xy.data(), NX*NY, pct.grid_comm);
+        rmg::all_reduce(rho_xy.data(), NX*NY, pct.grid_comm);
         OutputSTM(rho_xy, NX, NY, filename + ".stm");
     }
 

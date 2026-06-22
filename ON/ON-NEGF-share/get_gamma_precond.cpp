@@ -29,7 +29,7 @@ double get_gamma_precond(double *vtot, double small_eig)
     for (idx = 0; idx < get_P0_BASIS(); idx++)
         if (vmax < vtot[idx])
             vmax = vtot[idx];
-    rmg::reduce(&vmax, 1, pct.grid_comm);
+    rmg::all_reduce(&vmax, 1, pct.grid_comm);
 
     if (pct.gridpe == 0 && ct.verbose)
         rmg::printlog("\n sssss %f %f %f ", vmax, small_eig, diag);

@@ -213,7 +213,7 @@ void GetFdFactor(int kpt)
             // Make sure the orbital is normalized to 1.0
             double snorm = 0.0;
             for(int idx=0;idx < pbasis;idx++) snorm += std::real(orbital[idx] * std::conj(orbital[idx]));
-            rmg::reduce(&snorm, 1, pct.grid_comm);
+            rmg::all_reduce(&snorm, 1, pct.grid_comm);
             snorm *= get_vel();
             snorm = 1.0 / sqrt(snorm);
             for(int idx=0;idx < pbasis;idx++) orbital[idx] *= snorm;
@@ -265,7 +265,7 @@ void GetFdFactor(int kpt)
                 double snorm_f = 0.0;
                 for(int idx=0;idx < fpbasis;idx++)
                     snorm_f += std::real(pwork2[idx] * std::conj(pwork2[idx]));
-                rmg::reduce(&snorm_f, 1, pct.grid_comm);
+                rmg::all_reduce(&snorm_f, 1, pct.grid_comm);
                 snorm_f *= get_vel_f();
                 snorm_f = 1.0 / sqrt(snorm_f);
                 for(int idx=0;idx < fpbasis;idx++) pwork2[idx] *= snorm_f;

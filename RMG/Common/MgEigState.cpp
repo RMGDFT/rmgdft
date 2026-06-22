@@ -59,7 +59,7 @@ double ComputeEig(int n, T *A, T *B, T *D)
     }
 
     int length = 2;
-    rmg::reduce(s1, length, pct.coalesced_grid_comm);
+    rmg::all_reduce(s1, length, pct.coalesced_grid_comm);
     return  s1[0] / s1[1];
 
 }
