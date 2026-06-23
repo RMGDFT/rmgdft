@@ -79,8 +79,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     while (num_blocks < this->group_cols )
     {
-        this->NB /=2;
-        num_blocks = (N + this->NB -1) / this->NB;
+        rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d with block_factor of %d\n", this->group_cols, this->N, this->NB);
     }
 
     if(this->NB < 2)
