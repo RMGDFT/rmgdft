@@ -326,7 +326,13 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if(ct.forceflag == BAND_STRUCTURE) ct.max_states = std::max(ct.max_states, 3*ct.num_states);
     ct.max_states = std::max(ct.max_states, 2*ct.num_states);
 
-
+    int root_pes = static_cast<int>(std::ceil(sqrt((double)pct.grid_npes)));
+    int nb = ct.run_states / ct.scalapack_block_factor;
+    while((root_pes > nb) && (ct.scalapack_block_factor > 2))
+    {
+        ct.scalapack_block_factor /= 2;
+        nb = ct.run_states / ct.scalapack_block_factor;
+    } 
     /* Allocate memory for the state structures */
     this->Kstates.resize(2*ct.max_states);
     this->nstates = ct.init_states;

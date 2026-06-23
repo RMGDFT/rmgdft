@@ -218,4 +218,9 @@ void CheckSetDefault(void)
             rmg::error("Constrained dynamics is currently implemented for gamma only. Terminating.");
     }
 
+    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        ct.scalapack_block_factor = 16;
+        if(pct.gridpe==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
+    }
 }
