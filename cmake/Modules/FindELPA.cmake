@@ -69,11 +69,13 @@ endif()
 
 # ELPA depends on SCALAPACK anyway, try to find it
 if(NOT SCALAPACK_FOUND)
-    if(ELPA_FIND_REQUIRED)
-        find_package(SCALAPACK REQUIRED)
-    else()
-        find_package(SCALAPACK)
-    endif()
+    if(NOT CRAY_HOST)
+        if(ELPA_FIND_REQUIRED)
+            find_package(SCALAPACK REQUIRED)
+        else()
+            find_package(SCALAPACK)
+        endif()
+     endif()
 endif()
 
 # minimal support of ELPA_DIR ENV{ELPA_DIR}
