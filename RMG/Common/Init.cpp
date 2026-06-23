@@ -461,9 +461,16 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     }
 #endif    
 
+#if !USE_ELPA
+    if (ct.subdiag_driver == SUBDIAG_ELPA)
+    {
+        rmg::printlog("\n WARNING: Elpa specified as subspace diagonalization driver, but RMG was not built with Elpa support. Diagonalization driver will be auto selected");
+        ct.subdiag_driver = SUBDIAG_AUTO;
+    }
+#endif    
     /*Take care of automatic settings, do it just before write header so that settings can be printed out  */
     /*Subspace diagonalization: Use magma if GPU-enabled, otherwise switch between lapack and Scalapack according to number of states*/
-    if (ct.subdiag_driver ==  SUBDIAG_AUTO)
+    if (ct.subdiag_driver == SUBDIAG_AUTO)
     {
 #if CUDA_ENABLED
         ct.subdiag_driver = SUBDIAG_CUSOLVER;
@@ -471,7 +478,11 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if (ct.num_states < 128) 
             ct.subdiag_driver = SUBDIAG_LAPACK;
         else
+#if USE_ELPA
+            ct.subdiag_driver = SUBDIAG_ELPA;
+#else
             ct.subdiag_driver = SUBDIAG_SCALAPACK;
+#endif
 #endif
     }
 
