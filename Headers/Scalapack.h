@@ -231,6 +231,10 @@ protected:
 #define		pzgetrs		RMG_FC_GLOBAL(pzgetrs, PZGETRS)
 #define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
 #define		pztranu		RMG_FC_GLOBAL(pztranu, PZTRANU)
+#define		pdtrtri 	RMG_FC_GLOBAL(pdtrtri, PDTRTRI)
+#define		pztrtri 	RMG_FC_GLOBAL(pztrtri, PZTRTRI)
+#define		pdtrmm   	RMG_FC_GLOBAL(pdtrmm, PDTRMM)
+#define		pztrmm   	RMG_FC_GLOBAL(pztrmm, PZTRMM)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -275,8 +279,9 @@ void pzhengst(int *, char *, int *, std::complex<double> *, int *, int *, int *,
               int *, int*, int*, double *, std::complex<double> *, int *, int *);
 void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
 void pdpocon(char *, int*, double*, int*, int*, int*, double *, double *, double *, int *, int *, int *, int *);
-void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
+void pzpotrf(char *, int*, std::complex<double>*, int*, int*, int*, int*);
 void pdtrtri(char *, char *, int*, double*, int*, int*, int*, int*);
+void pztrtri(char *, char *, int*, std::complex<double>*, int*, int*, int*, int*);
 void pdsyrk( char *, char *, int *, int *, double *, double *, int *, int *, int *,
              double *, double *, int *, int *, int *);
 void pdlaset(char *, int *, int *, double *, double *, double *, int *, int *, int *);
@@ -302,8 +307,8 @@ void pdtrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, do
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 void pdtrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
-void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
-             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, std::complex<double> *alpha,
+             std::complex<double> * a, int *ia, int *ja, int *desca, std::complex<double> *b, int *ib, int *jb, int *descb);               
 void pztrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 void pdtran( int * M, int * N, double * ALPHA, double * A, int * IA, int * JA, int * DESCA,

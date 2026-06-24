@@ -369,7 +369,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
         else if(typeid(KpointType) == typeid(std::complex<double>))
         {
             double scale=1.0, rone[2] = {1.0, 0.0};
-            pzpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+            pzpotrf("L", &N, (std::complex<double> *)distB,  &ione, &ione, desca,  &info);
             if(info) return info;
 
             pzhegst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,

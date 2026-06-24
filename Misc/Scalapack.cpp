@@ -578,7 +578,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     int N = this->N;
     int *desca = this->GetDistDesca();
 
-    pzpotrf(uplo, &N, (double *)b,  &ione, &ione, desca,  &info);
+    pzpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
 
     if (info)
     {

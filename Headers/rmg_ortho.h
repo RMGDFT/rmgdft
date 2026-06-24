@@ -47,6 +47,7 @@ namespace rmg
         ortho(int max_states_in, int pbasis_in);
         ~ortho(void);
         void orthogonalize(int nbase, int notcon, T *psi, bool dostage2);
+        void orthogonalize_scalapack(int nbase, T *psi);
 
     protected:
         int max_states;
