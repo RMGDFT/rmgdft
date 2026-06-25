@@ -26,6 +26,7 @@
 #include "rmg_hvector.h"
 #include "rmg_dev_allocate.h"
 #include "Subdiag.h"
+#include "blacs.h"
 
 
 #if SYCL_ENABLED
@@ -98,7 +99,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
     }
 
     size_t tlength = ((notcon + 2) * notcon / 2);
-    size_t alloc = (notcon+nbase)*(notcon+nbase);
+    size_t alloc = std::max((size_t)notcon*(size_t)nbase, (size_t)notcon*(size_t)notcon);
     rmg::hvector<float> fmatrix(factor*alloc);
     rmg::hvector<T> gmatrix(alloc + tlength + 8192);
     T *mat = gmatrix.data();
@@ -321,14 +322,32 @@ template <class T> void ortho<T>::orthogonalize_scalapack(int notcon, T *psi)
     }
     delete RT2;
 
-    ScaL.CopyDistArrayToSquareMatrix(mat_g.data(), distSij.data(), notcon, desca);
-    ScaL.Allreduce(MPI_IN_PLACE, mat_g.data(), notcon * notcon, MPI_DOUBLE, MPI_SUM);
+//    ScaL.CopyDistArrayToSquareMatrix(mat_g.data(), distSij.data(), notcon, desca);
+//    ScaL.Allreduce(MPI_IN_PLACE, mat_g.data(), notcon * notcon, MPI_DOUBLE, MPI_SUM);
     RT2 = new RmgTimer("MgridOrtho: 2nd stage: update");
+    int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
+    int mycol, myrow, nprow, npcol;
+    Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
+    int izero(0);
 
-    for(int i = 0; i < notcon * notcon; i++) mat_g[i] /= inv_vel;
-    for(int i = 0; i < notcon; i++)
-        for(int j = i+1; j < notcon; j++) mat_g[i*notcon + j] = 0.0;
+    for(int i = 0; i < Mdim; i++)
+    {
+        for(int j = 0; j < Ndim; j++)
+        {
+            int i1 = i+1;
+            int j1 = j+1;
+            int i_glob = indxl2g(&i1, &mb, &myrow, &izero, &nprow);
+            int j_glob = indxl2g(&j1, &nb, &mycol, &izero, &npcol);
+            if(i_glob > j_glob) distSij[j *mxllda + i] = 0.0;
 
+        }
+    }
+
+    //    for(int i = 0; i < notcon * notcon; i++) mat_g[i] /= inv_vel;
+    //    for(int i = 0; i < notcon; i++)
+    //        for(int j = i+1; j < notcon; j++) mat_g[i*notcon + j] = 0.0;
+
+#if 0
 
 #if HIP_ENABLED || CUDA_ENABLED
     T *mat_d;
@@ -346,37 +365,40 @@ template <class T> void ortho<T>::orthogonalize_scalapack(int notcon, T *psi)
     RT2 = new RmgTimer("MgridOrtho: 2nd stage update");
     rmg::trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi, this->pbasis);
     delete RT2;
-    //    ScaL.CopySquareMatrixToDistArray(mat_g.data(), distSij.data(), notcon, desca);
-    //    T *matrix_diag = new T[notcon];
-    //    T *new_psi;
-    //#if HIP_ENABLED || CUDA_ENABLED
-    //    rmg_device_pool->malloc(&new_psi, notcon*(size_t)this->pbasis);
-    //#elif SYCL_ENABLED
-    //    gpuMalloc((void **)&new_psi, notcon*(size_t)this->pbasis*sizeof(T));
-    //#else
-    //   new_psi = new T[(size_t)notcon * (size_t)this->pbasis];
-    //#endif
-    //    PsiUpdate(notcon, pbasis, distSij.data(), desca, psi, new_psi,  matrix_diag);
-    //
-    //    size_t psi_size = notcon * this->pbasis;
-    //    RmgMemcpy(psi, new_psi, psi_size);
-
-    //#if HIP_ENABLED || CUDA_ENABLED
-    //    rmg::sync_device();
-    //    rmg_device_pool->free(new_psi);
-    //#elif SYCL_ENABLED
-    //    gpuFree(new_psi);
-    //#else
-    //    delete [] new_psi;
-    //#endif
-
-    delete RT1;
-
 #if HIP_ENABLED || CUDA_ENABLED
     rmg_device_pool->free(mat_d);
 #elif SYCL_ENABLED
     gpuFree(mat_d);
 #endif
+#endif
+    //    ScaL.CopySquareMatrixToDistArray(mat_g.data(), distSij.data(), notcon, desca);
+    T *matrix_diag = new T[notcon];
+    T *new_psi;
+#if HIP_ENABLED || CUDA_ENABLED
+    rmg_device_pool->malloc(&new_psi, notcon*(size_t)this->pbasis);
+#elif SYCL_ENABLED
+    gpuMalloc((void **)&new_psi, notcon*(size_t)this->pbasis*sizeof(T));
+#else
+    new_psi = new T[(size_t)notcon * (size_t)this->pbasis];
+#endif
+    PsiUpdate(notcon, pbasis, distSij.data(), desca, psi, new_psi,  matrix_diag);
+
+    size_t psi_size = notcon * this->pbasis * sizeof(T);
+    RmgMemcpy(psi, new_psi, psi_size);
+
+#if HIP_ENABLED || CUDA_ENABLED
+    rmg::sync_device();
+    rmg_device_pool->free(new_psi);
+#elif SYCL_ENABLED
+    gpuFree(new_psi);
+#else
+    delete [] new_psi;
+#endif
+
+    delete [] matrix_diag;
+    delete RT2;
+    delete RT1;
+
     if (info != 0)
         throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating.\n";
 

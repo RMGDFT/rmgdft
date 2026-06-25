@@ -246,7 +246,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         }
 
         RmgTimer RTO("3-MgridSubspace: ortho");
-        MGOrtho.orthogonalize(first, this->nstates-first, this->orbital_storage, true);
+        int stop = std::min(first+block_size, this->nstates-first);
+        MGOrtho.orthogonalize(first, stop, this->orbital_storage, true);
+
     }
 
     // Set trade images coalesce factor back to 1 for other routines.
