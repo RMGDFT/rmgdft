@@ -166,7 +166,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         return;
     }
 
-    if(1)
+    if(0)
     {
         RmgTimer *RT1 = new RmgTimer("MgridOrtho: 2nd stage");
         RmgTimer *RT2 = new RmgTimer("MgridOrtho: 2nd stage overlaps");
