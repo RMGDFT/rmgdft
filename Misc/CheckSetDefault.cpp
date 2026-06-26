@@ -50,6 +50,9 @@ void CheckSetDefault(void)
 //    ct.tddft_tiledMM = 1;
 #endif
 
+    int my_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
     if(ct.tddft_noscf || ct.restart_tddft)
     {
         ct.runflag = RESTART;
@@ -202,8 +205,8 @@ void CheckSetDefault(void)
         if(ct.forceflag == TDDFT_CVE)
         {
             ct.tddft_time_step = ct.iondt / (double)(ct.tddft_steps);
-            if(pct.gridpe==0) printf("Tddft timestep adjusted to an integral divisor of ionic time step.\n");
-            if(pct.gridpe==0) printf("Ionic = %14.8f,  tddft = %14.8f\n", ct.iondt, ct.tddft_time_step);
+            if(my_rank==0) printf("Tddft timestep adjusted to an integral divisor of ionic time step.\n");
+            if(my_rank==0) printf("Ionic = %14.8f,  tddft = %14.8f\n", ct.iondt, ct.tddft_time_step);
         }
     }
     if(ct.checkpoint <= 0) ct.checkpoint = 5;
@@ -221,6 +224,6 @@ void CheckSetDefault(void)
     if(ct.subdiag_driver == SUBDIAG_ELPA)
     {
         ct.scalapack_block_factor = 16;
-        if(pct.gridpe==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
+        if(my_rank==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
     }
 }

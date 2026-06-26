@@ -515,6 +515,9 @@ void WriteHeader (void)
         case SUBDIAG_ROCSOLVER:
             if(pct.imgpe==0) fprintf(ct.logfile, "Rocsolver\n");
             break;
+        case SUBDIAG_ELPA:
+            if(pct.imgpe==0) fprintf(ct.logfile, "Elpa\n");
+            break;
         default:
             if(pct.imgpe==0) fprintf(ct.logfile, "Unknown diagonalization method");
     }
