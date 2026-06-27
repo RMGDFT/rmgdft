@@ -215,7 +215,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         {
             rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
             PackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
-            rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
+            rmg::block_allreduce((std::complex<float> *)fmatrix.data(), length, pct.grid_comm);
             UnPackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
             for(int i=0;i < notcon;i++) mat[i + i*notcon] = D[i];
         }
