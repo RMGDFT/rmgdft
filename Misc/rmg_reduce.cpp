@@ -279,6 +279,8 @@ void rmg::block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
 void rmg::block_reduce(double *mat, size_t count, int root, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
+    int my_rank;
+    MPI_Comm_rank(comm, &my_rank);
 
     if(T->is_loop_over_states())
         rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
@@ -288,16 +290,26 @@ void rmg::block_reduce(double *mat, size_t count, int root, MPI_Comm comm)
     double *tptr = mat;
     for(size_t ib=0;ib < blocks;ib++)
     {
-        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
         tptr += block_size;
     }
     if(rem)
-        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+    {
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+    }
 }
 
 void rmg::block_reduce(float *mat, size_t count, int root, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
+    int my_rank;
+    MPI_Comm_rank(comm, &my_rank);
 
     if(T->is_loop_over_states())
         rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
@@ -307,16 +319,26 @@ void rmg::block_reduce(float *mat, size_t count, int root, MPI_Comm comm)
     float *tptr = mat;
     for(size_t ib=0;ib < blocks;ib++)
     {
-        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, block_size, MPI_FLOAT, MPI_SUM, root, comm);
         tptr += block_size;
     }
     if(rem)
-        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+    {
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, rem, MPI_FLOAT, MPI_SUM, root, comm);
+    }
 }
 
 void rmg::block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
+    int my_rank;
+    MPI_Comm_rank(comm, &my_rank);
 
     if(T->is_loop_over_states())
         rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
@@ -326,16 +348,26 @@ void rmg::block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Co
     double *tptr = (double *)mat;
     for(size_t ib=0;ib < blocks;ib++)
     {
-        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, block_size, MPI_DOUBLE, MPI_SUM, root, comm);
         tptr += block_size;
     }
     if(rem)
-        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+    {
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, rem, MPI_DOUBLE, MPI_SUM, root, comm);
+    }
 }
 
 void rmg::block_reduce(std::complex<float> *mat, size_t count, int root, MPI_Comm comm)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
+    int my_rank;
+    MPI_Comm_rank(comm, &my_rank);
 
     if(T->is_loop_over_states())
         rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
@@ -345,11 +377,19 @@ void rmg::block_reduce(std::complex<float> *mat, size_t count, int root, MPI_Com
     float *tptr = (float *)mat;
     for(size_t ib=0;ib < blocks;ib++)
     {
-        MPI_Reduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, block_size, MPI_FLOAT, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, block_size, MPI_FLOAT, MPI_SUM, root, comm);
         tptr += block_size;
     }
     if(rem)
-        MPI_Reduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+    {
+        if(my_rank == root)
+            MPI_Reduce(tptr, tptr, rem, MPI_FLOAT, MPI_SUM, root, comm);
+        else
+            MPI_Reduce(tptr, NULL, rem, MPI_FLOAT, MPI_SUM, root, comm);
+    }
 }
 
 
