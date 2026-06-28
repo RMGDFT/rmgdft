@@ -42,7 +42,7 @@ static int once;
 #endif
 
 
-Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
+Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB_in, int last, MPI_Comm rootcomm)
 {
     this->ngroups = ngroups;
     this->N = N;
@@ -73,18 +73,28 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_cols * this->group_rows > this->group_pes)
         throw RmgFatalException() << "Problem with processor distribution in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
-    this->NB = NB;
-    int num_blocks = N / NB;
-    if(N % NB) num_blocks++;
+    this->NB = NB_in;
+    int num_blocks;
+again:
+    num_blocks = N / this->NB;
+    if(N % this->NB) num_blocks++;
 
     if (num_blocks < this->group_cols )
     {
         rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d with block_factor of %d\n", this->group_cols, this->N, this->NB);
+        // With Elpa blacs grid must span so reduce block size
+        if(ct.subdiag_driver == SUBDIAG_ELPA)
+        {
+            this->NB /= 2;
+            goto again;
+        }
     }
 
     if(this->NB < 2)
     {
         rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+        // Switch to scalapack in this case though perhaps we should switch to Lapack or a gpu solver if available
+        if(ct.subdiag_driver == SUBDIAG_ELPA) ct.subdiag_driver = SUBDIAG_SCALAPACK;
     }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;

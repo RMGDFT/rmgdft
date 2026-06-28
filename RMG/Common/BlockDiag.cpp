@@ -97,13 +97,8 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     rmg::hvector<KpointType> vr(Nmax*Nmax);
     for(auto &gap: gaps)
     {
-        if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
+        if(pct.gridpe==0 && ct.verbose)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
         this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr.data(), sr.data(), vr.data());
-        if(gaps.size() > 1)
-        {
-            RmgTimer RT2("6-BlockDiag: ortho");
-            Ortho.orthogonalize(gap.first, gap.second, this->orbital_storage, ct.davidson_2stage_ortho);
-        }
     }
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;
