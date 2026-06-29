@@ -236,7 +236,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                             rmg::error("error reading");
                     }
 
-                    tptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi;
+                    tptr = (std::complex<double> *)Kptr[ik]->Kstates[is].psi;
                     for(int ix=0;ix < wvfn_size;ix++) tptr[ix] = std::complex<double>(tbuf[ix], 0.0);
 
                 }
