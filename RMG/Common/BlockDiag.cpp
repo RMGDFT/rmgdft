@@ -89,8 +89,6 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     gaps.push_back(std::make_pair(start, this->nstates - start));
     Nmax = std::max(Nmax, this->nstates - start);
 
-    rmg::ortho<KpointType> Ortho(nstates, pbasis_noncoll);
-
     // Loop over blocks.
     rmg::hvector<KpointType> hr(Nmax*Nmax);
     rmg::hvector<KpointType> sr(Nmax*Nmax);
