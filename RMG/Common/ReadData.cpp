@@ -225,10 +225,16 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
                     // Wavefunctions on disk are real but current calc is complex so convert them
                     ssize_t wanted = sizeof (double) * (ssize_t)wvfn_size;
-                    ssize_t size = read (fhand, tbuf, wanted);
-
-                    if(size != wanted)
-                        rmg::error("error reading");
+                    if(ct.compressed_infile)
+                    {
+                        read_compressed_buffer(fhand, tbuf, pgrid[0], pgrid[1], pgrid[2]);
+                    }
+                    else
+                    {
+                        ssize_t size = read (fhand, tbuf, wanted);
+                        if(size != wanted)
+                            rmg::error("error reading");
+                    }
 
                     tptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi;
                     for(int ix=0;ix < wvfn_size;ix++) tptr[ix] = std::complex<double>(tbuf[ix], 0.0);

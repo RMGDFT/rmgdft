@@ -111,7 +111,7 @@ template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_in, double 
         //        (ct.xc_is_hybrid && Functional::is_exx_active())) 
         {
             RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-            Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
+            Kptr[kpt]->MgridSubspaceBlocked(vtot_psi, vxc_psi);
             delete RT1;
         }
        // else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
