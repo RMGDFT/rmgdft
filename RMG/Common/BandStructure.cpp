@@ -136,7 +136,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 RmgTimer *RT = new RmgTimer("MgridSub in band");
 
                 //Kptr[kpt]->LcaoGetPsi(ct.num_states, ct.num_states);
-                Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
+                Kptr[kpt]->MgridSubspaceBlocked(vtot_psi, vxc_psi);
 
                 delete RT;
 
