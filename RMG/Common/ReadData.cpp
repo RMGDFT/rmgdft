@@ -141,7 +141,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
-    if (ns > ct.num_states) {
+    if(ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) 
+    {
+        ns = std::min(ns, ct.num_states);
+    }
+    else if (ns > ct.num_states) {
         rmg::printlog ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
         rmg::error("Terminating.");
     }
