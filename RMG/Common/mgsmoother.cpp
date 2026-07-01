@@ -81,7 +81,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
 
     double eig1 = ComputeEig(pbasis, u, Hu, ns);
     auto mixeig = [](double &eig, double &eig1) {
-        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)))
+        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)) || std::abs(eig) < 1.0e-10)
             eig = eig1;
         else
             eig = 0.7*eig1 + 0.3*eig;
