@@ -47,6 +47,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     this->ngroups = ngroups;
     this->N = N;
     this->root_comm = rootcomm;
+    this->driver = ct.subdiag_driver;
 
     MPI_Comm_size(rootcomm, &this->npes);
     MPI_Comm_rank(rootcomm, &this->root_rank);
@@ -83,18 +84,18 @@ again:
     {
         rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d with block_factor of %d\n", this->group_cols, this->N, this->NB);
         // With Elpa blacs grid must span so reduce block size
-        if(ct.subdiag_driver == SUBDIAG_ELPA)
+        if(this->driver == SUBDIAG_ELPA)
         {
             this->NB /= 2;
             goto again;
         }
     }
 
-    if(this->NB < 2)
+    if(this->NB < 8)
     {
         rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
         // Switch to scalapack in this case though perhaps we should switch to Lapack or a gpu solver if available
-        if(ct.subdiag_driver == SUBDIAG_ELPA) ct.subdiag_driver = SUBDIAG_SCALAPACK;
+        if(this->driver == SUBDIAG_ELPA) this->driver = SUBDIAG_SCALAPACK;
     }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
@@ -197,7 +198,7 @@ again:
   //   }
 
 #if USE_ELPA
-    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    if(this->driver != SUBDIAG_ELPA) return;
     int error;
     int api_version = 20260202;
     if(!once)
@@ -489,7 +490,7 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
 void Scalapack::generalized_eigenvectors(double *a, double *b, double *ev, double *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         this->generalized_eigenvectors_elpa(a, b, ev, q);
         return;
@@ -503,7 +504,7 @@ void Scalapack::generalized_eigenvectors(std::complex<double> *a, std::complex<d
              double *ev, std::complex<double> *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         this->generalized_eigenvectors_elpa(a, b, ev, q);
         return;
@@ -652,7 +653,7 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 void Scalapack::symherm_eigenvectors(double *a, double *ev, double *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         int error;
         elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
@@ -707,7 +708,7 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
 void Scalapack::symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         int error;
         elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
@@ -1113,7 +1114,7 @@ Scalapack::~Scalapack(void)
     delete [] this->dist_desca;
     delete [] this->local_desca;
 #if USE_ELPA
-    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    if(this->driver != SUBDIAG_ELPA) return;
     int error;
     elpa_deallocate((elpa_t)this->elpa_handle, &error);
 #endif

@@ -68,6 +68,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
 
     // Required size of block before we treat it as distinct object
     int count_thr = std::floor(0.05*(double)this->nstates);
+    count_thr = std::max(count_thr, 20);
 
     // Identify the start and size of each block
     std::vector<std::pair<int, int>> gaps;
@@ -80,14 +81,20 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
         {
             gaps.push_back(std::make_pair(start, count));
             start = st;
-            Nmax = std::max(Nmax, count);
             count = 0;
         }
         last_eig = eig;
         count++;
     }
-    gaps.push_back(std::make_pair(start, this->nstates - start));
-    Nmax = std::max(Nmax, this->nstates - start);
+    if((this->nstates - start) > count_thr)
+    {
+        gaps.push_back(std::make_pair(start, this->nstates - start));
+    }
+    else
+    {
+        gaps.back().second += this->nstates - start;
+    }
+    for(auto &gap: gaps) Nmax = std::max(Nmax, gap.second);
 
     // Loop over blocks.
     rmg::hvector<KpointType> hr(Nmax*Nmax);

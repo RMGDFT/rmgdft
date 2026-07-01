@@ -153,6 +153,7 @@ protected:
     void *elpa_handle;
 #endif
 
+    int driver;         // Scalapack or elpa
     int N;              // Operates on matrices of size (N,N)
     int scalapack_npes; // number of processors from the root_com that participate in sp operatrions
     int NB;             // Blocking factors
