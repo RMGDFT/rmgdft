@@ -128,6 +128,10 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         Kptr[kpt]->nstates = ct.num_states;
 
 
+        for(int st = 0; st < ct.num_states; st++)
+        {
+            Kptr[kpt]->Kstates[st].eig[0] = 0.0;
+        }
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
