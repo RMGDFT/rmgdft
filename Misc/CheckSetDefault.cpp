@@ -226,4 +226,12 @@ void CheckSetDefault(void)
         ct.scalapack_block_factor = 16;
         if(my_rank==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
     }
+
+    if((ct.subdiag_driver != SUBDIAG_SCALAPACK) && (ct.subdiag_driver != SUBDIAG_ELPA))
+    {
+        if(ct.use_block_diag)
+        {
+            if(my_rank==0) printf("Disabling use_block_diag as it's only available for scalapack or elpa drivers.\n");
+        }
+    }
 }
