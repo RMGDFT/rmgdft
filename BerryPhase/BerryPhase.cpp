@@ -1031,6 +1031,6 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
         */
 
     }
-    delete [] h_psi;
+    RmgFreeHost(h_psi);
 }
 
