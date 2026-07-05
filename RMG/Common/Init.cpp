@@ -501,6 +501,15 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM || ct.forceflag == NSCF) 
     {
         ct.num_states = ct.run_states;
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            for(int st = 0; st < ct.num_states; st++)
+            {
+                Kptr[kpt]->Kstates[st].eig[0] = 0.0;
+            }
+        }
+
         return;
     }
 

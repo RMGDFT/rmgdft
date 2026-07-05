@@ -36,10 +36,10 @@ public:
     int BerryPhase_dir;
     double efield_mag=0.0;
     double eps = 1.0e-10;
-    double vel;
+    double vel{0.0};
     std::complex<double> vel_C;
-    double eai; //efield dot lattice vector in berryphase_dri
-    double pol_elec, pol_ion, pol_tot, enthalpy_elec;
+    double eai{0.0}; //efield dot lattice vector in berryphase_dri
+    double pol_elec{0.0}, pol_ion{0.0}, pol_tot{0.0}, enthalpy_elec{0.0};
     int nband_occ;
     int pbasis, pbasis_noncoll;
     size_t wfc_size;
