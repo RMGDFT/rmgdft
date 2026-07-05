@@ -536,11 +536,13 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
     size_nown *= nstates * this->pstride;
 
 
+    rmg::hvector<KpointType> own_buff_storage(size_own+1);
+    rmg::hvector<KpointType> nown_buff_storage(size_nown+1);
     if (size_own) {
-        own_buff = new KpointType[size_own]();
+        own_buff = own_buff_storage.data();
     }
     if (size_nown) {
-        nown_buff = new KpointType[size_nown]();
+        nown_buff = nown_buff_storage.data();
     }
 
     if (this->num_owned_pe) {
@@ -564,15 +566,15 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
     // Set sint array
     //sint = &kptr->newsint_local[offset*this->num_nonloc_ions*this->pstride];
-    KpointType *sint = new KpointType[this->num_nonloc_ions * nstates * this->pstride]();
+    rmg::hvector<KpointType> sint(this->num_nonloc_ions * nstates * this->pstride);
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, &orbitals[offset*kptr->pbasis], nstates, weight);
+    betaxpsi_calculate (kptr, sint.data(), &orbitals[offset*kptr->pbasis], nstates, weight);
 
 
     /*Pack data for sending */
-    betaxpsi_pack (sint, send_buff, this->num_owners,
+    betaxpsi_pack (sint.data(), send_buff, this->num_owners,
             this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
 
     /*Send <beta|psi> contributions  to the owning PE */
@@ -587,7 +589,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
 
     /*Unpack received data and sum contributions from all pes for owned ions */
-    betaxpsi_sum_owned (recv_buff, sint, this->num_owned_pe,
+    betaxpsi_sum_owned (recv_buff, sint.data(), this->num_owned_pe,
             this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
 
     /*In the second stage, owning cores will send summed data to non-owners */
@@ -603,7 +605,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
             this->num_nonowned_ions_per_pe, req_recv, nstates);
 
     /*Pack summed data for owned ions to send to non-owners */
-    betaxpsi_pack (sint, send_buff, this->num_owned_pe,
+    betaxpsi_pack (sint.data(), send_buff, this->num_owned_pe,
             this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
 
     /*Send packed data for owned ions to non-owners */
@@ -617,7 +619,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         MPI_Waitall (this->num_owners, req_recv, MPI_STATUSES_IGNORE);
 
     /*Finaly, write received data about non-owned ions into sint array */
-    betaxpsi_write_non_owned (sint, recv_buff, this->num_owners,
+    betaxpsi_write_non_owned (sint.data(), recv_buff, this->num_owners,
             this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
 
 
@@ -625,11 +627,6 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         delete [] req_own;
     if (this->num_owners)
         delete [] req_nown;
-    if (size_nown)
-        delete [] nown_buff;
-    if (size_own)
-        delete [] own_buff;
-
 
     int idx= 0 ;
     for(int st = 0;st < nstates;st++) {
@@ -640,7 +637,6 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
             }
         }
     }
-    delete [] sint;
 }
 
 
