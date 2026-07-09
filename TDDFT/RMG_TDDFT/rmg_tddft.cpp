@@ -412,12 +412,12 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
                 memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
             }
         }
-    }
 
-    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-        for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
-        memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
-        MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
+            memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
+            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
+        }
     }
 
 

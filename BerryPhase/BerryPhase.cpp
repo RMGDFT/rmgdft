@@ -983,6 +983,11 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
     std::complex<double> one(1.0);
 
     int n2 = Sp.GetDistMdim() * Sp.GetDistNdim();
+    if(ct.tddft_tiledMM)
+    {
+        n2 = numst * numst/pct.local_comm_npes;
+    }
+
     if(Kptr[0]->BP_Xml == NULL)
     {
         for(int ik = 0; ik < ct.num_kpts_pe; ik++)
@@ -1012,23 +1017,35 @@ void BerryPhase::tddft_Xml (Kpoint<std::complex<double>> **Kptr, int tddft_start
         rmg::gemm("c", "n", numst, numst, pbasis_noncoll, vel_C, psi, pbasis_noncoll, h_psi, pbasis_noncoll, zero, mat_glob.data(), numst);
 
         rmg::block_allreduce(mat_glob.data(), (size_t)numst * numst, pct.grid_comm);
-        Sp.CopySquareMatrixToDistArray(mat_glob.data(),  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
+        if(ct.tddft_tiledMM)
+        {
+            int numst_pe = numst/pct.local_comm_npes;
+            for(int idx = 0; idx < numst_pe * numst; idx++)
+            {
+                Kptr[kpt]->BP_Xml[idx] = mat_glob[pct.local_rank * numst_pe * numst + idx];
+            }
+
+        }
+        else
+        {
+            Sp.CopySquareMatrixToDistArray(mat_glob.data(),  Kptr[kpt]->BP_Xml, numst, Sp.GetDistDesca());
+        }
 
         /*
-        rmg::printlog("\n kpt %d ", kpt);
-        for(int i=0; i < 5; i++)
-        {
-            rmg::printlog("\n aaa ");
-            for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::real(mat_glob[i*numst + j]));
-        }
+           rmg::printlog("\n kpt %d ", kpt);
+           for(int i=0; i < 5; i++)
+           {
+           rmg::printlog("\n aaa ");
+           for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::real(mat_glob[i*numst + j]));
+           }
 
-        rmg::printlog("\n");
-        for(int i=0; i < 5; i++)
-        {
-            rmg::printlog("\n bbb ");
-            for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::imag(mat_glob[i*numst + j]));
-        }
-        */
+           rmg::printlog("\n");
+           for(int i=0; i < 5; i++)
+           {
+           rmg::printlog("\n bbb ");
+           for(int j=0; j < 5; j++) rmg::printlog(" %e ", std::imag(mat_glob[i*numst + j]));
+           }
+         */
 
     }
     RmgFreeHost(h_psi);
