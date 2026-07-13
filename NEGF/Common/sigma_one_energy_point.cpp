@@ -34,6 +34,8 @@ double kvecy, double kvecz, std::complex<double> *work)
     int *desca, *descb, numst, numstC;
 
 
+    RmgTimer *RT = new RmgTimer("sigma");
+    RmgTimer *RT1 = new RmgTimer("sigma: matrix init");
 
     maxrow =0;
     maxcol =0;
@@ -90,17 +92,22 @@ double kvecy, double kvecz, std::complex<double> *work)
     }
 
 
+    delete RT1;
     if (std::imag(ene) <0.5 )
     {
 
         //KrylovSigma_c(numst, ch0, ch10, ch01,sigma, 0.01);
         //return;
+        RT1 = new RmgTimer("sigma: green_lead");
         green_lead(ch0, ch01, ch10, g, jprobe);
+        delete RT1;
 
     }    
     else
     {
+        RT1 = new RmgTimer("sigma: green_lead_semi");
         Sgreen_semi_infinite_p (g, ch0, ch01, ch10, jprobe);
+        delete RT1;
     }
     //    else
     //    {
@@ -133,6 +140,9 @@ double kvecy, double kvecz, std::complex<double> *work)
         ch10[i] = ene * S10[i] - Ha_eV * H10[i];
     }
 
+    RT1 = new RmgTimer("sigma: sigma_p");
     Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
+    delete RT1;
 
+    delete RT;
 }

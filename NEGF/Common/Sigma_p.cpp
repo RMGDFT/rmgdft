@@ -22,6 +22,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "blas_driver.h"
 
 
 
@@ -56,12 +57,10 @@ void Sigma_p (std::complex<double> *sigma, std::complex<double> *ch, std::comple
     /*    sigma(C,C) = ch1(C,L) * ch(L,C)  */ 
 		  
 
-    pzgemm (&fcd_n, &fcd_n, &ndim, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
-            green, &ione, &ione, descb, &beta, ch, &ione, &ione, desca);
+    rmg::zgemm_driver (&fcd_n, &fcd_n, ndim, nmax, nmax, alpha, ch01, ione, ione, desca,
+            green, ione, ione, descb, beta, ch, ione, ione, desca);
 
-    pzgemm (&fcd_n, &fcd_n, &ndim, &ndim, &nmax, &alpha, ch, &ione, &ione, desca,
-            ch10, &ione, &ione, descd, &beta, sigma, &ione, &ione, descc);
-
-
+    rmg::zgemm_driver (&fcd_n, &fcd_n, ndim, ndim, nmax, alpha, ch, ione, ione, desca,
+            ch10, ione, ione, descd, beta, sigma, ione, ione, descc);
 
 }
