@@ -353,7 +353,7 @@ int main(int argc, char **argv)
     RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    MPI_Finalize();
     RmgTerminateThreads();
+    MPI_Finalize();
 
 }

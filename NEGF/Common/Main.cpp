@@ -189,9 +189,9 @@ int main (int argc, char **argv)
     RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe);
 
 
-    MPI_Finalize ();
 
     RmgTerminateThreads();
+    MPI_Finalize ();
 
     return 0;
 }                               /*   end main */
