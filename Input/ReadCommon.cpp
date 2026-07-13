@@ -321,7 +321,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("internal_pseudo_type", NULL, &ct.internal_pseudo_type, "sg15",
                      CHECK_AND_TERMINATE, OPTIONAL, internal_pseudo_type,
-                     "Internal pseudopotential type. Choices are sg15, ultrasoft, nc_accuracy or all_electron ", 
+                     "Internal pseudopotential type. Choices are sg15, ultrasoft, abinit_accuracy, abinit_standard, nc_accuracy or all_electron ", 
                      "internal pseudopotential type not found. ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
@@ -1892,12 +1892,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     {
         auto K1 = InputMap["charge_mixing_type"];
         K1->Readstr = "Broyden";
+        ct.charge_mixing_type = 2;
         lc.potential_acceleration_constant_step = 0.0;
     }
     else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
     {
         auto K1 = InputMap["charge_mixing_type"];
         K1->Readstr = "Broyden";
+        ct.charge_mixing_type = 2;
         lc.potential_acceleration_constant_step = 0.0;
     }
 
