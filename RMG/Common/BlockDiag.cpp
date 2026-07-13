@@ -92,7 +92,14 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     }
     else
     {
-        gaps.back().second += this->nstates - start;
+        if(gaps.size() == 0)
+        {
+            gaps.push_back(std::make_pair(0, this->nstates));
+        }
+        else
+        {
+            gaps.back().second += this->nstates - start;
+        }
     }
     for(auto &gap: gaps) Nmax = std::max(Nmax, gap.second);
 
