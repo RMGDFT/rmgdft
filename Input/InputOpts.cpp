@@ -38,6 +38,7 @@
         {"nc_accuracy", NORM_CONSERVING_ACCURACY},
         {"abinit_standard", NORM_CONSERVING_STANDARD},
         {"nc_standard", NORM_CONSERVING_STANDARD},
+        {"nc_default", NORM_CONSERVING_DEFAULT},
         {"all_electron", ALL_ELECTRON}};
 
  std::unordered_map<std::string, int> energy_output_units = {

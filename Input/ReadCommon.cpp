@@ -321,7 +321,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("internal_pseudo_type", NULL, &ct.internal_pseudo_type, "sg15",
                      CHECK_AND_TERMINATE, OPTIONAL, internal_pseudo_type,
-                     "Internal pseudopotential type. Choices are sg15, ultrasoft, abinit_accuracy, abinit_standard, nc_accuracy or all_electron ", 
+                     "Internal pseudopotential type. Choices are sg15, ultrasoft, abinit_accuracy, abinit_standard, nc_accuracy, nc_default or all_electron ", 
                      "internal pseudopotential type not found. ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
