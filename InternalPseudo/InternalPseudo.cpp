@@ -89,7 +89,6 @@ std::string GetInternalPseudo(const char *symbol)
    if(ct.internal_pseudo_type == NORM_CONSERVING_DEFAULT)
    {
        std::string type = default_pp[std::string(symbol)];
-       printf("RRRR  %s\n",type.c_str());
        if(type == std::string("sg15"))
            return GetInternalPseudo_sg15(symbol);
        if(type == std::string("nc_accuracy") || type == std::string("pd_precision"))
