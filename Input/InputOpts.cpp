@@ -34,9 +34,9 @@
  std::unordered_map<std::string, int> internal_pseudo_type = {
         {"ultrasoft", ULTRASOFT_GBRV},
         {"sg15", NORM_CONSERVING_SG15},
-        {"abinit_precision", NORM_CONSERVING_ACCURACY},
+        {"pd_precision", NORM_CONSERVING_ACCURACY},
         {"nc_accuracy", NORM_CONSERVING_ACCURACY},
-        {"abinit_standard", NORM_CONSERVING_STANDARD},
+        {"pd_standard", NORM_CONSERVING_STANDARD},
         {"nc_standard", NORM_CONSERVING_STANDARD},
         {"nc_default", NORM_CONSERVING_DEFAULT},
         {"all_electron", ALL_ELECTRON}};
