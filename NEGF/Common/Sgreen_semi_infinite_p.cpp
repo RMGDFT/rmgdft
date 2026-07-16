@@ -19,6 +19,7 @@
 #include "GpuAlloc.h"
 #include "blas_driver.h"
 #include "rmg_reduce.h"
+#include "rmg_dev_allocate.h"
 
 
 #define 	MAX_STEP 	40

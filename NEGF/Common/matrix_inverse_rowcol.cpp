@@ -14,6 +14,7 @@
 #include "Scalapack.h"
 #include "GpuAlloc.h"
 #include "blas_driver.h"
+#include "rmg_dev_allocate.h"
 
 void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::complex<double> *G_tri_cpu, 
         std::complex<double> *Grow_cpu, std::complex<double> *Gcol_cpu)

@@ -95,8 +95,11 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
 
     /* t11 = (ene-ch0)^-1  */
 
-    rmg::zcopy_driver(n1, ch0_ptr, ione, t11, ione);
-    matrix_inverse_driver(t11, desca);
+    rmg::zcopy_driver(n1, Imatrix_ptr, ione, t11, ione);
+    rmg::zcopy_driver(n1, ch0_ptr, ione, t12, ione);
+    zgesv_driver(t12, desca, t11, desca);
+    //rmg::zcopy_driver(n1, ch0_ptr, ione, t11, ione);
+    //matrix_inverse_driver(t11, desca);
 
     /* initialize intermediate t-matrices  */
 
@@ -129,7 +132,10 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
 
         rmg::zaxpy_driver (n1, mone, t11, ione, s1, ione);
         rmg::zaxpy_driver (n1, mone, t12, ione, s1, ione);
-        matrix_inverse_driver(s1, desca);
+    rmg::zcopy_driver(n1, s1, ione, t11, ione);
+    rmg::zcopy_driver(n1, Imatrix_ptr, ione, s1, ione);
+    zgesv_driver(t11, desca, s1, desca);
+    //    matrix_inverse_driver(s1, desca);
 
         rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, tau, ione, ione, desca,
                 tau, ione, ione,  desca,  zero, t11, ione, ione, desca);
@@ -194,8 +200,10 @@ void green_lead (std::complex<double> *ch0_cpu, std::complex<double> *ch01_cpu,
     rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
             tot, ione, ione, desca, one, ch0_ptr, ione, ione, desca);
 
-    rmg::zcopy_driver(n1, ch0_ptr, ione, green_ptr, ione);
-    matrix_inverse_driver(green_ptr, desca);
+    rmg::zcopy_driver(n1, Imatrix_ptr, ione, green_ptr, ione);
+    zgesv_driver(ch0_ptr, desca, green_ptr, desca);
+    //rmg::zcopy_driver(n1, ch0_ptr, ione, green_ptr, ione);
+    //matrix_inverse_driver(green_ptr, desca);
 
     MemcpyDeviceHost(size, green_gpu, green_cpu);
     RmgFreeHost(temp_cpu);

@@ -35,7 +35,6 @@ double kvecy, double kvecz, std::complex<double> *work)
 
 
     RmgTimer *RT = new RmgTimer("sigma");
-    RmgTimer *RT1 = new RmgTimer("sigma: matrix init");
 
     maxrow =0;
     maxcol =0;
@@ -65,7 +64,10 @@ double kvecy, double kvecz, std::complex<double> *work)
     int idx, i;
 
 
+    RmgTimer *RT1 = new RmgTimer("sigma: matrix init_k");
     matrix_kpoint_lead(S00, H00, S01, H01, SCL, HCL,  kvecy, kvecz, jprobe);
+    delete RT1;
+    RT1 = new RmgTimer("sigma: matrix init");
     desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
 
     numst = lcr[jprobe].num_states;
