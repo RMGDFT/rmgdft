@@ -14,6 +14,7 @@
 #include "pmo.h"
 #include "GpuAlloc.h"
 #include "blas_driver.h"
+#include "rmg_dev_allocate.h"
 
 
 
@@ -81,19 +82,9 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_cpu, std::comple
 
 
     my_malloc_init( ndiag_begin, ct.num_blocks, int);
-    size_t n_alloc;
-    n_alloc = maxrow * maxcol * sizeof(std::complex<double>);
-    Gii_cpu = Green_C_cpu;
-    gpuMalloc((void **)&Gii_gpu, n_alloc );
-    Gii_ptr = MemoryPtrHostDevice(Gii_cpu, Gii_gpu);
 
-    gpuMalloc((void **)&H_tri_gpu, pmo.ntot_low * sizeof(std::complex<double>) );
-    gpuMalloc((void **)&G_tri_gpu, pmo.ntot_low * sizeof(std::complex<double>) );
-    H_tri_ptr = MemoryPtrHostDevice(H_tri_cpu, H_tri_gpu);
-    G_tri_ptr = MemoryPtrHostDevice(G_tri_cpu, G_tri_gpu);
-
-    MemcpyHostDevice(pmo.ntot_low * sizeof(std::complex<double>), H_tri_cpu, H_tri_gpu);
-
+    size_t n_alloc, nnmax;
+    nnmax = maxrow * maxcol;
 
     n_alloc = 0;
     for (i = 0; i < ct.num_blocks; i++)
@@ -101,10 +92,21 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_cpu, std::comple
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
+    Gii_cpu = Green_C_cpu;
     Gdiag_cpu = (std::complex<double> *) RmgMallocHost(n_alloc * sizeof(std::complex<double>));
-    gpuMalloc((void **)&Gdiag_gpu, n_alloc * sizeof(std::complex<double>) );
-    Gdiag_ptr = MemoryPtrHostDevice(Gdiag_cpu, Gdiag_gpu);
 
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->malloc(&Gii_gpu, nnmax);
+    rmg_device_pool->malloc(&Gdiag_gpu, n_alloc);
+    rmg_device_pool->malloc(&H_tri_gpu, pmo.ntot_low);
+    rmg_device_pool->malloc(&G_tri_gpu, pmo.ntot_low);
+#endif
+    Gii_ptr = MemoryPtrHostDevice(Gii_cpu, Gii_gpu);
+    Gdiag_ptr = MemoryPtrHostDevice(Gdiag_cpu, Gdiag_gpu);
+    H_tri_ptr = MemoryPtrHostDevice(H_tri_cpu, H_tri_gpu);
+    G_tri_ptr = MemoryPtrHostDevice(G_tri_cpu, G_tri_gpu);
+
+    MemcpyHostDevice(pmo.ntot_low * sizeof(std::complex<double>), H_tri_cpu, H_tri_gpu);
 
     /*
      *  ndiag_begin[i]:  pointer address for i-th diagonal block in Gdiag
@@ -278,10 +280,11 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_cpu, std::comple
 
     my_free( ndiag_begin );
     RmgFreeHost( Gdiag_cpu );
-    gpuFree(Gii_gpu);
-    gpuFree(Gdiag_gpu);
-    gpuFree(G_tri_gpu);
-    gpuFree(H_tri_gpu);
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->free(G_tri_gpu);
+    rmg_device_pool->free(H_tri_gpu);
+    rmg_device_pool->free(Gdiag_gpu);
+    rmg_device_pool->free(Gii_gpu);
+#endif
 
 }
-

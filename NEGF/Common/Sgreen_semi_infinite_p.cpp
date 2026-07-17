@@ -36,7 +36,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     std::complex<double> one=1.0, zero=0.0, mone=-1.0;
     int step;
-    int ione = 1, n1;
+    int ione = 1;
     int maxrow, maxcol, *desca, nmax;
 
 
@@ -47,18 +47,20 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
     maxrow = pmo.mxllda_lead[jprobe-1];
     maxcol = pmo.mxlocc_lead[jprobe-1];
 
-    n1 = maxrow * maxcol;
+    size_t n1 = maxrow * maxcol;
 
     /* allocate matrix and initialization  */
 
     size_t size = n1 * sizeof(std::complex<double>);
     chtem_cpu = (std::complex<double> *)RmgMallocHost(size);
 
-    gpuMalloc((void **)&chtem_gpu, size );
-    gpuMalloc((void **)&ch00_gpu, size );
-    gpuMalloc((void **)&ch01_gpu, size );
-    gpuMalloc((void **)&ch10_gpu, size );
-    gpuMalloc((void **)&green_gpu, size );
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->malloc(&chtem_gpu, n1 * 5);
+    ch00_gpu = chtem_gpu + n1;
+    ch01_gpu = chtem_gpu + 2*n1;
+    ch10_gpu = chtem_gpu + 3*n1;
+    green_gpu = chtem_gpu + 4*n1;
+#endif
     chtem_ptr = MemoryPtrHostDevice(chtem_cpu, chtem_gpu);
     ch00_ptr = MemoryPtrHostDevice(ch00_cpu, ch00_gpu);
     ch01_ptr = MemoryPtrHostDevice(ch01_cpu, ch01_gpu);
@@ -118,10 +120,8 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
     MemcpyDeviceHost(size, green_gpu, green_cpu);
 
     RmgFreeHost( chtem_cpu );
-    gpuFree(chtem_gpu);
-    gpuFree(ch00_gpu);
-    gpuFree(ch10_gpu);
-    gpuFree(ch01_gpu);
-    gpuFree(green_gpu);
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->free(chtem_gpu);
+#endif
 
 }

@@ -48,7 +48,7 @@
 #include "GpuAlloc.h"
 #include "RmgMatrix.h"
 #include "transition.h"
-
+#include "rmg_dev_allocate.h"
 
 
 
@@ -157,7 +157,8 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     size_t size = nn*nn*sizeof(std::complex<double>);
     Imatrix = (std::complex<double> *)RmgMallocHost(size);
     pmo_unitary_matrix(Imatrix, desca);
-    gpuMalloc((void **)&gpu_temp, size);
+    rmg_device_pool->malloc(&gpu_temp, (size_t)nn*nn);
+
     MemcpyHostDevice(size, Imatrix, gpu_temp);
 
 
@@ -165,7 +166,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     rmg::zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
-    gpuFree(gpu_temp);
+    rmg_device_pool->free(gpu_temp);
 
 #else
     //  use scalapack if nprow * npcol > 1
