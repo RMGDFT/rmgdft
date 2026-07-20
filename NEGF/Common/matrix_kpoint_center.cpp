@@ -19,6 +19,8 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "rmg_hvector.h"
+
 
 
 int min_distance_index(double *, int);
@@ -29,11 +31,71 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
 
     int i, j, n, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
-    double distance[9], *Htem, *Stem, *Stem1, *Htem1;
+    double distance[9], *Htem, *Stem;
     double blength, clength, yvec, zvec;
 
-   std::complex<double>  ctem[9];
-   std::complex<double> I(0.0, 1.0);
+    int maxrow = 0, maxcol = 0, *descb;
+    int ione = 1;
+    double one = 1.0, zero = 0.0;
+
+    for(n = 0; n < ct.num_blocks; n++)
+    {
+        maxrow = std::max(maxrow, pmo.mxllda_cond[n]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[n]);
+    }
+
+    size_t maxsize = maxrow * maxcol;
+
+    rmg::hvector<double> Htem1(maxsize);
+    rmg::hvector<double> Stem1(maxsize);
+
+    if(std::abs(kvecy) + std::abs(kvecz) < 1.0e-6)
+    {
+
+        for(n = 0; n < ct.num_blocks; n++)
+        {
+            Htem  = &lcr[0].Htri[pmo.diag_begin[n]];
+            Stem  = &lcr[0].Stri[pmo.diag_begin[n]];
+
+            for(size_t idx = 0; idx < (size_t)pmo.mxllda_cond[n] * pmo.mxlocc_cond[n]; idx++)
+            {
+                H_tri[pmo.diag_begin[n] + idx] = (ene * Stem[idx] - Htem[idx] * Ha_eV);
+            }
+        }
+
+        for(n = 0; n < ct.num_blocks -1; n++)
+        {
+            Htem  = &lcr[0].Htri[pmo.offdiag_begin[n]];
+            Stem  = &lcr[0].Stri[pmo.offdiag_begin[n]];
+
+            for(size_t idx = 0; idx < (size_t)pmo.mxllda_cond[n] * pmo.mxlocc_cond[n+1]; idx++)
+            {
+                H_tri[pmo.offdiag_begin[n] + idx] = (ene * Stem[idx] - Htem[idx] * Ha_eV);
+            }
+        }
+
+        for(n = 0; n < ct.num_blocks -1; n++)
+        {
+            Htem  = &lcr[0].Htri[pmo.offdiag_begin[n]];
+            Stem  = &lcr[0].Stri[pmo.offdiag_begin[n]];
+
+            desca = &pmo.desc_cond[( n + (n+1) * ct.num_blocks) * DLEN];
+            descb = &pmo.desc_cond[( n+1 + n * ct.num_blocks) * DLEN];
+            pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Htem, &ione, &ione, desca,
+                    &zero, Htem1.data(), &ione, &ione, descb);
+            pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Stem, &ione, &ione, desca,
+                    &zero, Stem1.data(), &ione, &ione, descb);
+
+            for(size_t idx = 0; idx < (size_t)pmo.mxllda_cond[n+1] * pmo.mxlocc_cond[n]; idx++)
+            {
+                H_tri[pmo.lowoffdiag_begin[n] + idx] = (ene * Stem1[idx] - Htem1[idx] * Ha_eV);
+            }
+        }
+        return;
+    }
+
+    std::complex<double>  ctem[9];
+    std::complex<double> I(0.0, 1.0);
 
     ctem[0] = 1.0;
     ctem[1] = std::exp(+I * kvecy);
@@ -153,22 +215,8 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
 
     }
 
-//  lower tridigonal block should be ene * conj(S) - conj(H)
+    //  lower tridigonal block should be ene * conj(S) - conj(H)
 
-    int maxsize, maxrow = 0, maxcol = 0, *descb;
-    int ione = 1;
-    double one = 1.0, zero = 0.0;
-
-    for(n = 0; n < ct.num_blocks; n++)
-    {
-        maxrow = std::max(maxrow, pmo.mxllda_cond[n]);
-        maxcol = std::max(maxcol, pmo.mxlocc_cond[n]);
-    }
-
-    maxsize = maxrow * maxcol;
-
-    my_malloc_init(Htem1, maxsize, double);
-    my_malloc_init(Stem1, maxsize, double);
 
     nstart = 0;
     for(n = 0; n < ct.num_blocks -1; n++)
@@ -179,9 +227,9 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
         desca = &pmo.desc_cond[( n + (n+1) * ct.num_blocks) * DLEN];
         descb = &pmo.desc_cond[( n+1 + n * ct.num_blocks) * DLEN];
         pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Htem, &ione, &ione, desca,
-                &zero, Htem1, &ione, &ione, descb);
+                &zero, Htem1.data(), &ione, &ione, descb);
         pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Stem, &ione, &ione, desca,
-                &zero, Stem1, &ione, &ione, descb);
+                &zero, Stem1.data(), &ione, &ione, descb);
 
 
         for(li = 0; li < pmo.mxllda_cond[n+1]; li++)
@@ -224,7 +272,5 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
 
     }
 
-    my_free(Htem1);
-    my_free(Stem1);
 
 }
