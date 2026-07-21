@@ -86,10 +86,10 @@ template <typename MatrixType>
     }
 }
 // set the matrix with diagonal elements to be diag_elem, and others to 0.0
-template void MatDiagGet<double> (double *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
-template void MatDiagGet<std::complex<double>> (std::complex<double> *mat, std::vector<double> diag_elem, int numst, Scalapack &SP);
+template void MatDiagGet<double> (double *mat, std::vector<double> &diag_elem, int numst, Scalapack &SP);
+template void MatDiagGet<std::complex<double>> (std::complex<double> *mat, std::vector<double> &diag_elem, int numst, Scalapack &SP);
 template <typename MatrixType>
-    void MatDiagGet (MatrixType *mat,  std::vector<double> diag_elem, int numst, Scalapack &SP)
+    void MatDiagGet (MatrixType *mat,  std::vector<double> &diag_elem, int numst, Scalapack &SP)
 {
 
     std::fill(diag_elem.begin(), diag_elem.end(), 0.0);
