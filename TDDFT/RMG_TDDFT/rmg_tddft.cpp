@@ -603,7 +603,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
                 fprintf(occ_fi, "\n  && electron-pair exitation at kpoint %d from VBM %d to CBM %d", ct.tddft_ehpair[0], ct.tddft_ehpair[1], ct.tddft_ehpair[2]);
                 fprintf(occ_fi, "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
                 fprintf(occ_fi, " \n %f", 0.0);
-                for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +3; i++) 
+                for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +8; i++) 
                     if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
 
             }
@@ -1213,7 +1213,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 if(pct.gridpe == 0)
                 {
                     fprintf(occ_fi, " \n %f", (tot_steps+1) * time_step);
-                    for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +3; i++) 
+                    for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +8; i++) 
                         if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
                 }
 
