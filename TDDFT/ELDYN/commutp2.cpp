@@ -39,23 +39,26 @@ void print_matrix(double *, int ) ;
 void print_matrix2(double *, int ) ;
 
 /////////////////////////////////////////////////////////////////////////
-void TiledM_transpose(double *A, int numst)
+void TiledM_transpose(double *A, int Mglob)
 {
 #if CUDA_ENABLED || HIP_ENABLED
 
-    rmg::error("\n not work yet\n");
+    int num_rows = Mglob/pct.local_comm_npes;
+    rmg::dvector<double> A_glob(Mglob*Mglob);
+    TiledM_to_glob(A_glob.data(), A, Mglob, pct.local_comm);
+    GpuTiledM_transpose(Mglob, num_rows, pct.local_rank, A, A_glob.data());
 
 #else
-   rmg::hvector<double> A_glob(numst*numst);
-   TiledM_to_glob(A_glob.data(), A, numst, pct.local_comm);
-   int numst_pe = numst/pct.local_comm_npes;
-   for(int i = 0; i < numst_pe; i++)
-   {
-       for(int j = 0; j < numst; j++)
-       {
-           A[i * numst + j] = A_glob[j * numst + i + pct.local_rank *numst_pe];
-       }
-   }
+    rmg::hvector<double> A_glob(numst*numst);
+    TiledM_to_glob(A_glob.data(), A, numst, pct.local_comm);
+    int numst_pe = numst/pct.local_comm_npes;
+    for(int i = 0; i < numst_pe; i++)
+    {
+        for(int j = 0; j < numst; j++)
+        {
+            A[i * numst + j] = A_glob[j * numst + i + pct.local_rank *numst_pe];
+        }
+    }
 
 #endif
 }

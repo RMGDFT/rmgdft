@@ -110,11 +110,13 @@ set_source_files_properties(
     GpuVxc_x_psi_noncoll.hip.cpp 
     GpuRhomatrixConvert.hip.cpp
     GpuCommuteMatrix.hip.cpp
+    GpuTiledM_transpose.hip.cpp
     PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
 hip_add_library(Gpufuncs GpuProductBr.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp 
     gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp prolong_orthorhombic.hip.cpp 
     prolong_hex.hip.cpp gputranspose.hip.cpp GpuVxc_x_psi_noncoll.hip.cpp 
     GpuRhomatrixConvert.hip.cpp GpuCommuteMatrix.hip.cpp
+    GpuTiledM_transpose.hip.cpp
     HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 endif(RMG_HIP_ENABLED)
