@@ -49,6 +49,7 @@ void TiledM_transpose(double *A, int Mglob)
     GpuTiledM_transpose(Mglob, num_rows, pct.local_rank, A, A_glob.data());
 
 #else
+    int numst = Mglob;
     rmg::hvector<double> A_glob(numst*numst);
     TiledM_to_glob(A_glob.data(), A, numst, pct.local_comm);
     int numst_pe = numst/pct.local_comm_npes;
