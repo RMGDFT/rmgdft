@@ -799,7 +799,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 for(int j = 0; j < ct.num_states; j++) 
                 {
-                    Hmat_mtype[i * ct.num_states + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                    Hmat_mtype[i * ct.num_states + j] = Smat[i * ct.num_states + j];
                 }
             }
             if(ct.tddft_tiledMM == 1)
@@ -829,14 +829,23 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             int *ipiv = new int[ct.num_states];
 
             // Solve AX = B for X
-            MPI_Bcast(Pmat_t1.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Hmat_mtype.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            int factor = sizeof(MatrixType)/sizeof(double);
+            MPI_Bcast(Pmat_t1.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Hmat_mtype.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             for(int i=0;i < ct.num_states*ct.num_states;i++) Pmat_t0[i] = Pmat_t1[i];
-            zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
+            if(factor == 2)
+            { 
+                zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
                     (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
+            }
+            else
+            {
+                dgesv(&ct.num_states, &ct.num_states, (double *)Hmat_mtype.data(), &ct.num_states, ipiv,
+                    (double *)Pmat_t0.data(), &ct.num_states, &info);
+            }
 
-            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             delete [] ipiv;
 
 
