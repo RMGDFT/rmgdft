@@ -1323,7 +1323,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
                 if(pct.gridpe == 0)
                 {
-                    fprintf(occ_fi, " \n %f", (tot_steps+1) * time_step);
+                    fprintf(occ_fi, " \n %f", total_time);
                     for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
                         if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
                 }
