@@ -587,8 +587,8 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
             if(kpt_glob == ct.tddft_ehpair[0])
             {
-                diag_elem[h_state -ct.tddft_start_state] -=1.0;
-                diag_elem[e_state -ct.tddft_start_state] +=1.0;
+                diag_elem[h_state -ct.tddft_start_state] -=1.0/ct.nspin;
+                diag_elem[e_state -ct.tddft_start_state] +=1.0/ct.nspin;
             }
 
             memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
