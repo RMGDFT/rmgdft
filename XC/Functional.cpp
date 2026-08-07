@@ -99,7 +99,7 @@ extern "C" void tau_xc (int *length, double *arho, double *grho2, double *atau, 
                         double *v1c, double *v2c, double *v3c);
 extern "C" void xc_metagcx( int *length, int *ione, int *np, double *rho, double *grhof, 
                    double *ked, double *ex, double *ec, double *v1x, double *v2x, double *v3x,
-                   double *v1c, double *v2c, double *v3c, bool *gargs );
+                   double *v1c, double *v2c, double *v3c, int *gargs );
 
 extern "C" void xc_spin (double *rho, double *zeta, double *ex, double *ec, double *vxup, double *vxdw, double *vcup, double *vcdw);
 
@@ -120,7 +120,7 @@ extern "C" double get_screening_parameter(void);
 extern "C" void set_screening_parameter(double *);
 #if __LIBXC
 #define xclib_init_libxc        RMG_FC_MODULE(dft_setting_routines,xclib_init_libxc,mod_FUNCT,XCLIB_INIT_LIBXC)
-extern "C" void xclib_init_libxc(int *nspin, bool *domag);
+extern "C" void xclib_init_libxc(int *nspin, int *domag);
 #endif
 
 bool Functional::dft_set=false;
@@ -167,7 +167,8 @@ Functional::Functional (
     RmgTimer RT0("5-Functional");
 #if __LIBXC
     static bool initialized;
-    bool domag = false;
+    int domag = false;
+    if(ct.nspin >= 2) domag = true;
     if(!initialized)
     {
         xclib_init_libxc(&ct.nspin, &domag);
@@ -206,14 +207,14 @@ Functional::~Functional(void)
 
 void Functional::set_dft_from_name_rmg(char *newdft_name) 
 {
-    if(!this->dft_set) {
+    if(!Functional::dft_set) {
         set_dft_from_name(newdft_name, std::strlen(newdft_name) );
         saved_dft_name = newdft_name;
     }
     else {
         std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
     }
-    this->dft_set = true;
+    Functional::dft_set = true;
 }
 
 const std::string &Functional::get_dft_name_rmg(void)
@@ -243,14 +244,14 @@ bool Functional::is_exx_active(void)
 
 void Functional::set_dft_from_name_rmg(std::string newdft_name)
 {
-    if(!this->dft_set) {
+    if(!Functional::dft_set) {
         set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
         saved_dft_name = newdft_name;
     }
     else {
         std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
     }
-    this->dft_set = true;
+    Functional::dft_set = true;
 }
 
 bool Functional::dft_is_gradient_rmg(void)
@@ -551,7 +552,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
     vtxc = 0.0;
     int np = 1;
     int ione = 1;
-    bool gargs = false;
+    int gargs = false;
     if(nspin == 2) np=3;
 
     if(nspin == 1)

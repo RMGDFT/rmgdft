@@ -75,9 +75,9 @@ public:
 
     static double *vxc2, *v2cud;
 
-    void set_dft_from_name_rmg(char *newdft_name);
+    static void set_dft_from_name_rmg(char *newdft_name);
     static const std::string & get_dft_name_rmg(void);
-    void set_dft_from_name_rmg(std::string newdft_name);
+    static void set_dft_from_name_rmg(std::string newdft_name);
     bool dft_is_gradient_rmg(void);
     static bool dft_is_meta_rmg(void);
     bool dft_is_hybrid_rmg(void);
