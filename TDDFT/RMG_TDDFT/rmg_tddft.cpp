@@ -553,6 +553,12 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
 
     if(ct.tddft_mode == EH_PAIR)
     {
+        rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states);
+        rmg::hvector<MatrixType> Hmat_mtype(ct.num_states*ct.num_states);
+        RmgTimer *RT2a, *RT1;
+        Kpoint<double> *kptr_d;
+        Kpoint<std::complex<double>> *kptr_c;
+        double vtxc, etxc;
         int kpt_eh = ct.tddft_ehpair[0] - pct.kstart;
         int vbm = ct.nel/2 -1;
         int h_state = vbm - ct.tddft_ehpair[1];
@@ -603,11 +609,107 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
                 fprintf(occ_fi, "\n  && electron-pair exitation at kpoint %d from VBM %d to CBM %d", ct.tddft_ehpair[0], ct.tddft_ehpair[1], ct.tddft_ehpair[2]);
                 fprintf(occ_fi, "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
                 fprintf(occ_fi, " \n %f", 0.0);
-                for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +8; i++) 
+                for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
                     if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
 
             }
         }
+
+        RT2a = new RmgTimer("rho_0");
+        for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] =0.0;
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+
+            if(ct.tddft_gpu)
+            {
+                RmgMemcpy(Pn1, Kptr[kpt]->Pn0_cpu, 2*n2*sizeof(double));
+            }
+            else
+            {
+                Pn1 = (MatrixType *)Kptr[kpt]->Pn0_cpu;
+            }
+            if(ct.tddft_floatprecision)
+            {
+                if(ct.is_gamma)
+                {
+                    kptr_d = (Kpoint<double> *)Kptr[kpt];
+                    GetNewRho_rmgtddft<double, float, MatrixType>(kptr_d, rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
+                }
+                else
+                {
+                    kptr_c = (Kpoint<std::complex<double>> *)Kptr[kpt];
+                    GetNewRho_rmgtddft<std::complex<double>, std::complex<float>, std::complex<double> >(kptr_c, rho_k, (std::complex<double> *)Pn1, numst, ct.tddft_start_state, *Sp);
+                }
+            }
+            else
+            {
+                GetNewRho_rmgtddft<OrbitalType, OrbitalType, MatrixType>(Kptr[kpt], rho_k, Pn1, numst, ct.tddft_start_state, *Sp);
+            }
+
+            if(ct.verbose) {
+                rmg::printlog("\n done rho_0 calc ");
+                fflush(NULL);
+            }
+            int kpt_glob = kpt + pct.kstart;
+            for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] += rho_k[idx] * ct.kp[kpt_glob].kweight;
+
+
+        }
+        delete(RT2a);
+
+        MPI_Allreduce(MPI_IN_PLACE, rho_ksum.data(), FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+        for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx] + rho_ground[idx];
+        //for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] = rho_ksum[idx];
+        rho.get_oppo();
+
+        //get_vxc(rho, rho_oppo, rhocore, vxc);
+        RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
+        //vxc_in = vxc;
+        compute_vxc(rho.data(), rhocore.data(), etxc, vtxc, vxc.data(), ct.nspin);
+        GetVtotPsi(vxc_psi.data(), vxc.data(), Rmg_G->default_FG_RATIO);
+        delete RT1;
+
+        RT1 = new RmgTimer("2-TDDFT: Vh");
+        //vh_in = vh;
+        VhDriver(rho.data(), rhoc.data(), vh.data(), ct.vh_ext, 1.0-12);
+        delete RT1;
+
+        for (int idx = 0; idx < vtot.pbasis; idx++)
+        {   
+            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        }
+        GetVtotPsi(vtot_psi.data(), vtot.data(), Rmg_G->default_FG_RATIO);
+
+        RT1 = new RmgTimer("2-TDDFT: Hmatrix");
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            OrbitalType *Snull = NULL;
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
+            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+            for(int i = 0; i < numst; i++) 
+            {
+                for(int j = 0; j < numst; j++) 
+                {
+                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                }
+            }
+            if(ct.tddft_tiledMM == 1)
+            {
+
+                int numst_pe = numst/pct.local_comm_npes;
+                for(int idx = 0; idx < numst_pe * numst; idx++)
+                {
+                    hptr[idx] = Hmat_mtype[pct.local_rank * numst_pe * numst + idx];
+                }
+
+            }
+            else
+            {
+                this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
+            }
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
+        }
+        delete RT1;
 
     }
 
@@ -697,7 +799,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             {
                 for(int j = 0; j < ct.num_states; j++) 
                 {
-                    Hmat_mtype[i * ct.num_states + j] = Smat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                    Hmat_mtype[i * ct.num_states + j] = Smat[i * ct.num_states + j];
                 }
             }
             if(ct.tddft_tiledMM == 1)
@@ -727,14 +829,23 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             int *ipiv = new int[ct.num_states];
 
             // Solve AX = B for X
-            MPI_Bcast(Pmat_t1.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
-            MPI_Bcast(Hmat_mtype.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            int factor = sizeof(MatrixType)/sizeof(double);
+            MPI_Bcast(Pmat_t1.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Hmat_mtype.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             for(int i=0;i < ct.num_states*ct.num_states;i++) Pmat_t0[i] = Pmat_t1[i];
-            zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
+            if(factor == 2)
+            { 
+                zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
                     (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
+            }
+            else
+            {
+                dgesv(&ct.num_states, &ct.num_states, (double *)Hmat_mtype.data(), &ct.num_states, ipiv,
+                    (double *)Pmat_t0.data(), &ct.num_states, &info);
+            }
 
-            MPI_Bcast(Pmat_t0.data(), 2*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
+            MPI_Bcast(Pmat_t0.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
             delete [] ipiv;
 
 
@@ -1212,8 +1323,8 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
                 if(pct.gridpe == 0)
                 {
-                    fprintf(occ_fi, " \n %f", (tot_steps+1) * time_step);
-                    for(int i = vbm-ct.tddft_start_state -2; i < vbm-ct.tddft_start_state +8; i++) 
+                    fprintf(occ_fi, " \n %f", total_time);
+                    for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
                         if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
                 }
 
