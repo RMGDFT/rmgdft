@@ -1085,6 +1085,12 @@ public:
    double lambda_max;
    double lambda_min;
 
+#if __LIBXC
+   const char *libxc_version;
+   const char *libxc_reference;
+   const char *libxc_reference_doi;
+   std::vector<std::string> libxc_func_references;
+#endif
 };
 
 

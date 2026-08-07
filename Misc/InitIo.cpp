@@ -54,6 +54,10 @@
 #include "Tetrahedron.h"
 #include "BerryPhase.h"
 
+#if __LIBXC
+#include <xc.h>
+#endif
+
 #if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
@@ -843,17 +847,23 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     // Set up exchange correlation type
-    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     ik = ControlMap["exchange_correlation_type"];
     if(*ik->Readintval == AUTO_XC) {
         // Type set from pp files
-        F.set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
+        Functional::set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
     }
     else {
         // Type set explicitly in input file
         std::string xc_type = reordered_xc_type[*ik->Readintval];
-        F.set_dft_from_name_rmg(xc_type);
+        Functional::set_dft_from_name_rmg(xc_type);
     }
+    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+#if __LIBXC
+    ct.libxc_version = xc_version_string();
+    ct.libxc_reference  = xc_reference();
+    ct.libxc_reference_doi = xc_reference_doi();
+#endif
+
     F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
     ct.xc_is_meta = F.dft_is_meta_rmg();
