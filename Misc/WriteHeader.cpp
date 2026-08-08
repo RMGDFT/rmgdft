@@ -207,18 +207,16 @@ void WriteHeader (void)
             if(pct.imgpe==0) fprintf(ct.logfile, "Unknown start mode\n");
     }
 #if __LIBXC
-    const char *xcv = xc_version_string();
-    if(pct.imgpe==0) fprintf(ct.logfile, "\nUsing libxc version %s\n", xcv);
-    const char *xcr  = xc_reference();
-    if(pct.imgpe==0) fprintf(ct.logfile, "    %s\n", xcr);
-    const char *xcr_doi  = xc_reference_doi();
-    if(pct.imgpe==0) fprintf(ct.logfile, "    DOI: %s\n\n", xcr_doi);
-#if 1
+    if(pct.imgpe==0) fprintf(ct.logfile, "\nUsing libxc version %s\n", ct.libxc_version);
+    if(pct.imgpe==0) fprintf(ct.logfile, "    %s\n", ct.libxc_reference);
+    if(pct.imgpe==0) fprintf(ct.logfile, "    DOI: %s\n\n", ct.libxc_reference_doi);
+#if 0
     int func_id = xc_functional_get_number(reordered_xc_type[ct.xctype].c_str());
-    xc_func_type func;
+    static xc_func_type func;
     if(func_id > 0)
     {
-        if (xc_func_init(&func, func_id, XC_UNPOLARIZED) != 0)
+       int retval = xc_func_init(&func, func_id, XC_UNPOLARIZED);
+       if(retval == 0)
         {
             const xc_func_info_type *info = xc_func_get_info(&func);
             const func_reference_type *ref;
@@ -231,8 +229,8 @@ void WriteHeader (void)
         }
     }
 #endif
-
 #endif
+
     const std::string tstr = Functional::get_dft_name_rmg();
     if(pct.imgpe==0) fprintf(ct.logfile, "    Exchange Correlation:     %s\n", tstr.c_str());
     if(pct.imgpe==0) fprintf(ct.logfile, "    Spin Polarization:        ");

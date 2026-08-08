@@ -582,7 +582,6 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
             double arho = std::abs(rho[ix]);
             double atau = ked[ix];
             if ((arho > eps8) && (grho2[ix] > eps12) && (std::abs(atau) > eps8))
-//if(1)
             {
                 v[ix] +=  (v1x[ix] + v1c[ix]);
                 // h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
@@ -591,7 +590,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
                 hz[ix] =  (v2c[ix] + v2x[ix])*gz[ix];
                 ke_taur[ix] =  (v3x[ix] + v3c[ix]) * 0.5;
                 etxc = etxc +  (ex[ix] + ec[ix]); // * segno
-                vtxc = vtxc +  0.5*(v1x[ix]+v1c[ix])*rho_in[ix];
+                vtxc = vtxc +  (v1x[ix]+v1c[ix])*rho_in[ix];
             }
             else
             {
@@ -608,7 +607,6 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              double dh = hx[ix]*dh1[ix];
-dh = dh1[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
@@ -616,7 +614,6 @@ dh = dh1[ix];
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              double dh = hy[ix]*dh2[ix];
-dh = dh2[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
@@ -624,7 +621,6 @@ dh = dh2[ix];
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              double dh = hz[ix]*dh3[ix];
-dh = dh3[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }

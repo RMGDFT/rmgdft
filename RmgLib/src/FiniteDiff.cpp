@@ -765,7 +765,7 @@ void FiniteDiff::fd_gradient_general (RmgType * __restrict__ a,
     {
         fd_gradient_general1<RmgType, order>(a, gx, gy, gz, gridhx, dimx, dimy, dimz);
     }
-    else if(gx && !gy && !gz)
+    else // Only one component
     {
         fd_gradient_general2<RmgType, order>(a, gx, gy, gz, gridhx, dimx, dimy, dimz);
     }

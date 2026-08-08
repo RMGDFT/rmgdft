@@ -91,8 +91,6 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
         h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (veff[idx] + tmag)*psi[idx];
     }
 
-#if 1
-//    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
     {
         wfobj<CalcType> gx, gy, gz, h, htmp; 
@@ -111,10 +109,9 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
         for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
         double msum = 0.0;
         for(int ix=0;ix < pbasis;ix++) msum += std::real(std::conj(htmp[ix])*psi[ix]);
-        sp->e_meta_xc = msum;
-        for(int ix=0;ix < pbasis;ix++) h_psi[ix] += htmp[ix];
+        sp->e_meta_xc = 0.5*msum;
+        for(int ix=0;ix < pbasis;ix++) h_psi[ix] += 0.5*htmp[ix];
    } 
-#endif
 
     if(ct.noncoll)
     {
