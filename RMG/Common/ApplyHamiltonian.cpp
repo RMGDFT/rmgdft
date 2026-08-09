@@ -93,7 +93,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
 
     if(ct.xc_is_meta)
     {
-        wfobj<CalcType> gx, gy, gz, h, htmp; 
+        wfobj<CalcType> gx, gy, gz, h, ha, hb, htmp; 
         htmp.set(0.0);
         ApplyGradient<CalcType> (psi, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Coarse");
     
@@ -102,15 +102,15 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
         for(int ix=0;ix < pbasis;ix++) gz[ix] *= Functional::ke_taur_wf[ix];
 
         ApplyGradient<CalcType> (gx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
         ApplyGradient<CalcType> (gy.data(), NULL, h.data(), NULL, ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
         ApplyGradient<CalcType> (gz.data(), NULL, NULL, h.data(), ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+        for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
         double msum = 0.0;
-        for(int ix=0;ix < pbasis;ix++) msum += std::real(std::conj(htmp[ix])*psi[ix]);
-        sp->e_meta_xc = 0.5*msum;
-        for(int ix=0;ix < pbasis;ix++) h_psi[ix] += 0.5*htmp[ix];
+        for(int ix=0;ix < pbasis;ix++) msum -= std::real(std::conj(htmp[ix])*psi[ix]);
+        sp->e_meta_xc = msum;
+        for(int ix=0;ix < pbasis;ix++) h_psi[ix] -= htmp[ix];
    } 
 
     if(ct.noncoll)

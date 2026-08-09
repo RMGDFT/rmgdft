@@ -606,21 +606,21 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         ApplyGradient (hx.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             double dh = hx[ix]*dh1[ix];
+             double dh = dh1[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
         ApplyGradient (hy.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             double dh = hy[ix]*dh2[ix];
+             double dh = dh2[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
         ApplyGradient (hz.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             double dh = hz[ix]*dh3[ix];
+             double dh = dh3[ix];
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
@@ -696,7 +696,6 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
 
     vtxc = rmg::sum_all(vtxc, this->T->get_MPI_comm());
     etxc = rmg::sum_all(etxc, this->T->get_MPI_comm());
-
     if(Rmg_G->default_FG_RATIO > 1)
     {
         int wf_pbasis = Rmg_G->get_P0_BASIS(1);

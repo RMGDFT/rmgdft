@@ -68,7 +68,13 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-
+    if(ct.xc_is_meta)
+    {
+        for(int idx = 0;idx < FP0_BASIS;idx++)
+        {
+            Functional::ke_density[idx] = 0.0;
+        }
+    }
     if(ct.fast_density)
     {
         GetNewRhoPost(Kpts, rho);
@@ -310,7 +316,8 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
-#if 0
+    rhomutex.unlock();
+#if 1
 //  Computing the kinetic energy density on the fine grid may help in some cases but
 //  that's not clear yet
     if(ct.xc_is_meta)
@@ -318,6 +325,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         fgobj<OrbitalType> gx, gy, gz;
         ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
+        rhomutex.lock();
         for(int idx = 0;idx < FP0_BASIS;idx++)
         {
             double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
@@ -325,9 +333,9 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
                                   gz[idx]*std::conj(gz[idx]));
             F.ke_density[idx] += 0.5*scale*t1;
         }
+        rhomutex.unlock();
     }
 #endif
-    rhomutex.unlock();
 
     delete [] psi_f;
 
