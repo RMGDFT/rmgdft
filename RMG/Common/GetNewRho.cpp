@@ -112,10 +112,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
         if(ct.noncoll && Rmg_Symm)
             Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
+
+        if(ct.xc_is_meta)
+        {
+            Rmg_Symm->symmetrize_grid_vector(Functional::ke_density);
+        }
     }
     if (ct.nspin == 2)
         get_rho_oppo (rho,  &rho[FP0_BASIS]);
-
 
     /* Check total charge. */
     ct.tcharge = ZERO;
@@ -322,7 +326,6 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
 //  that's not clear yet
     if(ct.xc_is_meta)
     {
-        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         fgobj<OrbitalType> gx, gy, gz;
         ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
         rhomutex.lock();
@@ -331,7 +334,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
             double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
                                   gy[idx]*std::conj(gy[idx]) + 
                                   gz[idx]*std::conj(gz[idx]));
-            F.ke_density[idx] += 0.5*scale*t1;
+            Functional::ke_density[idx] += 0.5*scale*t1;
         }
         rhomutex.unlock();
     }
