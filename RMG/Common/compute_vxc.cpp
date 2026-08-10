@@ -64,25 +64,7 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
         wfobj<double> kdetau_c;
         fgobj<double> kdetau_f;
         kdetau_c.set(0.0);
-        if(0)
-        {
-            for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
-//            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
-            Prolong P(Rmg_G->default_FG_RATIO, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
-            int dimx = kdetau_f.dimx;
-            int dimy = kdetau_f.dimy;
-            int dimz = kdetau_f.dimz;
-            int half_dimx = kdetau_c.dimx;
-            int half_dimy = kdetau_c.dimy;
-            int half_dimz = kdetau_c.dimz;
-            P.prolong(kdetau_f.data(), kdetau_c.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-
-        }
-        // Use interpolated kinetic energy density from GetNewRho
-        else
-        {
-            for(int ix=0;ix < kdetau_f.pbasis;ix++) kdetau_f[ix] = F->ke_density[ix];
-        }
+        for(int ix=0;ix < kdetau_f.pbasis;ix++) kdetau_f[ix] = F->ke_density[ix];
         for(int ix = 0;ix < nspin*kdetau_f.pbasis;ix++) v_xc[ix] = 0.0;
         F->v_xc_meta(rho, rhocore, XC, vtxc, v_xc, kdetau_f.data(), nspin);
     }
