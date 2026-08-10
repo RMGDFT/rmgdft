@@ -115,7 +115,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
         if(ct.xc_is_meta)
         {
-            Rmg_Symm->symmetrize_grid_vector(Functional::ke_density);
+            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(Functional::ke_density);
         }
     }
     if (ct.nspin == 2)
@@ -331,9 +331,15 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         rhomutex.lock();
         for(int idx = 0;idx < FP0_BASIS;idx++)
         {
-            double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
-                                  gy[idx]*std::conj(gy[idx]) + 
-                                  gz[idx]*std::conj(gz[idx]));
+            OrbitalType fx_r = std::real(gx[idx]) - kptr->kp.kvec[0]*std::imag(psi_f[idx]); 
+            OrbitalType fy_r = std::real(gy[idx]) - kptr->kp.kvec[1]*std::imag(psi_f[idx]); 
+            OrbitalType fz_r = std::real(gz[idx]) - kptr->kp.kvec[2]*std::imag(psi_f[idx]); 
+            OrbitalType fx_i = std::imag(gx[idx]) + kptr->kp.kvec[0]*std::real(psi_f[idx]); 
+            OrbitalType fy_i = std::imag(gy[idx]) + kptr->kp.kvec[1]*std::real(psi_f[idx]); 
+            OrbitalType fz_i = std::imag(gz[idx]) + kptr->kp.kvec[2]*std::real(psi_f[idx]); 
+
+            double t1 = std::real(fx_r*fx_r + fy_r*fy_r + fz_r*fz_r +
+                        fx_i*fx_i + fy_i*fy_i + fz_i*fz_i);
             Functional::ke_density[idx] += 0.5*scale*t1;
         }
         rhomutex.unlock();
