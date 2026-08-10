@@ -826,7 +826,12 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         DipoleCorrection(dipole,  NULL);
     }
 
-
+    // Kinetic energy density is generated in GetNewRho so make sure
+    // we recompute it with the LCAO orbitals
+    if(ct.runflag != RESTART && ct.xc_is_meta)
+    {
+        GetNewRho(Kptr, rho.data());
+    }
 }                               /* end init */
 
 
