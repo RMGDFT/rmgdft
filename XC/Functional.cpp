@@ -602,7 +602,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
             }
         }
 
-#if 1
+        // A custom function could speed these three operations up but not sure its worth it
         ApplyGradient (hx.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
@@ -624,7 +624,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
              v[ix] -= dh;
              vtxc -= dh * rho_in[ix];
         }
-#endif
+
         delete [] grhof;
         delete [] gx;
     }
