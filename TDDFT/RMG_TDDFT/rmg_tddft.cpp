@@ -347,77 +347,61 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
     }
 
     double one = 1.0;
-    if(ct.restart_tddft)
+
+    if(ct.forceflag == TDDFT_CVE)
     {
+        rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
+        rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
+        rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
 
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            int kpt_glob = kpt + pct.kstart;
+            OrbitalType *Snull = NULL;
+            HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
+            for(int i = 0; i < numst; i++)
+            {
+                for(int j = 0; j < numst; j++)
+                {
+                    Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
+                }
+            }
 
-            std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", ct.infile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
-            ReadData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
-                    (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, 
-                    &pre_steps, n2, n2_C, numst);
+            MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
+            if(ct.tddft_tiledMM == 1)
+            {
+                int numst_pe = numst/pct.local_comm_npes;
+                for(int idx = 0; idx < numst_pe * numst; idx++)
+                {
+                    hptr[idx] = Hmat_mtype[pct.local_rank * numst_pe * numst + idx];
+                }
+            }
+            else
+            {
+                this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
+            }
+
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
         }
     }
-    else 
+    else
     {
 
-        if(ct.forceflag == TDDFT_CVE)
-        {
-            rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states), Smat(ct.num_states*ct.num_states);
-            rmg::hvector<MatrixType> Pmat_t0(numst*numst), Pmat_t1(numst*numst);
-            rmg::hvector<MatrixType> Hmat_mtype(numst*numst);
-            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-
-                OrbitalType *Snull = NULL;
-                HSmatrix (this->Kptr[kpt], vtot_psi.data(), vxc_psi.data(),  Hmat.data(), Snull);
-                for(int i = 0; i < numst; i++)
-                {
-                    for(int j = 0; j < numst; j++)
-                    {
-                        Hmat_mtype[i * numst + j] = Hmat[(i+ct.tddft_start_state) * ct.num_states + j+ct.tddft_start_state];
-                    }
-                }
-
-                MatrixType *hptr = (MatrixType *)this->Kptr[kpt]->Hmatrix_cpu;
-                if(ct.tddft_tiledMM == 1)
-                {
-                    int numst_pe = numst/pct.local_comm_npes;
-                    for(int idx = 0; idx < numst_pe * numst; idx++)
-                    {
-                        hptr[idx] = Hmat_mtype[pct.local_rank * numst_pe * numst + idx];
-                    }
-                }
-                else
-                {
-                    this->Sp->DistributeMatrix(Hmat_mtype.data(), hptr);
-                }
-
-                memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-                memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-                memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
-            }
-        }
-        else
-        {
-
-            for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-
-                memset(Kptr[kpt]->Hmatrix_cpu, 0, matrix_size);
-                for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
-                MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
-                memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-                memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
-                memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
-            }
-        }
-
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
-            memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
-            MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
+
+            memset(Kptr[kpt]->Hmatrix_cpu, 0, matrix_size);
+            for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].eig[0];
+            MatDiagSet((MatrixType *)Kptr[kpt]->Hmatrix_cpu, diag_elem, one, numst, *Sp);
+            memcpy(Kptr[kpt]->Hmatrix_1_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_0_cpu, Kptr[kpt]->Hmatrix_cpu, matrix_size);
+            memcpy(Kptr[kpt]->Hmatrix_m1_cpu, Kptr[kpt]->Hmatrix_0_cpu, matrix_size);
         }
+    }
+
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+        for(int i = 0; i < numst; i++) diag_elem[i] =  Kptr[kpt]->Kstates[i + ct.tddft_start_state].occupation[0];
+        memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
+        MatDiagSet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, one, numst, *Sp);
     }
 
 
@@ -713,6 +697,20 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
 
     }
 
+    if(ct.restart_tddft)
+    {
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            int kpt_glob = kpt + pct.kstart;
+
+            std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", ct.infile_tddft, pct.spinpe, kpt_glob, pct.gridpe);
+            ReadData_rmgtddft(ofile.c_str(), vh.data(), vxc.data(), vh_dipole.data(), (double *)Kptr[kpt]->Pn0_cpu, (double *)Kptr[kpt]->Hmatrix_cpu, 
+                    (double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, 
+                    &pre_steps, n2, n2_C, numst);
+        }
+    }
+
 }
 
 // TDDFT MD loop
@@ -727,7 +725,7 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     int ij_err=0;
     double vtxc, etxc;
     int *desca = Sp->GetDistDesca();
-    static double total_time = 0.0;
+    static double total_time = pre_steps * time_step;
     spinobj<double> trho;
     trho.set(0.0);
     ReadData (ct.infile, vh_old.data(), rho_ground.data(), vxc_old.data(), Kptr);
@@ -837,12 +835,12 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             if(factor == 2)
             { 
                 zgesv(&ct.num_states, &ct.num_states, (std::complex<double> *)Hmat_mtype.data(), &ct.num_states, ipiv,
-                    (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
+                        (std::complex<double> *)Pmat_t0.data(), &ct.num_states, &info);
             }
             else
             {
                 dgesv(&ct.num_states, &ct.num_states, (double *)Hmat_mtype.data(), &ct.num_states, ipiv,
-                    (double *)Pmat_t0.data(), &ct.num_states, &info);
+                        (double *)Pmat_t0.data(), &ct.num_states, &info);
             }
 
             MPI_Bcast(Pmat_t0.data(), factor*ct.num_states*ct.num_states, MPI_DOUBLE, 0, pct.grid_comm);
