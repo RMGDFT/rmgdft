@@ -58,15 +58,11 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
     Functional *F = NULL;
     //if(F == NULL) F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
     F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
-
+    int N = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     if(F->dft_is_meta_rmg())
     {
-        wfobj<double> kdetau_c;
-        fgobj<double> kdetau_f;
-        kdetau_c.set(0.0);
-        for(int ix=0;ix < kdetau_f.pbasis;ix++) kdetau_f[ix] = F->ke_density[ix];
-        for(int ix = 0;ix < nspin*kdetau_f.pbasis;ix++) v_xc[ix] = 0.0;
-        F->v_xc_meta(rho, rhocore, XC, vtxc, v_xc, kdetau_f.data(), nspin);
+        for(int ix = 0;ix < nspin*N;ix++) v_xc[ix] = 0.0;
+        F->v_xc_meta(rho, rhocore, XC, vtxc, v_xc, Functional::ke_density, nspin);
     }
     else
     {

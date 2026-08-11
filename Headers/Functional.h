@@ -99,8 +99,7 @@ public:
     static void set_screening_parameter_rmg(double p);
 
     static std::string saved_dft_name;
-    static double *ke_density;
-    static double *ke_taur;
+    inline static double *ke_density;
     static double *ke_taur_wf;
     void stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma);
 

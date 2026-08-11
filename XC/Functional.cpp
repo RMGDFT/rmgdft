@@ -75,8 +75,6 @@
 #define get_screening_parameter       RMG_FC_MODULE(dft_setting_routines,get_screening_parameter,mod_FUNCT,GET_SCREENING_PARAMETER)
 #define set_screening_parameter       RMG_FC_MODULE(dft_setting_routines,set_screening_parameter,mod_FUNCT,SET_SCREENING_PARAMETER)
 
-double *Functional::ke_density;
-double *Functional::ke_taur;
 double *Functional::ke_taur_wf;
 
 extern "C" void set_dft_from_name( const char *name, std::size_t len );
@@ -551,10 +549,11 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
     etxc = 0.0;
     vtxc = 0.0;
     int np = 1;
-    int ione = 1;
+    int ione = 1, itwo = 2;
     int gargs = false;
     if(nspin == 2) np=3;
 
+    spinobj<double> ke_taur;
     if(nspin == 1)
     {
         fgobj<double> rho, grho2, lrho, d2rho;
@@ -630,10 +629,10 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
     }
     else if(nspin == 2)
     {
-#if 0
         fgobj<double> ex, ec;
-        spinobj<double> v1x, v2x, v3x, v1c, v2c, v3c;
-        spinobj<double> rho, grho2;
+        spinobj<double> v1x, v2x, v3x, v1c, v3c;
+        spinobj<double> rho, grho2, hx, hy, hz;
+        fgobj<double> dh1, dh2, dh3;
         double *rho_up, *rho_dw, *v_up, *v_dw;
 
         double *gx_up = new double[6*this->pbasis];
@@ -643,6 +642,8 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         double *gy_dw = gx_dw + this->pbasis;
         double *gz_dw = gy_dw + this->pbasis;
         double *grhof = new double[6*this->pbasis];
+        double *v2c = new double[6*this->pbasis];
+
         if(pct.spinpe == 0) {
             rho_up = rho_in;
             rho_dw = &rho_in[this->pbasis];
@@ -667,28 +668,78 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         int length = this->pbasis;
         xc_metagcx( &length, &itwo, &np, rho.data(), grhof, ked, 
                    ex.data(), ec.data(), v1x.data(), v2x.data(), v3x.data(),
-                   v1c.data(), v2c.data(), v3c.data(), &gargs );
+                   v1c.data(), v2c, v3c.data(), &gargs );
 
         for(int ix=0;ix < this->pbasis;ix++)
         {
             v_up[ix] = v1x.up[ix] + v1c.up[ix];
             v_dw[ix] = v1x.dw[ix] + v1c.dw[ix];
 
-                // h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-                hx_up[ix] =  (v2x.up[ix] + v2c.up[ix])*gx_up[ix];
-                hy_up[ix] =  (v2x.up[ix] + v2c.up[ix])*gy_up[ix];
-                hz_up[ix] =  (v2x.up[ix] + v2c.up[ix])*gz_up[ix];
-                hx_dw[ix] =  (v2x.dw[ix] + v2c.dw[ix])*gx_dw[ix];
-                hy_dw[ix] =  (v2x.dw[ix] + v2c.dw[ix])*gy_dw[ix];
-                hz_dw[ix] =  (v2x.dw[ix] + v2c.dw[ix])*gz_dw[ix];
-                ke_taur[ix] =  (v3x.up[ix] + v3c.up[ix]) * 0.5;
-                ke_taur[ix+this->pbasis] = (v3x.dw[ix] + v3c.dw[ix]) * 0.5;
-                etxc = etxc +  (ex[ix] + ec[ix]);
-                vtxc = vtxc +  (v1x.up[ix]+v1c.up[ix])*rho_in[ix] +
-                               (v1x.dw[ix]+v1c.dw[ix])*rho_in[ix];
+            // h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
+            hx.up[ix] =  v2x.up[ix]*gx_up[ix] + v2c[0 + ix*3];
+            hy.up[ix] =  v2x.up[ix]*gy_up[ix] + v2c[1 + ix*3];
+            hz.up[ix] =  v2x.up[ix]*gz_up[ix] + v2c[2 + ix*3];
+            hx.dw[ix] =  v2x.dw[ix]*gx_dw[ix] + v2c[0 + ix*3 + 3*this->pbasis];
+            hy.dw[ix] =  v2x.dw[ix]*gy_dw[ix] + v2c[1 + ix*3 + 3*this->pbasis];
+            hz.dw[ix] =  v2x.dw[ix]*gz_dw[ix] + v2c[2 + ix*3 + 3*this->pbasis];
+
+            ke_taur.up[ix] =  (v3x.up[ix] + v3c.up[ix]) * 0.5;
+            ke_taur.dw[ix] = (v3x.dw[ix] + v3c.dw[ix]) * 0.5;
+            etxc = etxc +  (ex[ix] + ec[ix]);
+            vtxc = vtxc +  (v1x.up[ix]+v1c.up[ix])*rho_up[ix] +
+                           (v1x.dw[ix]+v1c.dw[ix])*rho_dw[ix];
 
         }
-#endif
+
+        // A custom function could speed these three operations up but not sure its worth it
+        ApplyGradient (hx.up.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh1[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+        ApplyGradient (hy.up.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh2[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+        ApplyGradient (hz.up.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh3[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+
+        ApplyGradient (hx.dw.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh1[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+        ApplyGradient (hy.dw.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh2[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+
+        ApplyGradient (hz.dw.data(), dh1.data(), dh2.data(), dh3.data(), fd_order, "Fine");
+        for(int ix=0;ix < rho.pbasis;ix++)
+        {
+             double dh = dh3[ix];
+             v[ix] -= dh;
+             vtxc -= dh * rho_in[ix];
+        }
+
+
+        delete [] v2c;
+        delete [] grhof;
     } 
 
     vtxc = vtxc * L->omega / (double)this->N;
@@ -703,7 +754,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         {
             FftFilter(&v[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
             GetVtotPsi (&ke_taur_wf[is*wf_pbasis], 
-                        &ke_taur[is*pbasis], Rmg_G->default_FG_RATIO);
+                        ke_taur.data() + is*pbasis, Rmg_G->default_FG_RATIO);
         }
     }
 }
