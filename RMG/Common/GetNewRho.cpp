@@ -321,11 +321,10 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         }
     }                   /* end for */
     rhomutex.unlock();
-#if 1
-//  Computing the kinetic energy density on the fine grid may help in some cases but
-//  that's not clear yet
+
     if(ct.xc_is_meta)
     {
+        // Compute \sum_i |\nabla psi|^2
         fgobj<OrbitalType> gx, gy, gz;
         ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
         rhomutex.lock();
@@ -344,7 +343,6 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
         }
         rhomutex.unlock();
     }
-#endif
 
     delete [] psi_f;
 
