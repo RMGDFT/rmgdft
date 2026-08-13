@@ -141,11 +141,9 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     if ((ct.verbose == 1) || (difference > 0.01))
         rmg::printlog ("Charge normalization constant -1.0: %e\n", t1-1.0);
 
-    if(ct.xc_is_meta)
+    if(ct.xc_is_meta && ct.nspin == 2)
     {
-        // Get the opposite spin channel
-        spinobj<double> tk(Functional::ke_density);
-        tk.get_oppo();
+        get_rho_oppo (Functional::ke_density,  &Functional::ke_density[FP0_BASIS]);
     }
 }
 
@@ -332,7 +330,7 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     {
         // Compute \sum_i |\nabla psi|^2
         fgobj<OrbitalType> gx, gy, gz;
-        ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), 8, "Fine");
+        ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
         rhomutex.lock();
         for(int idx = 0;idx < FP0_BASIS;idx++)
         {
