@@ -525,6 +525,7 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
         OutputCubeFile(vh, Rmg_G->default_FG_RATIO, filename);
     }
 
+    wfobj<double> psi_tem;
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         int kpt_glob = kpt + pct.kstart;
@@ -533,7 +534,9 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
             int st = ct.cube_states_list[idx];
             std::string filename = "kpt"+std::to_string(kpt_glob);
             filename += "_mo"+std::to_string(st)+ spinindex + ".cube";
-            OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
+            for(int i = 0; i < Kptr[kpt]->pbasis; i++) psi_tem[i] = std::real(Kptr[kpt]->Kstates[st].psi[i]);
+            OutputCubeFile(psi_tem.data(), 1, filename);
+//OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
 
             if(ct.nspin == 4)
             {
