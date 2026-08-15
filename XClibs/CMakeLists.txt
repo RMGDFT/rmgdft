@@ -1,4 +1,6 @@
 add_library(XClibs
+    beefun.c
+    pbecor.c
     dft_setting_routines.F90
     dft_setting_params.F90
     qe_constants.F90
@@ -16,7 +18,7 @@ add_library(XClibs
     qe_kind.F90
     xclib_error.F90
     xclib_utils_and_para.F90
-#    xc_beef_interface.F90
+    xc_beef_interface.F90
     xc_lib.F90
     xc_wrapper_d_gga.F90
     xc_wrapper_d_lda_lsda.F90

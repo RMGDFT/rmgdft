@@ -15,10 +15,6 @@ MODULE qe_drivers_gga
   !! Contains the GGA drivers that calculate the XC energy and potential.
   !
   USE kind_l,               ONLY: DP
-  USE dft_setting_params,   ONLY: igcx, igcc, rho_threshold_gga,     &
-                                  grho_threshold_gga, exx_started,   &
-                                  exx_fraction, screening_parameter, &
-                                  gau_parameter, rmg_epsg_guard
   !
   IMPLICIT NONE
   !
@@ -38,10 +34,13 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
   !! Gradient corrections for exchange and correlation - Hartree a.u. 
   !! See comments at the beginning of module for implemented cases
   !
+  USE dft_setting_params,   ONLY: igcx, igcc, rho_threshold_gga,     &
+                                  grho_threshold_gga, exx_started,   &
+                                  exx_fraction, screening_parameter, &
+                                  gau_parameter, rmg_epsg_guard
   USE exch_gga
   USE corr_gga
-  USE dft_setting_params,   ONLY: rmg_epsg_guard
-!! EMIL  USE beef_interface, ONLY: beefx, beeflocalcorr
+  USE beef_interface, ONLY: beefx, beeflocalcorr
   !
   IMPLICIT NONE
   !
@@ -353,7 +352,7 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
         !
      CASE( 43 ) ! 'BEEX'
         !
-!! EMIL        CALL beefx( rho, grho, sx, v1x, v2x, 0 )
+        CALL beefx( rho, grho, sx, v1x, v2x, 0 )
         !
      CASE( 44 ) ! 'RPBE'
         !
@@ -366,6 +365,10 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
      CASE( 46 ) ! 'W32X'
         !
         CALL b86b( rho, grho, 4, sx, v1x, v2x )
+        !
+     CASE( 51 ) ! 'W3MX'
+        !
+        CALL W3MX( rho, grho, sx, v1x, v2x )
         !
      CASE DEFAULT
         !
@@ -428,7 +431,7 @@ SUBROUTINE gcxc( length, rho_in, grho_in, sx_out, sc_out, v1x_out, &
      CASE( 14 ) !'BEEC'
         ! last parameter 0 means: do not add lda contributions
         ! espresso will do that itself
-!! EMIL        CALL beeflocalcorr( rho, grho, sc, v1c, v2c, 0 )
+        CALL beeflocalcorr( rho, grho, sc, v1c, v2c, 0 )
         !
      CASE DEFAULT
         !
@@ -471,8 +474,11 @@ SUBROUTINE gcx_spin( length, rho_in, grho2_in, sx_tot, v1x_out, v2x_out, err_out
   !-----------------------------------------------------------------------
   !! Gradient corrections for exchange - Hartree a.u.
   !
+  USE dft_setting_params,   ONLY: igcx, igcc, exx_started,   &
+                                  exx_fraction, screening_parameter, &
+                                  gau_parameter, rmg_epsg_guard
   USE exch_gga
-!! EMIL  USE beef_interface, ONLY: beefx
+  USE beef_interface, ONLY: beefx
   !
   IMPLICIT NONE
   !
@@ -593,7 +599,7 @@ SUBROUTINE gcx_spin( length, rho_in, grho2_in, sx_tot, v1x_out, v2x_out, err_out
         ! igcx=3:  PBE,  igcx=4:  revised PBE, igcx=8:  PBE0, igcx=10: PBEsol
         ! igcx=12: HSE,  igcx=20: gau-pbe,     igcx=23: obk8, igcx=24: ob86,
         ! igcx=25: ev93, igcx=34: PBE-AH, igcx=35: PBESOL-AH,
-        ! igcx=44: RPBE,        igcx=45: W31X
+        ! igcx=44: RPBE, igcx=45: W31X
         !
         iflag = 1
         IF ( igcx== 4 ) iflag = 2
@@ -984,10 +990,22 @@ SUBROUTINE gcx_spin( length, rho_in, grho2_in, sx_tot, v1x_out, v2x_out, err_out
         rho_up = 2.0_DP * rho_up     ; rho_dw = 2.0_DP * rho_dw
         grho2_up = 4.0_DP * grho2_up ; grho2_dw = 4.0_DP * grho2_dw
         !
-!! EMIL        CALL beefx( rho_up, grho2_up, sx_up, v1x_up, v2x_up, 0 )
-!! EMIL        CALL beefx( rho_dw, grho2_dw, sx_dw, v1x_dw, v2x_dw, 0 )
+        CALL beefx( rho_up, grho2_up, sx_up, v1x_up, v2x_up, 0 )
+        CALL beefx( rho_dw, grho2_dw, sx_dw, v1x_dw, v2x_dw, 0 )
         !
         sx_tot(ir) = 0.5_DP * (sx_up*rnull_up + sx_dw*rnull_dw)
+        v2x_up = 2.0_DP * v2x_up
+        v2x_dw = 2.0_DP * v2x_dw
+        !
+      CASE( 51 )                  ! W3MX for vdW-DF3-mc
+        !
+        rho_up = 2.0_DP * rho_up     ; rho_dw = 2.0_DP * rho_dw
+        grho2_up = 4.0_DP * grho2_up ; grho2_dw = 4.0_DP * grho2_dw
+        !
+        CALL W3MX( rho_up, grho2_up, sx_up, v1x_up, v2x_up )
+        CALL W3MX( rho_dw, grho2_dw, sx_dw, v1x_dw, v2x_dw )
+        !
+        sx_tot(ir) = 0.5_DP * ( sx_up*rnull_up + sx_dw*rnull_dw )
         v2x_up = 2.0_DP * v2x_up
         v2x_dw = 2.0_DP * v2x_dw
         !
@@ -1032,9 +1050,9 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
   !! Gradient corrections for correlations - Hartree a.u.  
   !! Implemented: Perdew86, GGA (PW91), PBE
   !
+  USE dft_setting_params,   ONLY: igcx, igcc, rho_threshold_gga, rmg_epsg_guard
   USE corr_gga
-  USE dft_setting_params,       ONLY: rmg_epsg_guard
-!! EMIL  USE beef_interface, ONLY: beeflocalcorrspin
+  USE beef_interface, ONLY: beeflocalcorrspin
   !
   IMPLICIT NONE
   !
@@ -1075,7 +1093,7 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
 !$omp private( rho, zeta, grho, sc, v1c_up, v1c_dw, v2c ) &
 !$omp shared( igcc, sc_out, v1c_out, v2c_out, &
 !$omp         rho_threshold_gga, zeta_io, length, &
-!$omp         grho_in, rho_in, rmg_epsg_guard)
+!$omp         grho_in, rho_in, rmg_epsg_guard )
 !$omp do
 #endif
   DO ir = 1, length
@@ -1114,7 +1132,7 @@ SUBROUTINE gcc_spin( length, rho_in, zeta_io, grho_in, sc_out, v1c_out, v2c_out 
        !
     CASE( 14 )
        !  
-!! EMIL       CALL beeflocalcorrspin( rho, zeta, grho, sc, v1c_up, v1c_dw, v2c, 0 )
+       CALL beeflocalcorrspin( rho, zeta, grho, sc, v1c_up, v1c_dw, v2c, 0 )
        !
     CASE DEFAULT
        !
@@ -1157,6 +1175,8 @@ SUBROUTINE gcc_spin_more( length, rho_in, grho_in, grho_ud_in, &
   !!    * Lee, Yang & Parr;
   !!    * GGAC.
   !
+  USE dft_setting_params,   ONLY: igcx, igcc, rho_threshold_gga,     &
+                                  exx_started
   USE corr_gga
   !
   IMPLICIT NONE
