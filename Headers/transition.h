@@ -133,6 +133,7 @@ void LoadUpfPseudo(SPECIES *sp);
 void LoadXmlPseudo(SPECIES *sp);
 void LoadAllElectronPseudo(SPECIES *sp);
 double * UPF_str_to_double_array(std::string str, int max_count, int start);
+std::vector<double> UPF_str_to_double_vector(std::string str, int max_count, int start);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);

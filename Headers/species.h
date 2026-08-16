@@ -250,7 +250,7 @@ public:
 
 
     /* Local Pseudopotentials */
-    double *vloc0;
+    std::vector<double> vloc0;
 
     /* Core charge radial grids */
     double *cr;
@@ -274,6 +274,10 @@ public:
 
     /* l-value associated with each difference potential */
     std::vector<int> dVl_l;
+
+    /* Atomic kinetic energy density for metagga functionals */
+    std::vector<double> tau_atomic;   // for isolated atoms including core and valence
+    std::vector<double> tau_core;     // core only
 
     /* Total number of radial projectors */
     int nbeta;

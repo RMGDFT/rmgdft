@@ -55,6 +55,32 @@ double * UPF_str_to_double_array(std::string str, int max_count, int start) {
    return array;
 }
 
+std::vector<double> UPF_str_to_double_vector(std::string str, int max_count, int start) {
+
+   std::vector<std::string> strs;
+   int count = 0;
+   std::vector<double> array(max_count-start);
+   std::string delims = " \t\n";
+   boost::trim(str);
+   boost::algorithm::split( strs, str, boost::is_any_of(delims), boost::token_compress_on );
+ 
+   std::vector<std::string>::iterator it;
+   for (it = strs.begin(); it != strs.end(); ++it) {
+       std::string svalue = *it;
+       boost::trim(svalue);
+       if(count >= start)
+           array[count-start] = std::atof(svalue.c_str());
+       count++;
+       if(count > max_count)
+            throw RmgFatalException() << "Problem with UPF pseudopotential in " << __FILE__ << " at line " << __LINE__ << " Too many elements.\n";
+
+       if(count == max_count) return array;
+   }
+
+   return array;
+}
+
+
 
 
 // Skips the first start elements in array since some UPF pseudopotentials
@@ -62,6 +88,10 @@ double * UPF_str_to_double_array(std::string str, int max_count, int start) {
 double * UPF_read_mesh_array(std::string str, int count, int start)
 {
     return UPF_str_to_double_array(str, count, start);
+}
+std::vector<double> UPF_read_mesh_vector(std::string str, int count, int start)
+{
+    return UPF_str_to_double_vector(str, count, start);
 }
 
 
@@ -263,7 +293,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // Local potential
     std::string PP_LOCAL = upf_tree.get<std::string>("UPF.PP_LOCAL");
-    sp->vloc0 = UPF_read_mesh_array(PP_LOCAL, r_total, ibegin);
+    sp->vloc0 = UPF_read_mesh_vector(PP_LOCAL, r_total, ibegin);
 
     // Get into our internal units
     for(int ix = 0;ix < sp->rg_points;ix++) sp->vloc0[ix] /= 2.0;
@@ -334,6 +364,20 @@ void LoadUpfPseudo(SPECIES *sp)
     // Atomic charge density
     std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
     sp->atomic_rho = UPF_read_mesh_array(PP_RHOATOM, r_total, ibegin);
+
+    // Metagga stuff
+    try {
+        std::string PP_TAUATOM = upf_tree.get<std::string>("UPF.PP_TAUATOM");
+        sp->tau_atomic = UPF_read_mesh_vector(PP_TAUATOM, r_total, ibegin);
+    }
+    catch (std::exception const & e) {
+    }
+    try {
+        std::string PP_TAUMOD = upf_tree.get<std::string>("UPF.PP_TAUAMOD");
+        sp->tau_core = UPF_read_mesh_vector(PP_TAUMOD, r_total, ibegin);
+    }
+    catch (std::exception const & e) {
+    }
 
     // UPF stores rhoatom * r^2 so rescale
     for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);

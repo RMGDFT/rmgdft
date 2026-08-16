@@ -136,7 +136,7 @@ void LoadAllElectronPseudo(SPECIES *sp)
     for(int i = 1;i < sp->rg_points;i++) sp->rab[i] = (sp->r[i] - sp->r[i-1]);
 
     // All electron potential
-    sp->vloc0 = new double[sp->rg_points];
+    sp->vloc0.resize(sp->rg_points);
 
     // Get into our internal units
     for(int ix = 0;ix < sp->rg_points;ix++)
