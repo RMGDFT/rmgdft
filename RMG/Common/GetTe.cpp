@@ -238,6 +238,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     Functional F (*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
     {
+        double emeta = 0.0;
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             kptr = Kptr[kpt];
@@ -247,10 +248,12 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
                 t1 += kptr->Kstates[is].occupation[0] * kptr->Kstates[is].e_meta_xc;
             }
             t1 = get_vel() * rmg::sum_all(t1, pct.grid_comm);
-            xcstate += kptr->kp.kweight * t1;
+            emeta += kptr->kp.kweight * t1;
         }
+        emeta = rmg::sum_all(emeta, pct.spin_comm);
+        emeta = rmg::sum_all(emeta, pct.kpsub_comm);
+        xcstate += emeta;
     }
-
 
     if(ii_flag) {
 

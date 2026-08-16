@@ -109,9 +109,10 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     if(ct.xc_is_meta)
     {
+        double fac = 1.0 / (double)ct.nspin;
         for(int idx = 0;idx < FP0_BASIS;idx++)
         {
-            Functional::ke_density[idx] += Functional::tau_core[idx];
+            Functional::ke_density[idx] += fac*Functional::tau_core[idx];
         }
     }
 

@@ -630,7 +630,7 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         fgobj<double> ex, ec;
         spinobj<double> v1x, v2x, v3x, v1c, v3c, trho;
         spinobj<double> rho, grho2, hx, hy, hz;
-        fgobj<double> dh;
+        fgobj<double> dh, dd1, dd2;
         double *rho_up, *rho_dw, *v_up, *v_dw;
         
         double *gx_up = new double[6*this->pbasis];
@@ -642,34 +642,27 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         double *grhof = new double[6*this->pbasis];
         double *v2c = new double[6*this->pbasis];
 
-        for(int ix=0;ix < this->pbasis;ix++)
-            trho.up[ix] = rho_in[ix] + rho_in[ix+this->pbasis] + rho_core[ix];
-
         if(pct.spinpe == 0) {
-            for(int ix=0;ix < this->pbasis;ix++) trho.dw[ix] = rho_in[ix] - rho_in[ix+this->pbasis];
             rho_up = rho_in;
             rho_dw = &rho_in[this->pbasis];
             v_up = v;
             v_dw = &v[this->pbasis];
         }
         else {
-            for(int ix=0;ix < this->pbasis;ix++) trho.dw[ix] = rho_in[ix+this->pbasis] - rho_in[ix];
             rho_dw = rho_in;
             rho_up = &rho_in[this->pbasis];
             v_dw = v;
             v_up = &v[this->pbasis];
         }
-        for(int ix=0;ix < this->pbasis;ix++)
-        {
-            rho.up[ix] = rho_up[ix] + 0.5*rho_core[ix];
-            rho.dw[ix] = rho_dw[ix] + 0.5*rho_core[ix];
-        }
+        for(int ix=0;ix < this->pbasis;ix++) trho.up[ix] = rho_up[ix] + 0.5*rho_core[ix];
+        for(int ix=0;ix < this->pbasis;ix++) trho.dw[ix] = rho_dw[ix] + 0.5*rho_core[ix];
+
         ApplyGradient (trho.up.data(), gx_up, gy_up, gz_up, fd_order, "Fine");
         ApplyGradient (trho.dw.data(), gx_dw, gy_dw, gz_dw, fd_order, "Fine");
         CToF_2d(this->pbasis, gx_up, grhof);
         CToF_2d(this->pbasis, gx_dw, grhof+3*this->pbasis);
         int length = this->pbasis;
-        xc_metagcx( &length, &itwo, &np, rho.data(), grhof, ked, 
+        xc_metagcx( &length, &itwo, &np, trho.data(), grhof, ked, 
                    ex.data(), ec.data(), v1x.data(), v2x.data(), v3x.data(),
                    v1c.data(), v2c, v3c.data(), &gargs );
 
@@ -699,51 +692,54 @@ void Functional::v_xc_meta(double *rho_in, double *rho_core, double &etxc, doubl
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             vtxc -= dh[ix] * rho[ix];
         }
         ApplyGradient<double> (hy.up.data(), NULL, dh.data(), NULL, fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             vtxc -= dh[ix] * rho[ix];
         }
         ApplyGradient<double> (hz.up.data(), NULL, NULL, dh.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
              v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             vtxc -= dh[ix] * rho[ix];
         }
 
         ApplyGradient<double> (hx.dw.data(), dh.data(), NULL, NULL, fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             v[ix+this->pbasis] -= dh[ix];
+             vtxc -= dh[ix] * rho[ix+this->pbasis];
         }
         ApplyGradient<double> (hy.dw.data(), NULL, dh.data(), NULL, fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             v[ix+this->pbasis] -= dh[ix];
+             vtxc -= dh[ix] * rho[ix+this->pbasis];
         }
 
         ApplyGradient<double> (hz.dw.data(), NULL, NULL, dh.data(), fd_order, "Fine");
         for(int ix=0;ix < rho.pbasis;ix++)
         {
-             v[ix] -= dh[ix];
-             vtxc -= dh[ix] * rho_in[ix];
+             v[ix+this->pbasis] -= dh[ix];
+             vtxc -= dh[ix] * rho[ix+this->pbasis];
         }
 
+        get_rho_oppo(v, &v[this->pbasis]);
 
         delete [] v2c;
         delete [] grhof;
     } 
+
 
     vtxc = vtxc * L->omega / (double)this->N;
     etxc = etxc * L->omega / (double)this->N;
 
     vtxc = rmg::sum_all(vtxc, this->T->get_MPI_comm());
     etxc = rmg::sum_all(etxc, this->T->get_MPI_comm());
+
     if(Rmg_G->default_FG_RATIO > 1)
     {
         int wf_pbasis = Rmg_G->get_P0_BASIS(1);
