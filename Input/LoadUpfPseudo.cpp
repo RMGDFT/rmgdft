@@ -369,14 +369,20 @@ void LoadUpfPseudo(SPECIES *sp)
     try {
         std::string PP_TAUATOM = upf_tree.get<std::string>("UPF.PP_TAUATOM");
         sp->tau_atomic = UPF_read_mesh_vector(PP_TAUATOM, r_total, ibegin);
+//        for(int ix = 0;ix < sp->rg_points;ix++) sp->tau_atomic[ix] = sp->tau_atomic[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
     }
     catch (std::exception const & e) {
+        sp->tau_atomic.resize(sp->rg_points);
+        for(int ix = 0;ix < sp->rg_points;ix++) sp->tau_atomic[ix] = 0.0;
     }
     try {
-        std::string PP_TAUMOD = upf_tree.get<std::string>("UPF.PP_TAUAMOD");
+        std::string PP_TAUMOD = upf_tree.get<std::string>("UPF.PP_TAUMOD");
         sp->tau_core = UPF_read_mesh_vector(PP_TAUMOD, r_total, ibegin);
+//        for(int ix = 0;ix < sp->rg_points;ix++) sp->tau_core[ix] = sp->tau_core[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
     }
     catch (std::exception const & e) {
+        sp->tau_core.resize(sp->rg_points);
+        for(int ix = 0;ix < sp->rg_points;ix++) sp->tau_core[ix] = 0.0;
     }
 
     // UPF stores rhoatom * r^2 so rescale

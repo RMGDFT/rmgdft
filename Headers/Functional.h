@@ -100,7 +100,9 @@ public:
 
     static std::string saved_dft_name;
     inline static double *ke_density;
-    static double *ke_taur_wf;
+    inline static double *tau_atomic;
+    inline static double *tau_core;
+    inline static double *ke_taur_wf;
     void stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma);
 
 };

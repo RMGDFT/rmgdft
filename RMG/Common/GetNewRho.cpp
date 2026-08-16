@@ -107,6 +107,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         delete [] augrho;
     }
 
+    if(ct.xc_is_meta)
+    {
+        for(int idx = 0;idx < FP0_BASIS;idx++)
+        {
+            Functional::ke_density[idx] += Functional::tau_core[idx];
+        }
+    }
+
     if(ct.is_use_symmetry)
     {
         if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);

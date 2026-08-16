@@ -588,7 +588,13 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
 
+        if(ct.xc_is_meta)
+        {
+            for(int idx=0;idx < FP0_BASIS;idx++) Functional::ke_density[idx] = Functional::tau_atomic[idx];
+        }
+
         compute_vxc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
+
         // Initial vxc and vh can be very noisy
         FftFilter(vxc.up.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 

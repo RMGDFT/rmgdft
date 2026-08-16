@@ -288,8 +288,10 @@ public:
      */
     std::vector<double> localig;
 
-    /* Log interpolation storage for the core charge density */
+    /* Log interpolation storage for the core charge density and ke density with metagga */
     std::vector<double> rhocorelig;
+    std::vector<double> tau_atomic_lig;
+    std::vector<double> tau_core_lig;
 
     // projectors in G-space radial log grid
     std::vector<std::shared_ptr<double []>> beta_g;
@@ -300,6 +302,8 @@ public:
     double *der_localpp_g;
     double *arho_g;
     double *rhocore_g;
+    double *tau_atomic_g;
+    double *tau_core_g;
 
     /*Grid spacing for atomic charge density on linear grid*/
     double drlig_arho;

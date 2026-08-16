@@ -200,10 +200,28 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
     this->der_localpp_g = new double[RADIAL_GVECS];
     this->arho_g = new double[RADIAL_GVECS];
     this->rhocore_g = new double[RADIAL_GVECS];
+    this->tau_atomic_g = new double[RADIAL_GVECS]();
+    this->tau_core_g = new double[RADIAL_GVECS]();
     RLogGridToGLogGrid(work, this->r, this->rab, this->localpp_g,
             this->rg_points, 0, bessel_rg);
     RLogGridToGLogGrid(this->atomic_rho, this->r, this->rab, this->arho_g,
             this->rg_points, 0, bessel_rg);
+    if(ct.xc_is_meta)
+    {
+        RLogGridToGLogGrid(this->tau_atomic.data(), this->r, this->rab, this->tau_atomic_g,
+                this->rg_points, 0, bessel_rg);
+        RLogGridToGLogGrid(this->tau_core.data(), this->r, this->rab, this->tau_core_g,
+                this->rg_points, 0, bessel_rg);
+        this->tau_atomic_lig.resize(MAX_LOGGRID);
+        this->tau_core_lig.resize(MAX_LOGGRID);
+        FilterPotential(this->tau_atomic.data(), this->r, this->rg_points, this->lradius, ct.rhocparm,
+                        this->tau_atomic_lig.data(), this->rab, 0, this->gwidth, 0.66*this->lradius,
+                        this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+        FilterPotential(this->tau_core.data(), this->r, this->rg_points, this->lradius, ct.rhocparm,
+                        this->tau_core_lig.data(), this->rab, 0, this->gwidth, 0.66*this->lradius,
+                        this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+    }
+
     Der_Localpp_g(work, this->r, this->rab, this->der_localpp_g, this->rg_points);
     this->arho_g[0] = Zv;
     if (pct.gridpe == 0 && write_flag)
@@ -372,6 +390,9 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
 
     }                       /* end if */
 
+    if(ct.xc_is_meta)
+    {
+    }
 
     /*Open file for writing atomic orbitals */
     if (pct.gridpe == 0 && write_flag)

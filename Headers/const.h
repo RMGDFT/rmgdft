@@ -249,6 +249,8 @@
 #define ATOMIC_RHOCOMP   2
 #define ATOMIC_RHOCORE   3
 #define ATOMIC_RHOCORE_STRESS   4
+#define TAU_ATOMIC       5
+#define TAU_CORE         6
 
 // Pseudopotential file formats
 #define UPF_FORMAT  0

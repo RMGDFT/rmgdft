@@ -117,6 +117,14 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                         }
                         break;
 
+                    case TAU_ATOMIC:
+                        t1 = AtomicInterpolateInline_Ggrid(sp->tau_atomic_g, gval);
+                        break;
+
+                    case TAU_CORE:
+                        t1 = AtomicInterpolateInline_Ggrid(sp->tau_core_g, gval);
+                        break;
+
                     default:
                         throw RmgFatalException() << "Undefined local object type" << 
                             " in " << __FILE__ << " at line " << __LINE__ << "\n";

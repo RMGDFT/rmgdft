@@ -56,6 +56,8 @@
 // ATOMIC_RHO       Atomic rho
 // ATOMIC_RHOCOMP   Atomic compensating charges
 // ATOMIC_RHOCORE   Atomic core charges for non-linear core corrections.
+// TAU_ATOMIC       Total atomic kinetic energy density for metagga.
+// TAU_CORE         Core atomic kinetic energy density for metagga.
 //
 
 void LcaoGetAtomicRho(double *arho)
@@ -192,6 +194,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     {
         factor = 4;
     }
+    if( (ct.nspin == 2) && ((object_type == TAU_ATOMIC) || (object_type == TAU_CORE)))
+    {
+        factor = 2;
+    }
 
     for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] = 0.0;
     if(object_type == ATOMIC_RHOCOMP) {
@@ -271,7 +277,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                     Rmg_L.to_cartesian(x, cx);
 
                                     if(r > sp->lradius) continue;
-                                    double t1;
+                                    double t1 = 0.0;
 
                                     switch(object_type) 
                                     {
@@ -292,35 +298,41 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                             {
                                                 t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
                                             }
-                                            else
-                                            {
-                                                t1 = 0.0;
-                                            }
                                             break;
                                         case ATOMIC_RHOCORE_STRESS: 
                                             if(sp->nlccflag) 
                                             {
                                                 t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
                                             }
-                                            else
+                                            break;
+
+                                        case TAU_ATOMIC: 
+                                            if(ct.xc_is_meta) 
                                             {
-                                                t1 = 0.0;
+                                                t1 = AtomicInterpolateInline (sp->tau_atomic_lig.data(), r);
                                             }
                                             break;
 
+                                        case TAU_CORE: 
+                                            if(ct.xc_is_meta) 
+                                            {
+                                                t1 = AtomicInterpolateInline (sp->tau_core_lig.data(), r);
+                                            }
+                                            break;
                                         default:
                                             throw RmgFatalException() << "Undefined local object type" << 
                                                 " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
                                     }
 
-                                    if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) )
+                                    if((ct.nspin == 2) && 
+                                       ((object_type == ATOMIC_RHO) ||
+                                       (object_type == TAU_ATOMIC)))
                                     { 
                                         if (pct.spinpe == 0)
                                             sumobj_omp[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                         else
                                             sumobj_omp[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
-
                                     }
                                     else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) )
                                     { 
