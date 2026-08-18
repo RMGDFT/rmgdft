@@ -301,6 +301,7 @@ public:
     double *localpp_g;
     double *der_localpp_g;
     double *arho_g;
+    std::vector<double> mrho_g;
     double *rhocore_g;
     double *tau_atomic_g;
     double *tau_core_g;
@@ -354,8 +355,9 @@ public:
     std::vector<int> nh_l2m;
     int nh;
 
-    /*Atomic charge density on linear grid*/
+    /*Atomic charge densities on linear grid*/
     std::vector<double> arho_lig;
+    std::vector<double> mrho_lig;
     
     /* Point to plane wave object used for localized projectors */
     Pw *prj_pwave;

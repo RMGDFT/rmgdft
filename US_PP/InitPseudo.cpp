@@ -626,6 +626,50 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
 
     } // end if for !ct.norm_conserving_pp
 
+
+    // If this is a spin polarized calculation we need to compute the magnetic charge
+    // density for each species which is used to setup the initial atomic densities
+    if(ct.nspin == 2)
+    {
+        this->mrho_g.resize(RADIAL_GVECS);
+        this->mrho_lig.resize(MAX_LOGGRID);
+
+        std::vector<double> mrho(this->rg_points);
+        std::vector<double> work(std::max(RADIAL_GVECS, MAX_LOGGRID));
+
+        // Loop over atomic wavefunctions
+        for (int ip = 0; ip < this->num_atomic_waves; ip++)
+        {
+            // Look for partially filled shells
+            // and accumulate charge
+            int l = this->atomic_wave_l[ip];
+            double occ = this->atomic_wave_oc[ip];
+            double *wave = this->atomic_wave[ip];
+            if(((l == 0) && (std::abs(occ - 2.0) > 0.1)) || 
+               ((l == 1) && (std::abs(occ - 6.0) > 0.1)) ||
+               ((l == 2) && (std::abs(occ - 10.0) > 0.1)) ||
+               ((l == 3) && (std::abs(occ - 14.0) > 0.1)))
+            {
+                for(int i=0;i < this->rg_points;i++) work[i] = wave[i]*wave[i];
+                for(int i=0;i < this->rg_points;i++) mrho[i] += occ*wave[i]*wave[i];
+            }
+        }
+        //double norm = radint1 (mrho.data(), this->r, this->rab, this->rg_points);
+        //printf("NORM = %f\n", norm);
+        RLogGridToGLogGrid(mrho.data(), this->r, this->rab, this->mrho_g.data(),
+                           this->rg_points, 0, bessel_rg);
+        for (int idx = 0; idx < this->rg_points; idx++)
+        {
+            if(mrho[idx] < 0.0)
+                work[idx] = 0.0;
+            else 
+                work[idx] = sqrt(mrho[idx]);
+        }
+        FilterPotential(work.data(), this->r, this->rg_points, this->lradius, ct.rhocparm, this->mrho_lig.data(),
+                this->rab, 0, this->gwidth, 0.66*this->lradius, this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+        for (int idx = 0; idx < MAX_LOGGRID; idx++) this->mrho_lig[idx] *= this->mrho_lig[idx];
+    }
+
     delete [] bessel_rg;
     delete [] work;
 
