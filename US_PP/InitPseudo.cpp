@@ -633,6 +633,8 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
     {
         this->mrho_g.resize(RADIAL_GVECS);
         this->mrho_lig.resize(MAX_LOGGRID);
+        for(int i=0;i < RADIAL_GVECS;i++) mrho_g[i] = 0.0;
+        for(int i=0;i < MAX_LOGGRID;i++) mrho_lig[i] = 0.0;
 
         std::vector<double> mrho(this->rg_points);
         std::vector<double> work(std::max(RADIAL_GVECS, MAX_LOGGRID));
@@ -645,17 +647,23 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
             int l = this->atomic_wave_l[ip];
             double occ = this->atomic_wave_oc[ip];
             double *wave = this->atomic_wave[ip];
+#if 0
             if(((l == 0) && (std::abs(occ - 2.0) > 0.1)) || 
                ((l == 1) && (std::abs(occ - 6.0) > 0.1)) ||
                ((l == 2) && (std::abs(occ - 10.0) > 0.1)) ||
                ((l == 3) && (std::abs(occ - 14.0) > 0.1)))
+#else
+            if((l == 2) && (std::abs(occ - 10.0) > 0.1))
+#endif
             {
                 for(int i=0;i < this->rg_points;i++) work[i] = wave[i]*wave[i];
                 for(int i=0;i < this->rg_points;i++) mrho[i] += occ*wave[i]*wave[i];
             }
         }
-        //double norm = radint1 (mrho.data(), this->r, this->rab, this->rg_points);
-        //printf("NORM = %f\n", norm);
+        for (int idx = 0; idx < this->rg_points; idx++) mrho[idx] /= 4.0*PI;
+        //double norm1 = 4.0*PI*radint1 (atomic_rho, this->r, this->rab, this->rg_points);
+        //double norm2 = 4.0*PI*radint1 (mrho.data(), this->r, this->rab, this->rg_points);
+        //printf("NORMS %f   %f\n", norm1, norm2);
         RLogGridToGLogGrid(mrho.data(), this->r, this->rab, this->mrho_g.data(),
                            this->rg_points, 0, bessel_rg);
         for (int idx = 0; idx < this->rg_points; idx++)
