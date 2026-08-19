@@ -145,7 +145,7 @@ public:
     double tddft_frequency;
     double tddft_qpos[3];
     double tddft_qgau;
-    int tddft_ehpair[3];
+    int tddft_ehpair[4];
     
 
     /** Prepended to pseudopotential name */

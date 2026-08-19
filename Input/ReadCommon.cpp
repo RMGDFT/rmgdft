@@ -1363,9 +1363,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
             "cartesian coordinate of the point charge for tddft",
             "You must specify a triplet of (X,Y,Z) dimensions. ", TDDFT_OPTIONS);
-    Ri::ReadVector<int> def_tddft_ehpair({{0,0,0}});
+    Ri::ReadVector<int> def_tddft_ehpair({{0,0,0,1}});
     Ri::ReadVector<int> tddft_ehpair;
-    If.RegisterInputKey("tddft_ehpair", &tddft_ehpair, &def_tddft_ehpair, 3, OPTIONAL,
+    If.RegisterInputKey("tddft_ehpair", &tddft_ehpair, &def_tddft_ehpair, 4, OPTIONAL,
             "information for excitation in tddft",
             "the three ints are kpoint, vbm - ?, cbm + ? . [0,0,0] means ehpair at first kpoint  from vbm to cbm", TDDFT_OPTIONS);
 
@@ -1704,6 +1704,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ct.tddft_ehpair[0] = tddft_ehpair.vals.at(0);
     ct.tddft_ehpair[1] = tddft_ehpair.vals.at(1);
     ct.tddft_ehpair[2] = tddft_ehpair.vals.at(2);
+    ct.tddft_ehpair[3] = tddft_ehpair.vals.at(3);
     /* read the electric field vector */
     try {
         ct.efield_xtal[0] = electric_field.vals.at(0);
