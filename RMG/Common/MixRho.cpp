@@ -370,5 +370,7 @@ double AutoMix (void)
         }
 
     }
+    MPI_Bcast(&newmix, 1, MPI_DOUBLE, 0, pct.grid_comm);
+
     return newmix;
 }
