@@ -551,19 +551,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         {
             rmg::error("elecrton hole states are not correct");
         }
-        if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
-        {
-            if(Kptr[kpt_eh]->Kstates[h_state].occupation[0] < 1.0 - 1.0e-5)
-            {
-                rmg::printlog("\n electron hole pair info wrong kpt %d valance state %d\n", kpt_eh, vbm-ct.tddft_ehpair[1]);
-                rmg::error("state is not a valance band");
-            }
-            if(Kptr[kpt_eh]->Kstates[e_state].occupation[0] > 0.1 )
-            {
-                rmg::printlog("\n electron hole pair info wrong kpt %d conduction state %d\n", kpt_eh, vbm+1+ct.tddft_ehpair[2]);
-                rmg::error("state is not a conduction band");
-            }
-        }
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
@@ -573,6 +560,16 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             {
                 diag_elem[h_state -ct.tddft_start_state] -=ct.tddft_ehpair[3];
                 diag_elem[e_state -ct.tddft_start_state] +=ct.tddft_ehpair[3];
+                if(diag_elem[h_state -ct.tddft_start_state] < 0.0) 
+                {
+                    rmg::printlog("\n h_state %d occupation %f", h_state, diag_elem[h_state -ct.tddft_start_state]);
+                    rmg::error("elecrton hole states are not correct");
+                }
+                if(diag_elem[e_state -ct.tddft_start_state] > 2.0) 
+                {
+                    rmg::printlog("\n e_state %d occupation %f", e_state, diag_elem[e_state -ct.tddft_start_state]);
+                    rmg::error("elecrton hole states are not correct");
+                }
             }
 
             memset(Kptr[kpt]->Pn0_cpu, 0, 2*n2*sizeof(double));
