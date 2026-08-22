@@ -636,8 +636,8 @@ void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
         for(int i=0;i < RADIAL_GVECS;i++) mrho_g[i] = 0.0;
         for(int i=0;i < MAX_LOGGRID;i++) mrho_lig[i] = 0.0;
 
-        std::vector<double> mrho(this->rg_points);
-        std::vector<double> work(std::max(RADIAL_GVECS, MAX_LOGGRID));
+        std::vector<double> mrho(std::max(this->rg_points, std::max(RADIAL_GVECS, MAX_LOGGRID)));
+        std::vector<double> work(std::max(this->rg_points, std::max(RADIAL_GVECS, MAX_LOGGRID)));
 
         // Loop over atomic wavefunctions
         for (int ip = 0; ip < this->num_atomic_waves; ip++)
