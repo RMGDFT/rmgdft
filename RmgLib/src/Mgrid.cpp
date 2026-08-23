@@ -38,12 +38,55 @@
 #include <complex>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <cmath>
 #include "Mgrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "packfuncs.h"
 #include "boundary_conditions.h"
+
+
+//  Computes multigrid smoothing parameters based on Cheybshev polynomials
+std::vector<double> pois_periodic_coeffs(
+       int nx, int ny, int nz,           // global grid points at this level
+       double dx, double dy, double dz,  // grid spacing at this level
+       double sigma,                     // smoothing window (0.0 = full band, 1.0 = higher)
+       int nsteps)                       // number of steps
+{
+    const double PI = 3.14159265358979323;
+    std::vector<double> coefs(nsteps, 0.0);
+
+    // 1. Directional weights
+    double inv_dx2 = 1.0 / (dx * dx);
+    double inv_dy2 = 1.0 / (dy * dy);
+    double inv_dz2 = 1.0 / (dz * dz);
+    
+    // Gvector units
+    double cx = std::cos((2.0 * PI) / nx);
+    double cy = std::cos((2.0 * PI) / ny);
+    double cz = std::cos((2.0 * PI) / nz);
+    
+    double A = (inv_dx2 * cx) + (inv_dy2 * cy) + (inv_dz2 * cz);
+    double B = inv_dx2 + inv_dy2 + inv_dz2;
+    double r = A / B;
+    
+    if (sigma < 0.001 && nx > 4 && ny > 4 && nz > 4) {
+        r = 1.0; 
+    }
+    
+    // smoothing window
+    double rs = ((1.0 - sigma) * r) / (2.0 + (1.0 + sigma) * r);
+
+    // Chebyshev recursion
+    coefs[0] = 1.0; 
+    for (int k = 1; k < nsteps; ++k) {
+        coefs[k] = 4.0 / (4.0 - rs * rs * coefs[k - 1]);
+    }
+
+    return coefs;
+}
 
 template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
@@ -209,7 +252,6 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 {
     RmgTimer *RT = NULL;
     RmgType half(0.5);
-
     std::string timername;
     if(this->timer_mode) {
         timername = "Mgrid_solv: level " + std::to_string(level);
@@ -233,10 +275,25 @@ check=false;offset=1;
     int dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
     int dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
 
-    // More sweeps on coarsest level
     int presweeps = pre_cyc[level];
+    std::vector<double> pcoefs;
+    int fac = std::pow(2, level);
+    int nx = this->T->G->get_NX_GRID(1)/fac;
+    int ny = this->T->G->get_NY_GRID(1)/fac;
+    int nz = this->T->G->get_NZ_GRID(1)/fac;
+    // More sweeps on coarsest level
     if((level >= max_levels) || (dx2 < 0) || (dy2 < 0) || (dz2 < 0))
-        presweeps = 12;
+    {
+        int minpts = std::min(std::min(nx, ny), nz);
+        int maxpts = std::max(std::max(nx, ny), nz);
+        presweeps = std::max(maxpts, 12);
+        if(presweeps > minpts) presweeps = minpts;
+        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 0.0, presweeps);
+    }
+    else
+    {
+        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 0.25, presweeps);
+    }
 
 
 /* precalc some boundaries */
@@ -264,7 +321,7 @@ check=false;offset=1;
         for (int cycl = 0; cycl < presweeps; cycl++)
         {
             /* solve once */
-            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
+            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, pcoefs[cycl], Zfac, k, pot);
 
             /* trade boundary info */
             if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
@@ -341,7 +398,7 @@ check=false;offset=1;
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                     gridhy * 2.0, gridhz * 2.0, level + 1,
-                    max_levels, pre_cyc, post_cyc, mu_cyc, step, 2.0*Zfac, k, newpot,
+                    max_levels, pre_cyc, post_cyc, mu_cyc, step, sqrt(2.0)*Zfac, k, newpot,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim, boundaryflag, kvec);
@@ -363,7 +420,7 @@ check=false;offset=1;
             {
 
                 /* solve once */
-                solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
+                solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, pcoefs[cycl], Zfac, k, pot);
 
                 /* trade boundary info */
                 if(cycl < (post_cyc[level] - 1))

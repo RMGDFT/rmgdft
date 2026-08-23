@@ -95,8 +95,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    int eig_pre[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 6, 6, 6, 6, 6, 6, 6 };
+    int eig_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -122,7 +122,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
-    double Zfac = 2.0 * ct.max_zvalence;
+    double Zfac = sqrt(2.0)*ct.max_zvalence;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -270,7 +270,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
                         dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                         1, levels, eig_pre, eig_post, 1, 
-                        mg_step, 2.0*Zfac, 0.0, NULL,
+                        mg_step, sqrt(2.0)*Zfac, 0.0, NULL,
                         NX_GRID, NY_GRID, NZ_GRID,
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         dimx, dimy, dimz, ct.boundaryflag);

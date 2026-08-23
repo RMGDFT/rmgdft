@@ -175,5 +175,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
             break;
         }
     }
-
+    // No point in going to down to super tiny coarse grids.
+    int minpts = std::min(NX_GRID, std::min(NY_GRID, NZ_GRID));
+    if(minpts <= 32 && lc.eig_parm.levels > 2) lc.eig_parm.levels = 2;
 }

@@ -61,7 +61,6 @@ class TradeImages {
 
 private:
 
-    rmg::grid *G;
     MpiQueue *queue;
     void allocate_buffers(double ** &P, int nthreads, int length_per_thread, size_t elem_len);
     bool queue_mode;
@@ -133,6 +132,7 @@ private:
 public:
     /// MPI communicator to use
     MPI_Comm comm;
+    rmg::grid *G;
 
     TradeImages(rmg::grid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images);
     ~TradeImages(void);
