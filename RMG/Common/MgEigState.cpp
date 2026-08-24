@@ -44,6 +44,61 @@
 #include "rmg_complex.h"
 #include "rmgthreads.h"
 
+template <typename T>
+void anchor_residual(int n, T *r)
+{
+
+    double s1[2]{0.0,0.0};
+    for(int i=0;i < n;i++)
+    {
+        s1[0] += std::real(r[i]);
+        s1[1] += std::imag(r[i]);
+    }
+    rmg::allreduce(s1, 2, pct.coalesced_grid_comm);
+    T scale;
+    int global_n = Rmg_G->get_GLOBAL_BASIS(1);
+    if constexpr(std::is_same_v<T, std::complex<double>> || std::is_same_v<T, std::complex<float>>)
+    {
+        T I_t(0.0, 1.0);
+        scale = s1[0] / (double)global_n;
+        for(int i=0;i < n;i++) r[i] -= scale;
+        scale = s1[1] / (double)global_n;
+        for(int i=0;i < n;i++) r[i] -= I_t*scale;
+    }
+    else
+    {
+        scale = s1[0] / (double)global_n;
+        for(int i=0;i < n;i++) r[i] -= scale;
+    }
+}
+
+template <typename T>
+void project_residual(int n, T *r, T *psi)
+{
+
+    double s1[3]{0.0,0.0,0.0};
+    for(int i=0;i < n;i++)
+    {
+        //rpsi = rpsi + psi[i]*std::conj(r[i]);
+        s1[0] += std::real(psi[i])*std::real(r[i]) + std::imag(psi[i])*std::imag(r[i]);
+        s1[1] += -std::real(psi[i])*std::imag(r[i]) + std::imag(psi[i])*std::real(r[i]);
+        s1[2] += std::norm(psi[i]);
+    }
+    rmg::allreduce(s1, 3, pct.coalesced_grid_comm);
+    T scale;
+    if constexpr(std::is_same_v<T, std::complex<double>> || std::is_same_v<T, std::complex<float>>)
+    {
+        T scale(s1[0], s1[1]);
+    }
+    else
+    {
+        scale = s1[0] / s1[2];
+    }
+    for(int i=0;i < n;i++)
+    {
+        r[i] = r[i] - scale*psi[i];
+    }
+}
 
 template <typename T>
 double ComputeEig(int n, T *A, T *B, T *D)
@@ -122,7 +177,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
-    double Zfac = sqrt(2.0)*ct.max_zvalence;
+    double Zfac = 2.0*ct.max_zvalence + 0.5*kptr->kp.kmag;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -263,6 +318,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 }
 
                 /* Pack the residual data into multigrid array */
+                anchor_residual(pbasis, &res_t[is*pbasis]);
+                project_residual(pbasis, &res_t[is*pbasis], &tmp_psi_t[is*pbasis]);
                 rmg::pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
                 T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
                 MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -270,7 +327,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
                         dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                         1, levels, eig_pre, eig_post, 1, 
-                        mg_step, sqrt(2.0)*Zfac, 0.0, NULL,
+                        mg_step, Zfac, 0.0, NULL,
                         NX_GRID, NY_GRID, NZ_GRID,
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         dimx, dimy, dimz, ct.boundaryflag);
@@ -286,6 +343,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             if(ct.use_rmm_diis)
             {
                 rmg::pack_stop<CalcType> (sg_twovpsi_t, &work2_t[is*pbasis], dimx, dimy, dimz);
+                project_residual(pbasis, &work2_t[is*pbasis], &tmp_psi_t[is*pbasis]);
                 for(int i=0;i < pbasis_noncoll;i++)
                 {
                     rmmres_t[is*pbasis + i] = (saved_psi[is*pbasis+i] -
