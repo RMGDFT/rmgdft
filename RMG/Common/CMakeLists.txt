@@ -5,6 +5,7 @@ ApplyBlockedHamiltonian.cpp
 BlockDiag.cpp
 diis.cpp
 compute_vxc.cpp
+spectral_radius.cpp
 mgsmoother.cpp
 STM_calc.cpp
 ComputeHcore.cpp
