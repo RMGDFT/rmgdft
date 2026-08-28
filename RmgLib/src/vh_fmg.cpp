@@ -186,7 +186,6 @@ double vh_fmg (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *v
                  1, 2, maxlevel,
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
-                 G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
                  1.0e-8, global_step, coarse_step, boundaryflag, density, false, false);
 
         // Save coarse grid starting solution to use next time if vh_init is not null

@@ -81,17 +81,12 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 
-    /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-    int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-
     if(maxlevel >= MAX_MG_LEVELS)
        rmg::error("Too many multigrid levels requested.");
 
     int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 
     // Solve to a high degree of precision on the coarsest level
-    poi_pre[maxlevel] = 20;
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -150,9 +145,7 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
 
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
-                            G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-                            0, maxlevel, poi_pre,
-                            poi_post, mucycles, coarse_step,
+                            0, maxlevel, coarse_step,
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
 

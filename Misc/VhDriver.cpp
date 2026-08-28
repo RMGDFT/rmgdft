@@ -12,6 +12,7 @@
 #include "packfuncs.h"
 #include "blas.h"
 #include "RmgParallelFft.h"
+#include "rmg_error.h"
 
 
 float *vh_init;
@@ -19,9 +20,6 @@ float *vh_init;
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target)
 {
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
-    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
-    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
 
     double *rho_tot = new double[FP0_BASIS];
@@ -55,7 +53,12 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     }
     else
     {
+        rmg::error("Multigrid poission solver is currently disabled.");
 
+#if 0
+    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
         size_t coarse_size = FP0_BASIS;
 //        if(ct.poi_parm.levels > 0) coarse_size /= 8;
         if(ct.poi_parm.levels > 1) coarse_size /= 8;
@@ -75,8 +78,8 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
          * back into the wavefunction hartree array. */
         rmg::pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
         delete(RT1);
+#endif
     }
-
     delete [] rho_tot;
     if(Rmg_G->default_FG_RATIO > 1) 
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);

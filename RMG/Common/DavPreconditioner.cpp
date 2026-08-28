@@ -162,8 +162,6 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     Mgrid MG(L, T, G, 1, ct.max_zvalence);
     MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
 
-    int pre[MAX_MG_LEVELS] = { 3, 3, 3, 3, 3, 3, 3, 3 };
-    int post[MAX_MG_LEVELS] = { 3, 3, 3, 3, 3, 3, 3, 3 };
     int levels = ct.eig_parm.levels;
     double tstep = 0.666666666666;
 
@@ -173,10 +171,6 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
     //int pbasis_noncoll = pbasis;
-
-    double hxgrid = G->get_hxgrid(1);
-    double hygrid = G->get_hygrid(1);
-    double hzgrid = G->get_hzgrid(1);
 
     OrbitalType *work_t = (OrbitalType *)malloc(10*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
@@ -216,8 +210,8 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
 
         rmg::pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, levels, pre, post, 1,
+                    dimx, dimy, dimz,
+                    0, levels, 
                     tstep, -avg_potential, NULL,     // which one is best?
                     //tstep, 1.0, 0.0, vtot,
                     coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);

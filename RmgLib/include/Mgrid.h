@@ -54,6 +54,12 @@ private:
     static int level_warning;
     std::vector<double> kvec = {0.0, 0.0, 0.0};
     double kmag=0.0;
+
+    std::array<double, MAX_MG_LEVELS> hx;
+    std::array<double, MAX_MG_LEVELS> hy;
+    std::array<double, MAX_MG_LEVELS> hz;
+
+
     // Timer mode 0=off (default) 1=on
     bool timer_mode;
 
@@ -61,6 +67,11 @@ public:
     Mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *G, int density_in, double zmax_in);
    ~Mgrid(void);
    
+
+    // Public in case the caller wants to adjust these for some reasons
+    std::array<int, MAX_MG_LEVELS> pre_cyc = {3, 3, 3, 3, 3, 3, 3, 3};
+    std::array<int, MAX_MG_LEVELS> post_cyc = {3, 3, 3, 3, 3, 3, 3, 3};
+    std::array<int, MAX_MG_LEVELS> mu_cyc = {1, 1, 1, 1, 1, 1, 1, 1};
 
     // Level 0 grid offsets and dimensions
     int gxsize;
@@ -72,8 +83,8 @@ public:
 
     // This vector holds the maximum offset usable for any given multigrid level.
     static std::vector<int> toffsets;
-    void set_timer_mode(bool verbose);
 
+    void set_timer_mode(bool verbose);
     void set_kpoints(double *kvec_in, double kmag_in)
     {
         kvec[0] = kvec_in[0];
@@ -98,23 +109,17 @@ public:
     template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot);
 
-    template <typename RmgType> void solv_pois_offset (RmgType * vmat, RmgType * fmat, RmgType * work,
-                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, int offset, int foffset);
 
     int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 
     template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
-                 double gridhx, double gridhy, double gridhz,
-                 int level, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, double k, double *pot,
+                 int level, int max_levels, double step, double k, double *pot,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
     template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
-                 double gridhx, double gridhy, double gridhz,
-                 int level, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, 
+                 int level, int max_levels, double step, 
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
 };

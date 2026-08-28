@@ -62,7 +62,6 @@ src/rmg_max_all.cpp
 src/ThreadBarrier.cpp
 src/rmg_error.cpp
 src/get_vh.cpp
-src/vh_fmg.cpp
 src/packfuncs.cpp
 src/ZfpCompress.cpp
 )
