@@ -165,11 +165,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     int pre[MAX_MG_LEVELS] = { 3, 3, 3, 3, 3, 3, 3, 3 };
     int post[MAX_MG_LEVELS] = { 3, 3, 3, 3, 3, 3, 3, 3 };
     int levels = ct.eig_parm.levels;
-    //double Zfac = sqrt(2.0) * ct.max_zvalence;
-    double Zfac = 2.0*ct.max_zvalence + 0.5*kptr->kp.kmag;
     double tstep = 0.666666666666;
-//tstep = 1.0;
-//Zfac = 0.0;
 
     int coalesce_factor = T->get_coalesce_factor();
     int dimx = G->get_PX0_GRID(1) * coalesce_factor;
@@ -222,7 +218,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
-                    tstep, Zfac, -avg_potential, NULL,     // which one is best?
+                    tstep, -avg_potential, NULL,     // which one is best?
                     //tstep, 1.0, 0.0, vtot,
                     coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
         rmg::pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);

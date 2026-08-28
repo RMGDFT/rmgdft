@@ -96,10 +96,10 @@ public:
     template <typename RmgType> void eval_residual (RmgType * mat, RmgType * f_mat, RmgType *work, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, RmgType * res, double *pot);
 
     template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
-                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, double k, double *pot);
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot);
 
     template <typename RmgType> void solv_pois_offset (RmgType * vmat, RmgType * fmat, RmgType * work,
-                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, int offset, int foffset);
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, int offset, int foffset);
 
     int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 
@@ -107,7 +107,7 @@ public:
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
                  int level, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
+                 int *post_cyc, int mu_cyc, double step, double k, double *pot,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
     template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
@@ -117,12 +117,6 @@ public:
                  int *post_cyc, int mu_cyc, double step, 
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
-    template <typename RmgType> void mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * work,
-                 int dimx, int dimy, int dimz,
-                 double gridhx, double gridhy, double gridhz,
-                 int level, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, double *pot,
-                 int pxdim, int pydim, int pzdim, int boundary_flag);
 };
 
 #endif

@@ -183,8 +183,6 @@ external_grid_comm=pct.gridpe;
 
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
-    double Zfac = 2.0*ct.max_zvalence + 0.5*kptr->kp.kmag;
-Zfac = ct.max_zvalence;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -335,7 +333,7 @@ Zfac = ct.max_zvalence;
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
                         dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                         1, levels, eig_pre, eig_post, 1, 
-                        mg_step, Zfac, 0.0, NULL,
+                        mg_step, 0.0, NULL,
                         dimx, dimy, dimz, ct.boundaryflag);
 
                 MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
