@@ -38,6 +38,7 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "rmg_error.h"
+#include "boundary_conditions.h"
 
 
 class Mgrid {
@@ -54,6 +55,7 @@ private:
     static int level_warning;
     std::vector<double> kvec = {0.0, 0.0, 0.0};
     double kmag=0.0;
+    int boundary_flag = PERIODIC;   // only thing supported for now
 
     std::array<double, MAX_MG_LEVELS> hx;
     std::array<double, MAX_MG_LEVELS> hy;
@@ -115,12 +117,12 @@ public:
     template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  int level, int max_levels, double step, double k, double *pot,
-                 int pxdim, int pydim, int pzdim, int boundary_flag);
+                 int pxdim, int pydim, int pzdim);
 
     template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  int level, int max_levels, double step, 
-                 int pxdim, int pydim, int pzdim, int boundary_flag);
+                 int pxdim, int pydim, int pzdim);
 
 };
 

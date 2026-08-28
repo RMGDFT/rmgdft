@@ -214,7 +214,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                     0, levels, 
                     tstep, -avg_potential, NULL,     // which one is best?
                     //tstep, 1.0, 0.0, vtot,
-                    coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                    coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
         rmg::pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
 
         for(int idx = 0;idx <pbasis;idx++) work3_t[idx+is*pbasis] = work1_t[idx] + eig * t1;;

@@ -151,8 +151,6 @@ external_grid_comm=pct.gridpe;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    int eig_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
     int potential_acceleration;
 
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
@@ -164,19 +162,16 @@ external_grid_comm=pct.gridpe;
 
     Mgrid MG(L, T, G, 1, ct.max_zvalence);
     MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
-    MG.gxsize = NX_GRID;
-    MG.gysize = NY_GRID;
-    MG.gzsize = NZ_GRID;
+    MG.pre_cyc[0] = 0;
+    MG.post_cyc[0] = 0;
 
-    double hxgrid = G->get_hxgrid(1);
-    double hygrid = G->get_hygrid(1);
-    double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
     bool do_mgrid = true;
     double mg_step = ct.eig_parm.sb_step;
     double fg_step = ct.eig_parm.mg_timestep;
 
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+    double hxgrid = G->get_hxgrid(1);
     double diag = FD.fd_coeff0(ct.kohn_sham_fd_order, hxgrid);
 
     if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
@@ -331,10 +326,9 @@ external_grid_comm=pct.gridpe;
                 MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
-                        dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                        1, levels, eig_pre, eig_post, 1, 
-                        mg_step, 0.0, NULL,
-                        dimx, dimy, dimz, ct.boundaryflag);
+                        dx2, dy2, dz2,
+                        1, levels, mg_step, 0.0, NULL,
+                        dimx, dimy, dimz);
 
                 MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                 CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);

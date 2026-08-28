@@ -146,7 +146,7 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
                             0, maxlevel, coarse_step,
-                            G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
+                            G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density));
 
 
                 /* Transfer solution back to mgresarr array */
