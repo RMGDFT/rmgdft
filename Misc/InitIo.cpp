@@ -746,7 +746,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg::init_reduce();
 
     // Check individual node sizes on all levels for poisson mg solver
-    Mgrid MG(&Rmg_L, Rmg_T);
+    Mgrid MG(&Rmg_L, Rmg_T, Rmg_G, ct.FG_RATIO, ct.max_zvalence);
     int dx[MAX_MG_LEVELS];dx[0] = Rmg_G->get_PX0_GRID(ct.FG_RATIO);
     int dy[MAX_MG_LEVELS];dy[0] = Rmg_G->get_PY0_GRID(ct.FG_RATIO);
     int dz[MAX_MG_LEVELS];dz[0] = Rmg_G->get_PZ0_GRID(ct.FG_RATIO);

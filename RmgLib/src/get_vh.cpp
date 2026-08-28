@@ -77,7 +77,7 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
     double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_res, residual = 100.0;
-    Mgrid MG(L, T);
+    Mgrid MG(L, T, G, density, 0.0);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 
@@ -153,8 +153,6 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
                             0, maxlevel, poi_pre,
                             poi_post, mucycles, coarse_step,
-                            G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
-                            G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
 

@@ -45,21 +45,47 @@ class Mgrid {
 private:
     Lattice *L;
     TradeImages *T;
+    rmg::grid *G;
+    int density;
+    double zmax;
     int ibrav;
     int level_flag;
     bool central_trade;
     static int level_warning;
-
+    std::vector<double> kvec = {0.0, 0.0, 0.0};
+    double kmag=0.0;
     // Timer mode 0=off (default) 1=on
     bool timer_mode;
 
 public:
-    Mgrid(Lattice *lptr, TradeImages *tptr);
+    Mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *G, int density_in, double zmax_in);
    ~Mgrid(void);
+   
+
+    // Level 0 grid offsets and dimensions
+    int gxsize;
+    int gysize;
+    int gzsize;
+    int gxoffset;
+    int gyoffset;
+    int gzoffset;
 
     // This vector holds the maximum offset usable for any given multigrid level.
     static std::vector<int> toffsets;
     void set_timer_mode(bool verbose);
+
+    void set_kpoints(double *kvec_in, double kmag_in)
+    {
+        kvec[0] = kvec_in[0];
+        kvec[1] = kvec_in[1];
+        kvec[2] = kvec_in[2];
+        kmag = kmag_in;
+    }
+
+    double rel_sradius(int level);
+
+    template <typename RmgType> void anchor_residual(int id, int level, int n, RmgType *r);
+    template <typename RmgType> void anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r);
 
     template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
@@ -82,26 +108,13 @@ public:
                  double gridhx, double gridhy, double gridhz,
                  int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
-
-    template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
-                 int dimx, int dimy, int dimz,
-                 double gridhx, double gridhy, double gridhz,
-                 int level, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim, int boundary_flag, double *kvec);
 
     template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
                  int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, 
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
     template <typename RmgType> void mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * work,
@@ -109,8 +122,6 @@ public:
                  double gridhx, double gridhy, double gridhz,
                  int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, double *pot,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 };
 
