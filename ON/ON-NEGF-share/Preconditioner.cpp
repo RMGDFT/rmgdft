@@ -35,7 +35,7 @@
 #include "rmg_sum_all.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
@@ -108,7 +108,7 @@ void PreconditionerOne (double *res, int st, double gamma)
     rmg::grid *G = Rmg_G;
     TradeImages *T =Rmg_T;
     Lattice *L = &Rmg_L;
-    Mgrid MG(L, T, Rmg_G, 1, 0.0);
+    rmg::mgrid MG(L, T, Rmg_G, 1, 0.0);
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
     double tstep = 0.666666666666;

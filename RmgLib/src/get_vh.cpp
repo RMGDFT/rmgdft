@@ -39,7 +39,7 @@
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
@@ -77,7 +77,7 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
     double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_res, residual = 100.0;
-    Mgrid MG(L, T, G, density, 0.0);
+    rmg::mgrid MG(L, T, G, density, 0.0);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 

@@ -24,7 +24,6 @@
 #include <boost/pool/pool.hpp>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
 #include "rmg_sum_all.h"
 #include "BlasWrappers.h"
 #include "const.h"

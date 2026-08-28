@@ -48,7 +48,7 @@ src/Prolong.cpp
 src/Lattice.cpp
 src/BaseThread.cpp
 src/rmg_grid.cpp
-src/Mgrid.cpp
+src/rmg_mgrid.cpp
 src/MpiQueue.cpp
 src/app_cir_driver.cpp
 src/app_cil_driver.cpp

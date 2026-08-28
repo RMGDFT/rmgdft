@@ -24,7 +24,7 @@
 #include <boost/pool/pool.hpp>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "rmg_sum_all.h"
 #include "BlasWrappers.h"
 #include "const.h"
@@ -43,7 +43,11 @@
 #include "Solvers.h"
 #include "rmg_complex.h"
 #include "rmgthreads.h"
-int external_grid_comm;
+
+
+// The version of anchor residual in the multigrid class requires that the data be in a
+// smoothing grid that includes ghost points which is why we need this version here which
+// does not require them.
 template <typename T>
 void anchor_residual(int n, T *r)
 {
@@ -140,7 +144,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 {
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
-external_grid_comm=pct.gridpe;
+
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
 
@@ -160,7 +164,7 @@ external_grid_comm=pct.gridpe;
     int NY_GRID = G->get_NY_GRID(1);
     int NZ_GRID = G->get_NZ_GRID(1);
 
-    Mgrid MG(L, T, G, 1, ct.max_zvalence);
+    rmg::mgrid MG(L, T, G, 1, ct.max_zvalence);
     MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
     MG.pre_cyc[0] = 0;
     MG.post_cyc[0] = 0;

@@ -39,7 +39,7 @@
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
@@ -234,7 +234,7 @@ double coarse_vh (rmg::grid *G, Lattice *L, TradeImages *T, CalcType * rho, Calc
 
     int idx, its, cycles;
     double t1, vavgcor, diag=0.0, residual = 100.0, last_residual = 200.0;
-    Mgrid MG(L, T, G, density, 0.0);
+    rmg::mgrid MG(L, T, G, density, 0.0);
     int global_basis = G->get_GLOBAL_BASIS(density) / pow(8.0, (double)level);
 
     /* Pre and post smoothings on each level */

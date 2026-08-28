@@ -55,7 +55,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "packfuncs.h"
 
 
@@ -79,7 +79,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     // Note for Wenchang. Is this done on the wavefunction grid or the charge density grid?
     // If charge density replace the 1 with appropriate grid density
     //Mgrid MG(&Rmg_L, Rmg_T);
-    Mgrid MG(&Rmg_L, Rmg_T, Rmg_G, 1, ct.max_zvalence);
+    rmg::mgrid MG(&Rmg_L, Rmg_T, Rmg_G, 1, ct.max_zvalence);
 
     int ncycl;
 

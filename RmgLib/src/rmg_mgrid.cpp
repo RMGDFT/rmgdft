@@ -40,7 +40,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
@@ -48,20 +48,23 @@
 #include "boundary_conditions.h"
 #include "rmg_sum_all.h"
 
-template void Mgrid::anchor_residual<double> (int , int, int, double *);
-template void Mgrid::anchor_residual<float> (int , int, int, float *);
-template void Mgrid::anchor_residual<std::complex<double>> (int , int, int, std::complex<double> *);
-template void Mgrid::anchor_residual<std::complex<float>> (int , int, int, std::complex<float> *);
-template void Mgrid::anchor_residual<double> (int, int , int, int, double *);
-template void Mgrid::anchor_residual<float> (int, int , int, int, float *);
-template void Mgrid::anchor_residual<std::complex<double>> (int, int , int, int, std::complex<double> *);
-template void Mgrid::anchor_residual<std::complex<float>> (int, int , int, int, std::complex<float> *);
+namespace rmg
+{
 
-std::vector<int> Mgrid::toffsets;
+template void mgrid::anchor_residual<double> (int , int, int, double *);
+template void mgrid::anchor_residual<float> (int , int, int, float *);
+template void mgrid::anchor_residual<std::complex<double>> (int , int, int, std::complex<double> *);
+template void mgrid::anchor_residual<std::complex<float>> (int , int, int, std::complex<float> *);
+template void mgrid::anchor_residual<double> (int, int , int, int, double *);
+template void mgrid::anchor_residual<float> (int, int , int, int, float *);
+template void mgrid::anchor_residual<std::complex<double>> (int, int , int, int, std::complex<double> *);
+template void mgrid::anchor_residual<std::complex<float>> (int, int , int, int, std::complex<float> *);
+
+std::vector<int> mgrid::toffsets;
 
 // Requires r to be in a p type grid with no ghost points
 template <typename RmgType>
-void Mgrid::anchor_residual(int id, int level, int n, RmgType *r)
+void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
 {
 
     double s1[2]{0.0,0.0};
@@ -92,7 +95,7 @@ void Mgrid::anchor_residual(int id, int level, int n, RmgType *r)
 }
 
 // r is in an s type grid with ghost points
-template <typename RmgType> void Mgrid::anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r)
+template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r)
 {
     double s1[2]{0.0,0.0};
 
@@ -154,7 +157,7 @@ template <typename RmgType> void Mgrid::anchor_residual(int level, int dimx, int
     }
 }
 
-double Mgrid::rel_sradius(int level)
+double mgrid::rel_sradius(int level)
 {
     const double PI = 3.14159265358979323;
     int nmax = std::max(std::max(gxsize, gysize), gzsize);
@@ -253,50 +256,50 @@ lmin=0.05;
 }
 #endif
 
-template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, int, int, double, double, double *, int, int, int);
 
-template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, int, int, double, double, double *, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, double, double *, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, double, double *, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, int, int, double, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, int, int, double, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, int, int, int);
-
-
-template void Mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double *);
-
-template void Mgrid::eval_residual (float *, float *, float *, int, int, int, double, double, double, float *, double *);
-
-template void Mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double *);
-
-template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double, double *);
-
-template void Mgrid::mg_restrict(float*, float*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_restrict(double*, double*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_restrict(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_restrict(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
-
-template void Mgrid::mg_prolong(float*, float*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong(double*, double*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
-
-template void Mgrid::mg_prolong_cubic(float*, float*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong_cubic(double*, double*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong_cubic(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
-template void Mgrid::mg_prolong_cubic(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, int, int, int);
 
 
-int Mgrid::level_warning;
+template void mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double *);
 
-Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *gptr, int density_in, double zmax_in)
+template void mgrid::eval_residual (float *, float *, float *, int, int, int, double, double, double, float *, double *);
+
+template void mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double *);
+
+template void mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double, double *);
+
+template void mgrid::mg_restrict(float*, float*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict(double*, double*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+template void mgrid::mg_prolong(float*, float*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong(double*, double*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+template void mgrid::mg_prolong_cubic(float*, float*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong_cubic(double*, double*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong_cubic(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong_cubic(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+
+int mgrid::level_warning;
+
+mgrid::mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *gptr, int density_in, double zmax_in)
 {
     L = lptr;
     T = tptr;
@@ -336,27 +339,27 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *gptr, int density_in, 
        (this->ibrav == TETRAGONAL_PRIMITIVE)) this->central_trade = true;
 }
 
-Mgrid::~Mgrid(void)
+mgrid::~mgrid(void)
 {
-    if(level_flag && !Mgrid::level_warning)
+    if(level_flag && !mgrid::level_warning)
         std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times.\n";
-    Mgrid::level_warning = true;   // Only want to print one warning
+    mgrid::level_warning = true;   // Only want to print one warning
 }
 
-void Mgrid::set_timer_mode(bool verbose)
+void mgrid::set_timer_mode(bool verbose)
 {
-    Mgrid::timer_mode = verbose;
+    mgrid::timer_mode = verbose;
 }
 
 
 // Poisson variant
 template <typename RmgType>
-void Mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
+void mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  int level, int max_levels, double step, 
                  int pxdim, int pydim, int pzdim)
 {
-    Mgrid::mgrid_solv (v_mat, f_mat, work,
+    mgrid::mgrid_solv (v_mat, f_mat, work,
                  dimx, dimy, dimz,
                  level, max_levels, step, 0.0, NULL,
                  pxdim, pydim, pzdim);
@@ -365,7 +368,7 @@ void Mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 
 template <typename RmgType>
-void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
+void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  int level, int max_levels, double step, double k, double *pot,
                  int pxdim, int pydim, int pzdim)
@@ -373,7 +376,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     RmgTimer *RT = NULL;
     std::string timername;
     if(this->timer_mode) {
-        timername = "Mgrid_solv: level " + std::to_string(level);
+        timername = "mgrid_solv: level " + std::to_string(level);
         RT = new RmgTimer(timername.c_str());
     }
 
@@ -510,7 +513,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 }
 
 template <typename RmgType>
-void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz, ibrav;
@@ -792,7 +795,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
 
 
 template <typename RmgType>
-void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;
@@ -1198,7 +1201,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
 
 
 template <typename RmgType>
-void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     RmgType cc[10][4];
@@ -1359,7 +1362,7 @@ void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict_
 }
 
 template <typename RmgType>
-void Mgrid::eval_residual (RmgType * __restrict__ mat, 
+void mgrid::eval_residual (RmgType * __restrict__ mat, 
                            RmgType * __restrict__ f_mat, 
                            RmgType * __restrict__ work, 
                            int dimx, int dimy, int dimz,
@@ -1385,7 +1388,7 @@ void Mgrid::eval_residual (RmgType * __restrict__ mat,
 
 
 template <typename RmgType>
-void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat, RmgType * work,
+void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat, RmgType * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot)
 {
     int size, idx;
@@ -1451,7 +1454,7 @@ Return value  = size of next grid level
 
 */
 
-int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
+int mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
 {
     int skip, new_dim, istart, istop;
 
@@ -1493,6 +1496,8 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
     rmg::error("Boundary condition not programmed."); 
     return -1;
+
+}
 
 }
 

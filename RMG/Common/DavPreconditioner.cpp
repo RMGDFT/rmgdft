@@ -35,7 +35,7 @@
 #include "rmg_sum_all.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
@@ -159,7 +159,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     rmg::grid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
-    Mgrid MG(L, T, G, 1, ct.max_zvalence);
+    rmg::mgrid MG(L, T, G, 1, ct.max_zvalence);
     MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
 
     int levels = ct.eig_parm.levels;
