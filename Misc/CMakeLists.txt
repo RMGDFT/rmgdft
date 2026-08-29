@@ -74,7 +74,6 @@ rmg_trtri.cpp
 rmg_trmm.cpp
 GpuStreams.cpp
 RmgMallocHost.cpp
-rmg_reduce.cpp
 InvertMatrix.cpp
 DgetrftrsDriver.cpp
 ZgetrftrsDriver.cpp

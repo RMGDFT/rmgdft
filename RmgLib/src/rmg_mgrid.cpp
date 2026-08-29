@@ -46,7 +46,7 @@
 #include "RmgTimer.h"
 #include "packfuncs.h"
 #include "boundary_conditions.h"
-#include "rmg_sum_all.h"
+#include "rmg_reduce.h"
 
 namespace rmg
 {
@@ -73,8 +73,7 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
         s1[0] += std::real(r[i]);
         s1[1] += std::imag(r[i]);
     }
-    s1[0] = rmg::sum_all(s1[0], this->T->comm);
-    s1[1] = rmg::sum_all(s1[1], this->T->comm);
+    rmg::allreduce(s1, 2, this->T->comm);
     RmgType scale;
     int global_n = this->gxsize*this->gysize*this->gzsize / std::pow(8, level);
     if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
@@ -116,8 +115,7 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
 
     // Now we have to scale all the data including the ghost points
     int n = (dimx+2)*(dimy+2)*(dimz+2);
-    s1[0] = rmg::sum_all(s1[0], this->T->comm);
-    s1[1] = rmg::sum_all(s1[1], this->T->comm);
+    rmg::allreduce(s1, 2, this->T->comm);
     RmgType scale;
     int global_n = this->gxsize*this->gysize*this->gzsize / std::pow(8, level);
     if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
@@ -151,8 +149,7 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
         }
 
         // Now we have to scale all the data including the ghost points
-        s1[0] = rmg::sum_all(s1[0], this->T->comm);
-        s1[1] = rmg::sum_all(s1[1], this->T->comm);
+        rmg::allreduce(s1, 2, this->T->comm);
 
     }
 }
