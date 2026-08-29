@@ -111,7 +111,6 @@ void PreconditionerOne (double *res, int st, double gamma)
     rmg::mgrid MG(L, T, Rmg_G, 1, 0.0);
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
-    double tstep = 0.666666666666;
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -162,7 +161,7 @@ void PreconditionerOne (double *res, int st, double gamma)
             RT= new RmgTimer("Precond: mgrid");
             MG.mgrid_solv<double>(work2_t, work1_t, work_t,
                     dimx, dimy, dimz,
-                    0, levels, tstep, 1.0, pot,
+                    0, levels, 1.0, pot,
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
             delete RT;

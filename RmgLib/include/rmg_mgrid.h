@@ -118,13 +118,11 @@ namespace rmg
 
         template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                      int dimx, int dimy, int dimz,
-                     int level, int max_levels, double step, double k, double *pot,
-                     int pxdim, int pydim, int pzdim);
+                     int level, int max_levels, double k, double *pot, int pxdim, int pydim, int pzdim);
 
         template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                      int dimx, int dimy, int dimz,
-                     int level, int max_levels, double step, 
-                     int pxdim, int pydim, int pzdim);
+                     int level, int max_levels, int pxdim, int pydim, int pzdim);
 
     };
 

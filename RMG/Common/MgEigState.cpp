@@ -171,7 +171,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     int levels = ct.eig_parm.levels;
     bool do_mgrid = true;
-    double mg_step = ct.eig_parm.sb_step;
+//    double mg_step = ct.eig_parm.sb_step;
     double fg_step = ct.eig_parm.mg_timestep;
 
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
@@ -330,8 +330,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
-                        dx2, dy2, dz2,
-                        1, levels, mg_step, 0.0, NULL,
+                        dx2, dy2, dz2, 1, levels, 0.0, NULL,
                         dimx, dimy, dimz);
 
                 MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);

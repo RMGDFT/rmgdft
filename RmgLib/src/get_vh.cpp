@@ -64,13 +64,12 @@
 /// @param mucycles Number of mu cycles (also known as W-cycles) to use in the multigrid solver.
 /// @param rms_target Value for the root mean square residual at which to stop.
 /// @param global_step Time step for the jacobi iteration on the finest (0th) grid level.
-/// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
 /// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
 /// @param density Density of the grid relative to the default grid
 double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status)
+                 double rms_target, double global_step, int boundaryflag, int density, bool print_status)
 {
 
     int idx, its, cycles;
@@ -145,7 +144,7 @@ double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, doubl
 
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
-                            0, maxlevel, coarse_step,
+                            0, maxlevel, 
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density));
 
 

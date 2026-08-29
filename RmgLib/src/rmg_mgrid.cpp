@@ -256,21 +256,21 @@ lmin=0.05;
 }
 #endif
 
-template void mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, int, int, double, double *, int, int, int);
 
-template void mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, int, int, double, double *, int, int, int);
 
-template void mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, double *, int, int, int);
 
-template void mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, double, double *, int, int, int);
+template void mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, double *, int, int, int);
 
-template void mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, int, int, int, int, int);
 
-template void mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, int, int, int, int, int);
 
-template void mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int);
 
-template void mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, double, int, int, int);
+template void mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int);
 
 
 template void mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double *);
@@ -356,12 +356,12 @@ void mgrid::set_timer_mode(bool verbose)
 template <typename RmgType>
 void mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
-                 int level, int max_levels, double step, 
+                 int level, int max_levels, 
                  int pxdim, int pydim, int pzdim)
 {
     mgrid::mgrid_solv (v_mat, f_mat, work,
                  dimx, dimy, dimz,
-                 level, max_levels, step, 0.0, NULL,
+                 level, max_levels, 0.0, NULL,
                  pxdim, pydim, pzdim);
 
 }
@@ -370,7 +370,7 @@ void mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 template <typename RmgType>
 void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
-                 int level, int max_levels, double step, double k, double *pot,
+                 int level, int max_levels, double k, double *pot,
                  int pxdim, int pydim, int pzdim)
 {
     RmgTimer *RT = NULL;
@@ -476,8 +476,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, level + 1,
-                    max_levels, step, k, newpot,
-                    pxdim, pydim, pzdim);
+                    max_levels, k, newpot, pxdim, pydim, pzdim);
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         for(int idx = 0;idx < size;idx++) v_mat[idx] += resid[idx];
