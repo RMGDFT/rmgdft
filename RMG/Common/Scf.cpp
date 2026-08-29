@@ -122,14 +122,6 @@ template <typename OrbitalType> bool Scf (
         t[2] += (vh[idx] - vh_in[idx])*(vh[idx] - vh_in[idx]);
     }                           /* idx */
 
-if(ct.scf_steps == 0)
-{
-    double eig = spectral_radius<OrbitalType>(vtot, vxc, Kptr[0]);
-if(pct.gridpe==0) printf("spectral radius = %12.4f\n", eig);
-    ct.lambda_max = 1.1*eig;
-    ct.lambda_min = 0.25*ct.lambda_max;
-}
-
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
