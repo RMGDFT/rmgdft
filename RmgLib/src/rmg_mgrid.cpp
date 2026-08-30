@@ -67,13 +67,14 @@ template <typename RmgType>
 void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
 {
 
-    double s1[2]{0.0,0.0};
+    double s1[4]{0.0,0.0,0.0,0.0};
     for(int i=0;i < n;i++)
     {
         s1[0] += std::real(r[i]);
         s1[1] += std::imag(r[i]);
+        s1[2] += std::norm(r[i]);
     }
-    rmg::allreduce(s1, 2, this->T->comm);
+    rmg::allreduce(s1, 4, this->T->comm);
     RmgType scale;
     int global_n = this->gxsize*this->gysize*this->gzsize / std::pow(8, level);
     if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
@@ -83,7 +84,7 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
         for(int i=0;i < n;i++) r[i] -= scale;
         scale = s1[1] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= I_t*scale;
-//printf("SSSS  %d  %d  %d  %d  %14.8e  %14.8e\n",dddddd, level, n, global_n, std::real(scale), std::imag(scale));
+//printf("SSSS  %d  %d  %d  %14.8e  %14.8e\n", level, n, global_n, std::real(scale), std::imag(scale));
     }
     else
     {
@@ -91,12 +92,14 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
         for(int i=0;i < n;i++) r[i] -= scale;
 //printf("SSSS  %d  %d  %d  %14.8e\n", level, n, global_n, scale);
     }
+    s1[2] = sqrt(s1[2]/(double)global_n);
+    rms_residuals[level].push_back(s1[2]);
 }
 
 // r is in an s type grid with ghost points
 template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r)
 {
-    double s1[2]{0.0,0.0};
+    double s1[4]{0.0,0.0,0.0,0.0};
 
     int incys = dimz + 2;
     int incxs = (dimy + 2) * (dimz + 2);
@@ -109,13 +112,13 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
             {
                 s1[0] += std::real(r[ix*incxs + iy*incys + iz]);
                 s1[1] += std::imag(r[ix*incxs + iy*incys + iz]);
+                s1[2] += std::norm(r[ix*incxs + iy*incys + iz]);
             }
         }
     }
-
     // Now we have to scale all the data including the ghost points
     int n = (dimx+2)*(dimy+2)*(dimz+2);
-    rmg::allreduce(s1, 2, this->T->comm);
+    rmg::allreduce(s1, 4, this->T->comm);
     RmgType scale;
     int global_n = this->gxsize*this->gysize*this->gzsize / std::pow(8, level);
     if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
@@ -131,27 +134,8 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
         scale = s1[0] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= scale;
     }
-
-    if(1)
-    {
-        s1[0] = 0.0;
-        s1[1] = 0.0;
-        for(int ix=1;ix <= dimx;ix++)
-        {
-            for(int iy=1;iy <= dimy;iy++)
-            {
-                for(int iz=1;iz <= dimz;iz++)
-                {
-                    s1[0] += std::real(r[ix*incxs + iy*incys + iz]);
-                    s1[1] += std::imag(r[ix*incxs + iy*incys + iz]);
-                }
-            }
-        }
-
-        // Now we have to scale all the data including the ghost points
-        rmg::allreduce(s1, 2, this->T->comm);
-
-    }
+    s1[2] = sqrt(s1[2]/(double)global_n);
+    rms_residuals[level].push_back(s1[2]);
 }
 
 double mgrid::rel_sradius(int level)
@@ -363,7 +347,6 @@ void mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 }
 
-
 template <typename RmgType>
 void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
@@ -418,7 +401,6 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     {
         /* solve once */
         solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale*pcoefs[cycl], k, pot);
-
         /* trade boundary info */
         if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
             T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -432,26 +414,15 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
  * on coarsest grid, we are finished
  */
 
-    if (level >= max_levels)
+    // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
+    // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
+    if (level >= max_levels || (dx2 < 0) || (dy2 < 0) || (dz2 < 0))
     {
-        anchor_residual(level, dimx, dimy, dimz, v_mat);
-        T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
         if(this->timer_mode) delete RT;
+        if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) level_flag++;
         return;
 
     }                           /* end if */
-
-    // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
-    // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
-    if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
-        anchor_residual(level, dimx, dimy, dimz, v_mat);
-        T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
-        level_flag++;
-        if(this->timer_mode) delete RT;
-        return;
-    }
-
-
 
 /* set storage pointers in the current workspace */
     RmgType *newv = &work[0];
@@ -466,16 +437,17 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         /* evaluate residual */
         eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], resid, pot);
-        anchor_residual(level, dimx, dimy, dimz, resid);
         T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
         mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         if(pot) mg_restrict (pot, newpot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        anchor_residual(level+1, dx2, dy2, dz2, newf);
 
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, level + 1,
                     max_levels, k, newpot, pxdim, pydim, pzdim);
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        anchor_residual(level, dimx, dimy, dimz, resid);
         for(int idx = 0;idx < size;idx++) v_mat[idx] += resid[idx];
 
         /* re-solve on this grid level */
@@ -486,10 +458,8 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         for (int cycl = 0; cycl < post_cyc[level]; cycl++)
         {
-
             /* solve once */
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale*pcoefs[cycl], k, pot);
-
             /* trade boundary info */
             if(cycl < (post_cyc[level] - 1))
             {
@@ -500,7 +470,6 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             }
 
         }                       /* end for */
-        anchor_residual(level, dimx, dimy, dimz, v_mat);
         T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
     }                           /* for mu_cyc */
@@ -1400,7 +1369,6 @@ void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
     rmg::pack_ptos(work, work1, dimx, dimy, dimz);
     double Zfac = zmax*gridhx*gridhx;
     scale = 1.0 / (diag + Zfac);
-//printf("SCALE = %14.8f  %14.8f\n",step,scale);
     scale = step * scale;
 //scale = 0.66*scale;
  

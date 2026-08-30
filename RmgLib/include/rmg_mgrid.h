@@ -76,6 +76,8 @@ namespace rmg
         std::array<int, MAX_MG_LEVELS> pre_cyc = {3, 3, 3, 3, 3, 3, 3, 3};
         std::array<int, MAX_MG_LEVELS> post_cyc = {3, 3, 3, 3, 3, 3, 3, 3};
         std::array<int, MAX_MG_LEVELS> mu_cyc = {1, 1, 1, 1, 1, 1, 1, 1};
+        std::array<std::vector<double>, MAX_MG_LEVELS> rms_residuals;
+
 
         // Level 0 grid offsets and dimensions
         int gxsize;
