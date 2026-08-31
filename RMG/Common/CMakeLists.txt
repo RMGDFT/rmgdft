@@ -21,6 +21,7 @@ ApplyHamiltonianBlock.cpp
 Davidson.cpp
 MgridSubspace.cpp
 MolecularDynamics.cpp
+EhrenfestDynamics.cpp
 Fill.cpp
 GetAugRho.cpp
 GeneralDiag.cpp

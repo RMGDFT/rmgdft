@@ -385,7 +385,6 @@ template <typename OrbitalType> void run (
         case MD_CVE:               /* molecular dynamics */
         case MD_CVT:
         case MD_CPT:
-        case TDDFT_CVE:            /* Ehrenfest dynamics */
             ct.fpt[0] = 0;  // Eventually fix all references to fpt in the code and this will not be needed
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
@@ -395,6 +394,17 @@ template <typename OrbitalType> void run (
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
             MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
+        case TDDFT_CVE:            /* Ehrenfest dynamics */
+            ct.fpt[0] = 0;  // Eventually fix all references to fpt in the code and this will not be needed
+            ct.fpt[1] = 1;
+            ct.fpt[2] = 2;
+            ct.fpt[3] = 3;
+            if(!ct.restart_tddft && !ct.tddft_noscf) 
+            {   
+                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+            }
+            //MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
+            EhrenfestDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
             break;
 
         case BAND_STRUCTURE:

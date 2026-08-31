@@ -562,13 +562,13 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
                 diag_elem[e_state -ct.tddft_start_state] +=ct.tddft_ehpair[3];
                 if(diag_elem[h_state -ct.tddft_start_state] < 0.0) 
                 {
-                    rmg::printlog("\n h_state %d occupation %f", h_state, diag_elem[h_state -ct.tddft_start_state]);
-                    rmg::error("elecrton hole states are not correct");
+                    rmg::printlog("\n WARNING h_state %d occupation %e", h_state, diag_elem[h_state -ct.tddft_start_state]);
+                    diag_elem[h_state -ct.tddft_start_state] = 0.0;
                 }
                 if(diag_elem[e_state -ct.tddft_start_state] > 2.0) 
                 {
-                    rmg::printlog("\n e_state %d occupation %f", e_state, diag_elem[e_state -ct.tddft_start_state]);
-                    rmg::error("elecrton hole states are not correct");
+                    rmg::printlog("\n WARNING e_state %d occupation %e", e_state, diag_elem[e_state -ct.tddft_start_state]-2);
+                    diag_elem[e_state -ct.tddft_start_state] = 2.0; 
                 }
             }
 
