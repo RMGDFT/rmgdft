@@ -166,7 +166,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         }
 
         rmg::allreduce(rsum, 1, pct.coalesced_grid_comm);
-        sp->res[k+1] = rsum[0]*get_vel();
+        sp->res[k+1] = sqrt(rsum[0]/(double)Rmg_G->get_GLOBAL_BASIS(1));
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }
 }
