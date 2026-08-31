@@ -288,11 +288,11 @@ check=false;offset=1;
         int maxpts = std::max(std::max(nx, ny), nz);
         presweeps = std::max(maxpts, 12);
         if(presweeps > minpts) presweeps = minpts;
-        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 0.0, presweeps);
+        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 1.0, presweeps);
     }
     else
     {
-        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 0.25, presweeps);
+        pcoefs = pois_periodic_coeffs(nx, ny, nz, gridhx, gridhy, gridhz, 1.0, presweeps);
     }
 
 
@@ -305,7 +305,8 @@ check=false;offset=1;
     double scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     scale = scale + (2.0 / (gridhy * gridhy * L->get_yside() * L->get_yside()));
     scale = scale + (2.0 / (gridhz * gridhz * L->get_zside() * L->get_zside()));
-    scale = 1.0 / (scale + Zfac);
+    double pscale = std::pow(4.0, level);
+    scale = 1.0 / (scale * pscale);
     scale = step * scale;
 
 
@@ -398,7 +399,7 @@ check=false;offset=1;
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                     gridhy * 2.0, gridhz * 2.0, level + 1,
-                    max_levels, pre_cyc, post_cyc, mu_cyc, step, sqrt(2.0)*Zfac, k, newpot,
+                    max_levels, pre_cyc, post_cyc, mu_cyc, step, Zfac, k, newpot,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim, boundaryflag, kvec);
