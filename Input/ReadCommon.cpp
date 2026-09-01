@@ -1405,16 +1405,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
-    If.RegisterInputKey("lambda_max", &lc.lambda_max, 1.0, 200.0, 4.83,
+    If.RegisterInputKey("lambda_multiplier", &lc.lambda_mul, 1.0, 2.0, 1.25,
             CHECK_AND_TERMINATE, OPTIONAL,
-            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
+            "Chebyshev smoothing multiplier. Don't change unless you know what you're doing.",
             "", EXPERT_OPTION);
-
-    If.RegisterInputKey("lambda_min", &lc.lambda_min, 0.0, 50.0, 1.0964,
-            CHECK_AND_TERMINATE, OPTIONAL,
-            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
-            "", EXPERT_OPTION);
-
 
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
             CHECK_AND_FIX, OPTIONAL,

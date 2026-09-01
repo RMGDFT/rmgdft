@@ -84,13 +84,11 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
         for(int i=0;i < n;i++) r[i] -= scale;
         scale = s1[1] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= I_t*scale;
-//printf("SSSS  %d  %d  %d  %14.8e  %14.8e\n", level, n, global_n, std::real(scale), std::imag(scale));
     }
     else
     {
         scale = s1[0] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= scale;
-//printf("SSSS  %d  %d  %d  %14.8e\n", level, n, global_n, scale);
     }
     s1[2] = sqrt(s1[2]/(double)global_n);
     rms_residuals[level].push_back(s1[2]);
@@ -146,7 +144,6 @@ double mgrid::rel_sradius(int level)
     return (2.0 + cos(2.0*PI/(double)nmax)) / 3.0;
 }
 
-#if 1
 //  Computes multigrid smoothing parameters based on Cheybshev polynomials
 std::vector<double> pois_periodic_coeffs(
        int nx, int ny, int nz,           // global grid points at this level
@@ -156,6 +153,12 @@ std::vector<double> pois_periodic_coeffs(
 {
     const double PI = 3.14159265358979323;
     std::vector<double> coefs(nsteps, 0.0);
+
+    if(sigma < 0.1)
+    {
+        for(int k=0;k < nsteps;k++)coefs[k] = 0.66;
+        return coefs;
+    }
 
     // 1. Directional weights
     double inv_dx2 = 1.0 / (dx * dx);
@@ -171,9 +174,9 @@ std::vector<double> pois_periodic_coeffs(
     double B = inv_dx2 + inv_dy2 + inv_dz2;
     double r = A / B;
 
-    if (sigma < 0.001 && nx > 4 && ny > 4 && nz > 4) {
-        r = 1.0;
-    }
+//    if (sigma < 0.001 && nx > 4 && ny > 4 && nz > 4) {
+//        r = 1.0;
+//    }
 
     // smoothing window
     double rs = ((1.0 - sigma) * r) / (2.0 + (1.0 + sigma) * r);
@@ -186,56 +189,6 @@ std::vector<double> pois_periodic_coeffs(
 
     return coefs;
 }
-#else
-//  Computes multigrid smoothing parameters based on Cheybshev polynomials
-std::vector<double> pois_periodic_coeffs(
-       int nx, int ny, int nz,           // global grid points at this level
-       double dx, double dy, double dz,  // grid spacing at this level
-       double sigma_in,                     // smoothing window (0.0 = full band, 1.0 = higher)
-       int nsteps)                       // number of steps
-{
-    std::vector<double> coefs(nsteps, 0.0);
-double lmax=12.5;
-double lmin=0.25*lmax;
-if(sigma_in < 0.5)
-{
-lmax=12.5;
-lmin=0.05;
-}
-    const double theta = 0.5*(lmax + lmin);
-    const double delta = 0.5*(lmax - lmin);
-    const double sigma = theta / delta;
-
-    double a=0.0, b=0;
-    for(int k=0;k < nsteps;k++)
-    {
-        if (k==0)
-        {
-            a = 2.0 / theta; b = 0.0;
-        }
-        else if (k==1)
-        {
-            a = 2.0 / theta;
-            b  = (a * delta * delta) / 4.0;
-        }
-        else
-        {
-            const double beta_new = 1.0 / (2.0*sigma - b);
-            b = beta_new;
-            a = 2.0 * beta_new / delta;
-        }
-        coefs[k] = a;
-#if 0
-        if(is_jacobi)
-        {
-            a = 2.0/3.0;
-            b = 0.0;
-        }
-#endif
-    }
-    return coefs;
-}
-#endif
 
 template void mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, int, int, double, double *, int, int, int);
 
@@ -360,22 +313,24 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         RT = new RmgTimer(timername.c_str());
     }
 
-//printf("SSSS  %d   %f\n",level,rel_sradius(level));
-    int ixoff, iyoff, izoff;
-
 /* get sizes for the next level */
+    int ixoff, iyoff, izoff;
     int dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundary_flag);
     int dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundary_flag);
     int dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundary_flag);
-//printf("LLLLLLLLLL  %d  %d  %d  %d  %d  %d  %d\n",level,dimx,dimy,dimz, pxdim, pydim, pzdim);
+
+    bool bottom = false;
+    if (level >= max_levels || (dx2 < 0) || (dy2 < 0) || (dz2 < 0)) bottom = true;
+
     int presweeps = pre_cyc[level];
     std::vector<double> pcoefs;
     int fac = std::pow(2, level);
     int nx = this->T->G->get_NX_GRID(1)/fac;
     int ny = this->T->G->get_NY_GRID(1)/fac;
     int nz = this->T->G->get_NZ_GRID(1)/fac;
-    // More sweeps on coarsest level
-    if((level >= max_levels) || (dx2 < 0) || (dy2 < 0) || (dz2 < 0))
+
+    // More sweeps on coarsest level for now
+    if(bottom)
     {
         int minpts = std::min(std::min(nx, ny), nz);
         int maxpts = std::max(std::max(nx, ny), nz);
@@ -401,6 +356,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     {
         /* solve once */
         solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale*pcoefs[cycl], k, pot);
+        if(bottom) anchor_residual(level, dimx, dimy, dimz, f_mat);
         /* trade boundary info */
         if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
             T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -413,10 +369,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 /*
  * on coarsest grid, we are finished
  */
-
-    // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
-    // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
-    if (level >= max_levels || (dx2 < 0) || (dy2 < 0) || (dz2 < 0))
+    if (bottom)
     {
         if(this->timer_mode) delete RT;
         if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) level_flag++;
