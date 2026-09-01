@@ -62,7 +62,7 @@ BaseThread::BaseThread(int nthreads)
 {
 
     if(nthreads > MAX_RMG_THREADS)
-        rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
+        rmg::error("Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
 
     if(!BaseThread::init_flag)
     {
@@ -101,12 +101,12 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
     // Create a set of long lived threads
     for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) 
     {
-        BaseThread::comm_pool[thread] = new MPI_Comm[200];
-        BaseThread::coalesced_comm_pool[thread] = new MPI_Comm[20*BaseThread::THREADS_PER_NODE+1];
+        BaseThread::comm_pool[thread] = new MPI_Comm[100];
+        BaseThread::coalesced_comm_pool[thread] = new MPI_Comm[10*BaseThread::THREADS_PER_NODE+1];
         BaseThread::comm_indices[thread] = 0;
         thread_controls[thread].tid = thread;
-        for(int i=0;i < 200;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
-        for(int i=0;i < 20*BaseThread::THREADS_PER_NODE+1;i++) MPI_Comm_dup(comm, &BaseThread::coalesced_comm_pool[thread][i]);
+        for(int i=0;i < 100;i++) MPI_Comm_dup(comm, &BaseThread::comm_pool[thread][i]);
+        for(int i=0;i < 10*BaseThread::THREADS_PER_NODE+1;i++) MPI_Comm_dup(comm, &BaseThread::coalesced_comm_pool[thread][i]);
         MPI_Comm_dup(comm, &thread_controls[thread].grid_comm);
         threadgroup.emplace_back(BaseThread::funcptr, (void *)&thread_controls[thread]);
     }
@@ -118,7 +118,7 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
     if(rjobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
-        rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
+        rmg::error("More jobs than available threads scheduled\n");
     }
 
     std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -297,14 +297,14 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
     if(tid < 0) tid=0;
     size_t next = this->comm_indices[tid];
     this->comm_indices[tid]++;
-    size_t comm_index = next % 200;
+    size_t comm_index = next % 100;
     return this->comm_pool[tid][comm_index]; 
 }
 
 MPI_Comm BaseThread::get_unique_coalesced_comm(int index) {
     int tid = BaseThread::get_thread_tid();
     if(tid < 0) tid=0;
-    int comm_index = index % (20*BaseThread::THREADS_PER_NODE + 1);
+    int comm_index = index % (10*BaseThread::THREADS_PER_NODE + 1);
     return this->coalesced_comm_pool[tid][comm_index]; 
 }
 
@@ -318,7 +318,7 @@ int BaseThread::is_loop_over_states(void)
 int BaseThread::get_threads_per_node(void)
 {
     if(BaseThread::THREADS_PER_NODE == 0)
-        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
+        rmg::error("Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
 }
 

@@ -36,11 +36,10 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "RmgException.h"
+#include "read_wrapper.h"
 
-static void read_double (int fhand, double * rp, int count);
-static void read_int (int fhand, int *ip, int count);
 
 template void ReadData(char *, double *, double *, double *, Kpoint<double> **);
 template void ReadData(char *, double *, double *, double *, Kpoint<std::complex<double> > **);
@@ -55,7 +54,6 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 template <typename KpointType>
 void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int pgrid[3];
@@ -78,80 +76,81 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     MPI_Barrier(pct.img_comm);	
 
     /* Make the new output file name */
-    if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    if(ct.verbose) rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
     if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) kstart = 0;
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
+    std::string ofile = std::format("{}_spin{}_kpt{}_gridpe{}", name, pct.spinpe, kstart, pct.gridpe);
 
-
-    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(ofile.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg_printf("Can't open data file %s", newname);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::printlog("Can't open data file %s", ofile.c_str());
+        rmg::error("Terminating.");
     }
-
-
 
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg::error("Wrong NX_GRID");
     if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg::error("Wrong NY_GRID");
     if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg::error("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != Kptr[0]->G->get_PE_X())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg::error("Wrong PE_X");
     if (pe[1] != Kptr[0]->G->get_PE_Y())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg::error("Wrong PE_Y");
     if (pe[2] != Kptr[0]->G->get_PE_Z())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg::error("Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    if(ct.verbose) rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    if(ct.verbose) rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    if(ct.verbose) rmg_printf ("read_data: grid_size  = %d\n", grid_size);
-    if(ct.verbose) rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    if(ct.verbose) rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+    if(ct.verbose) rmg::printlog ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    if(ct.verbose) rmg::printlog ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    if(ct.verbose) rmg::printlog ("read_data: grid_size  = %d\n", grid_size);
+    if(ct.verbose) rmg::printlog ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    if(ct.verbose) rmg::printlog ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //    rmg::error("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE && ct.forceflag != NSCF)    /* bandstructure calculation */
-        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+        rmg::error("Wrong number of k points");
 
-    if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
-    if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+    if(ct.verbose) rmg::printlog ("read_data: gamma = %d\n", gamma);
+    if(ct.verbose) rmg::printlog ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
-    if (ns > ct.num_states) {
-        rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
-        rmg_error_handler (__FILE__, __LINE__,"Terminating.");
+    if(ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) 
+    {
+        ns = std::min(ns, ct.num_states);
+    }
+    else if (ns > ct.num_states) {
+        rmg::printlog ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
+        rmg::error("Terminating.");
     }
 
-    if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
+    if(ct.verbose) rmg::printlog ("read_data: ns = %d\n", ns);
 
     fflush(NULL);
 
@@ -159,25 +158,25 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if(ct.compressed_infile)
     {
         read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
-        if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'vh'\n");
         for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
             read_compressed_buffer(fhand, &rho[ic * fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
-        if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'rho'\n");
         for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
             read_compressed_buffer(fhand, &vxc[ic * fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
     
-        if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'vxc'\n");
     }
     else
     {
         read_double (fhand, vh, fgrid_size);
-        if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'vh'\n");
         for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
             read_double (fhand, &rho[ic * fgrid_size], fgrid_size);
-        if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'rho'\n");
         for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
             read_double (fhand, &vxc[ic * fgrid_size], fgrid_size);
-        if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'vxc'\n");
     }
 
     if(ct.forceflag == NSCF) 
@@ -226,16 +225,22 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 else {
                     // If wavefunctions on disk are complex but current calc is real then throw error
                     if(ct.is_gamma)
-                        rmg_error_handler (__FILE__, __LINE__,"Can't convert complex wavefunctions to real.");
+                        rmg::error("Can't convert complex wavefunctions to real.");
 
                     // Wavefunctions on disk are real but current calc is complex so convert them
                     ssize_t wanted = sizeof (double) * (ssize_t)wvfn_size;
-                    ssize_t size = read (fhand, tbuf, wanted);
+                    if(ct.compressed_infile)
+                    {
+                        read_compressed_buffer(fhand, tbuf, pgrid[0], pgrid[1], pgrid[2]);
+                    }
+                    else
+                    {
+                        ssize_t size = read (fhand, tbuf, wanted);
+                        if(size != wanted)
+                            rmg::error("error reading");
+                    }
 
-                    if(size != wanted)
-                        rmg_error_handler (__FILE__, __LINE__,"error reading");
-
-                    tptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi;
+                    tptr = (std::complex<double> *)Kptr[ik]->Kstates[is].psi;
                     for(int ix=0;ix < wvfn_size;ix++) tptr[ix] = std::complex<double>(tbuf[ix], 0.0);
 
                 }
@@ -247,7 +252,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             if(ct.forceflag == BAND_STRUCTURE || ct.forceflag == NSCF) break;
         }
 
-        if(ct.verbose) rmg_printf ("read_data: read 'wfns'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'wfns'\n");
 
         delete [] tbuf;
         delete [] psi_I;
@@ -260,7 +265,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         if(ct.noncoll) 
         {
             printf("\n num_state %d != read %d\n", ct.num_states, ns);
-            rmg_error_handler (__FILE__, __LINE__,"noncollinear case: ct.num_state differenecec.");
+            rmg::error("noncollinear case: ct.num_state differenecec.");
         }
         for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
@@ -368,7 +373,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         read_double (fhand, occ, (nk * ns));
 
-        if(ct.verbose) rmg_printf ("read_data: read 'occupations'\n"); 
+        if(ct.verbose) rmg::printlog ("read_data: read 'occupations'\n"); 
 
         for (ik = 0; ik < nk; ik++)
             for (is = 0; is < ns; is++)
@@ -395,35 +400,13 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
             }
 
-        if(ct.verbose) rmg_printf ("read_data: read 'eigenvalues'\n");
+        if(ct.verbose) rmg::printlog ("read_data: read 'eigenvalues'\n");
 
     }      /* end of read eigenvalues */
 
     close (fhand);
 
 }                               /* end read_data */
-
-
-static void read_double (int fhand, double * rp, int count)
-{
-    ssize_t wanted = sizeof (double) * (ssize_t)count;
-    ssize_t size = read (fhand, rp, wanted);
-    if(size != wanted)
-    {
-        std::cout << " wanted and readsize " << wanted <<" != " << size << std::endl;
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
-    }
-
-
-}
-
-static void read_int (int fhand, int *ip, int count)
-{
-    int size = count * sizeof (int);
-    if (size != read (fhand, ip, size))
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
-}
-
 
 
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
@@ -436,14 +419,14 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
     size_t wsize = read (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     if(csize > sizeof(double)*nx*ny*nz)
-        rmg_error_handler (__FILE__,__LINE__,"error reading input buffer too small");
+        rmg::error("error reading input buffer too small");
 
     wsize = read (fh, in, csize);
     if(wsize != csize)
-        rmg_error_handler (__FILE__,__LINE__,"error reading");
+        rmg::error("error reading");
 
     csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     delete [] in;
@@ -454,7 +437,6 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int pgrid[3];
@@ -474,20 +456,20 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
 
     if(ct.noncoll)
-        rmg_printf("\n WARNING: noncollinear wavefunction extrapolation not complete");
+        rmg::printlog("\n WARNING: noncollinear wavefunction extrapolation not complete");
 
     /* wait until everybody gets here */
     MPI_Barrier(pct.img_comm);	
 
     /* Get the previous wavefunction file name */
-    if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    if(ct.verbose) rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
 
     int kstart = pct.kstart;
-    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
+    std::string newname = std::format("{}_spin{}_kpt{}_gridpe{}_1", name, pct.spinpe, kstart, pct.gridpe);
 
-    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg_printf("Can't open data file %s for extrapolation.", newname);
+        rmg::printlog("Can't open data file %s for extrapolation.", newname.c_str());
         return;
     }
 
@@ -497,62 +479,62 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg::error("Wrong NX_GRID");
     if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg::error("Wrong NY_GRID");
     if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg::error("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != Kptr[0]->G->get_PE_X())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg::error("Wrong PE_X");
     if (pe[1] != Kptr[0]->G->get_PE_Y())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg::error("Wrong PE_Y");
     if (pe[2] != Kptr[0]->G->get_PE_Z())
-        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg::error("Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
-        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg::error("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    if(ct.verbose) rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    if(ct.verbose) rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    if(ct.verbose) rmg_printf ("read_data: grid_size  = %d\n", grid_size);
-    if(ct.verbose) rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    if(ct.verbose) rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+    if(ct.verbose) rmg::printlog ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    if(ct.verbose) rmg::printlog ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    if(ct.verbose) rmg::printlog ("read_data: grid_size  = %d\n", grid_size);
+    if(ct.verbose) rmg::printlog ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    if(ct.verbose) rmg::printlog ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //    rmg::error("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+        rmg::error("Wrong number of k points");
 
-    if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
-    if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+    if(ct.verbose) rmg::printlog ("read_data: gamma = %d\n", gamma);
+    if(ct.verbose) rmg::printlog ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
     if (ns > ct.num_states) {
-        rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
-        rmg_error_handler (__FILE__, __LINE__,"Terminating.");
+        rmg::printlog ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
+        rmg::error("Terminating.");
     }
 
-    if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
+    if(ct.verbose) rmg::printlog ("read_data: ns = %d\n", ns);
 
 
     /* read the hartree potential, electronic density and xc potential */
@@ -626,7 +608,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         {
             KpointType *A = (KpointType *)Kptr[ik]->Kstates[0].psi;
             KpointType *B = (KpointType *)Kptr[ik]->Kstates[ns].psi;
-            RmgGemm(trans_a, trans_n, ns, ns, grid_size, alpha, A, grid_size, B, grid_size, ZERO_t, C, ns);
+            rmg::gemm(trans_a, trans_n, ns, ns, grid_size, alpha, A, grid_size, B, grid_size, ZERO_t, C, ns);
             MPI_Allreduce(MPI_IN_PLACE, (double *)C, ns * ns * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
             if(ct.write_orbital_overlaps)

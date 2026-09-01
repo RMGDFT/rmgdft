@@ -30,7 +30,7 @@
 
 
 #include "RmgException.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Scalapack.h"
 #include "blacs.h"
 #include "transition.h"
@@ -42,11 +42,12 @@ static int once;
 #endif
 
 
-Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
+Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB_in, int last, MPI_Comm rootcomm)
 {
     this->ngroups = ngroups;
     this->N = N;
     this->root_comm = rootcomm;
+    this->driver = ct.subdiag_driver;
 
     MPI_Comm_size(rootcomm, &this->npes);
     MPI_Comm_rank(rootcomm, &this->root_rank);
@@ -73,19 +74,28 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->group_cols * this->group_rows > this->group_pes)
         throw RmgFatalException() << "Problem with processor distribution in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
-    this->NB = NB;
-    int num_blocks = N / NB;
-    if(N % NB) num_blocks++;
+    this->NB = NB_in;
+    int num_blocks;
+again:
+    num_blocks = N / this->NB;
+    if(N % this->NB) num_blocks++;
 
-    while (num_blocks < this->group_cols )
+    if (num_blocks < this->group_cols )
     {
-        this->NB /=2;
-        num_blocks = (N + this->NB -1) / this->NB;
+        rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d with block_factor of %d\n", this->group_cols, this->N, this->NB);
+        // With Elpa blacs grid must span so reduce block size
+        if(this->driver == SUBDIAG_ELPA)
+        {
+            this->NB /= 2;
+            goto again;
+        }
     }
 
-    if(this->NB < 2)
+    if(this->NB < 8)
     {
-        rmg_printf("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+        rmg::printlog("WARNING:  scalapack npcol %d is too large for matrix size of %d \n", this->group_cols, this->N);
+        // Switch to scalapack in this case though perhaps we should switch to Lapack or a gpu solver if available
+        if(this->driver == SUBDIAG_ELPA) this->driver = SUBDIAG_SCALAPACK;
     }
     /*Number of processor in any given direction cannot be more than number of blocks*/
 //    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
@@ -188,9 +198,9 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
   //   }
 
 #if USE_ELPA
-    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    if(this->driver != SUBDIAG_ELPA) return;
     int error;
-    int api_version = 20221109;
+    int api_version = 20260202;
     if(!once)
     {
         elpa_init(api_version);
@@ -203,6 +213,9 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     }
 
+    elpa_set((elpa_t)this->elpa_handle, "solver", ELPA_SOLVER_2STAGE, &error);
+    elpa_set((elpa_t)this->elpa_handle, "real_kernel", ELPA_2STAGE_REAL_GENERIC, &error);
+    elpa_set((elpa_t)this->elpa_handle, "complex_kernel", ELPA_2STAGE_COMPLEX_GENERIC, &error);
     elpa_set((elpa_t)this->elpa_handle, "na", this->N, &error);
     elpa_set((elpa_t)this->elpa_handle, "nev", this->N, &error);
     elpa_set((elpa_t)this->elpa_handle, "local_nrows", this->m_dist, &error);
@@ -225,7 +238,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 void Scalapack::GatherEigvectors(double *A, double *distA)
 {
     if(!this->participates) return;
-    if(N >= 16000)
+    if(N >= 16000 || 1)
     {
         CopyDistArrayToSquareMatrix(A, distA, N, dist_desca);
         ScalapackBlockAllreduce((double *)A, (size_t)N * (size_t)N);
@@ -457,8 +470,8 @@ void Scalapack::DistributeMatrix(std::complex<double> *A, std::complex<double> *
 
     // Call pdgeadd_ to distribute matrix (i.e. copy A into A_dist)
     int ione = 1;
-    double rone = 1.0, rzero = 0.0;
-    pzgeadd( "N", &this->N, &this->N, &rone, (double *)A, &ione, &ione, this->local_desca, &rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
+    double rone[2](1.0,0.0), rzero[2](0.0, 0.0);
+    pzgeadd( "N", &this->N, &this->N, rone, (double *)A, &ione, &ione, this->local_desca, rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
 }
 
 
@@ -477,7 +490,7 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
 void Scalapack::generalized_eigenvectors(double *a, double *b, double *ev, double *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         this->generalized_eigenvectors_elpa(a, b, ev, q);
         return;
@@ -491,7 +504,7 @@ void Scalapack::generalized_eigenvectors(std::complex<double> *a, std::complex<d
              double *ev, std::complex<double> *q)
 {
 #if USE_ELPA
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    if(this->driver == SUBDIAG_ELPA)
     {
         this->generalized_eigenvectors_elpa(a, b, ev, q);
         return;
@@ -514,8 +527,8 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
     pdpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
     if (info)
     {
-       rmg_printf ("\n pdpotrf failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdpotrf failed");
+       rmg::printlog ("\n pdpotrf failed, info is %d", info);
+       rmg::error("pdpotrf failed");
     }
 
     // Get workspace required
@@ -535,8 +548,8 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdsyngst failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdsyngst failed");
+       rmg::printlog ("\n pdsyngst failed, info is %d", info);
+       rmg::error("pdsyngst failed");
     }
 
 
@@ -549,8 +562,8 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdsyevd failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+       rmg::printlog ("\n pdsyevd failed, info is %d", info);
+       rmg::error("psyevd failed");
     }
 
     pdtrsm("Left", uplo, "T", "N", &N, &N, &rone, b, &ione, &ione, desca,
@@ -558,8 +571,8 @@ void Scalapack::generalized_eigenvectors_scalapack(double *a, double *b, double 
 
     if (info)
     {
-       rmg_printf ("\n pdtrms failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pdtrms failed");
+       rmg::printlog ("\n pdtrms failed, info is %d", info);
+       rmg::error("pdtrms failed");
     }
 
     delete [] iwork;
@@ -576,12 +589,12 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
     int N = this->N;
     int *desca = this->GetDistDesca();
 
-    pzpotrf(uplo, &N, (double *)b,  &ione, &ione, desca,  &info);
+    pzpotrf(uplo, &N, b,  &ione, &ione, desca,  &info);
 
     if (info)
     {
-       rmg_printf ("\n pzpotrf failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pzpotrf failed");
+       rmg::printlog ("\n pzpotrf failed, info is %d", info);
+       rmg::error("pzpotrf failed");
     }
 
     pzhegst(&ibtype, uplo, &N, (double *)q, &ione, &ione, desca,
@@ -589,8 +602,8 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-       rmg_printf ("\n pzhegst failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "pzhegst failed");
+       rmg::printlog ("\n pzhegst failed, info is %d", info);
+       rmg::error("pzhegst failed");
     }
 
 
@@ -617,8 +630,8 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-        rmg_printf ("\n pzheevd failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+        rmg::printlog ("\n pzheevd failed, info is %d", info);
+        rmg::error("pzheevd failed");
     }
 
     pztrsm("Left", uplo, "C", "N", &N, &N, rone, (double *)b, &ione, &ione, desca,
@@ -626,8 +639,8 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 
     if (info)
     {
-        rmg_printf ("\n pztrsm failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pztrms failed");
+        rmg::printlog ("\n pztrsm failed, info is %d", info);
+        rmg::error("pztrms failed");
     }
 
     delete [] iwork;
@@ -640,9 +653,15 @@ void Scalapack::generalized_eigenvectors_scalapack(std::complex<double> *a, std:
 void Scalapack::symherm_eigenvectors(double *a, double *ev, double *q)
 {
 #if USE_ELPA
-    not programmed so this will throw a compile error
+    if(this->driver == SUBDIAG_ELPA)
+    {
+        int error;
+        elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
+        size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+        for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+        return;
+    }
 #endif    
-
     this->symherm_eigenvectors_scalapack(a, ev, q);
 }
 
@@ -676,8 +695,8 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
 
     if (info)
     {
-       rmg_printf ("\n pdsyevd failed, info is %d", info);
-       rmg_error_handler (__FILE__, __LINE__, "psyevd failed");
+       rmg::printlog ("\n pdsyevd failed, info is %d", info);
+       rmg::error("psyevd failed");
     }
 
     delete [] iwork;
@@ -689,7 +708,14 @@ void Scalapack::symherm_eigenvectors_scalapack(double *a, double *ev, double *q)
 void Scalapack::symherm_eigenvectors(std::complex<double> *a, double *ev, std::complex<double> *q)
 {
 #if USE_ELPA
-    not programmed so this will throw a compile error
+    if(this->driver == SUBDIAG_ELPA)
+    {
+        int error;
+        elpa_eigenvectors((elpa_t)this->elpa_handle, a, ev, q, &error);
+        size_t dist_length = this->GetDistMdim() * this->GetDistNdim();
+        for(size_t i=0;i < dist_length;i++) a[i] = q[i];
+        return;
+    }
 #endif    
     this->symherm_eigenvectors_scalapack(a, ev, q);
 }
@@ -724,8 +750,8 @@ void Scalapack::symherm_eigenvectors_scalapack(std::complex<double> *a, double *
 
     if (info)
     {
-        rmg_printf ("\n pzheevd failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "pzheevd failed");
+        rmg::printlog ("\n pzheevd failed, info is %d", info);
+        rmg::error("pzheevd failed");
     }
 
     delete [] iwork;
@@ -795,13 +821,13 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
 // Block inplace double reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
 {
-    BlockAllreduce(buf, count, this->comm);
+    rmg::block_allreduce(buf, count, this->comm);
 }
 
 // Block inplace float reduction within the group only
 void Scalapack::ScalapackBlockAllreduce(float *buf, size_t count)
 {
-    BlockAllreduce(buf, count, this->comm);
+    rmg::block_allreduce(buf, count, this->comm);
 }
 
 // Broadcast to everyone in the root
@@ -1088,7 +1114,7 @@ Scalapack::~Scalapack(void)
     delete [] this->dist_desca;
     delete [] this->local_desca;
 #if USE_ELPA
-    if(ct.subdiag_driver != SUBDIAG_ELPA) return;
+    if(this->driver != SUBDIAG_ELPA) return;
     int error;
     elpa_deallocate((elpa_t)this->elpa_handle, &error);
 #endif

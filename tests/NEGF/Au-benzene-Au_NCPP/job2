@@ -1,4 +1,5 @@
 rmgnegf="/home/luw/rmgdft/build/rmg-negf-cpu"
 cd 3lead_lead1
-mpirun -n 8 ${rmgnegf} input
+mpirun -n 16 ${rmgnegf} input
+mpirun -n 16 ${rmgnegf} input.110
 cd ..

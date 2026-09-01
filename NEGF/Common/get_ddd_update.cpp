@@ -17,7 +17,6 @@ void get_ddd_update (double * veff)
 {
     int idx, i, j, ion;
     int nh, ncount, icount;
-    float *qnmI;
     double *dnmI, *sum;
     int *ivec, sum_dim, sum_idx;
     ION *iptr;
@@ -26,7 +25,7 @@ void get_ddd_update (double * veff)
 
     if(ct.noncoll) 
     {
-        rmg_printf("\n need to change for noncollinear \n");
+        rmg::printlog("\n need to change for noncollinear \n");
         fflush(NULL);
         exit(0);
     }
@@ -89,9 +88,9 @@ void get_ddd_update (double * veff)
 
 
     if (sum_idx != sum_dim)
-        rmg_error_handler (__FILE__, __LINE__, "Problem with sum index");
+        rmg::error("Problem with sum index");
 
-    global_sums (sum, &sum_dim, pct.grid_comm);
+    rmg::allreduce(sum, sum_dim, pct.grid_comm);
 
     sum_idx = 0;
 

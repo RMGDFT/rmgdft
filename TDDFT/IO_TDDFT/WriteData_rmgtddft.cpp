@@ -42,10 +42,9 @@
 #include "transition.h"
 
 
-void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
+void WriteData_rmgtddft (const char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, 
-        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2, int n2_C,
-        std::vector<double> &Eterms,double *Hcore_tddft, int numst)
+        double *Hmatrix_m1, double *Hmatrix_0, int tot_steps, int n2, int n2_C,int numst)
 
 {
     int fhand;
@@ -70,34 +69,33 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
        _splitpath(tmpname, NULL, dirname, NULL, NULL);
        if (!_mkdir(dirname));
 #endif
-        rmg_printf ("\n Creating directory %s succesfull\n\n", tmpname);
+        rmg::printlog ("\n Creating directory %s succesfull\n\n", tmpname);
     else
-        rmg_printf ("\n Creating directory %s FAILED\n\n", tmpname);
+        rmg::printlog ("\n Creating directory %s FAILED\n\n", tmpname);
 
 
     fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     if (fhand < 0) {
-        rmg_printf("Can't open restart file %s", filename);
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+        rmg::printlog("Can't open restart file %s", filename);
+        rmg::error("Terminating.");
     }
 
 
    }
 
 
+   int n_rho = ct.noncoll_factor * ct.noncoll_factor;
    fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-   write (fhand, vh, fgrid_size * sizeof(double));
-   write (fhand, vxc, fgrid_size * sizeof(double));
-   write (fhand, vh_corr, fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vh, fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vxc, n_rho*fgrid_size * sizeof(double));
+   rmg::writefile (fhand, vh_corr, fgrid_size * sizeof(double));
 
-   write (fhand, Pn0, 2*n2 * sizeof(double));
-   write (fhand, Hmatrix, n2_C * sizeof(double));
-   write (fhand, Hmatrix_m1, n2_C * sizeof(double));
-   write (fhand, Hmatrix_0, n2_C * sizeof(double));
-   write (fhand, &tot_steps, sizeof(int));
-   write (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
-   write (fhand, Hcore_tddft, numst * numst * sizeof(double));
+   rmg::writefile (fhand, Pn0, 2*n2 * sizeof(double));
+   rmg::writefile (fhand, Hmatrix, n2_C * sizeof(double));
+   rmg::writefile (fhand, Hmatrix_m1, n2_C * sizeof(double));
+   rmg::writefile (fhand, Hmatrix_0, n2_C * sizeof(double));
+   rmg::writefile (fhand, &tot_steps, sizeof(int));
    close(fhand);
 
 }                               /* end write_data */

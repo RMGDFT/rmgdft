@@ -17,6 +17,9 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
+#include "rmg_reduce.h"
+#include "rmg_dev_allocate.h"
 
 
 #define 	MAX_STEP 	40
@@ -33,7 +36,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     std::complex<double> one=1.0, zero=0.0, mone=-1.0;
     int step;
-    int ione = 1, n1;
+    int ione = 1;
     int maxrow, maxcol, *desca, nmax;
 
 
@@ -44,18 +47,20 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
     maxrow = pmo.mxllda_lead[jprobe-1];
     maxcol = pmo.mxlocc_lead[jprobe-1];
 
-    n1 = maxrow * maxcol;
+    size_t n1 = maxrow * maxcol;
 
     /* allocate matrix and initialization  */
 
     size_t size = n1 * sizeof(std::complex<double>);
     chtem_cpu = (std::complex<double> *)RmgMallocHost(size);
 
-    gpuMalloc((void **)&chtem_gpu, size );
-    gpuMalloc((void **)&ch00_gpu, size );
-    gpuMalloc((void **)&ch01_gpu, size );
-    gpuMalloc((void **)&ch10_gpu, size );
-    gpuMalloc((void **)&green_gpu, size );
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->malloc(&chtem_gpu, n1 * 5);
+    ch00_gpu = chtem_gpu + n1;
+    ch01_gpu = chtem_gpu + 2*n1;
+    ch10_gpu = chtem_gpu + 3*n1;
+    green_gpu = chtem_gpu + 4*n1;
+#endif
     chtem_ptr = MemoryPtrHostDevice(chtem_cpu, chtem_gpu);
     ch00_ptr = MemoryPtrHostDevice(ch00_cpu, ch00_gpu);
     ch01_ptr = MemoryPtrHostDevice(ch01_cpu, ch01_gpu);
@@ -71,12 +76,12 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     /*  green = (e S00- H00)^-1  */
 
-    zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
+    rmg::zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
     matrix_inverse_driver(green_ptr, desca);
 
-    dzasum_driver(n1, green_ptr, ione, &converge1);
+    rmg::dzasum_driver(n1, green_ptr, ione, &converge1);
 
-    comm_sums(&converge1, &ione, COMM_EN2);
+    rmg::allreduce(&converge1, ione, COMM_EN2);
 
 
     for (step = 0; step < MAX_STEP; step++)
@@ -84,18 +89,18 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
         /*  calculate chnn = ch00 - Hn+1, n * Gnn * Hn,n+1  */
 
-        zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01_ptr, ione, ione, desca,
                 green_ptr, ione, ione, desca,  zero, chtem_ptr, ione, ione, desca);
-        zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
-        zgemm_driver ("N", "N", nmax, nmax, nmax, mone, chtem_ptr, ione, ione, desca,
+        rmg::zcopy_driver (n1, ch00_ptr, ione, green_ptr, ione);
+        rmg::zgemm_driver ("N", "N", nmax, nmax, nmax, mone, chtem_ptr, ione, ione, desca,
                 ch10_ptr, ione, ione, desca, one, green_ptr, ione, ione, desca);
 
         matrix_inverse_driver(green_ptr, desca);
-        dzasum_driver(n1, green_ptr, ione, &converge2);
+        rmg::dzasum_driver(n1, green_ptr, ione, &converge2);
 
-        comm_sums(&converge2, &ione, COMM_EN2);
+        rmg::allreduce(&converge2, ione, COMM_EN2);
 
-        /* rmg_printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
+        /* rmg::printlog("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
 
         tem = converge1 - converge2;
         tem = sqrt (tem * tem);
@@ -107,18 +112,16 @@ void Sgreen_semi_infinite_p (std::complex<double> *green_cpu, std::complex<doubl
 
     if (tem > 1.0e-7)
     {
-        rmg_printf ("\n green not converge %f \n", tem);
+        rmg::printlog ("\n green not converge %f \n", tem);
         exit (0);
     }
-    /*    rmg_printf("\n %d %f %f converge\n", step, eneR, eneI); */
+    /*    rmg::printlog("\n %d %f %f converge\n", step, eneR, eneI); */
 
     MemcpyDeviceHost(size, green_gpu, green_cpu);
 
     RmgFreeHost( chtem_cpu );
-    gpuFree(chtem_gpu);
-    gpuFree(ch00_gpu);
-    gpuFree(ch10_gpu);
-    gpuFree(ch01_gpu);
-    gpuFree(green_gpu);
+#if CUDA_ENABLED || HIP_ENABLED
+    rmg_device_pool->free(chtem_gpu);
+#endif
 
 }

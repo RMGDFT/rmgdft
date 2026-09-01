@@ -40,14 +40,14 @@
 #include "Atomic.h"
 #include "RmgParallelFft.h"
 #include "prototypes_rmg.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Neb.h"
 
-template Neb<double>::Neb(BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
+template Neb<double>::Neb(rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final);
-template Neb<std::complex<double>>::Neb(BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
+template Neb<std::complex<double>>::Neb(rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final);
-template <class T> Neb<T>::Neb( BaseGrid &G_in, int num_images, int max_steps, std::string input_initial, 
+template <class T> Neb<T>::Neb( rmg::grid &G_in, int num_images, int max_steps, std::string input_initial, 
         std::string input_final, double totale_initial, double totale_final):BG(G_in)
 {
 
@@ -202,7 +202,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         path_length[0] = sqrt(path_length[0]);
         /* Call fastrelax for max_md_steps steps */
         MPI_Barrier( MPI_COMM_WORLD );
-        if(pct.worldrank == 0) rmg_printf("\tNEB call fast relax.\n");
+        if(pct.worldrank == 0) rmg::printlog("\tNEB call fast relax.\n");
         for (int count = 0; count < ct.num_ions; count++)
         {
             Atoms[count].constraint.forcemask[0] =0.0;
@@ -321,10 +321,10 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
                 break;
             case LBFGS:
                 //simple_lbfgs();
-                rmg_error_handler (__FILE__, __LINE__, "LBFGS for NEB not implemented");
+                rmg::error("LBFGS for NEB not implemented");
                 break;
             default:
-                rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
+                rmg::error("Undefined MD method");
         }
 
         /* Update items that change when the ionic coordinates change */

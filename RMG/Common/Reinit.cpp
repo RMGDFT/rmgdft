@@ -45,7 +45,7 @@
 #include "Subdiag.h"
 #include "Functional.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"
@@ -87,7 +87,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
         if(ecut < ct.ecutwfc)
         {
-            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+            rmg::printlog("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
         }
         else
         {
@@ -177,8 +177,8 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
         {
             // Grid object local to this MPI process
             delete sp->OG;
-            sp->OG = new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
-            BaseGrid *OG = (BaseGrid *)sp->OG;
+            sp->OG = new rmg::grid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
+            rmg::grid *OG = (rmg::grid *)sp->OG;
             OG->set_rank(0, pct.my_comm);
 
             // Lattice object for the localized projector region. Global vectors need to be

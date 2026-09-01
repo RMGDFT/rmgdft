@@ -15,6 +15,7 @@
 #include "pmo.h"
 #include "GpuAlloc.h"
 #include "transition.h"
+#include "rmg_reduce.h"
 
 
 #define 	LDEBUG 	0
@@ -45,14 +46,14 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     nL = lcr[1].num_states;
     if (nL != ct.block_dim[0])
     {
-        rmg_printf (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
+        rmg::printlog (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
     }
 
     nL = lcr[2].num_states;
 
     if (nL != ct.block_dim[ct.num_blocks - 1])
     {
-        rmg_printf (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
+        rmg::printlog (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
     }
 
     /*  allocate memory for green_C, grenn_C is tri-diagonal */
@@ -116,7 +117,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
         }                       /* end for energy points */
 
-        comm_sums (lcr[iprobe].density_matrix_tri, &ntot, COMM_EN1);
+        rmg::allreduce (lcr[iprobe].density_matrix_tri, ntot, COMM_EN1);
 
 
         if(cei.probe_noneq > 0) break;
@@ -140,8 +141,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-            maxrow = rmg_max(maxrow, pmo.mxllda_cond[idx_C]);
-            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[idx_C]);
+            maxrow = std::max(maxrow, pmo.mxllda_cond[idx_C]);
+            maxcol = std::max(maxcol, pmo.mxlocc_cond[idx_C]);
         }
 
         sigma = (std::complex<double> *)RmgMallocHost( maxrow * maxcol * sizeof(std::complex<double>) ); 
@@ -154,8 +155,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
         int totcol = 0;
         for(i = 0; i < ct.num_blocks; i++)
         {
-            maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
-            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
+            maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
+            maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
             totrow += pmo.mxllda_cond[i];
             totcol += pmo.mxlocc_cond[i];
         }
@@ -231,7 +232,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
                     }                   /* end for energy points */
 
-                    comm_sums (lcr[iprobe].lcr_ne[j].density_matrix_ne_tri, &ntot, COMM_EN1);
+                    rmg::allreduce (lcr[iprobe].lcr_ne[j].density_matrix_ne_tri, ntot, COMM_EN1);
 
                     j++;	
                 }     /* if statement ends here */	
@@ -301,8 +302,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
 
             //       if(pct.gridpe == 0) 
-            //           rmg_printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
-            //      rmg_printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
+            //           rmg::printlog (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
+            //      rmg::printlog (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
 
             /* Finally, calculates density matrix */ 
 
@@ -346,7 +347,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     for (st1 = 0; st1 < ntot; st1++)
         lcr[0].density_matrix_tri[st1] *= ct.kp[pct.kstart].kweight /PI ;
 
-    comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
+    rmg::allreduce (lcr[0].density_matrix_tri, ntot, pct.kpsub_comm);
 
 
     // for off-diagonal parts, we have already average the upper and lower
@@ -384,7 +385,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     delete RT;
 
     if (cei.num_probe > 4)
-        rmg_error_handler (__FILE__, __LINE__, "probe > 4");
+        rmg::error("probe > 4");
 
 
 }

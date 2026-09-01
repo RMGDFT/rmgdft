@@ -146,18 +146,20 @@ __global__ void prolong_ortho_kernel(double * full,
 }
 
 
-template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,3>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,4>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,5>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<float,6>(double * , float *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_ortho_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
+
+#include "rmg_error.h"
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full, 
@@ -166,6 +168,7 @@ void prolong_ortho_gpu_internal(double *full,
                    const int dimy,
                    const int dimz,
                    double scale,
+                   int smem_limit,
                    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER])
 {
     pcoeff agpu;
@@ -181,7 +184,7 @@ void prolong_ortho_gpu_internal(double *full,
     hipStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
 //    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
-    int smem_limit = 65536 - 4092;
+smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
@@ -203,7 +206,6 @@ void prolong_ortho_gpu_internal(double *full,
         //printf("DDDD  %d  %d  %d  %d  %d\n",i, dimz, zstart[i], smem_sizes[i], zlen[i]);fflush(NULL);
     }
 
-    int tid = getThreadId();
     int fbasis = 8*dimx*dimy*dimz;
     int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
@@ -220,14 +222,13 @@ void prolong_ortho_gpu_internal(double *full,
                    smem_sizes[i],
                    stream,
                    full,
-                   //(T *)abufs[tid],
                    half,
                    zstart[i],
                    zlen[i],
                    dimx, dimy, dimz, scale, agpu);
     }
 
-    hipStreamSynchronize(stream);
+    rmg::error(hipStreamSynchronize(stream));
 
 }
 #endif

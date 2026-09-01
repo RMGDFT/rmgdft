@@ -25,24 +25,26 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+#include "Gpufuncs.h"
+
 #include "blas.h"
+#include "blacs.h"
 #include "RmgParallelFft.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "prototypes_tddft.h"
+#include "GatherScatter.h"
 
 #if HIP_ENABLED
 #include <hip/hip_runtime.h>
@@ -55,30 +57,33 @@
 #endif
 
 #if CUDA_ENABLED || HIP_ENABLED
-void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states);
-void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states);
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(float *psi_dev,  float *work_dev, float *vtot_psi, int pbasis, int num_states);
+void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *vtot_psi, int pbasis, int num_states);
 #endif
 
-template void HmatrixUpdate<double>(Kpoint<double> *, double *, double *, int tddft_start_state);
-template void HmatrixUpdate<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, int tddft_start_state);
+template void HmatrixUpdate<double, double, double>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, double *, int tddft_start_state, int num_states, int *desca);
+template void HmatrixUpdate<double, float, double>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, double *, int tddft_start_state, int num_states, int *desca);
+template void HmatrixUpdate<std::complex<double>, std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states, int *desca);
+template void HmatrixUpdate<std::complex<double>, std::complex<float>, std::complex<double> >(Kpoint<std::complex<double>> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states, int *desca);
 
-template <typename KpointType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state)
+template void HmatrixUpdate<double, double, std::complex<double>>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states, int *desca);
+template void HmatrixUpdate<double, float, std::complex<double>>(Kpoint<double> *, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, std::complex<double> *, int tddft_start_state, int num_states, int *desca);
+
+template <typename KpointType, typename CalType, typename MatrixType>
+void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, MatrixType *Aij, int tddft_start_state, int num_states, int *desca)
 {
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     Lattice *L = kptr->L;
-
-    int num_states = kptr->nstates - tddft_start_state;
     int pbasis = kptr->pbasis;
+    int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-    KpointType alpha(vel);
-    KpointType beta(0.0);
 
-    static KpointType *global_matrix1;
-
-    int factor = 1;
-    if(!ct.is_gamma) factor = 2;
+    //value type of CalType
+    using TypeV = get_scalar_t<CalType>;
+    static CalType *global_matrix1;
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -92,26 +97,62 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     }   
 
 #if CUDA_ENABLED || HIP_ENABLED
-    KpointType *psi_dev = (KpointType *)kptr->psi_dev;
-    psi_dev = psi_dev + tddft_start_state * pbasis;
-    KpointType *work_dev = (KpointType *)kptr->work_dev;
-    static KpointType *mat_dev;
-    gpublasStatus_t gstat;
+    CalType alpha(vel);
+    CalType beta(0.0);
+    CalType *psi_dev;
+    CalType *work_dev;
+
+    static wfobj<CalType> vtot_psi_caltype;
+    static wf_spinobj<CalType> vxc_psi_TypeV;
+    CopyAndConvert(pbasis, vtot_psi.data(), vtot_psi_caltype.data());
+    if(ct.noncoll)
+    {
+        CopyAndConvert(4*pbasis, vxc_psi.data(), vxc_psi_TypeV.data());
+    }
+    if(typeid(KpointType) == typeid(CalType))
+    {
+        psi_dev = (CalType *)kptr->psi_dev;
+        work_dev = (CalType *)kptr->work_dev;
+    }
+    else
+    {
+        psi_dev = (CalType *)kptr->psi_dev_float;
+        work_dev = (CalType *)kptr->work_dev_float;
+    }
+
+    psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
+
+    static CalType *v_dev, *mat_dev;
+    static TypeV *vxc_dev;
+    if(!v_dev)
+    {
+        gpuMalloc((void **)&v_dev, pbasis * sizeof(CalType));
+        if(ct.noncoll)
+        {
+            gpuMalloc((void **)&vxc_dev, 4*pbasis * sizeof(TypeV));
+        }
+    }
+
+    gpuMemcpy(v_dev, vtot_psi_caltype.data(),  pbasis * sizeof(CalType), gpuMemcpyHostToDevice);
+    Veff_x_psi(psi_dev, work_dev, v_dev, pbasis, ct.noncoll_factor*num_states);
+    if(ct.noncoll)
+    {
+        gpuMemcpy(vxc_dev, vxc_psi_TypeV.data(),  4*pbasis * sizeof(TypeV), gpuMemcpyHostToDevice);
+        GpuVxc_x_psi_noncoll((std::complex<TypeV> *)psi_dev, (std::complex<TypeV> *)work_dev, vxc_dev, pbasis, num_states);
+    }
 
     int block_size = std::max(1024, ct.scalapack_block_factor);
     //block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
 
-    Veff_x_psi(psi_dev, work_dev, vtot_eig, pbasis, num_states);
-
 
     if(!mat_dev)
     {
-        gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(KpointType));
-        int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        gpuMalloc((void **)&mat_dev, num_states * block_size * sizeof(CalType));
+        int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(CalType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+            rmg::error("Memory allocation failure in HmatrixUpdate");
         }
     }
 
@@ -121,28 +162,110 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
     {
         int size_col = std::min(block_size, num_states - j * block_size);
         int size_row = num_states - j * block_size;
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi_dev+ j*block_size*pbasis, pbasis, work_dev + j * block_size * pbasis, 
-                pbasis, beta, mat_dev, size_row);
-        gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(KpointType), gpuMemcpyDeviceToHost);
+        //if(ct.tddft_floatprecision && 0)
+        //{
+        //    hipblasStatus_t hipstat;
+        //    hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transN = HIPBLAS_OP_N;
 
-        BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+        //    if(!strcmp(trans_a, "t")) hip_transA = HIPBLAS_OP_T;
+        //    if(!strcmp(trans_a, "T")) hip_transA = HIPBLAS_OP_T;
+        //    if(!strcmp(trans_a, "c")) hip_transA = HIPBLAS_OP_C;
+        //    if(!strcmp(trans_a, "C")) hip_transA = HIPBLAS_OP_C;
 
-        for(int jst = 0; jst < size_col; jst++)
+
+        //    if(ct.is_gamma)
+        //    {
+        //        float alpha_f = std::real(alpha);
+        //        float beta_f = 0.0;
+        //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+        //                &alpha, psi_dev + j*block_size * pbasis, HIP_R_32F, pbasis, 
+        //                work_dev + j * block_size * pbasis, HIP_R_32F, pbasis, &beta, 
+        //                mat_dev, HIP_R_32F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+        //         // rocblas_gemm_ex(ct.roc_handle, rocblas_operation_transpose, rocblas_operation_none, size_row, size_col, pbasis, 
+        //         //       &alpha_f, psi_dev + j*block_size * pbasis, rocblas_datatype_f32_r, pbasis, 
+        //         //       work_dev + j * block_size * pbasis,  rocblas_datatype_f32_r, pbasis, &beta_f, 
+        //         //       mat_dev1, rocblas_datatype_f32_r, size_row, 
+        //         //       mat_dev, rocblas_datatype_f32_r, size_row, 
+        //         //       rocblas_datatype_f64_r, rocblas_gemm_algo_standard, 0,0);
+        //    }
+        //    else
+        //    {
+        //                  //rocblas_operation_conjugate_
+        //        hipstat =  hipblasGemmEx(ct.gpublas_handle, hip_transA, hip_transN, size_row, size_col, pbasis, 
+        //                &alpha, psi_dev + j*block_size * pbasis, HIP_C_32F, pbasis, 
+        //                work_dev + j * block_size * pbasis, HIP_C_32F, pbasis, &beta, 
+        //                mat_dev, HIP_C_64F, size_row, HIPBLAS_COMPUTE_64F, HIPBLAS_GEMM_DEFAULT);
+        //    }
+        //}
+        //else
         {
+            rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, (psi_dev+ j*block_size*pbasis_noncoll), pbasis_noncoll, (work_dev + j * block_size * pbasis_noncoll), 
+                    pbasis_noncoll, beta, mat_dev, size_row);
+        }
+        gpuMemcpy(global_matrix1, mat_dev,  (size_t)size_row * (size_t)size_col * sizeof(CalType), gpuMemcpyDeviceToHost);
+
+        rmg::block_allreduce(global_matrix1, (size_t)size_row * (size_t)size_col, pct.grid_comm);
+
+        if(ct.tddft_tiledMM)
+        {
+            int numst_pe = num_states/pct.local_comm_npes;
+            for(int jst = 0; jst < size_col; jst++)
+            {
+                if(j * block_size + jst >=pct.local_rank * numst_pe &&
+                        j * block_size + jst < (pct.local_rank+1) * numst_pe )
+                {
+                    for(int ist = 0; ist < size_row; ist++)
+                    {
+                        size_t idx1 = (ist + j * block_size) + (j * block_size + jst) * num_states;
+                        idx1 -= pct.local_rank * numst_pe * num_states;
+                        Aij[idx1] = global_matrix1[jst * size_row + ist];
+
+                    }
+                }
+            }
+
             for(int ist = 0; ist < size_row; ist++)
             {
-                int idx1 = (ist + j * block_size) + (j * block_size + jst) * num_states;
-                int idx2 = (ist + j * block_size) * num_states + (j * block_size + jst);
-                Aij[idx1] = global_matrix1[jst * size_row + ist];
-                Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
+                if(j * block_size + ist >=pct.local_rank * numst_pe &&
+                        j * block_size + ist < (pct.local_rank+1) * numst_pe )
 
+                    for(int jst = 0; jst < size_col; jst++)
+                    {
+                        size_t idx2 = (ist + j * block_size) * num_states + (j * block_size + jst);
+                        idx2 -= pct.local_rank * numst_pe * num_states;
+                        Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
+                    }
+            }
+        }
+        else
+        {
+
+            for(int jst = 0; jst < size_col; jst++)
+            {
+                for(int ist = 0; ist < size_row; ist++)
+                {
+                    int idx1 = (ist + j * block_size) + (j * block_size + jst) * num_states;
+                    int idx2 = (ist + j * block_size) * num_states + (j * block_size + jst);
+                    Aij[idx1] = global_matrix1[jst * size_row + ist];
+                    Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
+
+                }
             }
         }
     }
-
 #else
 
-    int block_size = ct.state_block_size;
+    if(typeid(KpointType) != typeid(CalType))
+    {
+        rmg::error("float precision not programmed with cpu  failure in HmatrixUpdate");
+    }
+    int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
+    int mycol, myrow, nprow, npcol;
+    Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
+
+    KpointType alpha(vel);
+    KpointType beta(0.0);
+    int block_size = mb;
     //block_size = num_states;
     int nblock = (num_states + block_size -1)/block_size;
     // First time through allocate pinned memory for global_matrix1
@@ -151,42 +274,127 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
         int retval1 = MPI_Alloc_mem(num_states * block_size * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
 
         if(retval1 != MPI_SUCCESS) {
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
+            rmg::error("Memory allocation failure in HmatrixUpdate");
         }
 
     }
 
     // V|psi> is in tmp_arrayT
-    KpointType *psi = kptr->orbital_storage + tddft_start_state * pbasis;
-    KpointType *vpsi = &kptr->orbital_storage[kptr->nstates * pbasis];  // use the memory of psi extra 3* state_block_size.
+    KpointType *psi = kptr->orbital_storage + tddft_start_state * pbasis_noncoll;
+    KpointType *vpsi = &kptr->orbital_storage[kptr->nstates * pbasis_noncoll];  // use the memory of psi extra 3* state_block_size.
 
-    for(int j = 0; j < nblock; j++)
+    for(int ib = 0; ib < nblock; ib++)
     {
-        int size_col = std::min(block_size, num_states - j * block_size);
-        int size_row = num_states - j * block_size;
+        int size_col = std::min(block_size, num_states - ib * block_size);
+        int size_row = num_states - ib * block_size;
 
         for (int st1 = 0; st1 < size_col; st1++)
         {
-            for(int idx = 0; idx <pbasis; idx++)
+            for(int idx = 0; idx <pbasis_noncoll; idx++)
             {
-                vpsi[st1 * pbasis + idx] = psi[(j * block_size +st1) * pbasis + idx] * vtot_eig[idx];
+                vpsi[st1 * pbasis_noncoll + idx] = psi[(ib * block_size +st1) * pbasis_noncoll + idx] * vtot_psi[idx];
             } 
         }
-
-        RmgGemm(trans_a, trans_n, size_row, size_col,  pbasis, alpha, psi+j*block_size*pbasis, pbasis, vpsi, 
-                pbasis, beta, global_matrix1, size_row);
-        BlockAllreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
-
-        for(int jst = 0; jst < size_col; jst++)
+        // >>>>????
+        if(ct.noncoll)
         {
+            for (int st1 = 0; st1 < size_col; st1++)
+            {
+                std::complex<double> *vpsi_C = (std::complex<double> *)&vpsi[st1 * pbasis_noncoll];
+                std::complex<double> *psi_C = (std::complex<double> *)&psi[(ib * block_size +st1) * pbasis_noncoll];
+
+                for(int idx = 0; idx <pbasis; idx++)
+                {
+                    vpsi_C[idx] += psi_C[idx] * std::complex<double>(vxc_psi.cz[idx], 0.0);
+                    vpsi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_psi.cx[idx], vxc_psi.cy[idx]);
+                    vpsi_C[idx + pbasis] += - psi_C[idx + pbasis] * std::complex<double>(vxc_psi.cz[idx], 0.0);
+                    vpsi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_psi.cx[idx], -vxc_psi.cy[idx]);
+
+                } 
+            }
+        }
+
+        rmg::gemm(trans_a, trans_n, size_row, size_col,  pbasis_noncoll, alpha, psi+ib*block_size*pbasis_noncoll, pbasis_noncoll, vpsi, 
+                pbasis_noncoll, beta, (KpointType *)global_matrix1, size_row);
+        int factor = sizeof(KpointType)/sizeof(double);
+        rmg::block_allreduce((double *)global_matrix1, (size_t)size_row * (size_t)size_col * (size_t)factor , pct.grid_comm);
+
+        if(ct.tddft_tiledMM)
+        {
+            int numst_pe = num_states/pct.local_comm_npes;
+            for(int jst = 0; jst < size_col; jst++)
+            {
+                if(ib * block_size + jst >=pct.local_rank * numst_pe &&
+                        ib * block_size + jst < (pct.local_rank+1) * numst_pe )
+                {
+                    for(int ist = 0; ist < size_row; ist++)
+                    {
+                        size_t idx1 = (ist + ib * block_size) + (ib * block_size + jst) * num_states;
+                        idx1 -= pct.local_rank * numst_pe * num_states;
+                        Aij[idx1] = global_matrix1[jst * size_row + ist];
+
+                    }
+                }
+            }
+
             for(int ist = 0; ist < size_row; ist++)
             {
-                int idx1 = (ist + j * block_size) + (j * block_size + jst) * num_states;
-                int idx2 = (ist + j * block_size) * num_states + (j * block_size + jst);
-                Aij[idx1] = global_matrix1[jst * size_row + ist];
-                Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
+                if(ib * block_size + ist >=pct.local_rank * numst_pe &&
+                        ib * block_size + ist < (pct.local_rank+1) * numst_pe )
 
+                    for(int jst = 0; jst < size_col; jst++)
+                    {
+                        size_t idx2 = (ist + ib * block_size) * num_states + (ib * block_size + jst);
+                        idx2 -= pct.local_rank * numst_pe * num_states;
+                        Aij[idx2] = MyConj(global_matrix1[jst * size_row + ist]);
+                    }
             }
+        }
+        else
+        {
+            //block_matrix to distHij;
+            if(myrow == ib%nprow)
+            {
+                int istart = (ib/nprow) *nb;
+                for(int jb = ib; jb < nblock; jb++)
+                {
+                    if(mycol == jb%npcol)
+                        //  block (ib,jb) in this processor
+                    {
+                        int this_block_size_row  = std::min(mb, num_states - mb * jb);
+                        int jstart = (jb/npcol) * mb;
+                        for(int i = 0; i < size_col; i++)
+                        {
+                            for(int j = 0; j < this_block_size_row; j++)
+                            {
+                                Aij[(jstart + j) * mxllda + i + istart] =  global_matrix1[ i* size_row + j + (jb-ib) * mb ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(mycol == ib%npcol)
+            {
+                int istart = (ib/npcol) *nb;
+                for(int jb = ib; jb < nblock; jb++)
+                {
+                    if(myrow == jb%nprow)
+                        //  block (jb,ib) in this processor
+                    {
+                        int this_block_size_row  = std::min(mb, num_states - mb * jb);
+                        int jstart = (jb/nprow) * mb;
+                        for(int i = 0; i < size_col; i++)
+                        {
+                            for(int j = 0; j < this_block_size_row; j++)
+                            {
+                                Aij[(istart + i) * mxllda + j + jstart] = MyConj(global_matrix1[ i * size_row + j + (jb-ib) * mb]);
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -195,41 +403,42 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij,
 }
 
 #if CUDA_ENABLED || HIP_ENABLED
-void Veff_x_psi(double *psi_dev,  double *work_dev, double *vtot_eig, int pbasis, int num_states)
+void Veff_x_psi(double *psi_dev,  double *work_dev, double *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
-    static double *v_dev;
-    if(!v_dev)
-    {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(double));
-    }
-    gpuMemcpy(v_dev, vtot_eig,  pbasis * sizeof(double), gpuMemcpyHostToDevice);
-    gstat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis);
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                (double *)psi_dev, pbasis, (double *)v_dev, 1, (double *)work_dev, pbasis));
 }
-void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, double *vtot_eig, int pbasis, int num_states)
+void Veff_x_psi(float *psi_dev,  float *work_dev, float *v_dev, int pbasis, int num_states)
 {
-    gpublasStatus_t gstat;
-    static std::complex<double> *v_dev, *vtot_eig_C;
-    if(!v_dev)
-    {
-        gpuMalloc((void **)&v_dev, pbasis * sizeof(std::complex<double>));
-        vtot_eig_C = new std::complex<double>[pbasis];
-    }
-    for(int i = 0; i < pbasis; i++) vtot_eig_C[i] = vtot_eig[i];
-    gpuMemcpy(v_dev, vtot_eig_C,  pbasis * sizeof(std::complex<double>), gpuMemcpyHostToDevice);
+    rmg::error(gpublasSdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                (float *)psi_dev, pbasis, (float *)v_dev, 1, (float *)work_dev, pbasis));
+}
+void Veff_x_psi(std::complex<double> *psi_dev,  std::complex<double> *work_dev, std::complex<double> *v_dev, int pbasis, int num_states)
+{
 
 #if  HIP_ENABLED
-    gstat = hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            (hipDoubleComplex *)psi_dev, pbasis, (hipDoubleComplex *)v_dev, 1, (hipDoubleComplex *)work_dev, pbasis);
+    rmg::error(hipblasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                (hipDoubleComplex *)psi_dev, pbasis, (hipDoubleComplex *)v_dev, 1, (hipDoubleComplex *)work_dev, pbasis));
 #endif
 #if  CUDA_ENABLED 
-    gstat = cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
-            reinterpret_cast<cuDoubleComplex*>(psi_dev), pbasis,
-            reinterpret_cast<cuDoubleComplex*>(v_dev), 1,
-            reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis);
+    rmg::error(cublasZdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                reinterpret_cast<cuDoubleComplex*>(psi_dev), pbasis,
+                reinterpret_cast<cuDoubleComplex*>(v_dev), 1,
+                reinterpret_cast<cuDoubleComplex*>(work_dev), pbasis));
 #endif
-    RmgGpuError(__FILE__, __LINE__, gstat, "Error performing gpublasDgmm.");
+}
+void Veff_x_psi(std::complex<float> *psi_dev,  std::complex<float> *work_dev, std::complex<float> *v_dev, int pbasis, int num_states)
+{
+#if  HIP_ENABLED
+    rmg::error(hipblasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                (hipFloatComplex *)psi_dev, pbasis, (hipFloatComplex *)v_dev, 1, (hipFloatComplex *)work_dev, pbasis));
+#endif
+#if  CUDA_ENABLED 
+    rmg::error(cublasCdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, pbasis, num_states, 
+                reinterpret_cast<cuFloatComplex*>(psi_dev), pbasis,
+                reinterpret_cast<cuFloatComplex*>(v_dev), 1,
+                reinterpret_cast<cuFloatComplex*>(work_dev), pbasis));
+#endif
 }
 #endif
+

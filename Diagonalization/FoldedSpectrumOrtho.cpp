@@ -28,11 +28,12 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "blas.h"
+#include "blas_driver.h"
 
 
 #include "transition.h"
@@ -68,7 +69,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType beta(0.0);
 
     double *tarr = new double[n];
-    int info = 0;
+    [[maybe_unused]] int info = 0;
     int eig_step = eig_stop - eig_start;
 
     char *trans_t="t", *trans_n="n", *cuplo = "l";
@@ -93,20 +94,20 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 // AMD Symm peformance is absymal right now so use the GEMM
 #if HIP_ENABLED
-            RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
-            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
+            rmg::gemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+            rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
 #else
-            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
-            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n);
+            rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
+            rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n);
 #endif
 
         }
         else {
 
             // split over PE's if n is large enough
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n);
+            rmg::gemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n);
+            rmg::gemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
         }
@@ -116,12 +117,12 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // Cholesky factorization
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
     cudaGetDevice(&device);
     gpuMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
-    DeviceSynchronize();
+    rmg::sync_device();
 
     cusolverStatus_t cu_status;
     int Lwork;
@@ -129,20 +130,20 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     gpuMalloc((void **)&dev_info, sizeof(int));
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     cu_status = cusolverDnDpotrf_bufferSize(ct.cusolver_handle, cu_uplo, n, C, n, &Lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf_bufferSize failed.");
-    if(Lwork > n*n) rmg_error_handler (__FILE__, __LINE__, " something wrong with cusolverDnDpotrf workspace allocation.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDpotrf_bufferSize failed.");
+    if(Lwork > n*n) rmg::error(" something wrong with cusolverDnDpotrf workspace allocation.");
     cu_status = cusolverDnDpotrf(ct.cusolver_handle, cu_uplo, n, C, n, G, Lwork, dev_info );
-    //DeviceSynchronize();
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
+    //rmg::sync_device();
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDpotrf failed.");
     gpuFree(dev_info);
     delete(RT1);
 #elif HIP_ENABLED && MAGMA_LIBS
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
-    DeviceSynchronize();
+    rmg::sync_device();
     int device = -1;
     hipGetDevice(&device);
     gpuMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
-    DeviceSynchronize();
+    rmg::sync_device();
     magma_dpotrf(MagmaLower, n, C, n, &info);		
     delete(RT1);
 #else
@@ -153,13 +154,13 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 
 #if CUDA_ENABLED
-    //DeviceSynchronize();
+    //rmg::sync_device();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     gpuMemPrefetchAsync ( V, n*n*sizeof(double), device, NULL);
     gramsch_update_psi(V, C, n, eig_start, eig_stop, ct.cublas_handle);
     cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, &G[eig_start*n], n);
     cudaMemcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType), cudaMemcpyDefault);
-    DeviceSynchronize();
+    rmg::sync_device();
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");

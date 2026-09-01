@@ -27,7 +27,6 @@ void diaginit (double *aa, int *desca, double *a, int lda);
 void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX, double hx, double hx_old, double x0, double x0_old);
 void distri_fermi (std::complex<double> ene, double EF, std::complex<double> *distri);
 void distribute_to_X_soft (double * distr_array, double * global_array);
-void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum);
 void finalize_gpu (void);
 void find_fermi (std::complex<double> * sigma_all);
 double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, double simpson_tol, int *EP_final, int *energy_insert_index, double *ener1_temp);
@@ -134,10 +133,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz);
 void write_global_data_lead (int file_handle, double *data, int fnx, int fny, int fnz);
 void writeout_matrix_p (void);
-void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
-void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
 void zero_lead_image(double *tri);
-void zgemm_driver (char *transa, char *transb, int m, int n, int k, std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,std::complex<double> *B, int ib, int jb, int *descb, std::complex<double> beta, std::complex<double> *C, int ic, int jc, int *descc);
 void zgesv_driver (std::complex<double> *A, int *desca, std::complex<double> *B, int *descb );
 
 void Sgreen_semi_infinite_p (std::complex<double> * green_host, std::complex<double> *ch00_host,

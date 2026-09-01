@@ -61,7 +61,7 @@
 
 extern double *vh_old, *vxc_old;
 
-void Run (STATE * states, STATE * states1, std::unordered_map<std::string, InputKey *>& ControlMap)
+void Run (STATE * states, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     int size, iprobe, idx_delta, i, j;
     double *vbias;
@@ -90,7 +90,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         delete(RT1);
 
         if (pct.gridpe == 0)
-            rmg_printf ("\nband structrue file: band.dat\n");
+            rmg::printlog ("\nband structrue file: band.dat\n");
     }
     else if (ct.runflag == 110)
     {
@@ -119,19 +119,16 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
 
         RmgTimer *RT3 = new RmgTimer("1-TOTAL: init");
-        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, ControlMap);
+        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, vnuc, vext, vxc, vh_old, vxc_old, ControlMap);
         delete(RT3);
 
         size = 1;
         for (i = 0; i < ct.num_blocks; i++) size = std::max(size, ct.block_dim[i] * ct.block_dim[i]);
         size = std::max(size, ct.num_states * (ct.state_end - ct.state_begin));
 
-        work_matrix = new double[size];
-
-
 
         if (pct.imgpe == 0)
-            rmg_printf ("init_soft is done\n");
+            rmg::printlog ("init_soft is done\n");
 
         if (ct.runflag == 200)
         {
@@ -148,28 +145,6 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             get_dos(states);
             return;
         }
-        if (ct.runflag == 300)
-        {
-
-            RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-            for(int ib = 0; ib < ct.num_blocks; ib++)
-            {
-                LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
-                mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
-                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot, true);
-            }
-            delete(RTk);
-
-
-            get_cond_frommatrix_kyz ();
-            /* it will automatically calculate and plot 3Ddos for each peak */
-            for (i = 0; i < peakNum; i++)
-            {
-                get_3Ddos (states, peaks[i]-0.0002 , peaks[i]+0.0002, 3, i);
-            }
-            return;
-        }
-
 
         /* total energy point = # of poles + ncircle + nmax_gq1 */
 
@@ -237,7 +212,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         if (ct.runflag == 113) apply_potential_drop( vbias );
 
 
-        if(pct.imgpe == 0) rmg_printf (" apply_potential_drop is done :-) \n");
+        if(pct.imgpe == 0) rmg::printlog (" apply_potential_drop is done :-) \n");
 
 
         /*--------------------------------*/
@@ -250,10 +225,10 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
             case MD_QUENCH:            /* Quench the electrons */
                 if (pct.imgpe == 0)
-                    rmg_printf ("\n quench start...\n");
-                QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
+                    rmg::printlog ("\n quench start...\n");
+                QuenchNegf (states, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
                 if (pct.imgpe == 0)
-                    rmg_printf ("\n quench done...\n");
+                    rmg::printlog ("\n quench done...\n");
 
                 break;
 
@@ -281,7 +256,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
         MPI_Barrier(pct.img_comm);
         if (pct.imgpe == 0)
-            rmg_printf ("\n Run done...\n");
+            rmg::printlog ("\n Run done...\n");
         fflush (NULL);
 
         MPI_Barrier(pct.img_comm);

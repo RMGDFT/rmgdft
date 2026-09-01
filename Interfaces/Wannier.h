@@ -30,7 +30,7 @@
 #include <set>
 #include <complex>
 #include <mutex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "Symmetry.h"
 #include "Exxbase.h"
@@ -56,10 +56,10 @@ public:
 template <typename T> class Wannier {
 
 private:
-    // BaseGrid class (distributed) and half grid
+    // rmg::grid class (distributed) and half grid
 
     Exxbase<T> *Exx;
-    BaseGrid &G;
+    rmg::grid &G;
 
     // Lattice object
     Lattice &L;
@@ -105,7 +105,7 @@ private:
 
 public:
     Wannier (
-            BaseGrid &G, 
+            rmg::grid &G, 
             Lattice &L, 
             const std::string &wavefile,
             int nstates,

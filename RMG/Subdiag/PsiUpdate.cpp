@@ -28,15 +28,16 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 #include "blacs.h"
 #include "RmgMatrix.h"
 #include "Functional.h"
+#include "rmg_hvector.h"
 
 
 #include "common_prototypes.h"
@@ -67,14 +68,8 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
     // Begin rotation
     //
     char *trans_n = "n";
-    KpointType *block_matrix;
 
-
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    block_matrix = (KpointType *)GpuMallocHost( nb * nstates * sizeof(KpointType));
-#else
-    block_matrix = new KpointType[nstates * nb];
-#endif
+    rmg::hvector<KpointType> block_matrix(nb*nstates);
 
     int num_blocks = (nstates + nb -1)/nb;
 
@@ -104,7 +99,7 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
             }
         }
 
-        BlockAllreduce(block_matrix, size_mat, pct.grid_comm);
+        rmg::block_allreduce(block_matrix.data(), size_mat, pct.grid_comm);
 //        if(pct.imgpe == 0 && pct.gridpe == 0) 
 //            for(int i = 0; i < this_block_size_row; i++)
 //                for(int j = 0; j < nstates; j++) printf("\n %d %d %f eee", i+ib*nb, j,block_matrix[i*nstates + j]); 
@@ -115,17 +110,11 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 
 
         RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
-        RmgGemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
-                psi_dev, pbasis_noncoll, block_matrix, nstates, 
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha, 
+                psi_dev, pbasis_noncoll, block_matrix.data(), nstates, 
                 beta, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll);
         delete RT1;
 
     }
-
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    GpuFreeHost(block_matrix);
-#else
-    delete [] block_matrix;
-#endif
 
 }

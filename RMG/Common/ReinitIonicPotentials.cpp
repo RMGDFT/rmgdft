@@ -26,7 +26,8 @@
 #include "typedefs.h"
 #include "Kpoint.h"
 #include "Atomic.h"
-#include "ErrorFuncs.h"
+#include "Functional.h"
+
 #include "GpuAlloc.h"
 #include "transition.h"
 
@@ -50,6 +51,11 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
         InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
         InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+        if(ct.xc_is_meta)
+        {
+            InitLocalObject (Functional::tau_core, dum_array, TAU_CORE, false);
+            InitLocalObject (Functional::tau_atomic, dum_array, TAU_ATOMIC, false);
+        }
     }
     else
     {
@@ -57,6 +63,11 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         InitDelocalizedObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
         // For delocalized rhoc is zero
         for(int ix=0;ix < FP0_BASIS;ix++) rhoc[ix] = 0.0;
+        if(ct.xc_is_meta)
+        {
+            InitDelocalizedObject (Functional::tau_core, dum_array, TAU_CORE, false);
+            InitDelocalizedObject (Functional::tau_atomic, dum_array, TAU_ATOMIC, false);
+        }
     }
 
     delete RT1;

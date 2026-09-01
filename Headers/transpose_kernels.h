@@ -1,3 +1,4 @@
+#pragma once
 /*  This file is part of cuTranspose.
 
     cuTranspose is free software: you can redistribute it and/or modify

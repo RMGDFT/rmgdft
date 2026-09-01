@@ -27,6 +27,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
+#include "rmg_sum_all.h"
 #include "AtomicInterpolate.h"
 #include "transition.h"
 #include "Atomic.h"
@@ -116,6 +117,14 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                         }
                         break;
 
+                    case TAU_ATOMIC:
+                        t1 = AtomicInterpolateInline_Ggrid(sp->tau_atomic_g, gval);
+                        break;
+
+                    case TAU_CORE:
+                        t1 = AtomicInterpolateInline_Ggrid(sp->tau_core_g, gval);
+                        break;
+
                     default:
                         throw RmgFatalException() << "Undefined local object type" << 
                             " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -186,7 +195,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     if(object_type == ATOMIC_RHO) {
         double t2 = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
-        t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
+        t2 = get_vel_f() *  rmg::sum_all<double> (t2, pct.grid_comm);
         double t1 = ct.nel / t2;
         double difference = fabs(t1 - 1.0);
         if ((ct.verbose == 1) || (difference > 0.05))
@@ -208,7 +217,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         for (int idx = 0; idx < FP0_BASIS; idx++) ct.crho += sumobject[idx];
 
         ct.crho = ct.crho * get_vel_f();
-        ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
+        ct.crho = rmg::sum_all<double> (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
         if (ct.verbose)
         {

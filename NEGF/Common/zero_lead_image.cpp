@@ -59,8 +59,8 @@ void  zero_lead_image(double *tri)
                 }
                 else
                 {
-                    rmg_printf("\n two probes at the same block must be one even and one odd \n");
-                    rmg_printf("\n iprobe = %d, jprobe = %d\n", iprobe, jprobe);
+                    rmg::printlog("\n two probes at the same block must be one even and one odd \n");
+                    rmg::printlog("\n iprobe = %d, jprobe = %d\n", iprobe, jprobe);
 
                     exit(0);
                 }

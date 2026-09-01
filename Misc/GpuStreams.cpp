@@ -43,7 +43,7 @@ hipStream_t getGpuStream(void)
     if(!T->streams[tid])
     {
         gpuSetDevice(ct.hip_dev);
-        hipStreamCreateWithFlags(&T->streams[tid], hipStreamNonBlocking);
+        rmg::error(hipStreamCreateWithFlags(&T->streams[tid], hipStreamNonBlocking));
     }
     return T->streams[tid];
 }
@@ -60,8 +60,8 @@ cudaStream_t getGpuStream(void)
     if(tid < 0) tid = 0;
     if(!T->streams[tid])
     {
-        cudaSetDevice(ct.cu_dev);
-        cudaStreamCreateWithFlags(&T->streams[tid], cudaStreamNonBlocking);
+        rmg::error(cudaSetDevice(ct.cu_dev));
+        rmg::error(cudaStreamCreateWithFlags(&T->streams[tid], cudaStreamNonBlocking));
     }
     return T->streams[tid];
 }

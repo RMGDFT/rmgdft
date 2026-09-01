@@ -45,25 +45,25 @@ void write_tfions(void)
     TF_ION *iptr;
 
 
-    rmg_printf("\n\n\n  Simplified water model:\n");
-    rmg_printf("\n\n\n  TF IONIC POSITIONS AND PARAMETERS:\n");
+    rmg::printlog("\n\n\n  Simplified water model:\n");
+    rmg::printlog("\n\n\n  TF IONIC POSITIONS AND PARAMETERS:\n");
 
 
-    rmg_printf("\n          X           Y           Z           q          alpha       q0        alpha0");
+    rmg::printlog("\n          X           Y           Z           q          alpha       q0        alpha0");
 
     for (ion = 0; ion < ct.num_tfions; ion++)
     {
 
         iptr = &ct.tf_ions[ion];
 
-        rmg_printf("\n   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
+        rmg::printlog("\n   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
                iptr->crds[0], iptr->crds[1], iptr->crds[2],
                iptr->q, iptr->alpha,
                iptr->q0, iptr->alpha0);
 
     }                           /* end for */
 
-    rmg_printf("\n");
+    rmg::printlog("\n");
 
 }                               /* end write_pos */
 

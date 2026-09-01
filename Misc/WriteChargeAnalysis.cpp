@@ -8,8 +8,8 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "RmgSumAll.h"
-#include "GlobalSums.h"
+#include "rmg_sum_all.h"
+#include "rmg_reduce.h"
 #include "boundary_conditions.h"
 
 
@@ -27,17 +27,17 @@ void WriteChargeAnalysis(void)
 
 
 
-    rmg_printf ("\n\n");
+    rmg::printlog ("\n\n");
 
     /*Get atomic charge density*/
     switch (ct.charge_analysis_type)
     {
 	case CHARGE_ANALYSIS_NONE:
-	    rmg_printf("No charge analysis performed (should not happen)");
+	    rmg::printlog("No charge analysis performed (should not happen)");
 	    break;
 
 	case CHARGE_ANALYSIS_VORONOI:
-	    rmg_printf("VORONOI DEFORMATION DENSITY");
+	    rmg::printlog("VORONOI DEFORMATION DENSITY");
 	    break;
 
 	default :
@@ -45,8 +45,8 @@ void WriteChargeAnalysis(void)
     }
 
 
-    rmg_printf (" PARTIAL CHARGES \n\n");
-    rmg_printf("      Ion  Species      Charge\n");
+    rmg::printlog (" PARTIAL CHARGES \n\n");
+    rmg::printlog("      Ion  Species      Charge\n");
 
     for (i = 0; i < ct.num_ions; i++)
     {
@@ -54,7 +54,7 @@ void WriteChargeAnalysis(void)
 	iptr = &Atoms[i];
 	sp = &Species[iptr->species];
 
-	rmg_printf("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, iptr->partial_charge); 
+	rmg::printlog("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, iptr->partial_charge); 
 
     }
 

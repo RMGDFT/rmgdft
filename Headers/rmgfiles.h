@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_rmgfiles_h
 #define RMG_rmgfiles_h
 

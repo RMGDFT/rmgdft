@@ -27,13 +27,13 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 
 #include "common_prototypes.h"
@@ -55,7 +55,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 {
 
 #if !MAGMA_LIBS
-    rmg_printf("This version of RMG was not built with Magma. Redirecting to LAPACK.");
+    rmg::printlog("This version of RMG was not built with Magma. Redirecting to LAPACK.");
     return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
@@ -80,13 +80,13 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     {
         DiagTimer = new RmgTimer("4-Diagonalization: magma folded");
         folded_call_count++;
-        rmg_printf("\nDiagonalization using folded magma for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+        rmg::printlog("\nDiagonalization using folded magma for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
     }
     else
     {
         DiagTimer = new RmgTimer("4-Diagonalization: magma");
         call_count++;
-        rmg_printf("\nDiagonalization using magma for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+        rmg::printlog("\nDiagonalization using magma for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
 fflush(NULL);
     }
     

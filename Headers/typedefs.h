@@ -1,3 +1,4 @@
+#pragma once
 /*** QMD-MGDFT/main.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
@@ -206,32 +207,32 @@ typedef struct
  *  It is used to hold info needed by multiple branches of the code
  *  while the Kpoint class is used primarily by the base branch
 */
-typedef struct
+struct KSTRUCT
 {
 
     /** The index of the k-point for backreferencing */
-    int kidx;
+    int kidx=0;
 
     /** The k-point */
-    double kpt[3];
+    double kpt[3]{};
 
     /** The corresponding vector */
-    double kvec[3];
+    double kvec[3]{};
 
     /** The weight associated with the k-point */
-    double kweight;
+    double kweight=0.0;
 
     /** The magnitude of the k-vector */
-    double kmag;
+    double kmag=0.0;
     
-    char symbol[10];
+    char symbol[10]{};
     std::vector<double> eigs;
 
     /* The orbital structure for this k-point */
     /* Need to get rid of this but still required in a few places */
-    STATE *kstate;
+    STATE *kstate = NULL;
 
-} KSTRUCT;
+};
 
 /* multigrid-parameter structure */
 typedef struct

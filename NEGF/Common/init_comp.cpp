@@ -45,7 +45,7 @@ void init_comp (double *vh)
     if (pct.gridpe == 0)
     {
 
-        rmg_printf(" Begin init_comp ...\n");
+        rmg::printlog(" Begin init_comp ...\n");
 
     }                           /* end if */
 
@@ -77,22 +77,22 @@ void init_comp (double *vh)
 
     /* Now sum over all processors */
     ix = get_FNX_GRID();
-    global_sums(zvec, &ix, pct.grid_comm);
+    rmg::allreduce(zvec, ix, pct.grid_comm);
 
 
-    rmg_printf(" vcomp_Lbegin = %d  and vcomp_Lend = %d  on FINE GRID \n", lb, le);   
-    rmg_printf(" vcomp_Rbegin = %d  and vcomp_Rend = %d  on FINE GRID \n", rb, re);   
-    rmg_printf(" vcomp_Lbegin = %d  and vcomp_Lend = %d  on coarse GRID \n", ct.vcomp_Lbegin, ct.vcomp_Lend);   
-    rmg_printf(" vcomp_Rbegin = %d  and vcomp_Rend = %d  on coarse GRID \n", ct.vcomp_Rbegin, ct.vcomp_Rend);   
+    rmg::printlog(" vcomp_Lbegin = %d  and vcomp_Lend = %d  on FINE GRID \n", lb, le);   
+    rmg::printlog(" vcomp_Rbegin = %d  and vcomp_Rend = %d  on FINE GRID \n", rb, re);   
+    rmg::printlog(" vcomp_Lbegin = %d  and vcomp_Lend = %d  on coarse GRID \n", ct.vcomp_Lbegin, ct.vcomp_Lend);   
+    rmg::printlog(" vcomp_Rbegin = %d  and vcomp_Rend = %d  on coarse GRID \n", ct.vcomp_Rbegin, ct.vcomp_Rend);   
    
     delta_v1 = zvec[lb - 2] - zvec[lb];
     delta_v2 = zvec[lb - 2] - zvec[le];
     delta_v3 = zvec[re + 1] - zvec[rb];
     delta_v4 = zvec[re + 1] - zvec[re - 1];
-    rmg_printf(" delta_v1  = %f \n", delta_v1);   
-    rmg_printf(" delta_v2  = %f \n", delta_v2);   
-    rmg_printf(" delta_v3  = %f \n", delta_v3);   
-    rmg_printf(" delta_v4  = %f \n", delta_v4);   
+    rmg::printlog(" delta_v1  = %f \n", delta_v1);   
+    rmg::printlog(" delta_v2  = %f \n", delta_v2);   
+    rmg::printlog(" delta_v3  = %f \n", delta_v3);   
+    rmg::printlog(" delta_v4  = %f \n", delta_v4);   
 
     v_reference = 0;
     for (i = 0; i < lb; i++)
@@ -145,7 +145,7 @@ void init_comp (double *vh)
         }                       /* end for */
 
 
-	rmg_printf("x_locate = %5d      vcomp  = %10.7f \n ", x_locate, v_comp );
+	rmg::printlog("x_locate = %5d      vcomp  = %10.7f \n ", x_locate, v_comp );
 
     }                           /* end for */
 
@@ -154,7 +154,7 @@ void init_comp (double *vh)
     if (pct.gridpe == 0)
     {
 
-        rmg_printf(" init_comp done\n");
+        rmg::printlog(" init_comp done\n");
 
     }                           /* end if */
 

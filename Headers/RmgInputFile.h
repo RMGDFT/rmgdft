@@ -1,3 +1,4 @@
+#pragma once
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <iostream>

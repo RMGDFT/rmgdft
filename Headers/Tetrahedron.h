@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright 2023 The RMG Project Developers. See the COPYRIGHT file 
@@ -27,7 +28,7 @@
 #include <vector>
 #include <cstdint>
 #include "rmgtypedefs.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "Kpoint.h"
 #include <boost/multi_array.hpp>

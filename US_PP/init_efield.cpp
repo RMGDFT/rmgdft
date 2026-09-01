@@ -34,14 +34,12 @@
 void init_efield (double * vnuc, double efield[3])
 {
 
-    double norm_field_0;
     int ix, iy, iz;
     int jx, jy, jz;
     int idx;
     int incix, inciy;
     double xoff, yoff, zoff;
     double rx, ry, rz;
-    double d_field;
     double hxxgrid, hyygrid, hzzgrid;
 
     hxxgrid = get_hxxgrid();
@@ -50,9 +48,9 @@ void init_efield (double * vnuc, double efield[3])
 
 
     /* normalization of the electric field direction */
-	    rmg_printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
-	    rmg_printf ("\n ====================================== \n");
-	    rmg_printf ("\n Electric Field: (%12.8f, %12.8f, %12.8f) Ha/bohr\n",
+	    rmg::printlog ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
+	    rmg::printlog ("\n ====================================== \n");
+	    rmg::printlog ("\n Electric Field: (%12.8f, %12.8f, %12.8f) Ha/bohr\n",
 		    efield[0], efield[1], efield[2]);
     /* find the cartesian coordinate of the corner */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);

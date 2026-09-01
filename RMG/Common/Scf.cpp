@@ -33,6 +33,7 @@
 #include "Functional.h"
 #include "GridObject.h"
 #include "BerryPhase.h"
+#include "Solvers.h"
 
 
 
@@ -80,7 +81,7 @@ template <typename OrbitalType> bool Scf (
         double dipole[3];
         get_dipole(rho.data(), rhoc.data(),dipole);
         //get_dipole(rho.data(),dipole);
-        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+        rmg::printlog("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  vh_dipole_corr.data());
     }
     else
@@ -145,15 +146,15 @@ template <typename OrbitalType> bool Scf (
     vh_in = vh;
 
     if(std::isnan(ct.rms))
-        rmg_error_handler(__FILE__, __LINE__, "NaN encountered in computational stream. Terminating.\n");
+        rmg::error("NaN encountered in computational stream. Terminating.\n");
 
     if (ct.scf_steps)
     {
-        //rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
+        //rmg::printlog("scf check: <rho dv>   = %8.2e\n", t[0]);
         RMSdV.emplace_back(t[1]);
         if(ct.poisson_solver == MULTIGRID_SOLVER) 
-            rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
-        rmg_printf("average potential <V> = %8.2e\n", t[2]);
+            rmg::printlog("hartree residual      = %8.2e\n", hartree_residual);
+        rmg::printlog("average potential <V> = %8.2e\n", t[2]);
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
@@ -190,6 +191,12 @@ template <typename OrbitalType> bool Scf (
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
                 Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                // For tddft CVE on the first step make sure we have a good starting point
+                if(ct.forceflag == TDDFT_CVE && ct.md_steps < 1)
+                {
+                    Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                    Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
+                }
                 delete RT1;
             }
             else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {
@@ -300,9 +307,9 @@ template <typename OrbitalType> bool Scf (
         fflush(NULL);
     }
 
-    rmg_printf ("\n");
+    rmg::printlog ("\n");
     //progress_tag ();
-    rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
+    rmg::printlog ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
 
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
@@ -494,9 +501,9 @@ template <typename OrbitalType> bool Scf (
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
         if(ct.scf_steps && (max_unocc_res < ct.gw_threshold)) {
-            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
-            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
-            //            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+            rmg::printlog("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
+            rmg::printlog("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
+            //            rmg::printlog("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
 
             CONVERGED = true;
         }

@@ -181,6 +181,65 @@ void spinobj<T>::get_oppo(void)
     get_rho_oppo(this->up.data(), this->dw.data());
 }
 
+template<typename T>
+wf_spinobj<T>::wf_spinobj(void) : GridObject<T>(1)
+{
+    this->allocate(ct.nspin);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
+    // We don't define the 4 component names for the spin polarized case. This
+    // will cause an error if someone tries to use them like this which is fine.
+    if(this->factor == 4)
+    {
+        c0 = std::span(this->data_, this->pbasis);
+        cx = std::span(this->data_ + this->pbasis, this->pbasis);
+        cy = std::span(this->data_ + 2*this->pbasis, this->pbasis);
+        cz = std::span(this->data_ + 3*this->pbasis, this->pbasis);
+    }
+}
+template<typename T>
+wf_spinobj<T>::wf_spinobj(T *data_ptr) : GridObject<T>(1)
+{
+    this->allocate(ct.nspin, data_ptr);
+    if(ct.nspin == 1)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_, this->pbasis);
+    }
+    if(ct.nspin >= 2)
+    {
+        up = std::span(this->data_, this->pbasis);
+        dw = std::span(this->data_ + this->pbasis, this->pbasis);
+    }
+    // We don't define the 4 component names for the spin polarized case. This
+    // will cause an error if someone tries to use them like this which is fine.
+    if(this->factor == 4)
+    {
+        c0 = std::span(this->data_, this->pbasis);
+        cx = std::span(this->data_ + this->pbasis, this->pbasis);
+        cy = std::span(this->data_ + 2*this->pbasis, this->pbasis);
+        cz = std::span(this->data_ + 3*this->pbasis, this->pbasis);
+    }
+}
+template<typename T>
+wf_spinobj<T>::~wf_spinobj(void)
+{
+}
+
+template<typename T>
+void wf_spinobj<T>::get_oppo(void)
+{
+    if(this->factor != 2) return;
+    get_rho_oppo(this->up.data(), this->dw.data());
+}
 // Instantiate all versions
 template GridObject<float>::GridObject(int);
 template GridObject<double>::GridObject(int);
@@ -256,8 +315,22 @@ template spinobj<float>::~spinobj(void);
 template spinobj<double>::~spinobj(void);
 template spinobj<std::complex<float>>::~spinobj(void);
 template spinobj<std::complex<double>>::~spinobj(void);
-
 template void spinobj<double>::get_oppo(void);
+
+template wf_spinobj<float>::wf_spinobj(void);
+template wf_spinobj<double>::wf_spinobj(void);
+template wf_spinobj<float>::wf_spinobj(float *);
+template wf_spinobj<double>::wf_spinobj(double *);
+template wf_spinobj<std::complex<float>>::wf_spinobj(void);
+template wf_spinobj<std::complex<double>>::wf_spinobj(void);
+template wf_spinobj<std::complex<float>>::wf_spinobj(std::complex<float> *);
+template wf_spinobj<std::complex<double>>::wf_spinobj(std::complex<double> *);
+template wf_spinobj<float>::~wf_spinobj(void);
+template wf_spinobj<double>::~wf_spinobj(void);
+template wf_spinobj<std::complex<float>>::~wf_spinobj(void);
+template wf_spinobj<std::complex<double>>::~wf_spinobj(void);
+template void wf_spinobj<double>::get_oppo(void);
+
 //template void spinobj<std::complex<float>>::get_oppo(void);
 //template void spinobj<std::complex<double>>::get_oppo(void);
 //template void spinobj<float>::get_oppo(void);

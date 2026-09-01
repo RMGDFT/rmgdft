@@ -25,7 +25,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Symmetry.h"
 #include "rmg_error.h"
 #include "Dos.h"

@@ -27,6 +27,7 @@
  * 
 */
 
+#pragma once
 
 #ifndef RMG_ERROR_H
 #define RMG_ERROR_H 1
@@ -34,13 +35,59 @@
 #if __cplusplus
 #include <cstdio>
 #include <mpi.h>
+#include <source_location>
 
-void rmg_error_handler(const char *filename, int line, char const *message);
-void RmgErrorSetPrint(int doprint);
-void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message));
 
-#else
-void rmg_error_handler(char *message);
+#if HIP_ENABLED
+#include <hip/hip_runtime_api.h>
+#include <hipblas/hipblas.h>
+#include <rocblas/rocblas.h>
+    #if USE_NCCL
+    #include "rccl/rccl.h"
+    #endif
+#endif
+
+
+#if CUDA_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+    #if USE_NCCL
+    #include "nccl.h"
+        #if NCCL_VERSION_CODE >= NCCL_VERSION(2,28,0)
+        #include "nccl_device.h"
+        #endif
+    #endif
+#endif
+
+
+namespace rmg
+{
+    void error(char const *message, std::source_location loc = std::source_location::current());
+    void error_set_print(int doprint);
+    void writefile(int fd, const void *buf, ssize_t count, std::source_location loc = std::source_location::current());
+    void readfile(int fd, void *buf, ssize_t count, std::source_location loc = std::source_location::current());
+
+#if CUDA_ENABLED
+    void error(cublasStatus_t custat, std::source_location loc = std::source_location::current());
+    void error(cudaError_t custat, std::source_location loc = std::source_location::current());
+    void error(cusolverStatus_t custat, std::source_location loc = std::source_location::current());
+    void error(CUresult custat, std::source_location loc = std::source_location::current());
+#endif
+
+#if HIP_ENABLED
+    void error(hipblasStatus_t hipstat, std::source_location loc = std::source_location::current());
+    void error(hipError_t hipstat, std::source_location loc = std::source_location::current());
+    void error(rocblas_status rocstat, std::source_location loc = std::source_location::current());
+#endif
+#if USE_NCCL
+    void error(ncclResult_t nccl_res, std::source_location loc = std::source_location::current());
+#endif
+
+
+}
+
 #endif
 
 

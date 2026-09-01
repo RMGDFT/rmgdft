@@ -1,3 +1,4 @@
+#pragma once
 /*** QMD-MGDFT/main.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
@@ -69,7 +70,7 @@
 /* include scalapack wrapper */
 #include "Scalapack.h"
 
-/* Header file for blas routines */
+/* Header file for blas routines and rmg drivers */
 #include "blas.h"
 
 
@@ -85,8 +86,6 @@
 #include "typedefs.h"
 
 
-#include "lbfgs.h"
-
 /* Trade images and finite differencing stuff */
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -94,8 +93,6 @@
 /* Prototypes for function calls*/
 #include "common_prototypes.h" 
 #include "common_prototypes1.h" 
-
-#include "rmg_xc.h"
 
 // Boundary condition flags
 #include "boundary_conditions.h"

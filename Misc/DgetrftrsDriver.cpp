@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -36,36 +36,34 @@
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
 
-    int info = 0;
-
     int *d_Ipiv = nullptr; /* pivoting sequence */
     int *d_info = nullptr; /* error info */
 
     int lwork = 0;            /* size of workspace */
     double *d_work = nullptr; /* device workspace for getrf */
 
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
 
     /* query working space of getrf */
-    Cusolver_status(cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, A, n, &lwork));
+    rmg::error(cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, A, n, &lwork));
 
-    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork));
+    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork));
 
     /*  LU factorization */
-    Cusolver_status(cusolverDnDgetrf(ct.cusolver_handle, n, n, A, n, d_work, d_Ipiv, d_info));
+    rmg::error(cusolverDnDgetrf(ct.cusolver_handle, n, n, A, n, d_work, d_Ipiv, d_info));
 
 
     /*
      *  solve A*X = B
      */
-    Cusolver_status(cusolverDnDgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
+    rmg::error(cusolverDnDgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
                                         A, n, d_Ipiv, B, n, d_info));
 
     /* free resources */
-    Cuda_error(cudaFree(d_Ipiv));
-    Cuda_error(cudaFree(d_info));
-    Cuda_error(cudaFree(d_work));
+    rmg::error(cudaFree(d_Ipiv));
+    rmg::error(cudaFree(d_info));
+    rmg::error(cudaFree(d_work));
 
 }
 
@@ -75,33 +73,30 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg_error_handler (__FILE__, __LINE__, " dgestrs  not programmed.");
+    rmg::error(" dgestrs  not programmed.");
 }
 #else
 #include <rocsolver/rocsolver.h>
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
+    int info;
     rocblas_status status;
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
-    int info;
-    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
-    const rocblas_fill uplo = rocblas_fill_lower;
-    const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&ipiv, sizeof(int)*n ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&ipiv, sizeof(int)*n);
 
     status = rocsolver_dgetrf(ct.roc_handle, n, n, A, n, ipiv, devInfo);
 
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrf failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrf failed.");
 
 
     status = rocsolver_dgetrs(ct.roc_handle, rocblas_operation_none, n, m, A, n, ipiv, B, n);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrs failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrs failed.");
 
     gpuFree(devInfo);
     gpuFree(ipiv);
@@ -113,7 +108,7 @@ void DgetrftrsDriver(int n, int m, double *A, double *B)
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg_error_handler (__FILE__, __LINE__, " dgetrs not programmed.");
+    rmg::error(" dgetrs not programmed.");
 
 }
 #endif

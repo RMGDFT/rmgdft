@@ -2,7 +2,8 @@
 description="Si bulk"
 test_energy = "-31.58006638"
 test_energy_tolerance = "5.0e-7"
-
+use_block_diag="true"
+#verbose="true"
 #spin_polarization="true"
 
 # The normal process is to set thread counts via environment variables
@@ -82,20 +83,14 @@ calculation_mode="Quench Electrons"
 
 #atomic_orbital_type = "localized"
 
-#kohn_sham_solver="multigrid"
-kohn_sham_solver="davidson"
-subdiag_driver="lapack"
-charge_mixing_type = "Broyden"
-#charge_mixing_type = "Pulay"
-#charge_mixing_type = "Linear"
-charge_density_mixing = "0.5"
-kohn_sham_mucycles = "3"
+kohn_sham_solver="multigrid"
+#kohn_sham_solver="davidson"
+subdiag_driver="scalapack"
 max_scf_steps="100"
-potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
+#energy_convergence_criterion="1.0e-9"
 #rms_convergence_criterion = "1.0e-10"
 
 #atomic_coordinate_type="Absolute"

@@ -50,17 +50,17 @@ void interpolation_orbit (STATE * states)
     hx_new = get_hxgrid() * get_xside();
     hy_new = get_hygrid() * get_yside();
 
-    max_orbit_nx_ny = rmg_max(ct.max_orbit_nx, ct.max_orbit_ny);
+    max_orbit_nx_ny = std::max(ct.max_orbit_nx, ct.max_orbit_ny);
     my_malloc_init( psi_old, max_orbit_nx_ny, double );
     my_malloc_init( psi_new, max_orbit_nx_ny, double );
 
 #if 	LDEBUG
-    rmg_printf ("\n PE: %d  xside %f  %f %f  ", pct.gridpe, lcr[1].xside, lcr[0].xside, lcr[2].xside);
-    rmg_printf ("\n PE: %d  x_shift %f  %f %f  ", pct.gridpe, lcr[1].x_shift, lcr[0].x_shift,
+    rmg::printlog ("\n PE: %d  xside %f  %f %f  ", pct.gridpe, lcr[1].xside, lcr[0].xside, lcr[2].xside);
+    rmg::printlog ("\n PE: %d  x_shift %f  %f %f  ", pct.gridpe, lcr[1].x_shift, lcr[0].x_shift,
             lcr[2].x_shift);
-    rmg_printf ("\n PE: %d  get_NX_GRID() %d  %d %d  ", pct.gridpe, lcr[1].NX_GRID, lcr[0].NX_GRID,
+    rmg::printlog ("\n PE: %d  get_NX_GRID() %d  %d %d  ", pct.gridpe, lcr[1].NX_GRID, lcr[0].NX_GRID,
             lcr[2].NX_GRID);
-    rmg_printf ("\n PE: %d  num_states %d  %d %d  ", pct.gridpe, lcr[1].num_states, lcr[0].num_states,
+    rmg::printlog ("\n PE: %d  num_states %d  %d %d  ", pct.gridpe, lcr[1].num_states, lcr[0].num_states,
             lcr[2].num_states);
 #endif
 
@@ -77,7 +77,7 @@ void interpolation_orbit (STATE * states)
         iymin_new = states[st].iymin;
         iymin_old = states[st].iymin_old;
 
-       /* rmg_printf ("\n %d %d %d st ixmn\n", st, ixmin, ixmin_old);*/
+       /* rmg::printlog ("\n %d %d %d st ixmn\n", st, ixmin, ixmin_old);*/
         x1_new = ixmin_new * hx_new;
         y1_new = iymin_new * hy_new;
 
@@ -155,7 +155,7 @@ lcr[idx0].x_shift);
 */
 /*
                         if(idx0 == 0 || idx0 == 3 || idx0 == 4)
-                        rmg_printf (" old_urgent %d %d %f %f %d %f %d %f\n", st, idx0, 
+                        rmg::printlog (" old_urgent %d %d %f %f %d %f %d %f\n", st, idx0, 
                                        hy_old, hy_new, iymin_old, y1_old, iymin_new, y1_new);
 */
 
@@ -172,7 +172,7 @@ lcr[idx0].x_shift);
                                 }
 /*
                                 if(pct.gridpe ==0) 
-                                rmg_printf (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
+                                rmg::printlog (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
 */
                                 diff_hx_interpolation (st, psi_new, psi_old, NY, hy_new, hy_old, y1_new, y1_old); 
 
@@ -182,7 +182,7 @@ lcr[idx0].x_shift);
                                     states[st].psiR[idx1] = psi_new[iy];
 /*
                                     if(pct.gridpe ==0) 
-                                    rmg_printf (" urgent %f %f \n", psi_old[iy], psi_new[iy]);
+                                    rmg::printlog (" urgent %f %f \n", psi_old[iy], psi_new[iy]);
 */
                                 }
                             }
@@ -191,7 +191,7 @@ lcr[idx0].x_shift);
                     } 
                     else
                     {
-                        rmg_error_handler (__FILE__, __LINE__, " WARNING: Code may need to modify for num_probe > 4 ");
+                        rmg::error(" WARNING: Code may need to modify for num_probe > 4 ");
                     }
 
 
@@ -202,7 +202,7 @@ lcr[idx0].x_shift);
 
 
 #if 	LDEBUG
-        rmg_printf ("\n %d %f %f state x x  %d ixmin_old %d  hx_old %f", st, x1, x1_old, ixmin,
+        rmg::printlog ("\n %d %f %f state x x  %d ixmin_old %d  hx_old %f", st, x1, x1_old, ixmin,
                 ixmin_old, hx_old);
         fflush (NULL);
 #endif
@@ -214,6 +214,6 @@ lcr[idx0].x_shift);
     my_free(psi_new);
 
     MPI_Barrier(pct.img_comm);
-    if (pct.gridpe == 0) rmg_printf ("\n interpolation_orbit  is done! ");
+    if (pct.gridpe == 0) rmg::printlog ("\n interpolation_orbit  is done! ");
 
 }

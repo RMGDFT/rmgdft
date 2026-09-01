@@ -19,11 +19,11 @@ void RmgMemcpy(void *A_dest, void *A_source, size_t a_size)
 {
     if(A_dest == A_source) return;
 #if CUDA_ENABLED
-        cudaMemcpy(A_dest, A_source, a_size, cudaMemcpyDefault);
+        rmg::error(cudaMemcpy(A_dest, A_source, a_size, cudaMemcpyDefault));
 #elif SYCL_ENABLED
         gpuMemcpy(A_dest, A_source, a_size, gpuMemcpyHostToDevice);
 #elif HIP_ENABLED
-        hipMemcpy(A_dest, A_source, a_size, hipMemcpyDefault);
+        rmg::error(hipMemcpy(A_dest, A_source, a_size, hipMemcpyDefault));
 #else
        memcpy(A_dest, A_source, a_size); 
 #endif 
@@ -38,11 +38,11 @@ void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device)
     if(ct.tddft_gpu)
     {
 #if CUDA_ENABLED
-        cudaMemcpy(A_device, A_host, a_size, cudaMemcpyDefault);
+        rmg::error(cudaMemcpy(A_device, A_host, a_size, cudaMemcpyDefault));
 #elif SYCL_ENABLED
         gpuMemcpy(A_device, A_host, a_size, gpuMemcpyHostToDevice);
 #elif HIP_ENABLED
-        hipMemcpyHtoD(A_device, A_host, a_size );
+        rmg::error(hipMemcpyHtoD(A_device, A_host, a_size ));
 #endif 
     }
     else
@@ -60,11 +60,11 @@ void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host)
     if(ct.tddft_gpu)
     {
 #if CUDA_ENABLED
-    cudaMemcpy(A_host, A_device, a_size, cudaMemcpyDefault);
+    rmg::error(cudaMemcpy(A_host, A_device, a_size, cudaMemcpyDefault));
 #elif SYCL_ENABLED
     gpuMemcpy(A_host, A_device, a_size, gpuMemcpyDeviceToHost);
 #elif HIP_ENABLED
-    hipMemcpyDtoH(A_host, A_device, a_size );
+    rmg::error(hipMemcpyDtoH(A_host, A_device, a_size ));
 #endif 
     }
     else

@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -25,7 +26,7 @@
 #define RMG_Functional_H 1
 
 #include <string>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "vdW.h"
@@ -39,8 +40,8 @@
 class Functional {
 
 private:
-    // BaseGrid class
-    BaseGrid *Grid;
+    // rmg::grid class
+    rmg::grid *Grid;
 
     // TradeImages object to use
     TradeImages *T;
@@ -65,7 +66,7 @@ private:
     void gradcorr_spin(double *rho_up, double *rho_down, double *rho_core, double &etxc, double &vtxc, double *v_up, double *v_down);
 
 public:
-    Functional (BaseGrid &G, 
+    Functional (rmg::grid &G, 
                 Lattice &L, 
                 TradeImages &T, 
                 bool gamma_flag);
@@ -74,9 +75,9 @@ public:
 
     static double *vxc2, *v2cud;
 
-    void set_dft_from_name_rmg(char *newdft_name);
+    static void set_dft_from_name_rmg(char *newdft_name);
     static const std::string & get_dft_name_rmg(void);
-    void set_dft_from_name_rmg(std::string newdft_name);
+    static void set_dft_from_name_rmg(std::string newdft_name);
     bool dft_is_gradient_rmg(void);
     static bool dft_is_meta_rmg(void);
     bool dft_is_hybrid_rmg(void);
@@ -98,9 +99,10 @@ public:
     static void set_screening_parameter_rmg(double p);
 
     static std::string saved_dft_name;
-    static double *ke_density;
-    static double *ke_taur;
-    static double *ke_taur_wf;
+    inline static double *ke_density;
+    inline static double *tau_atomic;
+    inline static double *tau_core;
+    inline static double *ke_taur_wf;
     void stress_vdW_DF (double *rho, double *rho_core, int nspin, double *sigma);
 
 };

@@ -28,19 +28,22 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "GpuAlloc.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "blas.h"
 #include "RmgMatrix.h"
 #include "Functional.h"
+#include "rmg_hvector.h"
 
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
+
+#include "rmg_dvector.h"
 
 
 #include "Scalapack.h"
@@ -67,7 +70,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     {
         std::cout << "Scalalapack dimension not match" << std::endl;
         std::cout << SP.GetN() << "NOT equal " << num_states << std::endl; 
-        rmg_error_handler (__FILE__, __LINE__, "scalapack clase not correct");
+        rmg::error("scalapack clase not correct");
     }
 
     int *desca = SP.GetDistDesca();
@@ -96,7 +99,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
             int retval2 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distBij);
             int retval3 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distSij);
             if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
-                rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag_Scalapack");
+                rmg::error("Memory allocation failure in Subdiag_Scalapack");
             }
             saved_dist_length = dist_length;
         }
@@ -109,25 +112,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     KpointType *tmp_arrayT = kptr->Kstates[0].psi;
     tmp_arrayT += kptr->nstates * pbasis_noncoll ;
 
-    char *trans_t = "t";
-    char *trans_n = "n";
-    char *trans_c = "c";
-    char *trans_a = trans_t;
-    if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
-
-
     KpointType *psi = kptr->orbital_storage + first_state * pbasis_noncoll;
     KpointType *psi_dev;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    if(ct.gpu_managed_memory == false)
-    {
-        gpuMalloc((void **)&psi_dev, num_states * pbasis_noncoll * sizeof(KpointType));
-        gpuMemcpy(psi_dev, psi, num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-    }
-    else
-    {
-        psi_dev = psi;
-    }
+    rmg::dvector<KpointType> psi_dvector(num_states * pbasis_noncoll);
+    psi_dev = psi_dvector.data();
+    gpuMemcpy(psi_dev, psi, num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #else
     psi_dev = psi;
 #endif
@@ -135,21 +125,16 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     HS_Scalapack (num_states, pbasis_noncoll, psi_dev, &hpsi[first_state * pbasis_noncoll], &kptr->ns[first_state * pbasis_noncoll], desca, distAij, distSij, use_symmetric);
 
 
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    double *eigs;
-    eigs = (double *)GpuMallocHost(2*num_states * sizeof(double));
-#else
-    double *eigs = new double[2*num_states];
-#endif
+    rmg::hvector<double> eigs(2*num_states);
 
     static int call_count;
     if(ct.subdiag_driver == SUBDIAG_ELPA)
     {
-        rmg_printf("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        rmg::printlog("\nDiagonalization using elpa for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     else
     {
-        rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
+        rmg::printlog("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps,call_count);
     }
     call_count++;
 
@@ -160,14 +145,14 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 
         if(use_symmetric && ct.norm_conserving_pp)
         {
-            SP.symherm_eigenvectors(distAij, eigs, distBij);
+            SP.symherm_eigenvectors(distAij, eigs.data(), distBij);
             for(int ix=0;ix < dist_length;ix++) distAij[ix] = distBij[ix];
         }
         else
         {
             // Copy Aij into Bij to pass to eigensolver
             for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
-            SP.generalized_eigenvectors(distAij, distSij, eigs, distBij);
+            SP.generalized_eigenvectors(distAij, distSij, eigs.data(), distBij);
         }
         delete RT2;
 
@@ -175,7 +160,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 
     // Finally send eigenvalues and vectors to everyone 
     RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
-    SP.BcastRoot(eigs, num_states, MPI_DOUBLE);
+    SP.BcastRoot(eigs.data(), num_states, MPI_DOUBLE);
     delete RT1;
 
     // If subspace diagonalization is used every step, use eigenvalues obtained here 
@@ -203,14 +188,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     {
         tlen = (size_t)num_states * (size_t)pbasis_noncoll * sizeof(KpointType);
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-        if(ct.gpu_managed_memory == false)
-        {
-            gpuMemcpy(psi_dev, &kptr->vexx[first_state * pbasis_noncoll], num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
-        }
-        else
-        {
-            psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
-        }
+        gpuMemcpy(psi_dev, &kptr->vexx[first_state * pbasis_noncoll], num_states * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #else
         psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
 #endif
@@ -223,17 +201,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     delete RT1;
     // End rotation
 
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-    GpuFreeHost(eigs);
-    if(ct.gpu_managed_memory == false)
-    {
-        gpuFree(psi_dev);
-    }
-#else
-    delete [] eigs;
-#endif
-
-
+    char *trans_n = "n";
+    //char *trans_t = "t";
     //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
     //    switch to FOLDED_GSE must uncomment
     return trans_n;

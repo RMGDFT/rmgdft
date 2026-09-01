@@ -33,9 +33,12 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "Atomic.h"
 #include "transition.h"
+#include "prototypes_tddft.h"
+#include "rmg_tddft.h"
+#include "rmg_ortho.h"
 
 
 /* Local function prototypes */
@@ -53,13 +56,16 @@ void velup2 (void);
 void rms_disp (double *, double *);
 
 
-template void MolecularDynamics<double>(Kpoint<double> **, double *, double *, double *, double *, double *, double *, double *);
-template void MolecularDynamics<std::complex<double> >(Kpoint<std::complex<double>> **, double *, double *, double *, double *, double *, double *, double *);
+template void MolecularDynamics<std::complex<double> >(Kpoint<std::complex<double>> **, spinobj<double> &vxc,
+             fgobj<double> &vh, fgobj<double> &vnuc, spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
+
+template void MolecularDynamics (Kpoint<double> **Kptr, spinobj<double> &vxc, fgobj<double> &vh,
+                        fgobj<double> &vnuc, spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
 
 
 template <typename KpointType>
-void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
-             double * rho, double * rho_oppo, double * rhoc, double * rhocore)
+void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
+             spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore)
 {
     double rms[3], trms;
     double nosekin, nosepot;
@@ -68,11 +74,76 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     std::vector<double> RMSdV;
     static double *rhodiff;
 
+    // Save T=0 basis
+    if(ct.forceflag == TDDFT_CVE)
+    {
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+    }
+    auto tddft_predictor = [&]()
+    {
+        int pbasis_noncoll = Kptr[0]->pbasis_noncoll;
+        rmg::ortho<KpointType> MGOrtho(N, pbasis_noncoll);
+        for(int kpt=0;kpt < ct.num_kpts_pe;kpt++)
+        {
+            int N = ((ct.num_states - ct.tddft_start_state)/pct.local_comm_npes ) * pct.local_comm_npes; 
+            KpointType *base = Kptr[kpt]->orbital_storage;
+            KpointType *mid  = base + pbasis_noncoll*(ct.tddft_start_state + N / 2);
+            KpointType *prev_base = Kptr[kpt]->prev_orbital_storage + pbasis_noncoll*ct.tddft_start_state ;
+            KpointType *prev_mid  = prev_base + pbasis_noncoll*N / 2;
+            std::copy(prev_base, prev_mid, mid);
+            MGOrtho.orthogonalize(N/2 + ct.tddft_start_state, N + ct.tddft_start_state, base, false);
+        }
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        { 
+    #if HIP_ENABLED || CUDA_ENABLED
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+    #else
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0,
+                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+    #endif
+        }
+        // Save T=0 basis
+        //for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
+
+    };
+
+    // If tddft dynamics create tddft object
+    rmg::tddft<KpointType, KpointType> *tddftobj = NULL;
+    rmg::tddft<KpointType, std::complex<double>> *tddftobj_vp = NULL;
+    if(ct.forceflag == TDDFT_CVE)
+    {
+        if(ct.tddft_mode == VECTOR_POT)
+        {
+            tddftobj_vp = new rmg::tddft<KpointType, std::complex<double>>(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+        }
+        else
+        {
+            tddftobj = new rmg::tddft<KpointType, KpointType>(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
+        }
+    }
+
+
     // Prime the pump for extrapolations if this is an initial run.
     if(ct.runflag != RESTART)
     {
-        Quench (Kptr, false);
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        if(ct.forceflag == TDDFT_CVE)
+        {
+            //tddft_predictor();
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                tddftobj_vp->tddft_md();
+            }
+            else
+            {
+                tddftobj->tddft_md();
+            }
+        }
+        else
+        {
+            Quench (Kptr, false);
+        }
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
     }
 
 
@@ -85,39 +156,39 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n ==============================================");
+        rmg::printlog ("\n ==============================================");
 
         /* print out the title */
         switch (ct.forceflag)
         {
             case MD_CVE:
-                rmg_printf ("\n Constant Volume & Energy Molecular Dynamics");
+                rmg::printlog ("\n Constant Volume & Energy Molecular Dynamics");
                 break;
             case MD_CVT:
                 if (ct.tcontrol == T_NOSE_CHAIN)
                 {
-                    rmg_printf ("\n Finite Temperature MD with Nose-Hoover Chains");
+                    rmg::printlog ("\n Finite Temperature MD with Nose-Hoover Chains");
                 }
                 else
                 {
-                    rmg_printf ("\n Finite Temperature MD with Anderson Rescaling");
+                    rmg::printlog ("\n Finite Temperature MD with Anderson Rescaling");
                 }                   /* end of if */
                 break;
             case MD_CPT:
-                rmg_printf ("\n Constant Pressure and Temperature Molecular Dynamics");
+                rmg::printlog ("\n Constant Pressure and Temperature Molecular Dynamics");
                 break;
         }                       /* end of switch */
 
         switch (ct.mdorder)
         {
             case ORDER_2:
-                rmg_printf ("\n Integration with Velocity Verlet");
+                rmg::printlog ("\n Integration with Velocity Verlet");
                 break;
             case ORDER_3:
-                rmg_printf ("\n Integration with 3rd Order Beeman Velocity Verlet");
+                rmg::printlog ("\n Integration with 3rd Order Beeman Velocity Verlet");
                 break;
             case ORDER_5:
-                rmg_printf ("\n Integration with 5th Order Beeman Velocity Verlet");
+                rmg::printlog ("\n Integration with 5th Order Beeman Velocity Verlet");
                 break;
         }                       /* end of switch */
     }                           /* end of if pe */
@@ -141,30 +212,22 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     {
         if (pct.gridpe == 0)
         {
-            rmg_printf ("\n\n Initializing temperature to %14.10f K\n", ct.nose.temp);
+            rmg::printlog ("\n\n Initializing temperature to %14.10f K\n", ct.nose.temp);
         }
         ranv ();
     }
 
 
     /* init nose variables */
-    if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
-        init_nose ();
+    if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN) init_nose ();
 
     /* zero out the non-moving atoms */
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-        ION &Atom = Atoms[ion];
-        if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-        {
-            Atom.ZeroForces();
-            Atom.ZeroVelocity();
-        }
-    }
+    allatoms.zero_forces();
+    allatoms.zero_velocities();
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n ==============================================\n\n");
+        rmg::printlog ("\n ==============================================\n\n");
     }
 
     /*Reset timers, so that they do not count preceeding quench run if any */
@@ -173,20 +236,15 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     /*Also reset number of scf steps */
     ct.total_scf_steps = 0;
 
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    fgobj<double> arho, trho;
 
     /* begin the md loop */
     for (ct.md_steps = 1; ct.md_steps < ct.max_md_steps; ct.md_steps++)
     {
 
         /* enforce periodic boundary conditions on the ions */
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ION &Atom = Atoms[ion];
-
-            /* to_crystal enforces periodic boundary conditions */
-            to_crystal (Atom.xtal, Atom.crds);
-            to_cartesian (Atom.xtal, Atom.crds);
-        }
+        allatoms.enforce_pbc();
 
         /* Save coordinates */
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
@@ -201,71 +259,91 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         velup1 ();
 
         // Get atomic rho for this ionic configuration and subtract from current rho
-        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-        double *arho = new double[FP0_BASIS];
-        LcaoGetAtomicRho(arho);
-
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
-
-        if(rhodiff == NULL)
+        if(ct.forceflag != TDDFT_CVE)
         {
-            rhodiff = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
-        }
-        else
-        {
-            double *trho = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
-            delete [] trho;
-        }
+            LcaoGetAtomicRho(arho.data());
 
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+
+            if(rhodiff == NULL)
+            {
+                rhodiff = new double[FP0_BASIS];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+            }
+            else
+            {
+                for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+                for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+            }
+        }
 
         /* Update the positions a full timestep */
-        //posup ();
         move_ions (ct.iondt);
         /* update nose thermostats */
         if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN) nose_posup ();
 
 
         // Get atomic rho for new configuration and add back to rho
-        LcaoGetAtomicRho(arho);
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
-        delete [] arho;
+        if(ct.forceflag != TDDFT_CVE)
+        {
+            LcaoGetAtomicRho(arho.data());
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        }
 
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT1 = new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
-        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        ReinitIonicPotentials (Kptr, vnuc.data(), rhocore.data(), rhoc.data());
         delete RT1;
+
+        if(ct.forceflag == TDDFT_CVE)
+        {
+
+            //ct.mix = 0.0;
+            spinobj<double> rho_save;
+            rho_save = *Kptr[0]->rho;
+            Quench (Kptr, false);
+            *Kptr[0]->rho = rho_save;
+        }
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
 
-        /* converge to the ground state at the final positions */
-        Quench (Kptr, true);
-
+        if(ct.forceflag == TDDFT_CVE)
+        {
+            if(ct.tddft_predictor) tddft_predictor();
+            if(ct.tddft_mode == VECTOR_POT)
+            {
+                tddftobj_vp->tddft_md();
+            }
+            else
+            {
+                tddftobj->tddft_md();
+            }
+            write_force();
+        }
+        else
+        {
+            /* converge to the ground state at the final positions */
+            Quench (Kptr, true);
+        }
 
         /* zero out the non-moving atoms */
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ION &Atom = Atoms[ion];
-            if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-            {
-                Atom.ZeroForces();
-                Atom.ZeroVelocity();
-            }
-        }
+        allatoms.zero_forces();
+        allatoms.zero_velocities();
 
         /* Do another halfstep update of the velocities */
         /* to update them to the next time step */
         velup2 ();
 
-        if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
-        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        if (pct.gridpe == 0) rmg::printlog ("\n Writing data to output file ...\n");
+        WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
         // Extrapolate orbitals after first step
-        ExtrapolateOrbitals(ct.outfile, Kptr);
+        if(ct.forceflag != TDDFT_CVE)
+        {
+            ExtrapolateOrbitals(ct.outfile, Kptr);
+        }
 
         /* calculate the nose thermostat energies */
         if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
@@ -293,26 +371,31 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             switch (ct.forceflag)
             {
 
-                case MD_CVE:
-                    rmg_printf ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                case TDDFT_CVE:
+                    rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                             ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
-                    rmg_printf("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
+                    rmg::printlog("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
+                    break;
+                case MD_CVE:
+                    rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                            ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
+                    rmg::printlog("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
                     break;
                 case MD_CVT:
                     if (ct.tcontrol == T_NOSE_CHAIN)
                     {
-                        rmg_printf ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                        rmg::printlog ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                                 ct.md_steps, ct.TOTAL, ct.ionke, nosekin + nosepot,
                                 ct.TOTAL + ct.ionke + nosekin + nosepot, iontemp, trms);
                     }
                     if (ct.tcontrol == T_AND_SCALE)
                     {
-                        rmg_printf ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                        rmg::printlog ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                                 ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
                     }
                     break;
                 case MD_CPT:
-                    rmg_error_handler (__FILE__, __LINE__,"MD_CPT is not programmed yet.");
+                    rmg::error("MD_CPT is not programmed yet.");
                     break;
 
                 default:
@@ -321,7 +404,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             }                   /* end of switch */
 
 
-            rmg_printf ("\n Total number of SCF steps so far %d", ct.total_scf_steps);
+            rmg::printlog ("\n Total number of SCF steps so far %d", ct.total_scf_steps);
 
         }                       /* end of if */
 
@@ -331,12 +414,12 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     // Final quench at these ionic positions without computing forces so the
     // final wavefunctions are converged. Write the restart file then compute
-    Quench (Kptr, false);
-    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+    Quench (Kptr, true);
+    WriteRestart (ct.outfile, vh.data(), rho.up.data(), rho.dw.data(), vxc.data(), Kptr);
 
 
     if (pct.gridpe == 0)
-        rmg_printf ("\n Total number of SCF steps %d", ct.total_scf_steps);
+        rmg::printlog ("\n Total number of SCF steps %d", ct.total_scf_steps);
 
 
 
@@ -374,11 +457,7 @@ void init_nose ()
     }
 
     /* calculate ion KE */
-    ct.ionke = 0.0;
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-        ct.ionke += Atoms[ion].GetKineticEnergy();
-    }
+    ct.ionke = allatoms.kinetic_energy();
 
     inittemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
 
@@ -396,17 +475,17 @@ void init_nose ()
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n Nose Frequency (THz) = %14.10f ", ct.nose.fNose);
-        rmg_printf ("\n Steps/Oscillation    = %14.10f ", nosesteps);
-        rmg_printf ("\n Target Temp          = %14.10f ", ct.nose.temp);
-        rmg_printf ("\n Initial Temp         = %14.10f ", inittemp);
-        rmg_printf ("\n i        xx        xv         xq     xf ");
+        rmg::printlog ("\n Nose Frequency (THz) = %14.10f ", ct.nose.fNose);
+        rmg::printlog ("\n Steps/Oscillation    = %14.10f ", nosesteps);
+        rmg::printlog ("\n Target Temp          = %14.10f ", ct.nose.temp);
+        rmg::printlog ("\n Initial Temp         = %14.10f ", inittemp);
+        rmg::printlog ("\n i        xx        xv         xq     xf ");
         for (jc = 0; jc < ct.nose.m; jc++)
         {
-            rmg_printf ("\n %d %14.10f %14.10f %16.10f %14.10f", jc,
+            rmg::printlog ("\n %d %14.10f %14.10f %16.10f %14.10f", jc,
                     ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xq[jc], ct.nose.xf[ct.fpt[0]][jc]);
         }
-        rmg_printf ("\n ==============================================");
+        rmg::printlog ("\n ==============================================");
     }
 
 }                               /* end of init_nose */
@@ -440,20 +519,14 @@ void velup1 ()
             if (ct.tcontrol == T_AND_SCALE)
             {
 
-                ct.ionke = 0.0;
-                /* Loop over ions */
-                for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-                {
-                    ct.ionke += Atoms[ion].GetKineticEnergy();
-                }
-
+                ct.ionke = allatoms.kinetic_energy();
                 temperature = ct.ionke * 2.0 / (3.0 * ct.nose.N * kB);
 
                 if (ct.ionke > 0.0)
                 {
                     scale = sqrt (ct.nose.temp / temperature);
                     if (pct.gridpe == 0)
-                        rmg_printf ("\ntscale=%f\n", scale);
+                        rmg::printlog ("\ntscale=%f\n", scale);
                 }
                 else
                 {
@@ -465,7 +538,6 @@ void velup1 ()
     }
 
     /* Loop over ions */
-    ct.ionke = 0.0;
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
@@ -529,11 +601,10 @@ void velup1 ()
 
             }                   /* end of switch */
 
-            ct.ionke += Atoms[ion].GetKineticEnergy();
-
         }                       /* if */
 
     }                           /* end for */
+    ct.ionke = allatoms.kinetic_energy();
 
 }                               /* end of velup1 */
 
@@ -608,8 +679,6 @@ void velup2 ()
 
     }                           /* end of switch */
 
-    ct.ionke = 0.0;
-
     /* Loop over ions */
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
@@ -670,6 +739,8 @@ void velup2 ()
         ct.ionke += Atom.GetKineticEnergy();
 
     }                           /* end for */
+
+    ct.ionke = allatoms.kinetic_energy();
 
     /* perform second half update of nose coords */
     if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
@@ -938,7 +1009,7 @@ void nose_energy (double * nosekin, double * nosepot)
     if(ct.verbose)
     {
         if (pct.gridpe == 0)
-            rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+            rmg::printlog ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                     0, ct.nose.xx[0], ct.nose.xv[0], ct.nose.xf[ct.fpt[0]][0],
                     ct.nose.xf[ct.fpt[1]][0], ct.nose.xf[ct.fpt[2]][0], ct.nose.xf[ct.fpt[3]][0]);
     }
@@ -950,7 +1021,7 @@ void nose_energy (double * nosekin, double * nosepot)
         if(ct.verbose)
         {
             if (pct.gridpe == 0)
-                rmg_printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
+                rmg::printlog ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                         jc, ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xf[ct.fpt[0]][jc],
                         ct.nose.xf[ct.fpt[1]][jc],
                         ct.nose.xf[ct.fpt[2]][jc], ct.nose.xf[ct.fpt[3]][jc]);
@@ -960,7 +1031,7 @@ void nose_energy (double * nosekin, double * nosepot)
 
 #if 0
     if (pct.gridpe == 0)
-        rmg_printf ("\n nose_energy: %20.10f %20.10f %20.10f", *nosekin, *nosepot, *nosekin + *nosepot);
+        rmg::printlog ("\n nose_energy: %20.10f %20.10f %20.10f", *nosekin, *nosepot, *nosekin + *nosepot);
 #endif
 
 }                               /* end of nose_energy */
@@ -1067,11 +1138,7 @@ void ranv (void)
         }                       /* end of for ion */
 
         /* find kinetic energy */
-        ek = 0.0;
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            ek += Atoms[ion].GetKineticEnergy();
-        }                       /* end of for ion */
+        ek = allatoms.kinetic_energy();
         scale = sqrt (1.5 * N * kB * ct.nose.temp / ek);
 
         ek = 0.0;

@@ -1,3 +1,4 @@
+#pragma once
 // This file is part of VkFFT, a Vulkan Fast Fourier Transform library
 //
 // Copyright (C) 2020 - present Dmitrii Tolmachev <dtolm96@gmail.com>

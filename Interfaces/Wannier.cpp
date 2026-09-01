@@ -43,7 +43,7 @@
 #include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "transition.h"
 #include "rmgtypedefs.h"
 #include "pe_control.h"
@@ -57,8 +57,8 @@ void InitDelocalizedWeight_onek(int kpt, double kvec[3], Pw &pwave);
 void DelocalizedWeight_one(int kpt, double kvec[3], Pw &pwave);        
 
 void transpose(std::complex<double> *m, int w, int h);
-template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
-template Wannier<std::complex<double>>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double>
+template Wannier<double>::Wannier(rmg::grid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
+template Wannier<std::complex<double>>::Wannier(rmg::grid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double>
 *, Kpoint<std::complex<double>> **Kptr);
 
 template Wannier<double>::~Wannier(void);
@@ -68,7 +68,7 @@ template <class T> Wannier<T>::~Wannier ()
 }
 
 template <class T> Wannier<T>::Wannier (
-        BaseGrid &G_in,
+        rmg::grid &G_in,
         Lattice &L_in,
         const std::string &wavefile_in,
         int nstates_in,
@@ -122,7 +122,7 @@ template <class T> void Wannier<T>::AmnMmn(std::string wavefile)
     if(!ct.norm_conserving_pp)
     {
         RmgTimer *RT1 = new RmgTimer("7-Wannier: init_weight");
-        BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        rmg::grid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = Rmg_G->get_rank();
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
@@ -1170,7 +1170,7 @@ template <class T> void Wannier<T>::SetMmn()
             delete RT1;
 
             RT1 = new RmgTimer("7-Wannier: Mmn: gemm");
-            RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
+            rmg::gemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                     beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
             delete RT1;
 
@@ -1311,7 +1311,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
 
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
-    RmgGemm ("C", "N", num_tot_proj, tot_st_k, nbasis, alpha,
+    rmg::gemm ("C", "N", num_tot_proj, tot_st_k, nbasis, alpha,
             Nlweight_k, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
     size_t count = (size_t)num_tot_proj * (size_t)num_st_k * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_ik, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
@@ -1320,7 +1320,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
 
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
-    RmgGemm ("C", "N", num_tot_proj, tot_st_q, nbasis, alpha,
+    rmg::gemm ("C", "N", num_tot_proj, tot_st_q, nbasis, alpha,
             Nlweight_q, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
     count = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_kn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
@@ -1397,19 +1397,19 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
     //M_dnm: dim_dnm * dim_dnm matrxi
     //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
     //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
-    //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
-    //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
+    //  in the first rmg::gemm, nwork is a matrix of (dim_dnm) * num_states 
+    //  in the second rmg::gemm, nwork is a matrix of num_tot_proj * (tot_states) 
 
     // leading dimension is num_tot_proj * 2 for noncollinear
 
     char *transn = "n";
     char *transc = "c";
-    RmgGemm (transn, transn, dim_dnm, num_st_q, dim_dnm, 
+    rmg::gemm (transn, transn, dim_dnm, num_st_q, dim_dnm, 
             ONE_t, M_qqq,  dim_dnm, sint_kn, dim_dnm,
             ZERO_t,  sint_tem, dim_dnm);
 
     alpha = 1.0/pct.grid_npes;
-    RmgGemm (transc, transn, num_st_k, num_st_q, dim_dnm,
+    rmg::gemm (transc, transn, num_st_k, num_st_q, dim_dnm,
             alpha, sint_ik,  dim_dnm, sint_tem, dim_dnm,
             ONE_t,  Mmn_onekpair, num_st_k);
 
@@ -1833,7 +1833,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
         delete RT1;
 
         RT1 = new RmgTimer("7-Wannier: Amn: gemm");
-        RmgGemm("C", "N", nstates, n_wannier, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, guidefunc, nbasis_noncoll,
+        rmg::gemm("C", "N", nstates, n_wannier, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, guidefunc, nbasis_noncoll,
                 beta, &Amn[ik*n_wannier*nstates], nstates);
         delete RT1;
 

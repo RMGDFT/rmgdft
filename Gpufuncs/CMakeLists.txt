@@ -62,10 +62,13 @@ if ( NOT MIN_ARCH )
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr")
+    set(CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr --extended-lambda")
 elseif (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    set(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr")
+    set(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} ${NV_SM} ${NV_COMP} -DCUDA_API_PER_THREAD_DEFAULT_STREAM=1 --expt-relaxed-constexpr --extended-lambda")
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda -I$(MPICH_DIR)/include -I$(MPI_CXX_COMPILER_INCLUDE_DIRS)" CACHE STRING "NVCC flags" FORCE)
+
 
 add_definitions( "-DMIN_CUDA_ARCH=${MIN_ARCH}" )
 set(LIB_TYPE STATIC)
@@ -76,14 +79,45 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuEleMul.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuProductBr.cu
-  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_orthorhombic.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/prolong_hex.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuVxc_x_psi_noncoll.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuRhomatrixConvert.cu
+  ${PROJECT_SOURCE_DIR}/GpuCommuteMatrix.cu)
 
 endif(RMG_CUDA_ENABLED)
 
 if(RMG_HIP_ENABLED)
-set(MY_HIPCC_OPTIONS "-fPIE -ffast-math")
-set_source_files_properties(GpuProductBr.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp prolong_orthorhombic.hip.cpp prolong_hex.hip.cpp gputranspose.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
-hip_add_library(Gpufuncs GpuProductBr.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp prolong_orthorhombic.hip.cpp prolong_hex.hip.cpp gputranspose.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
+set(MY_HIPCC_OPTIONS "-fPIE -ffast-math -std=c++20")
+if(NOT "${MPI_CXX_COMPILER_INCLUDE_DIRS}" STREQUAL "")
+    include_directories("${MPI_CXX_COMPILER_INCLUDE_DIRS}")
+endif()
+if(CRAY_HOST)
+    include_directories("$(MPICH_DIR)/include")
+endif()
+
+set_source_files_properties(
+    GpuProductBr.hip.cpp 
+    GpuEleMul.hip.cpp 
+    GpuFill.hip.cpp 
+    GpuNegate.hip.cpp 
+    gramsch_update_psi_gpu.hip.cpp 
+    app8_del2_gpu.hip.cpp 
+    prolong_orthorhombic.hip.cpp 
+    prolong_hex.hip.cpp 
+    gputranspose.hip.cpp 
+    GpuVxc_x_psi_noncoll.hip.cpp 
+    GpuRhomatrixConvert.hip.cpp
+    GpuCommuteMatrix.hip.cpp
+    GpuTiledM_transpose.hip.cpp
+    PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
+hip_add_library(Gpufuncs GpuProductBr.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp 
+    gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp prolong_orthorhombic.hip.cpp 
+    prolong_hex.hip.cpp gputranspose.hip.cpp GpuVxc_x_psi_noncoll.hip.cpp 
+    GpuRhomatrixConvert.hip.cpp GpuCommuteMatrix.hip.cpp
+    GpuTiledM_transpose.hip.cpp
+    HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 endif(RMG_HIP_ENABLED)
 

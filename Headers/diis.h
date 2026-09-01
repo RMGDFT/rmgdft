@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -30,14 +31,14 @@
 #include <cmath>
 #include <complex>
 #include <typeinfo>
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "blas.h"
  
 template <typename T> class diis {
 public:
-    diis(int max_Min, int N_in);
-    int max_M;
-    int N;
+    diis(size_t max_Min, size_t N_in);
+    size_t max_M;
+    size_t N;
     double lambda;
     double eps = 1.0e-11;           // epsilon added to B_ii for stability
     bool cleared = false;

@@ -32,6 +32,8 @@
 #include "prototypes_on.h"
 
 
+#define my_strncpy(buf1, buf2, num) strncpy(buf1, buf2, num), buf1[num]=0
+
 int read_parse_pdb_line (ION * iptr, int ion_index)
 {
     char *tbuf;

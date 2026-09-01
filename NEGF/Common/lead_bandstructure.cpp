@@ -18,6 +18,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "rmg_reduce.h"
 
 
 char *get_num (char *str);
@@ -75,10 +76,10 @@ void lead_bandstructure ()
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n band struture calculations for left lead\n\n ");
-        rmg_printf ("lcr[1].num_states = %d \n", lcr[1].num_states);
-        rmg_printf ("lcr[2].num_states = %d \n", lcr[2].num_states);
-        rmg_printf (" kpoints= %d %d %d\n", kpoints[0], kpoints[1], kpoints[2]);
+        rmg::printlog ("\n band struture calculations for left lead\n\n ");
+        rmg::printlog ("lcr[1].num_states = %d \n", lcr[1].num_states);
+        rmg::printlog ("lcr[2].num_states = %d \n", lcr[2].num_states);
+        rmg::printlog (" kpoints= %d %d %d\n", kpoints[0], kpoints[1], kpoints[2]);
 
     }
 
@@ -187,7 +188,7 @@ void lead_bandstructure ()
     dk = (kmax - kmin) / (kpoints[0] - 1);
 
     NP0 = numroc( &nL, &NB, &izero, &izero, &pmo.nrow );
-    LWORK = nL + rmg_max( NB * ( NP0 + 1 ), 3 );
+    LWORK = nL + std::max( NB * ( NP0 + 1 ), 3 );
     LRWORK = 9 * nL;
     LIWORK = 6 * nL;
 
@@ -262,7 +263,7 @@ void lead_bandstructure ()
         if (info != 0)
         {
 
-            rmg_printf ("\n info = %d %d %f \n", info, ik, kvec);
+            rmg::printlog ("\n info = %d %d %f \n", info, ik, kvec);
             exit (0);
         }
 
@@ -276,7 +277,7 @@ void lead_bandstructure ()
 
     MPI_Barrier(pct.img_comm);
     idx = kpoints[0] * nL;
-    comm_sums (ener_band, &idx, COMM_EN1);
+    rmg::allreduce (ener_band, idx, COMM_EN1);
 
     MPI_Barrier(pct.img_comm);
     if (pct.gridpe == 0)

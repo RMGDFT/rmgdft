@@ -31,11 +31,12 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "params.h"
 #include "rmg_error.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
+#include "rmg_hvector.h"
 
 // Used to generate LDA+U orbital projectors that span the full space
 template void Kpoint<double>::GetDelocalizedOrbital(int ixyz);
@@ -43,8 +44,6 @@ template void Kpoint<std::complex<double>>::GetDelocalizedOrbital(int ixyz);
 template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int ixyz)
 {
 
-
-    double *kvec = kp.kvec;
 
     Projector<KpointType> *P = OrbitalProjector;
     size_t stride = P->get_pstride();
@@ -63,13 +62,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
 
         /*Make sure that the wavefunctions have been read*/
         if (!AtomType.num_atomic_waves) {
-            rmg_printf("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
-            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+            rmg::printlog("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
+            rmg::error("Terminating.");
         }
     }
 
     int num_allorbitals_ldaUion = 0;
-    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
+    for (size_t ion = 0; ion < (size_t)this->ldaU->num_ldaU_ions; ++ion)
     {
         /* Generate ion pointer */
         int ion_idx = this->ldaU->ldaU_ion_index[ion];
@@ -80,11 +79,10 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
         num_allorbitals_ldaUion += AtomType.num_orbitals;
     }
 
-    KpointType *npsi = (KpointType *)RmgMallocHost(num_allorbitals_ldaUion * pbasis * sizeof(KpointType));
+    rmg::hvector<KpointType> npsi(num_allorbitals_ldaUion * pbasis);
 
-    double coeff = 1.0;
     int wave_idx = 0;
-    for (size_t ion = 0; ion < this->ldaU->num_ldaU_ions; ++ion)
+    for (size_t ion = 0; ion < (size_t)this->ldaU->num_ldaU_ions; ++ion)
     {
         /* Generate ion pointer */
         int ion_idx = this->ldaU->ldaU_ion_index[ion];
@@ -154,8 +152,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
 
     }
 
-    RmgFreeHost(npsi);
-
     //  normalize the LDA+U orbitals
     //  for ixyz = 1,2,3, no normalization for x*orbital, y*orbital, z*orbital
 
@@ -174,7 +170,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::norm(orbital_weight[st * pbasis + idx] );
                 }
 
-                GlobalSums(&sum, 1, this->grid_comm);
+                rmg::allreduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 // if the sum = 0, this orbital is not a LDA+U orbital and the values are zeros.
                 if(tscale < 1.0e-5) continue;
@@ -211,7 +207,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (int 
                     sum += std::real(orbital_weight[st * pbasis + idx] * MyConj(tbuf[st * pbasis + idx]));
                 }
 
-                GlobalSums(&sum, 1, this->grid_comm);
+                rmg::allreduce(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 if(tscale < 1.0e-5) continue;
                 tscale = std::sqrt(1.0/tscale);

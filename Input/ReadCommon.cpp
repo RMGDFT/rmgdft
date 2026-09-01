@@ -35,7 +35,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "transition.h"
 
 #include "const.h"
@@ -107,9 +107,9 @@ void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
 {
     if(fullpath[0] !='/')
     {
-        char temp[MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pelc.image_path[pelc.thisimg], fullpath);
-        std::strncpy(fullpath, temp, MAX_PATH);
+        std::string temp = std::format("{}{}", 
+                pelc.image_path[pelc.thisimg], fullpath);
+        std::strncpy(fullpath, temp.c_str(), MAX_PATH);
     }
 }
 void MakeFullPath(std::string &fullpath, PE_CONTROL& pelc)
@@ -198,26 +198,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
                      "", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("nvme_weights_filepath", &Weightsfile, "Weights/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of projector weights. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_work_filepath", &Workfile, "Work/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of workspace. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for runtime disk storage of orbitals. ", 
-                     "", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("qfunction_filepath", &Qfunctionfile, "Qfunctions/",
-                     CHECK_AND_FIX, OPTIONAL,
-                     "File/path for runtime disk storage of qfunctions. ",
-                     "", CONTROL_OPTIONS);
-
     If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "afqmc_rmg",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for exact exchange integrals. ", 
@@ -246,14 +226,22 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_mode", NULL, &lc.tddft_mode, "electric field",
                      CHECK_AND_TERMINATE, OPTIONAL,tddft_mode, 
                      "TDDFT mode ", 
-                     "either electric field kick or point charge kick", TDDFT_OPTIONS);
+                     "either 'electric field', 'point charge' or 'vector potential'", TDDFT_OPTIONS);
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_gpu", &lc.tddft_gpu, true, 
                         "use gpu for ELYDYN or not", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_predictor", &lc.tddft_predictor, false, 
+                        "tddft predictor", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_tiledMM", &lc.tddft_tiledMM, false, 
+                        "use TiledM distribution for TDDFT matrix", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_floatprecision", &lc.tddft_floatprecision, false, 
+                        "use floatprecision for TDDFT matrix update", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
                         "TDDFT run read data directly from the last scf job", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_energy", &lc.tddft_energy, false, 
+                        "flag to calculate total energy at each tddft step", TDDFT_OPTIONS);
 
     If.RegisterInputKey("stress", &lc.stress, false, 
                         "flag to control stress cacluation", CONTROL_OPTIONS);
@@ -333,7 +321,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("internal_pseudo_type", NULL, &ct.internal_pseudo_type, "sg15",
                      CHECK_AND_TERMINATE, OPTIONAL, internal_pseudo_type,
-                     "Internal pseudopotential type. Choices are sg15, ultrasoft, nc_accuracy or all_electron ", 
+                     "Internal pseudopotential type. Choices are sg15, ultrasoft, pd_precision, pd_standard, nc_accuracy, nc_default or all_electron ", 
                      "internal pseudopotential type not found. ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
@@ -1025,10 +1013,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
-    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 16, 4,
+    If.RegisterInputKey("nccl_num_nodes", &pelc.nccl_num_nodes, 1, INT_MAX, 1,
+            CHECK_AND_FIX, OPTIONAL,
+            "number of nodes used in nccl operations",
+            "1: only do nccl within the node", CONTROL_OPTIONS|EXPERT_OPTION);
+
+    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 24, 4,
             CHECK_AND_FIX, OPTIONAL,
             "Grid coalescing factor.",
-            "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
+            "coalesce_factor must lie in the range (1,24). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("charge_density_mixing", &lc.init_mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,
@@ -1158,12 +1151,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
 
     // Booleans next. Booleans are never required.
-#if CUDA_ENABLED
-    // If GPU memory is constrained this one should be set to true.
-    If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
-            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS|EXPERT_OPTION);
-
-#endif
 
 #if CUDA_ENABLED || HIP_ENABLED
     If.RegisterInputKey("use_cublasxt", &lc.use_cublasxt, false,
@@ -1173,7 +1160,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_rmm_diis", &lc.use_rmm_diis, true,
             "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
 
-    If.RegisterInputKey("use_block_diag", &lc.use_block_diag, false,
+    If.RegisterInputKey("use_block_diag", &lc.use_block_diag, true,
             "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
@@ -1218,15 +1205,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
             "Flag indicating whether or not  parallel output wavefunction file uses compressed format.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_weights", &lc.nvme_weights, false,
-            "Flag indicating whether or not projector weights should be mapped to disk.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_work", &lc.nvme_work, false,
-            "Flag indicating whether or not work arrays should be mapped to disk.", CONTROL_OPTIONS);
-
-    If.RegisterInputKey("nvme_orbitals", &lc.nvme_orbitals, false,
-            "Flag indicating whether or not orbitals should be mapped to disk.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, true,
             "Flag indicating whether or not to use alternate laplacian weights for some operators.", MISC_OPTIONS|EXPERT_OPTION);
@@ -1280,10 +1258,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "to converge better for metallic systems. It works with the "
             "multigrid kohn_sham_solver but not the davidson solver. ", DIAG_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("gpu_managed_memory", &lc.gpu_managed_memory, false, 
-            "Some AMD and Nvidia GPUs support managed gou memory which is "
-            "useful when GPU memory limits are exceeded. ", CONTROL_OPTIONS|EXPERT_OPTION);
-
     If.RegisterInputKey("use_energy_correction", &lc.use_energy_correction, false, 
             "Experimental energy correction term ", CONTROL_OPTIONS|EXPERIMENTAL_OPTION);
 
@@ -1319,10 +1293,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
             "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.", PERF_OPTIONS|EXPERT_OPTION);
 
-    If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
-            "If set RMG assumes that sufficient huge pages are available. "
-            "Bad things may happen if this is not true.", PERF_OPTIONS|EXPERIMENTAL_OPTION);
-
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
             "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ", MD_OPTIONS);
 
@@ -1336,9 +1306,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
             "The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.", MD_OPTIONS);
-
-    If.RegisterInputKey("output_rho_xsf", NULL, false,
-            "Generate xsf format for electronic density.", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 0.0, 1.0e-3, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
@@ -1396,6 +1363,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
             "cartesian coordinate of the point charge for tddft",
             "You must specify a triplet of (X,Y,Z) dimensions. ", TDDFT_OPTIONS);
+    Ri::ReadVector<int> def_tddft_ehpair({{0,0,0,1}});
+    Ri::ReadVector<int> tddft_ehpair;
+    If.RegisterInputKey("tddft_ehpair", &tddft_ehpair, &def_tddft_ehpair, 4, OPTIONAL,
+            "information for excitation in tddft",
+            "the three ints are kpoint, vbm - ?, cbm + ? . [0,0,0] means ehpair at first kpoint  from vbm to cbm", TDDFT_OPTIONS);
 
     If.RegisterInputKey("tddft_qgau", &lc.tddft_qgau, 0.0, DBL_MAX, 1.0,
             CHECK_AND_FIX, OPTIONAL,
@@ -1433,16 +1405,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
-    If.RegisterInputKey("lambda_max", &lc.lambda_max, 1.0, 100.0, 3.0,
+    If.RegisterInputKey("lambda_multiplier", &lc.lambda_mul, 1.0, 2.0, 1.25,
             CHECK_AND_TERMINATE, OPTIONAL,
-            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
+            "Chebyshev smoothing multiplier. Don't change unless you know what you're doing.",
             "", EXPERT_OPTION);
-
-    If.RegisterInputKey("lambda_min", &lc.lambda_min, 0.0, 2.0, 0.3,
-            CHECK_AND_TERMINATE, OPTIONAL,
-            "Chebyshev smoothing parameter. Don't change unless you know what you're doing.",
-            "", EXPERT_OPTION);
-
 
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
             CHECK_AND_FIX, OPTIONAL,
@@ -1548,22 +1514,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.vdW_kernel_file = VdwKernelfile;
     MakeFullPath(lc.vdW_kernel_file, pelc);
 
-    lc.nvme_weights_path = Weightsfile;
-    if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
-    MakeFullPath(lc.nvme_weights_path, pelc);
-
-    lc.qfunction_path = Qfunctionfile;
-    if(lc.qfunction_path.length()) lc.qfunction_path.append("/");
-    MakeFullPath(lc.qfunction_path, pelc);
-
-    lc.nvme_work_path = Workfile;
-    if(lc.nvme_work_path.length()) lc.nvme_work_path.append("/");
-    MakeFullPath(lc.nvme_work_path, pelc);
-
-    lc.nvme_orbitals_path = Orbitalfile;
-    if(lc.nvme_orbitals_path.length()) lc.nvme_orbitals_path.append("/");
-    MakeFullPath(lc.nvme_orbitals_path, pelc);
-
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
     std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft)-1);
     MakeFullPath(lc.infile_tddft, pelc);
@@ -1580,7 +1530,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() != 0))
     {
-        rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
+        rmg::error("You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
     }
 
     if(lc.spinorbit) ct.noncoll = true;
@@ -1644,7 +1594,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Check if a lattice vector was specified and if not 
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == No_Lattice)
-        rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
+        rmg::error("\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
 
     // If ibrav is none then the user entered in a set of lattice vectors rather than a
     // lattice type with parameters so the next code block is used to set those up.
@@ -1745,6 +1695,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ct.tddft_qpos[0] = tddft_qpos.vals.at(0);
     ct.tddft_qpos[1] = tddft_qpos.vals.at(1);
     ct.tddft_qpos[2] = tddft_qpos.vals.at(2);
+    ct.tddft_ehpair[0] = tddft_ehpair.vals.at(0);
+    ct.tddft_ehpair[1] = tddft_ehpair.vals.at(1);
+    ct.tddft_ehpair[2] = tddft_ehpair.vals.at(2);
+    ct.tddft_ehpair[3] = tddft_ehpair.vals.at(3);
     /* read the electric field vector */
     try {
         ct.efield_xtal[0] = electric_field.vals.at(0);
@@ -1926,19 +1880,21 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
     {
-        //        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+        //        rmg::error("\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
     }
 
     if((ct.kohn_sham_solver == MULTIGRID_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
     {
         auto K1 = InputMap["charge_mixing_type"];
         K1->Readstr = "Broyden";
+        ct.charge_mixing_type = 2;
         lc.potential_acceleration_constant_step = 0.0;
     }
     else if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Auto", InputMap))
     {
         auto K1 = InputMap["charge_mixing_type"];
         K1->Readstr = "Broyden";
+        ct.charge_mixing_type = 2;
         lc.potential_acceleration_constant_step = 0.0;
     }
 

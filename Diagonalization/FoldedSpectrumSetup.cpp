@@ -29,7 +29,7 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "Subdiag.h"
-#include "ErrorFuncs.h"
+
 #include "transition.h"
 
 
@@ -85,7 +85,7 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.
     if((ct.folded_spectrum_width < 0.15) || (ct.folded_spectrum_width > 1.0)) {
-        rmg_printf("Folded spectrum width of %8.4f is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
+        rmg::printlog("Folded spectrum width of %8.4f is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
         ct.folded_spectrum_width = 0.3;
     }
 
@@ -96,7 +96,7 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
     // Find start of interval
     int ix = n_win - eig_step;
     if(ix < 4)
-        rmg_error_handler(__FILE__, __LINE__, "Too few PE's to use folded spectrum method for this problem");
+        rmg::error("Too few PE's to use folded spectrum method for this problem");
     if(ix % 2) {
         n_win = n_win + 1;
         ix = n_win - eig_step;

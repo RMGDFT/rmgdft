@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "common_prototypes.h"
+#include "rmg_sum_all.h"
 #include "main.h"
 
 /*Conversion factor to convert dipole in a.u. to debye*/
@@ -50,9 +51,9 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
                 int ixx = ix + FPX_OFFSET;
                 int iyy = iy + FPY_OFFSET;
                 int izz = iz + FPZ_OFFSET;
-                xc = ixx * hxgrid - dipole_center_xtal[0] +0.5;
-                yc = iyy * hygrid - dipole_center_xtal[1] +0.5;
-                zc = izz * hzgrid - dipole_center_xtal[2] +0.5;
+                xc = ixx * hxgrid - dipole_center_xtal[0];
+                yc = iyy * hygrid - dipole_center_xtal[1];
+                zc = izz * hzgrid - dipole_center_xtal[2];
 
                 if(xc > 1.0) xc -= 1.0;
                 if(yc > 1.0) yc -= 1.0;
@@ -92,9 +93,9 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
 
     /* Sum these up over all processors, multiply by volume elemnt so that sum is 
      * integration and invert sign, since electron charge should be negative*/
-    dipole[0] = -1.0 * vel * real_sum_all (dipole[0], pct.grid_comm);
-    dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.grid_comm);
-    dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.grid_comm);
+    dipole[0] = -1.0 * vel * rmg::sum_all<double> (dipole[0], pct.grid_comm);
+    dipole[1] = -1.0 * vel * rmg::sum_all<double> (dipole[1], pct.grid_comm);
+    dipole[2] = -1.0 * vel * rmg::sum_all<double> (dipole[2], pct.grid_comm);
 
 
     /*Now we have dipole moment for electrons, need to add ions now */
@@ -108,9 +109,9 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
             icharge = Species[iptr->species].zvalence;
 
             /*Difference vector between center of the cell and ionic position */
-            ax[0] = iptr->xtal[0] - dipole_center_xtal[0] +0.5;
-            ax[1] = iptr->xtal[1] - dipole_center_xtal[1] +0.5;
-            ax[2] = iptr->xtal[2] - dipole_center_xtal[2] +0.5;
+            ax[0] = iptr->xtal[0] - dipole_center_xtal[0];
+            ax[1] = iptr->xtal[1] - dipole_center_xtal[1];
+            ax[2] = iptr->xtal[2] - dipole_center_xtal[2];
 
             if(ax[0] > 1.0) ax[0] -= 1.0;
             if(ax[1] > 1.0) ax[1] -= 1.0;
@@ -143,7 +144,7 @@ void get_dipole (double * rho, double *rhoc, double *dipole)
 
 
 
-}                               /* end getpoi_bc.c */
+}
 
 /******/
 void get_dipole (double * rho, double *dipole)
@@ -229,11 +230,11 @@ void get_dipole (double * rho, double *dipole)
 
     /* Sum these up over all processors, multiply by volume elemnt so that sum is 
      * integration and invert sign, since electron charge should be negative*/
-    dipole[0] = -1.0 * vel * real_sum_all (dipole[0], pct.grid_comm);
-    dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.grid_comm);
-    dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.grid_comm);
+    dipole[0] = -1.0 * vel * rmg::sum_all<double> (dipole[0], pct.grid_comm);
+    dipole[1] = -1.0 * vel * rmg::sum_all<double> (dipole[1], pct.grid_comm);
+    dipole[2] = -1.0 * vel * rmg::sum_all<double> (dipole[2], pct.grid_comm);
 
-    rmg_printf("\n electronic dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+    rmg::printlog("\n electronic dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
 
     /*Now we have dipole moment for electrons, need to add ions now */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -278,7 +279,7 @@ void get_dipole (double * rho, double *dipole)
 
 
 
-}                               /* end getpoi_bc.c */
+}
 
 /******/
 

@@ -1,14 +1,15 @@
+#pragma once
 #define ORDER_N 1
 
 extern unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 extern double *projectors, *projectors_x, *projectors_y, *projectors_z;
-extern int *num_nonlocal_ion;
+extern std::vector<int> num_nonlocal_ion;
 extern double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
 extern int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
 extern char *state_overlap_or_not;
 extern int *send_to, *recv_from, num_sendrecv_loop;
 extern int *send_to1, *recv_from1, num_sendrecv_loop1;
-extern int *ionidx_allproc;
+extern std::vector<int> ionidx_allproc;
 extern int max_ion_nonlocal;
 extern STATE *states_tem;
 extern int *state_to_proc;

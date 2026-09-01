@@ -31,15 +31,15 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
-#include "Mgrid.h"
+#include "rmg_gemm.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+#include "rmg_hvector.h"
+
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
@@ -188,12 +188,12 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             else
             {
                 if(M == N) {
-                    zhegvd (&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    zhegvd (&itype, "V", "U", &N, (std::complex<double> *)A, &ld, (std::complex<double> *)B, &ld, eigs, (std::complex<double> *)work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
-                    zhegvx (&itype, "V", "I", "U", &N, (double *)A, &ld, (double *)B, &ld,
-                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (double *)V, &ld, work2,
+                    zhegvx (&itype, "V", "I", "U", &N, (std::complex<double> *)A, &ld, (std::complex<double> *)B, &ld,
+                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (std::complex<double> *)V, &ld, (std::complex<double> *)work2,
                             &lwork, &work2[lwork], iwork, ifail, &info);
 
                     //printf("\n %d infooo ", info);
@@ -206,7 +206,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
                 for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
                 int info1;
                 double *rwork = new double[3*N];
-                zheev("V", "L", &N, (double *)B, &ld,(double *)A, work2,&lwork, rwork, &info1);
+                zheev("V", "L", &N, (std::complex<double> *)B, &ld,(double *)A, (std::complex<double> *)work2,&lwork, rwork, &info1);
                 delete [] rwork;
 
                 if(pct.gridpe == 0)
@@ -261,10 +261,10 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 {
 
 #if !SCALAPACK_LIBS
-    rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
+    rmg::printlog("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
-    KpointType *global_matrix1 = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    rmg::hvector<KpointType> global_matrix1(ct.max_states * ct.max_states);
 
     int info = 0;
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
@@ -314,14 +314,14 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
                 global_matrix1[j + i*N] = A[j + i*ld];
             }
         }
-        MainSp->CopySquareMatrixToDistArray(global_matrix1, distA, N, desca);
+        MainSp->CopySquareMatrixToDistArray(global_matrix1.data(), distA, N, desca);
 
         for(int i = 0;i < N;i++) {
             for(int j = 0;j < N;j++) {
                 global_matrix1[j + i*N] = B[j + i*ld];
             }
         }
-        MainSp->CopySquareMatrixToDistArray(global_matrix1, distB, N, desca);
+        MainSp->CopySquareMatrixToDistArray(global_matrix1.data(), distB, N, desca);
 
         int ibtype = 1;
         int ione = 1;
@@ -368,7 +368,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
         else if(typeid(KpointType) == typeid(std::complex<double>))
         {
             double scale=1.0, rone[2] = {1.0, 0.0};
-            pzpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+            pzpotrf("L", &N, (std::complex<double> *)distB,  &ione, &ione, desca,  &info);
             if(info) return info;
 
             pzhegst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
@@ -414,8 +414,8 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 
         // Gather distributed results from distA into global_matrix1
         int fac = sizeof(KpointType)/sizeof(double);
-        MainSp->CopyDistArrayToSquareMatrix(global_matrix1, distV, N, desca);
-        MainSp->Allreduce(MPI_IN_PLACE, global_matrix1, N*M*fac, MPI_DOUBLE, MPI_SUM);
+        MainSp->CopyDistArrayToSquareMatrix(global_matrix1.data(), distV, N, desca);
+        MainSp->Allreduce(MPI_IN_PLACE, global_matrix1.data(), N*M*fac, MPI_DOUBLE, MPI_SUM);
 
         delete [] distV;
         delete [] distB;
@@ -424,7 +424,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
 
     // Finally send eigenvalues and vectors to everyone 
     int fac = sizeof(KpointType)/sizeof(double);
-    MainSp->BcastRoot(global_matrix1, N * M * fac, MPI_DOUBLE);
+    MainSp->BcastRoot(global_matrix1.data(), N * M * fac, MPI_DOUBLE);
     MainSp->BcastRoot(eigs, M, MPI_DOUBLE);
 
     // Repack V1 into V. Only need the first M eigenvectors
@@ -434,7 +434,6 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
         }
     }
 
-    RmgFreeHost(global_matrix1);
     return info;
 
 #endif
@@ -471,21 +470,20 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         int itype = 1, ione = 1;
         //int lwork = 3 * N * N + 6 * N;
         int lwork = 6 * N * ld + 6 * N + 2;
-        double *work = (double *)RmgMallocHost(lwork * sizeof(KpointType));
+        rmg::hvector<double> work(lwork);
 
         if(M == N) {
-            magma_dsygvd(itype, MagmaVec, MagmaLower, N, (double *)A, ld, (double *)B, ld, eigs, work, lwork, iwork, liwork, &info);
+            magma_dsygvd(itype, MagmaVec, MagmaLower, N, (double *)A, ld, (double *)B, ld, eigs, work.data(), lwork, iwork, liwork, &info);
             for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
         }
         else if(N > M) {
             magma_dsygvdx (itype, MagmaVec, MagmaRangeI, MagmaLower, N, (double *)A, ld, (double *)B, ld,
-                    vx, vx, ione, M,  &eigs_found, eigs, work, lwork, iwork, liwork, &info);
+                    vx, vx, ione, M,  &eigs_found, eigs, work.data(), lwork, iwork, liwork, &info);
             //magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeI,MagmaLower,N,(double *)A,ld,(double *)B,ld, vx, vx,
             //ione, M, &eigs_found, eigs, work,lwork,iwork,liwork,&info);		
 
             for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
         }
-        RmgFreeHost(work);
 
         for(int i=0;i < N*ld;i++) A[i] = Asave[i];
         for(int i=0;i < N*ld;i++) B[i] = Bsave[i];

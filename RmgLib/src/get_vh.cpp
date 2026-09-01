@@ -39,8 +39,8 @@
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
-#include "RmgSumAll.h"
+#include "rmg_mgrid.h"
+#include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
 #include "packfuncs.h"
@@ -64,34 +64,28 @@
 /// @param mucycles Number of mu cycles (also known as W-cycles) to use in the multigrid solver.
 /// @param rms_target Value for the root mean square residual at which to stop.
 /// @param global_step Time step for the jacobi iteration on the finest (0th) grid level.
-/// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
 /// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
 /// @param density Density of the grid relative to the default grid
-double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
+double CPP_get_vh (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status)
+                 double rms_target, double global_step, int boundaryflag, int density, bool print_status)
 {
 
     int idx, its, cycles;
     double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_res, residual = 100.0;
-    Mgrid MG(L, T);
+    rmg::mgrid MG(L, T, G, density, 0.0);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 
-    /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-    int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-
     if(maxlevel >= MAX_MG_LEVELS)
-       rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
+       rmg::error("Too many multigrid levels requested.");
 
     int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 
     // Solve to a high degree of precision on the coarsest level
-    poi_pre[maxlevel] = 20;
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -146,20 +140,16 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
             {
 
                 /* Transfer res into smoothing grid */
-                CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
+                rmg::pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
-                            G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-                            0, maxlevel, poi_pre,
-                            poi_post, mucycles, coarse_step,
-                            G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
-                            G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
-                            G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
+                            0, maxlevel, 
+                            G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density));
 
 
                 /* Transfer solution back to mgresarr array */
-                CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
+                rmg::pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
 
                 /* Update vh */
                 for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
@@ -182,7 +172,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
-                vavgcor =  RmgSumAll(vavgcor, T->get_MPI_comm());
+                vavgcor =  rmg::sum_all(vavgcor, T->get_MPI_comm());
                 t1 = (double) global_basis;
                 vavgcor = vavgcor / t1;
 
@@ -210,7 +200,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
         }                   /* end for */
 
-        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
+        residual = sqrt (rmg::sum_all(residual, T->get_MPI_comm()) / global_basis);
         //if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
 
 	    

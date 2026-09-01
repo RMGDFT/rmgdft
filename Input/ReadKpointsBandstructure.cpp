@@ -200,13 +200,13 @@ int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::s
 
     if(pct.gridpe == 0 && 0) 
     {
-        rmg_printf("\n num_kkkk %d", ct.num_kpts);
+        rmg::printlog("\n num_kkkk %d", ct.num_kpts);
         for(int kpt = 0; kpt < ct.num_kpts; kpt++)
         {
-            rmg_printf("\n kpt %d  %f %f %f %s", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].symbol);
-            rmg_printf("\n kvec %d  %f %f %f %s", kpt, ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ct.kp[kpt].symbol);
+            rmg::printlog("\n kpt %d  %f %f %f %s", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].symbol);
+            rmg::printlog("\n kvec %d  %f %f %f %s", kpt, ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ct.kp[kpt].symbol);
         }
-        rmg_printf("\n");
+        rmg::printlog("\n");
     }
 
     return 1;

@@ -176,7 +176,7 @@ void LoadXmlPseudo(SPECIES *sp)
             if(lval == sp->local)
             {
                 std::string vdata = s.second.get<std::string>("radfunc.data");
-                sp->vloc0 = UPF_str_to_double_array(vdata, r_total, 1);
+                sp->vloc0 = UPF_str_to_double_vector(vdata, r_total, 1);
                 for(int idx = 0;idx < sp->rg_points;idx++) sp->vloc0[idx] /= sp->r[idx];
             } 
         }

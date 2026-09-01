@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "rmg_sum_all.h"
 #include "prototypes_on.h"
 #include "init_var.h"
 
@@ -124,7 +125,7 @@ double get_Exc(double *rho, double *rhocore)
     my_free(exc);
 
 
-    esum = get_vel_f() * real_sum_all(esum, pct.grid_comm);
+    esum = get_vel_f() * rmg::sum_all<double>(esum, pct.grid_comm);
     /* end shuchun wang */
 
     return esum;

@@ -37,7 +37,7 @@
 #include "RmgException.h"
 #include "transition.h"
 #include "blas.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Functional.h"
 #include <float.h>
 #include <math.h>

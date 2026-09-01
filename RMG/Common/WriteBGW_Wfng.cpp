@@ -41,7 +41,7 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
-//  write wave function in gspace for one kpoitn. filename to wfng.complex_kpt(x)
+//  rmg::writefile wave function in gspace for one kpoitn. filename to wfng.complex_kpt(x)
 //  the file will be read in fortran with unformatted in Berkeley GW
 //  written by Wenchang Lu, NCSU, 2016-10-12
 
@@ -53,21 +53,19 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
     SPECIES *sp;
     ION *iptr;
     int amode, fhand=0;
-    char stitle[32], sdate[32], stime[32];
+    char stitle[33], sdate[33], stime[33];
+    memset(stitle, ' ', 33);
+    memset(sdate, ' ', 33);
+    memset(stime, ' ', 33);
+
     double wfng_dk1, wfng_dk2, wfng_dk3;
     time_t tt;
     time(&tt);
     char *timeptr;
     timeptr = ctime(&tt);
-    for(int i = 0; i < 32; i++)
-    {
-        strncpy(&sdate[i], " ", 1);
-        strncpy(&stime[i], " ", 1);
-        strncpy(&stitle[i], " ", 1);
-    }
     strncpy(sdate, timeptr, 9);
     strncpy(stime, &timeptr[9], 9);
-    strncpy(stitle, "WFN-Complex", 11);
+    strncpy(stitle, "WFN-Complex", 12);
 
     wfng_dk1 = 0.0;
     wfng_dk2 = 0.0;
@@ -264,72 +262,72 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
         filename = filename + std::to_string(kpt);
         fhand = open((char *)filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         length = 96;
-        write(fhand, &length, sizeof(int));
-        write(fhand, stitle, sizeof(char) *32);
-        write(fhand, sdate, sizeof(char) *32);
-        write(fhand, stime, sizeof(char) *32);
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, stitle, sizeof(char) *32);
+        rmg::writefile(fhand, sdate, sizeof(char) *32);
+        rmg::writefile(fhand, stime, sizeof(char) *32);
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 8 * sizeof(int) + 2 * sizeof(double);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &nspin, sizeof(int));
-        write(fhand, &num_pw_rho, sizeof(int)); // num_ of pw for rho
-        write(fhand, &ct.nsym, sizeof(int));  // num of symmetry
-        write(fhand, &cell_symmetry, sizeof(int));
-        write(fhand, &ct.num_ions, sizeof(int));
-        write(fhand, &ecutrho, sizeof(double));
-        write(fhand, &ione, sizeof(int)); // num of kpoint 
-        write(fhand, &ct.num_states, sizeof(int)); // number of bands
-        write(fhand, &num_pw_wfc_max, sizeof(int)); // max num of plane waves for wavefunction of all kpoint
-        write(fhand, &ecutwfc, sizeof(double)); 
+        rmg::writefile(fhand, &nspin, sizeof(int));
+        rmg::writefile(fhand, &num_pw_rho, sizeof(int)); // num_ of pw for rho
+        rmg::writefile(fhand, &ct.nsym, sizeof(int));  // num of symmetry
+        rmg::writefile(fhand, &cell_symmetry, sizeof(int));
+        rmg::writefile(fhand, &ct.num_ions, sizeof(int));
+        rmg::writefile(fhand, &ecutrho, sizeof(double));
+        rmg::writefile(fhand, &ione, sizeof(int)); // num of kpoint 
+        rmg::writefile(fhand, &ct.num_states, sizeof(int)); // number of bands
+        rmg::writefile(fhand, &num_pw_wfc_max, sizeof(int)); // max num of plane waves for wavefunction of all kpoint
+        rmg::writefile(fhand, &ecutwfc, sizeof(double)); 
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 6 * sizeof(int) + 3 * sizeof(double);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &FNX_GRID, sizeof(int)); 
-        write(fhand, &FNY_GRID, sizeof(int)); 
-        write(fhand, &FNZ_GRID, sizeof(int)); 
-        write(fhand, ct.kpoint_mesh, sizeof(int) *3);
+        rmg::writefile(fhand, &FNX_GRID, sizeof(int)); 
+        rmg::writefile(fhand, &FNY_GRID, sizeof(int)); 
+        rmg::writefile(fhand, &FNZ_GRID, sizeof(int)); 
+        rmg::writefile(fhand, ct.kpoint_mesh, sizeof(int) *3);
 
-        write(fhand, &wfng_dk1, sizeof(double)); 
-        write(fhand, &wfng_dk2, sizeof(double)); 
-        write(fhand, &wfng_dk3, sizeof(double)); 
+        rmg::writefile(fhand, &wfng_dk1, sizeof(double)); 
+        rmg::writefile(fhand, &wfng_dk2, sizeof(double)); 
+        rmg::writefile(fhand, &wfng_dk3, sizeof(double)); 
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 20 * sizeof(double);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &omega, sizeof(double)); 
-        write(fhand, &alat, sizeof(double)); 
-        write(fhand, at, sizeof(double) * 9);
-        write(fhand, adot, sizeof(double) * 9);
+        rmg::writefile(fhand, &omega, sizeof(double)); 
+        rmg::writefile(fhand, &alat, sizeof(double)); 
+        rmg::writefile(fhand, at, sizeof(double) * 9);
+        rmg::writefile(fhand, adot, sizeof(double) * 9);
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 20 * sizeof(double);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &recvol, sizeof(double)); 
-        write(fhand, &tpiba, sizeof(double));
-        write(fhand, bg, sizeof(double) * 9);
-        write(fhand, bdot, sizeof(double) * 9);
+        rmg::writefile(fhand, &recvol, sizeof(double)); 
+        rmg::writefile(fhand, &tpiba, sizeof(double));
+        rmg::writefile(fhand, bg, sizeof(double) * 9);
+        rmg::writefile(fhand, bdot, sizeof(double) * 9);
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 9*ct.nsym * sizeof(int);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, Rmg_Symm->sym_rotate.data(), sizeof(int) * 9 * ct.nsym);
+        rmg::writefile(fhand, Rmg_Symm->sym_rotate.data(), sizeof(int) * 9 * ct.nsym);
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = 3*ct.nsym * sizeof(double);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, Rmg_Symm->sym_trans.data(), sizeof(double) * 3 * ct.nsym);
+        rmg::writefile(fhand, Rmg_Symm->sym_trans.data(), sizeof(double) * 3 * ct.nsym);
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = ct.num_ions *( 3 * sizeof(double) + sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         for(int ion = 0; ion < ct.num_ions; ion++) 
         {
@@ -339,76 +337,76 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
             x[0] = iptr->crds[0]/alat;
             x[1] = iptr->crds[1]/alat;
             x[2] = iptr->crds[2]/alat;
-            write(fhand, x, sizeof(double)*3);
-            write(fhand, &sp->atomic_number, sizeof(int));
+            rmg::writefile(fhand, x, sizeof(double)*3);
+            rmg::writefile(fhand, &sp->atomic_number, sizeof(int));
         }
 
 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
         length = sizeof(int);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &num_pw_wfc, sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &num_pw_wfc, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = sizeof(double);
-        write(fhand, &length, sizeof(int));
-        write(fhand, &ct.kp[kpt].kweight, sizeof(double));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &ct.kp[kpt].kweight, sizeof(double));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = 3* sizeof(double);
-        write(fhand, &length, sizeof(int));
-        write(fhand, ct.kp[kpt].kpt, sizeof(double)*3);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, ct.kp[kpt].kpt, sizeof(double)*3);
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length =nspin* sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, ifmin, sizeof(int) * nspin);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, ifmin, sizeof(int) * nspin);
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = nspin* sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, ifmax, sizeof(int) * nspin);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, ifmax, sizeof(int) * nspin);
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = nspin *ct.num_states * sizeof(double);
-        write(fhand, &length, sizeof(int));
-        write(fhand, eigs, sizeof(double) * ct.num_states * nspin); 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, eigs, sizeof(double) * ct.num_states * nspin); 
+        rmg::writefile(fhand, &length, sizeof(int));
         // eigs(ispin * nband * ct.num_kpts + kpt * nband + iband)
 
-        write(fhand, &length, sizeof(int));
-        write(fhand, occs, sizeof(double) * ct.num_states * nspin); 
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, occs, sizeof(double) * ct.num_states * nspin); 
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, &nrecord, sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &nrecord, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, &num_pw_rho, sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &num_pw_rho, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = 3*num_pw_rho*sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, g_g, sizeof(int) * 3 * num_pw_rho);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, g_g, sizeof(int) * 3 * num_pw_rho);
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, &nrecord, sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &nrecord, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
-        write(fhand, &length, sizeof(int));
-        write(fhand, &num_pw_wfc, sizeof(int));
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &num_pw_wfc, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
 
         length = 3*num_pw_wfc * sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, gk_g, sizeof(int)*num_pw_wfc*3);
-        write(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, &length, sizeof(int));
+        rmg::writefile(fhand, gk_g, sizeof(int)*num_pw_wfc*3);
+        rmg::writefile(fhand, &length, sizeof(int));
     }
 
 
@@ -488,18 +486,18 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
         {
 
             length = sizeof(int);
-            write(fhand, &length, sizeof(int));
-            write(fhand, &nrecord, sizeof(int));
-            write(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, &nrecord, sizeof(int));
+            rmg::writefile(fhand, &length, sizeof(int));
 
-            write(fhand, &length, sizeof(int));
-            write(fhand, &num_pw_wfc, sizeof(int));
-            write(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, &num_pw_wfc, sizeof(int));
+            rmg::writefile(fhand, &length, sizeof(int));
 
             length = num_pw_wfc * sizeof(std::complex<double>);
-            write(fhand, &length, sizeof(int));
-            write(fhand, wfng, sizeof(std::complex<double>) * num_pw_wfc);
-            write(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, &length, sizeof(int));
+            rmg::writefile(fhand, wfng, sizeof(std::complex<double>) * num_pw_wfc);
+            rmg::writefile(fhand, &length, sizeof(int));
 
 
         }

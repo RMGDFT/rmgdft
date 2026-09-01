@@ -6,7 +6,7 @@
 #include "RmgException.h"
 #include "Voronoi.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Atomic.h"
 
 Voronoi::Voronoi()
@@ -72,7 +72,7 @@ Voronoi::Voronoi()
         Rmg_Symm->symmetrize_rho_AFM(atomic_rho, &atomic_rho[pbasis]);
     }
     LocalCharge(atomic_rho, localrho_atomic);
-    GlobalSums(localrho_atomic, (int)Atoms.size(), pct.spin_comm);  
+    rmg::allreduce(localrho_atomic, (int)Atoms.size(), pct.spin_comm);  
     delete [] atomic_rho;
 
 }
@@ -98,5 +98,5 @@ void Voronoi::LocalCharge(double *rho, double *localrho)
     {
         for(int idx = 0; idx < pbasis; idx++) localrho[grid_to_atom[idx]] += vol * rho[idx + pbasis];
     }
-    GlobalSums(localrho, (int)Atoms.size(), pct.grid_comm);  
+    rmg::allreduce(localrho, (int)Atoms.size(), pct.grid_comm);  
 }

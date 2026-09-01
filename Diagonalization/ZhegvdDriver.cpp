@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -44,7 +44,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     cuDoubleComplex *zwork;
 
     cu_status = cusolverDnZhegvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, &lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZheevd_bufferSize failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZheevd_bufferSize failed.");
 
     if(work == NULL)
     {
@@ -52,16 +52,16 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     }
     else
     {
-        if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " ZhegvdDriver: provided workspace too small.");
+        if(lwork > worksize) rmg::error(" ZhegvdDriver: provided workspace too small.");
         zwork = (cuDoubleComplex *)work;
     }
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)zwork, lwork, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZhegvd failed.");
 
     gpuFree(devInfo);
     if(work == NULL) RmgFreeHost(zwork);
@@ -80,10 +80,10 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     int lrwork = 2*n*n + 6*n; 
     double *rwork = new double[lrwork];
 
-    zhegvd(&itype, jobz, cuplo, &n, (double *)A, &n, (double *)B, &n, eigs, work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
+    zhegvd(&itype, jobz, cuplo, &n, A, &n, B, &n, eigs, (std::complex<double> *)work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
 
     if(info)
-        rmg_error_handler (__FILE__, __LINE__, " zhegvd failed.");
+        rmg::error(" zhegvd failed.");
 
     delete [] rwork;
     delete [] iwork;

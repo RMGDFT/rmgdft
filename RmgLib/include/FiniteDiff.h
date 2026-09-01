@@ -68,7 +68,7 @@ class FiniteDiff {
 
 private:
     Lattice *L;
-    BaseGrid *G;
+    rmg::grid *G;
 
     int x_type;
     int y_type;
@@ -91,7 +91,7 @@ private:
 public:
     FiniteDiff(Lattice *lptr);
     FiniteDiff(Lattice *lptr, bool alt_flag);
-    FiniteDiff(Lattice *lptr, BaseGrid *G, int xtype, int ytype, int ztype, int density, int order);
+    FiniteDiff(Lattice *lptr, rmg::grid *G, int xtype, int ytype, int ztype, int density, int order);
     static void gen_weights(int n, int m, double xr, double *x, double *w);
     static void set_allocation_limit(int lim);
     static int LCkey(double a0h);
@@ -158,6 +158,22 @@ public:
 
     template <typename RmgType, int order>
     void fd_gradient_general (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                double hxgrid,
+                                int dimx, int dimy, int dimz);
+
+    template <typename RmgType, int order>
+    void fd_gradient_general1 (RmgType * __restrict__ a,
+                                RmgType * __restrict__ gx,
+                                RmgType * __restrict__ gy,
+                                RmgType * __restrict__ gz,
+                                double hxgrid,
+                                int dimx, int dimy, int dimz);
+
+    template <typename RmgType, int order>
+    void fd_gradient_general2 (RmgType * __restrict__ a,
                                 RmgType * __restrict__ gx,
                                 RmgType * __restrict__ gy,
                                 RmgType * __restrict__ gz,

@@ -25,7 +25,6 @@
 #include "Pw.h"
 #include "transition.h"
 #include "rmg_error.h"
-#include "ErrorFuncs.h"
 #include "GpuAlloc.h"
 #if (VKFFT_BACKEND == 2)
     #include "vkFFT.h"
@@ -47,17 +46,17 @@ auto fft_sycl_exception_handler = [] (sycl::exception_list exceptions) {
 #endif
 #endif
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
+Pw::Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag)
 {
     pw_internal (G, L, ratio, gamma_flag, true);
 }
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+Pw::Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
 {
     pw_internal (G, L, ratio, gamma_flag, create_buffers);
 }
 
-void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
+void Pw::pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers)
 {
 
   // Grid parameters
@@ -219,7 +218,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
 
 #if CUDA_ENABLED
       for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking), "Problem creating gpu stream.");
+          gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking);
 
       for (int i = 0; i < num_streams; i++)
       {
@@ -250,20 +249,16 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
          cufftSetStream(gpu_plans_c2r[i], streams[i]);
 
          if(use_internal_buffers)
-             RmgGpuError(__FILE__, __LINE__, 
-             gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-             "Error: gpuMallocHost failed.\n");
+             gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
 
          if(use_internal_buffers)
-             RmgGpuError(__FILE__, __LINE__, 
-             gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-             "Error: gpuMalloc failed.\n");
+             gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
       }
 #elif HIP_ENABLED
       if(num_streams > 1)
       {
           for (int i = 0; i < num_streams; i++)
-              RmgGpuError(__FILE__, __LINE__, gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking), "Problem creating gpu stream.");
+              gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking);
       }
       else
       {
@@ -349,9 +344,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           {
               if(use_internal_buffers)
               {
-                  RmgGpuError(__FILE__, __LINE__, 
-                         gpuMalloc((void **)&work_bufs[i], work_size),
-                         "Error: gpuMalloc failed.\n");
+                 gpuMalloc((void **)&work_bufs[i], work_size);
                  status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
               }
           }
@@ -359,13 +352,8 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
 
           if(use_internal_buffers)
           {
-              RmgGpuError(__FILE__, __LINE__, 
-                   gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                   "Error: gpuMallocHost failed.\n");
-
-              RmgGpuError(__FILE__, __LINE__, 
-                   gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                   "Error: gpuMalloc failed.\n");
+              gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
+              gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>));
            }
 
 #if (VKFFT_BACKEND == 2)
@@ -388,7 +376,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_r2c[i] = {};
@@ -397,7 +385,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_r2c[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_d2z[i] = {};
@@ -406,7 +394,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_d2z[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 
           vk_plans_f[i] = {};
@@ -415,7 +403,7 @@ void Pw::pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool 
           resFFT = initializeVkFFT(&vk_plans_f[i], vkconf);
           if (resFFT != VKFFT_SUCCESS) 
           {
-              rmg_error_handler(__FILE__, __LINE__, " error setting up vkfft. Exiting.\n");
+              rmg::error(" error setting up vkfft. Exiting.\n");
           }
 #endif
 
@@ -683,11 +671,11 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
 #endif
 #elif HIP_ENABLED
       double *tptr = (double *)host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
 	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
-	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -698,14 +686,14 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
 #endif
       if(copy_from_dev)
       {
-	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
     if((void *)in == (void *)out)
@@ -782,11 +770,11 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
 #endif
 #elif HIP_ENABLED
       float *tptr = (float *)host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
 	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
-	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -797,14 +785,14 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
 #endif
       if(copy_from_dev)
       {
-	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if((void *)in == (void *)out)
@@ -879,11 +867,11 @@ catch(sycl::exception const& e) {
 #endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       }
 
 #if (VKFFT_BACKEND == 2)
@@ -896,13 +884,13 @@ catch(sycl::exception const& e) {
 
       if(copy_from_dev)
       {   
-          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -975,11 +963,11 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
 #endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -990,13 +978,13 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
 #endif
       if(copy_from_dev)
       {   
-          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -1073,12 +1061,12 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
       queues[tid].wait();
 #endif
 #elif HIP_ENABLED
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           std::complex<double> *tptr = (std::complex<double> *)host_bufs[tid];
           for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -1089,14 +1077,14 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
 #endif
       if(copy_from_dev)
       {
-          hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           double *tptr1 = (double *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if((double *)in == out)
@@ -1162,12 +1150,12 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
       queues[tid].wait();
 #endif
 #elif HIP_ENABLED
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
           for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -1178,14 +1166,14 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
 #endif
       if(copy_from_dev)
       {
-          hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           float *tptr1 = (float *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if((float *)in == out)
@@ -1246,11 +1234,11 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
 #endif
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -1262,13 +1250,13 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
 
       if(copy_from_dev)
       {   
-          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -1340,11 +1328,11 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
 #endif
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
-      hipStreamSynchronize(streams[tid]);
+      gpuStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
 #if (VKFFT_BACKEND == 2)
       VkFFTLaunchParams lp = {};
@@ -1355,13 +1343,13 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
 #endif
       if(copy_from_dev)
       {   
-          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
-          hipStreamSynchronize(streams[tid]);
+          gpuMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
       else
       {
-          hipStreamSynchronize(streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
       }
 #else 
       if(in == out)
@@ -1419,14 +1407,14 @@ Pw::~Pw(void)
          cufftDestroy(gpu_plans_z2d[i]);
          if(use_internal_buffers)
          {
-             RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
-             RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+             gpuFreeHost(host_bufs[i]);
+             gpuFree(dev_bufs[i]);
          }
       }
 
       // Gpu streams and plans
       for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+          gpuStreamDestroy(streams[i]);
 
 #elif HIP_ENABLED
       for (int i = 0; i < num_streams; i++)
@@ -1439,8 +1427,8 @@ Pw::~Pw(void)
          rocfft_plan_destroy(gpu_plans_z2d[i]);
          if(use_internal_buffers)
          {
-             RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
-             RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
+             gpuFreeHost(host_bufs[i]);
+             gpuFree(dev_bufs[i]);
          }
       }
 
@@ -1448,7 +1436,7 @@ Pw::~Pw(void)
       if(num_streams > 1)
       {
           for (int i = 0; i < num_streams; i++)
-              RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
+              gpuStreamDestroy(streams[i]);
       }
 
 #else

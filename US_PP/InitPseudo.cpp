@@ -39,7 +39,7 @@ using boost::math::policies::policy;
 using boost::math::policies::promote_double;
 typedef policy<promote_double<false> > bessel_policy;
 
-void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
+void SPECIES::InitPseudo (Lattice &L, rmg::grid *G, bool write_flag)
 {
 
     if(!std::strcmp(this->atomic_symbol, "DLO")) return;
@@ -92,7 +92,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
             {
                 if((pct.gridpe == 0) && (printed == 0))
                 {
-                    rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    rmg::printlog("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printed++;
                 }
@@ -100,7 +100,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
             }
             else if(printed == 0)
             {
-                rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size.\n");
+                rmg::printlog("Warning: localized projectors selected but their diameter exceeds cell size.\n");
                 printf("Warning: localized projectors selected but their diameter exceeds cell size.\n");
                 printed++;
             }
@@ -117,7 +117,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     }
 
     /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
-    if (ct.max_nlpoints < (this->nldim * this->nldim * this->nldim))
+    if (ct.max_nlpoints < (size_t)(this->nldim * this->nldim * this->nldim))
         ct.max_nlpoints = this->nldim * this->nldim * this->nldim;
 
     if(!ct.localize_projectors) {
@@ -127,8 +127,8 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     if(ct.localize_projectors)
     {
         // Grid object local to this MPI process
-        this->OG = new BaseGrid(this->nldim, this->nldim, this->nldim, 1, 1, 1, 0, 1);
-        BaseGrid *OG = (BaseGrid *)this->OG;
+        this->OG = new rmg::grid(this->nldim, this->nldim, this->nldim, 1, 1, 1, 0, 1);
+        rmg::grid *OG = (rmg::grid *)this->OG;
         OG->set_rank(0, pct.my_comm);
 
         // Lattice object for the localized projector region. Global vectors need to be
@@ -200,10 +200,28 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     this->der_localpp_g = new double[RADIAL_GVECS];
     this->arho_g = new double[RADIAL_GVECS];
     this->rhocore_g = new double[RADIAL_GVECS];
+    this->tau_atomic_g = new double[RADIAL_GVECS]();
+    this->tau_core_g = new double[RADIAL_GVECS]();
     RLogGridToGLogGrid(work, this->r, this->rab, this->localpp_g,
             this->rg_points, 0, bessel_rg);
     RLogGridToGLogGrid(this->atomic_rho, this->r, this->rab, this->arho_g,
             this->rg_points, 0, bessel_rg);
+    if(ct.xc_is_meta)
+    {
+        RLogGridToGLogGrid(this->tau_atomic.data(), this->r, this->rab, this->tau_atomic_g,
+                this->rg_points, 0, bessel_rg);
+        RLogGridToGLogGrid(this->tau_core.data(), this->r, this->rab, this->tau_core_g,
+                this->rg_points, 0, bessel_rg);
+        this->tau_atomic_lig.resize(MAX_LOGGRID);
+        this->tau_core_lig.resize(MAX_LOGGRID);
+        FilterPotential(this->tau_atomic.data(), this->r, this->rg_points, this->lradius, ct.rhocparm,
+                        this->tau_atomic_lig.data(), this->rab, 0, this->gwidth, 0.66*this->lradius,
+                        this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+        FilterPotential(this->tau_core.data(), this->r, this->rg_points, this->lradius, ct.rhocparm,
+                        this->tau_core_lig.data(), this->rab, 0, this->gwidth, 0.66*this->lradius,
+                        this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+    }
+
     Der_Localpp_g(work, this->r, this->rab, this->der_localpp_g, this->rg_points);
     this->arho_g[0] = Zv;
     if (pct.gridpe == 0 && write_flag)
@@ -312,7 +330,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     {
         if(ct.xc_is_hybrid)
         {
-            rmg_printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
+            rmg::printlog("Warning: Core corrections are not consistent with hybrid functionals!\n");
             printf("Warning: Core corrections are not consistent with hybrid functionals!\n");
         }
 
@@ -372,6 +390,9 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
 
     }                       /* end if */
 
+    if(ct.xc_is_meta)
+    {
+    }
 
     /*Open file for writing atomic orbitals */
     if (pct.gridpe == 0 && write_flag)
@@ -427,7 +448,7 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
             {
                 if(pct.gridpe == 0) 
                 {
-                    rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    rmg::printlog("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                 }
                 ct.atomic_orbital_type = DELOCALIZED;
@@ -604,6 +625,58 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         }
 
     } // end if for !ct.norm_conserving_pp
+
+
+    // If this is a spin polarized calculation we need to compute the magnetic charge
+    // density for each species which is used to setup the initial atomic densities
+    if(ct.nspin == 2)
+    {
+        this->mrho_g.resize(RADIAL_GVECS);
+        this->mrho_lig.resize(MAX_LOGGRID);
+        for(int i=0;i < RADIAL_GVECS;i++) mrho_g[i] = 0.0;
+        for(int i=0;i < MAX_LOGGRID;i++) mrho_lig[i] = 0.0;
+
+        std::vector<double> mrho(std::max(this->rg_points, std::max(RADIAL_GVECS, MAX_LOGGRID)));
+        std::vector<double> work(std::max(this->rg_points, std::max(RADIAL_GVECS, MAX_LOGGRID)));
+
+        // Loop over atomic wavefunctions
+        for (int ip = 0; ip < this->num_atomic_waves; ip++)
+        {
+            // Look for partially filled shells
+            // and accumulate charge
+            int l = this->atomic_wave_l[ip];
+            double occ = this->atomic_wave_oc[ip];
+            double *wave = this->atomic_wave[ip];
+#if 0
+            if(((l == 0) && (std::abs(occ - 2.0) > 0.1)) || 
+               ((l == 1) && (std::abs(occ - 6.0) > 0.1)) ||
+               ((l == 2) && (std::abs(occ - 10.0) > 0.1)) ||
+               ((l == 3) && (std::abs(occ - 14.0) > 0.1)))
+#else
+            if((l == 2) && (std::abs(occ - 10.0) > 0.1))
+#endif
+            {
+                for(int i=0;i < this->rg_points;i++) work[i] = wave[i]*wave[i];
+                for(int i=0;i < this->rg_points;i++) mrho[i] += occ*wave[i]*wave[i];
+            }
+        }
+        for (int idx = 0; idx < this->rg_points; idx++) mrho[idx] /= 4.0*PI;
+        //double norm1 = 4.0*PI*radint1 (atomic_rho, this->r, this->rab, this->rg_points);
+        //double norm2 = 4.0*PI*radint1 (mrho.data(), this->r, this->rab, this->rg_points);
+        //printf("NORMS %f   %f\n", norm1, norm2);
+        RLogGridToGLogGrid(mrho.data(), this->r, this->rab, this->mrho_g.data(),
+                           this->rg_points, 0, bessel_rg);
+        for (int idx = 0; idx < this->rg_points; idx++)
+        {
+            if(mrho[idx] < 0.0)
+                work[idx] = 0.0;
+            else 
+                work[idx] = sqrt(mrho[idx]);
+        }
+        FilterPotential(work.data(), this->r, this->rg_points, this->lradius, ct.rhocparm, this->mrho_lig.data(),
+                this->rab, 0, this->gwidth, 0.66*this->lradius, this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
+        for (int idx = 0; idx < MAX_LOGGRID; idx++) this->mrho_lig[idx] *= this->mrho_lig[idx];
+    }
 
     delete [] bessel_rg;
     delete [] work;

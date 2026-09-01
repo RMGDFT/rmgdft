@@ -48,14 +48,14 @@
 #include "Kpoint.h"
 #include "RmgException.h"
 #include "blas.h"
-#include "ErrorFuncs.h"
+
 #include "GpuAlloc.h"
 #include "OrbitalProfile.h"
+#include "rmgthreads.h"
 
-extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
-template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
-template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, rmg::grid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template void Kpoint<double>::set_pool(double *pool);
 template void Kpoint<std::complex <double> >::set_pool(std::complex<double> *pool);
 template void Kpoint<double>::init_states(void);
@@ -83,9 +83,13 @@ template void Kpoint<double>::DeleteNvmeArrays(void);
 template void Kpoint<std::complex <double> >::DeleteNvmeArrays(void);
 template void Kpoint<double>::ClearPotentialAcceleration(void);
 template void Kpoint<std::complex <double> >::ClearPotentialAcceleration(void);
+template void Kpoint<std::complex <double> >::save_sint(void);
+template void Kpoint<double>::save_sint(void);
+template void Kpoint<std::complex <double> >::restore_sint(void);
+template void Kpoint<double>::restore_sint(void);
 
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
+template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, rmg::grid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
 {
 
     this->grid_comm = newcomm;
@@ -99,16 +103,15 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->OrbitalProjector = NULL;
     this->ldaU = NULL;
     this->newsint_local = NULL;
+    this->oldsint_local = NULL;
     this->orbitalsint_local = NULL;
-    this->nvme_weight_fd = -1;
-    this->nvme_ldaU_fd = -1;
     this->G = newG;
     this->T = newT;
     this->L = newL;
     this->pbasis = this->G->get_P0_BASIS(1);
     this->pbasis_noncoll = ct.noncoll_factor * this->pbasis;
     this->stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT) this->stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE) this->stress_factor = 4;
 
     // This is a boost pool per thread allocator used in MgEigState. It makes it easy
     // to change the type of the underlying memory (cpu, cuda, hip) by modifying
@@ -166,7 +169,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     {
         repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
         if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )
-                rmg_error_handler (__FILE__, __LINE__, "Fixed occupation for both spin up and down must be specified !!!");
+                rmg::error("Fixed occupation for both spin up and down must be specified !!!");
         tbuf[0] = ct.occupation_str_spin_up;
         tbuf[1] = ct.occupation_str_spin_down;
         num_states_spf[0] = 0;
@@ -194,7 +197,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             {
                 count_states[idx] += n;
                 if (nocc[idx] == MAX_NOCC)
-                    rmg_error_handler (__FILE__, __LINE__, "Too many blocks in repeat count for state occupations");
+                    rmg::error("Too many blocks in repeat count for state occupations");
                 /* two block example  3 1.0  4 0.0*/
                 occ[nocc[idx] + MAX_NOCC * idx].n = n;
                 occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
@@ -210,11 +213,12 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
         if ( (nspin_occ == 2) && (num_states_spf[0] != num_states_spf[1]) )
         {
-            rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
-            rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
+            rmg::printlog("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+            rmg::error("num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
-        int total_occ_states = std::round(ct.nel / (double)ct.nspin);
+        double divisor = 2.0;
+        int total_occ_states = std::round(ct.nel / divisor);
         if(num_states_spf[0] < (total_occ_states + P.rec_unoccupied))
         {
             num_states_spf[0] = total_occ_states + P.rec_unoccupied;
@@ -256,9 +260,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // Adjust num_states to be an integral multiple of pct.coalesce_factor*active_threas.
     // Whatever value is used for active threads here
     // must match the value used in MgridSubspace
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    int active_threads = rmg::get_active_threads();
     int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
     int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
     if(states_rem) ct.num_states = states_div + (active_threads*pct.coalesce_factor);
@@ -297,6 +299,11 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.init_states = ct.num_states + ct.extra_random_lcao_states;
     }
 
+    // Pad init_states to be an integral multiple of active_threads*pct.coalesce_factor too
+    states_div = (ct.init_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+    states_rem = ct.init_states % (active_threads*pct.coalesce_factor);
+    if(states_rem) ct.init_states = states_div + (active_threads*pct.coalesce_factor);
+
     ct.run_states = ct.num_states;
 
     if(ct.state_block_size > ct.num_states ) ct.state_block_size = ct.num_states;
@@ -319,7 +326,13 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if(ct.forceflag == BAND_STRUCTURE) ct.max_states = std::max(ct.max_states, 3*ct.num_states);
     ct.max_states = std::max(ct.max_states, 2*ct.num_states);
 
-
+    int root_pes = static_cast<int>(std::ceil(sqrt((double)pct.grid_npes)));
+    int nb = ct.run_states / ct.scalapack_block_factor;
+    while((root_pes > nb) && (ct.scalapack_block_factor > 2))
+    {
+        ct.scalapack_block_factor /= 2;
+        nb = ct.run_states / ct.scalapack_block_factor;
+    } 
     /* Allocate memory for the state structures */
     this->Kstates.resize(2*ct.max_states);
     this->nstates = ct.init_states;
@@ -429,6 +442,17 @@ template <class KpointType> int Kpoint<KpointType>::get_nstates(void)
 template <class KpointType> int Kpoint<KpointType>::get_index(void)
 {
     return this->kidx;
+}
+
+template <class KpointType> void Kpoint<KpointType>::save_sint(void)
+{   
+    if(oldsint_local)
+        std::copy(this->newsint_local, this->newsint_local+this->sint_alloc, this->oldsint_local);
+}
+template <class KpointType> void Kpoint<KpointType>::restore_sint(void)
+{   
+    if(oldsint_local)
+        std::copy(this->oldsint_local, this->oldsint_local+this->sint_alloc, this->newsint_local);
 }
 
 
@@ -716,7 +740,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
                         nidx++;
                         if (nidx >= num_nonloc_ions)
-                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in nonloc_ions_list for owned ion");
+                            rmg::error("Could not find matching entry in nonloc_ions_list for owned ion");
 
                     } while (nonloc_ions_list[nidx] != oion);
 
@@ -751,7 +775,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /*Sum coefficients over all processors */
             if (length)
             {
-                global_sums (&cR[ist1 + 1], &length, grid_comm);
+                rmg::allreduce(&cR[ist1 + 1], length, grid_comm);
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
@@ -871,7 +895,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
                         nidx++;
                         if (nidx >= num_nonloc_ions)
-                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+                            rmg::error("Could not find matching entry in pct.nonloc_ions_list for owned ion");
 
                     } while (nonloc_ions_list[nidx] != oion);
 
@@ -912,8 +936,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
             /*Sum coefficients over all processors */
             if (length)
             {
-                global_sums (&cR[ist1 + 1], &length, grid_comm);
-                global_sums (&cI[ist1 + 1], &length, grid_comm);
+                rmg::allreduce(&cR[ist1 + 1], length, grid_comm);
+                rmg::allreduce(&cI[ist1 + 1], length, grid_comm);
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
@@ -966,7 +990,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -1047,7 +1071,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -1067,7 +1091,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
         FindPhaseKpoint (this->kp.kvec, nlxdim, nlydim, nlzdim, this->BetaProjector->nlcrds[ion].data(), fftw_phase, false);
 
         /*Temporary pointer to the already calculated forward transform */
-        fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
+        fptr = (std::complex<double> *)&sp->forward_orbital[0][this->kidx * sp->num_orbitals * pbasis];
 
         /* Loop over atomic orbitals */
         for (int ip = 0; ip < sp->num_orbitals; ip++)
@@ -1117,15 +1141,6 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     this->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
 
-    if(ct.nvme_weights)
-    {
-        if(nvme_weight_fd != -1) close(nvme_weight_fd);
-
-        nvme_weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        nvme_weight_fd = FileOpenAndCreate(nvme_weight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-    }
-
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
     ct.beta_alloc[0] = this->nl_weight_size * sizeof(KpointType);
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, grid_comm);
@@ -1138,65 +1153,26 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-    gpuError_t custat;
-    // Managed memory is faster when gpu memory is not constrained but 
-    // pinned memory works better when it is constrained.
-    if(ct.pin_nonlocal_weights)
-    {
-        custat = gpuMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMallocHost failed.\n");
-    }
-    else
-    {
-        this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
-#if CUDA_ENABLED
-        int _device = -1;
-        gpuGetDevice(&_device);
-#if CUDA_VERSION_MAJOR >= 13
-        struct cudaMemLocation device = {
-                .type = cudaMemLocationTypeDevice,
-                .id = _device,
-        };
-#else
-        int device = _device;
-#endif
-        cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
-#elif HIP_ENABLED
-        int device = -1;
-        gpuGetDevice(&device);
-        hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
-#elif SYCL_ENABLED
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
-
-#endif
-    }
+    this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
+    gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
 #else
-    if(ct.nvme_weights)
-    {
-        this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
-        if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_NORMAL);
-    }
-    else
-    {
-        this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
-    }
+    this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
 #endif
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
+    sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->newsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
+    if(ct.forceflag == TDDFT_CVE)
+        this->oldsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->newsint_local = new KpointType[sint_alloc]();
+    if(ct.forceflag == TDDFT_CVE)
+        this->oldsint_local = new KpointType[sint_alloc]();
 #endif
 
     MPI_Barrier(grid_comm);
@@ -1209,31 +1185,21 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
 
     if (this->nl_weight != NULL) {
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-        if(ct.pin_nonlocal_weights)
-        {
-            gpuFreeHost(this->nl_weight);
-        }
-        else
-        {
-            gpuFreeHost(this->nl_weight);
-            gpuFree(this->nl_weight_gpu);
-        }
+        gpuFreeHost(this->nl_weight);
+        gpuFree(this->nl_weight_gpu);
         if (this->newsint_local)
             RmgFreeHost(this->newsint_local);
+        if (this->oldsint_local)
+            RmgFreeHost(this->oldsint_local);
 #else
-        if(ct.nvme_weights)
-        {
-            munmap(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(double));
-        }
-        else
-        {
-            delete [] this->nl_weight;
-        }
+        delete [] this->nl_weight;
         if (this->newsint_local)
             delete [] this->newsint_local;
+        if (this->oldsint_local)
+            delete [] this->oldsint_local;
 #endif
         this->nl_weight = NULL;
-        this->newsint_local = NULL;
+        this->oldsint_local = NULL;
     }
 
 }
@@ -1247,15 +1213,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
         RmgFreeHost(this->orbital_weight);
         RmgFreeHost(this->orbitalsint_local);
 #else
-        if(ct.nvme_weights)
-        {
-            munmap(this->orbital_weight, this->orbital_weight_size* stress_factor * sizeof(double));
-        }
-        else
-        {
-            delete [] this->orbital_weight;
-            delete [] this->orbitalsint_local;
-        }
+        delete [] this->orbital_weight;
+        delete [] this->orbitalsint_local;
 #endif
         this->orbital_weight = NULL;
         this->orbitalsint_local = NULL;
@@ -1278,52 +1237,15 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
 
-    if(ct.nvme_weights)
-    {
-        if(nvme_ldaU_fd != -1) close(nvme_ldaU_fd);
-
-        nvme_ldaU_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        nvme_ldaU_fd = FileOpenAndCreate(nvme_ldaU_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-
-    }
-
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * (size_t)ct.noncoll_factor;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     this->orbital_weight = (KpointType *)RmgMallocHost(stress_factor * this->orbital_weight_size * sizeof(KpointType));
-#if CUDA_ENABLED
-    int _device = -1;
-    gpuGetDevice(&_device);
-#if CUDA_VERSION_MAJOR >= 13
-    struct cudaMemLocation device = {
-        .type = cudaMemLocationTypeDevice,
-        .id = _device,
-    };
-#else
-    int device = _device;
-#endif
-    cudaMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-#elif HIP_ENABLED
-    int device = -1;
-    gpuGetDevice(&device);
-    hipMemAdvise ( this->orbital_weight, stress_factor * this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-#endif
 
     for(size_t idx = 0;idx < stress_factor * this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
 #else
-    if(ct.nvme_weights)
-    {
-        this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, stress_factor * this->orbital_weight_size*sizeof(KpointType));
-        if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->orbital_weight, stress_factor * this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL);
-
-    }
-    else
-    {
-        this->orbital_weight = new KpointType[stress_factor * this->orbital_weight_size]();
-    }
+    this->orbital_weight = new KpointType[stress_factor * this->orbital_weight_size]();
 #endif
 
 
@@ -1347,30 +1269,6 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 {
     reset_beta_arrays();
     reset_orbital_arrays();
-    if(nvme_weight_fd > 0)
-    {
-        std::string weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-
-        if(std::filesystem::exists(weight_path.c_str()))
-        {
-            unlink(weight_path.c_str());
-        }
-        nvme_weight_fd = -1;
-    }
-
-    if(nvme_ldaU_fd > 0)
-    {
-        std::string orbital_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-
-        if(std::filesystem::exists(orbital_path.c_str()))
-        {
-            unlink(orbital_path.c_str());
-        }
-        nvme_ldaU_fd = -1;
-    }
-
 }
 
 template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)

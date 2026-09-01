@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -36,32 +36,28 @@
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
 
-    cusolverStatus_t cu_status;
     int lwork, *devInfo;
     const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
     syevjInfo_t dsygvj_params = NULL;
 
-    cu_status = cusolverDnCreateSyevjInfo(&dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnCreateDsygvjInfo failed.");
+    rmg::error(cusolverDnCreateSyevjInfo(&dsygvj_params));
 
-    cu_status = cusolverDnDsygvj_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork, dsygvj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvjDriver: provided workspace too small.");
+    rmg::error(cusolverDnDsygvj_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork, dsygvj_params));
+    if(lwork > worksize) rmg::error(" DsygvjDriver: provided workspace too small.");
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
     double abstol = 1.0e-5;
     abstol = std::min(abstol, ct.scf_accuracy)/100.0;
-    cusolverDnXsyevjSetTolerance( dsygvj_params, abstol);
+    rmg::error(cusolverDnXsyevjSetTolerance( dsygvj_params, abstol));
 
-    cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
+    rmg::error(cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params));
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvj failed.");
 
     gpuFree(devInfo);
-    if (dsygvj_params) cusolverDnDestroySyevjInfo(dsygvj_params);
+    if (dsygvj_params) rmg::error(cusolverDnDestroySyevjInfo(dsygvj_params));
 
 }
 
@@ -70,7 +66,6 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
     const rocblas_eform itype = rocblas_eform_ax;
-    const rocblas_esort sortdir = rocblas_esort_ascending;
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_lower;
     double abstol = 1.0e-20;
@@ -82,9 +77,9 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     int *dev_n_sweeps;
     rocblas_int *devInfo;
     rocblas_status status;
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&devResidual, sizeof(double));
+    gpuMalloc((void **)&dev_n_sweeps, sizeof(int));
 
     double tstart = my_crtc();
     status = rocsolver_dsygvj(ct.roc_handle,
@@ -110,7 +105,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(dev_n_sweeps);
     gpuFree(devResidual);
     gpuFree(devInfo);
-    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    if(status != 0) rmg::error(" rocsolver_dsygvj failed.");
     if(ct.verbose && pct.gridpe==0)
         printf("rocsolver_dsygvj  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 }

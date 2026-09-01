@@ -24,10 +24,11 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
+#include "blas_driver.h"
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
@@ -43,22 +44,22 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     syevjInfo_t dsyevj_params = NULL;
 
     cu_status = cusolverDnCreateSyevjInfo(&dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnCreateDsyevjInfo failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnCreateDsyevjInfo failed.");
 
     cu_status = cusolverDnDsyevj_bufferSize(ct.cusolver_handle, jobz, uplo, n, A, n, work, &lwork, dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevjDriver: provided workspace too small.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevj_bufferSize failed.");
+    if(lwork > worksize) rmg::error(" DsyevjDriver: provided workspace too small.");
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     cu_status = cusolverDnDsyevj(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo, dsyevj_params);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevj failed.");
 
     gpuFree(devInfo);
     if (dsyevj_params) cusolverDnDestroySyevjInfo(dsyevj_params);
-    DeviceSynchronize();
+    rmg::sync_device();
 }
 
 #elif HIP_ENABLED
@@ -72,7 +73,6 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     const rocblas_evect jobz = rocblas_evect_original;
     const rocblas_fill uplo = rocblas_fill_upper;
     const double abstol = 1.0e-9;
-    double *dev_residual = NULL;
     double *residual;
     double *devResidual;
     const rocblas_int max_sweeps = 100;
@@ -81,9 +81,9 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     int info;
     rocblas_status status;
 
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devResidual, sizeof(double) ), "Problem with gpuMalloc");
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&dev_n_sweeps, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
+    gpuMalloc((void **)&devResidual, sizeof(double));
+    gpuMalloc((void **)&dev_n_sweeps, sizeof(int));
 
     status = rocsolver_dsyevj(ct.roc_handle,
                               sortdir,
@@ -105,7 +105,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
     gpuFree(dev_n_sweeps);
     gpuFree(devResidual);
     gpuFree(devInfo);
-    if(status != 0) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygvj failed.");
+    if(status != 0) rmg::error(" rocsolver_dsygvj failed.");
     //printf("RRRRR  %d  %d  %e  %d\n",status, n_sweeps, residual, info);
 
 

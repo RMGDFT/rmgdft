@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef RMG_TYPEDEFS_H
 #define RMG_TYPEDEFS_H 1
@@ -28,6 +29,28 @@
     #include <complex.h>
     typedef complex double   DoubleC;
 #endif
+#include <type_traits>
+
+// 1. Primary template: handles scalar types (float, double, etc.)
+template <typename T>
+struct get_scalar {
+    using type = T;
+};
+
+// 2. Partial specialization: handles std::complex types
+template <typename T>
+struct get_scalar<std::complex<T>> {
+    using type = T;
+};
+
+// 3. Helper alias (Optional but recommended for modern C++)
+template <typename T>
+using get_scalar_t = typename get_scalar<T>::type;
+
+// --- Usage ---
+//using TypeA = get_scalar_t<float>;                // Result: float
+//using TypeB = get_scalar_t<std::complex<float>>;  // Result: float
+
 
 /*Structure for storing PDB information
  * Each ion should have it*/

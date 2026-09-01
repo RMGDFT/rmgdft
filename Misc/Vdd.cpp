@@ -9,8 +9,8 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "RmgSumAll.h"
-#include "GlobalSums.h"
+#include "rmg_sum_all.h"
+#include "rmg_reduce.h"
 #include "boundary_conditions.h"
 
 
@@ -110,7 +110,7 @@ void Vdd(double * rho)
     xtal_z = new double[ion_multiply * num_ions];
     xtal_index = new int [ion_multiply * num_ions];
 
-    //rmg_printf("\n Vdd setup took %f seconds\n", my_crtc () - timex);
+    //rmg::printlog("\n Vdd setup took %f seconds\n", my_crtc () - timex);
 
 
     //timex = my_crtc ();
@@ -143,7 +143,7 @@ void Vdd(double * rho)
 	}
     }
 
-    //rmg_printf("\n Vdd loop 1 took %f seconds\n", my_crtc () - timex);
+    //rmg::printlog("\n Vdd loop 1 took %f seconds\n", my_crtc () - timex);
 
 
 
@@ -253,7 +253,7 @@ void Vdd(double * rho)
 	xc += hxgrid; //advance to the next gridpoint in the x direction
     }
 
-    //rmg_printf("\n Vdd loop 2 took %f seconds\n", my_crtc () - timex);
+    //rmg::printlog("\n Vdd loop 2 took %f seconds\n", my_crtc () - timex);
 
 
     /*Array to store number of voronoi domains on each processor*/
@@ -330,7 +330,7 @@ void Vdd(double * rho)
 	    Atoms[ion_index].partial_charge += loc_array_recv[j];
 
 	}
-	//rmg_printf("\n Vdd p2p communication took %f seconds\n", my_crtc () - timex);
+	//rmg::printlog("\n Vdd p2p communication took %f seconds\n", my_crtc () - timex);
 
 
 
@@ -346,7 +346,7 @@ void Vdd(double * rho)
 	    check +=  iptr->partial_charge;
 	}
 
-	rmg_printf("\n\nVDD: Summation of partial charges is %e (report if substantially different from 0)", check);
+	rmg::printlog("\n\nVDD: Summation of partial charges is %e (report if substantially different from 0)", check);
 
 
     }

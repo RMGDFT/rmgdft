@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LCR_H_INCLUDED
 #define LCR_H_INCLUDED
 

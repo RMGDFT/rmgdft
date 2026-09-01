@@ -35,14 +35,17 @@
 #include "Kpoint.h"
 #include "GpuAlloc.h"
 #include "blas.h"
+#include "rmg_hvector.h"
+#include "rmg_gemm.h"
 
 //#include "TradeImages.h"
 #include "RmgException.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "transition.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "prototypes_rmg.h"
+#include "prototypes_tddft.h"
 
 
 
@@ -111,10 +114,10 @@ template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint
     
     size =  num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
-    OrbitalType *sint_der = (OrbitalType *)RmgMallocHost(3*size * sizeof(OrbitalType));
-    OrbitalType *sint_derx = sint_der + 0 * size;
-    OrbitalType *sint_dery = sint_der + 1 * size;
-    OrbitalType *sint_derz = sint_der + 2 * size;
+    rmg::hvector<OrbitalType> sint_der(3*size);
+    OrbitalType *sint_derx = sint_der.data() + 0 * size;
+    OrbitalType *sint_dery = sint_der.data() + 1 * size;
+    OrbitalType *sint_derz = sint_der.data() + 2 * size;
 
 
 //  determine the number of occupied states for all kpoints.
@@ -131,7 +134,9 @@ template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint
             }
         }
     }
+    num_occupied = ct.num_states;
 
+    if(ct.forceflag==TDDFT_CVE) num_occupied = ct.num_states;
 
     int num_state_block = (num_occupied +ct.state_block_size -1) / ct.state_block_size;
     int *state_start = new int[num_state_block];
@@ -156,7 +161,6 @@ ct.state_block_size);
     
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-
         for(int ib = 0; ib < num_state_block; ib++)
         {
             for(int st = state_start[ib]; st < state_end[ib]; st++)
@@ -229,7 +233,7 @@ ct.state_block_size);
                     if (nion >= num_nonloc_ions)
                     {
                         printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                        rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
                     }
 
                 } while (nonloc_ions_list[nion] != gion);
@@ -266,7 +270,7 @@ ct.state_block_size);
             if (nion >= num_nonloc_ions)
             {
                 printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
             }
         } while (nonloc_ions_list[nion] != gion);
 
@@ -281,9 +285,9 @@ ct.state_block_size);
         delete RT1;
     }
 
-    GlobalSums(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::allreduce(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::allreduce(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    rmg::allreduce(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
 
     /*Loop over ions again */
@@ -301,7 +305,7 @@ ct.state_block_size);
             if (nion >= num_nonloc_ions)
             {
                 printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
             }
 
         } while (nonloc_ions_list[nion] != gion);
@@ -345,12 +349,10 @@ ct.state_block_size);
         output_force(tmp_force_omega, "Non-local forces: der_omega term");
     }
 
-
     //    delete[] par_gamma;
     delete[] gamma_allions;
     delete[] par_gamma_allions;
     delete[] par_omega_allions;
-    RmgFreeHost(sint_der);
 
     delete[] tmp_force_omega;
     delete[] tmp_force_gamma;

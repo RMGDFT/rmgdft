@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <filesystem>
 #include "main.h"
 
 
@@ -40,52 +41,14 @@
 FILE *open_restart_file (char *filename)
 {
 
-    char newname[MAX_PATH + 20], tmpname[MAX_PATH];
     FILE *fhand;
 
-
     /* Make the new output file name */
-    sprintf (newname, "%s.restart", filename);
+    std::string newname = std::format("{}.restart", filename);
 
-
-
-    fhand = fopen (newname, "w");
-
-    /*Previous call may have failed because directory did not exist
-     * Let us try to to create it*/
-    if (fhand == NULL)
-    {
-
-	/*Make a copy of output filename, dirname overwrites it */
-	strcpy (tmpname, filename);
-
-	printf ("\n write_data: Opening output file '%s' failed\n"
-		"  Trying to create subdirectory in case it does not exist\n", newname);
-
-#if !(defined(_WIN32) || defined(_WIN64))
-	if (mkdir (dirname (tmpname), S_IRWXU))
-        {
-	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
-            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
-        }
-#else
-        char dirname[_MAX_DIR];
-        _splitpath(tmpname, NULL, dirname, NULL, NULL);
-        if (!_mkdir(dirname))
-        {
-	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
-            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
-        }
-#endif
-
-	printf ("\n Creating directory %s successfully\n\n", tmpname);
-	fflush (NULL);
-
-	/*try opening file again */
-	my_fopen (fhand, newname, "w");
-
-    }
-
+    std::filesystem::path p(newname);
+    std::filesystem::create_directories(p.parent_path());
+    fhand = fopen (newname.c_str(), "w");
 
     return (fhand);
 

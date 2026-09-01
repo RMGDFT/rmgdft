@@ -126,7 +126,7 @@ void *run_threads(void *v) {
                         numa_bitmask_clearall(thread_cpumask);
                         numa_bitmask_setbit(thread_cpumask, idx);
                         numa_sched_setaffinity(0, thread_cpumask);
-                        if(ct.verbose) rmg_printf("C1 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                        if(ct.verbose) rmg::printlog("C1 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
                         break;
                     }
                     t_tid++;
@@ -190,12 +190,6 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
-            case HYBRID_ORBITALS_DOT_PRODUCT:       // Performs dot product for one pair of orbitals
-                OrbitDotOrbitBlock(ss.basetag, ss.extratag2,(double *)ss.nv, (double *)ss.ns);
-                break;
-            case HYBRID_THETA_PHI:       // Performs Theta_ij * Phi_j
-                ThetaPhiBlock(ss.basetag, ss.extratag2,(double *)ss.nv);
-                break;
             case HYBRID_ON_PRECOND:       // Performs Theta_ij * Phi_j
                 PreconditionerOne((double *)ss.p1, ss.istate, ss.gamma);
                 break;

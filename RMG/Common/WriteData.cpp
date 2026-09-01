@@ -41,12 +41,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-
-static size_t totalsize;
-
-
-static void write_double (int fh, double * rp, int count);
-static void write_int (int fh, int *ip, int count);
+#include "write_wrapper.h"
 
 
 template void WriteData (int, double *, double *, double *, Kpoint<double> **);
@@ -202,9 +197,9 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     write_time = my_crtc () - time0;
 
-    rmg_printf ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
+    rmg::printlog ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
             ((double) totalsize) / (1024 * 1024));
-    rmg_printf ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
+    rmg::printlog ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
             ((double) totalsize) / (1024 * 1024) / write_time);
 
 
@@ -213,30 +208,6 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 }                               /* end write_data */
 
 
-
-static void write_double (int fh, double * rp, int count)
-{
-    int size;
-
-    size = count * sizeof (double);
-    if (size != rmg_write (fh, rp, size))
-        rmg_error_handler (__FILE__,__LINE__,"error writing");
-
-    totalsize += size;
-}
-
-
-static void write_int (int fh, int *ip, int count)
-{
-    int size;
-
-    size = count * sizeof (int);
-    if (size != rmg_write (fh, ip, size))
-        rmg_error_handler (__FILE__, __LINE__, "error writing");
-
-    totalsize += size;
-}
-
 void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {
 
@@ -244,13 +215,9 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     double *out = new double[2*nx*ny*nz];
 
     size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
-    size_t wsize = rmg_write (fh, &csize, sizeof(csize));
-    if(wsize != sizeof(csize))
-        rmg_error_handler (__FILE__,__LINE__,"error writing");
+    rmg::writefile(fh, &csize, sizeof(csize));
 
-    wsize = rmg_write (fh, out, csize);
-    if(wsize != csize)
-        rmg_error_handler (__FILE__,__LINE__,"error writing");
+    rmg::writefile(fh, out, csize);
 
     totalsize += csize;
     delete [] out;

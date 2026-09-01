@@ -5,11 +5,12 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "transition.h"
 #include "rmg_error.h"
+#include "rmg_dev_allocate.h"
 
 
 #if CUDA_ENABLED
@@ -31,9 +32,8 @@
 
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
 #else
 extern "C" {
 void dtrmm(const char *side, const char *uplo, const char *transa, const char *diag,
@@ -43,22 +43,21 @@ void ztrmm(const char *side, const char *uplo, const char *transa, const char *d
 }
 #endif
 
-template void rmg_trmm<double>(char *, char *, char *, char *, int, int, double, double *, int,
+template void rmg::trmm<double>(char *, char *, char *, char *, int, int, double, double *, int,
                              double *, int);
 
-template void rmg_trmm<std::complex<double> >(char *, char *, char *, char *, int, int,
+template void rmg::trmm<std::complex<double> >(char *, char *, char *, char *, int, int,
                      std::complex<double>, std::complex<double> *, int,
                      std::complex<double> *, int);
 
 
-template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, char *diag,
+template <typename DataType> void rmg::trmm(char *side, char *uplo, char *trans, char *diag,
                              int m, int n, DataType alpha, DataType *A, int lda,
                              DataType *B, int ldb)
 {
 
 #if CUDA_ENABLED
 
-    cublasStatus_t custat;
     cublasOperation_t cu_trans = CUBLAS_OP_N;
     cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;
     cublasFillMode_t fill_mode = CUBLAS_FILL_MODE_LOWER;
@@ -82,26 +81,22 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
 
     if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
     {
-        custat = cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasXtZtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex *)A, lda,
                             (cuDoubleComplex *)B, ldb,
-                            (cuDoubleComplex *)B, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZtrmm");
+                            (cuDoubleComplex *)B, ldb));
         return;
     }
     if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
     {
-        custat = cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasXtDtrmm(ct.cublasxt_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (double *)&alpha,
                             (double *)A, lda,
                             (double *)B, ldb,
-                            (double *)B, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDtrmm");
+                            (double *)B, ldb));
         return;
     }
 
@@ -124,49 +119,44 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        custat = cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasZtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex *)dA, lda,
                             (cuDoubleComplex *)dB, ldb,
-                            (cuDoubleComplex *)dB, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZtrmm");
+                            (cuDoubleComplex *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
         if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
         if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
-        custat = cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
+        rmg::error(cublasDtrmm(ct.cublas_handle, cu_side, fill_mode, cu_trans, diag_mode,
                             m, n,
                             (double *)&alpha,
                             (double *)dA, lda,
                             (double *)dB, ldb,
-                            (double *)dB, ldb);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDtrmm");
+                            (double *)dB, ldb));
         if(!b_dev) cudaMemcpy(B, dB, b_size * sizeof(double), cudaMemcpyDefault);
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
-    DeviceSynchronize();
+    rmg::sync_device();
     return;
 
 #elif HIP_ENABLED
 
-    hipblasStatus_t hipstat;
     hipblasFillMode_t hip_fill = HIPBLAS_FILL_MODE_UPPER;
     hipblasSideMode_t hip_side = HIPBLAS_SIDE_RIGHT;
     hipblasDiagType_t hip_diag = HIPBLAS_DIAG_NON_UNIT;
@@ -197,100 +187,86 @@ template <typename DataType> void rmg_trmm(char *side, char *uplo, char *trans, 
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
-        hipstat = hipblasZtrmm(ct.hipblas_handle,
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>)));
+        rmg::error(hipblasZtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
                             (hipDoubleComplex *)&alpha,
                             (hipDoubleComplex *)dA, lda,
                             (hipDoubleComplex *)dB, ldb,
-                            (hipDoubleComplex *)dB, ldb);
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZtrmm");
-        if(!b_dev) hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>));
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+                            (hipDoubleComplex *)dB, ldb));
+        if(!b_dev) rmg::error(hipMemcpyDtoH(dB, B, b_size * sizeof(std::complex<double>)));
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
     }
     else {
         double *dA=(double *)A, *dB=(double *)B;
-        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
-        if(!b_dev) hipMemcpyHtoD(dB, B, b_size * sizeof(double));
-        hipstat = hipblasDtrmm(ct.hipblas_handle,
+        if(!a_dev) rmg_device_pool->malloc(&dA, a_size);
+        if(!b_dev) rmg_device_pool->malloc(&dB, b_size);
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
+        if(!b_dev) rmg::error(hipMemcpyHtoD(dB, B, b_size * sizeof(double)));
+        rmg::error(hipblasDtrmm(ct.hipblas_handle,
                             hip_side, hip_fill, hip_trans, hip_diag,
                             m, n,
                             (double*)&alpha,
                             (double*)dA, lda,
                             (double*)dB, ldb,
-                            (double*)dB, ldb );
-        ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDtrmm");
-        if(!b_dev) hipMemcpyDtoH(B, dB, b_size * sizeof(double));
-        if(!b_dev) gpuFree(dB);
-        if(!a_dev) gpuFree(dA);
+                            (double*)dB, ldb ));
+        if(!b_dev) rmg::error(hipMemcpyDtoH(B, dB, b_size * sizeof(double)));
+        if(!b_dev) rmg_device_pool->free(dB);
+        if(!a_dev) rmg_device_pool->free(dA);
 
     }
 #elif SYCL_ENABLED
 
-this should cause a compile error since as I have no access to a machine to test this on right now
+        // Determine side (left or right)
+    oneapi::mkl::side side_mode = oneapi::mkl::side::left;
+    if (!strcmp(side, "r")) side_mode = oneapi::mkl::side::right;
+    if (!strcmp(side, "R")) side_mode = oneapi::mkl::side::right;
+
+    // Determine upper/lower fill mode
     oneapi::mkl::uplo fill_mode = oneapi::mkl::uplo::lower;
-    if(!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
-    if(!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
 
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans, sycl_transB;
+    // Determine transpose operation
+    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
+    if (!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
+    if (!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
+    if (!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans; 
+    if (!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
 
-    if(!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(sycl_transA == oneapi::mkl::transpose::nontrans)
-    {
-	    if(!strcmp(trans, "t")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "T")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-	    if(!strcmp(trans, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    // Determine whether the matrix is unit triangular
+    oneapi::mkl::diag diag_mode = oneapi::mkl::diag::nonunit;
+    if (!strcmp(diag, "u")) diag_mode = oneapi::mkl::diag::unit;
+    if (!strcmp(diag, "U")) diag_mode = oneapi::mkl::diag::unit;
+
+    // TRMM: Triangular matrix-matrix multiplication
+    // B = alpha * op(A) * B  or  B = alpha * B * op(A)
+    try {
+        sycl::event trmm_event = oneapi::mkl::blas::column_major::trmm(
+            ct.sycl_Q,
+            side_mode,
+            fill_mode,
+            sycl_transA,
+            diag_mode,
+            m, n,
+            alpha,
+            A, lda,
+            B, ldb);
+        // Wait for completion
+        trmm_event.wait();
     }
-    else
-    {
-        sycl_transB = oneapi::mkl::transpose::nontrans;
+    catch (sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during TRMM:\n"
+                  << e.what() << std::endl << std::endl;
+        rmg::error("Terminating");
     }
 
-    size_t a_size = (size_t)lda * (size_t)n;
-    size_t b_size = (size_t)ldb * (size_t)n;
 
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-    if(A == B)
-    {
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufA, ldb, beta, bufB, ldb);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
-    else
-    {
-        cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-        bufB.set_final_data(nullptr);
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufB, ldb, beta, bufB, ldb);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {

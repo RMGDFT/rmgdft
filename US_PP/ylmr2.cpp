@@ -157,6 +157,6 @@ void ylmr2 (double *r, double *out)
                      6.0 / 7.0 * (rr3 - 0.5 * (rr1 + rr2)));
         }
         else
-            rmg_error_handler (__FILE__, __LINE__, "higher l not programmed");
+            rmg::error("higher l not programmed");
     }
 }

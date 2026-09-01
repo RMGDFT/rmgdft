@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_InputKey_H
 #define RMG_InputKey_H 1
 

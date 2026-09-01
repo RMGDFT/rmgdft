@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright 2019 The RMG Project Developers. See the COPYRIGHT file 
@@ -30,7 +31,7 @@
 #include <set>
 #include <complex>
 #include <mutex>
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "Lattice.h"
 #include "fftw3.h"
 #include "Pw.h"
@@ -53,8 +54,8 @@ private:
 
     bool gamma_extrapolation;
 
-    BaseGrid &G;
-    BaseGrid &G_h;
+    rmg::grid &G;
+    rmg::grid &G_h;
 
     // Lattice object
     Lattice &L;
@@ -114,8 +115,8 @@ private:
     // Local MPI communicator
     MPI_Comm lcomm;
 
-    // BaseGrid instance for local grids
-    BaseGrid *LG;
+    // rmg::grid instance for local grids
+    rmg::grid *LG;
 
     // <psi_i, psi_j> pairs that this MPI task is responsible for
     std::vector< std::pair <int,int> > pairs;
@@ -165,11 +166,11 @@ private:
 
 
 public:
-    // BaseGrid class (distributed) and half grid
+    // rmg::grid class (distributed) and half grid
 
     Exxbase (
-            BaseGrid &G, 
-            BaseGrid &G_h, 
+            rmg::grid &G, 
+            rmg::grid &G_h, 
             Lattice &L, 
             const std::string &wavefile,
             int nstates,

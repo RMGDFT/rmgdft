@@ -80,7 +80,7 @@ template void TradeImages::trade_imagesx_central_local<double>(double*, double*,
 
 
 // Constructor
-TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images_in)
+TradeImages::TradeImages(rmg::grid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images_in)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -117,11 +117,11 @@ TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, Mpi
      TradeImages::max_alloc = 6 * this->max_images * grid_max1 * grid_max2 * T->get_threads_per_node();
      int retval = MPI_Alloc_mem(sizeof(std::complex<double>) * this->max_alloc , MPI_INFO_NULL, &swbuf1x);
      if(retval != MPI_SUCCESS) {
-         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+         rmg::error("Error in MPI_Alloc_mem.\n");
      }
      retval = MPI_Alloc_mem(sizeof(std::complex<double>)* this->max_alloc , MPI_INFO_NULL, &swbuf2x);
      if(retval != MPI_SUCCESS) {
-         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+         rmg::error("Error in MPI_Alloc_mem.\n");
      }
 
      this->local_mode = (this->G->get_PE_X() == 1) && (this->G->get_PE_Y() == 1) && (this->G->get_PE_Z() == 1);
@@ -295,7 +295,7 @@ void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict_
     alloc = 2 * (xlen + ylen + zlen) * T->get_threads_per_node();
     // Verify that the required memory will fit into the statically allocated storage
     if(alloc > TradeImages::max_alloc)
-        rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
+        rmg::error("Not enough memory. This should never happen.");
 
 
     /* Load up w with the basic stuff */
@@ -684,7 +684,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
         alloc = alloc1;
     alloc = alloc * T->get_threads_per_node();
     if(alloc > TradeImages::max_alloc)
-        rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
+        rmg::error("Not enough memory. This should never happen.");
 
 
     int tid = T->get_thread_tid();
@@ -865,12 +865,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     for(int idx = 0;idx < stop;idx++)
         mat[xmax + incx + idx] = swbuf2x_f[tid * stop + idx];
 
-
-    /* For clusters set the boundaries to zero -- this is wrong for the hartree
-     * potential but we'll fix it up later. */
-//    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
-//        set_bc (mat, dimx, dimy, dimz, 1, 0.0);
-
     if(this->timer_mode) delete RT;
 }
 
@@ -998,7 +992,7 @@ void TradeImages::allocate_buffers(double ** &P, int nthreads, int length_per_th
     P = new double * [nthreads];
     int retval = MPI_Alloc_mem(elem_len * nthreads * length_per_thread , MPI_INFO_NULL, &P[0]);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+        rmg::error("Error in MPI_Alloc_mem.\n");
     }
     for(int tid = 1;tid < nthreads;tid++) P[tid] = P[tid-1] + factor * length_per_thread;
 #if 0
@@ -1006,7 +1000,7 @@ void TradeImages::allocate_buffers(double ** &P, int nthreads, int length_per_th
     {
         int retval = MPI_Alloc_mem(elem_len * length_per_thread , MPI_INFO_NULL, &P[tid]);
         if(retval != MPI_SUCCESS) {
-            rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+            rmg::error("Error in MPI_Alloc_mem.\n");
         }
     }
 #endif
@@ -1227,7 +1221,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     m0_r_f = (RmgType *)TradeImages::m0_r[0];
 
     if(images > this->max_images) {
-       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg::error("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
     corner_node_stride = ACTIVE_THREADS * MAX_IMG3; 
@@ -1577,7 +1571,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -1781,7 +1775,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -1825,7 +1819,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
 
 
     if(images > this->max_images) {
-       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg::error("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
 
@@ -1976,7 +1970,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -2055,7 +2049,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -2067,7 +2061,7 @@ template <typename RmgType>
 void TradeImages::trade_imagesx_central_async_managed (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
     if(images > this->max_images) {
-       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg::error("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -2843,7 +2837,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -3010,7 +3004,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -3176,7 +3170,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -3255,7 +3249,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg::error("Error in MPI_Waitall.\n");
     }
     T->thread_barrier_wait(false);
 
@@ -4370,7 +4364,7 @@ void TradeImages::trade_imagesx_async_managed (RmgType * __restrict__ f, RmgType
 {
 
     if(images > this->max_images) {
-       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg::error("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
     int incx, incy, incx0, incy0, tim;

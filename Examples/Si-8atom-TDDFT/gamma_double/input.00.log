@@ -1,0 +1,627 @@
+RMG initialization ... 1 image(s) total, 1 per node. 16 MPI processes/image. 
+HIP version 60342133 detected.
+
+device 0: AMD Instinct MI250X, 1700.0 MHz clock, 65520.0 MB memory
+Thread level 2.
+Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.
+
+ EXTERNAL ELECTRIC FIELD INITIALIZATION 
+ ====================================== 
+
+ Electric Field: (  0.00000000,   0.00000000,   0.00000000) Ha/bohr
+
+
+                     * * * * * * * * * *
+                     *    R   M   G    *
+                     * * * * * * * * * *
+
+     -- A Real Space Multigrid Electronic structure code --
+     --      More information at www.rmgdft.org          --
+
+Code Revision:     7.1.0-develop-2bf6a2ed
+Build Date:        Dec 28 2025  18:57:51
+Start time:        Mon Dec 29 13:29:08 2025
+
+NOTICE: RMG internal pseudopotentials have switched to
+ONCVP from Ultrasoft. You can revert to Ultrasoft by
+adding the input tag internal_pseudo_type="ultrasoft" to
+your input files.
+
+
+Files
+   Control input file:        input
+   Data output file:          Waves/wave.out
+
+Run Setup
+    Calculation type:         Time dependent DFT (TDDFT) calculation 
+    Description:              ./cifs/Si.cif
+    Orbital Initialization:   LCAO (32 LCAO and 0 random orbitals)
+    Exchange Correlation:     pbe
+    Spin Polarization:        OFF
+    System charge:            Neutral
+
+Processor Topology
+   Total PEs:                 16
+   X direction:               4
+   Y direction:               2
+   Z direction:               2
+   MG Threads/PE:             6
+   OMP Threads/PE:            7
+
+Grid Points  (Linear Anisotropy: 1.000)
+    X:  Total: 24   Per PE: 6   Spacing:0.424 a0  
+    Y:  Total: 24   Per PE: 12   Spacing:0.424 a0  
+    Z:  Total: 24   Per PE: 12   Spacing:0.424 a0  
+
+    Equivalent energy cutoffs (psi,rho):    54.856    219.425 Ry
+
+    Charge density grid:         2 times finer
+
+Coordinate planes
+  Planar Anisotropy: 1.000
+  A0-A1 density:     5.558
+  A0-A2 density:     5.558
+  A1-A2 density:     5.558
+
+
+Lattice (Cell) Setup
+    Type:                       Cubic_primitive
+    Volume (a0^3):               1054.98
+    Boundary conditions:        Periodic
+
+    X Basis Vector:      10.180       0.000       0.000 a0
+    Y Basis Vector:       0.000      10.180       0.000 a0
+    Z Basis Vector:       0.000       0.000      10.180 a0
+    X Reci Vector:       0.098       0.000       0.000 a0
+    Y Reci Vector:       0.000       0.098       0.000 a0
+    Z Reci Vector:       0.000       0.000       0.098 a0
+
+K-points
+    Gamma Point Only (real orbitals)
+
+Atoms and States
+    Number of ions:                          8
+    Number of species:                       1
+    Number of states:                        35
+
+Run Parameters
+    SCF Convergence criterion (potential):   1.00e-07
+    SCF Convergence criterion (energy):      1.00e-10
+    Max SCF steps:                           100
+    Max MD steps                             100
+    Timestep for molecular dynamics:          50.00000000
+    Restart data write frequency:            500 MD steps
+
+SCF Cycle Settings
+    Charge density mixing:                   Unknown charge mixing method
+    Hartree Solver:                          PFFT
+    Interpolation type:                      Prolong
+
+Adaptive Interpolation
+    On: cmix                                 0.673508088
+
+Finite Difference parameters
+    Kohn Sham FD Order:                      8   
+    Force Gradient Order:                    8   
+    Adaptive Finite Differencing:            On
+    Adaptive CFAC:                           0.339661411
+
+Subspace Diagonalization Options
+    Frequency:                               every 1 SCF step(s)
+    Driver:                                  ScaLapack
+    Initial diagonalization:                 ON
+    Folded spectrum:                         OFF
+
+Filtering Cutoff  Parameters
+    Wavefunction grid (cparm):               0.800
+    Charge density grid (rhocparm):          1.000
+    Filter factor:                           1.000
+
+Multigrid (MG) Parameters
+    Psi MG levels:                           3
+    Psi global step:                         0.660 
+    Psi pre:                                 2
+    Psi post:                                2
+
+
+Blas Libraries
+    CPU support with Cray-libsci-parallel.
+    GPU support with hipblas
+
+
+Atomic Species Information
+(PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)
+-------------------------------------------------------------------------
+|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|    PP    |
+|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Functional|
+-------------------------------------------------------------------------
+|    1|    Si| 28.0|   4.00|  NC|    0.50|   -1|  8.38|  7.00|       PBE|
+-------------------------------------------------------------------------
+
+Pseudopotential generation information:
+  Si pseudopotential file: ./@Internal
+      Generation info     : Generated using ONCVPSP code by D. R. Hamann
+      Author info         : anonymous
+
+
+Memory usage (Mbytes):     Min        Max       Total
+    wave functions          0.97       0.97      15.50
+    beta-functions          0.44       0.44       7.09
+
+
+
+Initial Ionic Positions And Displacements (Bohr)
+Species      X           Y           Z           dX          dY          dZ
+  Si       0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+  Si       5.0900      5.0900      0.0000      0.0000      0.0000      0.0000
+  Si       0.0000      5.0900      5.0900      0.0000      0.0000      0.0000
+  Si       5.0900      0.0000      5.0900      0.0000      0.0000      0.0000
+  Si       2.5450      2.5450      2.5450      0.0000      0.0000      0.0000
+  Si       7.6350      7.6350      2.5450      0.0000      0.0000      0.0000
+  Si       2.5450      7.6350      7.6350      0.0000      0.0000      0.0000
+  Si       7.6350      2.5450      7.6350      0.0000      0.0000      0.0000
+
+
+Initial Ionic Positions And Displacements (Angstrom)
+Species      X           Y           Z           dX          dY          dZ
+  Si       0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+  Si       2.6935      2.6935      0.0000      0.0000      0.0000      0.0000
+  Si       0.0000      2.6935      2.6935      0.0000      0.0000      0.0000
+  Si       2.6935      0.0000      2.6935      0.0000      0.0000      0.0000
+  Si       1.3468      1.3468      1.3468      0.0000      0.0000      0.0000
+  Si       4.0403      4.0403      1.3468      0.0000      0.0000      0.0000
+  Si       1.3468      4.0403      4.0403      0.0000      0.0000      0.0000
+  Si       4.0403      1.3468      4.0403      0.0000      0.0000      0.0000
+
+Diagonalization using scalapack for step=0  count=0
+
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  -1   0]    -6.6819 [2.000]    -2.4517 [2.000]    -2.4517 [2.000]    -2.3144 [2.000]    -2.3144 [2.000]
+[kpt   0  -1   1]    -2.3144 [2.000]    -2.3144 [2.000]     2.6509 [2.000]     2.6509 [2.000]     2.6509 [2.000]
+[kpt   0  -1   2]     2.6509 [2.000]     2.6509 [2.000]     2.6509 [2.000]     5.9638 [2.000]     5.9638 [2.000]
+[kpt   0  -1   3]     5.9638 [2.000]     8.6182 [0.000]     8.6182 [0.000]     8.8977 [0.000]     8.8977 [0.000]
+[kpt   0  -1   4]     8.8977 [0.000]     8.9542 [0.000]     8.9542 [0.000]     8.9542 [0.000]     8.9542 [0.000]
+[kpt   0  -1   5]     9.3926 [0.000]    16.7974 [0.000]    16.7974 [0.000]    16.7974 [0.000]    16.7974 [0.000]
+[kpt   0  -1   6]    16.7974 [0.000]    16.7974 [0.000]    16.8793 [0.000]    20.6790 [0.000]    20.6790 [0.000]
+
+
+
+spinup:  valence band maximum = 5.963835 eV, conduction band minumm = 8.618152 eV
+spinup:  Band gap = 2.654316 eV
+WriteRestart: Restart file Waves/wave.out_init opened...
+WriteData: total size of each of the 16 files = 0.2 Mb
+WriteData: writing took 0.0 seconds, writing speed 59.227 Mbps 
+WriteRestart: writing took 0.0 seconds 
+
+Diagonalization using scalapack for step=0  count=1
+
+
+FERMI ENERGY =      5.85143453 eV
+@@ EIGENVALUE SUM     =        0.663819 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -0.856473 Ha
+@@ VXC                =      -12.280784 Ha
+@@ EXC                =       -9.433262 Ha
+@@ TOTAL ENERGY       =      -31.211053 Ha
+@@ estimated error    =   ****************
+Charge density mixing: Broyden
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 0.2 Mb
+WriteData: writing took 0.0 seconds, writing speed 65.162 Mbps 
+WriteRestart: writing took 0.0 seconds 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   0   0]    -6.7170 [2.000]    -2.5404 [2.000]    -2.5403 [2.000]    -2.5375 [2.000]    -2.5375 [2.000]
+[kpt   0   0   1]    -2.5373 [2.000]    -2.5373 [2.000]     2.5095 [2.000]     2.5095 [2.000]     2.5095 [2.000]
+[kpt   0   0   2]     2.5095 [2.000]     2.5095 [2.000]     2.5095 [2.000]     5.3074 [2.000]     5.3074 [2.000]
+[kpt   0   0   3]     5.3074 [2.000]     6.3984 [0.000]     6.4041 [0.000]     6.4363 [0.000]     6.4368 [0.000]
+[kpt   0   0   4]     6.4460 [0.000]     6.4489 [0.000]     8.0855 [0.000]     8.0855 [0.000]     8.0855 [0.000]
+[kpt   0   0   5]     8.8979 [0.000]    13.7391 [0.000]    15.7347 [0.000]    15.7347 [0.000]    15.7347 [0.000]
+[kpt   0   0   6]    15.7347 [0.000]    15.7347 [0.000]    15.7347 [0.000]    18.9929 [0.000]    19.0233 [0.000]
+
+
+
+spinup:  valence band maximum = 5.307365 eV, conduction band minumm = 6.398400 eV
+spinup:  Band gap = 1.091035 eV
+
+Total charge in supercell =      31.99996130
+
+ Vdd took 0.002299 seconds
+
+
+VORONOI DEFORMATION DENSITY PARTIAL CHARGES 
+
+      Ion  Species      Charge
+       1     Si           0.009
+       2     Si          -0.000
+       3     Si          -0.003
+       4     Si          -0.006
+       5     Si           0.005
+       6     Si           0.001
+       7     Si          -0.001
+       8     Si          -0.004
+ quench: [md:   0/100  scf:   0/100  step time:   0.22  scf time:     0.23 secs  RMS[dV]: ******** ]
+
+
+average potential <V> = 2.75e-03
+
+Diagonalization using scalapack for step=1  count=2
+
+
+FERMI ENERGY =      6.10290321 eV
+@@ EIGENVALUE SUM     =        1.164394 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.375364 Ha
+@@ VXC                =      -12.548850 Ha
+@@ EXC                =       -9.644443 Ha
+@@ TOTAL ENERGY       =      -31.172484 Ha
+@@ estimated error    =        2.29e-01 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   1/100  step time:   0.07  scf time:     0.30 secs  RMS[dV]: 4.83e-02 ]
+
+
+average potential <V> = 1.86e-03
+
+Diagonalization using scalapack for step=2  count=3
+
+
+FERMI ENERGY =      6.38636640 eV
+@@ EIGENVALUE SUM     =        1.524232 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.780132 Ha
+@@ VXC                =      -12.789115 Ha
+@@ EXC                =       -9.836249 Ha
+@@ TOTAL ENERGY       =      -31.168955 Ha
+@@ estimated error    =        4.13e-02 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   2/100  step time:   0.07  scf time:     0.37 secs  RMS[dV]: 2.54e-02 ]
+
+
+average potential <V> = 1.73e-04
+
+Diagonalization using scalapack for step=3  count=4
+
+
+FERMI ENERGY =      6.40865129 eV
+@@ EIGENVALUE SUM     =        1.536642 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.796515 Ha
+@@ VXC                =      -12.808400 Ha
+@@ EXC                =       -9.852157 Ha
+@@ TOTAL ENERGY       =      -31.169551 Ha
+@@ estimated error    =        5.64e-04 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   3/100  step time:   0.07  scf time:     0.44 secs  RMS[dV]: 5.93e-03 ]
+
+
+average potential <V> = 3.08e-05
+
+Diagonalization using scalapack for step=4  count=5
+
+
+FERMI ENERGY =      6.40849557 eV
+@@ EIGENVALUE SUM     =        1.533207 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.792944 Ha
+@@ VXC                =      -12.808107 Ha
+@@ EXC                =       -9.852030 Ha
+@@ TOTAL ENERGY       =      -31.169581 Ha
+@@ estimated error    =        1.28e-05 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   4/100  step time:   0.07  scf time:     0.50 secs  RMS[dV]: 9.09e-04 ]
+
+
+average potential <V> = 3.50e-06
+
+Diagonalization using scalapack for step=5  count=6
+
+
+FERMI ENERGY =      6.40901933 eV
+@@ EIGENVALUE SUM     =        1.533343 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.793098 Ha
+@@ VXC                =      -12.808281 Ha
+@@ EXC                =       -9.852188 Ha
+@@ TOTAL ENERGY       =      -31.169583 Ha
+@@ estimated error    =        2.24e-07 Ha
+Charge density mixing: Broyden
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   5   0]    -6.0290 [2.000]    -1.7750 [2.000]    -1.7750 [2.000]    -1.7749 [2.000]    -1.7749 [2.000]
+[kpt   0   5   1]    -1.7749 [2.000]    -1.7749 [2.000]     3.1795 [2.000]     3.1795 [2.000]     3.1795 [2.000]
+[kpt   0   5   2]     3.1795 [2.000]     3.1795 [2.000]     3.1795 [2.000]     6.1537 [1.997]     6.1537 [1.997]
+[kpt   0   5   3]     6.1537 [1.997]     6.6921 [0.002]     6.6921 [0.002]     6.6921 [0.002]     6.6921 [0.002]
+[kpt   0   5   4]     6.6921 [0.002]     6.6921 [0.002]     8.6020 [0.000]     8.6020 [0.000]     8.6020 [0.000]
+[kpt   0   5   5]     9.8087 [0.000]    14.2450 [0.000]    16.4183 [0.000]    16.4183 [0.000]    16.4183 [0.000]
+[kpt   0   5   6]    16.4183 [0.000]    16.4183 [0.000]    16.4183 [0.000]    19.5313 [0.000]    19.5314 [0.000]
+
+
+
+spinup:  valence band maximum = 6.153674 eV, conduction band minumm = 6.692123 eV
+spinup:  Band gap = 0.538450 eV
+
+Total charge in supercell =      32.00003287
+ quench: [md:   0/100  scf:   5/100  step time:   0.06  scf time:     0.57 secs  RMS[dV]: 1.99e-04 ]
+
+
+average potential <V> = 2.28e-06
+
+Diagonalization using scalapack for step=6  count=7
+
+
+FERMI ENERGY =      6.40931647 eV
+@@ EIGENVALUE SUM     =        1.533754 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.793550 Ha
+@@ VXC                =      -12.808479 Ha
+@@ EXC                =       -9.852345 Ha
+@@ TOTAL ENERGY       =      -31.169582 Ha
+@@ estimated error    =        4.02e-08 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   6/100  step time:   0.07  scf time:     0.63 secs  RMS[dV]: 2.27e-05 ]
+
+
+average potential <V> = 2.43e-07
+
+Diagonalization using scalapack for step=7  count=8
+
+
+FERMI ENERGY =      6.40928686 eV
+@@ EIGENVALUE SUM     =        1.533711 Ha
+@@ ION_ION            =      -33.865921 Ha
+@@ ELECTROSTATIC      =       -1.793502 Ha
+@@ VXC                =      -12.808458 Ha
+@@ EXC                =       -9.852328 Ha
+@@ TOTAL ENERGY       =      -31.169582 Ha
+@@ estimated error    =        5.89e-10 Ha
+Charge density mixing: Broyden
+ quench: [md:   0/100  scf:   7/100  step time:   0.07  scf time:     0.70 secs  RMS[dV]: 2.39e-06 ]
+
+
+
+ Convergence criterion reached: Energy variation (1.21e-11) is lower than threshold (1.00e-10)
+
+potential convergence has been achieved. stopping ...
+
+[   0   8    8        9 ] common_prototypes1.h: 
+final total energy from eig sum =     -31.16958223 Ha
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   8   0]    -6.0287 [2.000]    -1.7746 [2.000]    -1.7746 [2.000]    -1.7746 [2.000]    -1.7746 [2.000]
+[kpt   0   8   1]    -1.7746 [2.000]    -1.7746 [2.000]     3.1798 [2.000]     3.1798 [2.000]     3.1798 [2.000]
+[kpt   0   8   2]     3.1798 [2.000]     3.1798 [2.000]     3.1798 [2.000]     6.1540 [1.997]     6.1540 [1.997]
+[kpt   0   8   3]     6.1540 [1.997]     6.6923 [0.002]     6.6923 [0.002]     6.6923 [0.002]     6.6923 [0.002]
+[kpt   0   8   4]     6.6923 [0.002]     6.6923 [0.002]     8.6022 [0.000]     8.6022 [0.000]     8.6022 [0.000]
+[kpt   0   8   5]     9.8091 [0.000]    14.2452 [0.000]    16.4186 [0.000]    16.4186 [0.000]    16.4186 [0.000]
+[kpt   0   8   6]    16.4186 [0.000]    16.4186 [0.000]    16.4186 [0.000]    19.5316 [0.000]    19.5316 [0.000]
+
+
+
+spinup:  valence band maximum = 6.154047 eV, conduction band minumm = 6.692287 eV
+spinup:  Band gap = 0.538240 eV
+
+Total charge in supercell =      32.00003286
+
+SUM FORCE =    -0.000000884643     -0.000000261486      0.000000275258
+ volume and energy per atom =        19.54144819       -106.02093583 eV
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 0.2 Mb
+WriteData: writing took 0.0 seconds, writing speed 62.578 Mbps 
+WriteRestart: writing took 0.0 seconds 
+
+
+
+  IONIC POSITIONS [a0] AND FORCES [Ha/a0]
+  Charge analysis using: Voronoi Deformation Density
+
+@ION  Ion  Species       X           Y           Z       Charge  Mag       FX          FY         FZ      Movable
+@ION    1    Si      0.0000000   0.0000000   0.0000000    0.009  0.000   0.0000007   0.0000001   0.0000000  1 1 1
+@ION    2    Si      5.0900000   5.0900000   0.0000000   -0.000  0.000   0.0000003   0.0000000   0.0000002  1 1 1
+@ION    3    Si      0.0000000   5.0900000   5.0900000   -0.003  0.000   0.0000006   0.0000001   0.0000002  1 1 1
+@ION    4    Si      5.0900000   0.0000000   5.0900000   -0.006  0.000   0.0000004   0.0000001   0.0000001  1 1 1
+@ION    5    Si      2.5450000   2.5450000   2.5450000    0.005  0.000  -0.0000005  -0.0000001  -0.0000002  1 1 1
+@ION    6    Si      7.6350000   7.6350000   2.5450000    0.001  0.000  -0.0000006  -0.0000001  -0.0000001  1 1 1
+@ION    7    Si      2.5450000   7.6350000   7.6350000   -0.001  0.000  -0.0000005  -0.0000000  -0.0000002  1 1 1
+@ION    8    Si      7.6350000   2.5450000   7.6350000   -0.004  0.000  -0.0000004  -0.0000001  -0.0000000  1 1 1
+
+ mean FX      =   0.00000050 Ha/a0
+ mean FY      =   0.00000009 Ha/a0
+ mean FZ      =   0.00000012 Ha/a0
+
+ max FX       =   0.00000074 Ha/a0   (ion 1)
+ max FY       =   0.00000013 Ha/a0   (ion 8)
+ max FZ       =   0.00000020 Ha/a0   (ion 7)
+ max F[x,y,z] =   0.00000074 Ha/a0
+ max |F|      =   0.00000075 Ha/a0   (ion 1)
+
+WriteRestart: Restart file Waves/wave.out opened...
+WriteData: total size of each of the 16 files = 0.2 Mb
+WriteData: writing took 0.0 seconds, writing speed 64.184 Mbps 
+WriteRestart: writing took 0.0 seconds 
+
+  x dipolll  6.677934 
+  y dipolll  6.677932 
+  z dipolll  6.677932 
+step:     0  iteration: 0  thrs=  1.00000e-07 err=   5.84226e-04 at element:   201 
+step:     0  iteration: 1  thrs=  1.00000e-07 err=   2.94296e-06 at element:    48 
+step:     0  iteration: 2  thrs=  1.00000e-07 err=   1.58936e-09 at element:    48 
+step:     1  iteration: 0  thrs=  1.00000e-07 err=   5.84226e-04 at element:   201 
+step:     1  iteration: 1  thrs=  1.00000e-07 err=   2.94297e-06 at element:    48 
+step:     1  iteration: 2  thrs=  1.00000e-07 err=   1.58936e-09 at element:    48 
+step:     2  iteration: 0  thrs=  1.00000e-07 err=   1.65770e-08 at element:    48 
+step:     3  iteration: 0  thrs=  1.00000e-07 err=   1.62536e-08 at element:    48 
+step:     4  iteration: 0  thrs=  1.00000e-07 err=   1.57610e-08 at element:    48 
+step:     5  iteration: 0  thrs=  1.00000e-07 err=   1.51133e-08 at element:    48 
+step:     6  iteration: 0  thrs=  1.00000e-07 err=   1.43181e-08 at element:    48 
+step:     7  iteration: 0  thrs=  1.00000e-07 err=   1.33850e-08 at element:    48 
+step:     8  iteration: 0  thrs=  1.00000e-07 err=   1.23249e-08 at element:    48 
+step:     9  iteration: 0  thrs=  1.00000e-07 err=   1.11504e-08 at element:    48 
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                             9.28                1.16
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     7.84                0.98
+  1-TOTAL: run                                      1.43                0.18
+  ---------------------------------------------------------------------------
+    1-TOTAL: run: Force                             0.04                0.01
+    1-TOTAL: run: Scf steps                         0.69                0.09
+
+2-Force                                             0.04                0.01
+-----------------------------------------------------------------------------
+  2-Force: core correction                          0.00                0.00
+  2-Force: corrections                              0.00                0.00
+  2-Force: ion-ion                                  0.00                0.00
+  2-Force: local                                    0.00                0.00
+  2-Force: non-local                                0.04                0.00
+  2-Force: non-local-betaxpsi                       0.00                0.00
+  2-Force: non-local-get gamma                      0.00                0.00
+  2-Force: non-local-nlforce_par_Q                  0.00                0.00
+  2-Force: non-local-nlforce_par_gamma              0.00                0.00
+  2-Force: non-local-nlforce_par_omega              0.00                0.00
+  2-Force: non-local-partial gamma                  0.00                0.00
+  2-Force: non-local-veff grad                      0.00                0.00
+
+2-Init                                              7.84                0.98
+-----------------------------------------------------------------------------
+  2-Init: KpointClass                               2.69                0.34
+  2-Init: LcaoGetPsi                                4.27                0.53
+  2-Init: LcaoGetRho                                0.00                0.00
+  2-Init: ReinitIonicPotentials                     0.29                0.04
+  2-Init: betaxpsi                                  0.02                0.00
+  2-Init: exchange/correlation                      0.00                0.00
+  2-Init: hartree                                   0.00                0.00
+  2-Init: normalization                             0.12                0.02
+  2-Init: radial potentials                         0.10                0.01
+  2-Init: subdiag                                   0.16                0.02
+  2-Init: weights                                   0.00                0.00
+
+2-Scf steps                                         0.69                0.09
+-----------------------------------------------------------------------------
+  2-Scf steps: GetNewRho                            0.07                0.01
+  2-Scf steps: Hartree                              0.01                0.00
+  2-Scf steps: MgridSubspace                        0.50                0.06
+  2-Scf steps: MixRho                               0.01                0.00
+  2-Scf steps: exchange/correlation                 0.01                0.00
+
+2-TDDFT                                             0.14                0.01
+-----------------------------------------------------------------------------
+  2-TDDFT: ELDYN                                    0.07                0.01
+  2-TDDFT: Hupdate                                  0.00                0.00
+  2-TDDFT: Rho                                      0.01                0.00
+  2-TDDFT: Vh                                       0.01                0.00
+  2-TDDFT: Write                                    0.00                0.00
+  2-TDDFT: conv check                               0.00                0.00
+  2-TDDFT: current and dipole                       0.00                0.00
+  2-TDDFT: exchange/correlation                     0.02                0.00
+  2-TDDFT: extrapolate                              0.01                0.00
+  2-TDDFT: memcpy                                   0.00                0.00
+
+3-MgridSubspace                                     0.46                0.06
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                           0.01                0.00
+  3-MgridSubspace: Beta x psi                       0.01                0.00
+  3-MgridSubspace: Diagonalization                  0.04                0.00
+  3-MgridSubspace: Mg_eig                           0.29                0.04
+  3-MgridSubspace: ortho                            0.15                0.02
+
+3-ReinitIonicPotentials                             0.29                0.04
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.00                0.00
+  3-ReinitIonicPotentials: GetWeight                0.28                0.04
+  3-ReinitIonicPotentials: get_QI                   0.00                0.00
+  3-ReinitIonicPotentials: get_qqq                  0.00                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.01                0.00
+
+4-Diagonalization                                   0.20                0.02
+-----------------------------------------------------------------------------
+  4-Diagonalization: ELPA/PDSYGVX/PZHEGVX           0.03                0.00
+  4-Diagonalization: Hpsi                           0.16                0.02
+  4-Diagonalization: MPI_Bcast                      0.00                0.00
+  4-Diagonalization: Update orbitals                0.01                0.00
+  ---------------------------------------------------------------------------
+    4-Diagonalization: Update orbitals: gather           0.00                0.00
+    4-Diagonalization: Update orbitals: gemm           0.00                0.00
+  4-Diagonalization: matrix                         0.01                0.00
+  ---------------------------------------------------------------------------
+    4-Diagonalization: matrix: Allreduce            0.00                0.00
+    4-Diagonalization: matrix: Gemm                 0.00                0.00
+
+4-Hcore                                             0.00                0.00
+-----------------------------------------------------------------------------
+  4-Hcore: AppNls                                   0.00                0.00
+  4-Hcore: apply operators                          0.00                0.00
+
+5-Functional                                        0.03                0.00
+-----------------------------------------------------------------------------
+  5-Functional: apply gradient                      0.00                0.00
+  5-Functional: apply laplacian                     0.00                0.00
+  5-Functional: vxc                                 0.03                0.00
+  5-Functional: vxc grad                            0.01                0.00
+  5-Functional: vxc local                           0.01                0.00
+  5-Functional: vxc nonlocal                        0.00                0.00
+
+AppNls                                              0.16                0.02
+-----------------------------------------------------------------------------
+  AppNls: data_rearrange                            0.01                0.00
+  ---------------------------------------------------------------------------
+    AppNls: data_rearrange: alloc and zeros           0.01                0.00
+    AppNls: data_rearrange: dnm                     0.00                0.00
+    AppNls: data_rearrange: sint                    0.00                0.00
+  AppNls: nv                                        0.14                0.02
+  AppNls: nv_work                                   0.00                0.00
+
+App_gradient                                        0.01                0.00
+
+GlobalSums                                          0.08                0.01
+
+Init                                                5.15                0.64
+
+Init Voronoi                                        0.01                0.00
+-----------------------------------------------------------------------------
+  MgridOrtho: 2nd stage overlaps                    0.12                0.02
+  MgridOrtho: 2nd stage update                      0.01                0.00
+  MgridOrtho: allreduce                             0.00                0.00
+  MgridOrtho: cholesky                              0.00                0.00
+  MgridOrtho: inverse                               0.01                0.00
+
+Mix rho                                             0.01                0.00
+-----------------------------------------------------------------------------
+  Mix rho: Broyden                                  0.01                0.00
+
+Orbital                                             0.00                0.00
+-----------------------------------------------------------------------------
+  Orbital: phase and set                            0.00                0.00
+  Orbital: proj cal                                 0.00                0.00
+  Orbital: r_orbital cal                            0.00                0.00
+
+Prolong tradeimages                                 0.01                0.00
+-----------------------------------------------------------------------------
+    TDDFT: rho: interp                              0.01                0.00
+
+VhPfft                                              0.01                0.00
+
+Weight                                              0.00                0.00
+
+radial beta                                         0.08                0.01
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+2-Prolong gpu                0.02           0.02           0.02
+-----------------------------------------------------------------------------
+
+GlobalSums                   0.05           0.06           0.06
+-----------------------------------------------------------------------------

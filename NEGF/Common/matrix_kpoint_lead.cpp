@@ -27,7 +27,7 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
         std::complex<double> *HCL, double kvecy, double kvecz, int iprobe)
 {
 
-    int ntot, i, j, ii, jj, li, lj,nstart,idx, index;
+    int i, j, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
     double distance[9];
     double blength, clength, yvec, zvec;
@@ -76,9 +76,22 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
 
     llda =  pmo.mxllda_lead[iprobe-1] ;
     locc =  pmo.mxlocc_lead[iprobe-1];
-    ntot =  llda * locc;
+    size_t ntot =  llda * locc;
 
-    for(i = 0; i < ntot; i++) 
+    if(std::abs(kvecy) + std::abs(kvecz) < 1.0e-6)
+    {
+        for(size_t idx = 0; idx < ntot; idx++)
+        {
+            S01[idx] = lcr[iprobe].S01[idx];
+            H01[idx] = lcr[iprobe].H01[idx];
+            S00[idx] = lcr[iprobe].S00[idx];
+            H00[idx] = lcr[iprobe].H00[idx];
+            SCL[idx] = lcr[iprobe].SCL[idx];
+            HCL[idx] = lcr[iprobe].HCL[idx];
+        }
+        return;
+    }
+    for(size_t i = 0; i < ntot; i++) 
     {
         S01[i] = 0.0;
         H01[i] = 0.0;
@@ -132,7 +145,7 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
     locc  = pmo.mxlocc_lead[iprobe-1];
     ntot  = llda * locc;
 
-    for(i = 0; i < ntot; i++) 
+    for(size_t i = 0; i < ntot; i++) 
     {
         SCL[i] = 0.0;
         HCL[i] = 0.0;
@@ -143,7 +156,7 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
         nstart_block += ct.block_dim[j];
 
 
-    //    rmg_printf("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
+    //    rmg::printlog("\n iprobe nstart %d %d %d ", iprobe, nstart, nstart_block);
 
 
     for(li = 0; li < llda; li++)

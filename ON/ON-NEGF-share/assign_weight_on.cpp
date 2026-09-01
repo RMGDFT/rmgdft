@@ -29,11 +29,11 @@ void assign_weight_on(SPECIES * sp, fftw_complex * weptr, double * rtptr)
             {
 
                 rtptr[idx] = std::real(tweptr[idx]);
-//                rmg_printf("\n dddddd %d %d %d %f", ix, iy, iz, rtptr[idx]); 
+//                rmg::printlog("\n dddddd %d %d %d %f", ix, iy, iz, rtptr[idx]); 
                 if (fabs(std::imag(tweptr[idx])) > 1.0e-6)
                 {
-                    rmg_printf("weptr[%d].im=%e\n", idx, std::imag(tweptr[idx]));
-                    rmg_error_handler(__FILE__, __LINE__, "something wrong with the fourier transformation");
+                    rmg::printlog("weptr[%d].im=%e\n", idx, std::imag(tweptr[idx]));
+                    rmg::error("something wrong with the fourier transformation");
                 }
 
                 idx++;

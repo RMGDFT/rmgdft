@@ -9,7 +9,7 @@
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 
 #include "prototypes_on.h"
 #include "init_var.h"
@@ -27,9 +27,9 @@
 #include "RmgException.h"
 #include "transition.h"
 #include "prototypes_on.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "blacs.h"
 template BlockTriMatrix<double>::BlockTriMatrix(
         int num_block_in, int mtot_in, int ntot_in, 
@@ -152,10 +152,10 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
     MPI_Barrier(MPI_COMM_WORLD);
     RT= new RmgTimer("BlockTrReduc");
 
-    int tot_size = size_diag + size_up_offdiag + size_dn_offdiag;
-    //rmg_printf("\n tot_sie %d", tot_size);
+    //int tot_size = size_diag + size_up_offdiag + size_dn_offdiag;
+    //rmg::printlog("\n tot_sie %d", tot_size);
     //MPI_Allreduce(MPI_IN_PLACE, (double *)storage, tot_size, MPI_DOUBLE, MPI_SUM, A.comm);
-    //   GlobalSums(storage_up_offdiag, size_up_offdiag, A.comm);
+    //   rmg::allreduce(storage_up_offdiag, size_up_offdiag, A.comm);
     MPI_Barrier(MPI_COMM_WORLD);
     delete RT;
 

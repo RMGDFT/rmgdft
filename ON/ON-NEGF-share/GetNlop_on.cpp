@@ -45,28 +45,20 @@
 #include "RmgException.h"
 
 
-static void init_alloc_nonloc_mem (void);
-
 void GetNlop_on(void)
 {
     int ion, idx, ip;
-    int tot_prj, index;
-    size_t PROJECTOR_SPACE;
     size_t prjcount;
     double *beta;
     SPECIES *sp;
     ION *iptr;
     fftw_plan p2;
-    int overlap;
-    int coarse_size, st1;
+    int coarse_size;
     double vect[3], nlcrds[3];
 
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
     std::complex<double> *beptr, *gbptr;
-
-    init_alloc_nonloc_mem ();
-
 
     /*Do forward transform for each species and store results on the coarse grid */
     if(ct.localize_projectors)
@@ -96,67 +88,6 @@ void GetNlop_on(void)
 
     MPI_Barrier(pct.img_comm);
 
-
-
-
-    /*  get total number of projectors on this processor */
-    /*  pct.n_ion_center: number of ions whose nl projector overlap
-     *  with the states on this processor */
-
-    if(ct.LocalizedOrbitalLayout != LO_projection)
-    {
-        pct.n_ion_center = 0;
-        tot_prj = 0;
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-            overlap = 0;
-            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-            {
-                index = (st1 - ct.state_begin) * ct.num_ions + ion;
-                if (ion_orbit_overlap_region_nl[index].flag == 1)
-                    overlap = 1;
-            }
-            if (overlap == 1)
-            {
-                pct.ionidx[pct.n_ion_center] = ion;
-                pct.n_ion_center += 1;
-                tot_prj += Species[Atoms[ion].species].num_projectors;
-            }
-        }
-
-        PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
-
-
-        //    rmg_printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
-        std::string newpath;
-
-        if(ct.nvme_weights)
-        {
-            if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
-
-            newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
-                std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-            ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-
-            projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
-            if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for GetNlop_on. \n");
-            madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
-
-        }
-        else
-        {
-            if (projectors != NULL)
-                delete []projectors;
-            projectors = new double[PROJECTOR_SPACE];
-        }
-    }
-
-    /*allocate memorry for weight factor of partial_beta/partial_x */
-
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-        pct.prj_per_ion[ion] = Species[Atoms[ion].species].num_projectors;
-
     /* Loop over all the ions on this processor */
 
     mkdir("PROJECTORS",S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -166,12 +97,12 @@ void GetNlop_on(void)
     for (ion = pct.imgpe; ion < ct.num_ions; ion+=pct.image_npes[pct.thisimg])
     {
 
-        beta = new double[pct.prj_per_ion[ion] * ct.max_nlpoints];
         /* Generate ion pointer */
         iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &Species[iptr->species];
+        beta = new double[sp->num_projectors * ct.max_nlpoints];
 
         p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(gbptr), 
                 reinterpret_cast<fftw_complex*>(beptr), FFTW_BACKWARD, FFTW_ESTIMATE);
@@ -228,10 +159,10 @@ void GetNlop_on(void)
         int amode = S_IREAD | S_IWRITE;
         int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         if (fhand < 0) 
-            rmg_error_handler (__FILE__, __LINE__,"error open file");
+            rmg::error("error open file");
 
         ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
-        write(fhand, beta, size);
+        rmg::writefile(fhand, beta, size);
         close(fhand);
 
         delete [] beta;
@@ -244,69 +175,19 @@ void GetNlop_on(void)
     // Must fix this EMIL
     //
 
-    if(ct.LocalizedOrbitalLayout != LO_projection)
-    {
-        beta = projectors;
-        prjcount = 0;
-        for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
-        {
-            ion = pct.ionidx[ion1];
-            /* Generate ion pointer */
-            iptr = &Atoms[ion];
-
-            /* Get species type */
-            sp = &Species[iptr->species];
-            std::string newname;
-            newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
-            int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
-            ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
-            ssize_t read_size = read(fhand, &beta[prjcount], size);
-            if(read_size != size)
-            {
-                rmg_error_handler (__FILE__, __LINE__,"error reading");
-            }
-            prjcount += sp->num_projectors * ct.max_nlpoints;
-        }
-
-        MPI_Barrier(pct.img_comm);
-    }
-
 
 #if	DEBUG
-    rmg_printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
+    rmg::printlog("PE: %d leave  get_nlop ...\n", pct.gridpe);
     fflush(NULL);
 #endif
 
     if (pct.gridpe == 0)
     {
 
-        rmg_printf(" get_nlop.c  done\n");
+        rmg::printlog(" get_nlop.c  done\n");
 
     }                           /* end if */
     /*    MPI_Barrier(pct.img_comm); */
     fflush(NULL);
 
 }                               /* end get_nlop */
-
-
-static void init_alloc_nonloc_mem (void)
-{
-    int ion;
-
-
-    pct.ionidx = new int[ct.num_ions];
-    pct.prj_per_ion = new int[ct.num_ions];
-
-    pct.ionidx_loc = new int[ct.num_ions];
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        pct.ionidx[ion] = 0;
-        pct.ionidx_loc[ion] = 0;
-        pct.prj_per_ion[ion] = 0;
-
-    }                           /*end for(ion=0; ion<ct.num_ions; ion++) */
-
-}                               /*end init_alloc_nonloc_mem */
-
-

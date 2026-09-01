@@ -14,7 +14,7 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "LocalObject.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 
 
 
@@ -109,7 +109,7 @@ void tri_to_local (double * A_tri, double * Aii_local, LocalObject<double> &Phi)
         }
 
         size = ct.block_dim[i] * ct.block_dim[i];
-        GlobalSums(matrix_tem, size, COMM_EN2);
+        rmg::allreduce(matrix_tem, size, COMM_EN2);
 
         for(j =0; j < ct.block_dim[i]; j++)
         {
@@ -158,7 +158,7 @@ void tri_to_local (double * A_tri, double * Aii_local, LocalObject<double> &Phi)
         }
 
         size = ct.block_dim[i-1] * ct.block_dim[i];
-        GlobalSums(matrix_tem, size, COMM_EN2);
+        rmg::allreduce(matrix_tem, size, COMM_EN2);
 
 
         for(j =0; j < ct.block_dim[i-1]; j++)

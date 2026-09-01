@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_Plot_H
 #define RMG_Plot_H 1
 

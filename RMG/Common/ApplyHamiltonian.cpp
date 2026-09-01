@@ -26,13 +26,14 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "State.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "transition.h"
 #include "rmg_complex.h"
 #include "Functional.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
+#include "rmgthreads.h"
 
 
 template double ApplyHamiltonian<double,float>(Kpoint<double> *, State<double> *, int, float *, float *, double *, double *, double *, bool);
@@ -74,8 +75,6 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
     fd_diag = ApplyAOperator<CalcType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
     if(potential_acceleration) {
-        int active_threads = ct.MG_THREADS_PER_NODE;
-        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
         int offset = (istate / ct.dvh_skip) * pbasis;
         int my_pe_x, my_pe_y, my_pe_z;
         kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
@@ -92,30 +91,58 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, State<KpointType> *sp, int is
         h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (veff[idx] + tmag)*psi[idx];
     }
 
-#if 1
-//    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
     {
-        wfobj<CalcType> gx, gy, gz, h, htmp; 
+        wfobj<CalcType> gx, gy, gz, h, ha, hb, htmp; 
         htmp.set(0.0);
         ApplyGradient<CalcType> (psi, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Coarse");
+        double *ket = Functional::ke_taur_wf;
     
-        for(int ix=0;ix < pbasis;ix++) gx[ix] *= Functional::ke_taur_wf[ix];
-        for(int ix=0;ix < pbasis;ix++) gy[ix] *= Functional::ke_taur_wf[ix];
-        for(int ix=0;ix < pbasis;ix++) gz[ix] *= Functional::ke_taur_wf[ix];
+        if constexpr (std::is_same_v<CalcType, double> || std::is_same_v<CalcType, float>)
+        {
+                for(int ix=0;ix < pbasis;ix++) gx[ix] *= ket[ix];
+                for(int ix=0;ix < pbasis;ix++) gy[ix] *= ket[ix];
+                for(int ix=0;ix < pbasis;ix++) gz[ix] *= ket[ix];
+                ApplyGradient<CalcType> (gx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+                ApplyGradient<CalcType> (gy.data(), NULL, h.data(), NULL, ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+                ApplyGradient<CalcType> (gz.data(), NULL, NULL, h.data(), ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+        }
+        else
+        {
+                wfobj<CalcType> gxx, gyy, gzz;
+                wfobj<double> kgx, kgy, kgz;
+                CalcType I_t(0.0, 1.0);
+                ApplyGradient (ket, kgx.data(), kgy.data(), kgz.data(), ct.kohn_sham_fd_order, "Coarse");
 
-        ApplyGradient<CalcType> (gx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
-        ApplyGradient<CalcType> (gy.data(), NULL, h.data(), NULL, ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
-        ApplyGradient<CalcType> (gz.data(), NULL, NULL, h.data(), ct.kohn_sham_fd_order, "Coarse");
-        for(int ix=0;ix < pbasis;ix++) htmp[ix] -= h[ix];
+                for(int ix=0;ix < pbasis;ix++) gxx[ix] = gx[ix]*ket[ix];
+                ApplyGradient<CalcType> (gxx.data(), h.data(), NULL, NULL, ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+
+                for(int ix=0;ix < pbasis;ix++) gyy[ix] = gy[ix]*ket[ix];
+                ApplyGradient<CalcType> (gyy.data(), NULL, h.data(), NULL, ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+
+                for(int ix=0;ix < pbasis;ix++) gzz[ix] = gz[ix]*ket[ix];
+                ApplyGradient<CalcType> (gzz.data(), NULL, NULL, h.data(), ct.kohn_sham_fd_order, "Coarse");
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += h[ix];
+
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += 2.0 * I_t * ket[ix] *
+                    (gx[ix]*kptr->kp.kvec[0] + gy[ix]*kptr->kp.kvec[1] + gz[ix]*kptr->kp.kvec[2]);
+
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] += I_t * psi[ix] *
+                    (kgx[ix]*kptr->kp.kvec[0] + kgy[ix]*kptr->kp.kvec[1] + kgz[ix]*kptr->kp.kvec[2]);
+
+                for(int ix=0;ix < pbasis;ix++) htmp[ix] -= ket[ix]*psi[ix]*kptr->kp.kmag;
+
+        }
         double msum = 0.0;
-        for(int ix=0;ix < pbasis;ix++) msum += std::real(std::conj(htmp[ix])*psi[ix]);
+        for(int ix=0;ix < pbasis;ix++) msum -= std::real(std::conj(htmp[ix])*psi[ix]);
         sp->e_meta_xc = msum;
-        for(int ix=0;ix < pbasis;ix++) h_psi[ix] += htmp[ix];
+        for(int ix=0;ix < pbasis;ix++) h_psi[ix] -= htmp[ix];
    } 
-#endif
 
     if(ct.noncoll)
     {

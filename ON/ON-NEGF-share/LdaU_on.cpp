@@ -51,7 +51,7 @@
 #include <complex>
 
 #include "LocalObject.h"
-#include "BaseGrid.h"
+#include "rmg_grid.h"
 #include "prototypes_on.h"
 #include "blas.h"
 #include "transition.h"
@@ -66,7 +66,7 @@ LdaU_on::~LdaU_on(void)
 
 }
 
-LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
+LdaU_on::LdaU_on(LocalObject<double> &LO, rmg::grid &BG)
 {
     for(auto& sp : Species) sp.InitOrbitals (DELOCALIZED);
 
@@ -132,7 +132,7 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
 }
 
 
-void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, BaseGrid &BG)
+void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, rmg::grid &BG)
 {
     LO_x_LO(*this->AtomicOrbital, LocalOrbital, this->Upsi_mat_local, BG);
 
@@ -175,22 +175,22 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     //{
     //    for(int i = 0; i < 5; i++)
     //    {
-    //        rmg_printf("\n");
+    //        rmg::printlog("\n");
     //        for(int j = 0; j < 5; j++)
     //        {
-    //            rmg_printf(" %f ", this->ns_occ[i*nldaU + j]);
+    //            rmg::printlog(" %f ", this->ns_occ[i*nldaU + j]);
     //        } 
 //
  //       }
   //  }
 
-    //      rmg_printf("\n");
+    //      rmg::printlog("\n");
     //  for(int i = 0; i < norb; i++)
     //  {
-    //      rmg_printf("\n");
+    //      rmg::printlog("\n");
     //      for(int j = 0; j < nldaU; j++)
     //      {
-    //          rmg_printf(" %f ", this->Upsi_mat[i*nldaU + j]);
+    //          rmg::printlog(" %f ", this->Upsi_mat[i*nldaU + j]);
     //      } 
 
     //  }
@@ -199,7 +199,7 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     delete [] temA;
 }
 
-void LdaU_on::app_vhubbard(LocalObject<double> &HLO, BaseGrid &BG)
+void LdaU_on::app_vhubbard(LocalObject<double> &HLO, rmg::grid &BG)
 {
 
     int pbasis = BG.get_P0_BASIS(1);

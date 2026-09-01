@@ -5,9 +5,9 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "transition.h"
 #include "rmg_error.h"
 
@@ -18,14 +18,6 @@
 #include <cublas_v2.h>
 #endif
 
-#define         dpotrf          RMG_FC_GLOBAL(dpotrf, DPOTRF)
-#define         zpotrf          RMG_FC_GLOBAL(zpotrf, ZPOTRF)
-
-extern "C" {
-void dpotrf (char *uplo, int *n, double * a, int *lda, int *info);
-void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
-};
-
 
 /*
   These functions are used to hide the details of the choleski decomposition and GPU
@@ -34,16 +26,23 @@ void zpotrf (char *uplo, int *n, std::complex<double> * a, int *lda, int *info);
 */
 
 #if SYCL_ENABLED
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
-    #include "mkl.h"
+    #include <cstring>        // For strcmp
+    #include <oneapi/mkl/lapack.hpp>
 #endif
 
-template void rmg_potrf<double>(char *, int, double *, int, int *);
-template void rmg_potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
+template void rmg::potrf<double>(char *, int, double *, int, int *);
+template void rmg::potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *);
+template void rmg::potrf<double>(char *, int, double *, int, int *, MPI_Comm);
+template void rmg::potrf<std::complex<double>>(char *, int, std::complex<double> *, int, int *, MPI_Comm);
 
+template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info)
+{
+    rmg::potrf(uplo, n, A, lda, info, MPI_COMM_NULL);
+}
 
-template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int lda, int *info)
+template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int lda, int *info, MPI_Comm comm)
 {
 
 #if CUDA_ENABLED
@@ -66,7 +65,7 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
     if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
 #endif
 
-    DeviceSynchronize();
+    rmg::sync_device();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A, *work;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
@@ -77,7 +76,7 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
         custat = cusolverDnZpotrf(ct.cusolver_handle, fill_mode, n, (cuDoubleComplex *)dA, lda,
 			          (cuDoubleComplex *)work, lwork, dev_info);
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnZpotrf failed.");
+            rmg::error(" cusolverDnZpotrf failed.");
 	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
@@ -90,13 +89,13 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
         gpuMalloc((void **)&work, lwork * sizeof(double));
         custat = cusolverDnDpotrf(ct.cusolver_handle, fill_mode, n, dA, lda, work, lwork, dev_info);
 	if(custat != CUSOLVER_STATUS_SUCCESS)
-            rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
+            rmg::error(" cusolverDnDpotrf failed.");
 	gpuFree(work);
         if(!a_dev) cudaMemcpy(A, dA, a_size * sizeof(double), cudaMemcpyDefault);
         if(!a_dev) gpuFree(dA);
     }
     cudaMemcpy(info, dev_info, sizeof(int), cudaMemcpyDefault);
-    DeviceSynchronize();
+    rmg::sync_device();
     gpuFree(dev_info);
     return;
 
@@ -120,91 +119,71 @@ template <typename DataType> void rmg_potrf(char *uplo, int n, DataType *A, int 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>)));
         rocstat = rocsolver_zpotrf(ct.roc_handle, fill_mode, n, (rocblas_double_complex *)dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_zpotrf");
-        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>));
+            rmg::error("Problem executing rocsolver_zpotrf");
+        if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(std::complex<double>)));
         if(!a_dev) gpuFree(dA);
     }
     else {
         double *dA=(double *)A;
         if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
-        if(!a_dev) hipMemcpyHtoD(dA, A, a_size * sizeof(double));
+        if(!a_dev) rmg::error(hipMemcpyHtoD(dA, A, a_size * sizeof(double)));
         rocstat = rocsolver_dpotrf(ct.roc_handle, fill_mode, n, dA, lda, dev_info);
         if (rocstat != rocblas_status_success) 
-            rmg_error_handler(__FILE__, __LINE__, "Problem executing rocsolver_dpotrf");
-        if(!a_dev) hipMemcpyDtoH(A, dA, a_size * sizeof(double));
+            rmg::error("Problem executing rocsolver_dpotrf");
+        if(!a_dev) rmg::error(hipMemcpyDtoH(A, dA, a_size * sizeof(double)));
         if(!a_dev) gpuFree(dA);
     }
-    hipMemcpyDtoH(info, dev_info, sizeof(int));
+    rmg::error(hipMemcpyDtoH(info, dev_info, sizeof(int)));
     gpuFree(dev_info);
 #elif SYCL_ENABLED
 
-this should cause a compile error since as I have no access to a machine to test this on right now
+    // Determine upper/lower fill mode
     oneapi::mkl::uplo fill_mode = oneapi::mkl::uplo::lower;
-    if(!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
-    if(!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "u")) fill_mode = oneapi::mkl::uplo::upper;
+    if (!strcmp(uplo, "U")) fill_mode = oneapi::mkl::uplo::upper;
 
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans, sycl_transB;
+    // Allocate scratchpad memory with the correct type
+    std::int64_t scratchpad_size = oneapi::mkl::lapack::potrf_scratchpad_size<DataType>(ct.sycl_Q, fill_mode, n, lda);
+    DataType *scratchpad = sycl::malloc_device<DataType>(scratchpad_size, ct.sycl_Q);
 
-    if(!strcmp(trans, "t")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "T")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(trans, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(trans, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(sycl_transA == oneapi::mkl::transpose::nontrans)
-    {
-	    if(!strcmp(trans, "t")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "T")) sycl_transB = oneapi::mkl::transpose::trans;
-	    if(!strcmp(trans, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-	    if(!strcmp(trans, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
+    // POTRF: Cholesky factorization
+    // Computes L or U such that A = L * L^T or A = U^T * U
+    info = 0;
+    try {
+        // Use USM pointer-based API; returns a sycl::event
+        sycl::event potrf_event = oneapi::mkl::lapack::potrf(
+            ct.sycl_Q, fill_mode, n, A, lda, scratchpad, scratchpad_size);
+        // Wait for completion
+        potrf_event.wait();
     }
-    else
-    {
-        sycl_transB = oneapi::mkl::transpose::nontrans;
+    catch (sycl::exception const& e) {
+        std::cout << "\t\tCaught synchronous SYCL exception during POTRF:\n"
+                  << e.what() << std::endl << std::endl;
+        rmg::error("Terminating");
     }
 
-    size_t a_size = (size_t)lda * (size_t)n;
-    size_t c_size = (size_t)ldc * (size_t)n;
+    // Free scratchpad memory
+    sycl::free(scratchpad, ct.sycl_Q);
 
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
-    if(A == B)
-    {
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufA, ldb, beta, bufC, ldc);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
-    else
-    {
-        cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-        bufB.set_final_data(nullptr);
-        try {
-            oneapi::mkl::blas::gemmt(ct.sycl_Q, fill_mode, sycl_transA, sycl_transB, n, k, alpha, 
-                                    bufA, lda, bufB, ldb, beta, bufC, ldc);
-        }
-        catch(cl::sycl::exception const& e) {
-            std::cout << "\t\tCaught synchronous SYCL exception during GEMMT:\n"
-            << e.what() << std::endl << std::endl;
-            rmg_error_handler (__FILE__, __LINE__, "Terminating");
-        }
-    }
+
 #else
 
+    int factor = 1;
     if(typeid(DataType) == typeid(std::complex<double>)) {
         zpotrf(uplo, &n, (std::complex<double> *)A, &n, info);
+        factor = 2;
     }
     else {
         dpotrf(uplo, &n, (double *)A, &n, info);
     }
 
+    if(comm != MPI_COMM_NULL)
+    {
+        MPI_Bcast(A, factor*n*n, MPI_DOUBLE, 0, comm);
+    }
 #endif
 }
 

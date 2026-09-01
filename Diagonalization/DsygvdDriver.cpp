@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -46,18 +46,18 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 
     cu_status = cusolverDnDsygvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsyevd_bufferSize failed.");
     if(lwork > worksize) 
     {
-        cudaFree(work);
-        Cuda_error(cudaMalloc((void **)&work, lwork * sizeof(double)));
+        gpuFree(work);
+        gpuMalloc((void **)&work, lwork * sizeof(double));
     }
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
 
     cu_status = cusolverDnDsygvd(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, lwork, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvd failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDsygvd failed.");
 
     gpuFree(devInfo);
 }
@@ -100,12 +100,12 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    gpuMalloc((void **)&devInfo, sizeof(int));
     status = rocsolver_dsygvd(ct.roc_handle, itype, jobz, uplo, n, A, ld,
                              B, ld, eigs, work, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsygv failed.");
+    if(status != rocblas_status_success) rmg::error(" rocsolver_dsygv failed.");
 
     gpuFree(devInfo);
 }
@@ -132,7 +132,7 @@ void DsygvdDriver_lapack(double *A, double *B, double *eigs, double *work, int w
     dsygvd(&ione, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, iwork, &liwork, &info);
 
     if(info)
-        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
+        rmg::error(" dsyevd failed.");
 
     delete [] iwork;
 }

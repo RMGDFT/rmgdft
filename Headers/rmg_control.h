@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_control_H
 #define RMG_control_H 1
 #include <vector>
@@ -124,18 +125,6 @@ public:
     bool compressed_infile;
     bool compressed_outfile;
 
-    /** whether to mmap the weights for the projectors weights, work space and orbitals */
-    bool nvme_weights;
-    bool nvme_work;
-    bool nvme_orbitals;
-    int nvme_orbital_fd;
-    int nvme_work_fd;
-    int nvme_weight_fd;
-    std::string nvme_weights_path;
-    std::string nvme_work_path;
-    std::string nvme_orbitals_path;
-    std::string qfunction_path;
-
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
 
@@ -147,11 +136,16 @@ public:
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
     bool tddft_noscf;
-    bool tddft_gpu =1;
+    bool tddft_gpu = 1;
+    bool tddft_tiledMM = 0;
+    bool tddft_floatprecision = 0;
+    bool tddft_energy = 0;
+    bool tddft_predictor = 0;
     int tddft_mode;
     double tddft_frequency;
     double tddft_qpos[3];
     double tddft_qgau;
+    int tddft_ehpair[4];
     
 
     /** Prepended to pseudopotential name */
@@ -770,10 +764,6 @@ public:
     // GPU memory for the usable devices
     size_t gpu_mem[MAX_GPU_DEVICES];
 
-    // Default is to use managed memory for non-local weights but if GPU memory
-    // is constrained performance is much better using pinned memory.
-    bool pin_nonlocal_weights;
-
     // Flag indicating whether all of the gpu devices we plan on using support managed memory
     bool gpus_support_managed_memory;
 
@@ -787,6 +777,7 @@ public:
     // Cuda devices
     CUdevice  cu_dev;
     CUdevice  cu_devices[MAX_GPU_DEVICES];
+    int smemSize[MAX_GPU_DEVICES];
 
     // Cuda device context
     CUcontext cu_context;
@@ -807,7 +798,7 @@ public:
 
 #if HIP_ENABLED
 
-    // Cuda version
+    // Hip version
     int hip_version;
 
     // Hip devices
@@ -1001,12 +992,6 @@ public:
    // of std::complex. In that case setting this flag lets you use an alternate implementation.
    bool use_alt_zgemm;
 
-   // Default is false. RMG will still be able to use transparent huge pages but
-   // certain special optimizations will be disabled. If you set this to true then
-   // RMG assumes that sufficient huge pages are available to meet all memory
-   // requirements and bad results may occur if that is not true.
-   bool require_huge_pages;
-
    // Controls how far below the Nyquist frequency potentials are cutoff. Default is 0.25
    double filter_factor;
 
@@ -1032,7 +1017,7 @@ public:
    bool use_async_allreduce;
 
    bool ON_read_from_RMG;
-   char infile_ON_from_RMG[2*MAX_PATH];
+   std::string infile_ON_from_RMG;
    int freeze_rho_steps;
    bool use_cpdgemr2d;
 
@@ -1097,56 +1082,23 @@ public:
    int kpoint_units = 0;
 
    // Parameters for Chebyshev smoothing.
-   double lambda_max;
+   double sradius;         // approximate spectral radius of fine grid hamiltonian
+   double lambda_mul;      // Fudge factor for the spectral radius
+   double lambda_max;      // values used to compute chebyshev coeffs based on sradius and lambda_mul
    double lambda_min;
 
-   // Global matrix used for diag and ortho routines. We use a global here that is
-   // only allocated once since allocation on GPU architectures can be so slow.
-   void *gmatrix;
-   size_t gmatrix_size;
-
-   void *get_gmatrix(size_t size)
-   {
-       if(!this->gmatrix)
-       {
-#if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-           gpuMallocHost((void **)&this->gmatrix, size);
-#else
-           this->gmatrix = malloc(size);
+#if __LIBXC
+   const char *libxc_version;
+   const char *libxc_reference;
+   const char *libxc_reference_doi;
+   std::vector<std::string> libxc_func_references;
 #endif
-           this->gmatrix_size = size;
-       }
-       else if(size > this->gmatrix_size)
-       {
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           gpuFreeHost(this->gmatrix);
-           gpuMallocHost((void **)&this->gmatrix, size);
-#else
-           free(this->gmatrix);
-           this->gmatrix = malloc(size);
-#endif
-           this->gmatrix_size = size;
-       }
-       return gmatrix;
-   }
-   void free_gmatrix(void)
-   {
-       if(this->gmatrix_size)
-       {
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-           gpuFreeHost(this->gmatrix);
-#else
-           free(this->gmatrix);
-#endif
-           this->gmatrix = NULL;
-           this->gmatrix_size = 0;
-       }
-   }
 };
 
 
 /* Extern declaration for the main control structure */
 extern CONTROL ct;
 extern std::vector<ION> Atoms;
+extern rmg::ions allatoms;
 extern std::vector<SPECIES> Species;
 #endif

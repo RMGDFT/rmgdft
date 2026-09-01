@@ -50,12 +50,12 @@
 
 */
 
-template void WriteWavefunctions (std::string&, LocalObject<double> &LO , double *Cij, BaseGrid &BG, 
+template void WriteWavefunctions (std::string&, LocalObject<double> &LO , double *Cij, rmg::grid &BG, 
         double *eig, double *occ);
 //template void WriteWavefunctions (std::string&, LocalObjectt<std::complex<double> > &LO, std::complex<double> &Cij);
 
 template <typename KpointType>
-void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dist, BaseGrid &BG, 
+void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dist, rmg::grid &BG, 
         double *eig, double *occ)
 {
     int sizes_c[3];
@@ -136,12 +136,12 @@ void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, Kpoint
             {
                 int fhand = open(wfname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
                 if (fhand < 0) {
-                    rmg_printf("Can't open restart file %s", wfname.c_str());
-                    rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+                    rmg::printlog("Can't open restart file %s", wfname.c_str());
+                    rmg::error("Terminating.");
                 }
                 size_t wsize = write (fhand, &H, sizeof(OrbitalHeader));
                 if(wsize != sizeof(OrbitalHeader))
-                    rmg_error_handler (__FILE__,__LINE__,"error writing");
+                    rmg::error("error writing");
                 close(fhand);
                 fflush(NULL);
             }

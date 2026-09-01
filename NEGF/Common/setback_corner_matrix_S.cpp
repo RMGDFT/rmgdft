@@ -13,6 +13,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "rmg_reduce.h"
 
 
 /* 
@@ -47,7 +48,7 @@ void  setback_corner_matrix_S()
     for(iprobe = 1; iprobe <= cei.num_probe ; iprobe++)
     {
 
-        nmax = rmg_max (nmax, lcr[iprobe].num_states);
+        nmax = std::max(nmax, lcr[iprobe].num_states);
     }
     
     my_malloc(temp, nmax * nmax, double);
@@ -75,7 +76,7 @@ void  setback_corner_matrix_S()
         }
         
         n2 = nmax * nmax;
-        comm_sums(temp, &n2, COMM_EN2);
+        rmg::allreduce(temp, n2, COMM_EN2);
         /* now temp = S00, not distributed */
 
         ni = cei.probe_in_block[iprobe-1];  /* n0 => block index */

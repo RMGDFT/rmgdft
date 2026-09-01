@@ -1,0 +1,129 @@
+/*  
+ *  
+ * Copyright 2026 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ *      
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
+
+#include <stdlib.h>
+#include <string.h>
+#include <complex>
+#include "rmg_error.h"
+#include "fftw3.h"
+
+
+static void rmg_alloc_initialize (void *ptr, size_t n, char *type);
+
+void *rmg_malloc(int n, size_t size )
+{
+    void *ptr;
+    if(NULL == (ptr = malloc(n * size))) {
+           printf("\n memory size required %d x %lu", n, size);
+           rmg::error("can't allocate memory malloc ");
+    }
+    return ptr;
+}
+
+void *rmg_malloc_init(int n, size_t size, char *type )
+{
+    void *ptr;
+    if(NULL == (ptr = malloc(n * size))) {
+            printf("\n memory size required %d x %lu", n, size);
+           rmg::error("can't allocate memory malloc_init " );
+    }
+    rmg_alloc_initialize (ptr, n, type);
+    return ptr;
+}
+
+void *rmg_calloc(int n, size_t size )
+{
+    void *ptr;
+    if(NULL == (ptr = calloc(n, size))) {
+            printf("\n memory size required %d x %lu", n, size);
+           rmg::error("can't allocate memory calloc ");
+    }
+    return ptr;
+}
+
+void rmg_free( void *ptr )
+{
+
+    if(ptr != NULL)
+    {
+         free( ptr );
+    }
+    else
+    {
+           rmg::error("don't try to free null pointer");
+    }
+
+}
+
+
+/* 
+ The following routine initializes the allocated data to 0.0 
+ for selected types.
+*/
+
+static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
+{
+    size_t i;
+    if (strcmp (type, "int") == 0)
+    {
+        int *p = (int *) ptr;
+        for (i = 0; i < n; i++)
+            p[i] = 0;
+    }
+    else if (strcmp (type, "double") == 0)
+    {
+        double *p = (double *) ptr;
+        for (i = 0; i < n; i++)
+            p[i] = 0.0;
+    }
+    else if (strcmp (type, "double") == 0)
+    {
+        double *p = (double *) ptr;
+        for (i = 0; i < n; i ++ )
+            p[i] = 0.0;
+    }
+    else if (strcmp (type, "fftw_complex") == 0)
+    {
+        fftw_complex *p = (fftw_complex *) ptr;
+        for (i = 0; i < n; i++) {
+            double *p1 = (double *)p;
+            p1[0] = p1[1] = 0.0;
+            p++;
+        }
+    }
+    else if (strcmp (type, "std::complex<double>") == 0)
+    {
+        std::complex<double> *p = (std::complex<double> *) ptr;
+        for (i = 0; i < n; i++)
+            p[i] = 0.0;
+    }
+    else
+    {
+        printf ("!!!! warning: requested initialization of data pointed to by '%p' not done.\n", ptr);
+        printf ("              please inplement initialization procedure for type '%s' in '%s:%d'.\n",
+             type, __FILE__, __LINE__);
+
+    }
+
+}
+

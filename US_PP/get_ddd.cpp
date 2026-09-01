@@ -84,7 +84,7 @@ void get_ddd (double * veff, double *vxc, bool ddd0_flag)
 //        error_handler ("Problem with sum index");
 
     int num_sums = sum_dim * ct.noncoll_factor * ct.noncoll_factor;
-    global_sums (sum, &num_sums, pct.grid_comm);
+    rmg::allreduce(sum, num_sums, pct.grid_comm);
 
     for(int idx = 0; idx < num_sums; idx++) sum[idx] *= get_vel_f();
 

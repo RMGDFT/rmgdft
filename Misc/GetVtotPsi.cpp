@@ -26,7 +26,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
 
@@ -95,7 +95,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else
     {
-        rmg_error_handler (__FILE__, __LINE__, "A grid ratio > 4 is not allowed.");
+        rmg::error("A grid ratio > 4 is not allowed.");
     }
     delete [] vtot;
 }

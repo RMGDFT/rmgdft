@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <filesystem>
 #include "main.h"
 #include "prototypes_on.h"
 #include "transition.h"
@@ -21,10 +22,12 @@
  * If opening the file fails, PE 0 tries to create a directory, since it is possible that
  * the reason for failure is that the directory does not exist*/
 
-int open_wave_file (char *filename)
+int open_wave_file (const char *filename)
 {
 
-    char tmpname[MAX_PATH];
+    std::filesystem::path p(filename);
+    std::filesystem::create_directories(p.parent_path());
+
     int amode;
     int fhand;
 
@@ -32,29 +35,10 @@ int open_wave_file (char *filename)
 
     fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
-    /*Previous call may have failed because directory did not exist
-     * Let us try to to create it*/
     if (fhand < 0)
     {
-
-        /*Make a copy of output filename, dirname overwrites it*/
-        strcpy(tmpname, filename);
-
-        rmg_printf( "\n write_data: Opening output file '%s' failed\n" 
-                "  Trying to create subdirectory in case it does not exist\n", 
-                filename );
-
-
-        if (!mkdir(dirname(tmpname),S_IRWXU))
-            rmg_printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
-        else
-            rmg_printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
-
-        fflush (NULL);
-
-        /*try opening file again */
-        fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
-
+        rmg::printlog("\n cannot open file %s", filename);
+        rmg::error("cannot open file ");
     }
 
     return fhand;

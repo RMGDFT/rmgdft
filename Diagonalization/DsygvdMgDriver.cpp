@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "ErrorFuncs.h"
+
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -40,12 +40,11 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     static int count = 0;
     cusolverMgHandle_t cusolverMg_handle = NULL;
     int current_device = 0;
-    Cuda_error(cudaGetDevice(&current_device));
+    rmg::error(cudaGetDevice(&current_device));
 
     int block_size = 128;
     int nGpus = ct.num_gpu_devices;
     int *device_list = ct.gpu_device_ids;
-    const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
 
@@ -54,24 +53,24 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 
     cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
 
-    Cusolver_status(cusolverMgCreate(&cusolverMg_handle) );
-    Cusolver_status(cusolverMgDeviceSelect(cusolverMg_handle, nGpus,
+    rmg::error(cusolverMgCreate(&cusolverMg_handle) );
+    rmg::error(cusolverMgDeviceSelect(cusolverMg_handle, nGpus,
                 ct.gpu_device_ids) );
 
     // enable peer access
     if(count == 0) {
         for(int igpu = 0; igpu < nGpus; igpu++)
         {
-            Cuda_error(cudaSetDevice(igpu));
+            rmg::error(cudaSetDevice(igpu));
             for(int jgpu = 0; jgpu < nGpus; jgpu++)
             {
                 if(igpu != jgpu)
                 {
                     int canAccess = 0;
-                    Cuda_error(cudaDeviceCanAccessPeer(&canAccess, igpu, jgpu));
+                    rmg::error(cudaDeviceCanAccessPeer(&canAccess, igpu, jgpu));
                     if(canAccess)
                     {
-                        Cuda_error(cudaDeviceEnablePeerAccess(jgpu, 0));
+                        rmg::error(cudaDeviceEnablePeerAccess(jgpu, 0));
                     }
                 }
             }
@@ -80,8 +79,8 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     }
     // setuo desc for nxn matrix 
     RmgTimer *RT1 = new RmgTimer("6-Diag-DsygvdMg: init");
-    Cusolver_status(cusolverMgCreateDeviceGrid(&grid_gpu, 1, nGpus, device_list, mapping));
-    Cusolver_status(cusolverMgCreateMatrixDesc(&desc_gpu, n, n, n, block_size, CUDA_R_64F, grid_gpu));
+    rmg::error(cusolverMgCreateDeviceGrid(&grid_gpu, 1, nGpus, device_list, mapping));
+    rmg::error(cusolverMgCreateMatrixDesc(&desc_gpu, n, n, n, block_size, CUDA_R_64F, grid_gpu));
 
     //allocate mem for distributed matrix A B on devices.
     int num_blks = (n+block_size-1)/block_size;
@@ -93,13 +92,13 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     std::vector<double *> B_dist(nGpus, NULL);
     for(int igpu = 0; igpu < nGpus; igpu++)
     {
-        Cuda_error(cudaSetDevice(device_list[igpu]));
-        Cuda_error(cudaMalloc(&A_dist[igpu], size)); 
-        Cuda_error(cudaMalloc(&B_dist[igpu], size)); 
-        Cuda_error(cudaMemset(A_dist[igpu], 0, size));
-        Cuda_error(cudaMemset(B_dist[igpu], 0, size));
+        rmg::error(cudaSetDevice(device_list[igpu]));
+        rmg::error(cudaMalloc(&A_dist[igpu], size)); 
+        rmg::error(cudaMalloc(&B_dist[igpu], size)); 
+        rmg::error(cudaMemset(A_dist[igpu], 0, size));
+        rmg::error(cudaMemset(B_dist[igpu], 0, size));
     }
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
 
     delete RT1;
 
@@ -108,7 +107,7 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     RT1 = new RmgTimer("6-Diag-DsygvdMg: memcpy");
     for(int igpu = 0; igpu < nGpus; igpu++)
     {
-        Cuda_error(cudaSetDevice(device_list[igpu]));
+        rmg::error(cudaSetDevice(device_list[igpu]));
         for(int ib = igpu; ib < num_blks; ib+=nGpus)
         {
 
@@ -118,20 +117,20 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
             double *d_A = A_dist[igpu] + (size_t)(ib/nGpus) *block_size * n; 
             double *h_B = &B[ib*block_size * n]; 
             double *d_B = &B_dist[igpu][(ib/nGpus) *block_size * n]; 
-            Cuda_error(cudaMemcpy(d_A, h_A, num_items, cudaMemcpyHostToDevice));
-            Cuda_error(cudaMemcpy(d_B, h_B, num_items, cudaMemcpyHostToDevice));
+            rmg::error(cudaMemcpy(d_A, h_A, num_items, cudaMemcpyHostToDevice));
+            rmg::error(cudaMemcpy(d_B, h_B, num_items, cudaMemcpyHostToDevice));
         }
     }
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
 
     int IA = 1, JA = 1;
     int64_t lwork_potrf, lwork_syevd, lwork;
-    Cusolver_status(
+    rmg::error(
             cusolverMgPotrf_bufferSize(cusolverMg_handle, uplo, n,
                 reinterpret_cast<void **>(B_dist.data()), IA, JA,                                           
                 desc_gpu, CUDA_R_64F, &lwork_potrf));
-    Cusolver_status(cusolverMgSyevd_bufferSize(
+    rmg::error(cusolverMgSyevd_bufferSize(
                 cusolverMg_handle, jobz, uplo,
                 n, reinterpret_cast<void **>(A_dist.data()), IA, JA,
                 desc_gpu, reinterpret_cast<void *>(eigs), CUDA_R_64F, CUDA_R_64F, &lwork_syevd));
@@ -142,22 +141,22 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     if(pct.gridpe == 0) std::cout << "lwork in DsygvdMg" << lwork *sizeof(double)/1024.0/1024.0 << "MB" <<std::endl;
     for(int igpu = 0; igpu < nGpus; igpu++)
     {
-        Cuda_error(cudaSetDevice(device_list[igpu]));
+        rmg::error(cudaSetDevice(device_list[igpu]));
         int idevice;
-        Cuda_error(cudaGetDevice(&idevice));
-        Cuda_error(cudaMalloc(&work_gpu[igpu], lwork * sizeof(double))); 
-        Cuda_error(cudaMemset(work_gpu[igpu], 0, lwork * sizeof(double))); 
+        rmg::error(cudaGetDevice(&idevice));
+        rmg::error(cudaMalloc(&work_gpu[igpu], lwork * sizeof(double))); 
+        rmg::error(cudaMemset(work_gpu[igpu], 0, lwork * sizeof(double))); 
     }
 
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     RT1 = new RmgTimer("6-Diag-DsygvdMg: MgPotrf");
     int info;
-    Cusolver_status(cusolverMgPotrf(
+    rmg::error(cusolverMgPotrf(
                 cusolverMg_handle, uplo, n, reinterpret_cast<void **>(B_dist.data()), IA, JA,
                 desc_gpu, CUDA_R_64F, reinterpret_cast<void **>(work_gpu.data()),
                 lwork_potrf, &info /* host */
                 ));
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
 
     RT1 = new RmgTimer("6-Diag-DsygvdMg: memcpy");
@@ -171,11 +170,11 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
             if(ib == num_blks -1) num_items = len_lastblk * n * sizeof(double);
             double *h_B = &B[ib*block_size * n]; 
             double *d_B =  B_dist[igpu]+ib/nGpus *block_size * n; 
-            Cuda_error(cudaMemcpy(h_B, d_B, num_items, cudaMemcpyDeviceToHost));
+            rmg::error(cudaMemcpy(h_B, d_B, num_items, cudaMemcpyDeviceToHost));
         }
     }
 
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
     //    dpotrf("L", &n, B, &n, &info);
     RT1 = new RmgTimer("6-Diag-DsygvdMg: dsygst");
@@ -185,7 +184,7 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 
     //    dsyevd ("V", "L", &n, A, &n, eigs, work, &lwork_a, iwork, &liwork, &info);
 
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     RT1 = new RmgTimer("6-Diag-DsygvdMg: memcpy");
     for(int igpu = 0; igpu < nGpus; igpu++)
     {
@@ -196,22 +195,22 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
             if(ib == num_blks -1) num_items = len_lastblk * n * sizeof(double);
             double *h_A = &A[ib*block_size * n]; 
             double *d_A =  A_dist[igpu] + ib/nGpus *block_size * n; 
-            Cuda_error(cudaMemcpy(d_A, h_A, num_items, cudaMemcpyHostToDevice));
+            rmg::error(cudaMemcpy(d_A, h_A, num_items, cudaMemcpyHostToDevice));
         }
     }
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
-    //Cuda_error(cudaMemcpy(A_dist[0], A, sizeof(double)*n*n, cudaMemcpyHostToDevice));
+    //rmg::error(cudaMemcpy(A_dist[0], A, sizeof(double)*n*n, cudaMemcpyHostToDevice));
 
     RT1 = new RmgTimer("6-Diag-DsygvdMg: MgSyevd");
-    Cuda_error(cudaSetDevice(current_device));
-    Cusolver_status(cusolverMgSyevd(
+    rmg::error(cudaSetDevice(current_device));
+    rmg::error(cusolverMgSyevd(
                 cusolverMg_handle, (cusolverEigMode_t)jobz, CUBLAS_FILL_MODE_LOWER,
                 n, reinterpret_cast<void **>(A_dist.data()),  
                 IA, JA, desc_gpu, reinterpret_cast<void **>(eigs), CUDA_R_64F, CUDA_R_64F, 
                 reinterpret_cast<void **>(work_gpu.data()), lwork_syevd, &info));
 
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
     RT1 = new RmgTimer("6-Diag-DsygvdMg: memcpy");
     for(int igpu = 0; igpu < nGpus; igpu++)
@@ -223,10 +222,10 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
             if(ib == num_blks -1) num_items = len_lastblk * n * sizeof(double);
             double *h_A = &A[ib*block_size * n]; 
             double *d_A = &A_dist[igpu][ib/nGpus *block_size * n]; 
-            Cuda_error(cudaMemcpy(h_A, d_A, num_items, cudaMemcpyDeviceToHost));
+            rmg::error(cudaMemcpy(h_A, d_A, num_items, cudaMemcpyDeviceToHost));
         }
     }
-    Cuda_error(cudaDeviceSynchronize());
+    rmg::error(cudaDeviceSynchronize());
     delete RT1;
 
     RT1 = new RmgTimer("6-Diag-DsygvdMg: dtrsm");
@@ -235,12 +234,12 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
     delete RT1;
     for(int igpu = 0; igpu < nGpus; igpu++)
     {
-        Cuda_error(cudaSetDevice(device_list[igpu]));
-        Cuda_error(cudaFree(work_gpu[igpu]));
-        Cuda_error(cudaFree(B_dist[igpu]));
-        Cuda_error(cudaFree(A_dist[igpu]));
+        rmg::error(cudaSetDevice(device_list[igpu]));
+        rmg::error(cudaFree(work_gpu[igpu]));
+        rmg::error(cudaFree(B_dist[igpu]));
+        rmg::error(cudaFree(A_dist[igpu]));
     }
-    Cuda_error(cudaSetDevice(current_device));
+    rmg::error(cudaSetDevice(current_device));
 
 }
 
@@ -248,6 +247,6 @@ void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 
 void DsygvdMgDriver(double *A, double *B, double *eigs, int n)
 {
-    rmg_error_handler (__FILE__, __LINE__, " cusolverDsygvdMg not programmed without CUDA.");
+    rmg::error(" cusolverDsygvdMg not programmed without CUDA.");
 }
 #endif

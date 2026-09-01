@@ -43,7 +43,6 @@ int init_kpoints (int *kmesh, int *kshift)
     int magnetic_sym = 0;
     int time_reversal = true;
     if(!ct.time_reversal) time_reversal = false;
-    int no_z_inv = 0;
 
 
     //double *tau;
@@ -258,7 +257,7 @@ int init_kpoints (int *kmesh, int *kshift)
         ioff++;
     }
     if(ct.verbose && pct.gridpe == 0) 
-        rmg_printf("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
+        rmg::printlog("II1 nrot = %d nsym = %d  nks = %d\n",Rmg_Symm->nsym_full, Rmg_Symm->nsym, nks);
 
     int nsym_full_k = 0;
     int nsym_k = 0;
@@ -293,7 +292,7 @@ int init_kpoints (int *kmesh, int *kshift)
     }
 
     if(ct.verbose && ct.AFM) 
-        rmg_printf("II2 nrot = %d nsym = %d  nks = %d\n",nsym_full_k, nsym_k, nks);
+        rmg::printlog("II2 nrot = %d nsym = %d  nks = %d\n",nsym_full_k, nsym_k, nks);
     // irreducible_bz is cartesian
     irreducible_bz( &nsym_full_k,
             full_sym_rotate_k.data(),
@@ -394,11 +393,11 @@ int init_kpoints (int *kmesh, int *kshift)
 
     if (ct.verbose)
     {
-        rmg_printf("\n num_k %d", ct.num_kpts);
+        rmg::printlog("\n num_k %d", ct.num_kpts);
         for(kpt = 0; kpt < ct.num_kpts; kpt++)
-            rmg_printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+            rmg::printlog("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
         for(kpt = 0; kpt < ct.klist.num_k_all; kpt++)
-            rmg_printf("\n kall %d %f %f %f %d %d %d", kpt,
+            rmg::printlog("\n kall %d %f %f %f %d %d %d", kpt,
                     ct.klist.k_all_cart[kpt][0],ct.klist.k_all_cart[kpt][1],ct.klist.k_all_cart[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
                     (int)Rmg_Symm->time_rev[std::abs(ct.klist.k_map_symm[kpt])-1 ]);
     }

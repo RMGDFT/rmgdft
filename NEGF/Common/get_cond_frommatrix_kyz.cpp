@@ -91,9 +91,9 @@ void get_cond_frommatrix_kyz ()
 
 //    if(cei.num_probe > 2 ) nkp[1] = 1;
 	ntot = nkp[0] * nkp[1] * nkp[2];
-	rmg_printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
+	rmg::printlog("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-	if (ntot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
+	if (ntot == 0 ) rmg::error("wrong number of kpoints in cond.in");
 
 	my_malloc( kvecx, ntot, double );
 	my_malloc( kvecy, ntot, double );
@@ -104,32 +104,32 @@ void get_cond_frommatrix_kyz ()
 
 	if (pct.gridpe == 0)
 	{
-		rmg_printf ("\n transmission calculations from known matrix \n");
+		rmg::printlog ("\n transmission calculations from known matrix \n");
 		for (idx = 0; idx < ct.num_cond_curve; idx++)
 		{
-			rmg_printf ("Calculating transmission from probe %d to %d \n", 
+			rmg::printlog ("Calculating transmission from probe %d to %d \n", 
 					ct.cond_probe1[idx], ct.cond_probe2[idx]);
 		}	
-		rmg_printf ("ct.num_states     = %d \n", ct.num_states);
+		rmg::printlog ("ct.num_states     = %d \n", ct.num_states);
 		for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
 		{
-			rmg_printf ("lcr[iprobe].num_states = %d \n", lcr[iprobe].num_states);
+			rmg::printlog ("lcr[iprobe].num_states = %d \n", lcr[iprobe].num_states);
 		}	
-		rmg_printf ("num of blocks     = %d \n", ct.num_blocks);
-		rmg_printf ("blocks dim        =   ");
+		rmg::printlog ("num of blocks     = %d \n", ct.num_blocks);
+		rmg::printlog ("blocks dim        =   ");
 		for (idx = 0; idx < ct.num_blocks; idx++)
-			rmg_printf (" %d ", ct.block_dim[idx]);
-		rmg_printf ("\n");
+			rmg::printlog (" %d ", ct.block_dim[idx]);
+		rmg::printlog ("\n");
 
-		rmg_printf ("enengy from %f to %f with %d points\n", emin, emax, E_POINTS);
-		rmg_printf ("small imaginary part = %f \n", E_imag);
-		rmg_printf ("KT = %f eV\n", KT);
-		rmg_printf ("kpoint in x,y,z = %d %d %d\n", nkp[0], nkp[1], nkp[2]);
-		rmg_printf (" total number of kpoints = %d", nkp_tot);
-		rmg_printf (" kx       ky      kz      kweight" );
+		rmg::printlog ("enengy from %f to %f with %d points\n", emin, emax, E_POINTS);
+		rmg::printlog ("small imaginary part = %f \n", E_imag);
+		rmg::printlog ("KT = %f eV\n", KT);
+		rmg::printlog ("kpoint in x,y,z = %d %d %d\n", nkp[0], nkp[1], nkp[2]);
+		rmg::printlog (" total number of kpoints = %d", nkp_tot);
+		rmg::printlog (" kx       ky      kz      kweight" );
 		for ( i = 0; i < nkp_tot; i++)
 		{
-			rmg_printf("\n %f, %f,  %f, %f  ", kvecx[i], kvecy[i], kvecz[i], kweight[i]);
+			rmg::printlog("\n %f, %f,  %f, %f  ", kvecx[i], kvecy[i], kvecz[i], kweight[i]);
 		}
 	}
 
@@ -153,7 +153,7 @@ void get_cond_frommatrix_kyz ()
     for(i = 0; i < ct.num_blocks; i++)
     {
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        nC_max = rmg_max(nC_max, idx);
+        nC_max = std::max(nC_max, idx);
     }
     
     Gamma1 = (std::complex<double> *)RmgMallocHost( 5 *nC_max *sizeof( std::complex<double>) ); 
@@ -191,7 +191,7 @@ void get_cond_frommatrix_kyz ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
 
 
@@ -214,7 +214,7 @@ void get_cond_frommatrix_kyz ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
 
@@ -343,7 +343,7 @@ void get_cond_frommatrix_kyz ()
                     /* desca= &pmo.desc_lead[0]; */
                     cond_temp[iene] += pmo_trace(temp_matrix1, descb) * kweight[kp];
 
-                    /* rmg_printf (" condcond eneR, G= %f %f \n ", eneR, cond[iene]); */
+                    /* rmg::printlog (" condcond eneR, G= %f %f \n ", eneR, cond[iene]); */
 
                 }                     
             } /*  end for iene */
@@ -351,7 +351,7 @@ void get_cond_frommatrix_kyz ()
 
             MPI_Barrier(pct.img_comm);
 
-            global_sums (cond_temp, &EP, pct.grid_comm);
+            rmg::allreduce(cond_temp, EP, pct.grid_comm);
 
             tot_energy_point += EP;
             for(i=0; i< EP; i++)
@@ -364,7 +364,7 @@ void get_cond_frommatrix_kyz ()
             simpson_loop++;
             if(simpson_loop > simpson_depth) 
             {
-                rmg_printf("\n with Simpson depth of %d, tol = %e ", simpson_depth, max_tol);
+                rmg::printlog("\n with Simpson depth of %d, tol = %e ", simpson_depth, max_tol);
                 break;
             }
 
@@ -423,22 +423,22 @@ void get_cond_frommatrix_kyz ()
            peaks[1]=-0.5;
            peaks[2]=0.5;
            peakNum=3;
-           if (pct.gridpe == 0)   rmg_printf ("\n no peak in conductance, add 3 energy points: 0, 0.5, -0.5\n");
+           if (pct.gridpe == 0)   rmg::printlog ("\n no peak in conductance, add 3 energy points: 0, 0.5, -0.5\n");
         }
         if (pct.gridpe == 0)
         {
-            rmg_printf ("\n number of peaks: %d\n", peakNum);
+            rmg::printlog ("\n number of peaks: %d\n", peakNum);
             for(peaki=0;peaki<peakNum;peaki++)
-            rmg_printf ("\n peaks[%d]: %f\n",peaki,peaks[peaki]);
+            rmg::printlog ("\n peaks[%d]: %f\n",peaki,peaks[peaki]);
         }
 
 
         /* calculating the current */
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%s%d%d%s", ct.basename,".current_", iprobe1, iprobe2, ".dat");
-            file = fopen (newname, "w");
-            fprintf(file, "& bias(V)    current (A)", EF1 - EF2, current);
+            std::string newname = std::format("{}{}{}{}{}", ct.basename,".current_", iprobe1, iprobe2, ".dat");
+            file = fopen (newname.c_str(), "w");
+            fprintf(file, "& bias(V)    current (A)");
             for(int i = -E_POINTS/2; i < E_POINTS/2; i++)
             {
                 EF1 = i *de;

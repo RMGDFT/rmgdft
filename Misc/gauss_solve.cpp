@@ -52,7 +52,7 @@ template <typename T> void gauss_solve(std::vector<T>& A, std::vector<T>& b, int
         }
         if (maxabs < eps)
         {
-            rmg_error_handler (__FILE__,__LINE__,"Singular matrix encountered.");
+            rmg::error("Singular matrix encountered.");
         }
         if (ipiv != k)
         {
@@ -79,7 +79,7 @@ template <typename T> void gauss_solve(std::vector<T>& A, std::vector<T>& b, int
         T Aii = A[i * N + i];
         if (std::abs(Aii) < eps)
         {
-            rmg_error_handler (__FILE__,__LINE__,"Singular matrix encountered.");
+            rmg::error("Singular matrix encountered.");
         }
         b[i] = s / Aii;
     }

@@ -67,11 +67,11 @@ template void Prolong::prolong<std::complex<double>, 12>
 
 
 
-Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in, Lattice &L_in, BaseGrid &BG_in) : ratio(ratio_in), order(order_in), cmix(cmix_in), TR(TR_in), L(L_in), BG(BG_in)
+Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in, Lattice &L_in, rmg::grid &BG_in) : ratio(ratio_in), order(order_in), cmix(cmix_in), TR(TR_in), L(L_in), BG(BG_in)
 {
     /*Order has to be even number */
     if (order % 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for even orders.");
+        rmg::error("This function works only for even orders.");
 
     ibrav = L.get_ibrav_type();
 
@@ -94,7 +94,7 @@ Prolong::Prolong(int ratio_in, int order_in, double cmix_in, TradeImages &TR_in,
         for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
             a[i][iy] = c[iy];
- //           rmg_printf("\n acac %d %f", iy, c[iy]);
+ //           rmg::printlog("\n acac %d %f", iy, c[iy]);
             if(fabs(c[iy]) > 1.0e-20) af[i][iy] = (float)c[iy];
         }
     }
@@ -163,12 +163,12 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
     int count_shells = 0;
     for(auto it = dist_list.begin(); it != dist_list.end(); ++it)
     {
- //       rmg_printf("\n dist %f", *it);
+ //       rmg::printlog("\n dist %f", *it);
         if(*it > max_dist + 1.0e-5)
         {
             count_shells++;
             max_dist = *it;
-  //          rmg_printf("\n maxdist %d %f",count_shells, max_dist);
+  //          rmg::printlog("\n maxdist %d %f",count_shells, max_dist);
         }
         if(count_shells == num_shells)
         {
@@ -189,7 +189,7 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
                 double dist = L.metric(xcry);
                 if( dist - max_dist <1.0e-5)
                 {
- //                   rmg_printf("\n dist %f index %d %d %d", dist, ix, iy, iz);
+ //                   rmg::printlog("\n dist %f index %d %d %d", dist, ix, iy, iz);
                     double weight = std::pow(dist, -power_weight);
                     tot_weight += weight;
                     one_item.coeff = weight;
@@ -203,11 +203,11 @@ void Prolong::cgen_dist_inverse(std::vector<coef_idx> &coeff_indx, std::vector<d
     }
 
 
-    //rmg_printf("\n size of coef %d", coeff_indx.size());
+    //rmg::printlog("\n size of coef %d", coeff_indx.size());
     for(auto it = coeff_indx.begin(); it != coeff_indx.end(); ++it)
     {
         it->coeff /= tot_weight;
-  //      rmg_printf("\n aaa %f %d %d %d", it->coeff, it->ix, it->iy, it->iz);
+  //      rmg::printlog("\n aaa %f %d %d %d", it->coeff, it->ix, it->iy, it->iz);
     }
 }
 
@@ -531,7 +531,7 @@ template <typename T> void Prolong::prolong_bcc (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
@@ -613,7 +613,7 @@ template <typename T> void Prolong::prolong_bcc_other (T *full, T *half, int dim
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(dimx + 2*order) * (dimy + 2*order) * (dimz + 2*order)];
@@ -724,7 +724,7 @@ template <typename T> void Prolong::prolong_any (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
@@ -827,7 +827,7 @@ template <typename T> void Prolong::prolong_fcc (T *full, T *half, int dimx, int
 {
 
     if(ratio != 2)
-        rmg_error_handler (__FILE__, __LINE__, "This function works only for 2-times fine grid.");
+        rmg::error("This function works only for 2-times fine grid.");
 
     // need to have one more points each side, order 10, each side need 6 points
     T *sg_half = new T[(half_dimx + order) * (half_dimy + order) * (half_dimz + order)];
@@ -1048,7 +1048,6 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     std::vector<T> sg_half(sg_hbasis);
     TR.trade_imagesx (half, sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
 
-    int dimx = 2 * half_dimx;
     int dimy = 2 * half_dimy;
     int dimz = 2 * half_dimz;
 
@@ -1140,7 +1139,7 @@ template <typename T, int ord, int htype> void Prolong::prolong_hex_internal (T 
     }
 }
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
 
 template <typename T, int images>
 void prolong_ortho_gpu_internal(double *full,
@@ -1149,6 +1148,7 @@ void prolong_ortho_gpu_internal(double *full,
                const int dimy,
                const int dimz,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template <typename T, int images>
@@ -1159,6 +1159,7 @@ void prolong_hex_gpu_internal(double *full,
                const int dimz,
                const int type,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 template void Prolong::prolong_ortho_gpu<float,6>(double * , float *, int, int, int, double);
@@ -1183,22 +1184,22 @@ void Prolong::prolong_ortho_gpu(double *full,
                    double scale)
 {
     if constexpr (std::is_same_v<T, float> && ord==6)
-        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==8)
-        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==10)
-        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==12)
-        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
 
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
-        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
-        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
-        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
-        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, scale, a);
+        prolong_ortho_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, scale, smem_limit, a);
 }
 
 template void Prolong::prolong_hex_gpu<float,6>(double * , float *, int, int, int, int, double);
@@ -1224,21 +1225,21 @@ void Prolong::prolong_hex_gpu(double *full,
                    double scale)
 {
     if constexpr (std::is_same_v<T, float> && ord==6)
-        prolong_hex_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 3>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==8)
-        prolong_hex_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 4>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==10)
-        prolong_hex_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 5>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, float> && ord==12)
-        prolong_hex_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<float, 6>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
 
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==6)
-        prolong_hex_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 3>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==8)
-        prolong_hex_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 4>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==10)
-        prolong_hex_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 5>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
     if constexpr (std::is_same_v<T, std::complex<float>> && ord==12)
-        prolong_hex_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, type, scale, a);
+        prolong_hex_gpu_internal<std::complex<float>, 6>(full, half, dimx, dimy, dimz, type, scale, smem_limit, a);
 }
 #endif

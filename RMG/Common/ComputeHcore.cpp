@@ -29,17 +29,18 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
+#include "rmg_reduce.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "blas.h"
 #include "Solvers.h"
 #include "Functional.h"
 #include "RmgMatrix.h"
+#include "blas_driver.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -102,18 +103,9 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if CUDA_ENABLED || HIP_ENABLED
-    // Until the finite difference operators are being applied on the GPU it's faster
-    // to make sure that the result arrays are present on the cpu side.
-    int device = -1;
-    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    DeviceSynchronize();
-#endif
+    rmg::sync_device();
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
-
+    int active_threads = rmg::get_active_threads();
     int istop = nstates / active_threads;
     istop = istop * active_threads;
     for(int st1=0;st1 < istop;st1 += active_threads) {
@@ -122,10 +114,10 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-            DeviceSynchronize();
+            rmg::sync_device();
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-            DeviceSynchronize();
+            rmg::sync_device();
             first_nls = 0;
             delete RT3;
         }
@@ -165,11 +157,11 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-            DeviceSynchronize();
+            rmg::sync_device();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-            DeviceSynchronize();
+            rmg::sync_device();
 #endif
             first_nls = 0;
             delete RT3;
@@ -183,7 +175,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
 
     // Compute A matrix
@@ -191,9 +183,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     KpointType alphavel(vel);
     KpointType beta(0.0);
 
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
-    BlockAllreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
     if(Hij_kin == NULL && Hij_localpp == NULL)
     {
         ct.xc_is_hybrid = is_xc_hybrid;
@@ -225,15 +217,15 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     // - 0.5 for laplacian 
     alphavel = vel;
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_kin, nstates);
 
-    BlockAllreduce((double *)Hij_kin, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij_kin, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
     delete(RT1);
 
 #if CUDA_ENABLED
-    DeviceSynchronize();
+    rmg::sync_device();
 #endif
     for(int st = 0; st < nstates; st++) {
         for (int idx = 0; idx < pbasis; idx++)
@@ -250,32 +242,32 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
     alphavel = vel;
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
+    rmg::gemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, 
             pbasis_noncoll, h_psi, pbasis_noncoll, beta, Hij_localpp, nstates);
-    BlockAllreduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
+    rmg::block_allreduce((double *)Hij_localpp, (size_t)(nstates)*(size_t)nstates * (size_t)factor, grid_comm);
 
     if(pct.gridpe ==0 && ct.verbose)
     {
-        rmg_printf("\n Hcore");
+        rmg::printlog("\n Hcore");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij[i*nstates + j]) );
         }
-        rmg_printf("\n Hkin");
+        rmg::printlog("\n Hkin");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij_kin[i*nstates + j]) );
         }
-        rmg_printf("\n H_localpp");
+        rmg::printlog("\n H_localpp");
         for(int i= 0; i < std::min(8, nstates); i++)
         {
-            rmg_printf("\n");
+            rmg::printlog("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                rmg_printf(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
+                rmg::printlog(" %10.6f ", std::real(Hij_localpp[i*nstates + j]) );
         }
 
     }

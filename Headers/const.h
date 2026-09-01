@@ -1,3 +1,4 @@
+#pragma once
 /****f* QMD-MGDFT/const.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
@@ -149,7 +150,7 @@
 #define		NEB_RELAX       8
 #define		TDDFT       10
 #define     Exx_only    11
-#define     BAND_WANNIER    12
+#define     TDDFT_CVE    12
 #define     STM    13
 #define     NSCF    14
 
@@ -217,7 +218,6 @@
 #define ORBITAL_PROJECTOR 1
 
 // 3-d interpolation types
-#define CUBIC_POLYNOMIAL_INTERPOLATION 0
 #define BSPLINE_INTERPOLATION 1
 #define PROLONG_INTERPOLATION 2
 #define FFT_INTERPOLATION 3
@@ -249,6 +249,8 @@
 #define ATOMIC_RHOCOMP   2
 #define ATOMIC_RHOCORE   3
 #define ATOMIC_RHOCORE_STRESS   4
+#define TAU_ATOMIC       5
+#define TAU_CORE         6
 
 // Pseudopotential file formats
 #define UPF_FORMAT  0
@@ -261,12 +263,10 @@
 #define EFIELD 0
 #define POINT_CHARGE 1
 #define VECTOR_POT 2
+#define EH_PAIR 3
 // Projector types
 #define LOCALIZED 0
 #define DELOCALIZED 1
-
-#define LO_distribute 0
-#define LO_projection 1
 
 // EXX modes
 #define EXX_DIST_FFT 0
@@ -287,6 +287,7 @@
 #define NORM_CONSERVING_ACCURACY  2
 #define NORM_CONSERVING_STANDARD  3
 #define ALL_ELECTRON 4
+#define NORM_CONSERVING_DEFAULT 10
 
 #define KPOINT_LATT_UNIT 0
 #define KPOINT_2pi_alat 1

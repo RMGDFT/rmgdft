@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
@@ -121,6 +122,8 @@ void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
 void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
+void GpuProductBr(float *in1, float *in2, float *out, int n, int k);
+void GpuProductBr(std::complex<float> *in1, std::complex<float> *in2, float *out, int n, int k);
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
@@ -138,28 +141,6 @@ void app8_del2_gpu(T * __restrict__ a,
                    const int dimz,
                    const fdparms_o8<T> &c);
 cudaStream_t getGpuStream(void);
-
-#endif
-
-#if HIP_ENABLED
-#include <hip/hip_runtime.h>
-#include <hip/hip_complex.h>
-void init_hip_fd(int max_threads, size_t bufsize);
-void GpuFill(double *dptr, int n, double fillval);
-void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
-void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
-void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
-void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream);
-void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
-void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
-template <typename T>
-void app8_del2_gpu(T * __restrict__ a,
-                   T *b,
-                   const int dimx,
-                   const int dimy,
-                   const int dimz,
-                   const fdparms_o8<T> &c);
-hipStream_t getGpuStream(void);
 template <typename T>
 void init_gpu_prolong(int dimx, int dimy, int dimz);
 
@@ -170,8 +151,8 @@ void prolong_ortho_gpu_internal(double *full,
                const int dimy,
                const int dimz,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
 template <typename T, int images>
 void prolong_hex_gpu_internal(double *full,
                T *half,
@@ -180,7 +161,77 @@ void prolong_hex_gpu_internal(double *full,
                const int dimz,
                const int type,
                double scale,
+               int smem_limit,
                double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+
+template <typename TypeV>
+void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
+
+void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(double *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<double> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+
+#endif
+
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#include <hip/hip_complex.h>
+void init_hip_fd(int max_threads, size_t bufsize);
+void GpuFill(double *dptr, int n, double fillval);
+void GpuProductBr(double *in1, double *in2, double *out, int n, int k);
+void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *out, int n, int k);
+void GpuProductBr(float *in1, float *in2, float *out, int n, int k);
+void GpuProductBr(std::complex<float> *in1, std::complex<float> *in2, float *out, int n, int k);
+void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
+void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream);
+void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
+void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
+template <typename T>
+void app8_del2_gpu(T * __restrict__ a,
+        T *b,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        const fdparms_o8<T> &c);
+hipStream_t getGpuStream(void);
+template <typename T>
+void init_gpu_prolong(int dimx, int dimy, int dimz);
+
+template <typename T, int images>
+void prolong_ortho_gpu_internal(double *full,
+        T *half,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        double scale,
+        int smem_limit,
+        double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+
+template <typename T, int images>
+void prolong_hex_gpu_internal(double *full,
+        T *half,
+        const int dimx,
+        const int dimy,
+        const int dimz,
+        const int type,
+        double scale,
+        int smem_limit,
+        double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template <typename TypeV>
+void GpuVxc_x_psi_noncoll(std::complex<TypeV> *psi, std::complex<TypeV> *xpsi, TypeV *vxc, int pbasis, int num_states);
+void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, double *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(double *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(float *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<double> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs);
+void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alpha, std::complex<double> *dP, std::complex<double> *C);
+
+void GpuTiledM_transpose(int M, int num_rows, int my_rank, double *C, double *C_glob);
+
 #endif
 
 #if SYCL_ENABLED

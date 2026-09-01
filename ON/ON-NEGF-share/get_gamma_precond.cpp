@@ -29,10 +29,10 @@ double get_gamma_precond(double *vtot, double small_eig)
     for (idx = 0; idx < get_P0_BASIS(); idx++)
         if (vmax < vtot[idx])
             vmax = vtot[idx];
-    vmax = real_max_all(vmax);
+    rmg::allreduce(&vmax, 1, pct.grid_comm);
 
     if (pct.gridpe == 0 && ct.verbose)
-        rmg_printf("\n sssss %f %f %f ", vmax, small_eig, diag);
+        rmg::printlog("\n sssss %f %f %f ", vmax, small_eig, diag);
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
     /* diag * 4^{N_level+1} */
@@ -49,7 +49,7 @@ double get_gamma_precond(double *vtot, double small_eig)
 //gamma = ct.eig_parm.gl_step * t5;
 
     if (pct.gridpe == 0 && ct.verbose)
-        rmg_printf("\n get_gamma %22.16f\n ", gamma);
+        rmg::printlog("\n get_gamma %22.16f\n ", gamma);
 
 
     return gamma;

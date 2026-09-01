@@ -76,7 +76,7 @@
 #include "typedefs.h"
 #include "vdW.h"
 #include "RmgException.h"
-#include "RmgSumAll.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 #include "packfuncs.h"
 #include "RmgParallelFft.h"
@@ -130,7 +130,7 @@ double *Vdw::d2y_dx2;
   
 
 */
-Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
+Vdw::Vdw (rmg::grid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
   bool use_coarsegrid = !ct.use_vdwdf_finegrid;
 
@@ -241,19 +241,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       // is 2*pi/r_max. Be careful though, since this will also decrease the
       // maximum k point value and the vdW_DF code will crash if it encounters
       // a g-vector with a magnitude greater than 2*pi/r_max *Nr_points.
-
-      double dr = r_max/VDW_NRPOINTS;
       Vdw::dk = 2.0*PI/r_max;
-      // Real space and k-space spacing of grid points.
 
-      double q_min = 1.0e-5, q_cut = 5.0;
-      // The maximum and minimum values of q. During a vdW run, values of q0
-      // found larger than q_cut will be saturated (SOLER equation 5) to q_cut.
-
-
-      int vdW_DF_analysis = false;
+      //int vdW_DF_analysis = false;
       // vdW-DF analysis tool as described in PRB 97, 085115 (2018)
-      int Nintegration_points = VDW_INTEGRATION_POINTS;
+      //int Nintegration_points = VDW_INTEGRATION_POINTS;
       // Number of integration points for real-space kernel generation (see
       // DION equation 14). This is how many a's and b's there will be.
 
@@ -270,7 +262,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       Vdw::dk = 2.0 * PI / Vdw::r_max;
       
       // Read in the values of the q points used to generate this kernel.
-      int idx = 0;
+      //int idx = 0;
       //for(int meshlines = 0;meshlines < 5;meshlines++) {
       //    std::getline(kernel_file, line);
       //    std::istringstream is2(line);
@@ -387,7 +379,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-  int ibrav = Rmg_L.get_ibrav_type();
   ApplyGradient (total_rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
@@ -645,9 +636,9 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int
   // followed in higher level routines where vdW_xc_energy is added to the other components
   // and then summed
   vdW_xc_energy = 0.5*vdW_xc_energy / (double)N_calc;
-  double t1 = L->omega * RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm()) / (double)N_calc;
+  double t1 = L->omega * rmg::sum_all(vdW_xc_energy, this->T->get_MPI_comm()) / (double)N_calc;
    
-  rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", t1);
+  rmg::printlog("Van der Waals correlation energy = %16.9e Ha\n", t1);
 
   // Save u_vdW
   if(is_gamma) {
@@ -777,8 +768,8 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
 
   //double echeck = 0.0;
   //for(int idx=0;idx<this->pbasis;idx++) echeck += this->total_rho[idx] * potential[idx];
-  //echeck = RmgSumAll(echeck, this->T->get_MPI_comm());
-  //rmg_printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
+  //echeck = rmg::sum_all(echeck, this->T->get_MPI_comm());
+  //rmg::printlog("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
 
 
   delete [] h;
@@ -1010,7 +1001,6 @@ void Vdw::stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, doubl
     if(nspin != 1)
         throw RmgFatalException() << "Error terminating: Vdw stress calculations not implemented yet. " << "\n";
 
-    double tpiba = 2.0 * PI / this->L->celldm[0];
     double sigma_grad[9];
     double sigma_ker[9];
     std::fill(sigma_grad, sigma_grad+9, 0.0);
@@ -1061,8 +1051,8 @@ void Vdw::stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q
                                      double *dq0_dgradrho, std::complex<double> *thetas, double *sigma)
 {
     double tpiba = 2.0 * PI / this->L->celldm[0];
-    double G_multiplier = 1.0;
-    if(is_gamma) G_multiplier = 2.0;
+    //double G_multiplier = 1.0;
+    //if(is_gamma) G_multiplier = 2.0;
     double *gx = grad_rho;
     double *gy = grad_rho + this->pbasis;
     double *gz = grad_rho + 2*this->pbasis;
@@ -1136,8 +1126,8 @@ void Vdw::stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q
 
         double a = (q_mesh[q_hi] - q0[i])/dq;
         double b = (q0[i] - q_mesh[q_low])/dq;
-        double c = (a*a*a - a)*dq*dq/6.0;
-        double d = (b*b*b - b)*dq*dq/6.0;
+        //double c = (a*a*a - a)*dq*dq/6.0;
+        //double d = (b*b*b - b)*dq*dq/6.0;
         double e = (3.0*a*a - 1.0)*dq/6.0;
         double f = (3.0*b*b - 1.0)*dq/6.0;
 
@@ -1250,30 +1240,30 @@ void Vdw::info(void) {
   // vdW_kernel_table file. The user should ensure that these are the
   // parameters they were intending to use on each run.
 
-  rmg_printf("\n     ************************************************************************\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     * You are using vdW-DF, which was implemented by the Thonhauser group. *\n");
-  rmg_printf("     * Please cite the following two papers that made this development      *\n");
-  rmg_printf("     * possible and the two reviews that describe the various versions:     *\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     *   T. Thonhauser et al., PRL 115, 136402 (2015).                      *\n");
-  rmg_printf("     *   T. Thonhauser et al., PRB 76, 125112 (2007).                       *\n");
-  rmg_printf("     *   K. Berland et al., Rep. Prog. Phys. 78, 066501 (2015).             *\n");
-  rmg_printf("     *   D.C. Langreth et al., J. Phys.: Condens. Matter 21, 084203 (2009). *\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     * If you are calculating the stress with vdW-DF, please also cite:     *\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     *   R. Sabatini et al., J. Phys.: Condens. Matter 24, 424209 (2012).   *\n");
-  rmg_printf("     *                                                                      *\n");
-  rmg_printf("     ************************************************************************\n\n");
+  rmg::printlog("\n     ************************************************************************\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     * You are using vdW-DF, which was implemented by the Thonhauser group. *\n");
+  rmg::printlog("     * Please cite the following two papers that made this development      *\n");
+  rmg::printlog("     * possible and the two reviews that describe the various versions:     *\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     *   T. Thonhauser et al., PRL 115, 136402 (2015).                      *\n");
+  rmg::printlog("     *   T. Thonhauser et al., PRB 76, 125112 (2007).                       *\n");
+  rmg::printlog("     *   K. Berland et al., Rep. Prog. Phys. 78, 066501 (2015).             *\n");
+  rmg::printlog("     *   D.C. Langreth et al., J. Phys.: Condens. Matter 21, 084203 (2009). *\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     * If you are calculating the stress with vdW-DF, please also cite:     *\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     *   R. Sabatini et al., J. Phys.: Condens. Matter 24, 424209 (2012).   *\n");
+  rmg::printlog("     *                                                                      *\n");
+  rmg::printlog("     ************************************************************************\n\n");
   
-  rmg_printf("     Carrying out vdW-DF run using the following parameters:\n");
-  rmg_printf("     Nqs    = %d  Npoints = %d  r_max = %12.8f\n", Nqs, Nrpoints, r_max );
-  rmg_printf("     qmesh  = %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[0],q_mesh[1],q_mesh[2],q_mesh[3]);
+  rmg::printlog("     Carrying out vdW-DF run using the following parameters:\n");
+  rmg::printlog("     Nqs    = %d  Npoints = %d  r_max = %12.8f\n", Nqs, Nrpoints, r_max );
+  rmg::printlog("     qmesh  = %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[0],q_mesh[1],q_mesh[2],q_mesh[3]);
   for(int idx=4;idx < Nqs;idx+=4)
-      rmg_printf("              %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[idx],q_mesh[idx+1],q_mesh[idx+2],q_mesh[idx+3]);
-  rmg_printf("\n\n");
+      rmg::printlog("              %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[idx],q_mesh[idx+1],q_mesh[idx+2],q_mesh[idx+3]);
+  rmg::printlog("\n\n");
 
 }
 

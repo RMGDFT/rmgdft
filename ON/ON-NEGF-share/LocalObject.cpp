@@ -53,11 +53,11 @@
 template LocalObject<double>::~LocalObject(void);
 template LocalObject<std::complex<double>>::~LocalObject(void);
 
-template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid&, int, MPI_Comm);
-template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid&, int, MPI_Comm);
+template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, rmg::grid&, int, MPI_Comm);
+template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, rmg::grid&, int, MPI_Comm);
 template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects, 
         int *ixmin, int *iymin, int *izmin, int *dimx, int *dimy, int *dimz, bool delocalized,
-        BaseGrid &BG, int density, MPI_Comm comm)
+        rmg::grid &BG, int density, MPI_Comm comm)
 {
     this->num_tot = num_objects;
     this->num_thispe = 0;
@@ -217,9 +217,9 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
 
 }
 
-template void LocalObject<double>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG)
+template void LocalObject<double>::ReadOrbitalsFromSingleFiles(std::string filename, rmg::grid &BG);
+template void LocalObject<std::complex<double>>::ReadOrbitalsFromSingleFiles(std::string filename, rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingleFiles(std::string filename, rmg::grid &BG)
 {
 
     int density = this->density;
@@ -254,7 +254,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
         fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if(fhand < 0)
         {
-            rmg_printf ("\n %s \n", newname.c_str());
+            rmg::printlog ("\n %s \n", newname.c_str());
             fflush(NULL);
             exit(0);
         }
@@ -263,7 +263,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
         size_t nbytes = read(fhand, psi, size);
         if (nbytes != size)
         {
-            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, (int)size, st_glob);
+            rmg::printlog ("\n read %d is different from %d for state %d", (int) nbytes, (int)size, st_glob);
             fflush(NULL);
             exit(0);
         }
@@ -297,10 +297,10 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
     }
 }
 
-template void LocalObject<double>::ReadProjectors(int, int, int *,BaseGrid &BG);
-template void LocalObject<std::complex<double>>::ReadProjectors(int, int, int*, BaseGrid &BG);
+template void LocalObject<double>::ReadProjectors(int, int, int *,rmg::grid &BG);
+template void LocalObject<std::complex<double>>::ReadProjectors(int, int, int*, rmg::grid &BG);
 template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num_ions, int max_nlpoints,
-        int *num_prj_perion, BaseGrid &BG)
+        int *num_prj_perion, rmg::grid &BG)
 {
 
     int density = this->density;
@@ -349,7 +349,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         double *beta = new double[size];
         ssize_t read_size = read(fhand, beta, size * sizeof(double));
         if(read_size != (ssize_t)(size * sizeof(double)))
-            rmg_error_handler (__FILE__, __LINE__,"error reading");
+            rmg::error("error reading");
 
 
         close(fhand);
@@ -394,14 +394,14 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
 
 }
 
-template void LocalObject<double>::GetAtomicOrbitals(int, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::GetAtomicOrbitals(int, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int num_ions, BaseGrid &BG)
+template void LocalObject<double>::GetAtomicOrbitals(int, rmg::grid &BG);
+template void LocalObject<std::complex<double>>::GetAtomicOrbitals(int, rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int num_ions, rmg::grid &BG)
 {
 
     // Used to generate LDA+U orbital projectors that span the full space
     if (!this->delocalized)
-        rmg_error_handler (__FILE__, __LINE__,"error GetAtomicOrbitals");
+        rmg::error("error GetAtomicOrbitals");
 
     KpointType *weight;
     std::complex<double> I_t(0.0, 1.0);
@@ -417,7 +417,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+        rmg::error("can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -460,7 +460,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
         /*Temporary pointer to the already calculated forward transform */
         int kpt = 0;
-        fptr = (std::complex<double> *)&sp->forward_orbital[kpt * sp->num_orbitals * pbasis];
+        fptr = (std::complex<double> *)&sp->forward_orbital[0][kpt * sp->num_orbitals * pbasis];
 
 
         /* Loop over radial projectors */
@@ -512,9 +512,9 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
 //localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
 //efficient  so we write the orbitals for each processor 
-template void LocalObject<double>::WriteOrbitals(std::string filename, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, BaseGrid &BG)
+template void LocalObject<double>::WriteOrbitals(std::string filename, rmg::grid &BG);
+template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, rmg::grid &BG)
 {
 
     int density = this->density;
@@ -530,20 +530,20 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
     if(fhand < 0)
     {
-        rmg_printf ("\n cannot open file: %s \n", newname.c_str());
+        rmg::printlog ("\n cannot open file: %s \n", newname.c_str());
         fflush(NULL);
         exit(0);
     }
 
     size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
-    write(fhand, this->storage_cpu, size);
+    rmg::writefile(fhand, this->storage_cpu, size);
 
     close(fhand);
 }
 
-template void LocalObject<double>::SetZeroBoundary(BaseGrid&, int kh_level, int fd_order);
-template void LocalObject<std::complex<double>>::SetZeroBoundary(BaseGrid&, int kh_level, int fd_order);
-template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGrid &BG, int kh_level, int fd_order)
+template void LocalObject<double>::SetZeroBoundary(rmg::grid&, int kh_level, int fd_order);
+template void LocalObject<std::complex<double>>::SetZeroBoundary(rmg::grid&, int kh_level, int fd_order);
+template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(rmg::grid &BG, int kh_level, int fd_order)
 {
 
     int PX0_GRID = BG.get_PX0_GRID(density);
@@ -616,9 +616,9 @@ template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGr
 
 }
 
-template void LocalObject<double>::ReAssign(BaseGrid &BG);
-template void LocalObject<std::complex<double>>::ReAssign(BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
+template void LocalObject<double>::ReAssign(rmg::grid &BG);
+template void LocalObject<std::complex<double>>::ReAssign(rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReAssign(rmg::grid &BG)
 {
 
     // reassign orrbitals so that one orbital's local index on different proceessors are the same.
@@ -833,9 +833,9 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
     //this->ApplyBoundary(&this->storage_cpu[st * P0_BASIS], st);
 }
 
-template void LocalObject<double>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG)
+template void LocalObject<double>::ReadProjectedOrbitals(std::string filename, rmg::grid &BG);
+template void LocalObject<std::complex<double>>::ReadProjectedOrbitals(std::string filename, rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(std::string filename, rmg::grid &BG)
 {
 
     int density = this->density;
@@ -852,20 +852,20 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
     fhand = open(newname.c_str(),  O_RDWR, S_IREAD | S_IWRITE);
     if(fhand < 0)
     {
-        rmg_printf ("\n cannot open file: %s \n", newname.c_str());
+        rmg::printlog ("\n cannot open file: %s \n", newname.c_str());
         fflush(NULL);
         exit(0);
     }
 
     size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
-    read(fhand, this->storage_cpu, size);
+    rmg::readfile(fhand, (double *)this->storage_cpu, size);
 
     close(fhand);
 }
 
-template void LocalObject<double>::SetOrbitalProjToSingle(BaseGrid &BG);
-template void LocalObject<std::complex<double>>::SetOrbitalProjToSingle(BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle(BaseGrid &BG)
+template void LocalObject<double>::SetOrbitalProjToSingle(rmg::grid &BG);
+template void LocalObject<std::complex<double>>::SetOrbitalProjToSingle(rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle(rmg::grid &BG)
 {
     int rank,npes;
 
@@ -922,9 +922,9 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
         }
         if(pct.gridpe == 0 && 0)
         {
-            rmg_printf("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
+            rmg::printlog("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
             for(size_t i = 0; i < this->OrbitalOwnedProcs_pelist[st].size(); i++)
-                rmg_printf("\n             %d    %d   %d   %d", 
+                rmg::printlog("\n             %d    %d   %d   %d", 
                         this->OrbitalOwnedProcs_pelist[st][i], 
                         this->OrbitalOwnedProcs_xoffset[st][i], 
                         this->OrbitalOwnedProcs_yoffset[st][i], 
@@ -935,9 +935,9 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
 }
 
 
-template void LocalObject<double>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG)
+template void LocalObject<double>::WriteOrbitalsToSingleFiles(std::string filename, rmg::grid &BG);
+template void LocalObject<std::complex<double>>::WriteOrbitalsToSingleFiles(std::string filename, rmg::grid &BG);
+template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleFiles(std::string filename, rmg::grid &BG)
 {
 
     int density = this->density;
@@ -1059,13 +1059,14 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             fhand = open(newname.c_str(),  O_CREAT | O_TRUNC |O_RDWR, S_IREAD | S_IWRITE);
             if(fhand < 0)
             {
-                rmg_printf ("\n cannot open file: %s \n", newname.c_str());
+                rmg::printlog ("\n cannot open file: %s \n", newname.c_str());
                 fflush(NULL);
                 exit(0);
             }
 
-            size_t size = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob] *sizeof(KpointType);
-            write(fhand, phi, size);
+            size_t size = this->dimx[st_glob] * this->dimy[st_glob] 
+                * this->dimz[st_glob] *sizeof(KpointType);
+            rmg::writefile(fhand, phi, size);
 
             int ix0 = this->ixmin[st_glob];
             int ix1 = this->ixmin[st_glob] + this->dimx[st_glob];
@@ -1073,12 +1074,12 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             int iy1 = this->iymin[st_glob] + this->dimy[st_glob];
             int iz0 = this->izmin[st_glob];
             int iz1 = this->izmin[st_glob] + this->dimz[st_glob];
-            write(fhand, &ix0, sizeof(int));
-            write(fhand, &ix1, sizeof(int));
-            write(fhand, &iy0, sizeof(int));
-            write(fhand, &iy1, sizeof(int));
-            write(fhand, &iz0, sizeof(int));
-            write(fhand, &iz1, sizeof(int));
+            rmg::writefile(fhand, &ix0, sizeof(int));
+            rmg::writefile(fhand, &ix1, sizeof(int));
+            rmg::writefile(fhand, &iy0, sizeof(int));
+            rmg::writefile(fhand, &iy1, sizeof(int));
+            rmg::writefile(fhand, &iz0, sizeof(int));
+            rmg::writefile(fhand, &iz1, sizeof(int));
 
             close(fhand);
         }
@@ -1112,9 +1113,9 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(const LocalObje
     this->storage_ptr = this->storage_cpu;
 #endif
 }
-template void LocalObject<double>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);
-template void LocalObject<std::complex<double>>::SetBoundary(BaseGrid&, int kh_level, int fd_order, STATE *states);
-template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &BG, int kh_level, int fd_order, STATE *states)
+template void LocalObject<double>::SetBoundary(rmg::grid&, int kh_level, int fd_order, STATE *states);
+template void LocalObject<std::complex<double>>::SetBoundary(rmg::grid&, int kh_level, int fd_order, STATE *states);
+template <class KpointType> void LocalObject<KpointType>::SetBoundary(rmg::grid &BG, int kh_level, int fd_order, STATE *states)
 {
     boundary.resize(this->num_thispe);
     pot_precond.resize(this->num_thispe);
@@ -1181,7 +1182,7 @@ template <class KpointType> void LocalObject<KpointType>::SetBoundary(BaseGrid &
                         boundary[st][idx] = 0.0;
                 }
             }
-            //if(st == 0) rmg_printf("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);
+            //if(st == 0) rmg::printlog("\n %d %f %e aaaa ", ix, ix*grid_spacing, boundary[st][ix * PY0_GRID * PZ0_GRID]);
         }
     }
 

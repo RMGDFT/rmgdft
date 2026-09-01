@@ -44,12 +44,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     /* Generate hartree potential */
 
     /* Generate exchange-correlation potential */
-//double *rho_temp=new double[4*nfp0]();
-//Smooth(rho_tot, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 40.0);
-//Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-//F->v_xc(rho_temp, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
-//delete F;
-//delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     delete F;

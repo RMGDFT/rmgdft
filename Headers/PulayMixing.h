@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_Pulay_H
 #define RMG_Pulay_H 1
 

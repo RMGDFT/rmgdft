@@ -721,7 +721,6 @@ void FDOpt::Analyze_fft(int orb_index)
 
 void FDOpt::Analyze_fft(double *waves)
 {
-    double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
     int nx = get_NX_GRID();
     int ny = get_NY_GRID();
     int nz = get_NZ_GRID();

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef RMG_THREADS_H
 #define RMG_THREADS_H 1
 
@@ -22,6 +23,7 @@ typedef struct
     int extratag1;
     int extratag2;
     int extratag3;
+    int extratag4;
 
     // vcycle during multigrid iterations
     int vcycle;
@@ -56,4 +58,11 @@ void QueueThreadTask(int tid, SCF_THREAD_CONTROL &task);
 bool PopThreadTask(int tid, SCF_THREAD_CONTROL &task);
 // Called from main to terminate all threads
 void RmgTerminateThreads(void);
+
+namespace rmg
+{
+    int get_active_threads(void);
+    int get_max_threads(void);
+}
+
 #endif

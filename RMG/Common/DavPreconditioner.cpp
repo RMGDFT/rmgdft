@@ -31,20 +31,21 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "GlobalSums.h"
-#include "RmgSumAll.h"
+#include "rmg_reduce.h"
+#include "rmg_sum_all.h"
 #include "Kpoint.h"
-#include "RmgGemm.h"
-#include "Mgrid.h"
+#include "rmg_gemm.h"
+#include "rmg_mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-#include "ErrorFuncs.h"
+
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "GatherScatter.h"
 #include "packfuncs.h"
+#include "rmgthreads.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -77,9 +78,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    int active_threads = rmg::get_active_threads();
 
     int my_pe_x, my_pe_y, my_pe_z;
     kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
@@ -98,7 +97,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     }
 
     double *nvtot = new double[pct.coalesce_factor*4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    CPP_pack_ptos (nvtot, tvtot, dimx*pct.coalesce_factor, dimy, dimz);
+    rmg::pack_ptos (nvtot, tvtot, dimx*pct.coalesce_factor, dimy, dimz);
     for(int idx = 0;idx <(pct.coalesce_factor*dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
 
     int istop = notconv / (active_threads * pct.coalesce_factor);
@@ -135,7 +134,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     // Process any remaining states in serial fashion
     if(istop < notconv)
     {
-        CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
+        rmg::pack_ptos (nvtot, vtot, dimx, dimy, dimz);
         for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
         for(int st1 = istop;st1 < notconv;st1++) {
             DavPreconditionerOne (kptr, st1, res, fd_diag, eigs[st1], nvtot, avg_potential);
@@ -157,15 +156,13 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     // We want a clean exit if user terminates early
     CheckShutdown();
 
-    BaseGrid *G = kptr->G;
+    rmg::grid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
-    Mgrid MG(L, T);
-    int pre[MAX_MG_LEVELS] = { 2, 8, 8, 20, 20, 20, 20, 20 };
-    int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    rmg::mgrid MG(L, T, G, 1, ct.max_zvalence);
+    MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
+
     int levels = ct.eig_parm.levels;
-    //double Zfac = 2.0 * ct.max_zvalence;
-    double tstep = 0.666666666666;
 
     int coalesce_factor = T->get_coalesce_factor();
     int dimx = G->get_PX0_GRID(1) * coalesce_factor;
@@ -173,10 +170,6 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
     //int pbasis_noncoll = pbasis;
-
-    double hxgrid = G->get_hxgrid(1);
-    double hygrid = G->get_hygrid(1);
-    double hzgrid = G->get_hzgrid(1);
 
     OrbitalType *work_t = (OrbitalType *)malloc(10*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
@@ -202,11 +195,11 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
 
         if(coalesce_factor==1)
         {
-            GlobalSums (&t1, 1, pct.grid_comm);
+            rmg::allreduce(&t1, 1, pct.grid_comm);
         }
         else
         {
-            GlobalSums (&t1, 1, pct.coalesced_grid_comm);
+            rmg::allreduce(&t1, 1, pct.coalesced_grid_comm);
         }
 
         t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
@@ -214,16 +207,14 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
         // neutralize cell
         for(int idx = 0;idx <pbasis;idx++) work2_t[idx] = work3_t[idx+is*pbasis] - OrbitalType(t1);
 
-        CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
+        rmg::pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, levels, pre, post, 1,
-                    //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    tstep, 1.0, 0.0, vtot,
-                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
+                    dimx, dimy, dimz,
+                    0, levels, 
+                    -avg_potential, NULL,     // which one is best?
+                    // 1.0, 0.0, vtot,
+                    coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+        rmg::pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
 
         for(int idx = 0;idx <pbasis;idx++) work3_t[idx+is*pbasis] = work1_t[idx] + eig * t1;;
     }

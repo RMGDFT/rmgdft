@@ -1,3 +1,4 @@
+#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -152,6 +153,7 @@ protected:
     void *elpa_handle;
 #endif
 
+    int driver;         // Scalapack or elpa
     int N;              // Operates on matrices of size (N,N)
     int scalapack_npes; // number of processors from the root_com that participate in sp operatrions
     int NB;             // Blocking factors
@@ -185,6 +187,7 @@ protected:
 
 #define		numroc		RMG_FC_GLOBAL(numroc, NUMROC)
 #define		indxg2p		RMG_FC_GLOBAL(indxg2p, INDXG2P)
+#define		indxl2g		RMG_FC_GLOBAL(indxl2g, INDXL2G)
 #define		descinit	RMG_FC_GLOBAL(descinit, DESCINIT)
 #define		pdsyev		RMG_FC_GLOBAL(pdsyev, PDSYEV)
 #define		pcheev		RMG_FC_GLOBAL(pcheev, PCHEEV)
@@ -229,6 +232,10 @@ protected:
 #define		pzgetrs		RMG_FC_GLOBAL(pzgetrs, PZGETRS)
 #define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
 #define		pztranu		RMG_FC_GLOBAL(pztranu, PZTRANU)
+#define		pdtrtri 	RMG_FC_GLOBAL(pdtrtri, PDTRTRI)
+#define		pztrtri 	RMG_FC_GLOBAL(pztrtri, PZTRTRI)
+#define		pdtrmm   	RMG_FC_GLOBAL(pdtrmm, PDTRMM)
+#define		pztrmm   	RMG_FC_GLOBAL(pztrmm, PZTRMM)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -238,6 +245,7 @@ MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
 void Cpdgemr2d(int, int, double*, int, int, int*, double*, int, int, int*, int);
 int numroc (int *, int *, int *, int *, int *);
 int indxg2p (int *, int *, int *, int *, int *);
+int indxl2g (int *, int *, int *, int *, int *);
 void pdgetrf( int *, int *, double *, int *, int *, int *, int *, int * );
 void pdgetrs( char *, int *, int *, double *, int *, int *, int *, int *, double *, int *, int *, int *, int *);
 void pzgetrs( char *, int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, int *, int *, int *, int *);
@@ -272,8 +280,9 @@ void pzhengst(int *, char *, int *, std::complex<double> *, int *, int *, int *,
               int *, int*, int*, double *, std::complex<double> *, int *, int *);
 void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
 void pdpocon(char *, int*, double*, int*, int*, int*, double *, double *, double *, int *, int *, int *, int *);
-void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
+void pzpotrf(char *, int*, std::complex<double>*, int*, int*, int*, int*);
 void pdtrtri(char *, char *, int*, double*, int*, int*, int*, int*);
+void pztrtri(char *, char *, int*, std::complex<double>*, int*, int*, int*, int*);
 void pdsyrk( char *, char *, int *, int *, double *, double *, int *, int *, int *,
              double *, double *, int *, int *, int *);
 void pdlaset(char *, int *, int *, double *, double *, double *, int *, int *, int *);
@@ -299,8 +308,8 @@ void pdtrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, do
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 void pdtrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
-void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
-             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, std::complex<double> *alpha,
+             std::complex<double> * a, int *ia, int *ja, int *desca, std::complex<double> *b, int *ib, int *jb, int *descb);               
 void pztrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 void pdtran( int * M, int * N, double * ALPHA, double * A, int * IA, int * JA, int * DESCA,

@@ -15,6 +15,8 @@ endif()
 MESSAGE(STATUS "Tests will use ${num_proc} cores. If this will overload your machine try setting it manually using -Dnum_proc=X.")
 
 SUBDIRS(RMG)
+SUBDIRS(RMG_TDDFT)
 SUBDIRS(RMG_ON)
+SUBDIRS(NEGF)
 
 

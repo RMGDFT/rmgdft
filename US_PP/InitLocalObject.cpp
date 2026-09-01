@@ -39,10 +39,11 @@
 #include "prototypes_on.h"
 #include "Kbpsi.h"
 #include "rmgthreads.h"
-#include "RmgGemm.h"
+#include "rmg_gemm.h"
 #include "AtomicInterpolate.h"
 #include "Atomic.h"
 #include "RmgException.h"
+#include "rmg_sum_all.h"
 #include "transition.h"
 
 // This is used to initialize 4 types of atomic data structures that live
@@ -55,6 +56,8 @@
 // ATOMIC_RHO       Atomic rho
 // ATOMIC_RHOCOMP   Atomic compensating charges
 // ATOMIC_RHOCORE   Atomic core charges for non-linear core corrections.
+// TAU_ATOMIC       Total atomic kinetic energy density for metagga.
+// TAU_CORE         Core atomic kinetic energy density for metagga.
 //
 
 void LcaoGetAtomicRho(double *arho)
@@ -191,6 +194,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     {
         factor = 4;
     }
+    if( (ct.nspin == 2) && ((object_type == TAU_ATOMIC) || (object_type == TAU_CORE)))
+    {
+        factor = 2;
+    }
 
     for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] = 0.0;
     if(object_type == ATOMIC_RHOCOMP) {
@@ -270,7 +277,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                     Rmg_L.to_cartesian(x, cx);
 
                                     if(r > sp->lradius) continue;
-                                    double t1;
+                                    double t1 = 0.0;
 
                                     switch(object_type) 
                                     {
@@ -291,35 +298,41 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                             {
                                                 t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
                                             }
-                                            else
-                                            {
-                                                t1 = 0.0;
-                                            }
                                             break;
                                         case ATOMIC_RHOCORE_STRESS: 
                                             if(sp->nlccflag) 
                                             {
                                                 t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
                                             }
-                                            else
+                                            break;
+
+                                        case TAU_ATOMIC: 
+                                            if(ct.xc_is_meta) 
                                             {
-                                                t1 = 0.0;
+                                                t1 = AtomicInterpolateInline (sp->tau_atomic_lig.data(), r);
                                             }
                                             break;
 
+                                        case TAU_CORE: 
+                                            if(ct.xc_is_meta) 
+                                            {
+                                                t1 = AtomicInterpolateInline (sp->tau_core_lig.data(), r);
+                                            }
+                                            break;
                                         default:
                                             throw RmgFatalException() << "Undefined local object type" << 
                                                 " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
                                     }
 
-                                    if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) )
+                                    if((ct.nspin == 2) && 
+                                       ((object_type == ATOMIC_RHO) ||
+                                       (object_type == TAU_ATOMIC)))
                                     { 
                                         if (pct.spinpe == 0)
                                             sumobj_omp[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                         else
                                             sumobj_omp[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
-
                                     }
                                     else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) )
                                     { 
@@ -364,8 +377,8 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     if(object_type == ATOMIC_RHO) {
         double t2 = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
-        t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
-        t2 = real_sum_all (t2, pct.spin_comm);
+        t2 = get_vel_f() *  rmg::sum_all<double> (t2, pct.grid_comm);
+        t2 = rmg::sum_all<double> (t2, pct.spin_comm);
         if(ct.AFM) t2 *= 2.0;
 
         double t1 = ct.nel / t2;
@@ -400,7 +413,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for (int idx = 0; idx < FP0_BASIS; idx++) ct.crho += sumobject[idx];
 
         ct.crho = ct.crho * get_vel_f();
-        ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
+        ct.crho = rmg::sum_all<double> (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
         if (ct.verbose)
         {

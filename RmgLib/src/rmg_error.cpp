@@ -31,28 +31,287 @@
 #include "rmg_error.h"
 #include <iostream>
 #include <signal.h>
+#include <cstdint>
+#include <unistd.h>
+
+#if HIP_ENABLED
+#include "tiled_mm.hpp"
+#endif  
+
 #include <boost/stacktrace.hpp>
 
-static void *(*rmgerrfunc)(const char *filename, int line, char const *message) = NULL;
+ssize_t block_write(int fd, const void *buf, size_t count);
+ssize_t block_read(int fd, const void *buf, size_t count);
+
 static int do_print=true;
 
-void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message))
-{
-    rmgerrfunc = func;
-}
-
-void RmgErrorSetPrint(int doprint)
+void rmg::error_set_print(int doprint)
 {
     do_print = doprint;
 }
 
-void rmg_error_handler(const char *filename, int line, char const *message)
+static inline void print_exit(char const *message, const std::source_location& loc)
 {
-    std::cout << boost::stacktrace::stacktrace();
-    if(!rmgerrfunc) {
-        if(do_print) printf("\n\n%s at LINE %d in %s.\n\n\n", message, line, filename);
-        fflush (NULL);
-        raise(SIGTERM);
+   if(do_print)
+   {    
+        std::cout << "\nError: " << message << "\n";
+        std::cout << "Function:  " << loc.function_name() << "\n"
+                  << "File:      " << loc.file_name()     << "\n"
+                  << "Line:      " << loc.line()          << "\n\n";
+#ifdef RMG_DEBUG
+        std::cout << "Stacktrace:" << "\n";
+        std::cout << boost::stacktrace::stacktrace();
+#endif
     }
-    rmgerrfunc(filename, line, message);
+    fflush (NULL);
+    sleep(1);
+    raise(SIGTERM);
 }
+
+void rmg::error(char const *message, const std::source_location loc)
+{
+    print_exit(message, loc);
+}
+
+#if CUDA_ENABLED
+
+const char* cusolverGetErrorString(cusolverStatus_t error) {
+    switch (error) {
+        case CUSOLVER_STATUS_SUCCESS:           return "CUSOLVER_STATUS_SUCCESS";
+        case CUSOLVER_STATUS_NOT_INITIALIZED:   return "CUSOLVER_STATUS_NOT_INITIALIZED";
+        case CUSOLVER_STATUS_ALLOC_FAILED:      return "CUSOLVER_STATUS_ALLOC_FAILED";
+        case CUSOLVER_STATUS_INVALID_VALUE:     return "CUSOLVER_STATUS_INVALID_VALUE";
+        case CUSOLVER_STATUS_ARCH_MISMATCH:     return "CUSOLVER_STATUS_ARCH_MISMATCH";
+        case CUSOLVER_STATUS_EXECUTION_FAILED:  return "CUSOLVER_STATUS_EXECUTION_FAILED";
+        case CUSOLVER_STATUS_INTERNAL_ERROR:    return "CUSOLVER_STATUS_INTERNAL_ERROR";
+        case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED: return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
+        default:                                return "<unknown cuSOLVER error>";
+    }
+}
+
+void rmg::error(cublasStatus_t custat, const std::source_location loc)
+{
+
+    if(custat==CUBLAS_STATUS_SUCCESS)
+        return;
+
+    std::string msg;
+    if(custat==CUBLAS_STATUS_NOT_INITIALIZED)
+    {
+        msg = "CUBLAS_STATUS_NOT_INITIALIZED'";
+    }
+    else if(custat==CUBLAS_STATUS_ALLOC_FAILED)
+    {
+        msg = "CUBLAS_STATUS_ALLOC_FAILED";
+    }
+    else if(custat==CUBLAS_STATUS_INVALID_VALUE)
+    {
+        msg = "CUBLAS_STATUS_INVALID_VALUE";
+    }
+    else if(custat==CUBLAS_STATUS_ARCH_MISMATCH)
+    {
+        msg = "CUBLAS_STATUS_ARCH_MISMATCH";
+    }
+    else if(custat==CUBLAS_STATUS_MAPPING_ERROR)
+    {
+        msg = "CUBLAS_STATUS_MAPPING_ERROR";
+    }
+    else if(custat==CUBLAS_STATUS_EXECUTION_FAILED)
+    {
+        msg = "CUBLAS_STATUS_EXECUTION_FAILED";
+    }
+    else if(custat==CUBLAS_STATUS_INTERNAL_ERROR)
+    {
+        msg = "CUBLAS_STATUS_INTERNAL_ERROR";
+    }
+    else
+    {
+        msg = "UNKNOWN CUBLAS ERROR";
+    }
+
+    print_exit(msg.c_str(), loc);
+}
+
+void rmg::error(cudaError_t custat, const std::source_location loc)
+{
+
+    if(custat == cudaSuccess) return;
+
+    const char *msg = cudaGetErrorString(custat);
+    print_exit(msg, loc);
+}
+
+void rmg::error(cusolverStatus_t custat, const std::source_location loc)
+{
+    if(custat == CUSOLVER_STATUS_SUCCESS) return;
+
+    const char *msg = cusolverGetErrorString(custat);
+    print_exit(msg, loc);
+}
+
+void rmg::error(CUresult custat, const std::source_location loc)
+{
+    if(custat == CUDA_SUCCESS) return;
+
+    const char *msg = "CUresult wrong";
+    print_exit(msg, loc);
+}
+
+
+#endif
+
+#if HIP_ENABLED
+    void rmg::error(hipblasStatus_t hipstat, const std::source_location loc)
+    {
+
+        if(hipstat==HIPBLAS_STATUS_SUCCESS)
+            return;
+
+        std::string msg;
+        if(hipstat==HIPBLAS_STATUS_NOT_INITIALIZED)
+        {
+            msg = "'HIPBLAS_STATUS_NOT_INITIALIZED'";
+        }
+        else if(hipstat==HIPBLAS_STATUS_ALLOC_FAILED)
+        {
+            msg = "HIPBLAS_STATUS_ALLOC_FAILED";
+        }
+        else if(hipstat==HIPBLAS_STATUS_INVALID_VALUE)
+        {
+            msg = "HIPBLAS_STATUS_INVALID_VALUE";
+        }
+        else if(hipstat==HIPBLAS_STATUS_ARCH_MISMATCH)
+        {
+            msg = "HIPBLAS_STATUS_ARCH_MISMATCH";
+        }
+        else if(hipstat==HIPBLAS_STATUS_MAPPING_ERROR)
+        {
+            msg = "HIPBLAS_STATUS_MAPPING_ERROR";
+        }
+        else if(hipstat==HIPBLAS_STATUS_EXECUTION_FAILED)
+        {
+            msg = "HIPBLAS_STATUS_EXECUTION_FAILED";
+        }
+        else if(hipstat==HIPBLAS_STATUS_INTERNAL_ERROR)
+        {
+            msg = "HIPBLAS_STATUS_INTERNAL_ERROR";
+        }
+        else
+        {
+            msg = "UNKNOWN HIPBLAS ERROR";
+        }
+
+        print_exit(msg.c_str(), loc);
+    }
+
+    void rmg::error(hipError_t hipstat, const std::source_location loc)
+    {
+
+        if(hipstat == hipSuccess) return;
+
+        const char *msg = hipGetErrorString(hipstat);
+        print_exit(msg, loc);
+    }   
+
+    void rmg::error(rocblas_status rocstat, const std::source_location loc)
+    {
+        if(rocstat == rocblas_status_success) return;
+
+        const char *msg = rocblas_status_to_string(rocstat);
+        print_exit(msg, loc);
+    }
+
+
+#endif
+#if USE_NCCL
+void rmg::error(ncclResult_t res, const std::source_location loc)
+{
+    if (res != ncclSuccess) {
+        const char *msg = ncclGetErrorString(res);
+        print_exit(msg, loc);
+    }
+}
+#endif
+
+
+// This function is used to provide error checking for all the legacy
+// calls to write in the rmg code base that don't peform error checks.
+void rmg::writefile(int fd, const void *buf, ssize_t count, const std::source_location loc)
+{
+    ssize_t rval = block_write(fd, buf, count);
+
+    if(rval < 0 || rval != count)
+    {
+        // If any process had an error or incomplete write we want output
+        rmg::error_set_print(true);
+
+        rmg::error("File write failed.", loc);
+    }
+}
+
+// This function is used to provide error checking for all the legacy
+// calls to read in the rmg code base that don't peform error checks.
+void rmg::readfile(int fd, void *buf, ssize_t count, const std::source_location loc)
+{
+    ssize_t rval = block_read(fd, buf, count);
+
+    if(rval < 0 || rval != count)
+    {
+        // If any process had an error or incomplete read we want output
+        rmg::error_set_print(true);
+
+        rmg::error("File read failed.", loc);
+    }
+}
+
+// Some implementations of write fail for very large buffers so we block it here
+// This should not be called directly but from rmg::writefile which handles
+// the errors.
+#define WBLOCK_SIZE 1073741824
+
+ssize_t block_write(int fd, const void *buf, size_t count)
+{
+
+  size_t nblocks = count / WBLOCK_SIZE;
+  size_t rem = count % WBLOCK_SIZE;
+  uint8_t *bufptr = (uint8_t *)buf;
+
+  for(size_t blocks = 0;blocks < nblocks;blocks++)
+  {
+      size_t written = write(fd, bufptr, WBLOCK_SIZE);
+      if(written != WBLOCK_SIZE) return written;
+      bufptr += WBLOCK_SIZE;
+  }
+
+  if(rem)
+  {
+      size_t written = write(fd, bufptr, rem);
+      if(written != rem) return written;
+  }
+
+  return nblocks*WBLOCK_SIZE + rem;
+}
+
+ssize_t block_read(int fd, const void *buf, size_t count)
+{
+
+  size_t nblocks = count / WBLOCK_SIZE;
+  size_t rem = count % WBLOCK_SIZE;
+  uint8_t *bufptr = (uint8_t *)buf;
+
+  for(size_t blocks = 0;blocks < nblocks;blocks++)
+  {
+      size_t readsize = read(fd, bufptr, WBLOCK_SIZE);
+      if(readsize != WBLOCK_SIZE) return readsize;
+      bufptr += WBLOCK_SIZE;
+  }
+
+  if(rem)
+  {
+      size_t readsize = read(fd, bufptr, rem);
+      if(readsize != rem) return readsize;
+  }
+
+  return nblocks*WBLOCK_SIZE + rem;
+}
+
