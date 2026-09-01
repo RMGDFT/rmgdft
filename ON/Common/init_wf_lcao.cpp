@@ -37,24 +37,35 @@ void init_wf_lcao(STATE * states)
     double *phi = new double[ct.max_orbit_size];
 
     if (pct.gridpe == 0)
-        rmg::printlog(" LCAO initial wavefunction \n");
+        rmg_printf(" LCAO initial wavefunction \n");
     MPI_Barrier(pct.img_comm);
 
-    int P0_BASIS = LocalOrbital->pbasis;
-    for (int st = 0; st < LocalOrbital->num_thispe; st++)
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
-        int st_glob = LocalOrbital->index_proj_to_global[st];
-        if(st_glob < 0) continue;
-        get_one_orbital(states, st_glob, phi);
+        int P0_BASIS = LocalOrbital->pbasis;
+        for (int st = 0; st < LocalOrbital->num_thispe; st++)
+        {
+            int st_glob = LocalOrbital->index_proj_to_global[st];
+            if(st_glob < 0) continue;
+            get_one_orbital(states, st_glob, phi);
+            
+            LocalOrbital->AssignOrbital(st, phi);
+            LocalOrbital->ApplyBoundary(&LocalOrbital->storage_cpu[st * P0_BASIS], st);
 
-        LocalOrbital->AssignOrbital(st, phi);
-        LocalOrbital->ApplyBoundary(&LocalOrbital->storage_cpu[st * P0_BASIS], st);
-
+        }
     }
-
+    else
+    {
+        for (int state = ct.state_begin; state < ct.state_end; state++)
+        {
+            get_one_orbital(states, state, phi);
+            for(int idx = 0; idx < states[state].size; idx++)
+                states[state].psiR[idx] = phi[idx];
+        }
+    }
     delete [] phi;
     if (pct.gridpe == 0)
-        rmg::printlog(" LCAO initial wavefunction  down\n");
+        rmg_printf(" LCAO initial wavefunction  down\n");
 }
 
 static void get_one_orbital(STATE *states, int state, double *phi)
@@ -73,7 +84,7 @@ static void get_one_orbital(STATE *states, int state, double *phi)
 
     //count how many atomic wave functions we have
     // if the number of atomic wave functions is not enough, 
-    // use the same radial function with l+1;
+   // use the same radial function with l+1;
 
     state_count= 0;
     int l_extra = 0;

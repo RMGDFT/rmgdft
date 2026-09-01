@@ -21,7 +21,6 @@ get X  array  get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID()
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
-#include "rmg_reduce.h"
 
 
 void distribute_to_X_soft (double * distr_array, double * global_array)
@@ -46,6 +45,6 @@ void distribute_to_X_soft (double * distr_array, double * global_array)
         }
 
     idx1 = get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-    rmg::allreduce(global_array, idx1, COMM_PEX);
+    global_sums_X (global_array, &idx1);
 
 }

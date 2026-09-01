@@ -36,12 +36,11 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "Functional.h"
-#include "rmg_hvector.h"
 
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "blas.h"
 
 template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, int, int);
@@ -138,20 +137,26 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
     size_t M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = (size_t)ct.max_nl * (size_t)M_cols * ct.noncoll_factor;
 
-    rmg::hvector<KpointType> sint_compack(alloc);
-    rmg::hvector<KpointType> nwork(alloc);
-    rmg::hvector<KpointType> nwork_ion(alloc);
-    rmg::hvector<KpointType> M_dnm(alloc1);
-    rmg::hvector<KpointType> M_qqq(alloc1);
-
-    std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm.data();
-    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq.data();
+    KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork_ion = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *M_dnm = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
+    KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
+    std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
+    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
     size_t sindex = first_state * ct.noncoll_factor * num_nonloc_ions * ct.max_nl;
 
-    M_dnm.set(ZERO_t);
-    M_qqq.set(ZERO_t);
-    sint_compack.set(0.0);
+    for (size_t i = 0; i < alloc1; i++)
+    {
+        M_dnm[i] = ZERO_t;
+        M_qqq[i] = ZERO_t;
+    }
+
+    for (size_t i = 0; i < alloc; i++)
+    {
+        sint_compack[i] = 0.0;
+    }
 
     delete RT2;
     RT2 = new RmgTimer("AppNls: data_rearrange: sint");
@@ -245,9 +250,9 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
         size_t strideB = (size_t)dim_a * (size_t)num_states;
         size_t strideC = (size_t)dim_a * (size_t)num_states;;
 
-        rmg::gemm_strided_batched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
-                M_dnm.data(), dim_a, strideA, sint_compack.data(), dim_a, strideB, ZERO_t,
-                nwork_ion.data(), dim_a, strideC, num_nonloc_ions); 
+        RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+                M_dnm, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
+                nwork_ion, dim_a, strideC, num_nonloc_ions); 
 
         //      nvwork_ion: (ct.max_nl, noncoll, num_states, ion)
         // rotate it to nwork (ct.max_nl, ion, noncoll, num_states)`
@@ -289,8 +294,8 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     //nwork: num_tot_proj * (ct.noncoll_factor * num_states)
 
-    rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-            ONE_t, weight,  P0_BASIS, nwork.data(), num_tot_proj,
+    RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+            ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
             ZERO_t,  nv, P0_BASIS);
 
     delete RT1;
@@ -304,9 +309,9 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
         int strideB = dim_a * num_states;
         int strideC = dim_a * num_states;;
 
-        rmg::gemm_strided_batched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
-                M_qqq.data(), dim_a, strideA, sint_compack.data(), dim_a, strideB, ZERO_t,
-                nwork_ion.data(), dim_a, strideC, num_nonloc_ions); 
+        RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+                M_qqq, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
+                nwork_ion, dim_a, strideC, num_nonloc_ions); 
 
         //      nvwork_ion: (ct.max_nl, noncoll, num_states, ion)
         // rotate it to nwork (ct.max_nl, ion, noncoll, num_states)`
@@ -328,12 +333,21 @@ void AppNls_0xyz(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         delete RT1;
         RT1 = new RmgTimer("AppNls: ns");
-        rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
-                ONE_t, weight,  P0_BASIS, nwork.data(), num_tot_proj,
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
+                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
         delete RT1;
 
     }
+
+
+
+
+    RmgFreeHost(M_qqq);
+    RmgFreeHost(M_dnm);
+    RmgFreeHost(nwork);
+    RmgFreeHost(nwork_ion);
+    RmgFreeHost(sint_compack);
 
     if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
     {
@@ -397,12 +411,11 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj;
     size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols;
 
-    rmg::hvector<KpointType> sint_compack(alloc);
-    rmg::hvector<KpointType> nwork(alloc);
-    rmg::hvector<KpointType> M_qqq(alloc1);
-
-    sint_compack.set(0.0);
-    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq.data();
+    KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
+    for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
+    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
     for(int istate = 0; istate < num_states; istate++)
     {
@@ -484,20 +497,26 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
         //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
-        //  in the first rmg::gemm, nwork is a matrix of (dim_dnm) * num_states 
-        //  in the second rmg::gemm, nwork is a matrix of num_tot_proj * (tot_states) 
+        //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
+        //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
 
         // leading dimension is num_tot_proj * 2 for noncollinear
         memcpy(ns, psi, stop*sizeof(KpointType));
 
-        rmg::gemm (transa, transa, dim_dnm, num_states, dim_dnm, 
-                ONE_t, M_qqq.data(),  dim_dnm, sint_compack.data(), dim_dnm,
-                ZERO_t,  nwork.data(), dim_dnm);
+        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
+                ONE_t, M_qqq,  dim_dnm, sint_compack, dim_dnm,
+                ZERO_t,  nwork, dim_dnm);
 
-        rmg::gemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
-                ONE_t, weight,  P0_BASIS, nwork.data(), num_tot_proj,
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
+                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
+
+
+
+    RmgFreeHost(M_qqq);
+    RmgFreeHost(nwork);
+    RmgFreeHost(sint_compack);
 
 }
 
@@ -523,13 +542,13 @@ template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T *nv
     // Compute the overlap matrix
     T *overlaps = new T[kptr->nstates * N];
 
-    rmg::gemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
+    RmgGemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
             psi, pbasis, beta, overlaps, N);
 
-    rmg::block_allreduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
+    BlockAllreduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
 
     // Update nv
-    rmg::gemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,
+    RmgGemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,
             overlaps, kptr->nstates, alpha, nv, pbasis);
 
     delete [] overlaps;

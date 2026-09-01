@@ -38,7 +38,11 @@
 void read_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, double *vh_corr, STATE * states)
 {
+    int fhand;
+    int state;
+    size_t nbytes;
     char newname[MAX_PATH + 200];
+    int idx;
     int pex, pey, pez;
 
     /* Wait until everybody gets here */
@@ -116,7 +120,35 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
     MPI_Barrier(pct.img_comm);
 
-    LocalOrbital->ReadProjectedOrbitals(name, *Rmg_G);
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        LocalOrbital->ReadProjectedOrbitals(name, *Rmg_G);
+    }
+    else
+    {
+        for (state = ct.state_begin; state < ct.state_end; state++)
+        {
+            int state_permuted = perm_state_index[state];
+            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+            fhand = open(newname, O_RDWR);
+            if (fhand < 0)
+            {
+                printf("\n  unable to open file %s", newname);
+                exit(0);
+            }
+
+            nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
+            idx = states[state].size * sizeof(double);
+            if (nbytes != (size_t)idx)
+            {
+                rmg_printf("\n read %zd is different from %d for state %d", nbytes, idx, state);
+                rmg_error_handler(__FILE__, __LINE__, "Unexpected end of file orbit");
+            }
+
+            close(fhand);
+        }
+    }
+
 
     if(ct.num_ldaU_ions > 0)
     {

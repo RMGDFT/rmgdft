@@ -41,12 +41,11 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "Kpoint.h"
-#include "rmg_sum_all.h"
-#include "rmg_gemm.h"
+#include "RmgSumAll.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "Projector.h"
 #include "RmgException.h"
-#include "rmg_hvector.h"
 
 
 
@@ -322,10 +321,10 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (rmg::sum_all<int> (this->num_owned_ions, pct.grid_comm) != num_ions)
+    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
     {
         printf("\n num_owned_ions %d at pe %d num_ion %d\n", this->num_owned_ions, pct.gridpe, num_ions);
-        rmg::error("Problem with claimimg ions.");
+        rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
     }
 
     /* Loop over all ions to obtain the lists necessary for communication */
@@ -507,7 +506,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
         int length = factor * nstates * this->num_tot_proj;
-        rmg::gemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
+        RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
                 weight, kptr->pbasis, &orbitals[offset*kptr->pbasis], kptr->pbasis,
                 rzero, p, this->num_tot_proj);
 
@@ -536,13 +535,11 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
     size_nown *= nstates * this->pstride;
 
 
-    rmg::hvector<KpointType> own_buff_storage(size_own+1);
-    rmg::hvector<KpointType> nown_buff_storage(size_nown+1);
     if (size_own) {
-        own_buff = own_buff_storage.data();
+        own_buff = new KpointType[size_own]();
     }
     if (size_nown) {
-        nown_buff = nown_buff_storage.data();
+        nown_buff = new KpointType[size_nown]();
     }
 
     if (this->num_owned_pe) {
@@ -566,15 +563,15 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
     // Set sint array
     //sint = &kptr->newsint_local[offset*this->num_nonloc_ions*this->pstride];
-    rmg::hvector<KpointType> sint(this->num_nonloc_ions * nstates * this->pstride);
+    KpointType *sint = new KpointType[this->num_nonloc_ions * nstates * this->pstride]();
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint.data(), &orbitals[offset*kptr->pbasis], nstates, weight);
+    betaxpsi_calculate (kptr, sint, &orbitals[offset*kptr->pbasis], nstates, weight);
 
 
     /*Pack data for sending */
-    betaxpsi_pack (sint.data(), send_buff, this->num_owners,
+    betaxpsi_pack (sint, send_buff, this->num_owners,
             this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
 
     /*Send <beta|psi> contributions  to the owning PE */
@@ -589,7 +586,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
 
     /*Unpack received data and sum contributions from all pes for owned ions */
-    betaxpsi_sum_owned (recv_buff, sint.data(), this->num_owned_pe,
+    betaxpsi_sum_owned (recv_buff, sint, this->num_owned_pe,
             this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
 
     /*In the second stage, owning cores will send summed data to non-owners */
@@ -605,7 +602,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
             this->num_nonowned_ions_per_pe, req_recv, nstates);
 
     /*Pack summed data for owned ions to send to non-owners */
-    betaxpsi_pack (sint.data(), send_buff, this->num_owned_pe,
+    betaxpsi_pack (sint, send_buff, this->num_owned_pe,
             this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
 
     /*Send packed data for owned ions to non-owners */
@@ -619,7 +616,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         MPI_Waitall (this->num_owners, req_recv, MPI_STATUSES_IGNORE);
 
     /*Finaly, write received data about non-owned ions into sint array */
-    betaxpsi_write_non_owned (sint.data(), recv_buff, this->num_owners,
+    betaxpsi_write_non_owned (sint, recv_buff, this->num_owners,
             this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
 
 
@@ -627,6 +624,11 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         delete [] req_own;
     if (this->num_owners)
         delete [] req_nown;
+    if (size_nown)
+        delete [] nown_buff;
+    if (size_own)
+        delete [] own_buff;
+
 
     int idx= 0 ;
     for(int st = 0;st < nstates;st++) {
@@ -637,6 +639,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
             }
         }
     }
+    delete [] sint;
 }
 
 
@@ -655,10 +658,13 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     if(this->num_tot_proj == 0) return;
     int pbasis = kptr->pbasis;
 
-    rmg::hvector<KpointType> nlarray(this->num_tot_proj * num_states);
-
-    rmg::gemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
-            weight, pbasis, psi, pbasis, rzero, nlarray.data(), this->num_tot_proj);
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+    KpointType *nlarray = (KpointType *)RmgMallocHost(sizeof(KpointType) * this->num_tot_proj * num_states);
+#else
+    KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
+#endif
+    RmgGemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
+            weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
 
     for (int nion = 0; nion < this->num_nonloc_ions; nion++)
     {
@@ -674,6 +680,12 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
             }
         }
     }
+
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+    RmgFreeHost(nlarray);
+#else
+    delete [] nlarray;
+#endif
 
 }
 
@@ -819,6 +831,7 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
 // Destructor
 template <class KpointType> Projector<KpointType>::~Projector(void)
 {
+    this->nlcrds.empty();
     delete [] this->nldims;
     delete [] this->idxptrlen;
     delete [] this->nonloc_ions_list;

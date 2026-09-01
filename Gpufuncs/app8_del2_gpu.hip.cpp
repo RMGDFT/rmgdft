@@ -135,7 +135,6 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 }
 #endif
 
-#include "rmg_error.h"
 static std::vector<double *> abufs;
 static std::vector<double *> bbufs;
 
@@ -146,8 +145,8 @@ void init_hip_fd(int max_threads, size_t bufsize)
 
     for(int i=0;i < max_threads;i++)
     {
-        rmg::error(hipMalloc((void **)&abufs[i], bufsize));
-        rmg::error(hipMalloc((void **)&bbufs[i], bufsize));
+        hipMalloc((void **)&abufs[i], bufsize);
+        hipMalloc((void **)&bbufs[i], bufsize);
     }
 }
 
@@ -155,7 +154,6 @@ template void app8_del2_gpu(float * , float *, int, int, int, const fdparms_o8<f
 template void app8_del2_gpu(double * , double *, int, int, int, const fdparms_o8<double> &);
 template void app8_del2_gpu(std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &);
 template void app8_del2_gpu(std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &);
-
 
 
 
@@ -189,10 +187,10 @@ void app8_del2_gpu(T *a,
     int smem_siz = Block.x*Block.y*sizeof(T);
 
 
-    rmg::error(hipStreamSynchronize(stream));
-    rmg::error(hipMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), hipMemcpyDefault, stream));
+    hipStreamSynchronize(stream);
+    hipMemcpyAsync(abufs[tid], a, (dimx+2*IMAGES)*(dimy+2*IMAGES)*(dimz+2*IMAGES)*sizeof(T), hipMemcpyDefault, stream);
     hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, stream,
                (T *)abufs[tid], (T *)bbufs[tid], dimx, dimy, dimz, c);
-    rmg::error(hipMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), hipMemcpyDefault, stream));
-    rmg::error(hipStreamSynchronize(stream));
+    hipMemcpyAsync(b, bbufs[tid], dimx*dimy*dimz*sizeof(T), hipMemcpyDefault, stream);
+    hipStreamSynchronize(stream);
 }

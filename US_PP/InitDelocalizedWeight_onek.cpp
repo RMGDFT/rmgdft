@@ -167,10 +167,10 @@ void InitDelocalizedWeight_onek (int kindex, double kvec[3], Pw &pwave)
         std::string filename = "PROJECTORS/forward_beta_species" + std::to_string(isp) + "_kpt" + std::to_string(kindex);
         int fhand = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         size_t count = sizeof(std::complex<double>) * sp->nh * pbasis;
-        rmg::writefile(fhand, forward_beta, count);
-        rmg::writefile(fhand, forward_beta_r[0], count);
-        rmg::writefile(fhand, forward_beta_r[1], count);
-        rmg::writefile(fhand, forward_beta_r[2], count);
+        write(fhand, forward_beta, count);
+        write(fhand, forward_beta_r[0], count);
+        write(fhand, forward_beta_r[1], count);
+        write(fhand, forward_beta_r[2], count);
         close(fhand);
 
 

@@ -53,8 +53,8 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "rmg_sum_all.h"
-#include "rmg_reduce.h"
+#include "RmgSumAll.h"
+#include "GlobalSums.h"
 
 
 static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
@@ -165,7 +165,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     f = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
-        rmg::error("root must be bracketed");
+        rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
 
     if (f < 0.0)
     {
@@ -197,12 +197,12 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     while ((iter < maxit) && (std::abs(fmid) > charge_tol));
 
     if (iter == maxit)
-        rmg::error("too many bisections");
+        rmg_error_handler (__FILE__,__LINE__,"too many bisections");
 
     if (fabs (fmid) > charge_tol)
     {
         printf ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg::error("did not converge");
+        rmg_error_handler (__FILE__,__LINE__,"did not converge");
     }                           /* end if */
 
     /* mix occupations */
@@ -226,15 +226,15 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
         }
     }                           /* st and kpt */
 
-    fmid = rmg::sum_all(fmid, pct.kpsub_comm);
+    fmid = RmgSumAll(fmid, pct.kpsub_comm);
 
     fmid -= nel;
 
     if (fabs (fmid) > charge_tol * 10)
     {
-        rmg::printlog ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg::printlog ("error in mixing occupations fmid = %e", fmid);
-        rmg::error("Terminating.\n");
+        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg_printf ("error in mixing occupations fmid = %e", fmid);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }                           /* end if */
 
     delete [] occ;
@@ -283,7 +283,7 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
     }                           /* st1 and kpt */
 
 
-    sumf = rmg::sum_all(sumf, pct.kpsub_comm);
+    sumf = RmgSumAll(sumf, pct.kpsub_comm);
     return (sumf - nel);
 
 }                               /* fd */
@@ -361,7 +361,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
             break;
 
         default:
-            rmg::error("unknown filling procedure");
+            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
 
     }                           /* end switch */
 

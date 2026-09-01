@@ -56,7 +56,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
     std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
     if ((beptr == NULL) || (gbptr == NULL))
-        rmg::error("can't allocate memory\n");
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
@@ -157,13 +157,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
 
 #if HIP_ENABLED || CUDA_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE)stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)stress_factor = 4;
 
     gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 #if SYCL_ENABLED
     size_t stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT || ct.forceflag == TDDFT_CVE)stress_factor = 4;
+    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)stress_factor = 4;
     //    memcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType));
 #endif
 

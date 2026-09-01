@@ -37,7 +37,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "RmgException.h"
 #include "InputKey.h"
 #include "InputOpts.h"
@@ -46,12 +46,7 @@ void CheckSetDefault(void)
 {
 #if !(CUDA_ENABLED || HIP_ENABLED)
     ct.tddft_gpu = false;
-#else
-//    ct.tddft_tiledMM = 1;
 #endif
-
-    int my_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
     if(ct.tddft_noscf || ct.restart_tddft)
     {
@@ -102,7 +97,7 @@ void CheckSetDefault(void)
         }
         if(!pp_has_so)
         {
-            rmg::error("no pseudopotential has spin-orbit.\n");
+            rmg_error_handler (__FILE__, __LINE__, "no pseudopotential has spin-orbit.\n");
         }
         ct.noncoll = true;
     }
@@ -126,7 +121,7 @@ void CheckSetDefault(void)
     }
     if(nc_count && us_count)
     {
-        rmg::error("Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
     }
 
     if(us_count && ct.use_rmm_diis)
@@ -149,7 +144,7 @@ void CheckSetDefault(void)
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[1] == 0);
     ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[2] == 0);
     ct.is_gamma = ct.is_gamma && (!ct.noncoll);
-    //ct.is_gamma = ct.is_gamma && (ct.tddft_mode != VECTOR_POT);
+    ct.is_gamma = ct.is_gamma && (ct.tddft_mode != VECTOR_POT);
     if(ct.is_use_symmetry == 2)
     {
         ct.is_use_symmetry = 1;
@@ -167,7 +162,6 @@ void CheckSetDefault(void)
     {
         ct.kohn_sham_fd_order = 12;
         ct.afd_cfac = 0.5;
-        ct.localize_projectors = false;
         if( ct.force_grad_order != 0)  
         {
             ct.force_grad_order = 12;
@@ -189,7 +183,7 @@ void CheckSetDefault(void)
         ct.exx_mode = EXX_LOCAL_FFT;
 
         if(!ct.norm_conserving_pp)
-            rmg::error("qmcpack restart only worked with norm-conserving pseudopotentials.\n");
+            rmg_error_handler (__FILE__, __LINE__, "qmcpack restart only worked with norm-conserving pseudopotentials.\n");
     }
 
     if(ct.AFM)
@@ -197,41 +191,16 @@ void CheckSetDefault(void)
         ct.is_use_symmetry = 1;
     }
 
-    if((ct.forceflag == TDDFT) || (ct.forceflag == TDDFT_CVE))
+    if(ct.forceflag== TDDFT)
     {
         if(ct.checkpoint <= 0) ct.checkpoint = 500;
         ct.potential_acceleration_constant_step = 0.0;
         ct.interp_flag = PROLONG_INTERPOLATION;
-        if(ct.forceflag == TDDFT_CVE)
-        {
-            ct.tddft_time_step = ct.iondt / (double)(ct.tddft_steps);
-            if(my_rank==0) printf("Tddft timestep adjusted to an integral divisor of ionic time step.\n");
-            if(my_rank==0) printf("Ionic = %14.8f,  tddft = %14.8f\n", ct.iondt, ct.tddft_time_step);
-        }
+
     }
     if(ct.checkpoint <= 0) ct.checkpoint = 5;
     if(ct.wannier90) {
         ct.frac_symm = false;
         ct.time_reversal = false;
-    }
-
-    for(auto& Atom : Atoms)
-    {
-        if((!Atom.movable[0] || !Atom.movable[1] || !Atom.movable[2]) && !ct.is_gamma)
-            rmg::error("Constrained dynamics is currently implemented for gamma only. Terminating.");
-    }
-
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
-    {
-        ct.scalapack_block_factor = 16;
-        if(my_rank==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
-    }
-
-    if((ct.subdiag_driver != SUBDIAG_SCALAPACK) && (ct.subdiag_driver != SUBDIAG_ELPA))
-    {
-        if(ct.use_block_diag)
-        {
-            if(my_rank==0) printf("Disabling use_block_diag as it's only available for scalapack or elpa drivers.\n");
-        }
     }
 }

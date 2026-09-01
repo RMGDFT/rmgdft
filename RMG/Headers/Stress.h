@@ -27,7 +27,7 @@
 
 //#include "Kpoint.h"
 //#include "Lattice.h"
-//#include "rmg_grid.h"
+//#include "BaseGrid.h"
 //#include "species.h"
 //#include "Pw.h"
 #include "GridObject.h"
@@ -37,11 +37,11 @@ void print_stress(char *w, double *stress_term);
 template <typename T> class Stress 
 {
 private:
- //   rmg::grid BG;
+ //   BaseGrid BG;
     
 public:
     double stress_tensor[9];
-    Stress(Kpoint<T> **Kpin, Lattice &L, rmg::grid &BG, Pw &pwaves,
+    Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves,
             std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc,
             spinobj<double> &vxc,
             spinobj<double> &rho,
@@ -51,9 +51,9 @@ public:
             bool local_only);
 
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
-    void Kinetic_term_fine(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L);
-    void Kinetic_term_coarse(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L);
-    void Kinetic_term_FFT(Kpoint<T> **Kpin, rmg::grid &BG, Lattice &L);
+    void Kinetic_term_fine(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
+    void Kinetic_term_coarse(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
+    void Kinetic_term_FFT(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
     void Local_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, spinobj<double> &rho, Pw &pwaves);
     void Local_term1(spinobj<double> &rho, fgobj<double> &vnuc);
     void Hartree_term(spinobj<double> &rho, Pw &pwaves);

@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_MapElements_H
 #define RMG_MapElements_H 1
 #include <string>

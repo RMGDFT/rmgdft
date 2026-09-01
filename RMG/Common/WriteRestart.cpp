@@ -52,6 +52,7 @@ template void WriteRestart (char *, double *, double *, double *, double *, Kpoi
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
+    char newname[MAX_PATH + 20];
     int amode;
     FILE *fhandle;
     int fhand;
@@ -65,7 +66,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     if ((!strcmp ("/dev/null", name)) || (!strcmp ("/dev/null/", name)) )
     {
 	if (pct.imgpe == 0)
-	    rmg::printlog ("WriteRestart: Output file given as /dev/null, no restart data written ...\n");
+	    rmg_printf ("WriteRestart: Output file given as /dev/null, no restart data written ...\n");
 	return;
     }
 
@@ -88,7 +89,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
         /*This opens restart file, creates a directory if needed */
         fhandle = open_restart_file (name);
-        rmg::printlog ("WriteRestart: Restart file %s opened...\n", name);
+        rmg_printf ("WriteRestart: Restart file %s opened...\n", name);
 
 
         // Absolute coordinates in bohr
@@ -171,11 +172,12 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    std::string new_file = std::format("{}_spin{}_kpt{}_gridpe{}", 
-            name, pct.spinpe, pct.kstart, pct.gridpe);
+    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, pct.kstart, pct.gridpe);
 
     // Save previous wavefunction file
-    std::string old_file = new_file + "_1";
+    std::string new_file(newname);
+    std::string old_file(newname);
+    old_file = old_file + "_1";
     try {
         std::filesystem::rename(new_file, old_file);
     }
@@ -184,10 +186,10 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     }
 
     amode = S_IREAD | S_IWRITE;
-    fhand = open(new_file.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
+    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
     if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", new_file.c_str());
-        rmg::error("Terminating.");
+        rmg_printf("Can't open restart file %s", newname);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
     WriteData (fhand, vh, rho, vxc, Kptr);
@@ -210,11 +212,11 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     write_time = my_crtc () - time0;
 
-    rmg::printlog ("WriteRestart: writing took %.1f seconds \n", write_time);
+    rmg_printf ("WriteRestart: writing took %.1f seconds \n", write_time);
 
 
     /* force change mode of output file */
-    chmod (new_file.c_str(), amode);
+    chmod (newname, amode);
 
     if (pct.imgpe == 0)
     {
@@ -224,7 +226,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	    FILE *fhandle = fopen (new_file.c_str(), "w");
 	    if (!fhandle)
 	    {
-		    rmg::error("Unable to write atomic coordinate xyz file. Terminating.");
+		    rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
 	    }
 
 	    fprintf(fhandle,"%lu\n", Atoms.size());

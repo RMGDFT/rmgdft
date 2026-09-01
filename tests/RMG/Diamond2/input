@@ -1,7 +1,5 @@
 # Description of run.
 description="diamond"
-rmg_threads_per_node = "1"
-omp_threads_per_node = "1"
 
 #spin_polarization="true"
 

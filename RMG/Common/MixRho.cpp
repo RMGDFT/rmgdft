@@ -36,9 +36,9 @@
 #include "RmgParallelFft.h"
 #include "RmgException.h"
 #include "transition.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include "blas.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Functional.h"
 #include <float.h>
 #include <math.h>
@@ -77,7 +77,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         int ione = 1;
         daxpy(&pbasis_noncoll, &t1, drho.data(), &ione, rho, &ione);
 
-        rmg::printlog("Charge density mixing: Linear with a constant of %.2f \n", t1);
+        rmg_printf("Charge density mixing: Linear with a constant of %.2f \n", t1);
     }
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
     {
@@ -110,7 +110,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
             Pulay_rho->Mixing(rho, new_rho);
         }
 
-        rmg::printlog("Charge density mixing: Pulay\n");
+        rmg_printf("Charge density mixing: Pulay\n");
 
     }
     else if (Verify("charge_mixing_type","Broyden", ControlMap))
@@ -118,7 +118,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         RmgTimer RT1("Mix rho: Broyden");
         BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, reset);
         if(reset) return;
-        rmg::printlog("Charge density mixing: Broyden\n");
+        rmg_printf("Charge density mixing: Broyden\n");
     }
 
 
@@ -144,8 +144,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     if (min < ZERO)
     {
-        rmg::printlog ("\n charge density is NEGATIVE after interpolation, minimum is %e\n", min);
-        rmg::printlog (" minimum charge density with core charge added is %e\n", min2);
+        rmg_printf ("\n charge density is NEGATIVE after interpolation, minimum is %e\n", min);
+        rmg_printf (" minimum charge density with core charge added is %e\n", min2);
     }
 
 }
@@ -370,7 +370,5 @@ double AutoMix (void)
         }
 
     }
-    MPI_Bcast(&newmix, 1, MPI_DOUBLE, 0, pct.grid_comm);
-
     return newmix;
 }

@@ -72,7 +72,7 @@ double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b,
         cc = FD.app_cil_sixth (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else {
-        rmg::error("APP_CIL order not programmed yet in app_cil_driver.\n");
+        rmg_error_handler (__FILE__, __LINE__, "APP_CIL order not programmed yet in app_cil_driver.\n");
     }
 
     if(alloc > 110592) delete [] rptr;

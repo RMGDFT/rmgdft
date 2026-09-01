@@ -41,11 +41,15 @@
 #include "transition.h"
 #include "ZfpCompress.h"
 
+static void read_double (int fhand, double * rp, int count);
+static void read_int (int fhand, int *ip, int count);
+
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
 /* Reads the hartree potential, charge density, vxc from RMG results for ON part */
-void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
+void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
 {
+    char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
     int fpgrid[3];
@@ -64,94 +68,94 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
     MPI_Barrier(pct.img_comm);	
 
     /* Make the new output file name */
-    rmg::printlog("\nspin flag =%d\n", ct.spin_flag);
+    rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
-    std::string newname = std::format("{}_spin{}_kpt{}_gridpe{}", name, pct.spinpe, kstart, pct.gridpe);
+    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
 
 
-    int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg::printlog("Can't open data file %s", newname.c_str());
-        rmg::error("Terminating.");
+        rmg_printf("Can't open data file %s", newname);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
 
 
     /* read grid info */
-    rmg::readfile (fhand, grid, 3 * sizeof(int));
+    read_int (fhand, grid, 3);
     if (grid[0] != Rmg_G->get_NX_GRID(1))
-        rmg::error("Wrong NX_GRID");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
     if (grid[1] != Rmg_G->get_NY_GRID(1))
-        rmg::error("Wrong NY_GRID");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
     if (grid[2] != Rmg_G->get_NZ_GRID(1))
-        rmg::error("Wrong NZ_GRID");
-    rmg::printlog("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+    rmg_printf("\n grid %d %d %d\n", grid[0], grid[1], grid[2]);
 
     /* read grid processor topology */
-    rmg::readfile (fhand, pe, 3 * sizeof(int));
+    read_int (fhand, pe, 3);
     if (pe[0] != Rmg_G->get_PE_X())
-        rmg::error("Wrong PE_X");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
     if (pe[1] != Rmg_G->get_PE_Y())
-        rmg::error("Wrong PE_Y");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
     if (pe[2] != Rmg_G->get_PE_Z())
-        rmg::error("Wrong PE_Z");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
 
     grid_size = Rmg_G->get_P0_BASIS(0);
 
     /* read fine grid info */
-    rmg::readfile (fhand, fine, 3 * sizeof(int));
+    read_int (fhand, fine, 3);
     if (fine[0] != Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PX0_GRID(1))
-        rmg::error("Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     if (fine[1] != Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PY0_GRID(1))
-        rmg::error("Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     if (fine[2] != Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO) / Rmg_G->get_PZ0_GRID(1))
-        rmg::error("Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    rmg::printlog ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    rmg::printlog ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    rmg::printlog ("read_data: grid_size  = %d\n", grid_size);
-    rmg::printlog ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    rmg::printlog ("read_data: fgrid_size = %d\n", fgrid_size);
+    rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    rmg_printf ("read_data: grid_size  = %d\n", grid_size);
+    rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
-    rmg::readfile (fhand, &gamma, sizeof(int));
+    read_int (fhand, &gamma, 1);
     //if (gamma != ct.is_gamma)
-    //    rmg::error("Wrong gamma data");
+    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
 
 
-    rmg::readfile (fhand, &nk, sizeof(int));
+    read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-        rmg::error("Wrong number of k points");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
-    rmg::printlog ("read_data: gamma = %d\n", gamma);
-    rmg::printlog ("read_data: nk = %d\n", ct.num_kpts_pe);
+    rmg_printf ("read_data: gamma = %d\n", gamma);
+    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
-    rmg::readfile (fhand, &ns, sizeof(int));
+    read_int (fhand, &ns, 1);
 
 
     /* read the hartree potential, electronic density and xc potential */
     if(ct.compressed_infile)
     {
         read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg::printlog ("read_data: read 'vh'\n");
+        rmg_printf ("read_data: read 'vh'\n");
         read_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg::printlog ("read_data: read 'rho'\n");
+        rmg_printf ("read_data: read 'rho'\n");
         read_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg::printlog ("read_data: read 'vxc'\n");
+        rmg_printf ("read_data: read 'vxc'\n");
     }
     else
     {
-        rmg::readfile (fhand, vh, fgrid_size * sizeof(double));
-        rmg::printlog ("read_data: read 'vh'\n");
-        rmg::readfile (fhand, rho, fgrid_size * sizeof(double));
-        rmg::printlog ("read_data: read 'rho'\n");
-        rmg::readfile (fhand, vxc, fgrid_size * sizeof(double));
-        rmg::printlog ("read_data: read 'vxc'\n");
+        read_double (fhand, vh, fgrid_size);
+        rmg_printf ("read_data: read 'vh'\n");
+        read_double (fhand, rho, fgrid_size);
+        rmg_printf ("read_data: read 'rho'\n");
+        read_double (fhand, vxc, fgrid_size);
+        rmg_printf ("read_data: read 'vxc'\n");
     }
 
 
@@ -159,6 +163,26 @@ void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc)
 
 
 }                               /* end read_data */
+
+
+static void read_double (int fhand, double * rp, int count)
+{
+    ssize_t wanted = sizeof (double) * (ssize_t)count;
+    ssize_t size = read (fhand, rp, wanted);
+    if(size != wanted)
+        rmg_error_handler (__FILE__, __LINE__,"error reading");
+
+
+}
+
+static void read_int (int fhand, int *ip, int count)
+{
+    int size = count * sizeof (int);
+    if (size != read (fhand, ip, size))
+        rmg_error_handler (__FILE__, __LINE__,"error reading");
+}
+
+
 
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {
@@ -170,16 +194,18 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
     size_t wsize = read (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
-        rmg::error("error reading");
+        rmg_error_handler (__FILE__,__LINE__,"error reading");
 
     if(csize > sizeof(double)*nx*ny*nz)
-        rmg::error("error reading input buffer too small");
+        rmg_error_handler (__FILE__,__LINE__,"error reading input buffer too small");
 
     wsize = read (fh, in, csize);
     if(wsize != csize)
-        rmg::error("error reading");
+        rmg_error_handler (__FILE__,__LINE__,"error reading");
 
     csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     delete [] in;
 
 }
+/******/
+/******/

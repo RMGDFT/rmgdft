@@ -1,4 +1,3 @@
-#pragma once
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
@@ -14,7 +13,7 @@ void PreconditionerOne(double *, int, double);
 template <typename KpointType>
 void WriteCij (std::string& name, KpointType *Cij_dis);
 template <typename KpointType>
-void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, rmg::grid &BG,
+void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
         double *eig, double *occ);
 template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double * vnuc,
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, LocalObject<OrbitalType> &Phi,
@@ -49,7 +48,7 @@ void DipoleCorrection(double *rho, double *rhoc, double *vcorr, double *vhx, dou
 void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0);
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
 void GetNlop_on(void);
-void ReadDataFromRMG (std::string name, double * vh, double * rho, double * vxc);
+void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc);
 void DistributeTasks(int active_thread, int num_task, int *task_start, int *task_end);
 void Pulay (int step, int N, double *xm, double *fm, int NsavedSteps,
         int preconditioning);
@@ -63,7 +62,7 @@ void GenVxPsi (double * psi, int st1, double * work1, double * vtot_global, STAT
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
-void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, rmg::grid &Rmg_G);
+void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
 void mat_local_to_glob(double *, double *, LocalObject<double> &A, LocalObject<double> &B, int, int, int, int, bool);
 void ApplyHphi(LocalObject<double> &A, LocalObject<double> &HB, double *vtot_c);
 void GetNewRho_proj(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
@@ -81,7 +80,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 #include "FiniteDiff.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
-          STATE * states, double * vnuc, double * vxc, double * vh_old, 
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
 void PrecondMg(double *psiR, double *work1, STATE *sp);
 void Precond(double *x, int);
@@ -113,7 +112,7 @@ void nlforce_par_Q(double *, double *, int, int, double *);
 int prime_factors(int, int *);
 void get_vxc(double*, double *, double *, double*);
 void assign_weight_on(SPECIES *, fftw_complex *, double *);
-void quench(STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
+void quench(STATE *, STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
 void app10_del2(double *, double *, int, int, int, double, double, double);
 void sl_init_comm(int *, int, int, MPI_Comm comm);
 void read_data(char *, double *, double *, double *, double *, double *, double *, STATE *);
@@ -135,7 +134,7 @@ void init_pe ( int image );
 void mg_restrict_6 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio);
 
 void fill_orbit_borders4(double * sg, double * pg, int dimx, int dimy, int dimz);
-int open_wave_file (const char  *filename);
+int open_wave_file (char *filename);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void init_nonlocal_comm();
 void normalize_orbits( STATE *states);
@@ -197,6 +196,7 @@ char *get_num (char *str);
 void get_zdens (STATE * states, int state, double * zvec);
 void xcgga (double * rho, double * vxc, double * exc, int flag);
 double get_ke (STATE * sp, int tid);
+void global_sums (double * vect, int *length, MPI_Comm comm);
 void init_pe_on (void);
 void init_wf (STATE * states);
 void init_wflcao (STATE * states);
@@ -223,16 +223,20 @@ double radint (double *f, double *r, int n, double al);
 void radiff (double *f, double *df, double *r, int n, double al);
 void ra2diff (double *f, double *df, double *r, int n, double al);
 void ranv (void);
+double real_sum_all (double x, MPI_Comm comm);
 double real_max_all (double x);
 void sortpsi (STATE * states);
 void subdiag (STATE * states, double * vh, double * vnuc, double * vxc);
 void trade_images (double * mat, int dimx, int dimy, int dimz, int type);
 void trade_images_mpi (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
+void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val);
+void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
 void write_avgv (double * vh, double * vnuc);
+void write_zstates (STATE * states);
 void write_header (void);
 void write_pos (void);
 void write_eigs (STATE * states, double *kpt);
@@ -331,6 +335,7 @@ char *get_symbol (int atomic_number);
 void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void qnm_beta_betapsi (STATE *sp, int ion2, double * prjptr);
+void pack_rho_ctof (double * rho1, double * rho_f);
 
 void rho_Qnm_mat (double *Aij, double * global_mat_X,
 int *state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,
@@ -414,6 +419,7 @@ char *get_num (char *str);
 void get_zdens (STATE * states, int state, double * zvec);
 void xcgga (double * rho, double * vxc, double * exc, int flag);
 double get_ke (STATE * sp, int tid);
+void global_sums (double * vect, int *length, MPI_Comm comm);
 void init_pe_on (void);
 void init_wf (STATE * states);
 void init_wflcao (STATE * states);
@@ -441,12 +447,15 @@ double radint (double *f, double *r, int n, double al);
 void radiff (double *f, double *df, double *r, int n, double al);
 void ra2diff (double *f, double *df, double *r, int n, double al);
 void ranv (void);
+double real_sum_all (double x, MPI_Comm comm);
 double real_max_all (double x);
 void sortpsi (STATE * states);
 void subdiag (STATE * states, double * vh, double * vnuc, double * vxc);
 void trade_images (double * mat, int dimx, int dimy, int dimz, int type);
 void trade_images_mpi (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (double * mat, int dimx, int dimy, int dimz, int *nb_ids);
+void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val);
+void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (double * rho, int step);
 void vol_wf (STATE * states, int state, int step);
 void write_avgd (double * rho);
@@ -559,6 +568,7 @@ char *get_symbol (int atomic_number);
 void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void get_qnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
+void pack_rho_ctof (double * rho1, double * rho_f);
 void rho_nm_mat (double *Aij, double * global_mat_X);
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
         int *jlow, int *jhi, int *klow, int *khi, int cdim, int pxgrid,

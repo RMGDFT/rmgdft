@@ -44,7 +44,6 @@
 #include "blas.h"
 #include "RmgThread.h"
 #include "rmgthreads.h"
-#include "rmg_tddft.h"
 #include "../Interfaces/WriteEshdf.h"
 
 
@@ -54,7 +53,7 @@
 #include "Exxbase.h"
 #include "Neb.h"
 #include "Wannier.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "GridObject.h"
 #include "BerryPhase.h"
 
@@ -78,7 +77,6 @@ void finish (void);
 
 std::vector<ION> Atoms;
 std::vector<SPECIES> Species;
-rmg::ions allatoms(Atoms);
 
 
 // Pointer to Kpoint class arrays for gamma and non-gamma
@@ -109,6 +107,21 @@ void CheckShutdown(void)
 {
     if(shutdown_request.load())
     {
+        DeleteNvmeArrays();
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+
+            int kpt1 = kpt + pct.kstart;
+            if(ct.is_gamma)
+            {
+                Kptr_g[kpt1]->DeleteNvmeArrays();
+            }
+            else
+            {
+                Kptr_c[kpt1]->DeleteNvmeArrays();
+            }
+            if(ct.forceflag==BAND_STRUCTURE) break;
+        }
         MPI_Abort( MPI_COMM_WORLD, 0 );
         kill(getpid(), SIGKILL);
     }
@@ -298,7 +311,7 @@ int main (int argc, char **argv)
                 WriteQmcpackRestart(qmcpack_file);
             }
 #else
-            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
         }
 
@@ -389,22 +402,7 @@ template <typename OrbitalType> void run (
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
             ct.fpt[3] = 3;
-            if(!ct.restart_tddft && !ct.tddft_noscf) 
-            {   
-                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-            }
-            MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
-        case TDDFT_CVE:            /* Ehrenfest dynamics */
-            ct.fpt[0] = 0;  // Eventually fix all references to fpt in the code and this will not be needed
-            ct.fpt[1] = 1;
-            ct.fpt[2] = 2;
-            ct.fpt[3] = 3;
-            if(!ct.restart_tddft && !ct.tddft_noscf) 
-            {   
-                Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-            }
-            //MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
-            EhrenfestDynamics (Kptr, vxc, vh, vnuc, rho, rhoc, rhocore);
+            MolecularDynamics (Kptr, vxc.data(), vh.data(), vnuc.data(), rho.data(), rho.dw.data(), rhoc.data(), rhocore.data());
             break;
 
         case BAND_STRUCTURE:
@@ -444,8 +442,8 @@ template <typename OrbitalType> void run (
                         }
                     }
 
-                    rmg::allreduce(eig_all, tot_num_eigs, pct.kpsub_comm);
-                    rmg::allreduce(eig_all, tot_num_eigs, pct.spin_comm);
+                    GlobalSums (eig_all, tot_num_eigs, pct.kpsub_comm);
+                    GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
 
                     OutputBandPlot(eig_all);
                     delete [] eig_all;
@@ -465,16 +463,7 @@ template <typename OrbitalType> void run (
                 Relax<OrbitalType> (0, vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             }
             ct.cube_rho = false;
-            if(ct.tddft_mode == VECTOR_POT)
-            {
-                rmg::tddft<OrbitalType, std::complex<double>> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                tddftobj.tddft_md(); 
-            }
-            else
-            {
-                rmg::tddft<OrbitalType, OrbitalType> tddftobj(vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
-                tddftobj.tddft_md(); 
-            }
+            RmgTddft (vxc, vh, vnuc, rho, rhocore, rhoc, Kptr);
             break;
 
         case Exx_only:
@@ -491,12 +480,14 @@ template <typename OrbitalType> void run (
             }
 
         default:
-            rmg::error("Undefined MD method");
+            rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 
 
     }
 
 
+    if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
+        Output_rho_xsf(rho.data(), pct.grid_comm);
     outcubes(Kptr, vh.data(), rho.data());
 }                               /* end run */
 
@@ -535,7 +526,6 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
         OutputCubeFile(vh, Rmg_G->default_FG_RATIO, filename);
     }
 
-    wfobj<double> psi_tem;
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         int kpt_glob = kpt + pct.kstart;
@@ -544,9 +534,7 @@ template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, doubl
             int st = ct.cube_states_list[idx];
             std::string filename = "kpt"+std::to_string(kpt_glob);
             filename += "_mo"+std::to_string(st)+ spinindex + ".cube";
-            for(int i = 0; i < Kptr[kpt]->pbasis; i++) psi_tem[i] = std::real(Kptr[kpt]->Kstates[st].psi[i]);
-            OutputCubeFile(psi_tem.data(), 1, filename);
-//OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
+            OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
 
             if(ct.nspin == 4)
             {
@@ -590,9 +578,19 @@ void report (void)
 void finish ()
 {
 
+    DeleteNvmeArrays();
     MPI_Barrier(MPI_COMM_WORLD);
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
+
+        if(ct.is_gamma)
+        {
+            Kptr_g[kpt]->DeleteNvmeArrays();
+        }
+        else
+        {
+            Kptr_c[kpt]->DeleteNvmeArrays();
+        }
         if(ct.forceflag == BAND_STRUCTURE) break;
     }
 

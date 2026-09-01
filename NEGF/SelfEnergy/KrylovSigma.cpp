@@ -102,10 +102,10 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     zcopy(&nn, H01, &ione, VR, &ione);
 
 
-    zgesv(&n, &n2, A, &n, ipiv, VR, &n, &info );
+    zgesv(&n, &n2, (double *)A, &n, ipiv, (double *)VR, &n, &info );
     if (info != 0)
     {
-        rmg::printlog ("error in zgesv in Krylov with INFO = %d \n", info);
+        rmg_printf ("error in zgesv in Krylov with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -129,7 +129,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
     if (info != 0)
     {
-        rmg::printlog ("error in zgeev in Krylov with INFO = %d \n", info);
+        rmg_printf ("error in zgeev in Krylov with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
@@ -156,7 +156,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
             zgemv ("N", &n, &n, &W[i], H01, &n, &VR[i*n2], &ione, &zero, &VR[i*n2 + n], &ione);
 
-            alpha = -rmg_zdotc(&n, &VR[i*n2], &ione, &VR[i*n2+n], &ione);
+            alpha = -zdotc(&n, &VR[i*n2], &ione, &VR[i*n2+n], &ione);
             if(alpha.imag() < 0.0)
             {
                 lamda[num_modes] = W[i];
@@ -168,7 +168,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     }
 
 //for (i = 0; i < n2; i++) 
-//        rmg::printlog("\n  %32.16f  lamda   %f  %f ", abs(W[i]), W[i]);
+//        rmg_printf("\n  %32.16f  lamda   %f  %f ", abs(W[i]), W[i]);
     //  now A store eigenvector n * num_modes  u(+) from literatures.
     //  find the dual vector u~ 
     // VR store overlap matrix S(num_modes, num_modes) 
@@ -180,10 +180,10 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
         for(j = 0; j < n; j++)
             A[num_modes * n + j * num_modes + i] = std::conj(A[i * n + j]);
 
-    zgesv(&num_modes, &n, VR, &num_modes, ipiv, &A[num_modes*n], &num_modes, &info );
+    zgesv(&num_modes, &n, (double *)VR, &num_modes, ipiv, (double *)&A[num_modes*n], &num_modes, &info );
     if (info != 0)
     {
-        rmg::printlog ("error in zgesv in dual vector with INFO = %d \n", info);
+        rmg_printf ("error in zgesv in dual vector with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }

@@ -37,8 +37,8 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        maxrow = std::max( maxrow, pmo.mxllda_cond[idx_C]);
-        maxcol = std::max( maxcol, pmo.mxlocc_lead[iprobe-1]);
+        maxrow = rmg_max( maxrow, pmo.mxllda_cond[idx_C]);
+        maxcol = rmg_max( maxcol, pmo.mxlocc_lead[iprobe-1]);
     }
 
 
@@ -49,8 +49,8 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        max_sigma_row = std::max(max_sigma_row, pmo.mxllda_cond[idx_C]);
-        max_sigma_col = std::max(max_sigma_col, pmo.mxlocc_cond[idx_C]);
+        max_sigma_row = rmg_max(max_sigma_row, pmo.mxllda_cond[idx_C]);
+        max_sigma_col = rmg_max(max_sigma_col, pmo.mxlocc_cond[idx_C]);
     }
 
 

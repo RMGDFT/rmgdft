@@ -150,7 +150,7 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
     }
 
 
-    std::string array_print;
+    char *array_print = new char[subsizes[0] * subsizes[1] * num_char];
 
     if(pct.gridpe == 0 )
     {
@@ -186,7 +186,7 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
         fclose(fhand);
     }
 
-    array_print ="";
+    char *buffer = array_print;
     for (int i=0; i<subsizes[0]; i++) {
         for (int j=0; j<subsizes[1]; j++) {
             for (int k=0; k<subsizes[2] * nval; k++) {
@@ -194,16 +194,19 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
                 int k_glob = k + FPZ_OFFSET * nval; 
                 if(k_glob%6 == 5)
                 {
-                    array_print+= std::format("{:12.3e}\n", array_d[idx]);
+                    sprintf(buffer,  "%12.3e\n", array_d[idx]);
+                    buffer += 13;
                 }
                 else
                 {
-                    array_print+= std::format("{:12.3e}", array_d[idx]);
+                    sprintf(buffer,  "%12.3e", array_d[idx]);
+                    buffer += 12;
                 }
             }
             if(pez == pct.pe_z -1 )
             {
-                array_print+= "\n";
+                sprintf(buffer,  "\n");
+                buffer +=1;
             }
 
 
@@ -237,7 +240,7 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
     MPI_File_seek(mpi_fhand, 0, MPI_SEEK_END);
     MPI_File_get_position(mpi_fhand, &disp);
     MPI_File_set_view(mpi_fhand, disp, MPI_CHAR, grid_char, "native", MPI_INFO_NULL);
-    MPI_File_write_all(mpi_fhand, array_print.c_str(), pbasis_char, MPI_CHAR, &status);
+    MPI_File_write_all(mpi_fhand, array_print, pbasis_char, MPI_CHAR, &status);
     MPI_File_close(&mpi_fhand);
 
 }

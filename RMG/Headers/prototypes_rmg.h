@@ -35,24 +35,22 @@
 
 extern PulayMixing *Pulay_rho;
 extern PulayMixing *Pulay_orbital;
-extern rmg::grid *Rmg_G;
+extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 
 
 template <typename KpointType>
-void MolecularDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
-             spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
-template <typename KpointType>
-void EhrenfestDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
-             spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore);
-template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, State<OrbitalType> *psi, Prolong *P, double *work, double scale);
+void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
+             double * rho, double * rho_oppo, double * rhoc, double * rhocore);
+
+template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *psi, Prolong *P, double *work, double scale);
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
 template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void GetNewRhoGpuOne(State<OrbitalType> *sp, Prolong *P, double scale);
 #endif

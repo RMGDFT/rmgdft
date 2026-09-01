@@ -34,7 +34,7 @@
 #include "RmgTimer.h"
 #include "RmgThread.h"
 #include "RmgException.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
@@ -128,10 +128,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         Kptr[kpt]->nstates = ct.num_states;
 
 
-        for(int st = 0; st < ct.num_states; st++)
-        {
-            Kptr[kpt]->Kstates[st].eig[0] = 0.0;
-        }
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
@@ -140,7 +136,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 RmgTimer *RT = new RmgTimer("MgridSub in band");
 
                 //Kptr[kpt]->LcaoGetPsi(ct.num_states, ct.num_states);
-                Kptr[kpt]->MgridSubspaceBlocked(vtot_psi, vxc_psi);
+                Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
 
                 delete RT;
 
@@ -157,7 +153,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 eig_old[st] = Kptr[kpt]->Kstates[st].eig[0];
             }
 
-            rmg::printlog("kpt= %d  scf = %d  rms_eig = %e\n", kpt+pct.kstart, ct.scf_steps, rms_eig);
+            rmg_printf("kpt= %d  scf = %d  rms_eig = %e\n", kpt+pct.kstart, ct.scf_steps, rms_eig);
 
             if(rms_eig < 1.0e-5) 
             {
@@ -166,7 +162,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         }
 
         //for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
-        //rmg::printlog("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
+        //rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
         int kpt_global = kpt + pct.kstart;
         if(ct.wannier90) {

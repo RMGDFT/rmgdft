@@ -1,4 +1,3 @@
-#pragma once
 /************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
@@ -14,7 +13,7 @@
 
 #include <vector>
 #include <iterator>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 
@@ -23,10 +22,10 @@ template <typename KpointType> class LocalObject {
 
 public:
 //    LocalObject(int num_objects, double *center_crd, double *radius, 
-//                rmg::grid *Rmg_G, int coarse_fine, MPI_Comm comm);
+//                BaseGrid *Rmg_G, int coarse_fine, MPI_Comm comm);
     LocalObject(int num_objects, int *ixmin, int *iymin, int *izmin, 
                 int *dimx, int *dimy, int *dimz, bool delocalized,
-                rmg::grid &Rmg_G, int density, MPI_Comm comm);
+                BaseGrid &Rmg_G, int density, MPI_Comm comm);
     LocalObject(const LocalObject &);
     ~LocalObject(void);
 
@@ -59,18 +58,18 @@ public:
 
     // Type LOCALIZED or DELOCALIZED
     int type;
-    void ReadOrbitalsFromSingleFiles(std::string filename, rmg::grid &Rmg_G);
-    void WriteOrbitals(std::string filename, rmg::grid &Rmg_G);
-    void ReadProjectedOrbitals(std::string filename, rmg::grid &Rmg_G);
-    void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, rmg::grid &Rmg_G);
-    void GetAtomicOrbitals(int num_ions, rmg::grid &Rmg_G);
-    void SetZeroBoundary(rmg::grid &Rmg_G, int multi_grid_level, int fd_order);
-    void SetBoundary(rmg::grid &Rmg_G, int multi_grid_level, int fd_order, STATE *states);
-    void ReAssign(rmg::grid &BG);
+    void ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &Rmg_G);
+    void WriteOrbitals(std::string filename, BaseGrid &Rmg_G);
+    void ReadProjectedOrbitals(std::string filename, BaseGrid &Rmg_G);
+    void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid &Rmg_G);
+    void GetAtomicOrbitals(int num_ions, BaseGrid &Rmg_G);
+    void SetZeroBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order);
+    void SetBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order, STATE *states);
+    void ReAssign(BaseGrid &BG);
     void AssignOrbital(int st, KpointType *psi);
     void Normalize();
-    void SetOrbitalProjToSingle(rmg::grid &);
-    void WriteOrbitalsToSingleFiles(std::string filename, rmg::grid &Rmg_G);
+    void SetOrbitalProjToSingle(BaseGrid &);
+    void WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &Rmg_G);
     void ApplyBoundary(KpointType *res, int st);
 
 

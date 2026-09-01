@@ -74,7 +74,7 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
         FD.app_cir_sixth (rptr, b, dimx, dimy, dimz);
     }
     else {
-        rmg::error("APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
+        rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
     }
 
    if(alloc > 110592) delete [] rptr;

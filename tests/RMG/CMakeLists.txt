@@ -1,5 +1,4 @@
 set(energy_tests "atomO_polarized")
-list(APPEND energy_tests "si8_scan")
 list(APPEND energy_tests "Diamond2")
 list(APPEND energy_tests "Diamond16")
 list(APPEND energy_tests "C60")

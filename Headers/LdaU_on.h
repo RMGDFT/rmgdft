@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2019, Wenchang Lu
@@ -33,16 +32,16 @@
 
 #include "rmgtypedefs.h"
 #include "LocalObject.h"
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 
 class LdaU_on {
 
 public:
 
-    LdaU_on(LocalObject<double> &, rmg::grid &);
+    LdaU_on(LocalObject<double> &, BaseGrid &);
     ~LdaU_on(void);
-    void calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, rmg::grid &);
-    void app_vhubbard(LocalObject<double> &HL, rmg::grid &);
+    void calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, BaseGrid &);
+    void app_vhubbard(LocalObject<double> &HL, BaseGrid &);
     void WriteLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
     void ReadLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
     void write_ldaU(void);

@@ -31,15 +31,15 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
-#include "rmg_mgrid.h"
+#include "RmgGemm.h"
+#include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
@@ -69,12 +69,12 @@ void Eigen(std::complex<double> *mat, double *eigs, int N, int lda)
     int lwork = 2 * N * N;  // this function is for LDA+U diag, so N is small
     double *rwork = new double[3*N];
     double *work = new double[lwork];
-    zheev("V", "L", &N, mat, &N, eigs, (std::complex<double> *)work,&lwork, rwork, &info);
+    zheev("V", "L", &N, (double *)mat, &N, eigs, work,&lwork, rwork, &info);
     delete [] rwork;
     delete [] work;
     if(info != 0)
     {
-         rmg::error("failed to diagonalization a matrix\n");
+         rmg_error_handler (__FILE__, __LINE__, "failed to diagonalization a matrix\n");
     }
 
     return;
@@ -85,6 +85,7 @@ template void Eigen<std::complex<double>>(std::complex<double> *A, double *eigs,
     template <typename KpointType>
 void Eigen(KpointType *distA, double *eigs, KpointType *distV, int N, int M, Scalapack &Sp)
 {
+    int ibtype = 1;
     int ione = 1;
     int info = 0;
 

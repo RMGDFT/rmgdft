@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2022 The RMG Project Developers. See the COPYRIGHT file 

@@ -1,4 +1,3 @@
-#pragma once
 /****f* QMD-MGDFT/params.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

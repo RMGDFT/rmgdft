@@ -17,25 +17,25 @@ void print_matrix(double *b, int n, int ldb)
     rows = n / MAX_COL;
     cols = n % MAX_COL;
 
-    rmg::printlog("MATRIX at prid_pe %d world_pe%d\n", pct.gridpe, pct.worldrank);
+    rmg_printf("MATRIX at prid_pe %d world_pe%d\n", pct.gridpe, pct.worldrank);
     for (i = 0; i < n; i++)
     {
         for (idx = 0; idx < rows; idx++)
         {
             for (j = 0; j < MAX_COL; j++)
             {
-                rmg::printlog("%15.8e \t", b[i * ldb + j + idx * MAX_COL]);
+                rmg_printf("%15.8e \t", b[i * ldb + j + idx * MAX_COL]);
             }
             if (idx + 1 < rows || cols > 0)
-                rmg::printlog("\n");
+                rmg_printf("\n");
         }
         for (j = 0; j < cols; j++)
         {
-            rmg::printlog("%15.8e \t", b[i * ldb + j + rows * MAX_COL]);
+            rmg_printf("%15.8e \t", b[i * ldb + j + rows * MAX_COL]);
         }
-        rmg::printlog("\n");
+        rmg_printf("\n");
     }
-    rmg::printlog("\n");
+    rmg_printf("\n");
 
     fflush(NULL);
 
@@ -49,24 +49,24 @@ void print_matrix_matlab(char *name, int n, double *a)
 
 
 
-    rmg::printlog("\n %s = ...\n", name);
-    rmg::printlog(" [");
+    rmg_printf("\n %s = ...\n", name);
+    rmg_printf(" [");
     for (i = 0; i < n; i++)
     {
         for (j = 0; j < n; j++)
         {
-            rmg::printlog(" %e ", a[n * i + j]);
+            rmg_printf(" %e ", a[n * i + j]);
             if (j < n - 1)
             {
-                rmg::printlog(",");
+                rmg_printf(",");
                 if (!((j + 1) % 7))
-                    rmg::printlog("... \n");
+                    rmg_printf("... \n");
             }
         }
         if (i < n - 1)
-            rmg::printlog(" ;... \n");
+            rmg_printf(" ;... \n");
     }
-    rmg::printlog(" ]\n");
+    rmg_printf(" ]\n");
 
     fflush(NULL);
 

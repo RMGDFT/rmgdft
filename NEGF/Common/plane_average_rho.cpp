@@ -45,7 +45,7 @@ void plane_average_rho (double *rho)
 
     if(ct.plane[0] + ct.plane[1] + ct.plane[2] >1)
     {
-        rmg::printlog("\n plane is not defined right %d %d %d \n", ct.plane[0], ct.plane[1],ct.plane[2]);
+        rmg_printf("\n plane is not defined right %d %d %d \n", ct.plane[0], ct.plane[1],ct.plane[2]);
     }
 
     
@@ -77,7 +77,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNY_GRID() * get_FNZ_GRID();
-        rmg::allreduce (zvec, ix, pct.grid_comm);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -120,7 +120,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNX_GRID() * get_FNZ_GRID();
-        rmg::allreduce (zvec, ix, pct.grid_comm);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -164,7 +164,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = get_FNX_GRID() * get_FNY_GRID();
-        rmg::allreduce (zvec, ix, pct.grid_comm);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {

@@ -46,7 +46,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     ION *iptr = &Atoms[ion];
     int ibrav = L->get_ibrav_type();
 
-    rmg::grid *G = kptr->G;
+    BaseGrid *G = kptr->G;
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);

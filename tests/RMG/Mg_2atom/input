@@ -29,6 +29,11 @@ preconditioner_threshold = "0.00010000000"
 #verbose="true"
 #subdiag_driver="lapack"
 
+# for swapping on low memory machines
+#nvme_weights = "true"
+#nvme_orbitals = "true"
+#nvme_weights_filepath = "/mnt/scratch/briggs/Weights/"
+#nvme_orbitals_filepath = "/mnt/scratch/briggs/Orbitals/"
 wavefunction_grid = "24 24 44"
 
 potential_grid_refinement = "2"

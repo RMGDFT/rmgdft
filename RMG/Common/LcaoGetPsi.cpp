@@ -28,8 +28,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
-#include "rmg_hvector.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "transition.h"
 
@@ -72,8 +71,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
         /*Make sure that the wavefunctions have been read*/
         if (!AtomType.num_atomic_waves) {
-            rmg::printlog("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
-            rmg::error("Terminating.");
+            rmg_printf("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
+            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
         }
     }
 
@@ -84,8 +83,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     if(ct.spinorbit && state_count > nstates)
     {
-        rmg::printlog("state_count %d != nstates %d", state_count, nstates);
-        rmg::error(" state_count != nstates Terminating.");
+        rmg_printf("state_count %d != nstates %d", state_count, nstates);
+        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
 
     }
     double coeff = 1.0;
@@ -239,7 +238,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
 
         // Now generate a random mix
-        rmg::hvector<KpointType> rmatrix(state_count * nstates);
+        KpointType *rmatrix = (KpointType *)RmgMallocHost(state_count * nstates * sizeof(KpointType));
 
         for(int st = 0;st < state_count;st++) {
             for(int idx = 0;idx < nstates;idx++) {
@@ -253,14 +252,15 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
 
         int lda = pbasis * ct.noncoll_factor;
-        rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
-                npsi, pbasis, rmatrix.data(), state_count, beta, states[0].psi, lda);
+        RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+                npsi, pbasis, rmatrix, state_count, beta, states[0].psi, lda);
 
         if(ct.noncoll)
-            rmg::gemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
-                    npsi, pbasis, rmatrix.data(), state_count, beta, states[state_count].psi+pbasis, lda);
+            RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+                    npsi, pbasis, rmatrix, state_count, beta, states[state_count].psi+pbasis, lda);
 
 
+        RmgFreeHost(rmatrix);
         delete [] aidum;
     }
 
@@ -268,10 +268,11 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
     /*Initialize any additional states to random start*/
     if ( nstates > state_count)
     {
-        int NX_GRID = get_NX_GRID() / 2;
-        int NY_GRID = get_NY_GRID() / 2;
-        int NZ_GRID = get_NZ_GRID() / 2;
-        rmg::grid *LG = new rmg::grid(NX_GRID, NY_GRID, NZ_GRID, 1, 1, 1, 0, 1);
+
+        int NX_GRID = get_NX_GRID();
+        int NY_GRID = get_NY_GRID();
+        int NZ_GRID = get_NZ_GRID();
+        BaseGrid *LG = new BaseGrid(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = Rmg_G->get_rank();
         MPI_Comm lcomm;
         MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);

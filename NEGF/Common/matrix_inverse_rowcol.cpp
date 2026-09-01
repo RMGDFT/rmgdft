@@ -13,8 +13,6 @@
 #include "pmo.h"
 #include "Scalapack.h"
 #include "GpuAlloc.h"
-#include "blas_driver.h"
-#include "rmg_dev_allocate.h"
 
 void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::complex<double> *G_tri_cpu, 
         std::complex<double> *Grow_cpu, std::complex<double> *Gcol_cpu)
@@ -77,8 +75,8 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
     {
         ntot_row += pmo.mxllda_cond[i];
         ntot_col += pmo.mxlocc_cond[i];
-        maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
 
     }
 
@@ -139,7 +137,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
     //  right side Gauss elimination  
     ncopy = pmo.mxllda_cond[N-1] * pmo.mxlocc_cond[N-1];
 
-    rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
+    zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
 
 
     for (i = N-1; i > m; i--)
@@ -162,20 +160,20 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
 
         //Ci = (Dii)^-1 * Hi,i-1
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
+        zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
 
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1]; 
-        rmg::zcopy_driver (ncopy, Hlower, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione);
+        zcopy_driver (ncopy, Hlower, ione, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione);
         zgesv_driver(Gii_ptr, desca, &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], descc);
 
 
         //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i - 1]; 
-        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
+        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
 
-        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, Hupper, ione, ione, descb, 
+        zgemm_driver ("N", "N", n1, n1, n2, mone, Hupper, ione, ione, descb, 
                 &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione, ione, descc,
                 one, &Gdiag_ptr[ndiag_begin[i-1]], ione, ione, descd);
     }
@@ -184,7 +182,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
 
     ncopy = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
 
-    rmg::zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
+    zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
 
 
     for (i = 0; i < m; i++)
@@ -206,19 +204,19 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         n2 = ni[i];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
+        zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i+1]; 
-        rmg::zcopy_driver (ncopy, Hupper, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
+        zcopy_driver (ncopy, Hupper, ione, &G_tri_ptr[pmo.offdiag_begin[i]], ione);
         //  Ci = -(Di,i)^-1 * Hi,i+1
         zgesv_driver (Gii_ptr, desca, &G_tri_ptr[pmo.offdiag_begin[i]], descc);
 
        //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; 
-        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
+        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
 
-        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, Hlower, ione, ione, descb,
+        zgemm_driver ("N", "N", n1, n1, n2, mone, Hlower, ione, ione, descb,
                 &G_tri_ptr[pmo.offdiag_begin[i]], ione, ione, descc,
                 one, &G_tri_ptr[pmo.diag_begin[i+1]], ione, ione, descd);
     }
@@ -241,15 +239,15 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
-        rmg::zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
         matrix_inverse_driver(&G_tri_ptr[pmo.diag_begin[i]], desca);
 
     }
 
 
     ncopy = pmo.mxllda_cond[m] * pmo.mxlocc_cond[m]; 
-    rmg::zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[m]], ione, &Grow_ptr[n_begin1[m]], ione);
+    zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[m]], ione, &Grow_ptr[n_begin1[m]], ione);
 
     //calculating  G(j, m) (j = m+1, N-1)
     int n0 = ni[m];
@@ -261,7 +259,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         descb = &pmo.desc_cond[ (i+1 + i * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ (i+1 + m * ct.num_blocks) * DLEN];
 
-        rmg::zgemm_driver ("N", "N", n2, n0, n1, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
+        zgemm_driver ("N", "N", n2, n0, n1, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
                 &Grow_ptr[n_begin1[i]], ione, ione, desca, zero, &Grow_ptr[n_begin1[i+1]], ione, ione, descc);
 
     }
@@ -274,7 +272,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         descb = &pmo.desc_cond[ (i-1 + i * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ (i-1 + m * ct.num_blocks) * DLEN];
 
-        rmg::zgemm_driver ("N", "N", n2, n0, n1, mone, &G_tri_ptr[pmo.offdiag_begin[i-1]], ione, ione, descb,
+        zgemm_driver ("N", "N", n2, n0, n1, mone, &G_tri_ptr[pmo.offdiag_begin[i-1]], ione, ione, descb,
                 &Grow_ptr[n_begin1[i]], ione, ione, desca, zero, &Grow_ptr[n_begin1[i-1]], ione, ione, descc);
     }
 
@@ -319,7 +317,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
 
     ncopy = pmo.mxllda_cond[N-1] * pmo.mxlocc_cond[N-1];
 
-    rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
+    zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[N-1]], ione, &Gdiag_ptr[ndiag_begin[N-1]], ione);
 
 
     for (i = N-1; i > m; i--)
@@ -342,21 +340,21 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
 
         //Ci = (Dii)^-1 * Hi,i-1
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
+        zcopy_driver (ncopy, &Gdiag_ptr[ndiag_begin[i]], ione, Gii_ptr, ione);
 
 
         matrix_inverse_driver(Gii_ptr, desca);
 
-        rmg::zgemm_driver ("N", "N", n1, n2, n2, one, Hupper, ione, ione, descb, 
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hupper, ione, ione, descb, 
                 Gii_ptr, ione, ione, desca,
                 zero, &G_tri_ptr[pmo.offdiag_begin[i-1]], ione, ione, descb);
 
         //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i - 1]; 
-        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
+        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i - 1]], ione, &Gdiag_ptr[ndiag_begin[i-1]], ione);
 
-        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, &G_tri_ptr[pmo.offdiag_begin[i-1]], ione, ione, descb, 
+        zgemm_driver ("N", "N", n1, n1, n2, mone, &G_tri_ptr[pmo.offdiag_begin[i-1]], ione, ione, descb, 
                 Hlower, ione, ione, descc,
                 one, &Gdiag_ptr[ndiag_begin[i-1]], ione, ione, descd);
     }
@@ -365,7 +363,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
 
     ncopy = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
 
-    rmg::zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
+    zcopy_driver (ncopy, H_tri_ptr, ione, G_tri_ptr, ione);
 
 
     for (i = 0; i < m; i++)
@@ -387,19 +385,19 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         n2 = ni[i];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
+        zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[i]], ione, Gii_ptr, ione);
         matrix_inverse_driver(Gii_ptr, desca);
 
-        rmg::zgemm_driver ("N", "N", n1, n2, n2, one, Hlower, ione, ione, descb,
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hlower, ione, ione, descb,
                 Gii_ptr, ione, ione, desca,
                 zero, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb);
 
         //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; 
-        rmg::zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
+        zcopy_driver (ncopy, &H_tri_ptr[pmo.diag_begin[i + 1]], ione, &G_tri_ptr[pmo.diag_begin[i+1]], ione);
 
-        rmg::zgemm_driver ("N", "N", n1, n1, n2, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
+        zgemm_driver ("N", "N", n1, n1, n2, mone, &G_tri_ptr[pmo.lowoffdiag_begin[i]], ione, ione, descb,
                 Hupper, ione, ione, descc,
                 one, &G_tri_ptr[pmo.diag_begin[i+1]], ione, ione, descd);
     }
@@ -422,15 +420,15 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
 
         ncopy = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
-        rmg::zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
-        rmg::zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        zaxpy_driver (ncopy, one, &Gdiag_ptr[ndiag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
+        zaxpy_driver (ncopy, mone, &H_tri_ptr[pmo.diag_begin[i]], ione, &G_tri_ptr[pmo.diag_begin[i]], ione);
         matrix_inverse_driver(&G_tri_ptr[pmo.diag_begin[i]], desca);
 
     }
 
 
     ncopy = pmo.mxllda_cond[m] * pmo.mxlocc_cond[m]; 
-    rmg::zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[m]], ione, &Gcol_ptr[n_begin2[m]], ione);
+    zcopy_driver (ncopy, &G_tri_ptr[pmo.diag_begin[m]], ione, &Gcol_ptr[n_begin2[m]], ione);
 
     //calculating  G(j, m) (j = m+1, N-1)
     n0 = ni[m];
@@ -442,7 +440,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         descb = &pmo.desc_cond[ (i + (i+1) * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ (m + (i+1) * ct.num_blocks) * DLEN];
 
-        rmg::zgemm_driver ("N", "N", n0, n2, n1, mone, &Gcol_ptr[n_begin2[i]], ione, ione, desca,
+        zgemm_driver ("N", "N", n0, n2, n1, mone, &Gcol_ptr[n_begin2[i]], ione, ione, desca,
                 &G_tri_ptr[pmo.offdiag_begin[i]], ione, ione, descb,
                 zero, &Gcol_ptr[n_begin2[i+1]], ione, ione, descc);
 
@@ -455,7 +453,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri_cpu, int iprobe, std::c
         desca = &pmo.desc_cond[ (m +  i    * ct.num_blocks) * DLEN];
         descb = &pmo.desc_cond[ (i + (i-1) * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ (m + (i-1) * ct.num_blocks) * DLEN];
-        rmg::zgemm_driver ("N", "N", n0, n2, n1, mone, &Gcol_ptr[n_begin2[i]], ione, ione, desca,
+        zgemm_driver ("N", "N", n0, n2, n1, mone, &Gcol_ptr[n_begin2[i]], ione, ione, desca,
                 &G_tri_ptr[pmo.lowoffdiag_begin[i-1]], ione, ione, descb,
                 zero, &Gcol_ptr[n_begin2[i-1]], ione, ione, descc);
 

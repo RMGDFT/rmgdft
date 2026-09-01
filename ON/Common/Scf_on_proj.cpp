@@ -18,7 +18,7 @@
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 
 #include "prototypes_on.h"
 #include "init_var.h"
@@ -151,7 +151,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                         if(i == j ) CC_res_local[i*num_orb + j] = 1.0;
                         else CC_res_local[i*num_orb + j] = 0.0;
                     }
-                }
+		}
                 delete RT0;
                 break;
             }
@@ -195,7 +195,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
-        rmg::printlog("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
+        rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
     dcopy(&nfp0, rho, &ione, rho_old, &ione);
     dcopy(&nfp0, rho, &ione, rho_pre, &ione);
@@ -224,8 +224,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     double tcharge = 0.0;
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         tcharge += rho[idx];
-    ct.tcharge = rmg::sum_all<double>(tcharge, pct.grid_comm);
-    ct.tcharge = rmg::sum_all<double>(ct.tcharge, pct.spin_comm);
+    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+    ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
     ct.tcharge *= get_vel_f();
 
     double t2 = ct.nel / ct.tcharge;
@@ -233,7 +233,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
 
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        rmg::printlog("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
+        rmg_printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
 
 
     if(ct.charge_mixing_type == 0)
@@ -292,7 +292,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         RT0 = new RmgTimer("2-SCF: Residual calculation");
         CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat, CC_res_local);
         delete RT0;
-        rmg::sync_device();
+        my_sync_device();
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
 

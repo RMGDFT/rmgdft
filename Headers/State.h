@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2014, Emil Briggs
@@ -107,7 +106,7 @@ public:
     int istate;
 
     // Occupation of the orbital
-    double occupation[4];
+    double occupation[2];
 
     bool skip;
 

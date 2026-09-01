@@ -37,7 +37,7 @@
 #define RMG_TradeImages_H 1
 
 #include <mpi.h>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "rmg_error.h"
 #include "MpiQueue.h"
 
@@ -47,7 +47,7 @@
 #define FULL_TRADE 1
 #define CENTRAL_TRADE 2
 
-#define MAX_CFACTOR 24
+#define MAX_CFACTOR 16
 
 #if __cplusplus
 
@@ -61,6 +61,7 @@ class TradeImages {
 
 private:
 
+    BaseGrid *G;
     MpiQueue *queue;
     void allocate_buffers(double ** &P, int nthreads, int length_per_thread, size_t elem_len);
     bool queue_mode;
@@ -132,9 +133,8 @@ private:
 public:
     /// MPI communicator to use
     MPI_Comm comm;
-    rmg::grid *G;
 
-    TradeImages(rmg::grid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images);
+    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor, int images);
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);

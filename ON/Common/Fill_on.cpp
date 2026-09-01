@@ -53,8 +53,8 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
-#include "rmg_sum_all.h"
-#include "rmg_reduce.h"
+#include "RmgSumAll.h"
+#include "GlobalSums.h"
 
 
 static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
@@ -70,7 +70,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     const double charge_tol = 1.0e-10;
     ct.E_lowbound = *min_element(eigs.begin(), eigs.end());
 
-    int iter, st1, idx, nks;
+    int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double mu = 0.0, dmu, mu1, mu2, f, fmid;
 
     nks = eigs.size();
@@ -125,7 +125,7 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     f = occ_allstates (mu1, occ, eigs, width, nel, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
-        rmg::error("root must be bracketed");
+        rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
 
     if (f < 0.0)
     {
@@ -157,12 +157,12 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
     while ((iter < maxit) && (fmid > charge_tol));
 
     if (iter == maxit)
-        rmg::error("too many bisections");
+        rmg_error_handler (__FILE__,__LINE__,"too many bisections");
 
     if (fabs (fmid) > charge_tol)
     {
-        rmg::printlog ("\nfill: \\sum f - n_el= %e", fmid);
-        rmg::error("did not converge");
+        rmg_printf ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg_error_handler (__FILE__,__LINE__,"did not converge");
     }                           /* end if */
 
     return (mu1);
@@ -174,11 +174,13 @@ double Fill_on (std::vector<double> &eigs, std::vector<double> &weight, std::vec
 static double occ_allstates (double mu, std::vector<double> & occ, std::vector<double> & eigs, double width, double nel, 
         std::vector<double> &weight, int occ_flag, int mp_order)
 {
-    int st, kpt, st1;
+    int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double t1, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
+
+    nks = ct.num_kpts_pe * ct.num_states;
 
     sumf = 0.0; 
 
@@ -190,14 +192,14 @@ static double occ_allstates (double mu, std::vector<double> & occ, std::vector<d
             eig = eigs[st];
             t1 = (eig - mu) / width;
 
-            occ[st] = fac * dist_func(t1, occ_flag, mp_order);
+            occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
             sumf += occ[st] * weight[kpt];
         }
     }                           /* st1 and kpt */
 
 
-    sumf = rmg::sum_all(sumf, pct.kpsub_comm);
-    sumf = rmg::sum_all(sumf, pct.spin_comm);
+    sumf = RmgSumAll(sumf, pct.kpsub_comm);
+    sumf = RmgSumAll(sumf, pct.spin_comm);
 
     return (sumf - nel);
 
@@ -276,7 +278,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
             break;
 
         default:
-            rmg::error("unknown filling procedure");
+            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
 
     }                           /* end switch */
 

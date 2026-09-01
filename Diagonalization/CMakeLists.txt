@@ -13,7 +13,7 @@ FoldedSpectrumGSE.cpp
 FoldedSpectrumScalapackGSE.cpp
 FoldedSpectrumOrtho.cpp
 FoldedSpectrumScalapackOrtho.cpp
-rmg_ortho.cpp
+ortho.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

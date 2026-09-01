@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_blacs_h
 #define RMG_blacs_h 1
 

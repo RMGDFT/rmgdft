@@ -27,13 +27,13 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
 
 #include "common_prototypes.h"
@@ -45,6 +45,8 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+#include <thrust/fill.h>
+#include <thrust/device_vector.h>
 #endif
 
 
@@ -57,7 +59,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 {
 
 #if !CUDA_ENABLED
-        rmg::printlog("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
+        rmg_printf("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
         return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
@@ -83,13 +85,13 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: cusolver folded");
             folded_call_count++;
-            rmg::printlog("\nDiagonalization using folded cusolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+            rmg_printf("\nDiagonalization using folded cusolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
         }
         else
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: cusolver");
             call_count++;
-            rmg::printlog("\nDiagonalization using cusolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+            rmg_printf("\nDiagonalization using cusolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
         }
 
         // Magma is not parallel across MPI procs so only have the local master proc on a node perform

@@ -67,9 +67,9 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "Functional.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "transition.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include "RmgParallelFft.h"
 
 
@@ -137,10 +137,10 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         }
     }
 
-    eigsum = rmg::sum_all(eigsum, pct.kpsub_comm);
-    vnuc_correction = rmg::sum_all(vnuc_correction, pct.kpsub_comm);
-    vxc_correction = rmg::sum_all(vxc_correction, pct.kpsub_comm);
-    vh_correction = 0.5*rmg::sum_all(vh_correction, pct.kpsub_comm);
+    eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
+    vnuc_correction = RmgSumAll(vnuc_correction, pct.kpsub_comm);
+    vxc_correction = RmgSumAll(vxc_correction, pct.kpsub_comm);
+    vh_correction = 0.5*RmgSumAll(vh_correction, pct.kpsub_comm);
 
     if(ct.AFM) eigsum *= 2.0;
 
@@ -164,7 +164,7 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         for (idx = 0; idx < fpbasis; idx++)
             ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
     }
-    ct.ES = 0.5 * vel * rmg::sum_all(ct.ES, pct.grid_comm);
+    ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
 
     if(potential_acceleration)
     {
@@ -196,9 +196,9 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
         }
         delete [] vc_tmp;
         delete [] vf_tmp;
-        ES_pa = 0.5 * cvel * rmg::sum_all(ES_pa, pct.grid_comm);
-        ES_pa = rmg::sum_all(ES_pa, pct.spin_comm);
-        ES_pa = rmg::sum_all(ES_pa, pct.kpsub_comm);
+        ES_pa = 0.5 * cvel * RmgSumAll(ES_pa, pct.grid_comm);
+        ES_pa = RmgSumAll(ES_pa, pct.spin_comm);
+        ES_pa = RmgSumAll(ES_pa, pct.kpsub_comm);
 
     }
 
@@ -216,8 +216,8 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
             mag += ( rho.up[idx] - rho.dw[idx] );       /* calculate the magnetization */
             absmag += fabs(rho.up[idx] - rho.dw[idx]);
         }
-        mag = vel * rmg::sum_all(mag, pct.grid_comm);
-        absmag = vel * rmg::sum_all(absmag, pct.grid_comm);
+        mag = vel * RmgSumAll(mag, pct.grid_comm);
+        absmag = vel * RmgSumAll(absmag, pct.grid_comm);
     }
     else if(ct.nspin == 4)
     {
@@ -233,12 +233,11 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     }
 
     /*XC potential energy */
-    xcstate = vel * rmg::sum_all(xcstate, pct.grid_comm);
+    xcstate = vel * RmgSumAll(xcstate, pct.grid_comm);
 
     Functional F (*Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     if(ct.xc_is_meta)
     {
-        double emeta = 0.0;
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             kptr = Kptr[kpt];
@@ -247,13 +246,11 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
             { 
                 t1 += kptr->Kstates[is].occupation[0] * kptr->Kstates[is].e_meta_xc;
             }
-            t1 = get_vel() * rmg::sum_all(t1, pct.grid_comm);
-            emeta += kptr->kp.kweight * t1;
+            t1 = get_vel() * RmgSumAll(t1, pct.grid_comm);
+            xcstate += kptr->kp.kweight * t1;
         }
-        emeta = rmg::sum_all(emeta, pct.spin_comm);
-        emeta = rmg::sum_all(emeta, pct.kpsub_comm);
-        xcstate += emeta;
     }
+
 
     if(ii_flag) {
 
@@ -298,40 +295,40 @@ void GetTe (spinobj<double> &rho, fgobj<double> &rhocore, fgobj<double> &rhoc, f
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
-    //rmg::printlog ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
-    rmg::printlog ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
-    rmg::printlog ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
-    rmg::printlog ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
-    rmg::printlog ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
-    rmg::printlog ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+    //rmg_printf ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
+    rmg_printf ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
+    rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+    rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
+    rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
+    rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
     if(ct.vdw_corr)
-        rmg::printlog ("@@ vdw_corr           = %15.6f %s\n", efactor*ct.Evdw, eunits);
+        rmg_printf ("@@ vdw_corr           = %15.6f %s\n", efactor*ct.Evdw, eunits);
     if(ct.xc_is_hybrid && Functional::is_exx_active())
-        rmg::printlog ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
+        rmg_printf ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-        rmg::printlog ("@@ HUBBARD ENERGY     = %15.6f %s\n", efactor*ldaU_H, eunits);
+        rmg_printf ("@@ HUBBARD ENERGY     = %15.6f %s\n", efactor*ldaU_H, eunits);
     if(ct.BerryPhase)
     {
         ct.TOTAL += Rmg_BP->enthalpy_elec;
-        rmg::printlog ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
+        rmg_printf ("@@ Electric Enthalpy  = %15.6f %s\n", efactor*Rmg_BP->enthalpy_elec, eunits);
     }
 
 
-    rmg::printlog ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
+    rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
-        rmg::printlog ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);
+        rmg_printf ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);
     }
     else {
-        rmg::printlog ("@@ estimated error    =   ****************\n");
+        rmg_printf ("@@ estimated error    =   ****************\n");
     }
 
     if (ct.spin_flag)
     {
         /* Print the total magetization and absolute magnetization into output file */
-        rmg::printlog ("@@ TOTAL MAGNETIZATION    = %12.8f Bohr mag/cell\n", mag );
-        rmg::printlog ("@@ ABSOLUTE MAGNETIZATION = %12.8f Bohr mag/cell\n", absmag );
+        rmg_printf ("@@ TOTAL MAGNETIZATION    = %12.8f Bohr mag/cell\n", mag );
+        rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %12.8f Bohr mag/cell\n", absmag );
     }
 
-    //rmg::printlog("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
+    //rmg_printf("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
 }                               /* end get_te */

@@ -22,216 +22,81 @@
 #include "Kbpsi.h"
 #include "Gpufuncs.h"
 #include "Kpoint.h"
-#include "rmg_hvector.h"
-#include "rmg_dvector.h"
 
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
 #include "RmgParallelFft.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "blas_driver.h"
 #include "Prolong.h"
-#include "GatherScatter.h"
 
-template void GetNewRho_rmgtddft<double, double, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template void GetNewRho_rmgtddft<double, float, double>(Kpoint<double> *,spinobj<double> &rho, double *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template void GetNewRho_rmgtddft<double, double, std::complex<double>>(Kpoint<double> *,spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template void GetNewRho_rmgtddft<double, float, std::complex<double>>(Kpoint<double> *,spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template void GetNewRho_rmgtddft<std::complex<double>, std::complex<float>, std::complex<double> >(Kpoint<std::complex<double>> *, spinobj<double> &rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp);
-template <typename KpointType, typename CalType, typename MatrixType>
-void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, MatrixType *rho_matrix, int numst, int tddft_start_state, Scalapack &Sp)
+template void GetNewRho_rmgtddft<double>(Kpoint<double> *,double *rho, double *rho_matrix, int numst, int tddft_start_state);
+template void GetNewRho_rmgtddft<std::complex<double> >(Kpoint<std::complex<double>> *, double *rho, std::complex<double> *rho_matrix, int numst, int tddft_start_state);
+template <typename KpointType>
+void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, double *rho_k, KpointType *rho_matrix, int numst, int tddft_start_state)
 {
+    int idx;
 
-    // rho_matrix are distributed either in tiledMM or scalpack 
     /* for parallel libraries */
 
+    int st1;
 
-    using TypeV = get_scalar_t<CalType>;                // Result: float
+    KpointType one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();
-    int pbasis_noncoll = pbasis * ct.noncoll_factor;
-    // in the noncollinear case, noncoll_factor = 2, and number of rho components = 4
-    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
 
     if(!ct.norm_conserving_pp) {
-        rmg::error("\n tddft not programed for ultrasoft \n");
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for ultrasoft \n");
+    }
+    if(ct.noncoll)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\n tddft not programed for noncoll \n");
     }
 
-    std::vector<double> occ_ground(numst);
     for (int istate = 0; istate < numst; istate++)
     {
-        occ_ground[istate] = 
+        rho_matrix[istate * numst + istate] -=
             kptr->Kstates[istate + tddft_start_state].occupation[0];
+
     }
 
 #if CUDA_ENABLED || HIP_ENABLED 
-    // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
-    // the reduction over numst.
-    
-    // rho_matrix is on device, with MatrixType
-    CalType one = 1.0, zero = 0.0;
-
-    rmg::dvector<CalType> rho_matrix_dev(numst * numst);
-    rmg::dvector<TypeV> rho_temp_dev(pbasis * n_rho);
-    rmg::dvector<double> occ_dev(numst);
-
-    rmg::hvector<TypeV> rho_temp(pbasis*n_rho);
-    gpuMemcpy(occ_dev.data(), occ_ground.data(),  numst * sizeof(double), gpuMemcpyHostToDevice);
-
-    //rho_matrix_dev[i,i] = rho_matrix[i,i] - occ_dev[i]
-
-    int nprocs = pct.local_comm_npes;
-    int myrank = pct.local_rank;
-    if(!ct.tddft_tiledMM)
-    {
-        nprocs = 1;
-        myrank = 0;
-    }
-
-    GpuRhomatrixConvert(rho_matrix_dev.data(), rho_matrix, occ_dev.data(), numst, myrank, nprocs);
-
-    if(ct.tddft_tiledMM)
-    {
-#if USE_NCCL
-        size_t sendcount = numst * numst/nprocs * sizeof(CalType)/sizeof(TypeV);
-        if( typeid(TypeV) == typeid(float) )
-        {
-            rmg::error(ncclAllGather(rho_matrix_dev.data() + numst*numst/nprocs*myrank, rho_matrix_dev.data(), sendcount, ncclFloat, ct.nccl_local_comm, 0));
-        }
-        //else if( typeid(TypeV) == typeid(double) )
-        else
-        {
-            rmg::error(ncclAllGather(rho_matrix_dev.data() + numst*numst/nprocs*myrank, rho_matrix_dev.data(), sendcount, ncclDouble, ct.nccl_local_comm, 0));
-        }
+    double *rho_temp, *rho_temp_dev;
+    rho_temp = (double *)GpuMallocHost(pbasis * sizeof(double));
+    gpuMalloc((void **)&rho_temp_dev, pbasis * sizeof(double));
 #else
-            rmg::error("set tddft_tiledMM=false in the input file, need use nccl for this option");
+    double *rho_temp = new double[pbasis];
+    for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
+#endif
+
+
+    if(numst > 0)
+    {
+#if CUDA_ENABLED || HIP_ENABLED 
+        // xpsi is a device buffer in this case and GpuProductBr is a GPU functions to do
+        // the reduction over numst.
+        KpointType *psi_dev = &kptr->psi_dev[tddft_start_state * pbasis];
+        KpointType *xpsi = kptr->work_dev;
+        RmgGemm ("N", "N", pbasis, numst, numst, one, 
+                psi_dev, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
+        GpuProductBr(psi_dev, xpsi, rho_temp_dev, numst, pbasis);
+        gpuMemcpy(rho_temp, rho_temp_dev,  pbasis * sizeof(double), gpuMemcpyDeviceToHost);
+#else
+        RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
+        KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis];
+        KpointType *xpsi = kptr->work_cpu;
+        RmgGemm ("N", "N", pbasis, numst, numst, one, 
+                psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
+
+        delete RT;
+        RT = new RmgTimer("TDDFT: rho: dot");
+        for(st1 = 0; st1 < numst; st1++)
+            for(idx = 0; idx < pbasis; idx++)
+                rho_temp[idx] += std::real(psi[st1 * pbasis + idx] * std::conj(xpsi[st1 * pbasis + idx]));
+        delete RT;
 #endif
     }
-
-
-    CalType *psi_dev;
-    CalType *xpsi;
-    if(typeid(KpointType) == typeid(CalType))
-    {
-        psi_dev = (CalType *)kptr->psi_dev;
-        xpsi = (CalType *)kptr->work_dev;
-    }
-    else
-    {
-        psi_dev = (CalType *)kptr->psi_dev_float;
-        xpsi = (CalType *)kptr->work_dev_float;
-    }
-
-    psi_dev = psi_dev + tddft_start_state * pbasis_noncoll;
-
-    rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi_dev, pbasis_noncoll, rho_matrix_dev.data(), numst, zero, xpsi, pbasis_noncoll);
-
-    GpuProductBr(psi_dev, xpsi, rho_temp_dev.data(), numst, pbasis);
-    gpuMemcpy(rho_temp.data(), rho_temp_dev.data(),  n_rho * pbasis * sizeof(TypeV), gpuMemcpyDeviceToHost);
-#else
-    if(typeid(KpointType) != typeid(CalType))
-    {
-        rmg::error("\n float precision not for CPU \n");
-    }
-    KpointType one = 1.0, zero = 0.0;
-    RmgTimer *RT = new RmgTimer("TDDFT: rho: gemm");
-
-    rmg::hvector<double> rho_temp(pbasis*n_rho);
-    rho_temp.set(0.0);
-    rmg::hvector<KpointType> rho_matrix_glob(numst*numst);
-
-
-    if(ct.tddft_tiledMM == 1)
-    {
-        double *rho_R = (double *)rho_matrix_glob.data();
-        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_glob.data();
-        size_t recvcount = numst * numst/pct.local_comm_npes * sizeof(KpointType)/sizeof(double);
-        if(typeid(KpointType) == typeid(double))
-        {
-            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
-            {
-                rho_R[pct.local_rank * numst * numst/pct.local_comm_npes + i] = std::real(rho_matrix[i]);
-            }
-        }
-        else
-        {
-            for(int i = 0; i < numst * numst/pct.local_comm_npes; i++)
-            {
-                rho_C[pct.local_rank * numst * numst/pct.local_comm_npes + i] = rho_matrix[i];
-            }
-        }
-        MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, 
-                rho_matrix_glob.data(), recvcount, MPI_DOUBLE, pct.local_comm);       
-    }
-    else
-    {
-        std::vector<KpointType> rho_matrix_dist(Sp.GetDistMdim() * Sp.GetDistNdim());
-        double *rho_R = (double *)rho_matrix_dist.data();
-        std::complex<double> *rho_C = (std::complex<double> *)rho_matrix_dist.data();
-
-        if(typeid(KpointType) == typeid(double))
-        {
-            for(int i = 0; i < Sp.GetDistMdim() * Sp.GetDistNdim(); i++)
-            {
-                rho_R[i] = std::real(rho_matrix[i]);
-            }
-        }
-        else
-        {
-            for(int i = 0; i < Sp.GetDistMdim() * Sp.GetDistNdim(); i++)
-            {
-                rho_C[i] = rho_matrix[i];
-            }
-        }
-
-        for(int i = 0; i < numst * numst; i++) rho_matrix_glob[i] = 0.0;
-        Sp.GatherEigvectors(rho_matrix_glob.data(), rho_matrix_dist.data());
-    }
-
-    for(int i = 0; i< numst; i++) rho_matrix_glob[i*numst+i] -= occ_ground[i];
-    KpointType *psi = &kptr->orbital_storage[tddft_start_state * pbasis_noncoll];
-    KpointType *xpsi = kptr->work_cpu;
-    rmg::gemm ("N", "N", pbasis_noncoll, numst, numst, one, 
-            psi, pbasis_noncoll, rho_matrix_glob.data(), numst, zero, xpsi, pbasis_noncoll);
-
-    delete RT;
-    RT = new RmgTimer("TDDFT: rho: dot");
-    if(!ct.noncoll)
-    {
-        for(int st1 = 0; st1 < numst; st1++)
-        {
-            for(int idx = 0; idx < pbasis; idx++)
-            {
-                rho_temp[idx] += std::real(psi[st1 * pbasis_noncoll + idx] * std::conj(xpsi[st1 * pbasis_noncoll + idx]));
-            }
-        }
-    }
-    else
-    {
-        for(int st1 = 0; st1 < numst; st1++)
-        {
-
-            KpointType *one_psi = &psi[st1 * pbasis_noncoll];
-            KpointType *one_xpsi = &xpsi[st1 * pbasis_noncoll];
-            for(int idx = 0; idx < pbasis; idx++)
-            {
-                double rho_up = std::real(one_psi[idx] * std::conj(one_xpsi[idx]));
-                double rho_dn = std::real(one_psi[idx + pbasis] * std::conj(one_xpsi[idx + pbasis]));
-                std::complex<double> psiud = one_psi[idx] * std::conj(one_xpsi[idx + pbasis]);
-                std::complex<double> psidu = one_psi[idx+pbasis] * std::conj(one_xpsi[idx]);
-                rho_temp[idx] += rho_up + rho_dn;
-                rho_temp[idx + pbasis] += std::real(psiud + psidu);
-                rho_temp[idx + pbasis *2] += std::imag(psiud + psidu);
-                rho_temp[idx + pbasis *3] += rho_up - rho_dn;
-            }
-        }
-    }
-
-    delete RT;
-#endif
 
 
     /* Interpolate onto fine grid, result will be stored in rho*/
@@ -248,23 +113,21 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
-    spinobj<double> rho_k_double;
-    int fpbasis = dimx * dimy * dimz;
-    CopyAndConvert(n_rho * pbasis, rho_temp.data(), rho_k_double.data());
-    for(int irho = 0; irho< n_rho; irho++)
-    {
-        P.prolong(rho_k.data()+irho*fpbasis, rho_k_double.data() + irho*pbasis, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-
-    }
-
-    double tem =0.0;
-    for(int i = 0; i < fpbasis; i++) tem += rho_k[i];
-
-    MPI_Allreduce(MPI_IN_PLACE, &tem, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    rmg::printlog("\n TDDFT normalization %e\n", tem *get_vel_f());
-
+    P.prolong(rho_k, rho_temp, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
     delete RT1;
 
+#if CUDA_ENABLED || HIP_ENABLED 
+    gpuFree(rho_temp_dev);
+    GpuFreeHost(rho_temp);
+#else
+    delete [] rho_temp;
+#endif
+    for (int istate = 0; istate < numst; istate++)
+    {
+        rho_matrix[istate * numst + istate] +=
+            kptr->Kstates[istate + tddft_start_state].occupation[0];
+
+    }
 }
 

@@ -63,7 +63,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
     std::complex<double> *gbptr = new std::complex<double>[pbasis];
 
     if (gbptr == NULL)
-        rmg::error("can't allocate memory\n");
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     int nlxdim = Rmg_G->get_NX_GRID(1);
     int nlydim = Rmg_G->get_NY_GRID(1);
@@ -82,7 +82,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
         filename = "PROJECTORS/forward_beta_species" + std::to_string(isp) + "_kpt" + std::to_string(kindex);
         int fhand = open(filename.c_str(), O_RDWR, amode);
         size_t count = sizeof(std::complex<double>) * AtomType.nh * pbasis;
-        rmg::readfile(fhand, forward_beta, count);
+        read(fhand, forward_beta, count);
         close(fhand);
 
 
@@ -126,7 +126,7 @@ void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
 
         }
 
-        rmg::writefile(fhand_nl, Nlweight, count);
+        write(fhand_nl, Nlweight, count);
 
     }
     close(fhand_nl);

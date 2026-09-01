@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_pe_control_H
 #define RMG_pe_control_H 1
 
@@ -9,7 +8,7 @@
     #include <hwloc.h>
 #endif
 #include "params.h"
-#include "rmg_mgrid.h"
+#include "Mgrid.h"
 #include "Scalapack.h"
 
 
@@ -92,7 +91,6 @@ typedef struct
 
     // Communicator associated with the local ranks.
     MPI_Comm local_comm;
-    int local_comm_npes;
 
     // local master
     int is_local_master;
@@ -103,11 +101,6 @@ typedef struct
     /* scalapack variables */
     int desca[DLEN];
     int ictxt;
-
-    MPI_Comm nccl_comm;
-    int nccl_comm_npes;
-    int nccl_rank;
-    int nccl_num_nodes;
 
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
@@ -134,6 +127,15 @@ typedef struct
     /** Processor z-coordinate for domain decomposition */
     int pe_z;
 
+    /** points to start of DnmI function storage for this ion*/
+//    double **dnmI;
+//    double **dnmI_x;
+//    double **dnmI_y;
+//    double **dnmI_z;
+
+    /** points to start of qqq storage for this ion*/
+//    double **qqq;
+
     int num_owned_ions;
     int num_loc_ions;
     int *loc_ions_list;
@@ -157,6 +159,26 @@ typedef struct
 
     /*  processor coordinates in COMM_KP communicator */
     int coords[2];
+
+    /* Number of ions centered on this processor */
+    int n_ion_center;
+    int n_ion_center_loc;
+
+    /* Projectors per ion in a given region */
+    int *prj_per_ion;
+
+    /* Indices of the ions within non-local range */
+    int *ionidx;
+    int *ionidx_loc;
+
+    /* The size of local orbitals on this PE */
+    int psi_size;
+
+    /* pointer to former step solution, used in pulay and KAIN mixing  */
+    int descb[DLEN];
+
+    double *psi1, *psi2;
+    int num_local_orbit;
 
 } PE_CONTROL;
 

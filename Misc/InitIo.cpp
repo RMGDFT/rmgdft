@@ -44,7 +44,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "RmgException.h"
 #include "InputKey.h"
 #include "InputOpts.h"
@@ -54,15 +54,10 @@
 #include "Tetrahedron.h"
 #include "BerryPhase.h"
 
-#if __LIBXC
-#include <xc.h>
-#endif
-
 #if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-    #include "rmg_dev_allocate.h"
 #endif
 
 #if HIP_ENABLED
@@ -73,12 +68,10 @@
     #if MAGMA_LIBS
         #include <magma_v2.h>
     #endif
-    #include "rmg_dev_allocate.h"
 #endif
 
 #if SYCL_ENABLED
     #include <CL/sycl.hpp>
-    #include "rmg_allocate.h"
     #include "oneapi/mkl/blas.hpp"
     #include "mkl.h"
     #include <omp.h>
@@ -142,7 +135,7 @@ void rmg_mpi_errors(MPI_Comm *comm, int *err, ...)
     Rmg_Q->set_exitflag();
     MPI_Error_string(*err, errmsg, &len);
     printf("RMG MPI error: %s\n", errmsg);fflush(NULL);sleep(5);
-    rmg::error("MPI error. Terminating.\n");
+    rmg_error_handler(__FILE__,__LINE__,"MPI error. Terminating.\n");
 }
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
@@ -164,7 +157,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
 
     // Set error handler to only print to rank 0
-    rmg::error_set_print(pct.worldrank == 0);
+    RmgErrorSetPrint(pct.worldrank == 0);
 
     /* get total mpi core count */
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
@@ -403,29 +396,21 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
     }
 
-    // For now forces via finite differencing require this so force use of FFT.
-    if(Rmg_G->get_PX0_GRID(1) < ct.kohn_sham_fd_order/2) ct.force_grad_order = 0;
 
-    // If coalescing is off the number of grid points per pe in all coordinate directions must be
-    // must be greater than or equal to ct.kohn_sham_fd_order/2 and greater than or equal to
-    // the number of points used for prolongation of the density to the fine grid which is 5 by default.
-    // but only 1 if fast_density is true.
-    int cfac = 1;
-    if(ct.coalesce_states && pct.coalesce_factor > 1) cfac = pct.coalesce_factor;
+    // We do not (currently) coalesce outside of the multigrid solver so the number of grid points on a PE in any
+    // coordinate direction (non-coalesced) must be greater than or equal to the number of points used in the global FD routines.
     int fd_check_err = false;
-    int pgrid_limit = std::max(ct.kohn_sham_fd_order/2, 5);
-    if(ct.fast_density) pgrid_limit = ct.kohn_sham_fd_order/2;
-    PX0_GRID = cfac*Rmg_G->get_PX0_GRID(1);
-    if(PX0_GRID < pgrid_limit) fd_check_err = true;
-    if(PY0_GRID < pgrid_limit) fd_check_err = true;
-    if(PZ0_GRID < pgrid_limit) fd_check_err = true;
+    PX0_GRID = Rmg_G->get_PX0_GRID(1);
+    if(PX0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    if(PY0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    if(PZ0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
     MPI_Allreduce(MPI_IN_PLACE, &fd_check_err, 1, MPI_INT, MPI_SUM, pct.grid_comm);
     if(fd_check_err) 
-        rmg::error(
-"If coalescing is off the number of grid points per pe in all coordinate directions\n"
-"must be greater than or equal to ct.kohn_sham_fd_order/2 and greater than or equal\n"
-"the number of points used for prolongation of the density to the fine grid which is\n"
-"5 by default but only 1 if fast_density is enabled.\n");
+        rmg_error_handler (__FILE__, __LINE__, "The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
+
+
+
+
 
 
     /* if logname exists, increment until unique filename found */
@@ -452,9 +437,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Bcast(ct.basename, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
-    rmg::printlog ("RMG initialization ...");
-    rmg::printlog (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
-    rmg::printlog (" %d MPI processes/image. ", status);
+    rmg_printf ("RMG initialization ...");
+    rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
+    rmg_printf (" %d MPI processes/image. ", status);
 
 
 
@@ -480,8 +465,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     gpuGetDeviceCount( &ct.num_gpu_devices);
 
     // Get cuda version
-    rmg::error(cudaDriverGetVersion ( &ct.cuda_version ));
-    rmg::printlog ("\nCUDA version %d detected.\n", ct.cuda_version);
+    cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
+    rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
 #endif
 
 #if HIP_ENABLED
@@ -489,24 +474,24 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(pct.local_rank == 0)
     {
         gpuDeviceReset();
-        rmg::error(hipInit(0));
+        hipInit(0);
         gpuSetDeviceFlags(gpuDeviceScheduleAuto);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if(pct.local_rank != 0)
     {
-        rmg::error(hipInit(0));
+        hipInit(0);
     }
     gpuGetDeviceCount( &ct.num_gpu_devices);
 
     // Get hip version
     hipError_t hiperr =  hipDriverGetVersion ( &ct.hip_version );
     if(hiperr == hipSuccess) {
-        rmg::printlog ("\nHIP version %d detected.\n", ct.hip_version);
+        rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
     }
     else
     {
-        rmg::printlog ("\nHIP version NOT detected.\n");
+        rmg_printf ("\nHIP version NOT detected.\n");
     }
 #endif
 
@@ -514,7 +499,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // we will find the device with the largest memory and use all devices that have just as
     // much memory
     std::vector<size_t> device_mem;
-    rmg::printlog("\n");
+    rmg_printf("\n");
     for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
 #if CUDA_ENABLED
         cuDeviceGet( &cudev, idevice );
@@ -522,17 +507,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cuDeviceTotalMem( &deviceMem, cudev );
         ct.gpu_mem[idevice] = deviceMem;
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, cudev );
-        rmg::printlog( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
 
 #if HIP_ENABLED
-        rmg::error(hipDeviceGet( &hipdev, idevice ));
-        rmg::error(hipDeviceGetName( name, sizeof(name), hipdev ));
-        rmg::error(hipDeviceTotalMem( &deviceMem, hipdev ));
+        hipDeviceGet( &hipdev, idevice );
+        hipDeviceGetName( name, sizeof(name), hipdev );
+        hipDeviceTotalMem( &deviceMem, hipdev );
         ct.gpu_mem[idevice] = deviceMem;
-        rmg::error(hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev ));
-        rmg::printlog( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev );
+        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
 
@@ -549,12 +534,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if CUDA_ENABLED
             cuDeviceGet( &ct.cu_devices[ct.num_usable_gpu_devices], idevice);
             cuDeviceGetAttribute( &does_managed, CU_DEVICE_ATTRIBUTE_MANAGED_MEMORY, ct.cu_devices[ct.num_usable_gpu_devices]);
-            cudaDeviceGetAttribute(&ct.smemSize[idevice], cudaDevAttrMaxSharedMemoryPerBlock, idevice);
 #endif
 #if HIP_ENABLED
-            rmg::error(hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice));
-            rmg::error(hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]));
-            rmg::error(hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice));
+            hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
+            hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
+            hipDeviceGetAttribute(&ct.smemSize[idevice], hipDeviceAttributeMaxSharedMemoryPerBlock, idevice);
             //            hipDeviceGetAttribute(&t1, hipDeviceAttributeSharedMemPerMultiprocessor , idevice);
 #endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
@@ -564,7 +548,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     if(ct.num_usable_gpu_devices == 0)
-        rmg::error("No usable GPU devices were found on the system. Exiting.\n");
+        rmg_error_handler (__FILE__, __LINE__, "No usable GPU devices were found on the system. Exiting.\n");
 
     // Now we have to decide how to allocate the GPU's to MPI procs if we have more than
     // one GPU/node.
@@ -573,10 +557,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         gpuSetDevice(ct.gpu_device_ids[pct.local_rank]);
 #if CUDA_ENABLED
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-            rmg::error("CUBLAS: Handle not created\n");
+            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
         if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
-            rmg::error("CUBLAS: Handle not created\n");
+            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
         cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[pct.local_rank]);
         cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
@@ -584,10 +568,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #if HIP_ENABLED
         ct.hip_dev = ct.gpu_device_ids[pct.local_rank];
-        rmg::error(hipDeviceReset());
-        rmg::error(hipSetDeviceFlags(hipDeviceScheduleAuto));
+        hipDeviceReset();
+        hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-            rmg::error("HIPBLAS: Handle not created\n");
+            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
 #endif
@@ -604,10 +588,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 gpuSetDevice(ct.gpu_device_ids[next_gpu]);
 #if CUDA_ENABLED
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-                    rmg::error("CUBLAS: Handle not created\n");
+                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
                 if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
-                    rmg::error("CUBLAS: Handle not created\n");
+                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
                 cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[next_gpu]);
                 cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
@@ -615,10 +599,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #if HIP_ENABLED
                 ct.hip_dev = ct.gpu_device_ids[next_gpu];
-                gpuDeviceReset();
-                rmg::error(hipSetDeviceFlags(hipDeviceScheduleAuto));
+                hipDeviceReset();
+                hipSetDeviceFlags(hipDeviceScheduleAuto);
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-                    rmg::error("HIPBLAS: Handle not created\n");
+                    rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
                 }
                 ct.gpublas_handle = ct.hipblas_handle;
 #endif
@@ -632,17 +616,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
 #if CUDA_ENABLED
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
-            rmg::error("CUDA: Cannot get the device\n");
+            rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
         }
         gpuSetDevice(ct.cu_dev);
 #endif
 #if HIP_ENABLED
         // Still need to figure out a way to handle this case
         gpuSetDevice(ct.hip_dev);
-        gpuDeviceReset();
-        gpuSetDeviceFlags(hipDeviceScheduleAuto);
+        hipDeviceReset();
+        hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-            rmg::error("HIPBLAS: Handle not created\n");
+            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
         ct.gpublas_handle = ct.hipblas_handle;
         hipsolverCreate(&ct.hipsolver_handle);
@@ -653,13 +637,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        rmg::error("cusolver initialization failed.\n");
+        rmg_error_handler (__FILE__, __LINE__, "cusolver initialization failed.\n");
     }
     gpuStreamCreateWithFlags(&ct.cusolver_stream, gpuStreamNonBlocking);
     cusolver_status = cusolverDnSetStream(ct.cusolver_handle, ct.cusolver_stream);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        rmg::error("cusolver stream initialization failed.\n");
+        rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
     }
 #endif
 
@@ -677,9 +661,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if SYCL_ENABLED
     //    ct.host_dev = omp_get_initial_device();
     ct.sycl_Q = cl::sycl::queue(sycl::gpu_selector_v, main_sycl_exception_handler, sycl::property_list{sycl::property::queue::in_order()});
-    hpool.sycl_Q = ct.sycl_Q;
     std::string dev_str = ct.sycl_Q.get_device().get_info<sycl::info::device::name>();
-    rmg::printlog("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
+    rmg_printf("\nGPU enabled build using:\n    %s\n", dev_str.c_str());
     for (const auto & p : sycl::platform::get_platforms())
     {
         for (const auto& d: p.get_devices())
@@ -691,28 +674,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 #endif
 
-#if HIP_ENABLED
-    if(ct.num_usable_gpu_devices == 1)
-    {
-        rmg_device_pool = new rmg::dev_allocate(ct.hip_dev, 16384*4096);
-    }
-#endif
-#if CUDA_ENABLED
-    if(ct.num_usable_gpu_devices == 1)
-    {
-        rmg_device_pool = new rmg::dev_allocate(ct.cu_dev, 16384*4096);
-    }
-#endif
-
     // This is placed down here since the IO is not setup yet when provided is obtained above.
     if(provided < ct.mpi_threadlevel) {
 
-        rmg::printlog("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
+        rmg_printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
         MPI_Finalize();
         exit(0);
 
     }
-    rmg::printlog("Thread level %d.\n", provided);
+    rmg_printf("Thread level %d.\n", provided);
     fflush(NULL);
 
     // Allocate storage for trade_images and global sums routines
@@ -743,10 +713,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
-    rmg::init_reduce();
+    GlobalSumsInit();
 
     // Check individual node sizes on all levels for poisson mg solver
-    rmg::mgrid MG(&Rmg_L, Rmg_T, Rmg_G, ct.FG_RATIO, ct.max_zvalence);
+    Mgrid MG(&Rmg_L, Rmg_T);
     int dx[MAX_MG_LEVELS];dx[0] = Rmg_G->get_PX0_GRID(ct.FG_RATIO);
     int dy[MAX_MG_LEVELS];dy[0] = Rmg_G->get_PY0_GRID(ct.FG_RATIO);
     int dz[MAX_MG_LEVELS];dz[0] = Rmg_G->get_PZ0_GRID(ct.FG_RATIO);
@@ -813,7 +783,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         MPI_Allreduce(MPI_IN_PLACE, &minsizez, 1, MPI_INT, MPI_MIN, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, &maxsizez, 1, MPI_INT, MPI_MAX, pct.grid_comm);
 
-        rmg::mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
+        Mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
         ct.mg_offset_level++;
     }
 
@@ -847,23 +817,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     // Set up exchange correlation type
+    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     ik = ControlMap["exchange_correlation_type"];
     if(*ik->Readintval == AUTO_XC) {
         // Type set from pp files
-        Functional::set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
+        F.set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
     }
     else {
         // Type set explicitly in input file
         std::string xc_type = reordered_xc_type[*ik->Readintval];
-        Functional::set_dft_from_name_rmg(xc_type);
+        F.set_dft_from_name_rmg(xc_type);
     }
-    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-#if __LIBXC
-    ct.libxc_version = xc_version_string();
-    ct.libxc_reference  = xc_reference();
-    ct.libxc_reference_doi = xc_reference_doi();
-#endif
-
     F.set_epsg_guard(ct.epsg_guard);
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
     ct.xc_is_meta = F.dft_is_meta_rmg();
@@ -880,18 +844,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         int dimy = Rmg_G->get_PY0_GRID(1);
         int dimz = Rmg_G->get_PZ0_GRID(1);
         F.ke_taur_wf = new double[ct.nspin*dimx*dimy*dimz]();
-        Functional::ke_density = new double[ct.nspin*get_FP0_BASIS()]();
-        Functional::tau_core = new double[ct.nspin*get_FP0_BASIS()]();
-        Functional::tau_atomic = new double[ct.nspin*get_FP0_BASIS()]();
+        F.ke_density = new double[get_FP0_BASIS()]();
+        F.ke_taur = new double[ct.nspin*get_FP0_BASIS()]();
     }
 
     if(ct.wannier90 && ct.BerryPhase)
     {
-        rmg::error("Berry Phase does not support hybrid functional.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
     }
     if(ct.xc_is_hybrid && ct.BerryPhase)
     {
-        rmg::error("Berry Phase does not support hybrid functional.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Berry Phase does not support hybrid functional.\n");
     }
 #if HIP_ENABLED || CUDA_ENABLED
     size_t factor = 2;

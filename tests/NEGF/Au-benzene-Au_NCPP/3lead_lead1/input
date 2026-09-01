@@ -5,16 +5,23 @@ start_mode="Random Start"
 wavefunction_grid ="144 72 72"
 num_processor ="12"
 processor_grid="3 2 2"
-max_nlradius = "6.00000000"
 
 # **** SCF controls ****  
   
 max_scf_steps = "12"
 rms_convergence_criterion = "1e-12"
 
+# **** MD/Relax controls  **** 
+  
+max_md_steps = "20"
+fast_relax_max_force = "1e-3"
+ionic_time_step = "45"
+relax_dynamic_timestep = "true"
+
 # **** Mixing controls **** 
   
 charge_density_mixing = "0.1"
+projector_mixing = "0.1"
 charge_mixing_type = "Pulay"
 charge_pulay_order = "5"
 charge_pulay_scale = "0.5"
@@ -22,7 +29,7 @@ charge_pulay_refresh = "100"
 
 # **** Setup  ****
 
-description = "3lead Au-mo-Au"
+description = "Short description of the input file"
 exchange_correlation_type = "LDA"
 bravais_lattice_type = "Orthorhombic Primitive"
 system_charge = "0.0"
@@ -31,6 +38,7 @@ system_charge = "0.0"
 
 occupations_type = "Fermi Dirac"
 occupation_electron_temperature_eV = "0.1"
+occupation_number_mixing = "0.3"
 
 # ****  Multigrid **** 
 
@@ -38,6 +46,14 @@ kohn_sham_mg_levels  = "2"
 poisson_mg_levels    = "2"
 kohn_sham_time_step  = "1.0"
 poisson_time_step    = "1.35"
+
+#  **** IO control  ****
+
+write_eigvals_period = "10"
+md_steps_til_write_waves = "10"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+
 
 # **** Pseudopotential **** 
 pseudopotential = "
@@ -58,6 +74,7 @@ atomic_coordinate_type = "Absolute"
 a_length="46.2378372454" b_length="23.1189186227" c_length="23.1189186227"
 alpha="0.0" beta="0.0" gamma="0.0"
 
+max_nlradius = "8.00000000"
 
 
  #  atomic coordinates  
@@ -192,5 +209,14 @@ chargedensity_compass = "0 48 96 0 72 0 72"
 kpoints_per_processor="1"
 potential_grid_refinement="1"
 calculation_mode="Quench Electrons"
+do_sort_wavefunctions="false"
 number_of_kpoints="1"
 kpoints= "0.0  0.0  0.0   1.0 "
+do_spin_polarized="false"
+kohn_sham_pre_smoothing="3"
+kohn_sham_post_smoothing="3"
+poisson_pre_smoothing="2"
+poisson_post_smoothing="2"
+do_write_waves_to_file="true"
+do_movable_orbital_centers="false"
+movable_orbital_centers_steps="1"

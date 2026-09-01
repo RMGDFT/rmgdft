@@ -28,10 +28,10 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "blas.h"
@@ -70,13 +70,13 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
     {
         DiagTimer = new RmgTimer("4-Diagonalization: lapack folded");
         folded_call_count++;
-        rmg::printlog("\nDiagonalization using folded lapack for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count);
+        rmg_printf("\nDiagonalization using folded lapack for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count);
     }
     else
     {
         DiagTimer = new RmgTimer("4-Diagonalization: lapack");
         call_count++;
-        rmg::printlog("\nDiagonalization using lapack for step=%d  count=%d\n\n",ct.scf_steps, call_count);
+        rmg_printf("\nDiagonalization using lapack for step=%d  count=%d\n\n",ct.scf_steps, call_count);
     }
 
     // Lapack is not parallel across MPI procs so only have the local master proc on a node perform
@@ -135,8 +135,8 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         delete(RT1);
 
         if (info) {
-            rmg::printlog ("\n Lapack eigensolver failed, info is %d", info);
-            rmg::error("Lapack eigensolver failed");
+            rmg_printf ("\n Lapack eigensolver failed, info is %d", info);
+            rmg_error_handler (__FILE__, __LINE__, "Lapack eigensolver failed");
         }
 
         // Reset omp_num_threads

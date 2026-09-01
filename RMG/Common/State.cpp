@@ -38,7 +38,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include <complex>
 
 
@@ -91,7 +91,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             sum1 = sum1 + std::norm(tpsi[idx]);
         }
 
-        sum2 = vel * rmg::sum_all<double>(sum1, this->Kptr->grid_comm);
+        sum2 = vel * RmgSumAll<double>(sum1, this->Kptr->grid_comm);
         sum2 = sqrt(1.0 / sum2);
 
         StateType tscale(sum2);
@@ -128,7 +128,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
                 
                 nidx++;
                 if (nidx >= num_nonloc_ions)
-                    rmg::error("Could not find matching entry in nonloc_ions_list");
+                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list");
             
             } while (nonloc_ions_list[nidx] != oion);
 
@@ -169,13 +169,13 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             sumpsi += std::norm(tpsi[idx]);
         }
 
-        sum = rmg::sum_all<double>(vel * sumpsi + sumbeta, this->Kptr->grid_comm);
+        sum = RmgSumAll<double>(vel * sumpsi + sumbeta, this->Kptr->grid_comm);
         sum = 1.0 / sum;
 
         if (sum < 0.0)
         {
-            rmg::printlog ("the %dth state is wrong\n", istate);
-            rmg::error("<psi|S|psi> cann't be negative");
+            rmg_printf ("the %dth state is wrong\n", istate);
+            rmg_error_handler (__FILE__, __LINE__, "<psi|S|psi> cann't be negative");
         }
 
         t1 = sqrt (sum);

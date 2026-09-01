@@ -25,16 +25,17 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
+#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
 #include "blacs.h"
 #include "RmgParallelFft.h"
@@ -57,7 +58,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
     int ictxt=desca[1], mb=desca[4], nb=desca[5], mxllda = desca[8];
     int mycol, myrow, nprow, npcol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    rmg::grid *G = kptr->G;
+    BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
     int num_states = kptr->nstates - tddft_start_state;
@@ -71,6 +72,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
 
     std::complex<double> *block_matrix;
 
+    char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a;
@@ -87,7 +89,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
     std::complex<double> *block_matrix_z = block_matrix_y + num_states * nb;
 
     if(retval1 != MPI_SUCCESS) {
-        rmg::error("Memory allocation failure in HmatrixUpdate");
+        rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
     }
 
 
@@ -137,6 +139,7 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
         length_block = num_states - ib * nb;
         this_block_size = std::min(nb, length_block);
         int st_start = ib *nb + tddft_start_state;
+        int st_end   = st_start + this_block_size;
 
         for (int st1 = 0; st1 < this_block_size; st1++)
         {
@@ -165,23 +168,23 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
 
             if(ct.noncoll)
             {
-                rmg::printlog("\nAAAAAA\n"); 
+                rmg_printf("\nAAAAAA\n"); 
                 exit(0);
             }
 
         }
 
-        rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_x, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_x, this_block_size);
-        rmg::block_allreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_x, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
-        rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_y, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_y, this_block_size);
-        rmg::block_allreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_y, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
-        rmg::gemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev,
+        RmgGemm(trans_a, trans_n, this_block_size, num_states,  pbasis_noncol, alpha, psi_z, pbasis_noncol, psi_dev,
                 pbasis_noncol, beta, block_matrix_z, this_block_size);
-        rmg::block_allreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
+        BlockAllreduce((double *)block_matrix_z, (size_t)this_block_size * (size_t)num_states * (size_t)factor , pct.grid_comm);
 
         //block_matrix to distHij;
         if(myrow == ib%nprow)
@@ -233,18 +236,18 @@ void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_
     }
 
     delete [] block_matrix;
-//  rmg::printlog("kvec %f", kptr->kp.kvec[0] );
+//  rmg_printf("kvec %f", kptr->kp.kvec[0] );
 //  for(int i = 0; i < 8; i++)
 //  {
-//      rmg::printlog("\n aaa ");
+//      rmg_printf("\n aaa ");
 //      for(int j = 0; j < 8; j++)
-//          rmg::printlog(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
+//          rmg_printf(" %8.3e ", std::real(kptr->Pxmatrix_cpu[i *8 + j]));
 //  }
 //  for(int i = 0; i < 8; i++)
 //  {
-//      rmg::printlog("\n bbb ");
+//      rmg_printf("\n bbb ");
 //      for(int j = 0; j < 8; j++)
-//          rmg::printlog(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
+//          rmg_printf(" %8.3e ", std::imag(kptr->Pxmatrix_cpu[i *8 + j]));
 //  }
 
 }

@@ -28,16 +28,15 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
-#include "blas_driver.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -59,10 +58,10 @@ static int FS_RANK;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrum<double> (rmg::grid *, int, double *, int, double *, int, double *, double *, double *, double *, int, int *, int, int);
+template int FoldedSpectrum<double> (BaseGrid *, int, double *, int, double *, int, double *, double *, double *, double *, int, int *, int, int);
 
 template <typename KpointType>
-int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
+int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
 		double *eigs, double *work, int lwork, int *iwork, int liwork, int driver)
 {
 
@@ -94,7 +93,7 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
     double *Vdiag, *tarr;
     gpuMallocManaged((void **)&Vdiag, n * sizeof(double));
@@ -106,7 +105,7 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
     int its=7;
     gpuMemcpy(Asave, A, n*n*sizeof(double), gpuMemcpyDefault);
-    rmg::sync_device();
+    DeviceSynchronize();
     FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
     delete(RT2);
 
@@ -117,7 +116,7 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
     GpuFill((double *)V, n*n, 0.0);
     double *n_eigs = new double[n]();
 
-    rmg::sync_device();
+    DeviceSynchronize();
 
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
@@ -153,7 +152,7 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
 
 #endif
 
-    rmg::sync_device();
+    DeviceSynchronize();
 
 #if CUDA_ENABLED || HIP_ENABLED
     DsyevjDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
@@ -163,13 +162,15 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
 
     // Store the eigen vector from the submatrix
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
     GpuFill(Vdiag, n, 1.0);
     GpuNegate(G, n_win, Vdiag, 1, n_win);
     int i1=0, ione = 1;
     for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
-    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n));
-    rmg::sync_device();
+    gpublasStatus_t custat;
+    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
+    DeviceSynchronize();
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem executing gpublasDdgmm.");
 #else
     // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {
@@ -203,13 +204,13 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
 
     // Apply folded spectrum to this PE's range of eigenvectors
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
 #endif
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     if(ct.folded_spectrum_iterations)
         FoldedSpectrumIterator(A, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
 #endif
     delete(RT2);
 
@@ -229,16 +230,16 @@ int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
 #endif
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, Asave, Bsave, driver, fs_comm);
 
 #if CUDA_ENABLED || HIP_ENABLED
-    rmg::sync_device();
+    DeviceSynchronize();
     gpuMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), gpuMemcpyDefault);
     //memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
-    rmg::sync_device();
+    DeviceSynchronize();
 #else
     memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
 #endif

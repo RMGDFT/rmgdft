@@ -1,4 +1,3 @@
-#pragma once
 #ifndef LBFGS_HPP
 #define LBFGS_HPP
 

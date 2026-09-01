@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -12,14 +11,15 @@
 #include "packfuncs.h"
 #include "blas.h"
 #include "RmgParallelFft.h"
-#include "rmg_error.h"
-
 
 float *vh_init;
 
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target)
 {
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
 
     double *rho_tot = new double[FP0_BASIS];
@@ -53,12 +53,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     }
     else
     {
-        rmg::error("Multigrid poission solver is currently disabled.");
 
-#if 0
-    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
-    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
-    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
         size_t coarse_size = FP0_BASIS;
 //        if(ct.poi_parm.levels > 0) coarse_size /= 8;
         if(ct.poi_parm.levels > 1) coarse_size /= 8;
@@ -76,42 +71,12 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
                  ct.poi_parm.gl_step, ct.poi_parm.sb_step, ct.boundaryflag, Rmg_G->get_default_FG_RATIO(), vh_init, ct.verbose);
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
-        rmg::pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
+        CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
         delete(RT1);
-#endif
     }
+
     delete [] rho_tot;
     if(Rmg_G->default_FG_RATIO > 1) 
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
     return residual;
 }
-
-
-void VhPfft(double *rho_tot, double *rhoc, double *vh)
-{
-
-    int pbasis = fine_pwaves->pbasis;
-    int size = pbasis;
-    std::complex<double> ZERO_t(0.0, 0.0);
-    std::complex<double> *crho = new std::complex<double>[size];
-
-
-    for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i], 0.0);
-    fine_pwaves->FftForward(crho, crho);
-
-    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-    double tpiba2 = tpiba * tpiba;
-    for(int ig=0;ig < pbasis;ig++) {
-        if((fine_pwaves->gmags[ig] > 1.0e-6) && fine_pwaves->gmask[ig]) 
-            crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
-        else
-            crho[ig] = ZERO_t;
-    }
-
-    fine_pwaves->FftInverse(crho, crho);
-    for(int i = 0;i < pbasis;i++) vh[i] = std::real(crho[i])/(double)fine_pwaves->global_basis * 4.0 * PI;
-
-    delete [] crho;
-
-}
-

@@ -1,4 +1,3 @@
-#pragma once
 //#include "typedefs.h"
 //#define eldyn_ eldyn
 void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, double *rho_matrix);
@@ -40,59 +39,39 @@ FILE *my_fopen_increment(char *name);
 template <typename KpointType>
 void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l);
 
-template <typename OrbitalType, typename MatrixType> 
-    void RmgTddft ( spinobj<double> &vxc,
+template <typename OrbitalType> 
+void RmgTddft ( spinobj<double> &vxc,
                    fgobj<double> &vh,
                    fgobj<double> &vnuc,
                    spinobj<double> &rho,
                    fgobj<double> &rhocore,
                    fgobj<double> &rhoc,Kpoint<OrbitalType> **Kptr);
 
-template <typename OrbitalType> 
-    void VecPHmatrix (Kpoint<OrbitalType> *kptr, double *efield_tddft, int *desca, int tddft_start_state, int num_states);
-template <typename OrbitalType> void CurrentNlpp (Kpoint<OrbitalType> *kptr, int *desca, int tddft_start_state, int num_states);
+void VecPHmatrix (Kpoint<std::complex<double>> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+void VecPHmatrix (Kpoint<double> *kptr, double *efield_tddft, int *desca, int tddft_start_state);
+void CurrentNlpp (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
+void CurrentNlpp (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 void CurrentOperator (Kpoint<std::complex<double>> *kptr, int *desca, int tddft_start_state);
 void CurrentOperator (Kpoint<double> *kptr, int *desca, int tddft_start_state);
 
-template <typename KpointType, typename CalType, typename MatrixType>
-void HmatrixUpdate (Kpoint<KpointType> *kptr, wfobj<double> vtot_psi, wf_spinobj<double> vxc_psi, MatrixType *Aij, int tddft_start_state, int num_states, int *desca);
+template <typename KpointType>
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, int tddft_start_state);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, double *vxc_psi,  KpointType *Aij, KpointType *Sij);
-void ReadData_rmgtddft (const char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, int n2_C,int numst);
-void WriteData_rmgtddft (const char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,int n2_C,int numst);
+void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int *tot_steps, int n2, int n2_C,
+        std::vector<double> &Eterms, double *Hcore_tddft, int numst);
+void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *H0, double *H1,int tot_steps, int n2,int n2_C,
+        std::vector<double> &Eterms, double *Hcore_tddft, int numst);
 void ReadData_rmgtddft_on (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int *tot_steps, int n2);
 void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, double *H0, double *H1,int tot_steps, int n2);
 
-template <typename OrbitalType, typename CalType, typename MatrixType> 
-void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, spinobj<double> &rho, MatrixType *rho_matrix, int numst, int tddft_start_state, Scalapack &);
-
-template <typename MatrixType>
-    void MatDiagSet (MatrixType *mat,  std::vector<double> diag_elem, double beta, int numst, Scalapack &SP);
-template <typename MatrixType>
-    void MatDiagGet (MatrixType *mat,  std::vector<double> &diag_elem, int numst, Scalapack &SP);
+template <typename OrbitalType> 
+void GetNewRho_rmgtddft (Kpoint<OrbitalType> *kptr, double *rho, OrbitalType *rho_matrix, int numst, int tddft_start_state);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
 void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);
 void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int ldim);
-template <typename OrbitalType> void TddftEnergyInit ( spinobj<double> &vxc,
-        fgobj<double> &vh, fgobj<double> &vnuc,
-        spinobj<double> &rho_ground,
-        fgobj<double> &rhocore, fgobj<double> &rhoc,
-        Kpoint<OrbitalType> **Kptr,
-        Scalapack &SP, int Mdim, int Ndim, std::vector<double> &Eterms);
-template <typename OrbitalType, typename MatrixType> void TddftEnergy (fgobj<double> &vh, spinobj<double> &rho, fgobj<double> &rhoc,
-        Kpoint<OrbitalType> **Kptr, int Mdim, int Ndim, std::vector<double> &Eterms, MPI_Comm mat_comm);
-
-
-namespace rmg
-{
-    template <typename OrbitalType>
-    void rotate_sint(Kpoint<OrbitalType> *Kptr,
-                     OrbitalType *sint,
-                     OrbitalType *rho_matrix);
-}
-

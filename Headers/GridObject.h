@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2024, Emil Briggs
@@ -75,9 +74,6 @@
          spinobj() vxc;
          spinobj() vxc(ptr);
 
-     We also have a wf_spinobj which is the same as spinobj but defined on the
-     coarse grid.
-
      Wavefunctions are defined on the coarse grid with 1 or 2 components.
      1 for non-spin and spin polarized
      2 for spin orbit
@@ -92,13 +88,12 @@
 
 #include <complex>
 #include <span>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 
 template <typename T> class fgobj;
 template <typename T> class wfobj;
 template <typename T> class spinobj;
-template <typename T> class wf_spinobj;
 
 template <typename T> class GridObject {
 
@@ -219,7 +214,7 @@ protected:
    int density_;
    int factor = 1;
    T *data_;
-   rmg::grid *G;
+   BaseGrid *G;
    Lattice *L;
 
    void allocate(int components)
@@ -274,16 +269,6 @@ void increment(const spinobj<T>& c) {
   }
 }
 
-void increment(const wf_spinobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < this->factor*this->pbasis; i++) {
-      data_[i] += c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
 void decrement(const GridObject<T>& c) {
   if(this->pbasis == c.pbasis && this->factor == c.factor) {
     for (int i = 0; i < factor*this->pbasis; i++) {
@@ -315,16 +300,6 @@ void decrement(const wfobj<T>& c) {
 }
 
 void decrement(const spinobj<T>& c) {
-  if(this->pbasis == c.pbasis && this->factor == c.factor) {
-    for (int i = 0; i < factor*this->pbasis; i++) {
-      data_[i] -= c.data_[i];
-    }
-  } else {
-    throw "Grid objects are not the same size!";
-  }
-}
-
-void decrement(const wf_spinobj<T>& c) {
   if(this->pbasis == c.pbasis && this->factor == c.factor) {
     for (int i = 0; i < factor*this->pbasis; i++) {
       data_[i] -= c.data_[i];
@@ -429,49 +404,6 @@ public:
     spinobj(void);
     spinobj(T *data_ptr);
     ~spinobj(void);
-    void get_oppo(void);
-    std::span<T> up;
-    std::span<T> dw;
-    std::span<T> c0;
-    std::span<T> cx;
-    std::span<T> cy;
-    std::span<T> cz;
-};
-
-template <typename T> class wf_spinobj : public GridObject<T>
-{
-  friend wf_spinobj operator+(wf_spinobj a, const wf_spinobj& b) {
-    a += b;
-    return a;
-  }
-  friend wf_spinobj& operator+=(wf_spinobj& a, const wf_spinobj& b) {
-    a.increment(b);
-    return a;
-  }
-  friend wf_spinobj operator-(wf_spinobj a, const wf_spinobj& b) {
-    a -= b;
-    return a;
-  }
-  friend wf_spinobj& operator-=(wf_spinobj& a, const wf_spinobj& b) {
-    a.decrement(b);
-    return a;
-  }
-  friend wf_spinobj operator*(const T &b, wf_spinobj a) {
-    a.multiply(b);
-    return a;
-  }
-  friend wf_spinobj operator*(wf_spinobj a, const T &b) {
-    a *= b;
-    return a;
-  }
-  friend wf_spinobj& operator*=(wf_spinobj& a, const T &b) {
-    a.multiply(b);
-    return a;
-  }
-public:
-    wf_spinobj(void);
-    wf_spinobj(T *data_ptr);
-    ~wf_spinobj(void);
     void get_oppo(void);
     std::span<T> up;
     std::span<T> dw;

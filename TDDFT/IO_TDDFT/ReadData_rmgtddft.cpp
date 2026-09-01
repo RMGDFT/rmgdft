@@ -40,10 +40,10 @@
 #include "Kpoint.h"
 #include "transition.h"
 
-void ReadData_rmgtddft (const char *filename, double * vh, double * vxc, 
+void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix,  
         double *Hmatrix_m1, double *Hmatrix_0, int *tot_steps, int n2, int n2_C,
-        int numst)
+        std::vector<double> &Eterms, double *Hcore_tddft, int numst)
 {
     int fhand, fgrid_size;
 
@@ -52,22 +52,27 @@ void ReadData_rmgtddft (const char *filename, double * vh, double * vxc,
     fhand = open(filename, O_RDWR, amode);
 
    if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", filename);
-        rmg::error("Terminating.");
+        rmg_printf("Can't open restart file %s", filename);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
 
-    int n_rho = ct.noncoll_factor * ct.noncoll_factor;
-
     fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-    rmg::readfile (fhand, vh, fgrid_size * sizeof(double));
-    rmg::readfile (fhand, vxc, n_rho*fgrid_size * sizeof(double));
-    rmg::readfile (fhand, vh_corr, fgrid_size * sizeof(double));
-    rmg::readfile (fhand, Pn0, 2*n2 * sizeof(double));
-    rmg::readfile (fhand, Hmatrix, n2_C * sizeof(double));
-    rmg::readfile (fhand, Hmatrix_m1, n2_C * sizeof(double));
-    rmg::readfile (fhand, Hmatrix_0, n2_C * sizeof(double));
-    rmg::readfile (fhand, tot_steps, sizeof(int));
+    read (fhand, vh, fgrid_size * sizeof(double));
+    read (fhand, vxc, fgrid_size * sizeof(double));
+    read (fhand, vh_corr, fgrid_size * sizeof(double));
+    read (fhand, Pn0, 2*n2 * sizeof(double));
+    read (fhand, Hmatrix, n2_C * sizeof(double));
+    read (fhand, Hmatrix_m1, n2_C * sizeof(double));
+    read (fhand, Hmatrix_0, n2_C * sizeof(double));
+    read (fhand, tot_steps, sizeof(int));
+    read (fhand, Eterms.data(), Eterms.size() * sizeof(double) );
+    size_t size = read (fhand, Hcore_tddft, numst * numst * sizeof(double));
+
+
+    if(size != numst * numst * sizeof(double)) 
+        rmg_error_handler(__FILE__, __LINE__, "endof file in ReadData_rmgtddft ");
+
     close(fhand);
 
-}                               /* end read_data */
+}                               /* end write_data */

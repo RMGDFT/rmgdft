@@ -1,4 +1,3 @@
-#pragma once
 #ifndef CUTRANSPOSE_H_
 #define CUTRANSPOSE_H_
 

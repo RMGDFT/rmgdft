@@ -46,7 +46,7 @@ void read_orbital (STATE * states)
     MPI_Barrier(pct.img_comm);
 
 /*
-    rmg::printlog ("state_begin, state_end %d %d \n", ct.state_begin, ct.state_end);
+    rmg_printf ("state_begin, state_end %d %d \n", ct.state_begin, ct.state_end);
 */
     
 
@@ -67,8 +67,8 @@ void read_orbital (STATE * states)
                     my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
                     if (fhand < 0)
                     {
-                        rmg::printlog ("\n %s, st1 = %d %d", newname, st1, st);
-                        rmg::error(" Unable to open file ");
+                        rmg_printf ("\n %s, st1 = %d %d", newname, st1, st);
+                        rmg_error_handler (__FILE__, __LINE__, " Unable to open file ");
                     }
 
                     idx = states[st].size * (int) sizeof (double);
@@ -81,8 +81,8 @@ void read_orbital (STATE * states)
                         nbytes = read (fhand, states[st].psiR, idx);
                         if (nbytes != idx)
                         {
-                            rmg::printlog ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
-                            rmg::error("Unexpected end of file orbit");
+                            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
+                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
                         }
 
                         nbytes = read (fhand, &ixmin, sizeof (int));
@@ -91,9 +91,9 @@ void read_orbital (STATE * states)
                         nbytes = read (fhand, &iymax, sizeof (int));
                         if (nbytes != sizeof (int))
                         {
-                            rmg::printlog ("\n read %d is different from %d for state %d", (int) nbytes,
+                            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                                     (int) sizeof (int), st);
-                            rmg::error("Unexpected end of file orbit");
+                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
                         }
 
                         states[st].ixmin_old = ixmin;
@@ -102,26 +102,26 @@ void read_orbital (STATE * states)
                         states[st].iymax_old = iymax;
 /*                   
                         if(idx0 == 1) 
-                        rmg::printlog (" state_pos1  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
+                        rmg_printf (" state_pos1  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
                         states[st].ixmax_old, states[st].iymin_old, states[st].iymax_old); 
 
                         if(idx0 == 0) 
-                        rmg::printlog (" state_pos0  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
+                        rmg_printf (" state_pos0  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
                         states[st].ixmax_old, states[st].iymin_old, states[st].iymax_old); 
 */                   
                     }
                     else /* Satisfies down and up probes */ 
                     {
 /*
-                    rmg::printlog ("reading orbitals for 3rd/4th probe, idx0 =  %d %s \n", idx0, newname);
+                    rmg_printf ("reading orbitals for 3rd/4th probe, idx0 =  %d %s \n", idx0, newname);
 */
                         my_malloc_init(array_tmp, idx, double);
 
                         nbytes = read (fhand, array_tmp, idx);
                         if (nbytes != idx)
                         {
-                            rmg::printlog ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
-                            rmg::error("Unexpected end of file orbit");
+                            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes, idx, st);
+                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
                         }
 
                         incx = states[st].orbit_nz * states[st].orbit_ny;
@@ -136,9 +136,9 @@ void read_orbital (STATE * states)
                                     idx2= iz + ix * states[st].orbit_nz + iy * incy; /* Check */ 
                                     states[st].psiR[idx] = array_tmp[idx2];
 /*
-                       if(pct.gridpe ==0) rmg::printlog (" urgent  %d %d %d %f \n", ix, iy, iz, 
+                       if(pct.gridpe ==0) rmg_printf (" urgent  %d %d %d %f \n", ix, iy, iz, 
                                   states[st].psiR[idx]); 
-                       rmg::printlog (" urgent  %d %d %d %f \n", ix, iy, iz, states[st].psiR[idx]); 
+                       rmg_printf (" urgent  %d %d %d %f \n", ix, iy, iz, states[st].psiR[idx]); 
 */
                                 }
                             }
@@ -151,9 +151,9 @@ void read_orbital (STATE * states)
                         nbytes = read (fhand, &iymax, sizeof (int));
                         if (nbytes != sizeof (int))
                         {
-                            rmg::printlog ("\n read %d is different from %d for state %d", (int) nbytes,
+                            rmg_printf ("\n read %d is different from %d for state %d", (int) nbytes,
                                     (int) sizeof (int), st);
-                            rmg::error("Unexpected end of file orbit");
+                            rmg_error_handler (__FILE__, __LINE__, "Unexpected end of file orbit");
                         }
 
                         states[st].ixmin_old = iymin;
@@ -161,7 +161,7 @@ void read_orbital (STATE * states)
                         states[st].iymin_old = ixmin;
                         states[st].iymax_old = ixmax;
 /*                        
-                        rmg::printlog (" state_pos3  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
+                        rmg_printf (" state_pos3  %d %d %d %d %d %d \n", st, idx0, states[st].ixmin_old, 
                         states[st].ixmax_old, states[st].iymin_old, states[st].iymax_old); 
 */
                     }   /* if statement ends */

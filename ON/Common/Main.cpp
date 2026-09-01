@@ -59,7 +59,7 @@
 #include "prototypes_on.h"
 #include "Kbpsi.h"
 #include "rmgthreads.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -91,20 +91,44 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
+KBPSI Kbpsi_str;
+unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
+double *projectors, *projectors_x, *projectors_y, *projectors_z;
 
-std::vector<int> num_nonlocal_ion;
-std::vector<int> ionidx_allproc;
+int *num_nonlocal_ion;
+double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
+int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
+int *send_to, *recv_from, num_sendrecv_loop;
+int *send_to1, *recv_from1, num_sendrecv_loop1;
+int *ionidx_allproc;
 int max_ion_nonlocal;
+STATE *states_tem;
+int *state_to_proc;
+char *state_overlap_or_not;
 STATE *states;
+STATE *states1;
+ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
 double *rho_oppo, *rho_tot;
 int MXLLDA, MXLCOL;
+double *sg_twovpsi, *sg_res;
 double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
+double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
+ORBIT_ORBIT_OVERLAP *orbit_overlap_region;
+std::vector<ORBITAL_PAIR> OrbitalPairs;
+char *vloc_state_overlap_or_not;
+double *orbit_tem;
+double *sg_orbit;
+double *sg_orbit_res;
 int *state_begin;
 int *state_end;
-double *vxc_old, *vh_old, *vh_corr;
+double *vtot_global;
+double *work_memory;
+double *wave_global;
+double *rho_global;
+double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z;
 
 
 int mpi_nprocs;
@@ -122,6 +146,10 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
+#if ELEMENTAL_LIBS
+#include "El.hpp"
+using namespace El;
+#endif
 using namespace std;
 
 MPI_Comm COMM_PEX, COMM_PEY, COMM_PEZ, COMM_3D;
@@ -160,22 +188,60 @@ int main(int argc, char **argv)
     {
         InitIo(argc, argv, ControlMap);
         double A[1], B[1],C[1];
-        rmg::gemm("N", "N", 1, 1, 1, 0.5, A, 1, B, 1, 0.0, C, 1);
+        RmgGemm("N", "N", 1, 1, 1, 0.5, A, 1, B, 1, 0.0, C, 1);
 
+
+        //  initialize for ELEMENTAl lib
+#if ELEMENTAL_LIBS
+        Initialize( argc, argv );
+#endif
 
         ReadBranchON(ct.cfile, ct, ControlMap);
         WriteXyz(ct.cfile);
         states = init_states();
-        ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm);
+        allocate_states();
+        get_state_to_proc(states);
+        perm_ion_index = new unsigned int[ct.num_ions + 1];
+        for(int i = 0; i < ct.num_ions + 1; i++) perm_ion_index[i] = i;
+
+        perm_state_index = new unsigned int[ct.num_states];
+        rev_perm_state_index = new unsigned int[ct.num_states];
+
+        switch(ct.runflag)
+        {
+            //case 1:
+            //    if(pct.gridpe == 0) 
+            //    {
+            //        ReadPermInfo(ct.infile, perm_ion_index);
+            //        WritePermInfo(ct.outfile, perm_ion_index);
+            //    }
+            //    MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+            //    break;
+            default:
+                if(pct.gridpe == 0) 
+                {
+                    if(ct.bandwidthreduction)
+                        BandwidthReduction(ct.num_ions, Atoms, perm_ion_index);
+                    WritePermInfo(ct.outfile, perm_ion_index);
+                }
+                MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+                PermAtoms(ct.num_ions, Atoms, perm_ion_index);
+                break;
+        }
+        ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm, perm_ion_index);
+        GetPermStateIndex(ct.num_ions, Atoms, perm_ion_index, perm_state_index, rev_perm_state_index);
 
         MPI_Barrier(pct.img_comm);
+
 
         RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
 
         init_dimension(&MXLLDA, &MXLCOL);
+        init_pe_on();
+
 
         if (pct.gridpe == 0)
-            rmg::printlog("\n  MXLLDA: %d ", MXLLDA);
+            rmg_printf("\n  MXLLDA: %d ", MXLLDA);
 
         /* allocate memory for matrixs  */
         allocate_matrix();
@@ -186,9 +252,12 @@ int main(int argc, char **argv)
         vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
         vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
+        vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
+        vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
+        vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)]();
 
 
-        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, vh_old, vxc_old, ControlMap);
+        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
         MPI_Barrier(pct.img_comm);
 
@@ -201,13 +270,18 @@ int main(int argc, char **argv)
             case MD_QUENCH:            /* Quench the electrons */
             case BAND_STRUCTURE:
 
-                quench(states, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
             case TDDFT:
+                if(ct.LocalizedOrbitalLayout != LO_projection)
+                {   
+                    throw RmgFatalException() << " TDDFT only works with LO_Projection in "
+                        << __FILE__ << " at line " << __LINE__ << "\n";
+                }
 
                 if(!ct.restart_tddft) 
                 {
-                    quench(states, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                    quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                     write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
 
                 }
@@ -245,7 +319,7 @@ int main(int argc, char **argv)
 
 
             default:
-                rmg::printlog("\n undifined MD Method");
+                rmg_printf("\n undifined MD Method");
                 exit(0);
         }
 
@@ -256,9 +330,32 @@ int main(int argc, char **argv)
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
 
-        RmgTimer *RTO = new RmgTimer("WriteOrbitals");
-        LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
-        delete RTO;
+        if(ct.LocalizedOrbitalLayout == LO_projection)
+        {
+            RmgTimer *RTO = new RmgTimer("WriteOrbitals");
+            LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+            if(ct.num_ions == 1)
+            {
+                int pbasis = Rmg_G->get_P0_BASIS(1);
+                int num_orb = LocalOrbital->num_tot;
+                if(num_orb != LocalOrbital->num_thispe)
+                {
+                    rmg_printf("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
+                    exit(0);
+                }
+                double *Cij_glob = new double[num_orb * num_orb];
+                mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+
+                double one = 1.0, zero = 0.0;
+                dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_cpu, &pbasis, 
+                        Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_cpu, &pbasis);
+
+                for(int idx = 0; idx < num_orb * pbasis; idx++) 
+                    LocalOrbital->storage_cpu[idx] = H_LocalOrbital->storage_cpu[idx];
+                LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+            }
+            delete RTO;
+        }
 
         // test conditions
         check_tests();
@@ -286,7 +383,7 @@ int main(int argc, char **argv)
                 WriteQmcpackRestart(fname);
             }
 #else
-            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
 
         }
@@ -300,10 +397,25 @@ int main(int argc, char **argv)
             int rank;
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);
             std::string fname(ct.outfile);
-            //  double *Cij_glob = new double[num_orb * num_orb];
-            //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+          //  double *Cij_glob = new double[num_orb * num_orb];
+          //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
 
             WriteCij(fname, zz_dis);
+
+           // if(pct.gridpe == 0)
+            //{
+             //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
+              //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+               // if (fhand < 0) {
+                //    rmg_printf("Can't open restart file %s", cijname.c_str());
+                 //   rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+              //  }
+               // 
+               // size_t wsize = ct.num_states * ct.num_states * sizeof(double);
+               // write (fhand, Cij_glob, wsize);
+               // close(fhand);
+               // fflush(NULL);
+          //  }
 
             MPI_Barrier(MPI_COMM_WORLD);
             if(rank == 0)
@@ -311,7 +423,7 @@ int main(int argc, char **argv)
                 WriteQmcpackRestartLocalized(fname);
             }
 #else
-            rmg::printlog ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
 
         }
@@ -353,7 +465,7 @@ int main(int argc, char **argv)
     RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    RmgTerminateThreads();
     MPI_Finalize();
+    RmgTerminateThreads();
 
 }

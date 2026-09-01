@@ -1,13 +1,9 @@
-#pragma once
 #ifndef RMG_ION_H
 #define RMG_ION_H 1
 
 #include <map>
 #include "species.h"
 #include "const.h"
-
-void to_cartesian (double crystal[], double cartesian[]);
-void to_crystal (double crystal[], double cartesian[]);
 
 // This structure holds information about a separable q-function component which is
 // required to generate the augmentation charges when ultrasoft pseudopotentials are used.
@@ -160,10 +156,6 @@ public:
 
     /* Forces on the ion */
     double force[4][3];
-    double saved_force[4][3];
-
-    // Average force over an interval
-    double avg_force[3];
 
     /* Current velocity of the ion */
     double velocity[3];
@@ -251,133 +243,6 @@ public:
     std::complex<double> *qqq_so=NULL;
 
 };
-
-namespace rmg
-{
-    class ions
-    {
-        public:
-           size_t force_avg_counter;
-           std::vector<ION> &Atoms; 
-           ions(std::vector<ION>& v) : Atoms(v) {}
-           void rotate_forces(void)
-           {
-               for (auto& Atom : Atoms)
-               {
-                   Atom.RotateForces();
-               }
-           }
-
-           void save_forces(void)
-           {
-               for (auto& Atom : Atoms)
-               {
-                   for(int i=0;i < 4;i++)
-                   {
-                       Atom.saved_force[i][0] = Atom.force[i][0];
-                       Atom.saved_force[i][1] = Atom.force[i][1];
-                       Atom.saved_force[i][2] = Atom.force[i][2];
-                   }
-               }
-           }
-
-           void restore_forces(void)
-           {
-               for (auto& Atom : Atoms)
-               {
-                   for(int i=0;i < 4;i++)
-                   {
-                       Atom.force[i][0] = Atom.saved_force[i][0];
-                       Atom.force[i][1] = Atom.saved_force[i][1];
-                       Atom.force[i][2] = Atom.saved_force[i][2];
-                   }
-               }
-           }
-
-           void zero_forces(void)
-           {
-               for (auto& Atom : Atoms)
-               {       
-                   if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-                   {
-                       Atom.ZeroForces();
-                   }   
-               }       
-           }
-
-           void zero_avg_forces(void)
-           {
-               force_avg_counter = 0;
-               for (auto& Atom : Atoms)
-               {       
-                   Atom.avg_force[0] = 0.0;
-                   Atom.avg_force[1] = 0.0;
-                   Atom.avg_force[2] = 0.0;
-               }       
-           }
-
-           void update_avg_forces(int tddft_step, int total_tddft_steps)
-           {
-               double iweight;
-               // Trapezoidal rule for averaging rho and P0
-               iweight = 1.0;
-               if((tddft_step == 0) || (tddft_step == (total_tddft_steps - 1))) iweight = 0.5;
-
-               for (auto& Atom : Atoms)
-               {       
-                   Atom.avg_force[0] = Atom.avg_force[0] + iweight*Atom.force[0][0];
-                   Atom.avg_force[1] = Atom.avg_force[1] + iweight*Atom.force[0][1];
-                   Atom.avg_force[2] = Atom.avg_force[2] + iweight*Atom.force[0][2];
-               }
-           }
-
-           void finalize_avg_forces(int total_tddft_steps)
-           {
-               double rscale = 1.0 / (double)(total_tddft_steps-1);
-               for (auto& Atom : Atoms)
-               {       
-                   Atom.avg_force[0] *= rscale; 
-                   Atom.avg_force[1] *= rscale; 
-                   Atom.avg_force[2] *= rscale; 
-               }
-           }
-
-           void zero_velocities(void)
-           {
-               for (auto& Atom : Atoms)
-               {       
-                   if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
-                   {
-                       Atom.ZeroVelocity();
-                   }   
-               }       
-           }
-
-           /* enforce periodic boundary conditions on the ions */
-           void enforce_pbc(void)
-           {
-               for (auto& Atom : Atoms)
-               {
-                   /* to_crystal enforces periodic boundary conditions */
-                   to_crystal (Atom.xtal, Atom.crds);
-                   to_cartesian (Atom.xtal, Atom.crds);
-               }
-           } 
-
-           double kinetic_energy(void)
-           {
-               double ke = 0.0;
-               for(auto& Atom : Atoms)
-               {
-                   if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
-                   {
-                       ke += Atom.GetKineticEnergy();
-                   }
-               }
-               return ke;
-           }
-    };
-}
 
 static inline double GetAugcharge(int ih, int jh, int icount, double *cg, ION *iptr)
 {

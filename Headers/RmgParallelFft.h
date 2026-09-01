@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -26,7 +25,7 @@
 
 #if __cplusplus
 #include <complex>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "Pw.h"
 #include "GridObject.h"
@@ -48,8 +47,8 @@ typedef struct
 
 void FftInitPlans(void);
 
-void FftInterpolation (rmg::grid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
-void FftInterpolation (rmg::grid &G, std::complex<double> *coarse, std::complex<double> *fine, int ratio, bool use_sqrt);
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
+void FftInterpolation (BaseGrid &G, std::complex<double> *coarse, std::complex<double> *fine, int ratio, bool use_sqrt);
 
 void FftGradientCoarse(float *x, float *fgx, float *fgy, float *fgz);
 void FftGradientCoarse(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz);
@@ -87,6 +86,10 @@ void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, double factor);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, int type);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, double factor);
 
+void FftFreqBin(double *x, Pw &pwaves, double *bins);
+
+void FftRestrict(double *fine, double *coarse, int ratio);
+
 void LocalFftForward(double *, std::complex<double> *, Pw &pwaves);
 
 void LocalFftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves);
@@ -94,6 +97,8 @@ void LocalFftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves)
 void LocalFftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
 
 void LocalFftInverse(std::complex<double> *, double *, Pw &pwaves);
+
+void FftSmoother(double *x, Pw &pwaves, double factor);
 
 #endif
 #endif

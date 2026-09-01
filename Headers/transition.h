@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_transition_h
 #define RMG_transition_h
 
@@ -7,7 +6,7 @@
 #include <set>
 #include <list>
 #include <map>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "const.h"
@@ -28,14 +27,13 @@
 #include "Tetrahedron.h"
 #include "BerryPhase.h"
 #include "rmgfiles.h"
-#include "rmg_printlog.h"
 
 
 extern PulayMixing *Pulay_rho;
 extern PulayMixing *Pulay_ldau;
 extern PulayMixing *Pulay_orbital;
-extern rmg::grid *Rmg_G;
-extern rmg::grid *Rmg_halfgrid;
+extern BaseGrid *Rmg_G;
+extern BaseGrid *Rmg_halfgrid;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
@@ -47,8 +45,6 @@ extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwave
 
 
 template <typename T> void EpsilonMatrix(Kpoint<T> **Kptr);
-template <typename T> void  TiledM_to_glob(T *matrix_glob, T *tiledM, int numst, MPI_Comm tiled_comm);
-
 
 void OutputBandPlot(double *);
 void CheckSetDefault();
@@ -81,13 +77,22 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, do
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, int, int, int, double, double, double, int, double *kvec);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
 template <typename DataType> void SumGradientKvec (DataType *a, DataType *b, double *kvec, const char *grid);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, rmg::grid *G, TradeImages *T);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, int order);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, rmg::grid *G, TradeImages *T);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
 
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 
+
+// Gamma point float version
+void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
+// complex float version
+void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
+// complex double version
+void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
+// Gamma point double version
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
 
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
@@ -133,7 +138,6 @@ void LoadUpfPseudo(SPECIES *sp);
 void LoadXmlPseudo(SPECIES *sp);
 void LoadAllElectronPseudo(SPECIES *sp);
 double * UPF_str_to_double_array(std::string str, int max_count, int start);
-std::vector<double> UPF_str_to_double_vector(std::string str, int max_count, int start);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
@@ -161,7 +165,7 @@ void CheckShutdown(void);
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm);
+void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm, unsigned int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h, PE_CONTROL& pelc);
@@ -204,6 +208,7 @@ template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataTy
 void SetLaplacian();
 void WriteHeader (void);
 template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T* nv);
+void DeviceSynchronize(void);
 void Precond_drho(double *);
 template <typename T> void Write_Wfs_forWannier(int kpt_global, Kpoint<T> *kptr, std::vector<bool> exclude_bands, std::string wavefule);
 double GetPlanarAnisotropy(double *density);
@@ -220,5 +225,12 @@ void Eigen(std::complex<double> *distA, double *eigs, int N, int lda);
 #endif
 #endif
 
+#if !(defined(_WIN32) || defined(_WIN64))
+#define rmg_printf( message... ) \
+        fprintf( ct.logfile, message )
+#else
+#define rmg_printf( message, ... ) \
+        fprintf( ct.logfile, message, __VA_ARGS__ )
+#endif
 
 

@@ -26,8 +26,8 @@
  * OUTPUT
  *   x,y,z: coordinates of the processor in 3D array
  * PARENTS
- *   get_index.c init_wf.c init_wflcao.c pack_vhdtos.c
- *   pack_vhstod.c init_pe.c symmetry.c write_avgd.c
+ *   get_index.c getpoi_bc.c init_wf.c init_wflcao.c pack_vhdtos.c
+ *   pack_vhstod.c init_pe.c set_bc.c symmetry.c write_avgd.c write_zstates.c
  * CHILDREN
  *   nothing  
  * SOURCE

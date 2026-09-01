@@ -38,7 +38,7 @@
 #include "Kpoint.h"
 #include <complex>
 #include "RmgParallelFft.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 
 
 void transform_so(std::complex<double> *product, std::complex<double> *product_tem, SPECIES &sp);
@@ -171,7 +171,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     }                           /*end for ion */
 
-    rmg::allreduce(augrho, pbasis * factor, pct.kpsub_comm);
+    GlobalSums(augrho, pbasis * factor, pct.kpsub_comm);
 
     delete [] sint;
     delete [] product;

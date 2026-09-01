@@ -142,16 +142,16 @@ void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc,
             {
                 int fhand = open(wfname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
                 if (fhand < 0) {
-                    rmg::printlog("Can't open restart file %s", wfname.c_str());
-                    rmg::error("Terminating.");
+                    rmg_printf("Can't open restart file %s", wfname.c_str());
+                    rmg_error_handler(__FILE__, __LINE__, "Terminating.");
                 }
                 size_t rsize = read (fhand, &H, sizeof(OrbitalHeader));
                 if(rsize != sizeof(OrbitalHeader))
-                    rmg::error("error reading");
+                    rmg_error_handler (__FILE__,__LINE__,"error reading");
 
                 if((H.nx != (size_t)sizes_c[0]) || (H.ny != (size_t)sizes_c[1]) || (H.nz != (size_t)sizes_c[2])) {
-                    rmg::printlog("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
-                    rmg::error("Grid size mismatch.");
+                    rmg_printf("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
+                    rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");
                 }
                 close(fhand);
                 fflush(NULL);

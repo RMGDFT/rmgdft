@@ -28,7 +28,7 @@
 #include "RmgParallelFft.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-
+#include "ErrorFuncs.h"
 #include "rmg_complex.h"
 
 //  Applies the A operator to a wavefunction. The A operator is defined as
@@ -140,10 +140,10 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     {
 #if HIP_ENABLED || CUDA_ENABLED
 #if HIP_ENABLED
-        gpuSetDevice(ct.hip_dev);
+        hipSetDevice(ct.hip_dev);
 #endif
 #if CUDA_ENABLED
-        gpuSetDevice(ct.cu_dev);
+        cudaSetDevice(ct.cu_dev);
 #endif
         gpuMallocHost((void **)&rbufs[tid], alloc);
 #else
@@ -214,7 +214,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         return cc;
     }
 
-    rmg::error("APP_DEL2 order not programmed yet in app_del2_driver.\n");
+    rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
     return 0;   // Just to keep the compiler from complaining
 
     return cc;

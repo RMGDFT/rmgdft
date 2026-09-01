@@ -12,7 +12,6 @@
 #include <assert.h>
 
 #include "main.h"
-#include "rmg_sum_all.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
@@ -147,7 +146,7 @@ void writeout_matrix_p ()
     }
 
     if (pct.gridpe == 0)
-        rmg::printlog ("\n THE MATRICES are written out ");
+        rmg_printf ("\n THE MATRICES are written out ");
 }
 
 

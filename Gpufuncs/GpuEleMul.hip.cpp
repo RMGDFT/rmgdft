@@ -47,34 +47,31 @@ __global__ void MulVec1(double *dx, hipFloatComplex *dy, int n)
     for (int i = idx; i < n; i += gridDim.x * blockDim.x) dy[i] = make_hipFloatComplex(hipCrealf(dy[i]) * dx[i], hipCimagf(dy[i]) * dx[i]);
 }
 
-
-#include "GpuAlloc.h"
-
 void GpuEleMul(double *dx, double *dy, int n, hipStream_t stream)
 {
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
     int blockSize = 128;
     int numBlocks = (n + blockSize - 1) / n;
     hipLaunchKernelGGL(MulVec, dim3(numBlocks), dim3(blockSize), 0, stream, dx, dy, n);
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
 }
 
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream)
 {
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
     int blockSize = 128;
     int numBlocks = (n + blockSize - 1) / n;
     hipLaunchKernelGGL(MulVec, dim3(numBlocks), dim3(blockSize), 0, stream, dx, (hipDoubleComplex *)dy, n);
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
 }
 
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream)
 {
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
     int blockSize = 128;
     int numBlocks = (n + blockSize - 1) / n;
     hipLaunchKernelGGL(MulVec1, dim3(numBlocks), dim3(blockSize), 0, stream, dx, (hipFloatComplex *)dy, n);
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
 }
   
 

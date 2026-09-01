@@ -25,7 +25,6 @@
 #include "main.h"
 #include "transition.h"
 #include "RmgMatrix.h"
-#include "blas_driver.h"
 
 
 #if CUDA_ENABLED
@@ -168,7 +167,7 @@ void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
         if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, lda, Tr);
-        rmg::sync_device();
+        DeviceSynchronize();
         return;
     }
 #endif
@@ -193,7 +192,7 @@ void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::compl
         if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, lda, (cuDoubleComplex*)Tr);
-        rmg::sync_device();
+        DeviceSynchronize();
         return;
     }
 #endif
@@ -218,7 +217,7 @@ void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
         if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, lda);
-        rmg::sync_device();
+        DeviceSynchronize();
         return;
     }
 #endif
@@ -242,7 +241,7 @@ void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::com
         if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
         cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, lda);
-        rmg::sync_device();
+        DeviceSynchronize();
     }
 #endif
     int info;
@@ -274,7 +273,7 @@ template <typename T> void TransposeMatrix(T *A, int n, int m)
     }
     else
     {
-        rmg::error(" Data type not implemented.\n");
+        rmg_error_handler(__FILE__, __LINE__, " Data type not implemented.\n");
     }
 }
 #endif

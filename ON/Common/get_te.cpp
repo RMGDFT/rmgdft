@@ -181,13 +181,13 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     /*Sum emergies over all processors */
     if (ct.spin_flag)
     {
-        rmg::allreduce (esum, two, pct.grid_comm);
-        rmg::allreduce (&esum[2], one, pct.img_comm);  
-        rmg::allreduce (&mag, one, pct.grid_comm); 
-        rmg::allreduce (&absmag, one, pct.grid_comm); 
+        global_sums (esum, &two, pct.grid_comm);
+        global_sums (&esum[2], &one, pct.img_comm);  
+        global_sums (&mag, &one, pct.grid_comm); 
+        global_sums (&absmag, &one, pct.grid_comm); 
     }
     else
-        rmg::allreduce (esum, three, pct.grid_comm);
+        global_sums (esum, &three, pct.grid_comm);
 
 
     /*Electrostatic E */
@@ -221,26 +221,26 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     }
 
     /* Print contributions to total energies into output file */
-    rmg::printlog ("\n\n");
-    rmg::printlog ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-    rmg::printlog ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-    rmg::printlog ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-    rmg::printlog ("@@ VXC                 = %16.9f Ha\n",  xcstate);
-    rmg::printlog ("@@ EXC                 = %16.9f Ha\n", ct.XC );
+    rmg_printf ("\n\n");
+    rmg_printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
+    rmg_printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
+    rmg_printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
+    rmg_printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
+    rmg_printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
     if(ct.xc_is_hybrid && Functional::is_exx_active())
-        rmg::printlog ("@@ FOCK               = %16.9f Ha\n", ct.FOCK);
+        rmg_printf ("@@ FOCK               = %16.9f Ha\n", ct.FOCK);
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
     {
-        rmg::printlog ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
+        rmg_printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
     }
 
-    rmg::printlog ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
+    rmg_printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
 
     if (ct.spin_flag)
     {
         /* Print the total magetization and absolute magnetization into output file */
-        rmg::printlog ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-        rmg::printlog ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
+        rmg_printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
+        rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 
 

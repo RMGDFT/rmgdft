@@ -29,13 +29,13 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
 #include "Solvers.h"
 #include "Functional.h"
@@ -58,11 +58,34 @@ void compute_vxc(double *rho, double *rhocore, double &XC, double &vtxc, double 
     Functional *F = NULL;
     //if(F == NULL) F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
     F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, nspin);
-    int N = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+
     if(F->dft_is_meta_rmg())
     {
-        for(int ix = 0;ix < nspin*N;ix++) v_xc[ix] = 0.0;
-        F->v_xc_meta(rho, rhocore, XC, vtxc, v_xc, Functional::ke_density, nspin);
+        wfobj<double> kdetau_c;
+        fgobj<double> kdetau_f;
+        kdetau_c.set(0.0);
+        if(ct.scf_steps >= 0)
+        {
+            for(int ik = 0; ik < ct.num_kpts_pe; ik++) Kptr_g[ik]->KineticEnergyDensity(kdetau_c.data());
+//            FftInterpolation(*Rmg_G, kdetau_c.data(), kdetau_f.data(), 2, false);
+            int ratio = Rmg_G->default_FG_RATIO;
+            Prolong P(2, ct.prolong_order, 0.0, *Rmg_T,  Rmg_L, *Rmg_G);
+            int dimx = kdetau_f.dimx;
+            int dimy = kdetau_f.dimy;
+            int dimz = kdetau_f.dimz;
+            int half_dimx = kdetau_c.dimx;
+            int half_dimy = kdetau_c.dimy;
+            int half_dimz = kdetau_c.dimz;
+            P.prolong(kdetau_f.data(), kdetau_c.data(), dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
+        }
+//  Need to update GetNewRho if we want to compute this on fine grid but not clear if it's necessary
+//        else
+//        {
+//            for(int ix=0;ix < this->pbasis;ix++) kdetau_f[ix] = this->ke_density[ix];
+//        }
+        for(int ix = 0;ix < nspin*kdetau_f.pbasis;ix++) v_xc[ix] = 0.0;
+        F->v_xc_meta(rho, rhocore, XC, vtxc, v_xc, kdetau_f.data(), nspin);
     }
     else
     {

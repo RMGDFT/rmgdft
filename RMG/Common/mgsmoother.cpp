@@ -24,7 +24,8 @@
 #include <boost/pool/pool.hpp>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "rmg_sum_all.h"
+#include "Mgrid.h"
+#include "RmgSumAll.h"
 #include "BlasWrappers.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -33,7 +34,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
@@ -42,6 +43,15 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "rmg_complex.h"
+
+
+template <typename OrbitalType, typename CalcType> void mgsmoother(
+              Kpoint<OrbitalType> *kp, State<OrbitalType> *sp,
+              CalcType *u, CalcType *Hu, CalcType *r, 
+              CalcType *iHu, CalcType *ir,
+              double *v, double *vxc, double *dinv,
+              OrbitalType *nv, CalcType *ns,
+              double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 
 // Multigrid fine grid smoothing routine. If is_jacobi is true
@@ -61,7 +71,6 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
                double *dinv,
                OrbitalType *nv,
                CalcType *ns,       // only used for USPP
-               std::span<CalcType> p,
                double &eig, 
                int order,
                bool is_jacobi,
@@ -72,15 +81,17 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
     const double theta = 0.5*(lmax + lmin);
     const double delta = 0.5*(lmax - lmin);
     const double sigma = theta / delta;
-    int pbasis = Rmg_G->get_P0_BASIS(1);
-    pbasis *= ct.noncoll_factor * pct.coalesce_factor;
+    wfobj<CalcType> pp;
+    std::vector<CalcType> p;
+    int pbasis = pp.pbasis * ct.noncoll_factor * pct.coalesce_factor;
+    p.resize(pbasis);
 
     ApplyHamiltonian<OrbitalType,CalcType> (kptr, sp, sp->istate, u, Hu, v, vxc, nv, false);
     for (int i=0;i<pbasis;i++) iHu[i] = Hu[i];
 
     double eig1 = ComputeEig(pbasis, u, Hu, ns);
     auto mixeig = [](double &eig, double &eig1) {
-        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)) || std::abs(eig) < 1.0e-10)
+        if((ct.scf_steps && (ct.scf_accuracy < 1.0e-4)))
             eig = eig1;
         else
             eig = 0.7*eig1 + 0.3*eig;
@@ -100,7 +111,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
         rsum[0] += std::norm(r[i]);
         rsum[1] += std::norm(u[i]);
     }
-    rmg::allreduce(rsum, 2, pct.coalesced_grid_comm);
+    GlobalSums (rsum, 2, pct.coalesced_grid_comm);
     sp->res[0] = rsum[0]*get_vel();
     double norm = rsum[1]*get_vel();
     norm = 1.0 / sqrt(norm);
@@ -143,7 +154,7 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             u[i] += a*p[i];
             rsum[0] += std::norm(u[i]);
         }
-        rmg::allreduce(rsum, 1, pct.coalesced_grid_comm);
+        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
         norm = rsum[0]*get_vel();
         norm = 1.0 / sqrt(norm);
         if(ct.norm_conserving_pp)
@@ -165,8 +176,8 @@ void mgsmoother (Kpoint<OrbitalType> *kptr,
             rsum[0] += std::norm(r[i]);
         }
 
-        rmg::allreduce(rsum, 1, pct.coalesced_grid_comm);
-        sp->res[k+1] = sqrt(rsum[0]/(double)Rmg_G->get_GLOBAL_BASIS(1));
+        GlobalSums (rsum, 1, pct.coalesced_grid_comm);
+        sp->res[k+1] = rsum[0]*get_vel();
         //if(order >0 && pct.gridpe==0)printf("ZZZZ  %d  %14.8e  \n",sp->istate,rsum[1]*get_vel(), sp->res[k+1]);
     }
 }
@@ -176,7 +187,6 @@ template void mgsmoother<double,float>(
               float *u, float *Hu, float *r, float *iHu, float *ir,
               double *v, double *vxc, double *dinv,
               double *nv, float *ns,
-              std::span<float> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<double,double>(
@@ -184,7 +194,6 @@ template void mgsmoother<double,double>(
               double *u, double *Hu, double *r, double *iHu, double *ir,
               double *v, double *vxc, double *dinv,
               double *nv, double *ns,
-              std::span<double> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<float>>(
@@ -193,7 +202,6 @@ template void mgsmoother<std::complex<double>,std::complex<float>>(
               std::complex<float> *r, std::complex<float> *iHu, std::complex<float> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<float> *ns,
-              std::span<std::complex<float>> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 
 template void mgsmoother<std::complex<double>,std::complex<double>>(
@@ -202,6 +210,5 @@ template void mgsmoother<std::complex<double>,std::complex<double>>(
               std::complex<double> *r, std::complex<double> *iHu, std::complex<double> *ir,
               double *v, double *vxc, double *dinv,
               std::complex<double> *nv, std::complex<double> *ns,
-              std::span<std::complex<double>> p,
               double &eig, int order, bool is_jacobi, double lmax, double lmin, int vcycle);
 

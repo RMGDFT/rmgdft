@@ -34,7 +34,7 @@
 #include "FiniteDiff.h"
 #include "Mgrid.h"
 #include "vhartree.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include "RmgTimer.h"
 #include "rmg_error.h"
 #include "boundary_conditions.h"
@@ -93,14 +93,14 @@ int main(int argc, char **argv)
 
     // Check that MPI grid matches npes
     if(npes != (NODES_X * NODES_Y * NODES_Z))
-        rmg::error("Check the number of MPI procs you have requested and make sure it matches (NODES_X * NODES_Y * NODES_Z)");
+        rmg_error_handler(__FILE__, __LINE__, "Check the number of MPI procs you have requested and make sure it matches (NODES_X * NODES_Y * NODES_Z)");
 
 
     // Print Header
     if(my_rank == 0) cout << header;
 
     // Instantiate and initialize a grid object with a default fine/coarse ratio of 1
-    rmg::grid *G = new rmg::grid(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, my_rank, default_grid_density);
+    BaseGrid *G = new BaseGrid(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, my_rank, default_grid_density);
 
     int pbasis = G->get_P0_BASIS(1);
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     }
 
     // now neutralize it with a uniform charge
-    totalcharge = rmg::sum_all(totalcharge, T.get_MPI_comm());
+    totalcharge = RmgSumAll(totalcharge, T.get_MPI_comm());
     cout << "For Rank " << my_rank << " total charge = " << totalcharge << endl;
     double t1 = totalcharge / ((double) (npes * pbasis)) / vel;
     for(ix=0;ix < pbasis;ix++) rho[ix] -= t1;
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
     totalcharge = 0.0;
     for(ix=0;ix < pbasis;ix++) totalcharge+=rho[ix] * vel;
 
-    totalcharge = rmg::sum_all(totalcharge, T.get_MPI_comm());
+    totalcharge = RmgSumAll(totalcharge, T.get_MPI_comm());
     if(my_rank == 0)
         cout << "Total charge for full cell = " << totalcharge << endl;
 

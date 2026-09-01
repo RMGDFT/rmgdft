@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2014, Emil Briggs
@@ -31,7 +30,7 @@
 #ifndef RMG_Subdiag_H
 #define RMG_Subdiag_H 1
 
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "const.h"
@@ -58,7 +57,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi);
 template <typename KpointType>
 char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
-int FoldedSpectrum(rmg::grid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
+int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
                 double *eigs, double *work, int lwork, int *iwork, int liwork, int driver);
 template <typename KpointType>
 int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, KpointType *Adist, int lda, KpointType *B, int ldb,

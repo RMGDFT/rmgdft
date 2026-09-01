@@ -33,22 +33,23 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
-#include "rmg_mgrid.h"
+#include "RmgGemm.h"
+#include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
+#include "RmgParallelFft.h"
 #include "TradeImages.h"
+#include "packfuncs.h"
 #include "RmgMatrix.h"
-#include "rmg_hvector.h"
 
 #include "transition.h"
 #include "blas.h"
-#include "rmg_ortho.h"
+#include "ortho.h"
 
 
 
@@ -61,14 +62,13 @@ template void Kpoint<std::complex<double>>::BlockDiagInternal(double *vtot, doub
 
 template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, double *vxc_psi)
 {
-    RmgTimer RT0("6-BlockDiag");
+    RmgTimer RT0("6-BlockDiag"), *RT1;
 
     // Distance between blocks of eigenvalues in eV
     double gap_thr = 20.0;
 
     // Required size of block before we treat it as distinct object
     int count_thr = std::floor(0.05*(double)this->nstates);
-    count_thr = std::max(count_thr, 20);
 
     // Identify the start and size of each block
     std::vector<std::pair<int, int>> gaps;
@@ -81,39 +81,55 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
         {
             gaps.push_back(std::make_pair(start, count));
             start = st;
+            Nmax = std::max(Nmax, count);
             count = 0;
         }
         last_eig = eig;
         count++;
     }
-    if((this->nstates - start) > count_thr)
+    gaps.push_back(std::make_pair(start, this->nstates - start));
+    Nmax = std::max(Nmax, this->nstates - start);
+
+    KpointType *hr=NULL, *sr=NULL, *vr=NULL;
+    if(ct.subdiag_driver != SUBDIAG_SCALAPACK && ct.subdiag_driver != SUBDIAG_ELPA)
     {
-        gaps.push_back(std::make_pair(start, this->nstates - start));
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+        KpointType *hr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        KpointType *sr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+        KpointType *vr = (KpointType *)GpuMallocHost(Nmax * Nmax * sizeof(KpointType));
+#else
+        KpointType *hr = new KpointType[Nmax * Nmax]();
+        KpointType *sr = new KpointType[Nmax * Nmax]();
+        KpointType *vr = new KpointType[Nmax * Nmax]();
+#endif
     }
-    else
-    {
-        if(gaps.size() == 0)
-        {
-            gaps.push_back(std::make_pair(0, this->nstates));
-        }
-        else
-        {
-            gaps.back().second += this->nstates - start;
-        }
-    }
-    for(auto &gap: gaps) Nmax = std::max(Nmax, gap.second);
+
+    ortho<KpointType> Ortho(nstates, pbasis_noncoll);
+
 
     // Loop over blocks.
-    rmg::hvector<KpointType> hr(Nmax*Nmax);
-    rmg::hvector<KpointType> sr(Nmax*Nmax);
-    rmg::hvector<KpointType> vr(Nmax*Nmax);
     for(auto &gap: gaps)
     {
-        if(pct.gridpe==0 && ct.verbose)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
-        this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr.data(), sr.data(), vr.data());
+        if(pct.gridpe==0)printf("\nGap start and size  %d  %d\n",gap.first, gap.second);
+        this->BlockDiagInternal(vtot, vxc_psi, gap.first, gap.second, hr, sr, vr);
+        if(gaps.size() > 1)
+        {
+            RmgTimer RT2("6-BlockDiag: ortho");
+            Ortho.orthogonalize(gap.first, gap.second, this->orbital_storage, ct.davidson_2stage_ortho);
+        }
     }
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK || ct.subdiag_driver == SUBDIAG_ELPA) return;
+
+#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+    GpuFreeHost(vr);
+    GpuFreeHost(sr);
+    GpuFreeHost(hr);
+#else
+    delete [] vr;
+    delete [] sr;
+    delete [] hr;
+#endif
 
 }
 
@@ -165,7 +181,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     {
         Scalapack *SP;
         static std::unordered_map<uint64_t, Scalapack *> SPS;
-        uint64_t hash = ((uint64_t)first << 32) + N;
+        uint64_t hash = first << 32 + N;
         if(SPS.contains(hash))
         {
             SP = SPS[hash];
@@ -183,14 +199,14 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
 
     // Update the reduced Hamiltonian and S matrices
     RT1 = new RmgTimer("6-BlockDiag: matrix setup/reduce");
-    rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
+    RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[first*pbasis_noncoll], pbasis_noncoll, beta, hr, N);
     PackSqToTr("U", N, hr, N, vr);
-    rmg::block_allreduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
+    BlockAllreduce((double *)vr, (size_t)(N+2)*N*factor/2, pct.grid_comm);
     UnPackSqToTr("U", N, hr, N, vr);
 
-    rmg::gemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
+    RmgGemm(trans_a, trans_n, N, N, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, N);
     PackSqToTr("U", N, sr, N, vr);
-    rmg::block_allreduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
+    BlockAllreduce((double *)vr, (size_t)N*(size_t)N * (size_t)factor, pct.grid_comm);
     UnPackSqToTr("U", N, sr, N, vr);
     delete RT1;
 
@@ -217,11 +233,10 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     int info = GeneralDiag(hr, sr, eigs, vr, N, N, N, ct.subdiag_driver);
     delete RT1;
 
-    if(info) rmg::error("GeneralDiag failed.");
 
     // Rotate orbitals and use h_psi for scratch space
     RT1 = new RmgTimer("6-BlockDiag: rotate orbitals");
-    rmg::gemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
+    RmgGemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
     for(int idx=0;idx < N*pbasis_noncoll;idx++)psi[idx] = h_psi[idx];
 
     delete RT1;

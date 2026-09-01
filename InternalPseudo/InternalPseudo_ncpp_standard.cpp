@@ -208,9 +208,9 @@ std::string GetInternalPseudo_ncpp_standard(const char *symbol)
         // If we can't write this what should we do?
         fhand = open(pp_file.c_str(), O_RDWR|O_CREAT|O_TRUNC, S_IREAD | S_IWRITE);
         if(fhand < 0)
-            rmg::error(" Error saving pseudopotential file. Terminating.");
+            rmg_error_handler (__FILE__, __LINE__, " Error saving pseudopotential file. Terminating.");
 
-        rmg::writefile(fhand, decompressed.c_str(), decompressed.length());
+        write(fhand, decompressed.c_str(), decompressed.length());
         close(fhand);
     }
     return decompressed;

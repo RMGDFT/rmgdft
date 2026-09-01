@@ -1,4 +1,9 @@
-/*
+/****f* QMD-MGDFT/mg_prolong_MAX10.c *****
+ * NAME
+ *   Ab initio real space code with multigrid acceleration
+ *   Quantum molecular dynamics package.
+ *   Version: 2.1.5
+ * COPYRIGHT
  * FUNCTION
  *   void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio, int order)
  *   get full dimensioned array in the fine grid from half dimensioned 
@@ -10,7 +15,11 @@
  *   dimx, dimy, dimz: dimensions of array in the fine grid
  * INPUT
  *   half[(dimx/grid_ratio+10)*(dimy/grid_ratio+10)*(dimz/grid_ratio+10)] array in the corse grid
- *
+ * PARENTS
+ *   get_rho.c or get_new_rho.c
+ * CHILDREN
+ *   cgen_prolong.c 
+ * SOURCE
  */
 
 
@@ -37,7 +46,8 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     double fraction;
 
     sg_half = new double[(half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10)];
-    Rmg_T->trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
+    trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
+
 
     incy = dimz / grid_ratio + 10;
     incx = (dimz / grid_ratio + 10) * (dimy / grid_ratio + 10);
@@ -51,7 +61,7 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     if (order % 2)
     {
         if(pct.gridpe==0) printf("This function works only for even orders, but order %d was specified", order);
-        rmg::error("Terminating.");
+        rmg_error_handler(__FILE__,__LINE__,"Terminating.");
     }
 
 

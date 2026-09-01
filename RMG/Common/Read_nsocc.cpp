@@ -36,7 +36,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "RmgException.h"
 
 template void Read_nsocc(char *, Kpoint<double> *);
@@ -45,20 +45,21 @@ template void Read_nsocc(char *, Kpoint<std::complex<double> > *);
 template <typename KpointType>
 void Read_nsocc(char *name, Kpoint<KpointType> * kptr)
 {
+    char newname[MAX_PATH + 200];
     int pstride = kptr->ldaU->ldaU_m;
     size_t occ_size_bytes = ct.nspin * kptr->ldaU->num_ldaU_ions * pstride * pstride * sizeof(std::complex<double>);
 
     if(pct.imgpe == 0)
     {
-        std::string newname = std::format("{}_spin{}_nsocc", name, pct.spinpe);
-        int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+        sprintf (newname, "%s_spin%d_nsocc", name, pct.spinpe);
+        int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
-            rmg::printlog("Can't open data file %s", newname.c_str());
-            rmg::error("Terminating.");
+            rmg_printf("Can't open data file %s", newname);
+            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
         }
 
 
-        rmg::readfile(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
+        read(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
         close(fhand);
     }
 
@@ -84,12 +85,12 @@ void Write_nsocc(char *name, Kpoint<KpointType> * kptr)
     {
         int fhand = FileOpenAndCreate(newname, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if (fhand < 0) {
-            rmg::printlog("Can't open data file %s", newname.c_str());
-            rmg::error("Terminating.");
+            rmg_printf("Can't open data file %s", newname.c_str());
+            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
         }
 
 
-        rmg::writefile(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
+        write(fhand, kptr->ldaU->ns_occ.data(), occ_size_bytes);
         close(fhand);
     }
 

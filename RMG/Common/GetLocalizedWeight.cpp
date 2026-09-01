@@ -67,7 +67,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
     std::complex<double> *phase_fftw = new std::complex<double>[max_size];
 
     if (beptr == NULL)
-        rmg::error("can't allocate memory\n");
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     gbptr = beptr + max_size;
 
@@ -132,18 +132,16 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
     delete [] beptr;
     delete [] phase_fftw;
+    int stress_factor = 1;
 
     if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
+
     {
         this->GetLocalizedWeight_xyz();
+        stress_factor = 4;
     }
 
 #if HIP_ENABLED || CUDA_ENABLED
-    int stress_factor = 1;
-    if(ct.stress || ct.LOPTICS || ct.forceflag == TDDFT)
-    {
-        stress_factor = 4;
-    }
     gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor * nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 
@@ -186,7 +184,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight_xyz (voi
     std::complex<double> *phase_fftw = new std::complex<double>[max_size];
 
     if (beptr == NULL)
-        rmg::error("can't allocate memory\n");
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     gbptr = beptr + max_size;
 

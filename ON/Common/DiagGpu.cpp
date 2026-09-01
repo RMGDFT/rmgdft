@@ -21,7 +21,7 @@
 #include "blas.h"
 #include "blas_driver.h"
 #include "GpuAlloc.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "RmgMatrix.h"
 
 
@@ -53,7 +53,7 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     MemcpyHostDevice(size, Sij_glob, S_gpu);
     DgetrftrsDriver(numst, numst, S_gpu, H_gpu);
     double t1 = 2.0;
-    rmg::dscal_driver(numst2, t1, H_gpu, ione);
+    dscal_driver(numst2, t1, H_gpu, ione);
     MemcpyDeviceHost(size, H_gpu, mat_glob);
     mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, theta_local);
 
@@ -136,16 +136,16 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
     num_res_states = num_occ_states + ct.num_unocc_states;
     num_res_states = std::min(num_res_states, numst);
 
-    rmg::dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
+    dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
     for(int st1 = 0; st1 <  numst; st1++)
     {
         double alpha = states[st1].occupation[0];
-        rmg::dscal_driver(numst, alpha, &S_gpu[st1 * numst], ione);
+        dscal_driver(numst, alpha, &S_gpu[st1 * numst], ione);
     }
 
 
     RmgTimer *RT3 = new RmgTimer("3-DiagGpu: gemm ");
-    rmg::gemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
+    RmgGemm("N", "T", numst, numst, numst, one, eigvector_gpu, numst, S_gpu, numst, zero, H_gpu, numst);
     MemcpyDeviceHost(size, H_gpu, mat_glob);
     delete(RT3);
 
@@ -153,15 +153,15 @@ void DiagGpu(STATE *states, int numst, double *Hij_glob, double *Sij_glob,
 
     // S_gpu = Cij
     // H_gpu = Cij^-1
-    rmg::dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
+    dcopy_driver(numst2, eigvector_gpu, ione, S_gpu, ione);
     InvertMatrix(S_gpu, H_gpu, numst);
-    rmg::gemm("N", "N", numst, numst, num_res_states, one, eigvector_gpu, numst, H_gpu, numst, zero, S_gpu, numst);
+    RmgGemm("N", "N", numst, numst, num_res_states, one, eigvector_gpu, numst, H_gpu, numst, zero, S_gpu, numst);
     // S_gpu = Cij * Cij^-1
     MemcpyDeviceHost(size, S_gpu, mat_glob);
     
     if(pct.gridpe == 0) 
     {
-        rmg::printlog("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
+        rmg_printf("\n num_re_stat %d %d %d", num_res_states, num_occ_states, ct.num_unocc_states);
         print_matrix(mat_glob, 6, numst);
     }
     mat_global_to_local(*LocalOrbital, *LocalOrbital, mat_glob, CC_res_local);
