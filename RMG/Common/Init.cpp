@@ -82,7 +82,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     OrbitalType *rptr = NULL, *nv, *ns = NULL;
-    double *vtot;
+    fgobj<double> vtot;
     double fac;
     bool need_ns = true;
     if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
@@ -682,11 +682,10 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         }
     }
 
-    vtot = new double[FP0_BASIS];
     for (int idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     /*Generate the Dnm_I */
-    get_ddd (vtot, vxc.data(), true);
+    get_ddd (vtot.data(), vxc.data(), true);
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
     {
@@ -696,7 +695,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         double *vxc_psi = NULL;
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
-        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        GetVtotPsi (vtot_psi, vtot.data(), Rmg_G->default_FG_RATIO);
         if(ct.noncoll)
         {
             vxc_psi = new double[4*P0_BASIS];
@@ -787,8 +786,6 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
     }
 
-    delete [] vtot;
-
 
     ct.num_states = ct.run_states;
     ct.dvh_skip = 8;
@@ -838,6 +835,11 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     {
         GetNewRho(Kptr, rho.data());
     }
+
+    ct.sradius = spectral_radius<OrbitalType>(vtot, vxc, Kptr[0]);
+    ct.lambda_max = ct.lambda_mul*ct.sradius;
+    ct.lambda_min = 0.25*ct.lambda_max;
+    if(pct.imgpe==0) fprintf(ct.logfile, "\nSpectral radius of Hamiltonian = %f\n\n", ct.sradius); 
 }                               /* end init */
 
 

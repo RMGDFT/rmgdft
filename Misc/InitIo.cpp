@@ -746,7 +746,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg::init_reduce();
 
     // Check individual node sizes on all levels for poisson mg solver
-    Mgrid MG(&Rmg_L, Rmg_T);
+    rmg::mgrid MG(&Rmg_L, Rmg_T, Rmg_G, ct.FG_RATIO, ct.max_zvalence);
     int dx[MAX_MG_LEVELS];dx[0] = Rmg_G->get_PX0_GRID(ct.FG_RATIO);
     int dy[MAX_MG_LEVELS];dy[0] = Rmg_G->get_PY0_GRID(ct.FG_RATIO);
     int dz[MAX_MG_LEVELS];dz[0] = Rmg_G->get_PZ0_GRID(ct.FG_RATIO);
@@ -813,7 +813,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         MPI_Allreduce(MPI_IN_PLACE, &minsizez, 1, MPI_INT, MPI_MIN, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, &maxsizez, 1, MPI_INT, MPI_MAX, pct.grid_comm);
 
-        Mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
+        rmg::mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
         ct.mg_offset_level++;
     }
 

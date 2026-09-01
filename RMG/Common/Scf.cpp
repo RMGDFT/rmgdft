@@ -33,6 +33,7 @@
 #include "Functional.h"
 #include "GridObject.h"
 #include "BerryPhase.h"
+#include "Solvers.h"
 
 
 

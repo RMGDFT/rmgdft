@@ -24,7 +24,7 @@
 #include <boost/pool/pool.hpp>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "rmg_sum_all.h"
 #include "BlasWrappers.h"
 #include "const.h"
@@ -44,6 +44,10 @@
 #include "rmg_complex.h"
 #include "rmgthreads.h"
 
+
+// The version of anchor residual in the multigrid class requires that the data be in a
+// smoothing grid that includes ghost points which is why we need this version here which
+// does not require them.
 template <typename T>
 void anchor_residual(int n, T *r)
 {
@@ -56,7 +60,7 @@ void anchor_residual(int n, T *r)
     }
     rmg::allreduce(s1, 2, pct.coalesced_grid_comm);
     T scale;
-    int global_n = Rmg_G->get_GLOBAL_BASIS(1);
+    size_t global_n = Rmg_G->get_GLOBAL_BASIS(1);
     if constexpr(std::is_same_v<T, std::complex<double>> || std::is_same_v<T, std::complex<float>>)
     {
         T I_t(0.0, 1.0);
@@ -67,6 +71,7 @@ void anchor_residual(int n, T *r)
     }
     else
     {
+//if(pct.gridpe==0)printf("RRRR  %14.8e\n",s1[0]);
         scale = s1[0] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= scale;
     }
@@ -139,6 +144,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 {
     BaseThread *Thread = BaseThread::getBaseThread(0);
     int tid = Thread->get_thread_tid();
+    if(tid < 0) tid = 0;
 
     // Save in case needed for variational energy correction term
     sp->feig[0]=sp->eig[0];
@@ -150,10 +156,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    int eig_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
     int potential_acceleration;
-    Mgrid MG(L, T);
 
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
@@ -162,22 +165,25 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int NY_GRID = G->get_NY_GRID(1);
     int NZ_GRID = G->get_NZ_GRID(1);
 
-    double hxgrid = G->get_hxgrid(1);
-    double hygrid = G->get_hygrid(1);
-    double hzgrid = G->get_hzgrid(1);
+    rmg::mgrid MG(L, T, G, 1, 0.0);
+    MG.set_kpoints(kptr->kp.kvec, kptr->kp.kmag);
+    // We start on level 1 here
+    MG.pre_cyc[0] = 0;
+    MG.post_cyc[0] = 0;
+
     int levels = ct.eig_parm.levels;
     bool do_mgrid = true;
-    double mg_step = ct.eig_parm.sb_step;
+//    double mg_step = ct.eig_parm.sb_step;
     double fg_step = ct.eig_parm.mg_timestep;
 
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+    double hxgrid = G->get_hxgrid(1);
     double diag = FD.fd_coeff0(ct.kohn_sham_fd_order, hxgrid);
 
     if(reduce_it) fg_step = std::min(2.0/3.0, ct.eig_parm.mg_timestep);
 
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
-    double Zfac = 2.0*ct.max_zvalence + 0.5*kptr->kp.kmag;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
     int pbasis_noncoll = pbasis * ct.noncoll_factor;
@@ -257,22 +263,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     if(ct.use_rmm_diis)
         sp->dptr->addfunc(saved_psi);
 
-    // Check if residuals were decreasing and if not abort smoothing for
-    // this state.
-    bool smooth_status = (sp->res[0] > sp->res[1]);
-    if(!smooth_status)
-    {
-        if(ct.verbose && pct.gridpe==0)
-            printf("REDUCING   %d   %14.8e  %14.8e\n", sp->istate, sp->res[0],sp->res[1]);
-        reduce_it = true;
-        //do_mgrid = false;  causes hang with some kpoint distributions
-        // This is still a little tricky since if it happens to too many states you can
-        // converge to a wrong answer so maybe just leave it off for now so that it won't
-        // converge at all.
-        //for(int idx = 0;idx <pbasis_noncoll;idx++) tmp_psi_t[idx] = saved_psi[idx];
-    }
-
-
     /* Now do a multigrid cycle */
     if (do_mgrid )
     {
@@ -318,21 +308,18 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 }
 
                 /* Pack the residual data into multigrid array */
-                anchor_residual(pbasis, &res_t[is*pbasis]);
-                project_residual(pbasis, &res_t[is*pbasis], &tmp_psi_t[is*pbasis]);
+                //project_residual(pbasis, &res_t[is*pbasis], &tmp_psi_t[is*pbasis]);
                 rmg::pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
                 T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
                 MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                MG.anchor_residual(1, dx2, dy2, dz2, f_mat);
 
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
-                        dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                        1, levels, eig_pre, eig_post, 1, 
-                        mg_step, Zfac, 0.0, NULL,
-                        NX_GRID, NY_GRID, NZ_GRID,
-                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                        dimx, dimy, dimz, ct.boundaryflag);
+                        dx2, dy2, dz2, 1, levels, 0.0, NULL,
+                        dimx, dimy, dimz);
 
                 MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                MG.anchor_residual(0, dimx, dimy, dimz, twork_tf);
                 CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);
 
             }

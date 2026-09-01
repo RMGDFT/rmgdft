@@ -9,7 +9,7 @@
     #include <hwloc.h>
 #endif
 #include "params.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "Scalapack.h"
 
 

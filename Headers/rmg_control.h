@@ -1082,7 +1082,9 @@ public:
    int kpoint_units = 0;
 
    // Parameters for Chebyshev smoothing.
-   double lambda_max;
+   double sradius;         // approximate spectral radius of fine grid hamiltonian
+   double lambda_mul;      // Fudge factor for the spectral radius
+   double lambda_max;      // values used to compute chebyshev coeffs based on sradius and lambda_mul
    double lambda_min;
 
 #if __LIBXC

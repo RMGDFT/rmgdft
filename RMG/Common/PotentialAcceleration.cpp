@@ -24,7 +24,6 @@
 #include <atomic>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
 #include "BlasWrappers.h"
 #include "const.h"
 #include "rmgtypedefs.h"

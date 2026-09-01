@@ -34,7 +34,7 @@
 #include "rmg_reduce.h"
 #include "Kpoint.h"
 #include "rmg_gemm.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"

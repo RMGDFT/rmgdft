@@ -55,7 +55,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "packfuncs.h"
 
 
@@ -76,7 +76,10 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     double *resid, *newf, *newv, *newwork;
-    Mgrid MG(&Rmg_L, Rmg_T);
+    // Note for Wenchang. Is this done on the wavefunction grid or the charge density grid?
+    // If charge density replace the 1 with appropriate grid density
+    //Mgrid MG(&Rmg_L, Rmg_T);
+    rmg::mgrid MG(&Rmg_L, Rmg_T, Rmg_G, 1, ct.max_zvalence);
 
     int ncycl;
 
@@ -125,7 +128,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     {
   		
 	/* solve once */
-        MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
+        MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k, NULL);
 
         rmg::pack_stop(v_mat, work, dimx, dimy, dimz);
          
@@ -214,7 +217,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
         {
 
             /* solve once */
-            MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
+            MG.solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k, NULL);
 
             rmg::pack_stop(v_mat, work, dimx, dimy, dimz);
 

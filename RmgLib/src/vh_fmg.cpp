@@ -39,7 +39,7 @@
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
-#include "Mgrid.h"
+#include "rmg_mgrid.h"
 #include "rmg_sum_all.h"
 #include "vhartree.h"
 #include "rmg_error.h"
@@ -79,7 +79,7 @@ double vh_fmg (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *v
     double residual = 100.0;
     double rms_target = std::min(rms_target, 1.0e-6);
     rms_target = std::max(rms_target_in, 1.0e-10);
-    Mgrid MG(L, T);
+    Mgrid MG(L, T, G, density, 0.0);
 
     if(maxlevel >= MAX_MG_LEVELS)
        rmg::error("Too many multigrid levels requested.");
@@ -186,7 +186,6 @@ double vh_fmg (rmg::grid *G, Lattice *L, TradeImages *T, double * rho, double *v
                  1, 2, maxlevel,
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
-                 G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
                  1.0e-8, global_step, coarse_step, boundaryflag, density, false, false);
 
         // Save coarse grid starting solution to use next time if vh_init is not null
@@ -235,7 +234,7 @@ double coarse_vh (rmg::grid *G, Lattice *L, TradeImages *T, CalcType * rho, Calc
 
     int idx, its, cycles;
     double t1, vavgcor, diag=0.0, residual = 100.0, last_residual = 200.0;
-    Mgrid MG(L, T);
+    rmg::mgrid MG(L, T, G, density, 0.0);
     int global_basis = G->get_GLOBAL_BASIS(density) / pow(8.0, (double)level);
 
     /* Pre and post smoothings on each level */
@@ -309,8 +308,6 @@ double coarse_vh (rmg::grid *G, Lattice *L, TradeImages *T, CalcType * rho, Calc
                             gridhx, gridhy, gridhz,
                             level, maxlevel, poi_pre,
                             poi_post, mu_cycles[level], coarse_step,
-                            G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
-                            G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
                 /* Transfer solution back to double array */

@@ -48,7 +48,8 @@ src/Prolong.cpp
 src/Lattice.cpp
 src/BaseThread.cpp
 src/rmg_grid.cpp
-src/Mgrid.cpp
+src/rmg_mgrid.cpp
+src/rmg_reduce.cpp
 src/MpiQueue.cpp
 src/app_cir_driver.cpp
 src/app_cil_driver.cpp
@@ -62,7 +63,6 @@ src/rmg_max_all.cpp
 src/ThreadBarrier.cpp
 src/rmg_error.cpp
 src/get_vh.cpp
-src/vh_fmg.cpp
 src/packfuncs.cpp
 src/ZfpCompress.cpp
 )
