@@ -71,6 +71,8 @@ namespace rmg
         mgrid(Lattice *lptr, TradeImages *tptr, rmg::grid *G, int density_in, double zmax_in);
        ~mgrid(void);
        
+        // Special handling for ON case
+        bool on_flag = false;
 
         // Public in case the caller wants to adjust these for some reasons
         std::array<int, MAX_MG_LEVELS> pre_cyc = {3, 3, 3, 3, 3, 3, 3, 3};
@@ -99,7 +101,13 @@ namespace rmg
             kmag = kmag_in;
         }
 
-        double rel_sradius(int level);
+       double rel_sradius(int level);
+
+       std::vector<double> pois_chebyshev_coeffs(
+       int nx, int ny, int nz,           // global grid points at this level
+       double dx, double dy, double dz,  // grid spacing at this level
+       double sigma,                     // smoothing window (0.0 = full band, 1.0 = higher)
+       int nsteps);                      // number of steps
 
         template <typename RmgType> void anchor_residual(int id, int level, int n, RmgType *r);
         template <typename RmgType> void anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r);

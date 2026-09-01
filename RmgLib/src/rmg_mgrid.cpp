@@ -66,7 +66,6 @@ std::vector<int> mgrid::toffsets;
 template <typename RmgType>
 void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
 {
-
     double s1[4]{0.0,0.0,0.0,0.0};
     for(int i=0;i < n;i++)
     {
@@ -145,7 +144,7 @@ double mgrid::rel_sradius(int level)
 }
 
 //  Computes multigrid smoothing parameters based on Cheybshev polynomials
-std::vector<double> pois_periodic_coeffs(
+std::vector<double> mgrid::pois_chebyshev_coeffs(
        int nx, int ny, int nz,           // global grid points at this level
        double dx, double dy, double dz,  // grid spacing at this level
        double sigma,                     // smoothing window (0.0 = full band, 1.0 = higher)
@@ -336,11 +335,11 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         int maxpts = std::max(std::max(nx, ny), nz);
         presweeps = std::max(maxpts, 12);
         if(presweeps > minpts) presweeps = minpts;
-        pcoefs = pois_periodic_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
+        pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
     }
     else
     {
-        pcoefs = pois_periodic_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 1.0, presweeps);
+        pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 1.0, presweeps);
     }
 
 /* precalc some boundaries */
@@ -1323,7 +1322,6 @@ void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
     double Zfac = zmax*gridhx*gridhx;
     scale = 1.0 / (diag + Zfac);
     scale = step * scale;
-//scale = 0.66*scale;
  
     // Non-zero k effectively means we are solving the Helmholtz rather than Poissons equation
     if(k != 0.0) {
