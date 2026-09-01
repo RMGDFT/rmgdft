@@ -16,7 +16,7 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE                   "")
 set(CTEST_SOURCE_DIRECTORY   "${RMGDFT_PATH}/build")
 set(CTEST_BINARY_DIRECTORY   "${RMGDFT_PATH}/build")
 # build options
-set(OPTION_BUILD             "-j16")
+set(OPTION_BUILD             "-j8")
 # define generator (optional), e.g. default to 'Unix Makefiles' on UNIX, Visual Studio on Windows
 set(CTEST_GENERATOR          "Unix Makefiles")
 # submit under Continuous, Nightly (default), Experimental
@@ -29,11 +29,11 @@ set(CTEST_CHECKOUT_COMMAND   "git pull")
 # define how to configure (e.g. cmake -DCMAKE_INSTALL_PREFIX=...)
 set(CTEST_CONFIGURE_COMMAND  "cmake ..")
 # the name of the build
-set(CTEST_BUILD_COMMAND      "make -j16 rmg-on-cpu rmg-cpu rmg-negf-cpu")
+set(CTEST_BUILD_COMMAND      "make -j8 rmg-on-cpu rmg-cpu")
 set(CTEST_BUILD_NAME         "rmg")
 # how to build
 # default max time each tests can run (in seconds)
-set(CTEST_TIMEOUT            "14400")
+set(CTEST_TIMEOUT            "7200")
 # locale to English
 set(ENV{LC_MESSAGES}         "en_EN")
 ctest_start             (${CTEST_MODEL} TRACK ${CTEST_MODEL})

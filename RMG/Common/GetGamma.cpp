@@ -36,7 +36,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 
 
 template void GetGamma<double> (double * gammaR, int ion, int nh, Kpoint<double> **Kptr);

@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_SPECIES_H
 #define RMG_SPECIES_H 1
 
@@ -35,7 +34,7 @@ private:
 public:
     void Init_ddd0_so(void);
     void InitSpinOrbit (void);
-    void InitPseudo (Lattice &L, rmg::grid *G, bool write_flag);
+    void InitPseudo (Lattice &L, BaseGrid *G, bool write_flag);
     void InitSemilocalBessel (void);
     void InitWeights(bool localize)
     {
@@ -250,7 +249,7 @@ public:
 
 
     /* Local Pseudopotentials */
-    std::vector<double> vloc0;
+    double *vloc0;
 
     /* Core charge radial grids */
     double *cr;
@@ -275,10 +274,6 @@ public:
     /* l-value associated with each difference potential */
     std::vector<int> dVl_l;
 
-    /* Atomic kinetic energy density for metagga functionals */
-    std::vector<double> tau_atomic;   // for isolated atoms including core and valence
-    std::vector<double> tau_core;     // core only
-
     /* Total number of radial projectors */
     int nbeta;
 
@@ -288,10 +283,8 @@ public:
      */
     std::vector<double> localig;
 
-    /* Log interpolation storage for the core charge density and ke density with metagga */
+    /* Log interpolation storage for the core charge density */
     std::vector<double> rhocorelig;
-    std::vector<double> tau_atomic_lig;
-    std::vector<double> tau_core_lig;
 
     // projectors in G-space radial log grid
     std::vector<std::shared_ptr<double []>> beta_g;
@@ -301,10 +294,7 @@ public:
     double *localpp_g;
     double *der_localpp_g;
     double *arho_g;
-    std::vector<double> mrho_g;
     double *rhocore_g;
-    double *tau_atomic_g;
-    double *tau_core_g;
 
     /*Grid spacing for atomic charge density on linear grid*/
     double drlig_arho;
@@ -355,15 +345,14 @@ public:
     std::vector<int> nh_l2m;
     int nh;
 
-    /*Atomic charge densities on linear grid*/
+    /*Atomic charge density on linear grid*/
     std::vector<double> arho_lig;
-    std::vector<double> mrho_lig;
     
     /* Point to plane wave object used for localized projectors */
     Pw *prj_pwave;
 
-    /* Point to local rmg::grid object */
-    rmg::grid *OG;
+    /* Point to local BaseGrid object */
+    BaseGrid *OG;
     
 };
 #endif

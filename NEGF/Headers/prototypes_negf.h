@@ -4,7 +4,7 @@
 void write_data_NEGF(char *name, double *vh, double *vxc, double *rho);
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
-void QuenchNegf (STATE * states, double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias);
 
 void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10, 
@@ -15,9 +15,9 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 #include "InputKey.h"
 
 void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
-                STATE * states, double * vnuc, double * vext, double * vxc, double * vh_old,
+                STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
                 double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
-void Run(STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
+void Run(STATE *, STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
 
 void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMPASS& potcompass, COMPASS& rhocompass);
 void ReadMatrix2Systems();
@@ -83,6 +83,15 @@ void modify_rho (double *, double *);
 void get_vh_negf (double*, double*, double*,int, int, int, double);
 void tri_to_row (double *, double *, int, int *);
 
+void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum);
+void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
+void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib);
+void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B, int *descb );
+
+void zgemm_driver (char *transa, char *transb, int m, int n, int k,
+std::complex<double> alpha, std::complex<double> *A, int ia, int ja, int *desca,
+std::complex<double> *B, int ib, int jb, int *descb, std::complex<double> beta,
+std::complex<double> *C, int ic, int jc, int *descc);
 void read_cond_input (double *emin, double *emax, int *E_POINTS, double *E_imag, double *KT, int *kpoint);
 
 double *memory_ptr_host_device(double *ptr_host, double *ptr_device);

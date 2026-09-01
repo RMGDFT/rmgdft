@@ -16,7 +16,7 @@ endif()
 
 
 
-add_executable(${rmg-negf} Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(${rmg-negf} EXCLUDE_FROM_ALL Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 set_target_properties(${rmg-negf} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_include_directories(${rmg-negf} PRIVATE "${PROJECT_SOURCE_DIR}/NEGF/Headers/")

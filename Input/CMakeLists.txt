@@ -1,5 +1,4 @@
 add_library (Input
-InputOpts.cpp
 AutoSet.cpp
 SetupGrids.cpp
 GetPrimeFactors.cpp

@@ -69,16 +69,16 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
        _splitpath(tmpname, NULL, dirname, NULL, NULL);
        if (!_mkdir(dirname));
 #endif
-        rmg::printlog ("\n Creating directory %s succesfull\n\n", tmpname);
+        rmg_printf ("\n Creating directory %s succesfull\n\n", tmpname);
     else
-        rmg::printlog ("\n Creating directory %s FAILED\n\n", tmpname);
+        rmg_printf ("\n Creating directory %s FAILED\n\n", tmpname);
 
 
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", newname);
-        rmg::error("Terminating.");
+        rmg_printf("Can't open restart file %s", newname);
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
 
@@ -86,17 +86,17 @@ void WriteData_rmgtddft_on (char *filename, double * vh, double * vxc,
 
 
    fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-   rmg::writefile (fhand, vh, fgrid_size * sizeof(double));
-   rmg::writefile (fhand, vxc, fgrid_size * sizeof(double));
-   rmg::writefile (fhand, vh_corr, fgrid_size * sizeof(double));
+   write (fhand, vh, fgrid_size * sizeof(double));
+   write (fhand, vxc, fgrid_size * sizeof(double));
+   write (fhand, vh_corr, fgrid_size * sizeof(double));
 
-   rmg::writefile (fhand, Pn0, 2* n2 * sizeof(double));
-   rmg::writefile (fhand, Hmatrix, n2 * sizeof(double));
-   rmg::writefile (fhand, Smatrix, n2 * sizeof(double));
-   rmg::writefile (fhand, Cmatrix, n2 * sizeof(double));
-   rmg::writefile (fhand, Hmatrix_m1, n2 * sizeof(double));
-   rmg::writefile (fhand, Hmatrix_0, n2 * sizeof(double));
-   rmg::writefile (fhand, &tot_steps, sizeof(int));
+   write (fhand, Pn0, 2* n2 * sizeof(double));
+   write (fhand, Hmatrix, n2 * sizeof(double));
+   write (fhand, Smatrix, n2 * sizeof(double));
+   write (fhand, Cmatrix, n2 * sizeof(double));
+   write (fhand, Hmatrix_m1, n2 * sizeof(double));
+   write (fhand, Hmatrix_0, n2 * sizeof(double));
+   write (fhand, &tot_steps, sizeof(int));
    close(fhand);
 
 }                               /* end write_data */

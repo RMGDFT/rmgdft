@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_mangling_in_H
 #define RMG_mangling_in_H 1
 

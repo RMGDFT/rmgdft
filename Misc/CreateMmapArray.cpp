@@ -34,8 +34,8 @@
 // exists it's length is adjusted to length.
 void *CreateMmapArray(int &fd, size_t length)
 {
-    if(ftruncate(fd, length)) rmg::error("Problem truncating mmap file.");
+    ftruncate(fd, length);
     lseek(fd, length-1, SEEK_SET);
-    rmg::writefile(fd, "", 1);
+    write(fd, "", 1);
     return mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 }

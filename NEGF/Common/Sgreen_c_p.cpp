@@ -44,9 +44,7 @@ void Sgreen_c_p (double * Htri, double * Stri, std::complex<double> * sigma, int
     /* allocate matrix and initialization  */
     H_tri = (std::complex<double> *) RmgMallocHost(ntot * sizeof( std::complex<double>) );
  
-    RmgTimer *RT1 = new RmgTimer("matrix_kpoint_center");
     matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-    delete RT1;
 
 
     /* Construct H = ES - H */

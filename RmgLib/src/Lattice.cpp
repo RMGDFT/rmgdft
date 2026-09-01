@@ -416,13 +416,13 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         case ORTHORHOMBIC_BASE_CENTRED:
 
             /* not programmed */
-            rmg::error("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case ORTHORHOMBIC_BC:
 
-            if(celldm[1] <= 0.0) rmg::error("celldm[1] must be positive.");
-            if(celldm[2] <= 0.0) rmg::error("celldm[2] must be positive.");
+            if(celldm[1] <= 0.0) rmg_error_handler (__FILE__, __LINE__, "celldm[1] must be positive.");
+            if(celldm[2] <= 0.0) rmg_error_handler (__FILE__, __LINE__, "celldm[2] must be positive.");
             
             Lattice::a0[0] = 0.5 * celldm[0];
             Lattice::a0[1] = Lattice::a0[0] * celldm[1];
@@ -438,7 +438,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         case ORTHORHOMBIC_FC:
 
             /* not programmed */
-            rmg::error("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case -MONOCLINIC_PRIMITIVE:
@@ -450,7 +450,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
  
         case MONOCLINIC_PRIMITIVE:
 
-            //rmg::error("bravais lattice not programmed.");
+            //rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             sine = sqrt (1.0 - celldm[3] * celldm[3]);
             Lattice::a0[0] = alat;
             Lattice::a1[0] = alat * celldm[1] * celldm[3];
@@ -460,12 +460,12 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
         case MONOCLINIC_BASE_CENTRED:
             /* not programmed */
-            rmg::error("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case TRICLINIC_PRIMITIVE:
 
-            //rmg::error("bravais lattice not programmed.");
+            //rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             singam = sqrt (1.0 - celldm[5] * celldm[5]);
             term = sqrt ((1.0 + 2.0 * celldm[3] * celldm[4] * celldm[5] -
                         celldm[3] * celldm[3]
@@ -482,7 +482,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         default:
 
             printf ("ibrav is set to %d", Lattice::ibrav);
-            rmg::error("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
 
 
     }                           /* end switch (*ibrav) */
@@ -701,7 +701,7 @@ void Lattice::lat2abc(double *a0, double *a1, double *a2)
     }
 
 //    if(ibrav < 0)
-//        rmg::error("Negative ibrav not supported.\n");
+//        rmg_error_handler (__FILE__, __LINE__, "Negative ibrav not supported.\n");
 }
 
 void Lattice::abc2celldm(void)
@@ -1184,7 +1184,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
             celldm[5] = dot_product(a1,a2) / celldm[0] / sqrt(dot_product(a2,a2));
             break;
         default:
-            rmg::error("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
     }
     celldm[0] = celldm[0] * alat;
 }
@@ -1192,7 +1192,7 @@ void Lattice::lat2celldm (int ibrav, double alat, double *a1, double *a2, double
 void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double *a2, double *nalat)
 {
   
-  double omegai;
+  double e0[3], e1[3], e2[3], celldm_internal[6], omegai;
   bool dorotate = (ibrav == CUBIC_FC) ||
       (ibrav == CUBIC_BC) ||
       (ibrav == -CUBIC_BC) ||
@@ -1210,6 +1210,15 @@ void Lattice::remake_cell(int ibrav, double alat, double *a0, double *a1, double
   }
   lat2celldm (ibrav, alat, a0, a1, a2);
 
+  e0[0] = a0[0];
+  e0[1] = a0[1];
+  e0[2] = a0[2];
+  e1[0] = a1[0];
+  e1[1] = a1[1];
+  e1[2] = a1[2];
+  e2[0] = a2[0];
+  e2[1] = a2[1];
+  e2[2] = a2[2];
   latgen (celldm, &omegai, a0, a1, a2, !dorotate);
   for(int i=0;i < 3;i++) a0[i] /= alat;
   for(int i=0;i < 3;i++) a1[i] /= alat;

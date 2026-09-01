@@ -38,15 +38,13 @@
 #include "Kpoint.h"
 #include <complex>
 #include "RmgParallelFft.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Prolong.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
 #include "Symmetry.h"
+#include "Voronoi.h"
 #include "Functional.h"
-#include "GatherScatter.h"
-#include "rmg_sum_all.h"
-#include "blas_driver.h"
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -57,8 +55,8 @@ template void GetNewRhoPre<std::complex<double> >(Kpoint<std::complex<double>> *
 template void GetNewRhoPost<double>(Kpoint<double> **, double *);
 template void GetNewRhoPost<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
 
-template void GetNewRhoOne<double>(Kpoint<double> *, State<double> *, Prolong *, double *, double);
-template void GetNewRhoOne<std::complex<double>>(Kpoint<std::complex<double>> *, State<std::complex<double>> *, Prolong *, double *, double);
+template void GetNewRhoOne<double>(State<double> *, Prolong *, double *, double);
+template void GetNewRhoOne<std::complex<double>>(State<std::complex<double>> *, Prolong *, double *, double);
 
 
 
@@ -68,20 +66,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    if(ct.xc_is_meta)
-    {
-        for(int idx = 0;idx < FP0_BASIS;idx++)
-        {
-            Functional::ke_density[idx] = 0.0;
-        }
-    }
+
     if(ct.fast_density)
     {
         GetNewRhoPost(Kpts, rho);
     }
     else
     {
-#if 0 && HIP_ENABLED
+#if HIP_ENABLED
         int ibrav = Rmg_L.get_ibrav_type();
         if(ct.prolong_order == 0)
         {
@@ -107,28 +99,15 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         delete [] augrho;
     }
 
-    if(ct.xc_is_meta)
-    {
-        double fac = 1.0 / (double)ct.nspin;
-        for(int idx = 0;idx < FP0_BASIS;idx++)
-        {
-            Functional::ke_density[idx] += fac*Functional::tau_core[idx];
-        }
-    }
-
     if(ct.is_use_symmetry)
     {
         if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
         if(ct.noncoll && Rmg_Symm)
             Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
-
-        if(ct.xc_is_meta)
-        {
-            if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(Functional::ke_density);
-        }
     }
     if (ct.nspin == 2)
         get_rho_oppo (rho,  &rho[FP0_BASIS]);
+
 
     /* Check total charge. */
     ct.tcharge = ZERO;
@@ -136,9 +115,9 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         ct.tcharge += rho[idx];
 
     if(ct.AFM) ct.tcharge *=2.0;
-    /* ct.tcharge = rmg::sum_all<double> (ct.tcharge); */
-    ct.tcharge = rmg::sum_all<double> (ct.tcharge, pct.grid_comm);
-    ct.tcharge = rmg::sum_all<double> (ct.tcharge, pct.spin_comm);
+    /* ct.tcharge = real_sum_all (ct.tcharge); */
+    ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
+    ct.tcharge = real_sum_all (ct.tcharge, pct.spin_comm);
     ct.tcharge = ct.tcharge * get_vel_f();
 
     /* Renormalize charge, there could be some discrepancy because of interpolation */
@@ -148,12 +127,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     /*Write out normalization constant if needed*/
     double difference = fabs(t1 - 1.0);
     if ((ct.verbose == 1) || (difference > 0.01))
-        rmg::printlog ("Charge normalization constant -1.0: %e\n", t1-1.0);
+        rmg_printf ("Charge normalization constant -1.0: %e\n", t1-1.0);
 
-    if(ct.xc_is_meta && ct.nspin == 2)
-    {
-        get_rho_oppo (Functional::ke_density,  &Functional::ke_density[FP0_BASIS]);
-    }
 }
 
 // Generates the new density by interpolating each orbital to the fine grid and then squaring
@@ -165,48 +140,36 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
-    int cfac = 1;
-    if(ct.coalesce_states) cfac = pct.coalesce_factor;
-    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
-    int my_pe_x, my_pe_y, my_pe_z;
-    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
-    int my_pe_offset = my_pe_x % cfac;
-
-
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     static Prolong P(ratio, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
-    int cstride = FP0_BASIS * factor;
-    double *work = new double[cfac * cstride]();
+    double *work = new double[FP0_BASIS * factor]();
 
-    int active_threads = rmg::get_active_threads();
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--; 
+
     int istop = nstates / active_threads;
     istop = istop * active_threads;
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        Rmg_T->set_coalesce_factor(cfac);
 
         /* Loop over states and accumulate charge */
-        for(int st1=0;st1 < istop;st1+=active_threads*cfac)
+        for(int st1=0;st1 < istop;st1+=active_threads)
         {
 
             SCF_THREAD_CONTROL thread_control;
-            int istart = my_pe_offset*active_threads;
 
             for(int ist = 0;ist < active_threads;ist++)
             {
                 thread_control.job = HYBRID_GET_RHO;
-                double scale = Kpts[kpt]->kp.kweight;
-                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist+istart];
+                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                thread_control.p1 = (void *)&Kpts[kpt]->Kstates[st1+ist];
                 thread_control.p2 = (void *)&P;
                 thread_control.p3 = (void *)work;
-                thread_control.p4 = (void *)Kpts[kpt];
-                thread_control.extratag1 = active_threads;
-                thread_control.extratag2 = st1;
-
                 thread_control.fd_diag = scale;
-                thread_control.basetag = st1 + ist + istart;
+                thread_control.basetag = st1 + ist;
                 QueueThreadTask(ist, thread_control);
             }
             // Thread tasks are set up so wake them
@@ -214,34 +177,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
         } 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-        Rmg_T->set_coalesce_factor(1);
 
         for(int st1=istop;st1 < nstates;st1++)
         {
-            double scale = Kpts[kpt]->kp.kweight;
-            GetNewRhoOne(Kpts[kpt], &Kpts[kpt]->Kstates[st1], &P, work, scale);
+            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
+            GetNewRhoOne(&Kpts[kpt]->Kstates[st1], &P, work, scale);
         }
         MPI_Barrier(pct.grid_comm);
     }                           /*end for kpt */
-
-    // If coalescing enabled then each MPI process contains the
-    // charge density from a subset of the orbitals. But this
-    // subset also spans a larger domain so we have to combine
-    // the domains to get the contribution from all orbitals.
-    if(cfac > 1)
-    {
-        double *w0 = new double[cfac*cstride]();
-        ScatterGrid(Rmg_G, cfac*FP0_BASIS, w0, work);
-        std::fill(work, work+FP0_BASIS, 0.0);
-        for(int i=0;i < cfac;i++)
-        {
-            for(int j=0;j < cstride;j++)
-            {
-                work[j] += w0[i*cstride+j];
-            }
-        }
-        delete [] w0;
-    }
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
@@ -262,12 +205,13 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
 std::mutex rhomutex;
 
-template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, Prolong *P, double *work, double scale)
+template <typename OrbitalType> void GetNewRhoOne(State<OrbitalType> *sp, Prolong *P, double *work, double scale)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
     T->thread_barrier_wait(false);
-    scale = scale * sp->occupation[0];
+    if(scale < 1.0e-10) return;              // No need to include unoccupied orbitals
+
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
@@ -277,33 +221,16 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
-    int cfac = 1;
-    if(ct.coalesce_states) cfac = pct.coalesce_factor;
-    if(Rmg_G->get_PX0_GRID(1) >= 5) cfac = 1;
-    int my_pe_x, my_pe_y, my_pe_z;
-    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
 
 
     OrbitalType *psi = sp->psi;
     std::complex<double> psiud;
-    OrbitalType *psi_f = new OrbitalType[cfac*ct.noncoll_factor * FP0_BASIS]();
+    OrbitalType *psi_f = new OrbitalType[ct.noncoll_factor * FP0_BASIS]();
 
     if(ct.prolong_order == 0)
         FftInterpolation(*Rmg_G, psi, psi_f, ratio, false);
     else
-    {
-        if(cfac == 1)
-        {
-            P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-        }
-        else
-        {
-            OrbitalType *work1 = new OrbitalType[cfac * ct.noncoll_factor * P0_BASIS]();
-            GatherPsi(Rmg_G, cfac*P0_BASIS, sp->istate, kptr->orbital_storage, work1, cfac);
-            P->prolong(psi_f, work1, cfac*dimx, dimy, dimz, cfac*half_dimx, half_dimy, half_dimz);
-            delete [] work1;
-        }
-    }
+        P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
     if(ct.noncoll)
         P->prolong(&psi_f[FP0_BASIS], &psi[half_dimx*half_dimy*half_dimz], dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
@@ -313,16 +240,13 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
     if(ct.norm_conserving_pp)
     {
         sum1 = 0.0;
-        for (int idx = 0; idx < cfac*FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
-        if(cfac > 1)
-            rmg::allreduce(&sum1, 1, pct.coalesced_grid_comm);
-        else
-            rmg::allreduce(&sum1, 1, pct.grid_comm);
+        for (int idx = 0; idx < FP0_BASIS*ct.noncoll_factor; idx++) sum1 += std::norm(psi_f[idx]);
+        GlobalSums(&sum1, 1, pct.grid_comm);
         sum1 = 1.0 / sum1 / get_vel_f();
     }
 
     rhomutex.lock();
-    for (int idx = 0; idx < cfac*FP0_BASIS; idx++)
+    for (int idx = 0; idx < FP0_BASIS; idx++)
     {
         work[idx] += sum1 * scale * std::norm(psi_f[idx]);
         if(ct.noncoll)
@@ -333,30 +257,24 @@ template <typename OrbitalType> void GetNewRhoOne(Kpoint<OrbitalType> *kptr, Sta
             work[idx + 3 * FP0_BASIS] += sum1 * scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
-    rhomutex.unlock();
-
+#if 0
+//  Computing the kinetic energy density on the fine grid may help in some cases but
+//  that's not clear yet
     if(ct.xc_is_meta)
     {
-        // Compute \sum_i |\nabla psi|^2
+        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         fgobj<OrbitalType> gx, gy, gz;
         ApplyGradient<OrbitalType> (psi_f, gx.data(), gy.data(), gz.data(), ct.kohn_sham_fd_order, "Fine");
-        rhomutex.lock();
         for(int idx = 0;idx < FP0_BASIS;idx++)
         {
-            OrbitalType fx_r = std::real(gx[idx]) - kptr->kp.kvec[0]*std::imag(psi_f[idx]); 
-            OrbitalType fy_r = std::real(gy[idx]) - kptr->kp.kvec[1]*std::imag(psi_f[idx]); 
-            OrbitalType fz_r = std::real(gz[idx]) - kptr->kp.kvec[2]*std::imag(psi_f[idx]); 
-            OrbitalType fx_i = std::imag(gx[idx]) + kptr->kp.kvec[0]*std::real(psi_f[idx]); 
-            OrbitalType fy_i = std::imag(gy[idx]) + kptr->kp.kvec[1]*std::real(psi_f[idx]); 
-            OrbitalType fz_i = std::imag(gz[idx]) + kptr->kp.kvec[2]*std::real(psi_f[idx]); 
-
-            double t1 = std::real(fx_r*fx_r + fy_r*fy_r + fz_r*fz_r +
-                        fx_i*fx_i + fy_i*fy_i + fz_i*fz_i);
-            Functional::ke_density[idx] += 0.5*scale*t1;
+            double t1 = std::real(gx[idx]*std::conj(gx[idx]) + 
+                                  gy[idx]*std::conj(gy[idx]) + 
+                                  gz[idx]*std::conj(gz[idx]));
+            F.ke_density[idx] += 0.5*scale*t1;
         }
-        rhomutex.unlock();
-
     }
+#endif
+    rhomutex.unlock();
 
     delete [] psi_f;
 
@@ -441,6 +359,9 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
     {
         switch (ct.interp_flag)
         {
+            case CUBIC_POLYNOMIAL_INTERPOLATION:
+                pack_rho_ctof (&work[is*pbasis], &rho[is*FP0_BASIS]);
+                break;
             case PROLONG_INTERPOLATION:
                 mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 4);
                 break;
@@ -450,7 +371,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
             default:
 
                 //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-                rmg::error("ct.interp_flag is set to an invalid value.");
+                rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
 
 
         }
@@ -467,7 +388,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
     delete [] work;
 }
 
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
 
 #include "Gpufuncs.h"
 
@@ -503,15 +424,15 @@ void init_gpu_prolong(int dimx, int dimy, int dimz, Prolong &P)
     P.hbufs.resize(max_threads);
     for(int i=0;i < max_threads;i++)
     {
-        gpuMalloc((void **)&P.abufs[i], bufsize);
-        gpuMallocHost((void **)&P.hbufs[i], buf_max);
-        gpuMalloc((void **)&P.rbufs[i], rbufsize);
+        hipMalloc((void **)&P.abufs[i], bufsize);
+        hipMallocHost((void **)&P.hbufs[i], buf_max);
+        hipMalloc((void **)&P.rbufs[i], rbufsize);
     }
     for(int i=0;i < max_threads;i++)
     {
         GpuFill(P.rbufs[i], 8*dimx*dimy*dimz, 0.0);
     }
-    rmg::sync_device();
+    DeviceSynchronize();
 }
 
 // Generates the new density by interpolating each orbital to the fine grid and then squaring
@@ -520,7 +441,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
 {
 
     if(ct.verbose) {
-        printf("PE: %d  start GetNewRhoGpu \n", pct.gridpe);
+        printf("PE: %d  start GetnewRhoGpu \n", pct.gridpe);
         fflush(NULL);
     }
 
@@ -532,15 +453,12 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     int half_dimy = rhop.dimy / 2;
     int half_dimz = rhop.dimz / 2;
 
-    int my_pe_x, my_pe_y, my_pe_z;
-    Rmg_G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
-
     int nstates = Kpts[0]->nstates;
     Prolong P(2, ct.prolong_order, ct.cmix, *Rmg_T,  Rmg_L, *Rmg_G);
     init_gpu_prolong(half_dimx, half_dimy, half_dimz, P);
 
-    int active_threads = rmg::get_active_threads();
-
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -581,12 +499,12 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
     // Now we have to reduce rbufs on the GPU
     int ione = 1;
     const double rone = 1.0;
-    rmg::sync_device();
+    DeviceSynchronize();
     for(size_t i=1;i < P.rbufs.size();i++)
     {
         gpublasDaxpy (ct.gpublas_handle, rhop.pbasis, &rone, P.rbufs[i], ione, P.rbufs[0], ione);
     }
-    gpuMemcpy(P.hbufs[0], P.rbufs[0], rhop.pbasis*sizeof(double), gpuMemcpyDeviceToHost);
+    hipMemcpy(P.hbufs[0], P.rbufs[0], rhop.pbasis*sizeof(double), hipMemcpyDeviceToHost);
     double *hptr = (double *)P.hbufs[0];
 
     // Sum over kpoints and spin
@@ -613,6 +531,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
     int tid = T->get_thread_tid();
     int ord = P->order;
     gpuStream_t stream = getGpuStream();
+
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
@@ -627,7 +546,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         float *hptr = (float *)P->hbufs[tid];
         float *gptr = (float *)P->abufs[tid];
         std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
-        gpuMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), gpuMemcpyHostToDevice, stream);
+        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
 
         if(ord == 6)
             P->prolong_ortho_gpu<float, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
@@ -641,13 +560,13 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
     if constexpr (std::is_same_v<OrbitalType, std::complex<double>>)
     {
         std::vector<std::complex<float>> sg_half(sg_hbasis), thalf(hbasis);
-        for(size_t idx =0;idx < hbasis;idx++) 
+        for(int idx =0;idx < hbasis;idx++) 
             thalf[idx] = std::complex<float>(std::real(sp->psi[idx]), std::imag(sp->psi[idx]));
         Rmg_T->trade_imagesx (thalf.data(), sg_half.data(), half_dimx, half_dimy, half_dimz, ord/2, FULL_TRADE);
         std::complex<float> *hptr = (std::complex<float> *)P->hbufs[tid];
         std::complex<float> *gptr = (std::complex<float> *)P->abufs[tid];
         std::copy(sg_half.data(), sg_half.data()+sg_hbasis, hptr);
-        gpuMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), gpuMemcpyHostToDevice, stream);
+        hipMemcpyAsync(gptr, hptr, sg_hbasis*sizeof(T), hipMemcpyHostToDevice, stream);
         if(ord == 6)
             P->prolong_ortho_gpu<std::complex<float>, 6>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
         if(ord == 8)
@@ -657,7 +576,7 @@ template <typename OrbitalType> void GetNewRhoGpuOne(
         if(ord == 12)
             P->prolong_ortho_gpu<std::complex<float>, 12>(P->rbufs[tid], gptr, half_dimx, half_dimy, half_dimz, scale);
     }
-    gpuStreamSynchronize(stream);
+    hipStreamSynchronize(stream);
 }
 
 #endif

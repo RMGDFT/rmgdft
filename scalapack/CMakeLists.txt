@@ -6,7 +6,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
       #string( REGEX REPLACE "-std=c99" "" CMAKE_C_FLAGS
       #    "${CMAKE_C_FLAGS}" )
       set(CMAKE_C_STANDARD 90)
-      add_compile_options("-w")
 endif ()
 
 # Configure the warning and code coverage suppression file

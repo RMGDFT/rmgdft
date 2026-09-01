@@ -32,11 +32,6 @@
 #include "transition.h"
 #include "Functional.h"
 
-#if __LIBXC
-#include "xc.h"
-#include "InputOpts.h"
-#endif
-
 static void init_write_pos (void);
 
 
@@ -149,9 +144,6 @@ void WriteHeader (void)
     case TDDFT:
         if(pct.imgpe==0) fprintf(ct.logfile, "Time dependent DFT (TDDFT) calculation \n");
         break;
-    case TDDFT_CVE:
-        if(pct.imgpe==0) fprintf(ct.logfile, "Time dependent DFT (TDDFT) calculation with Ehrenfest dynamics. \n");
-        break;
     case Exx_only:
         if(pct.imgpe==0) fprintf(ct.logfile, "calculate Exx integral's from saveed wave functions \n");
         break;
@@ -164,7 +156,7 @@ void WriteHeader (void)
 
 
     default:
-        rmg::error("Unknown molecular dynamics method.");
+        rmg_error_handler (__FILE__,__LINE__,"Unknown molecular dynamics method.");
     }
     if(pct.imgpe==0) fprintf(ct.logfile, "    Description:              %s\n", ct.description.c_str());
     if(pct.imgpe==0) fprintf(ct.logfile, "    Orbital Initialization:   ");
@@ -206,31 +198,6 @@ void WriteHeader (void)
 	default:
             if(pct.imgpe==0) fprintf(ct.logfile, "Unknown start mode\n");
     }
-#if __LIBXC
-    if(pct.imgpe==0) fprintf(ct.logfile, "\nUsing libxc version %s\n", ct.libxc_version);
-    if(pct.imgpe==0) fprintf(ct.logfile, "    %s\n", ct.libxc_reference);
-    if(pct.imgpe==0) fprintf(ct.logfile, "    DOI: %s\n\n", ct.libxc_reference_doi);
-#if 0
-    int func_id = xc_functional_get_number(reordered_xc_type[ct.xctype].c_str());
-    static xc_func_type func;
-    if(func_id > 0)
-    {
-       int retval = xc_func_init(&func, func_id, XC_UNPOLARIZED);
-       if(retval == 0)
-        {
-            const xc_func_info_type *info = xc_func_get_info(&func);
-            const func_reference_type *ref;
-
-            for(int i = 0; xc_func_info_get_references(info, i) == 0; i++) {
-                ref = xc_func_info_get_references(info, i);
-                fprintf(ct.logfile, "Reference %d: %s\n", i+1, ref->ref);
-            }
-            xc_func_end(&func);
-        }
-    }
-#endif
-#endif
-
     const std::string tstr = Functional::get_dft_name_rmg();
     if(pct.imgpe==0) fprintf(ct.logfile, "    Exchange Correlation:     %s\n", tstr.c_str());
     if(pct.imgpe==0) fprintf(ct.logfile, "    Spin Polarization:        ");
@@ -512,9 +479,6 @@ void WriteHeader (void)
             break;
         case SUBDIAG_ROCSOLVER:
             if(pct.imgpe==0) fprintf(ct.logfile, "Rocsolver\n");
-            break;
-        case SUBDIAG_ELPA:
-            if(pct.imgpe==0) fprintf(ct.logfile, "Elpa\n");
             break;
         default:
             if(pct.imgpe==0) fprintf(ct.logfile, "Unknown diagonalization method");

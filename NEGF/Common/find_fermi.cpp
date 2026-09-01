@@ -21,7 +21,6 @@
 #include "method.h"
 #include "pmo.h"
 #include "transition.h"
-#include "rmg_reduce.h"
 
 
 
@@ -34,29 +33,24 @@ void find_fermi (std::complex<double> * sigma_all)
     int ione = 1;
     static double density = 0.0;
 
-    RmgTimer *RT = new RmgTimer("Find Fermi");
 
     bias1 = lcr[1].EF_new;
     for (fermi_step = 0; fermi_step < 4; fermi_step++)
     {
 
-        RmgTimer *RT1 = new RmgTimer("Find Fermi: sigma_all");
         set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-        delete RT1;
 
-        RT1 = new RmgTimer("Find Fermi: charge density");
         charge_density_matrix_p (sigma_all);
-        delete RT1;
 
         /* calculating the total charge in the central part  */
         ct.tcharge = 0.0;
         for (st1 = pmo.offdiag_begin[0]; st1 < pmo.diag_begin[ct.num_blocks-1]; st1++)
                 ct.tcharge += 6.0 * lcr[0].density_matrix_tri[st1] * lcr[0].Stri[st1];
-        rmg::allreduce(&ct.tcharge, ione, COMM_EN2);
+         comm_sums(&ct.tcharge, &ione, COMM_EN2);
 
         if (pct.gridpe == 0)
-            rmg::printlog ("\n total charge, %18.12f %18.12f  Fermi energy %16.10f %16.10f",
+            rmg_printf ("\n total charge, %18.12f %18.12f  Fermi energy %16.10f %16.10f",
                     ct.nel, ct.tcharge, bias1, density);
 
 
@@ -77,18 +71,15 @@ void find_fermi (std::complex<double> * sigma_all)
     }
 
     if (pct.gridpe == 0)
-        rmg::printlog("\nFERMI ENERGY = %15.8f\n", bias1);
+        rmg_printf("\nFERMI ENERGY = %15.8f\n", bias1);
 
-    RmgTimer *RT1 = new RmgTimer("Find Fermi: sigma_all");
     set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
 
     sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-    delete RT1;
 
     lcr[1].EF_new = bias1;
     lcr[2].EF_new = bias1;
     lcr[1].EF_old = bias1;
     lcr[2].EF_old = bias1;
-    delete RT;
 
 }

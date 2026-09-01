@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -26,7 +25,7 @@
 
 
 #include <complex>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -51,8 +50,8 @@ private:
     static double a;
     static double b;
 
-    // rmg::grid class
-    rmg::grid *Grid;
+    // BaseGrid class
+    BaseGrid *Grid;
 
     // Lattice object
     Lattice *L;

@@ -36,7 +36,15 @@
 void write_data_NEGF(char *name, double *vh, double *vxc, double *rho)
 {
     int amode;
+    int state;
     char newname[MAX_PATH + 20];
+    int idx, idx1;
+    double hxgrid, hygrid, hzgrid;
+    double *rho_tem;
+    int ix, iy, iz, ixdim, iydim, izdim;
+    int ixmin, ixmax, iymin, iymax, izmin, izmax;
+    int ixx, iyy, izz;
+    int PNX0, PNY0, PNZ0;
     int pex, pey, pez;
 
 

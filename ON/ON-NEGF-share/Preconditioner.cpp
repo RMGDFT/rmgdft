@@ -31,16 +31,16 @@
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
-#include "rmg_sum_all.h"
+#include "GlobalSums.h"
+#include "RmgSumAll.h"
 #include "Kpoint.h"
-#include "rmg_gemm.h"
-#include "rmg_mgrid.h"
+#include "RmgGemm.h"
+#include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
@@ -66,7 +66,10 @@ void Preconditioner (double *res, int num_states)
 
     RmgTimer RT("Precond");
 
-    int active_threads = rmg::get_active_threads();
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
+
     int istop = num_states / active_threads;
     istop = istop * active_threads;
     if(active_threads == 1) istop = 0;
@@ -105,12 +108,15 @@ void Preconditioner (double *res, int num_states)
 void PreconditionerOne (double *res, int st, double gamma)
 {
 
-    rmg::grid *G = Rmg_G;
+    BaseGrid *G = Rmg_G;
     TradeImages *T =Rmg_T;
     Lattice *L = &Rmg_L;
-    rmg::mgrid MG(L, T, Rmg_G, 1, 0.0);
+    Mgrid MG(L, T);
+    int pre[MAX_MG_LEVELS] = { 2, 2, 2, 2, 20, 20, 20, 20 };
+    int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
+    double tstep = 0.666666666666;
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -154,19 +160,22 @@ void PreconditionerOne (double *res, int st, double gamma)
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if (cycles == ct.eig_parm.gl_pre)
         {
-            //rmg::pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
-            rmg::pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
-            rmg::pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
+            //CPP_pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
+            CPP_pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
+            CPP_pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
             //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
             RT= new RmgTimer("Precond: mgrid");
             MG.mgrid_solv<double>(work2_t, work1_t, work_t,
-                    dimx, dimy, dimz,
-                    0, levels, 1.0, pot,
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
-
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                    0, levels, pre, post, 1,
+                    //tstep, 1.0*Zfac, 0.1, NULL,     // which one is best?
+                    tstep, 1.0, 0.0, pot,
+                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
             delete RT;
-            //rmg::pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
-            rmg::pack_stop(work2_t, res_t2, dimx, dimy, dimz);
+            //CPP_pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
+            CPP_pack_stop(work2_t, res_t2, dimx, dimy, dimz);
 
             t1 = -1.;
 

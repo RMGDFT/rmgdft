@@ -128,7 +128,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z)
 //    dipole_center[2] = idx * hzzgrid * zside;
 
 
-    rmg::printlog("\n dipole center at %f %f %f", ct.dipole_center[0], ct.dipole_center[1], ct.dipole_center[2]);
+    rmg_printf("\n dipole center at %f %f %f", ct.dipole_center[0], ct.dipole_center[1], ct.dipole_center[2]);
 
     VhcorrPeriodicPart(vh_x, vh_y, vh_z, alpha, ct.dipole_center);
     for(i = 0; i < FPX0_GRID; i++)
@@ -195,7 +195,7 @@ double gaussintegral(double r, int n)
 
     if(n < 0)
     {
-        rmg::printlog("\n  n < 0 in gaussintegral \n");
+        rmg_printf("\n  n < 0 in gaussintegral \n");
         fflush(NULL);
         exit(0);
     }
@@ -302,7 +302,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
             g_r0 *= tpiba;
             phase_r0 = exp(std::complex<double>(0.0, -g_r0));
 
-            //rmg::printlog("\n  iggg %d %e %e %e %e %e", ig, fine_pwaves->g[ig].a[2],g_r0, g_r0/PI, phase_r0)
+            //rmg_printf("\n  iggg %d %e %e %e %e %e", ig, fine_pwaves->g[ig].a[2],g_r0, g_r0/PI, phase_r0)
 
             gx  = fine_pwaves->g[ig].a[2] * tpiba;
             crho[ig] = exp(-alpha * alpha * gsquare/4.0)/gsquare * gx *phase_r0;

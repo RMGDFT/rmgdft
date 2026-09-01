@@ -119,16 +119,16 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
 
     int fhand = open(wfname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
-        rmg::printlog("Can't open restart file %s", wfname.c_str());
-        rmg::error("Terminating.");
+        rmg_printf("Can't open restart file %s", wfname.c_str());
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
     size_t rsize = read (fhand, &H, sizeof(OrbitalHeader));
     if(rsize != sizeof(OrbitalHeader))
-        rmg::error("error reading");
+        rmg_error_handler (__FILE__,__LINE__,"error reading");
 
     //    if((H.nx != (size_t)sizes_c[0]) || (H.ny != (size_t)sizes_c[1]) || (H.nz != (size_t)sizes_c[2])) {
-    //        rmg::printlog("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
-    //        rmg::error("Grid size mismatch.");//    }
+    //        rmg_printf("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
+    //        rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");//    }
 
     eig_value = H.eig;
     wf_occ = H.occ;
@@ -138,7 +138,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
     double *tbuf = new double[cont.fullSize * factor];
     rsize = read (fhand, tbuf, cont.fullSize * sizeof(double) * factor);
     if(rsize != cont.fullSize * sizeof(double) * factor)
-        rmg::error("problem reading wf file");
+        rmg_error_handler (__FILE__,__LINE__,"problem reading wf file");
     close(fhand);
     for(int idx=0;idx < cont.fullSize*factor;idx++) values.push_back(tbuf[idx]);
     delete [] tbuf;
@@ -389,7 +389,7 @@ void eshdfFile::writeElectrons(void) {
     if(ct.noncoll) {
         //check if avgNup == avgNdn
         if(nup_int != ndn_int) {
-            rmg::error("SOC case nup ! = ndn");
+            rmg_error_handler(__FILE__, __LINE__, "SOC case nup ! = ndn");
         }
         
         ndn_int = -1;
@@ -495,7 +495,7 @@ void eshdfFile::writeLocalizedOrbitals() {
             exit(0);
         }
 
-        rmg::readfile(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
+        read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
         close(fhand);
         std::string Cij_name = "eigenset_" + std::to_string(ispin);
         hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
@@ -594,7 +594,7 @@ void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
                 exit(0);
             }
 
-            rmg::readfile(fhand, phi.data(), ct.states[chIdx].size * sizeof(double));
+            read(fhand, phi.data(), ct.states[chIdx].size * sizeof(double));
             close(fhand);
 
             int dimx = ct.states[chIdx].orbit_nx;
@@ -690,13 +690,13 @@ void eshdfFile::handleRho(hid_t groupLoc) {
         rhofname = rhofname + "_spin" + std::to_string(ispin) + ".rho";
         int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if (fhand < 0) {
-            rmg::printlog("Can't open restart file %s", rhofname.c_str());
-            rmg::error("Terminating.");
+            rmg_printf("Can't open restart file %s", rhofname.c_str());
+            rmg_error_handler(__FILE__, __LINE__, "Terminating.");
         }
 
         size_t rsize = read (fhand, rho_buf, rho_fftCont.fullSize * sizeof(double));
         if(rsize != rho_fftCont.fullSize * sizeof(double))
-            rmg::error("problem reading rho file");
+            rmg_error_handler (__FILE__,__LINE__,"problem reading rho file");
         close(fhand);
         std::string spin_str = "spin_" + std::to_string(ispin);
 

@@ -33,7 +33,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
@@ -46,7 +46,7 @@
 #include "Functional.h"
 #include "Solvers.h"
 #include "RmgParallelFft.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 
 
 
@@ -111,7 +111,7 @@ template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_in, double 
         //        (ct.xc_is_hybrid && Functional::is_exx_active())) 
         {
             RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-            Kptr[kpt]->MgridSubspaceBlocked(vtot_psi, vxc_psi);
+            Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
             delete RT1;
         }
        // else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
@@ -227,7 +227,7 @@ template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_in, double 
         }
     }
 
-    eigsum = rmg::sum_all(eigsum, pct.kpsub_comm);
+    eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
 
     ct.scf_accuracy = eigsum - eigsum_old;
     eigsum_old = eigsum;

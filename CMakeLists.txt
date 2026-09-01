@@ -45,11 +45,11 @@ if( RMG_COMPILE_INPLACE )
 endif()
 
 if(RMG_CUDA_ENABLED)
-    project (RMG CXX C Fortran CUDA) 
     enable_language(Fortran CUDA)
+    project (RMG CXX C Fortran CUDA) 
 else()
-    project (RMG CXX C Fortran) 
     enable_language(Fortran)
+    project (RMG CXX C Fortran) 
 endif()
 
 
@@ -78,11 +78,7 @@ set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentia
 set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
 set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 set(USE_INTERNAL_SCALAPACK OFF CACHE BOOL "Use internal scalapack.")
-if(RMG_HIP_ENABLED)
-    set(USE_NCCL_OR_RCCL ON CACHE BOOL "Experimental support for NCCL or RCCL")
-else()
-    set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
-endif()
+set(USE_NCCL_OR_RCCL OFF CACHE BOOL "Experimental support for NCCL or RCCL")
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
@@ -190,10 +186,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Cray)$")
 endif()
 
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "NVIDIA")
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mpreprocess>")
-endif()
-
 # Modify this if you need some special compiler flags.
 set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=sapphirerapids")
@@ -268,14 +260,12 @@ else()
         set(rmg-negf "rmg-negf-gpu")
         set(rmg "rmg-gpu")
         set(rmg-on "rmg-on-gpu")
-        set(MPIEXEC "srun")
     else()
         add_definitions(-DCUDA_ENABLED=0)
         add_definitions(-DMAGMA_LIBS=0)
         set(rmg-negf "rmg-negf-cpu")
         set(rmg "rmg-cpu")
         set(rmg-on "rmg-on-cpu")
-        set(MPIEXEC "mpirun")
     endif()
 endif()
 
@@ -345,7 +335,6 @@ if(RMG_HIP_ENABLED)
         if(RMG_VKFFT_ENABLED)
             add_library(VkFFT INTERFACE)
             add_definitions(-DVKFFT_BACKEND=2)
-            list(APPEND RMGLIBS "${HIP_PATH}/lib/libhiprtc.so")
         endif()
     endif()
 
@@ -461,11 +450,6 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 
-if ( CMAKE_BUILD_TYPE MATCHES DEBUG )
-    add_definitions("-DRMG_DEBUG=1")
-endif()
-
-
 
 # This file contains system specific paths. If cmake is unable to find
 # a specific package or library look in this file and uncomment or add
@@ -505,14 +489,10 @@ endif()
 
 #experimental
 if(USE_ELPA_LIBS)
-list(APPEND CMAKE_PREFIX_PATH "/home/emil/usr/local/")
-    find_package(ELPA)
-    if(ELPA_FOUND)
-        add_definitions(-DUSE_ELPA=1)
-    endif()
+    message(WARNING "ELPA is experimental and requires manual editing of CMakeLists.txt to enable.")
+    #add_definitions(-DUSE_ELPA=1)
     #list(APPEND RMGLIBS /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
-    list(APPEND RMGLIBS ${ELPA_LIBRARIES})
-    include_directories(${ELPA_INCLUDE_DIRS})
+    #list(APPEND RMGLIBS /usr/lib64/libelpa.so)
 endif()
 
 
@@ -735,8 +715,7 @@ if(RMG_CUDA_ENABLED)
 
     if (NOT CUDA_INCLUDE_DIRS)
         message( WARNING "Using default CUDA include directory" )
-#        set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
-        set(CUDA_INCLUDE_DIRS "/usr/local/cuda/include")
+        set(CUDA_INCLUDE_DIRS "/opt/cuda/include")
     endif()
 
     message( "Using CUDA include directory: ${CUDA_INCLUDE_DIRS}" )
@@ -896,7 +875,7 @@ add_subdirectory (TDDFT/IO_TDDFT EXCLUDE_FROM_ALL)
 add_subdirectory (TDDFT/RMG_TDDFT EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/ON_TDDFT EXCLUDE_FROM_ALL) 
 
-add_subdirectory (NEGF) 
+add_subdirectory (NEGF EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/SelfEnergy EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Input EXCLUDE_FROM_ALL) 

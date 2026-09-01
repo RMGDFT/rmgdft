@@ -27,13 +27,13 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
 
 #include "common_prototypes.h"
@@ -55,13 +55,13 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 {
 
 #if !HIP_ENABLED
-    rmg::error("This version of RMG was not built with GPU support so Rocsolver cannot be used.");
+    rmg_error_handler (__FILE__, __LINE__, "This version of RMG was not built with GPU support so Rocsolver cannot be used.");
 
 #endif
 
-    static char *trans_n = "n";
 #if HIP_ENABLED
     static char *trans_t = "t";
+    static char *trans_n = "n";
     static int call_count, folded_call_count;
     int num_states = kptr->nstates;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps >= 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
@@ -75,13 +75,13 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver folded");
             folded_call_count++;
-            rmg::printlog("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+            rmg_printf("\nDiagonalization using folded rocsolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
         }
         else
         {
             DiagTimer = new RmgTimer("4-Diagonalization: Eigensolver: rocsolver");
             call_count++;
-            rmg::printlog("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+            rmg_printf("\nDiagonalization using rocsolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
         }
 
         // Copy A into eigvectors
@@ -163,8 +163,8 @@ char * Subdiag_Rocsolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     } 
 
     if(use_folded) return trans_t;
-#endif
     return trans_n;
+#endif
 }
 
 

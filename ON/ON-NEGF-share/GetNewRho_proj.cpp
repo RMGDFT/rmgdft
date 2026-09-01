@@ -22,8 +22,8 @@
 
 #include "blas.h"
 #include "RmgParallelFft.h"
-#include "rmg_grid.h"
-#include "rmg_gemm.h"
+#include "BaseGrid.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 
 void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *rho, double *rho_matrix_local)
@@ -44,7 +44,7 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
     {
 
         int num_orb = Phi.num_thispe;
-        rmg::gemm ("N", "N", pbasis, num_orb, num_orb, one, 
+        RmgGemm ("N", "N", pbasis, num_orb, num_orb, one, 
                 Phi.storage_cpu, pbasis, rho_matrix_local, num_orb,
                 zero, HPhi.storage_cpu, pbasis);
 
@@ -68,9 +68,9 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
             FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
             break;
         default:
-            //Drmg::printlog ("charge interpolation is set to %d", ct.interp_flag);
-            rmg::printlog("\n ct.interp_flag = %d", ct.interp_flag);
-            rmg::error("ct.interp_flag is set to an invalid value.");
+            //Drmg_printf ("charge interpolation is set to %d", ct.interp_flag);
+            rmg_printf("\n ct.interp_flag = %d", ct.interp_flag);
+            rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
 
 
     }

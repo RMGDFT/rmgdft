@@ -20,21 +20,12 @@
  *
 */
 
-/*
-   Wrapper functions that simplify using various cuda, hip and sycl runtime calls.
 
-   These functions use the same return semantics as their cuda or hip counterparts
-   but for now RMG does not try to recover from an error condition so if the functions
-   are not successful rmg::error is called and execution terminated so the caller
-   does not need to check return codes.
-
-*/
 
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-#include "rmg_error.h"
-
+#include "ErrorFuncs.h"
 
 
 void MallocHostOrDevice(void **ptr, size_t size)
@@ -67,212 +58,234 @@ void FreeHostOrDevice(void *ptr)
 #include <cuda_runtime_api.h>
 #endif
 
-void gpuMalloc(void **ptr, size_t size, const std::source_location loc)
+hipError_t gpuMalloc(void **ptr, size_t size)
 {
-    rmg::error(hipMalloc(ptr, size), loc);
+    hipError_t hiperr = hipMalloc(ptr, size);
+    if(hiperr != hipSuccess)
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+    return hiperr;
 }
 
-void gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
+hipError_t gpuMallocManaged(void **ptr, size_t size)
 {
-    rmg::error(hipMallocManaged(ptr, size), loc);
+    hipError_t hiperr = hipMallocManaged(ptr, size);
+    //hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
+
+    if(hiperr != hipSuccess)
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
+    return hiperr;
 }
 
-void gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
-{
-    if(ct.gpu_managed_memory)
-    {
-        rmg::error(hipMallocManaged(ptr, size), loc);
-    }
-    else
-    {
-        rmg::error(hipMallocHost(ptr, size), loc);
-    }
-}
-
-void gpuFree(void *ptr, const std::source_location loc)
-{
-    rmg::error(hipFree(ptr), loc);
-}
-
-void gpuFreeHost(void *ptr, const std::source_location loc)
+hipError_t gpuMallocHost(void **ptr, size_t size)
 {
     if(ct.gpu_managed_memory)
     {
-        rmg::error(hipFree(ptr), loc);
+        return gpuMallocManaged(ptr, size);
     }
     else
     {
-        rmg::error(hipFreeHost(ptr), loc);
+        hipError_t hiperr = hipHostMalloc(ptr, size, hipHostMallocNumaUser);
+        if(hiperr != hipSuccess)
+        {
+            std::cout << "memory size: " << size/1024 << " MB" << std::endl; 
+            rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory . Terminating.");
+        }
+        return hiperr;
     }
 }
 
-void gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, const std::source_location loc)
+hipError_t gpuFree(void *ptr)
 {
-    rmg::error(hipMemcpy(dst, src, sizeBytes, kind), loc);
+    return hipFree(ptr);
 }
 
-void gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream, const std::source_location loc)
+hipError_t gpuFreeHost(void *ptr)
 {
-    rmg::error(hipMemcpyAsync (dst, src, sizeBytes, kind, stream), loc);
+    if(ct.gpu_managed_memory)
+    {
+        return hipFree(ptr);
+    }
+    else
+    {
+        return hipFreeHost(ptr);
+    }
 }
 
-void gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream, const std::source_location loc)
+hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind)
+{
+    return hipMemcpy(dst, src, sizeBytes, kind);
+}
+
+hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream)
+{
+    return hipMemcpyAsync (dst, src, sizeBytes, kind, stream);
+}
+
+hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream)
 {
     // Bit of a hack until HIP implements this
 #ifdef __HIP_PLATFORM_NVCC__
-    rmg::error(cudaMemPrefetchAsync (devPtr, count, dstDevice, stream), loc);
+    cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
+    return hipSuccess;
+#else
+    return hipSuccess;
 #endif
 }
-void gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags, const std::source_location loc)
+hipError_t gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags)
 {
-    rmg::error(hipStreamCreateWithFlags (stream, flags), loc);
+    return hipStreamCreateWithFlags (stream, flags);
 }
-void gpuStreamDestroy (hipStream_t stream, const std::source_location loc)
+hipError_t gpuStreamDestroy (hipStream_t stream)
 {
-    rmg::error(hipStreamDestroy (stream), loc);
+    return hipStreamDestroy (stream);
 }
-void gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind, const std::source_location loc)
+hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind)
 {
-    rmg::error(hipMemcpy2D (dst, dpitch, src, spitch, width, height, kind), loc);
+    return hipMemcpy2D (dst, dpitch, src, spitch, width, height, kind);
 }
-void gpuDeviceReset (const std::source_location loc)
+hipError_t gpuDeviceReset (void)
 {
-    rmg::error(hipDeviceReset(), loc);
+    return hipDeviceReset();
 }
-void gpuSetDevice (int deviceId, const std::source_location loc)
+hipError_t gpuSetDevice (int deviceId)
 {
-    rmg::error(hipSetDevice (deviceId), loc);
+    return hipSetDevice (deviceId);
 }
-void gpuGetDevice (int *deviceId, const std::source_location loc)
+hipError_t gpuGetDevice (int *deviceId)
 {
-    rmg::error(hipGetDevice (deviceId), loc);
+    return hipGetDevice (deviceId);
 }
-void gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
+hipError_t gpuSetDeviceFlags (unsigned flags)
 {
-    rmg::error(hipSetDeviceFlags (flags), loc);
+    return hipSetDeviceFlags (flags);
 }
-void gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
+hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 {
-    rmg::error(hipHostRegister(hostPtr, sizeBytes, flags), loc);
+    return hipHostRegister(hostPtr, sizeBytes, flags);
 }
-void gpuHostUnregister(void *hostPtr, const std::source_location loc)	
+hipError_t gpuHostUnregister(void *hostPtr)	
 {
-    rmg::error(hipHostUnregister(hostPtr), loc);
+    return hipHostUnregister(hostPtr);
 }
-void gpuGetDeviceCount(int *count, const std::source_location loc)
+hipError_t gpuGetDeviceCount(int *count)
 {
-    rmg::error(hipGetDeviceCount(count), loc);
-}
-void gpuStreamSynchronize (hipStream_t stream, const std::source_location loc)
-{
-    rmg::error(hipStreamSynchronize (stream), loc);
+    return hipGetDeviceCount(count);
 }
 #elif CUDA_ENABLED
 
-void gpuMalloc(void **ptr, size_t size, const std::source_location loc)
+cudaError_t gpuMalloc(void **ptr, size_t size)
 {
-    rmg::error(cudaMalloc(ptr, size), loc);
+    cudaError_t cuerr = cudaMalloc(ptr, size);
+    if(cuerr != cudaSuccess)
+    {
+        std::cout << "size to be allocated " << size/1024.0/1024.0 <<" MB"<< std::endl;
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+    }
+    return cuerr;
 }
 
-void gpuMallocManaged(void **ptr, size_t size, const std::source_location loc)
+cudaError_t gpuMallocManaged(void **ptr, size_t size)
 {
-    rmg::error(cudaMallocManaged(ptr, size), loc);
+    cudaError_t cuerr = cudaMallocManaged(ptr, size);
+    if(cuerr != cudaSuccess)
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
+    return cuerr;
 }
 
-void gpuMallocHost(void **ptr, size_t size, const std::source_location loc)
+cudaError_t gpuMallocHost(void **ptr, size_t size)
 {
     if(ct.gpu_managed_memory)
     {
-        gpuMallocManaged(ptr, size, loc);
+        return gpuMallocManaged(ptr, size);
     }
     else
     {
-        rmg::error(cudaMallocHost(ptr, size), loc);
+        cudaError_t cuerr = cudaMallocHost(ptr, size);
+        if(cuerr != cudaSuccess)
+            rmg_error_handler(__FILE__, __LINE__, "Error allocating pinned host memory. Terminating.");
+        return cuerr;
     }
 }
 
-void gpuFree(void *ptr, const std::source_location loc)
+cudaError_t gpuFree(void *ptr)
 {
-    rmg::error(cudaFree(ptr), loc);
+    return cudaFree(ptr);
 }
 
-void gpuFreeHost(void *ptr, const std::source_location loc)
+cudaError_t gpuFreeHost(void *ptr)
 {
     if(ct.gpu_managed_memory)
     {
-        rmg::error(cudaFree(ptr), loc);
+        return cudaFree(ptr);
     }
     else
     {
-        rmg::error(cudaFreeHost(ptr), loc);
+        return cudaFreeHost(ptr);
     }
 }
 
-void gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, const std::source_location loc)
+cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)
 {
-    rmg::error(cudaMemcpy(dst, src, sizeBytes, kind), loc);
+    return cudaMemcpy(dst, src, sizeBytes, kind);
 }
 
-void gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream, const std::source_location loc)
+cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
 {
-    rmg::error(cudaMemcpyAsync (dst, src, sizeBytes, kind, stream), loc);
+    return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);
 }
 
-void gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevice, cudaStream_t stream, const std::source_location loc)
+cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int _dstDevice, cudaStream_t stream)
 {
 #if CUDA_VERSION_MAJOR >= 13
     struct cudaMemLocation dstDevice = {
         .type = cudaMemLocationTypeDevice,
         .id = _dstDevice,
     };
-    rmg::error(cudaMemPrefetchAsync (devPtr, count, dstDevice, 0, stream), loc);
+    return cudaMemPrefetchAsync (devPtr, count, dstDevice, 0, stream);
 #else
-    rmg::error(cudaMemPrefetchAsync (devPtr, count, _dstDevice, stream), loc);
+    return cudaMemPrefetchAsync (devPtr, count, _dstDevice, stream);
 #endif
+
 }
-void gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags, const std::source_location loc)
+cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags)
 {
-    rmg::error(cudaStreamCreateWithFlags (stream, flags), loc);
+    return cudaStreamCreateWithFlags (stream, flags);
 }
-void gpuStreamDestroy (cudaStream_t stream, const std::source_location loc)
+cudaError_t gpuStreamDestroy (cudaStream_t stream)
 {
-    rmg::error(cudaStreamDestroy (stream), loc);
+    return cudaStreamDestroy (stream);
 }
-void gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, const std::source_location loc)
+cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind)
 {
-    rmg::error(cudaMemcpy2D (dst, dpitch, src, spitch, width, height, kind), loc);
+    return cudaMemcpy2D (dst, dpitch, src, spitch, width, height, kind);
 }
-void gpuDeviceReset (const std::source_location loc)
+cudaError_t gpuDeviceReset (void)
 {
-    rmg::error(cudaDeviceReset(), loc);
+    return cudaDeviceReset();
 }
-void gpuSetDevice (int deviceId, const std::source_location loc)
+cudaError_t gpuSetDevice (int deviceId)
 {
-    rmg::error(cudaSetDevice (deviceId), loc);
+    return cudaSetDevice (deviceId);
 }
-void gpuGetDevice (int *deviceId, const std::source_location loc)
+cudaError_t gpuGetDevice (int *deviceId)
 {
-    rmg::error(cudaGetDevice (deviceId), loc);
+    return cudaGetDevice (deviceId);
 }
-void gpuSetDeviceFlags (unsigned flags, const std::source_location loc)
+cudaError_t gpuSetDeviceFlags (unsigned flags)
 {
-    rmg::error(cudaSetDeviceFlags (flags), loc);
+    return cudaSetDeviceFlags (flags);
 }
-void gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags, const std::source_location loc)
+cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 {   
-    rmg::error(cudaHostRegister(hostPtr, sizeBytes, flags), loc);
+    return cudaHostRegister(hostPtr, sizeBytes, flags);
 }
-void gpuHostUnregister(void *hostPtr, const std::source_location loc)	
+cudaError_t gpuHostUnregister(void *hostPtr)	
 {
-    rmg::error(cudaHostUnregister(hostPtr), loc);
+    return cudaHostUnregister(hostPtr);
 }
-void gpuGetDeviceCount(int *count, const std::source_location loc)
+cudaError_t gpuGetDeviceCount(int *count)
 {
-    rmg::error(cudaGetDeviceCount(count), loc);
-}
-void gpuStreamSynchronize (cudaStream_t stream, const std::source_location loc)
-{
-    rmg::error(cudaStreamSynchronize (stream), loc);
+    return cudaGetDeviceCount(count);
 }
 #elif SYCL_ENABLED
 #include <CL/sycl.hpp>
@@ -290,7 +303,7 @@ int gpuMalloc(void **ptr, size_t size)
 
     if(!ptr)
     {
-        rmg::error("Error allocating host memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
         return -1;
     }
     return 0;
@@ -300,7 +313,7 @@ int gpuMalloc(void **ptr, size_t size)
 //{
 //    cudaError_t cuerr = cudaMallocManaged(ptr, size);
 //    if(cuerr != cudaSuccess)
-//    rmg::error("Error allocating gpu memory. Terminating.");
+//    rmg_error_handler(__FILE__, __LINE__, "Error allocating gpu memory. Terminating.");
 //    return cuerr;
 //}
 
@@ -309,7 +322,7 @@ int gpuMallocHost(void **ptr, size_t size)
     *ptr = cl::sycl::malloc_host(size, ct.sycl_Q);
     if(!ptr)
     {
-        rmg::error("Error allocating host memory. Terminating.");
+        rmg_error_handler(__FILE__, __LINE__, "Error allocating host memory. Terminating.");
         return -1;
     }
     return 0;

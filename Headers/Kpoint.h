@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2014, Emil Briggs
@@ -31,7 +30,7 @@
 #ifndef RMG_Kpoint_H
 #define RMG_Kpoint_H 1
 
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "State.h"
@@ -49,11 +48,11 @@ char inline *rmg_pool_malloc(const size_t bytes)
     {
     #if HIP_ENABLED
         void *ptr;
-        rmg::error(hipHostMalloc(&ptr, bytes, hipHostMallocNumaUser));
+        hipHostMalloc(&ptr, bytes, hipHostMallocNumaUser);
         return reinterpret_cast<char *>(ptr);
     #elif CUDA_ENABLED
         void *ptr;
-        rmg::error(cudaMallocHost(&ptr, bytes));
+        cudaMallocHost(&ptr, bytes);
         return reinterpret_cast<char *>(ptr);
     #else
         return reinterpret_cast<char *>(std::malloc(bytes));
@@ -70,7 +69,7 @@ struct rmg_user_allocator
     {return reinterpret_cast<char *>(rmg_pool_malloc(bytes)); }
     static void free(char * const block)
 #if HIP_ENABLED
-    {rmg::error(hipHostFree(block)); }
+    {hipError_t herr = hipHostFree(block); }
 #else
     { std::free(block); }
 #endif
@@ -81,7 +80,7 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, rmg::grid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
+    Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
 
     void set_pool(KpointType *pool);
     void random_init(void);
@@ -98,6 +97,7 @@ public:
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
     void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver, bool use_symmetric);
+    void KineticEnergyDensity(double *ked);
     void ComputeHpsi (double *vtot_eig, double *vxc_psi, KpointType *h_psi);
     void ComputeHcore (double *vtot_eig, double *vxc_psi, KpointType *Hcore, KpointType *Hcore_kin, KpointType *Hij_localpp);
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
@@ -114,8 +114,6 @@ public:
     void DeleteNvmeArrays(void);
     void ClearPotentialAcceleration(void);
     void GetFdFactor(void);
-    void save_sint(void);
-    void restore_sint(void);
     std::vector<double> fd_factors;
 
     // Minimal kpoint structure
@@ -124,8 +122,8 @@ public:
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
 
-    // rmg::grid class
-    rmg::grid *G;
+    // BaseGrid class
+    BaseGrid *G;
 
     // TradeImages object to use
     TradeImages *T;
@@ -155,27 +153,19 @@ public:
     KpointType *orbital_storage;
 
     // Block of contiguous storage for the orbitals from the previous step which is needed in some cases
-    KpointType *prev_orbital_storage;
-
-    // Block of contiguous storage for the orbitals for a projected next step which might be needed
-    KpointType *next_orbital_storage;
-
-    // Pointers to blocks of memory the same size as orbital_storage for
-    // holding wavefunctions at previous ionic coordinates. Used in TDDFT dynamics.
-    std::vector<KpointType> *psi_history;
+    KpointType *prev_orbitals;
 
     // The orbital structure for this k-point
     std::vector<State<KpointType>> Kstates;
 
-    // Pointers to sint arrays (Betaxpsi)
-    KpointType *newsint_local=NULL;
-    KpointType *oldsint_local=NULL;
+    // Pointer to sint arrays (Betaxpsi)
+    KpointType *newsint_local;
 
     // Pointer to orbital sint arrays (Orbital projectors)
     KpointType *orbitalsint_local;
 
     // Size of the sint arrays
-    size_t sint_alloc;
+    //size_t sint_size;
 
     // Pointers to nv, ns. Each of these arrays is dimensioned (NL_BLOCK_SIZE, P0_BASIS).
     // since we apply the non-local operators in blocks for efficiency and to save memory
@@ -216,7 +206,6 @@ public:
     // For CUDA or HIP the TDDFT code leaves a copy of the wavefunctions on the GPUs so
     // we store a pointer to that here.
     KpointType *psi_dev = NULL, *work_dev, *work_cpu;
-    void *psi_dev_float, *work_dev_float;
 
     // Grid objects
     fgobj<double> *vh;
@@ -226,18 +215,16 @@ public:
     fgobj<double> *rhocore;
     spinobj<double> *rho;
     spinobj<double> *vxc;
-    void *Hmatrix_cpu    ;
-    void *Pn0_cpu=NULL   ;
-    void *Pn0_mean=NULL   ;
-    void *Pn1_cpu=NULL   ;
-    void *Hmatrix_1_cpu ;
-    void *Hmatrix_m1_cpu ;
-    void *Hmatrix_0_cpu  ;
+    KpointType *Hmatrix_cpu    ;
+    KpointType *Pn0_cpu        ;
+    KpointType *Pn1_cpu        ;
+    KpointType *Hmatrix_1_cpu ;
+    KpointType *Hmatrix_m1_cpu ;
+    KpointType *Hmatrix_0_cpu  ;
     KpointType *Akick_cpu  ;
-    std::complex<double> *Pxmatrix_cpu  ;
-    std::complex<double> *Pymatrix_cpu  ;
-    std::complex<double> *Pzmatrix_cpu  ;
-    std::vector<KpointType> Hcore_tddft;
+    KpointType *Pxmatrix_cpu  ;
+    KpointType *Pymatrix_cpu  ;
+    KpointType *Pzmatrix_cpu  ;
 
     // BP_matrix_cpu: S^-1(k, k+1) Ivo Souza, Jorge I´n˜iguez, and David Vanderbilt, PRL2002, 117602
     KpointType *BP_Xml = NULL  ;
@@ -245,25 +232,6 @@ public:
     KpointType *BP_matrix_cpu=NULL  ;
     KpointType *BP_psi=NULL  ;
     KpointType *BP_Gnk=NULL  ;
-
-    void save_wavefunctions(void)
-    {
-        std::copy(this->orbital_storage, this->orbital_storage+pbasis_noncoll*this->nstates,
-                  this->prev_orbital_storage);
-    }
-
-    void restore_wavefunctions(void)
-    {
-        std::copy(this->prev_orbital_storage, this->prev_orbital_storage+pbasis_noncoll*this->nstates,
-                  this->orbital_storage);
-    }
-
-    void save_nextwavefunctions(void)
-    {
-        std::copy(this->orbital_storage, this->orbital_storage+pbasis_noncoll*this->nstates,
-                  this->next_orbital_storage);
-    }
-
 
 private:
 
@@ -279,6 +247,13 @@ private:
 
     // Index of the highest orbital included in the calculation of mean/min/max
     int max_unocc_res_index;
+
+    int nvme_weight_fd;
+    int nvme_Bweight_fd;
+    int nvme_ldaU_fd;
+    std::string nvme_weight_path;
+    std::string nvme_Bweight_path;
+    std::string nvme_ldaU_path;
 
 };
 

@@ -178,8 +178,8 @@ void write_force (void)
     {
         maxf = sqrt (maxf);
         avf = sqrt (avf / num_movable);
-        max_all_f = std::max(maxfx, maxfy);
-        max_all_f = std::max(max_all_f, maxfz);
+        max_all_f = rmg_max (maxfx, maxfy);
+        max_all_f = rmg_max (max_all_f, maxfz);
 
 
         if(pct.imgpe==0)fprintf(ct.logfile,"\n");

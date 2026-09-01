@@ -34,7 +34,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Subdiag.h"
 #include "rmgthreads.h"
 #include "packfuncs.h"
@@ -46,7 +46,7 @@
 #include "GatherScatter.h"
 #include "Solvers.h"
 #include "blas.h"
-#include "rmg_ortho.h"
+#include "ortho.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations
@@ -67,6 +67,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
 {
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     int bs = ct.non_local_block_size;
 
     for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
@@ -128,7 +129,8 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     // Set trade images coalesce_factor
     this->T->set_coalesce_factor(cfac);
 
-    int active_threads = rmg::get_active_threads();
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
     // When grid coalescing is enabled we need nstates to be an integral
     // multiple of (active_threads * pct.coalesce_factor) in order for the
@@ -138,7 +140,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(N % (active_threads * cfac)) mstates++;
     mstates = mstates * (active_threads * cfac);
 
-    rmg::ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
+    ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
 
     // We adjust the block size here for threading and coalescing
     int block_size = bs;
@@ -194,6 +196,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 
                 RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
                 int istart = my_pe_offset*active_threads;
+                int nthreads = active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
                     int sindex = bofs + st1 + ist + istart;
                     if(sindex >= mstates)
@@ -218,9 +221,9 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                         thread_control.ns = (void *)&this->ns[(first+sindex) * pbasis_noncoll];  // ns is not blocked!
                         thread_control.basetag = this->Kstates[first + sindex].istate;
                         thread_control.extratag1 = active_threads;
+                        thread_control.extratag2 = bofs + st1;
                         thread_control.extratag2 = first + bofs + st1;
                         thread_control.extratag3 = st1 + ist + istart;
-                        thread_control.extratag4 = potential_acceleration;
                     }
                     QueueThreadTask(ist, thread_control);
                 }
@@ -246,9 +249,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
         }
 
         RmgTimer RTO("3-MgridSubspace: ortho");
-        int stop = std::min(first+block_size, this->nstates-first);
-        MGOrtho.orthogonalize(first, stop, this->orbital_storage, true);
-
+        MGOrtho.orthogonalize(first, this->nstates-first, this->orbital_storage, true);
     }
 
     // Set trade images coalesce factor back to 1 for other routines.

@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_rmg_complex_H
 #define RMG_rmg_complex_H 1
 

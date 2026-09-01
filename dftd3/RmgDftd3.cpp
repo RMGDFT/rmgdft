@@ -35,7 +35,7 @@
 #include "typedefs.h"
 #include "RmgException.h"
 #include "RmgTimer.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include "transition.h"
 #include "MapElements.h"
 #include "Functional.h"

@@ -33,7 +33,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
@@ -57,8 +57,6 @@
 #include "GpuAlloc.h"
 #include "RmgException.h"
 #include "blas_driver.h"
-#include "rmg_sum_all.h"
-
 void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
 *niter , int *p_iprint, MPI_Comm comm) ;
 
@@ -160,7 +158,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     // Loop over k-points
     if(ct.num_kpts != 1) 
     {
-        rmg::printlog(" \n  TDDFT does not support multiple k-points \n");
+        rmg_printf(" \n  TDDFT does not support multiple k-points \n");
 
         fflush(NULL);
         throw RmgFatalException() << " TDDFT does not support multiple k-points in "<< __FILE__ << " at line " << __LINE__ << "\n";
@@ -168,7 +166,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     }
     if(!ct.norm_conserving_pp)
     {
-        rmg::printlog(" \n  TDDFT support NCPP only \n");
+        rmg_printf(" \n  TDDFT support NCPP only \n");
 
         fflush(NULL);
         throw RmgFatalException() << " TDDFT support NCPP only in "<< __FILE__ << " at line " << __LINE__ << "\n";
@@ -244,15 +242,15 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 #else
         dcopy(&n2, zz_dis, &ione, Cmatrix, &ione);
 #endif
-        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Hmatrix_old, ione, ione, desca);
-        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Smatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Smatrix, ione, ione, desca);
-        rmg::sync_device();
+        my_sync_device();
 
 
         pre_steps = 0;
@@ -266,7 +264,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         Sp->CopySquareMatrixToDistArray(Hmatrix_glob, Akick, numst, desca);
 
         double alpha = 1.0/time_step;
-        rmg::daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
+        daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
 
         for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
 
@@ -277,18 +275,18 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         get_dipole(rho, dipole_ele);
 
-        rmg::printlog("\n  x dipolll  %f ", dipole_ele[0]);
-        rmg::printlog("\n  y dipolll  %f ", dipole_ele[1]);
-        rmg::printlog("\n  z dipolll  %f ", dipole_ele[2]);
+        rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
+        rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
+        rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
-        rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+        dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                 Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-        rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+        dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                 Cmatrix, ione, ione, desca, zero, Hmatrix, ione, ione, desca);
 
-        rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
-        rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
-        rmg::sync_device();
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
+        my_sync_device();
 
     }
 
@@ -303,7 +301,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
-        rmg::sync_device();
+        my_sync_device();
         //  SCF loop 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
@@ -325,15 +323,15 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             /* --- fortran version:  --*/
             // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             /* --- C++  version:  --*/
-            rmg::sync_device();
+            my_sync_device();
             eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
 
             RT2a = new RmgTimer("2-TDDFT: transform of H to Cij *H * Cij");
-            rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+            dgemm_driver ("N", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                     Pn1, ione, ione, desca, zero, Akick, ione, ione, desca);
-            rmg::dgemm_driver ("N", "T", numst, numst, numst, one, Akick, ione, ione, desca,
+            dgemm_driver ("N", "T", numst, numst, numst, one, Akick, ione, ione, desca,
                     Cmatrix, ione, ione, desca, zero, Xmatrix, ione, ione, desca);
 
             if( scalapack_groups != pct.grid_npes)
@@ -349,11 +347,11 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             }
             else
             {
-                rmg::dcopy_driver(n2, Xmatrix, ione, Hmatrix_glob, ione);
+                dcopy_driver(n2, Xmatrix, ione, Hmatrix_glob, ione);
             }
 
 
-            rmg::sync_device();
+            my_sync_device();
 
 
             RT2a = new RmgTimer("2-TDDFT: mat_glob_to_local");
@@ -368,8 +366,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             double tcharge = 0.0;
             for (i = 0; i < get_FP0_BASIS(); i++)
                 tcharge += rho[i];
-            ct.tcharge = rmg::sum_all<double>(tcharge, pct.grid_comm);
-            ct.tcharge = rmg::sum_all<double>(ct.tcharge, pct.spin_comm);
+            ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+            ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
 
 
             ct.tcharge *= get_vel_f();
@@ -379,7 +377,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 
             if(fabs(t2 -1.0) > 1.0e-11 && pct.gridpe == 0)
-                rmg::printlog("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
+                rmg_printf("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
 
             delete(RT2a);
 
@@ -414,25 +412,25 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
             mat_local_to_glob(Hij_local, Hmatrix_glob, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
 
             Sp->CopySquareMatrixToDistArray(Hmatrix_glob, Hmatrix, numst, desca);
-            rmg::dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
+            dgemm_driver ("T", "N", numst, numst, numst, one, Cmatrix, ione, ione, desca,
                     Hmatrix, ione, ione, desca, zero, Akick, ione, ione, desca);
-            rmg::dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
+            dgemm_driver ("N", "N", numst, numst, numst, one, Akick, ione, ione, desca,
                     Cmatrix, ione, ione, desca, zero, Hmatrix, ione, ione, desca);
 
 
             delete RT1;
 
-            rmg::sync_device();
+            my_sync_device();
             double one = 1.0;
-            rmg::daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
-            rmg::dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
+            daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
+            dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
 
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
-            rmg::sync_device();
+            my_sync_device();
             tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
-            rmg::dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
+            dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
@@ -441,15 +439,15 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         } //---- end of  SCF/while loop 
 
         /*  done with propagation,  save Pn1 ->  Pn0 */
-        rmg::dcopy_driver(n22, Pn1, ione, Pn0, ione);
+        dcopy_driver(n22, Pn1, ione, Pn0, ione);
 
         //  extract dipole from rho(Pn1)
         get_dipole(rho, dipole_ele);
         // save current  H0, H1 for the  next step extrapolatiion
-        rmg::dcopy_driver  (n2, Hmatrix_0, ione, Hmatrix_m1 , ione);         
+        dcopy_driver  (n2, Hmatrix_0, ione, Hmatrix_m1 , ione);         
         //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
 
-        rmg::dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
+        dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
 
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
@@ -458,7 +456,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         if((tddft_steps +1) % ct.checkpoint == 0)
         {
             RmgTimer *RT1 = new RmgTimer("2-TDDFT: WriteData");
-            rmg::sync_device();
+            my_sync_device();
             WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
                     Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps, n2);
             delete RT1;
@@ -470,7 +468,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(pct.gridpe == 0) fclose(dfi);
 
 
-    rmg::sync_device();
+    my_sync_device();
     dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
     WriteData_rmgtddft_on(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
             Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1, n2);

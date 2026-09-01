@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2019 The RMG Project Developers. See the COPYRIGHT file 
@@ -31,15 +30,15 @@
 #include <set>
 #include <complex>
 #include <mutex>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "ION.h"
 #include "Kpoint.h"
 
 template <typename T> class Neb {
 
 private:
-    // rmg::grid class (distributed)
-    rmg::grid &BG;
+    // BaseGrid class (distributed)
+    BaseGrid &BG;
     std::vector<ION> Atoms_initial;
     std::vector<ION> Atoms_final;
     int num_images;
@@ -55,7 +54,7 @@ private:
 
 
 public:
-    Neb( rmg::grid &BG, int num_images, int max_steps, std::string input_initial, 
+    Neb( BaseGrid &BG, int num_images, int max_steps, std::string input_initial, 
             std::string input_final, double totale_initial, double total_final); 
 
     ~Neb(void);

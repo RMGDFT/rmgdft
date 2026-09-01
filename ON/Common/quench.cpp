@@ -49,7 +49,7 @@
 #include "Exx_on.h"
 #include "GpuAlloc.h"
 
-void quench(STATE * states, double * vxc, double * vh,
+void quench(STATE * states, STATE * states1, double * vxc, double * vh,
             double * vnuc, double * vh_old, double *
 vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
@@ -63,36 +63,38 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     double exx_step_time;
     int pbasis = Rmg_G->get_P0_BASIS(1);
 
-    double *rho_pre=NULL, *trho=NULL;
-    double *Hij_local=NULL, *Sij_local=NULL, *rho_matrix_local=NULL;
-    double *Hij_glob=NULL, *Sij_glob=NULL,*theta_local=NULL, *CC_res_local=NULL;
-    int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int outer_steps = 1;
+    double *rho_pre, *trho;
+    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local, *CC_res_local;
+    double *Hij_glob, *Sij_glob;
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
+                ct.mix, ct.mix, pct.grid_comm); 
+        Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
 
-    Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
-            ct.mix, ct.mix, pct.grid_comm); 
-    Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
+        int tot_size = LocalOrbital->num_thispe * pbasis;
+        Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
+                ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
+        Pulay_orbital->SetPrecond(Preconditioner);
+        Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
+        Pulay_orbital->SetBroyden(pbasis);
 
-    int tot_size = LocalOrbital->num_thispe * pbasis;
-    Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
-            ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
-    Pulay_orbital->SetPrecond(Preconditioner);
-    Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
-    Pulay_orbital->SetBroyden(pbasis);
+        rho_pre = new double[nfp0];
+        trho = new double[nfp0];
+        int num_orb = LocalOrbital->num_thispe;
+        rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        CC_res_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
 
-    rho_pre = new double[nfp0]();
-    trho = new double[nfp0]();
-    int num_orb = LocalOrbital->num_thispe;
-    rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    CC_res_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
-    Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+        int num_tot = LocalOrbital->num_tot;
+        Hij_glob = new double[num_tot * num_tot];
+        Sij_glob = new double[num_tot * num_tot];
 
-    int num_tot = LocalOrbital->num_tot;
-    Hij_glob = new double[num_tot * num_tot];
-    Sij_glob = new double[num_tot * num_tot];
-
+    }
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
@@ -124,7 +126,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
         {
             if (pct.gridpe == 0)
-                rmg::printlog("\n\n\n ITERATION     %d\n", ct.scf_steps);
+                rmg_printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
 
             step_time = my_crtc();
 
@@ -135,10 +137,18 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             /* Perform a single self-consistent step */
             if (!CONVERGENCE || ct.scf_steps <= ct.freeze_rho_steps)
             {
-                Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                        rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital, 
-                        rho_pre, trho, rho_matrix_local, theta_local, CC_res_local,
-                        Hij_local, Sij_local, Hij_glob, Sij_glob);
+                if(ct.LocalizedOrbitalLayout == LO_projection)
+                {
+                    Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                            rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital, 
+                            rho_pre, trho, rho_matrix_local, theta_local, CC_res_local,
+                            Hij_local, Sij_local, Hij_glob, Sij_glob);
+                }
+                else
+                {
+                    Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                            rhocore, vxc_old, vh_old, &CONVERGENCE);
+                }
             }
             step_time = my_crtc() - step_time;
 
@@ -151,7 +161,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             if (CONVERGENCE && ct.scf_steps > ct.freeze_rho_steps)
             {
                 if (pct.gridpe == 0)
-                    rmg::printlog ("\n\n Convergence has been achieved. stopping ...\n");
+                    rmg_printf ("\n\n Convergence has been achieved. stopping ...\n");
                 break;
             }
 
@@ -221,14 +231,14 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
             if(fabs(ct.exx_delta) < ct.exx_convergence_criterion)
             {
-                rmg::printlog(" Finished EXX outer loop in %3d exx steps exx_delta = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX outer loop in %3d exx steps exx_delta = %8.2e, total energy = %.*f Ha\n",
                         ct.exx_steps, ct.exx_delta, 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                rmg::printlog(" Finished EXX inner loop in %3d scf steps exx_delta = %8.2e, total energy = %.*f Ha\n",
+                rmg_printf(" Finished EXX inner loop in %3d scf steps exx_delta = %8.2e, total energy = %.*f Ha\n",
                         ct.scf_steps, ct.exx_delta, 6, ct.TOTAL);
             }
 
@@ -238,7 +248,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     }
 
     if (pct.gridpe == 0)
-        rmg::printlog("\n final total energy = %14.8f Ha\n", ct.TOTAL);
+        rmg_printf("\n final total energy = %14.8f Ha\n", ct.TOTAL);
     // Exact exchange integrals
     if(ct.exx_int_flag)
     {
@@ -287,14 +297,17 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         Exx.Vexx_integrals(ct.exx_int_file);
     }
 
-    delete [] trho;
-    delete [] rho_pre;
-    RmgFreeHost(rho_matrix_local);
-    RmgFreeHost(theta_local);
-    RmgFreeHost(CC_res_local);
-    RmgFreeHost(Hij_local);
-    RmgFreeHost(Sij_local);
-    delete [] Hij_glob;
-    delete [] Sij_glob;
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        delete [] trho;
+        delete [] rho_pre;
+        RmgFreeHost(rho_matrix_local);
+        RmgFreeHost(theta_local);
+        RmgFreeHost(CC_res_local);
+        RmgFreeHost(Hij_local);
+        RmgFreeHost(Sij_local);
+        delete [] Hij_glob;
+        delete [] Sij_glob;
+    }
 
 }

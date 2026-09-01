@@ -57,8 +57,8 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "",
                      CHECK_AND_TERMINATE, REQUIRED, start_mode,
-                     "Type of run. Choices are \"Random Start\", \"Restart From File\", \"FIREBALL Start\",  or \"Restart TDDFT\".\n", 
-                     "start_mode must be one of  \"Random Start\", \"Restart From File\", \"FIREBALL Start\",  or \"Restart TDDFT\". Terminating.\n");
+                     "Type of run. Choices are \"Random Start\", \"Restart From File\", \"FIREBALL Start\", \"Gaussian Start\", or \"Restart TDDFT\".\n", 
+                     "start_mode must be one of  \"Random Start\", \"Restart From File\", \"FIREBALL Start\", \"Gaussian Start\", or \"Restart TDDFT\". Terminating.\n");
 
     If.RegisterInputKey("freeze_orbital_step", &lc.freeze_orbital_step, 0, 100000, 90, 
                      CHECK_AND_FIX, OPTIONAL, 
@@ -109,17 +109,23 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      "Output file/path to store wavefunctions and other binary data.\n",
                      "");
 
+    If.RegisterInputKey("LocalizedOrbitalLayout", NULL, &lc.LocalizedOrbitalLayout, "Projection",
+            CHECK_AND_FIX, OPTIONAL, orbital_layout, 
+            "Localized rbitals layout \"Distribute\", \"Projetion\".\n", 
+            "Localized Orbital Layout mustbe one of \"Distribute\", or \"Projetion\".\n");
+
+
     If.LoadInputKeys();
 
     if( (!RMGfile.length() ) && lc.ON_read_from_RMG ) 
     {
-        rmg::printlog(" \nNeed a file name and path from RMG run, so we can read potentials and charge density as initial ones\n");
+        rmg_printf(" \nNeed a file name and path from RMG run, so we can read potentials and charge density as initial ones\n");
         fflush(NULL);
         exit(0);
     }
     else
     {
-        lc.infile_ON_from_RMG = RMGfile;
+        std::strncpy(lc.infile_ON_from_RMG, RMGfile.c_str(), sizeof(lc.infile_ON_from_RMG));
     }
 
     InputKey *Key;

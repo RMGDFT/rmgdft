@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2019 The RMG Project Developers. See the COPYRIGHT file 
@@ -31,7 +30,7 @@
 #include <set>
 #include <complex>
 #include <mutex>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "Symmetry.h"
 #include "Exxbase.h"
@@ -43,10 +42,10 @@ template <typename T> void Ldos_calc(Kpoint<T> **Kptr, std::vector<double> eigs,
 template <typename T> class Pdos {
 
 private:
-    // rmg::grid class (distributed) and half grid
+    // BaseGrid class (distributed) and half grid
 
     Exxbase<T> *Exx;
-    rmg::grid &G;
+    BaseGrid &G;
 
     // Lattice object
     Lattice &L;
@@ -76,7 +75,7 @@ private:
 
 public:
     Pdos (
-            rmg::grid &G, 
+            BaseGrid &G, 
             Lattice &L, 
             const std::string wavefile,
             int nstates,

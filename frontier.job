@@ -37,16 +37,16 @@ export MPICH_GPU_SUPPORT_ENABLED=0
 #
 # Load modules
 module load PrgEnv-gnu/8.6.0
-module load gcc-native/13.2
+module load  gcc-native/13.2
 module load cmake
-module load cray-mpich/9.0.1
 module load Core/24.00
 module load bzip2
 module load boost/1.85.0
 module load craype-x86-milan
 module load cray-fftw
 module load cray-hdf5-parallel
-module load rocm/6.2.4
+module load craype-accel-amd-gfx90a
+module load rocm/6.3.1
 export MPICH_GPU_SUPPORT_ENABLED=0
 
 # Set variables

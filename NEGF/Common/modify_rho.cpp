@@ -10,7 +10,6 @@
 #include <assert.h>
 
 #include "main.h"
-#include "rmg_sum_all.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
@@ -40,7 +39,7 @@ void modify_rho (double * rho, double * rho_old)
 
         item = get_FNX_GRID() / 3;
         if (item * 3 - get_FNX_GRID() != 0)
-            rmg::error("run flag=111");
+            rmg_error_handler (__FILE__, __LINE__, "run flag=111");
         distribute_to_X_soft (rho, array_global);
 
         for (i = 0; i < get_FNX_GRID(); i++)
@@ -72,7 +71,7 @@ void modify_rho (double * rho, double * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             tcharge += rho[idx];
-        ct.tcharge = rmg::sum_all<double> (tcharge, pct.grid_comm);
+        ct.tcharge = real_sum_all (tcharge, pct.grid_comm);
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             rho[idx] = rho_old[idx];
 
@@ -87,9 +86,9 @@ void modify_rho (double * rho, double * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             tcharge += rho[idx];
-        ct.tcharge = rmg::sum_all<double> (tcharge, pct.grid_comm) * get_vel_f();
+        ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * get_vel_f();
         if (pct.gridpe == 0)
-            rmg::printlog ("total charge %10.4f = %10.4f + %10.4f\n",
+            rmg_printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
 
         t2 = ct.nel / ct.tcharge;
@@ -138,12 +137,39 @@ void modify_rho (double * rho, double * rho_old)
             }
         }
 
-        t2 = rmg::sum_all<double> (total_charge, pct.grid_comm) * get_vel_f();
-        t_fixed = rmg::sum_all<double> (tcharge_fixed, pct.grid_comm) * get_vel_f();
+        t2 = real_sum_all (total_charge, pct.grid_comm) * get_vel_f();
+        t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * get_vel_f();
 
         if (pct.gridpe == 0)
-            rmg::printlog ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
+            rmg_printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
+
+        /*
+           t2 = (ct.nel - t_fixed) / (t2 * get_vel_f());
+           t2 = 1.0 / get_vel_f();
+
+           for (i = 0; i < get_FPX0_GRID(); i++)
+           {
+           for (j = 0; j < get_FPY0_GRID(); j++)
+           {
+           for (k = 0; k < get_FPZ0_GRID(); k++)
+           {
+           idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j * get_FPZ0_GRID() + k;
+           test = (((i + xoff) < chargeDensityCompass.box1.x1)
+           || ((i + xoff) >= chargeDensityCompass.box1.x2)
+           || ((j + yoff) < chargeDensityCompass.box1.y1)
+           || ((j + yoff) >= chargeDensityCompass.box1.y2)
+           || ((k + zoff) < chargeDensityCompass.box1.z1)
+           || ((k + zoff) >= chargeDensityCompass.box1.z2));
+           if (!test)
+           {
+           rho[i * get_FPY0_GRID() * get_FPZ0_GRID() + j * get_FPZ0_GRID() + k] *= t2;
+
+           }
+           }
+           }
+           }
+         */
 
     }
     MPI_Barrier(pct.img_comm);

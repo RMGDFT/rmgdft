@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_ALLOC_H
 #define RMG_ALLOC_H 1
 

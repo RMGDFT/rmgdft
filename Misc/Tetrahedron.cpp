@@ -123,6 +123,7 @@ Tetrahedron::Tetrahedron(void)
 template <typename KpointType>
 double Tetrahedron::FillTetra (Kpoint<KpointType> **Kptr)
 {
+    size_t knum_states = ct.num_kpts*ct.num_states;
     int nspin = (ct.spin_flag + 1);
 
     std::vector<double> eigs(nspin * ct.num_kpts * ct.num_states);

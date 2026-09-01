@@ -33,7 +33,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
@@ -47,7 +47,7 @@
 #include "transition.h"
 #include "Solvers.h"
 #include "RmgParallelFft.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 
 
 // Computes an approximate correction that helps make the total energy variational when using multigrid
@@ -93,7 +93,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
         }
     }
 
-    ec = rmg::sum_all(ec, pct.kpsub_comm);
+    ec = RmgSumAll(ec, pct.kpsub_comm);
     return ec;
 }
 

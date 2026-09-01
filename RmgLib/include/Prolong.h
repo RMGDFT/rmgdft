@@ -45,7 +45,7 @@
 #include <stdint.h>
 #include "TradeImages.h"
 #include "Lattice.h"
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "rmg_error.h"
 
 
@@ -60,7 +60,7 @@ public:
 class Prolong {
 
 public:
-    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, rmg::grid &BG);
+    Prolong(int ratio, int order, double cmix, TradeImages &TI, Lattice &L, BaseGrid &BG);
     ~Prolong(void);
 
     template<typename T>
@@ -90,8 +90,7 @@ public:
     template <typename T, int ord, int htype>
     void prolong_hex_internal (T *full, T *half, int half_dimx, int half_dimy, int half_dimz);
 
-#if HIP_ENABLED || CUDA_ENABLED
-    int smem_limit = 45056;    // Good for most modern GPUs but can be reset
+#if HIP_ENABLED
     static inline std::vector<void *> abufs;
     static inline std::vector<void *> hbufs;
     static inline std::vector<double *> rbufs;
@@ -126,7 +125,7 @@ private:
     double cmix;
     TradeImages &TR;
     Lattice &L;
-    rmg::grid &BG;
+    BaseGrid &BG;
     int ibrav;
     std::vector<coef_idx> c000, c100, c010, c001, c110, c101, c011, c111;
 

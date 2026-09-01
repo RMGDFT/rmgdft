@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2015, Emil Briggs
@@ -61,7 +60,7 @@
     #include <oneapi/mkl/dfti.hpp>
 #endif
 
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
 #include "fft3d.h"
@@ -107,9 +106,9 @@ private:
     MPI_Comm comm;
 
 public:
-    Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag);
-    Pw (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
-    void pw_internal (rmg::grid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
+    void pw_internal (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, bool create_buffers);
     void index_to_gvector(int *index, double *gvector);
     size_t count_filtered_gvectors(double filter_factor);
     void remask(void);
@@ -136,8 +135,8 @@ public:
 
     ~Pw(void);
 
-    // rmg::grid class
-    rmg::grid *Grid;
+    // BaseGrid class
+    BaseGrid *Grid;
 
     // Lattice object
     Lattice *L;

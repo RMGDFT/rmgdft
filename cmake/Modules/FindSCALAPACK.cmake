@@ -8,11 +8,10 @@ if (SCALAPACK_LIBRARIES)
   set (SCALAPACK_FIND_QUIETLY TRUE)
 endif (SCALAPACK_LIBRARIES)
 
-find_library (SCALAPACK_LIBRARIES NAMES scalapack scalapack-openmpi)
+find_library (SCALAPACK_LIBRARIES NAMES scalapack)
 
 # if not found try using the MPI library path as a hint
 # since it's often included there
-
 if(NOT SCALAPACK_LIBRARIES)
     if(MPI_C_LIBRARIES)
         get_filename_component(RMG_MPI_LIB_PATH ${MPI_C_LIBRARIES} DIRECTORY CACHE)
@@ -20,8 +19,9 @@ if(NOT SCALAPACK_LIBRARIES)
         set(RMG_MPI_LIB_PATH "")
     endif()
 endif()
-find_library (SCALAPACK_LIBRARIES NAMES scalapack scalapack-openmpi
-    HINTS "${RMG_MPI_LIB_PATH}" "$ENV{SCALAPACK_LIB}")
+find_library (SCALAPACK_LIBRARIES NAMES scalapack
+    HINTS "${RMG_MPI_LIB_PATH}" "$ENV{SCALAPACK_LIB}"
+)
 
 # handle the QUIETLY and REQUIRED arguments and set SCALAPACK_FOUND to TRUE if
 # all listed variables are TRUE

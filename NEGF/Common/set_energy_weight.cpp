@@ -55,7 +55,7 @@ void set_energy_weight (std::complex<double> * ene, std::complex<double> * weigh
     ncircle = cei.ncircle;
     nmax_gq1 = cei.nmax_gq1;
 
-    size = std::max(ncircle, nmax_gq1); 
+    size = rmg_max(ncircle, nmax_gq1); 
     my_malloc( xc, size, double );
     my_malloc( wc, size, double );
 
@@ -127,10 +127,10 @@ void set_energy_weight (std::complex<double> * ene, std::complex<double> * weigh
 
     if (pct.gridpe == 0)
     {
-        rmg::printlog ("\n set_energy_weight done %d", *nenergy);
-        rmg::printlog ("\n    eneR   eneI   weightR   weightI");
+        rmg_printf ("\n set_energy_weight done %d", *nenergy);
+        rmg_printf ("\n    eneR   eneI   weightR   weightI");
         for (i = 0; i < nen; i++)
-            rmg::printlog ("\n     %f  %f %f  %f", std::real(ene[i]), std::imag(ene[i]), 
+            rmg_printf ("\n     %f  %f %f  %f", std::real(ene[i]), std::imag(ene[i]), 
                     std::real(weight[i]), std::imag(weight[i]));
     }
 

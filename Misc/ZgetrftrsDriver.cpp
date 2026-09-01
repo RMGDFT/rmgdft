@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-
+#include "ErrorFuncs.h"
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -36,34 +36,36 @@
 void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double> *B)
 {
 
+    int info = 0;
+
     int *d_Ipiv = nullptr; /* pivoting sequence */
     int *d_info = nullptr; /* error info */
 
     int lwork = 0;            /* size of workspace */
     std::complex<double> *d_work = nullptr; /* device workspace for getrf */
 
-    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
-    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
+    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_Ipiv), sizeof(int) * n));
+    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_info), sizeof(int)));
 
     /* query working space of getrf */
-    rmg::error(cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, &lwork));
+    Cusolver_status(cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, &lwork));
 
-    rmg::error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork * 2));
+    Cuda_error(cudaMalloc(reinterpret_cast<void **>(&d_work), sizeof(double) * lwork * 2));
 
     /*  LU factorization */
-    rmg::error(cusolverDnZgetrf(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, (cuDoubleComplex*)d_work, d_Ipiv, d_info));
+    Cusolver_status(cusolverDnZgetrf(ct.cusolver_handle, n, n, (cuDoubleComplex*)A, n, (cuDoubleComplex*)d_work, d_Ipiv, d_info));
 
 
     /*
      *  solve A*X = B
      */
-    rmg::error(cusolverDnZgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
+    Cusolver_status(cusolverDnZgetrs(ct.cusolver_handle, CUBLAS_OP_N, n, m, /* nrhs */
                                         (cuDoubleComplex*)A, n, d_Ipiv, (cuDoubleComplex*)B, n, d_info));
 
     /* free resources */
-    rmg::error(cudaFree(d_Ipiv));
-    rmg::error(cudaFree(d_info));
-    rmg::error(cudaFree(d_work));
+    Cuda_error(cudaFree(d_Ipiv));
+    Cuda_error(cudaFree(d_info));
+    Cuda_error(cudaFree(d_work));
 
 }
 
@@ -73,7 +75,7 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
 
 void DgetrftrsDriver(int n, int m, double *A, double *B)
 {
-    rmg::error(" dgestrs  not programmed.");
+    rmg_error_handler (__FILE__, __LINE__, " dgestrs  not programmed.");
 }
 #else
 #include <rocsolver/rocsolver.h>
@@ -84,19 +86,22 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
     rocblas_int *devInfo;
     rocblas_int *ipiv = nullptr;
     int info;
+    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
+    const rocblas_fill uplo = rocblas_fill_lower;
+    const rocblas_eform itype = rocblas_eform_ax;
 
     gpuSetDevice(ct.hip_dev);
-    gpuMalloc((void **)&devInfo, sizeof(int));
-    gpuMalloc((void **)&ipiv, sizeof(int)*n );
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&ipiv, sizeof(int)*n ), "Problem with gpuMalloc");
 
     status = rocsolver_zgetrf(ct.roc_handle, n, n,  (rocblas_double_complex *)A, n, ipiv, devInfo);
 
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
-    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrf failed.");
+    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrf failed.");
 
 
     status = rocsolver_zgetrs(ct.roc_handle, rocblas_operation_none, n, m, (rocblas_double_complex *)A, n, ipiv, (rocblas_double_complex *)B, n);
-    if(status != rocblas_status_success) rmg::error(" rocsolver_dgetrs failed.");
+    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dgetrs failed.");
 
     gpuFree(devInfo);
     gpuFree(ipiv);
@@ -108,7 +113,7 @@ void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double>
 
 void ZgetrftrsDriver(int n, int m, std::complex<double> *A, std::complex<double> *B)
 {
-    rmg::error(" dgetrs not programmed.");
+    rmg_error_handler (__FILE__, __LINE__, " dgetrs not programmed.");
 
 }
 #endif

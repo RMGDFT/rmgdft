@@ -40,6 +40,17 @@ start_mode="LCAO Start"
 
 #start_mode="Restart From File"
 
+
+#nvme_weights = "true"
+#nvme_work = "true"
+#nvme_orbitals = "true"
+nvme_weights_filepath = "/mnt/scratch/briggs/Weights/"
+nvme_work_filepath = "/mnt/scratch/briggs/Work/"
+nvme_orbitals_filepath = "/mnt/scratch/briggs/Orbitals/"
+#nvme_weights_filepath = "Weights/"
+#nvme_work_filepath = "Work/"
+#nvme_orbitals_filepath = "Orbitals/"
+
 localize_localpp = "true"
 localize_projectors = "true"
 
@@ -145,6 +156,6 @@ LocalizedOrbitalLayout="Projection"
 
 
 
-write_qmcpack_restart = "false"
+write_qmcpack_restart = "true"
 
 

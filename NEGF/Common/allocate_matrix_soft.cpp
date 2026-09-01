@@ -41,10 +41,19 @@
 
 void allocate_matrix_soft ()
 {
-    int ispin;
+    int ispin, item, item1, item2, lwork;
+    int ictxt, nproc, myrow, mycol, icrow, iccol;
+    int izero = 0, ione = 1, itwo = 2, nb = ct.scalapack_block_factor, nn = ct.num_states;
+    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = pct.grid_npes;
+    int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
     
+
+    int sbasis;
+
+    int NB = ct.scalapack_block_factor;
     ispin = ct.nspin;
 
+    sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
     my_malloc_init( peaks, 100, double );
 
     my_malloc_init( rho, get_FP0_BASIS() * ispin, double );
@@ -64,6 +73,41 @@ void allocate_matrix_soft ()
     }
 
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, double );
+
+    my_malloc_init( sg_res, sbasis, double );
+
+
+    /*  allocate memory for other uses  */
+
+    item = ct.num_kpts * ct.num_states;
+    item1 = rmg_max (ct.num_states * ct.num_states, item);
+    item2 = 2 * get_P0_BASIS() + sbasis + item1;
+    item = rmg_max (13 * sbasis, item2);
+
+
+    nproc = pct.scalapack_nprow * pct.scalapack_npcol;
+    locr = ((ct.num_states / ct.scalapack_block_factor + 1) / nproc + 1) * NB + NB;
+    lwork = 10 * (locr * 5 + ct.scalapack_block_factor);
+    item1 = rmg_max (lwork, item);
+
+    sl_init_on (&ictxt, pct.scalapack_nprow, pct.scalapack_npcol);
+    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
+    if (myrow != -1)
+        Cblacs_gridexit (ictxt);
+
+    icrow = indxg2p (&itwo, &nb, &myrow, &izero, &nprow);
+    iccol = indxg2p (&ione, &nb, &mycol, &izero, &npcol);
+    mpc0 = numroc (&nn, &nb, &myrow, &icrow, &nprow);
+    nqc0 = numroc (&nn, &nb, &mycol, &iccol, &npcol);
+    nrc = numroc (&nn, &nb, &myrow, &izero, &npes);
+    ldc = rmg_max (1, nrc);
+    sizemqrleft = rmg_max ((ct.scalapack_block_factor * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
+    sizemqrleft *= 2;
+    qrmem = 2 * ct.num_states - 2;
+    lwork = 5 * ct.num_states + ct.num_states * ldc + rmg_max (sizemqrleft, qrmem) + 1;
+    item = rmg_max (lwork, item1);
+
+
 
 }                               /* end allocate_matrix */
 

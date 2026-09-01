@@ -42,25 +42,6 @@ const int nTPB = 128; // Only 1 block but 128 threads per block
 
 // produce the sum or mean of each array
 template <typename T>
-__global__ void breduce_float(const T * __restrict__ idata1, const T * __restrict__ idata2, float * __restrict__ odata, const int numst, const int pbasis){
-
-  //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
-  {
-  size_t pidx = blockIdx.x*nTPB;
-      double sum = 0.0;
-      int poffset = pidx + threadIdx.x;
-
-      for(size_t ns = 0;ns < numst;ns++)
-      {
-          size_t offset = ns*pbasis + poffset;
-          if(poffset < pbasis)
-              sum += std::real(idata1[offset] * std::conj(idata2[offset]));   
-      }
-      if(poffset < pbasis)
-          odata[poffset] = sum;
-  }
-}
-template <typename T>
 __global__ void breduce(const T * __restrict__ idata1, const T * __restrict__ idata2, double * __restrict__ odata, const int numst, const int pbasis){
 
   //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
@@ -89,17 +70,6 @@ void GpuProductBr(std::complex<double> *in1, std::complex<double> *in2, double *
 {
   int nblocks = pbasis / nTPB + 1;
   breduce<<<nblocks, nTPB>>>(in1, in2, out, numst, pbasis);
-}
-
-void GpuProductBr(float *in1, float *in2, float *out, int numst, int pbasis)
-{
-  int nblocks = pbasis / nTPB + 1;
-  breduce_float<<<nblocks, nTPB>>>(in1, in2, out, numst, pbasis);
-}
-void GpuProductBr(std::complex<float> *in1, std::complex<float> *in2, float *out, int numst, int pbasis)
-{
-  int nblocks = pbasis / nTPB + 1;
-  breduce_float<<<nblocks, nTPB>>>(in1, in2, out, numst, pbasis);
 }
 
 #endif

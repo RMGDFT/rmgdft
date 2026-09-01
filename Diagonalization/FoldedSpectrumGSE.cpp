@@ -28,12 +28,12 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "Gpufuncs.h"
 #include "blas.h"
 
@@ -80,6 +80,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 #if CUDA_ENABLED || HIP_ENABLED
 
+    gpublasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *T1, *D;
     gpuMallocManaged((void **)&D, n * sizeof(DataType));
@@ -88,9 +89,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     gpuMallocManaged((void **)&unitvector, n*sizeof(double));
     gpuMallocManaged((void **)&tvector, n*sizeof(double));
     gpublasDcopy(ct.gpublas_handle, n, B, n+1, tvector, 1);
-    rmg::sync_device();
+    DeviceSynchronize();
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
-    rmg::sync_device();
+    DeviceSynchronize();
 
 
     // Set up D^(-1) and transfer it to the GPU
@@ -112,9 +113,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // (I - D-1 * B)
     double negrone = -1.0;
     double rone = 1.0;
-    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n));
-    rmg::error(gpublasDscal(ct.gpublas_handle, n*n, &negrone, T1, 1));
-    rmg::error(gpublasDaxpy(ct.gpublas_handle, n, &rone, unitvector, 1, T1, n+1));
+    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n);
+    custat = gpublasDscal(ct.gpublas_handle, n*n, &negrone, T1, 1);
+    custat = gpublasDaxpy(ct.gpublas_handle, n, &rone, unitvector, 1, T1, n+1);
 
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = 0;st1 < n;st1++){
@@ -130,7 +131,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
     // Compute D^(-1) * B * I and store in B
-    rmg::error(gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n));
+    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n);
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = istart;st1 < istop;st1++){
 //        for(int st2 = 0;st2 < n;st2++){
@@ -146,14 +147,15 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // outer loop over steps
     int device = -1;
     gpuGetDevice(&device);
-    rmg::sync_device();
+    DeviceSynchronize();
     for(int step = 0;step < iterations;step++) {
 
-            rmg::gemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
+            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
             // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
             //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
-            rmg::error(gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_N, GPUBLAS_OP_N, n, istep, &ONE_t, 
-                                 &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n));
+            custat = gpublasDgeam(ct.gpublas_handle, GPUBLAS_OP_N, GPUBLAS_OP_N, n, istep, &ONE_t, 
+                                 &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
+            RmgGpuError(__FILE__, __LINE__, custat, "Problem executing gpublasDgeam.");
 //#pragma omp for schedule(static, 1) nowait
 //            for(int st1 = istart;st1 < istop;st1++){
 //                for(int st2 = 0;st2 < n;st2++){
@@ -163,7 +165,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 
     }
-    rmg::sync_device();
+    DeviceSynchronize();
     gpuMemPrefetchAsync ( Z, n*n*sizeof(double), gpuCpuDeviceId, NULL);
     gpuFree(T1);
     gpuFree(D);
@@ -216,7 +218,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     for(int step = 0;step < iterations;step++) {
 
         // Compute (I - D-1 * B) * Z(step) and store in A
-        rmg::gemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
+        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
 
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];

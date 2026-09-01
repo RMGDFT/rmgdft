@@ -12,7 +12,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <filesystem>
 #include <boost/lexical_cast.hpp>
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "transition.h"
 
 #include "const.h"

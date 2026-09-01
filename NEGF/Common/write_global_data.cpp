@@ -63,11 +63,11 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
         }
 
         /* get one slice global data in a x plane */
-        rmg::allreduce(x_plane, size, pct.grid_comm);
+        global_sums (x_plane, &size, pct.grid_comm);
 
 
         if (pct.gridpe == 0)
-            rmg::writefile (file_handle, x_plane, fny * fnz * sizeof (double));
+            write (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 
@@ -116,11 +116,11 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
         }
 
         /* get one slice global data in a x plane */
-        rmg::allreduce(x_plane, size, pct.grid_comm);
+        global_sums (x_plane, &size, pct.grid_comm);
 
 
         if (pct.gridpe == 0)
-            rmg::writefile (file_handle, x_plane, fny * fnz * sizeof (double));
+            write (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 

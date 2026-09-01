@@ -39,7 +39,7 @@
 #include "RmgException.h"
 #include "transition.h"
 #include "prototypes_on.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 
 

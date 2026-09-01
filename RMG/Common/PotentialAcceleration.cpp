@@ -24,6 +24,7 @@
 #include <atomic>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
+#include "Mgrid.h"
 #include "BlasWrappers.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -32,7 +33,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"

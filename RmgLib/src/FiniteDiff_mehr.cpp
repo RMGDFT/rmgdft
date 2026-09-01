@@ -994,7 +994,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
             break;
 
         default:
-            rmg::error("Grid symmetry not programmed yet in app_cil_fourth.\n");
+            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
 
     } // end switch
 
@@ -1132,7 +1132,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
             break;
 
         default:
-            rmg::error("Grid symmetry not programmed yet in app_cir_fourth.\n");
+            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cir_fourth.\n");
 
     }
 

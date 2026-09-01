@@ -27,7 +27,7 @@
 #include <cuda_runtime_api.h>
 #include <cuda_device_runtime_api.h>
 #include <cublas_v2.h>
-
+#include "ErrorFuncs.h"
 #include "GpuAlloc.h"
 
 __global__ void gramsch_update_psi_kernel(
@@ -56,9 +56,6 @@ __global__ void gramsch_update_psi_kernel(
 //memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
 
 
-#include "rmg_error.h"
-#include "blas_driver.h"
-
 void gramsch_update_psi(double *V,
                         double *C,
                         int N,
@@ -73,29 +70,30 @@ void gramsch_update_psi(double *V,
 
     // We get the inverse of the diagonal elements here rather than inside the loop to avoid page faults
     double *darr;
-    gpuMallocManaged ( (void **)&darr, N*sizeof(double));
+//    RmgGpuError(__FILE__, __LINE__, gpuMallocManaged ( (void **)&darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: gpuMallocManaged failed.\n");
+    RmgGpuError(__FILE__, __LINE__, gpuMallocManaged ( (void **)&darr, N*sizeof(double)), "Error: gpuMallocManaged failed.\n");
     for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
     //cublasDcopy(cublasH, N, C, N + 1, darr, 1);
     //for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
-    rmg::sync_device();
+    cudaDeviceSynchronize();
     /* apply inverse of cholesky factor to states */
     for (int st = 0; st < N; st++)
     {
 
         /* normalize V[st] */
-        rmg::error(gpublasDscal(cublasH, eig_step, &darr[st], &V[st * N + eig_start], ione));
+        cublasDscal(cublasH, eig_step, &darr[st], &V[st * N + eig_start], ione);
 
         /* subtract the projection along c[st] from the remaining vectors */
         int idx = N - st - 1;
         if(idx)
         {
-            rmg::error(cublasDger(cublasH, eig_step, idx, &alpha, &V[st * N + eig_start], ione,
-               &C[(st+1) + N*st], ione, &V[(st+1) * N + eig_start], N));
+            cublasDger(cublasH, eig_step, idx, &alpha, &V[st * N + eig_start], ione,
+               &C[(st+1) + N*st], ione, &V[(st+1) * N + eig_start], N);
         }
 
     } /* end of for */
 
-    rmg::sync_device();
+    cudaDeviceSynchronize();
     gpuFree(darr);
 }
 

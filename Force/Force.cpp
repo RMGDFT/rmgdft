@@ -125,7 +125,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlforce (vtott, vxc, Kptr, force_tmp);
-    rmg::allreduce (force_tmp, size1, pct.spin_comm);
+    global_sums (force_tmp, &size1, pct.spin_comm);
 
     for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT3;
@@ -137,7 +137,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     RmgTimer *RT4 = new RmgTimer("2-Force: core correction");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlccforce (rho, vxc, force_tmp);
-    rmg::allreduce (force_tmp, size1, pct.spin_comm);
+    global_sums (force_tmp, &size1, pct.spin_comm);
     for(int i = 0; i < num_ions * 3; i++) force_sum[i] += fac_spin * force_tmp[i];
     delete RT4;
 
@@ -147,12 +147,10 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
     // Need high quality atomic orbitals to correct forces but
     // we don't have those for the all electron case.
-    if((ct.internal_pseudo_type != ALL_ELECTRON) &&
-       (ct.forceflag != TDDFT_CVE) &&
-       (ct.forceflag != TDDFT))
+    if(ct.internal_pseudo_type != ALL_ELECTRON)
     {
-        //CorrectForces (vh, vh_in, vxc, vxc_in, force_tmp);
-        //for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
+        CorrectForces (vh, vh_in, vxc, vxc_in, force_tmp);
+        for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
     }
     delete RT5;
 
@@ -185,8 +183,8 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
                 force_tmp[idx] += force_ldau[idx] * Kptr[kpt]->kp.kweight; 
         }
 
-        rmg::allreduce (force_tmp, size1, pct.kpsub_comm);
-        rmg::allreduce (force_tmp, size1, pct.spin_comm);
+        global_sums (force_tmp, &size1, pct.kpsub_comm);
+        global_sums (force_tmp, &size1, pct.spin_comm);
         for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
         if(ct.verbose) output_force(force_tmp, "LDA+U force:");
         delete [] force_ldau;
@@ -197,7 +195,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     //                      nlforce for other ions on the proc is  zero
     //  sum over grid_comm for lforce and other parts are due to the integration over grid space.
 
-    rmg::allreduce (force_sum, size1, pct.grid_comm);
+    global_sums (force_sum, &size1, pct.grid_comm);
 
     for (ion = 0; ion < num_ions; ion++)
     {
@@ -206,15 +204,6 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
         Atoms[ion].force[ct.fpt[0]][1] = force_sum[ion * 3 + 1];
         Atoms[ion].force[ct.fpt[0]][2] = force_sum[ion * 3 + 2];
 
-    }
-
-    // Zero forces on constrained ions if gamma point
-    for (int ion = 0; ion < num_ions; ion++)
-    {
-        double *fp = Atoms[ion].force[ct.fpt[0]];
-        if(Atoms[ion].movable[0] == 0) fp[0] = 0.0;
-        if(Atoms[ion].movable[1] == 0) fp[1] = 0.0;
-        if(Atoms[ion].movable[2] == 0) fp[2] = 0.0;
     }
 
     if (!ct.is_gamma) {
@@ -236,7 +225,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
             sumz += fp[2];
         }
 
-        rmg::printlog("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
+        rmg_printf("\nSUM FORCE = %18.12f  %18.12f  %18.12f\n",sumx,sumy,sumz);
         // Normalize by the number of ions
         sumx /= (double)num_ions;
         sumy /= (double)num_ions;
@@ -268,14 +257,14 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 void output_force(double *force_tmp, char *desc)    
 {
     int size1 = 3 * Atoms.size();
-    rmg::allreduce (force_tmp, size1, pct.grid_comm);
+    global_sums (force_tmp, &size1, pct.grid_comm);
     if (pct.imgpe == 0)
     {
-        rmg::printlog ("\n\n %s", desc);
+        rmg_printf ("\n\n %s", desc);
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            rmg::printlog ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
+            rmg_printf ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
                     ion, force_tmp[3 * ion],force_tmp[3 * ion + 1],force_tmp[3 * ion + 2]);
         }
     }

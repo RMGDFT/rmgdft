@@ -40,12 +40,11 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "Kpoint.h"
-#include "rmg_sum_all.h"
-#include "rmg_gemm.h"
+#include "RmgSumAll.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "FiniteDiff.h"
 #include "LdaU.h"
-#include "rmg_hvector.h"
 #include "transition.h"
 
 
@@ -113,7 +112,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     if(first_state != 0) 
     {
         printf("\n first_state in calc_ns_occ must be 0 but it is  %d", first_state);
-        rmg::error("wrong first_state");
+        rmg_error_handler(__FILE__, __LINE__, "wrong first_state");
     }
     boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[num_states][ct.noncoll_factor][this->num_ldaU_ions][pstride]};
 
@@ -238,25 +237,24 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     size_t M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = (size_t)pstride * (size_t)M_cols * ct.noncoll_factor;
 
-    rmg::hvector<KpointType> sint_compack(alloc);
-    rmg::hvector<KpointType> nwork(alloc);
-    rmg::hvector<KpointType> nwork_ion(alloc);
-    rmg::hvector<KpointType> lambda(alloc1);
-    sint_compack.set(0.0);
-    nwork.set(0.0);
-    nwork_ion.set(0.0);
-    lambda.set(0.0);
+    KpointType *sint_compack = (KpointType *)RmgMallocHost(alloc * sizeof(KpointType));
+    std::fill(sint_compack, sint_compack + alloc, 0.0);
+    KpointType *nwork = (KpointType *)RmgMallocHost(alloc * sizeof(KpointType));
+    KpointType *nwork_ion = (KpointType *)RmgMallocHost(alloc * sizeof(KpointType));
+    std::fill(nwork, nwork + alloc, 0.0);
+    KpointType *lambda = (KpointType *)RmgMallocHost(alloc1 * sizeof(KpointType));
+    std::fill(lambda, lambda + alloc1, 0.0);
 
 
     // and for the diagonal part of ns_occ
-    std::complex<double> *lambda_C = (std::complex<double> *)lambda.data();
-    boost::multi_array_ref<KpointType, 5> nlambda{lambda.data(),
+    std::complex<double> *lambda_C = (std::complex<double> *)lambda;
+    boost::multi_array_ref<KpointType, 5> nlambda{lambda,
         boost::extents[num_nonloc_ions][ct.noncoll_factor][pstride][ct.noncoll_factor][pstride]};
     boost::multi_array_ref<std::complex<double>, 5> nlambda_C{lambda_C,
         boost::extents[num_nonloc_ions][ct.noncoll_factor][pstride][ct.noncoll_factor][pstride]};
 
     // Repack the sint array
-    boost::multi_array_ref<KpointType, 4> nsint{sint_compack.data(), boost::extents[K.nstates][ct.noncoll_factor][num_nonloc_ions][pstride]};
+    boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[K.nstates][ct.noncoll_factor][num_nonloc_ions][pstride]};
     int *nonloc_ions_list = K.OrbitalProjector->get_nonloc_ions_list();
 
     size_t sindex = first_state * ct.noncoll_factor * num_nonloc_ions * pstride;
@@ -313,9 +311,9 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     size_t strideB = (size_t)dim_a * (size_t)num_states;
     size_t strideC = (size_t)dim_a * (size_t)num_states;;
 
-    rmg::gemm_strided_batched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
-            lambda.data(), dim_a, strideA, sint_compack.data(), dim_a, strideB, ZERO_t,
-            nwork_ion.data(), dim_a, strideC, num_nonloc_ions); 
+    RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+            lambda, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
+            nwork_ion, dim_a, strideC, num_nonloc_ions); 
 
     //      nvwork_ion: (pstride, noncoll, num_states, ion)
     // rotate it to nwork (pstride, ion, noncoll, num_states)`
@@ -335,10 +333,15 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     }
 
     int num_states_nc = num_states * ct.noncoll_factor;
-    rmg::gemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
-            ONE_t, orbital_weight_ptr, K.pbasis, nwork.data(), num_tot_proj,
+    RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
+            ONE_t, orbital_weight_ptr, K.pbasis, nwork, num_tot_proj,
             ONE_t, v_hub_x_psi, K.pbasis);
 
+
+    RmgFreeHost(lambda);
+    RmgFreeHost(nwork);
+    RmgFreeHost(nwork_ion);
+    RmgFreeHost(sint_compack);
 }
 
 
@@ -367,10 +370,10 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     int pstride = K.OrbitalProjector->get_pstride();
 
     size_t size =  (size_t)num_tot_proj * ct.state_block_size * sizeof(KpointType);
-    rmg::hvector<KpointType> sint_der(3*size);
-    KpointType *sint_derx = sint_der.data() + 0 * size;
-    KpointType *sint_dery = sint_der.data() + 1 * size;
-    KpointType *sint_derz = sint_der.data() + 2 * size;
+    KpointType *sint_der = (KpointType *)RmgMallocHost(3*size * sizeof(KpointType));
+    KpointType *sint_derx = sint_der + 0 * size;
+    KpointType *sint_dery = sint_der + 1 * size;
+    KpointType *sint_derz = sint_der + 2 * size;
 
     for(int idx = 0; idx < (int)Atoms.size() * 3; idx++) force_ldau[idx] = 0.0;
     //  determine the number of occupied states for all kpoints.
@@ -476,7 +479,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
                 if (nion >= num_nonloc_ions)
                 {
                     printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                    rmg::error("Could not find matching entry in nonloc_ions_list for owned ion ");
+                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
                 }
 
             } while (nonloc_ions_list[nion] != gion);
@@ -571,6 +574,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     delete [] par_occ_x;
     delete [] par_occ_y;
     delete [] par_occ_z;
+    RmgFreeHost(sint_der);
 
 }
 template void LdaU<double>::init_ns_occ();
@@ -861,7 +865,7 @@ template <class KpointType> void LdaU<KpointType>::Hubbard_matrix()
 
         if(sp.ldaU_l > 3)
         {
-            rmg::error("wrong ldaU_l");
+            rmg_error_handler(__FILE__, __LINE__, "wrong ldaU_l");
         }
 
         int moffset = sp.ldaU_l * sp.ldaU_l;

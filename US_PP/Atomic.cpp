@@ -25,7 +25,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "transition.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "RmgException.h"
 #include "Atomic.h"
 //#include "BesselRoots.h"
@@ -82,6 +82,7 @@ Atomic::Atomic(void)
 
         // Set up bessel roots
         J_roots.resize(8);
+        if(ct.internal_pseudo_type == ALL_ELECTRON) NUM_BESSEL_ROOTS = 2000;
         for(int i = 0;i < 8;i++)
         {
             J_roots[i] = new double[NUM_BESSEL_ROOTS];
@@ -188,7 +189,7 @@ double Atomic::BesselToLogGrid (
         }
         bcof[i] = JNorm * radint1 (work1, r, rab, rg_points) / (JN_i * JN_i);
     }
-    rmg::allreduce(bcof, N, pct.img_comm);
+    GlobalSums(bcof, N, pct.img_comm);
 
 
     /* Now we reconstruct the filtered function */
@@ -205,7 +206,7 @@ double Atomic::BesselToLogGrid (
             }
         }
     }
-    rmg::allreduce(ffil, MAX_LOGGRID, pct.img_comm);
+    GlobalSums(ffil, MAX_LOGGRID, pct.img_comm);
 
     /* Release memory */
     delete [] bcof;
@@ -437,7 +438,7 @@ void Atomic::RLogGridToGLogGrid (
         f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
     
     }
-    rmg::allreduce(f_g, gnum, pct.grid_comm);
+    GlobalSums (f_g, gnum, pct.grid_comm);
 
     /* Release memory */
     delete [] work1;
@@ -493,7 +494,6 @@ void Atomic::InitBessel(
     gvec[0] = LOGGRID_START;
     // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
     double gmax = PI / 0.02;
-    if(ct.internal_pseudo_type == ALL_ELECTRON) gmax = PI / 0.005;
 
     double gmesh = (log (gmax) - log (gvec[0])) / gnum;
     t1 = exp (gmesh);
@@ -529,7 +529,7 @@ void Atomic::InitBessel(
     }
 
     int size = (lmax+1) * gnum * rg_points; 
-    rmg::allreduce(bessel_rg, size, pct.grid_comm); 
+    GlobalSums (bessel_rg, size, pct.grid_comm); 
 
 } 
 
@@ -557,7 +557,7 @@ void Atomic::Der_Localpp_g(
         f_g[ift] = 4.0 * PI * radint1 (work, r, rab, rg_points)/(2.0 * gvec[ift]);
 
     }
-    rmg::allreduce(f_g, gnum, pct.grid_comm);
+    GlobalSums (f_g, gnum, pct.grid_comm);
 
     /* Release memory */
     delete [] work;

@@ -39,16 +39,16 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "Gpufuncs.h"
 #include "blas.h"
 #include "Scalapack.h"
 #include "GpuAlloc.h"
 #include "RmgMatrix.h"
 #include "transition.h"
-#include "rmg_dev_allocate.h"
+
 
 
 
@@ -72,7 +72,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol <1) 
     {
-        rmg::printlog ("error in matrix_inverse_driver nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("error in matrix_inverse_driver nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -81,7 +81,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol != 1)
     {
-        rmg::printlog ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -97,50 +97,50 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     std::complex<double> *A = Hii;
     std::complex<double> *B = gpu_temp;
     
-    rmg::sync_device();
+    DeviceSynchronize();
     cusolverStatus_t cu_status;
     int Lwork;
     int *devIpiv, *devInfo;
     cuDoubleComplex *Workspace;
-    gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
-    gpuMalloc((void **)&devInfo, sizeof(int) );
+    cudaError_t cuerr = gpuMalloc((void **)&devIpiv, sizeof(int) *nn);
+    cuerr = gpuMalloc((void **)&devInfo, sizeof(int) );
 
     cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf_bufferSize failed.");
-    gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf_bufferSize failed.");
+    cuerr = gpuMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
     cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
     info = 0;
     if (info != 0)
     {
-        rmg::printlog ("error in cusolverDnZgetrf with INFO = %d \n", info);
+        rmg_printf ("error in cusolverDnZgetrf with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
 
 
-    rmg::sync_device();
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrf failed.");
+    DeviceSynchronize();
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
 
     cublasOperation_t trans =CUBLAS_OP_N;
     cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nn, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo );
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error("cusolverDnZgetrs failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
 
 
     info = 0;
     if (info != 0)
     {
-        rmg::printlog ("error in cusolverDnZgetrs with INFO = %d \n", info);
+        rmg_printf ("error in cusolverDnZgetrs with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
-    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnZgetrs failed.");
-    rmg::sync_device();
+    //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
+    DeviceSynchronize();
     gpuFree(devIpiv);
     gpuFree(devInfo);
     gpuFree(Workspace);
 
-    rmg::zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
     gpuFree(gpu_temp);
 
@@ -148,7 +148,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
 
     if(nprow*npcol != 1)
     {
-        rmg::printlog ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
+        rmg_printf ("GPU ENALBED but nprow*npcol !=1  nprow= %d npcol=%d \n", nprow, npcol);
         fflush (NULL);
         exit (0);
     }
@@ -157,16 +157,15 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     size_t size = nn*nn*sizeof(std::complex<double>);
     Imatrix = (std::complex<double> *)RmgMallocHost(size);
     pmo_unitary_matrix(Imatrix, desca);
-    rmg_device_pool->malloc(&gpu_temp, (size_t)nn*nn);
-
+    gpuMalloc((void **)&gpu_temp, size);
     MemcpyHostDevice(size, Imatrix, gpu_temp);
 
 
     ZgetrftrsDriver(nn, nn, Hii, gpu_temp);
 
-    rmg::zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
     RmgFreeHost(Imatrix);
-    rmg_device_pool->free(gpu_temp);
+    gpuFree(gpu_temp);
 
 #else
     //  use scalapack if nprow * npcol > 1
@@ -187,14 +186,14 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         pzgetrf(&nn, &nn, Hii, &ione, &ione, desca, ipiv, &info);
         if (info != 0)
         {
-            rmg::printlog ("error in pzgetrf with INFO = %d \n", info);
+            rmg_printf ("error in pzgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
         pzgetri(&nn, Hii, &ione, &ione, desca, ipiv, work, &lwork, iwork, &liwork, &info);
         if (info != 0)
         {
-            rmg::printlog ("error in pzgetri with INFO = %d \n", info);
+            rmg_printf ("error in pzgetri with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
@@ -213,17 +212,17 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
         work = (std::complex<double> *)malloc(lwork * sizeof(std::complex<double>));
 
-        zgetrf(&nn, &nn, Hii, &nn, ipiv, &info);
+        zgetrf(&nn, &nn, (double *)Hii, &nn, ipiv, &info);
         if (info != 0)
         {
-            rmg::printlog ("error in zgetrf with INFO = %d \n", info);
+            rmg_printf ("error in zgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
-        zgetri(&nn, Hii, &nn, ipiv, work, &lwork, &info);
+        zgetri(&nn, (double *)Hii, &nn, ipiv, (double *)work, &lwork, &info);
         if (info != 0)
         {
-            rmg::printlog ("error in zgetri with INFO = %d \n", info);
+            rmg_printf ("error in zgetri with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }

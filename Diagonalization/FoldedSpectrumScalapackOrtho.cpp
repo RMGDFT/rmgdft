@@ -28,10 +28,9 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "Subdiag.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
-#include "rmg_hvector.h"
-
+#include "ErrorFuncs.h"
 #include "blas.h"
 
 
@@ -65,12 +64,16 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     KpointType ONE_t(1.0);
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    rmg::hvector<KpointType> C(n*n);
-    rmg::hvector<KpointType> G(n*n);
-
-    [[maybe_unused]] int ione = 1;
+#if CUDA_ENABLED
+    cublasStatus_t custat;
+    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+#else
+    KpointType *C = work1;
+    KpointType *G = work2;
+#endif
     double *tarr = new double[n];
-    int info = 0;
+    int info = 0, ione = 1;
     char *trans_t="t", *trans_n="n", *cuplo = "l";
 
     // For mpi routines. Transfer twice as much data for complex orbitals
@@ -88,7 +91,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     if(!m_distC) {
         int retval1 = MPI_Alloc_mem(m_f_dist_length * sizeof(double) * factor , MPI_INFO_NULL, &m_distC);
         if(retval1 != MPI_SUCCESS)
-            rmg::error("Memory allocation failure in FoldedSpectrumScalapackOrtho");
+            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in FoldedSpectrumScalapackOrtho");
  
     }
 
@@ -96,7 +99,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs-Gram-overlaps");
     if(!B) {
 #if CUDA_ENABLED
-        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C.data(), n);
+        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
 
 #else
 //        dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
@@ -105,9 +108,9 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-        rmg::symm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G.data(), n);
+        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
         // Multiply G by V and leave result in C for the magma_dpotrf_gpu call coming up next
-        rmg::gemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G.data(), n, ZERO_t, C.data(), n);
+        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
     }
     delete(RT1);
 
@@ -116,18 +119,20 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RT1 = new RmgTimer("4-Diagonalization: fs-Gram-cholesky");
 #if CUDA_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
-    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C.data(), 1, C.data(), 1 ));
+    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
 #elif CUDA_ENABLED
-    rmg::error(cublasGetVector(n * n, sizeof( KpointType ), C.data(), 1, C.data(), 1 ));
-    dpotrf(cuplo, &n, C.data(), &n, &info);
+    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    dpotrf(cuplo, &n, C, &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);
     pdpotrf( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
     for(int i=0;i<n*n;i++)C[i]=0.0;
-    MainSp->GatherMatrix(C.data(), m_distC);
+    MainSp->GatherMatrix(C, m_distC);
 
 #endif
-    MainSp->BcastRoot(C.data(), factor * n * n, MPI_DOUBLE);
+    MainSp->BcastRoot(C, factor * n * n, MPI_DOUBLE);
     delete(RT1);
 
 
@@ -198,12 +203,16 @@ for(int st1 = 0;st1 < n;st1++) {
         G[st1*n + st2] = V[st1 + st2*n];
     }
 }
-    MainSp->CopySquareMatrixToDistArray(G.data(), Vdist, n, m_f_desca);
+    MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
 
 #endif
 
     delete(RT1);
     delete [] tarr;
+#if CUDA_ENABLED
+    GpuFreeHost(G);
+    GpuFreeHost(C);
+#endif
 }
 
 

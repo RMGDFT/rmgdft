@@ -38,7 +38,7 @@
 
 #include "FiniteDiff.h"
 #include "transition.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 
 
 // Scf correction for forces as described by Chan, Bohnen and Ho
@@ -88,7 +88,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     }
 
     int count = 3 * ct.num_ions;
-    rmg::allreduce(force, count, pct.spin_comm);
+    GlobalSums(force, count, pct.spin_comm);
 
     delete [] dvh;
     delete [] force_tmp;

@@ -182,6 +182,8 @@ double invincbeta(double y,double alpha, double beta) {
 // **************************************************************
 double CalculateTValueStudent(const double nu, const double alpha) {
 
+    double precision = 1.e-5;
+
     if (alpha<=0. || alpha >= 1.) return 0.;
 
     double x = invincbeta(2.*min(alpha,1.-alpha), 0.5*nu, 0.5);

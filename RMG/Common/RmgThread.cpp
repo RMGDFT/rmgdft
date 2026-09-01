@@ -162,6 +162,7 @@ void *run_threads(void *v) {
     
 #if CUDA_ENABLED
     bool dev_set = false;
+    cudaError_t cuerr;
 #endif
 
     // Set up thread local storage
@@ -189,7 +190,7 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
-#if HIP_ENABLED || CUDA_ENABLED
+#if HIP_ENABLED
             case GPU_GET_RHO:
                 if(ct.is_gamma)
                     GetNewRhoGpuOne((State<double> *)ss.p1, (Prolong *)ss.p2, ss.fd_diag);
@@ -199,15 +200,9 @@ void *run_threads(void *v) {
 #endif
             case HYBRID_GET_RHO:
                 if(ct.is_gamma)
-                {
-                    kptr_d = (Kpoint<double> *)ss.p4;
-                    GetNewRhoOne(kptr_d, (State<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
-                }
+                    GetNewRhoOne((State<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
                 else
-                {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p4;
-                    GetNewRhoOne(kptr_c, (State<std::complex<double>> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
-                }
+                    GetNewRhoOne((State<std::complex<double>> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
                 break;
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
                 if(ct.is_gamma) {
@@ -227,28 +222,17 @@ ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcy
 ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
                 }
                 break;
-            case SUBDIAG_HAMILTONIAN:
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p3;
-                    ApplySubdiagHamiltonian<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns);
-                }
-                else {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    ApplySubdiagHamiltonian<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot,
-ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns);
-                }
-                break;
             case HYBRID_SKIP:
                 break;
             case HYBRID_APPLY_HAMILTONIAN:
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
-                    ApplyHamiltonian<double> (kptr_d, (State<double> *)ss.sp, ss.istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, (double *)ss.nv, ss.extratag4);
+                    ApplyHamiltonian<double> (kptr_d, (State<double> *)ss.sp, ss.istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, (double *)ss.nv, ss.extratag1);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
                     ApplyHamiltonian<std::complex<double> > (kptr_c, (State<std::complex<double>> *)ss.sp, ss.istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot, ss.vxc_psi, 
-                                          (std::complex<double> *)ss.nv, ss.extratag4);
+                                          (std::complex<double> *)ss.nv, ss.extratag1);
                 } 
                 break;
             case HYBRID_DAV_PRECONDITIONER:

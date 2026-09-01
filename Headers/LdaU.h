@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright (c) 2019, Emil Briggs

@@ -45,7 +45,7 @@
 #include "Subdiag.h"
 #include "Functional.h"
 #include "GpuAlloc.h"
-
+#include "ErrorFuncs.h"
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"
@@ -56,8 +56,6 @@
 #include "GatherScatter.h"
 #include "bfgs.h"
 #include "FDOpt.h"
-#include "rmgthreads.h"
-
 
 #if HIP_ENABLED
 template <typename T>
@@ -81,8 +79,11 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     int P0_BASIS, FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
+    ct.nvme_orbital_fd = -1;
+    ct.nvme_work_fd = -1;
+
     OrbitalType *rptr = NULL, *nv, *ns = NULL;
-    fgobj<double> vtot;
+    double *vtot;
     double fac;
     bool need_ns = true;
     if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
@@ -136,7 +137,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
         if(ecut < ct.ecutwfc)
         {
-            rmg::printlog("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
+            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid.  %7.2f %7.2f\n", ct.ecutwfc, ecut);
         }
         else
         {
@@ -192,7 +193,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
             printf ("A0-A2 density = %7.5f\n", density[1]);
             printf ("A1-A2 density = %7.5f\n", density[2]);
         }
-        rmg::error("Planar Anisotropy too large");
+        rmg_error_handler (__FILE__, __LINE__, "Planar Anisotropy too large");
     }
 
 
@@ -225,6 +226,29 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
 
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
+    // Blocks of pinned host memory
+    if(ct.kohn_sham_solver == DAVIDSON_SOLVER)
+    {
+        size_t palloc = (size_t)4*(size_t)ct.max_states*(size_t)ct.max_states*sizeof(OrbitalType);
+        palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+        InitGpuMallocHost(palloc);
+    }
+    else
+    {
+        if(((ct.subdiag_driver == SUBDIAG_SCALAPACK) || (ct.subdiag_driver == SUBDIAG_ELPA)) && !ct.xc_is_hybrid && !ct.write_qmcpack_restart)
+        {
+            size_t palloc = (size_t)(ct.scalapack_block_factor+4)*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
+        else
+        {
+            size_t palloc = (size_t)4*(size_t)ct.init_states*(size_t)ct.init_states*sizeof(OrbitalType);
+            palloc = std::max(palloc, 2*FP0_BASIS*sizeof(double));
+            InitGpuMallocHost(palloc);
+        }
+    }
+
     // Wavefunctions are actually stored here
     size_t galloc = ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType);
 
@@ -239,30 +263,40 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     // Wavefunctions are actually stored here
     std::string newpath;
 
-    rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
+    if(ct.nvme_orbitals)
+    {
+        if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
 
-    if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor]();
+        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
+        ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS * ct.noncoll_factor + 1024) * sizeof(OrbitalType));
+        if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
+        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
+    }
+    else
+    {
+        rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
+    }
+
+    if(ct.nvme_work)
+    {
+        if(ct.nvme_work_fd != -1) close(ct.nvme_work_fd);
+
+        newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS  * ct.noncoll_factor* sizeof(OrbitalType));
+        if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for work arrays. \n");
+        madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL);
+    }
+    else
+    {
+        if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor]();
+    }
+
     nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
 #endif
-
-    if(ct.forceflag == TDDFT_CVE)
-    {
-        OrbitalType *tptr, *tptr1;    
-#if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
-        gpuMallocHost((void **)&tptr, galloc);
-        gpuMallocHost((void **)&tptr1, galloc);
-#else
-        tptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
-        tptr1 = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
-#endif
-        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            Kptr[kpt]->prev_orbital_storage = tptr;
-            Kptr[kpt]->next_orbital_storage = tptr1;
-            tptr += (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024;
-            tptr1 += (size_t)ct.alloc_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor + (size_t)1024;
-        }
-    }
 
     ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024;
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
@@ -371,7 +405,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(!ct.num_ldaU_ions && (ct.ldaU_mode != LDA_PLUS_U_NONE))
     {
         printf("\n You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.");
-        rmg::error("You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
+        rmg_error_handler (__FILE__, __LINE__, "You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
     }
 
     /*Set max_nldim */
@@ -456,21 +490,14 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 #if !MAGMA_LIBS
     if (ct.subdiag_driver == SUBDIAG_MAGMA)
     {
-        rmg::printlog("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
+        rmg_printf("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
         ct.subdiag_driver = SUBDIAG_AUTO;
     }
 #endif    
 
-#if !USE_ELPA
-    if (ct.subdiag_driver == SUBDIAG_ELPA)
-    {
-        rmg::printlog("\n WARNING: Elpa specified as subspace diagonalization driver, but RMG was not built with Elpa support. Diagonalization driver will be auto selected");
-        ct.subdiag_driver = SUBDIAG_AUTO;
-    }
-#endif    
     /*Take care of automatic settings, do it just before write header so that settings can be printed out  */
     /*Subspace diagonalization: Use magma if GPU-enabled, otherwise switch between lapack and Scalapack according to number of states*/
-    if (ct.subdiag_driver == SUBDIAG_AUTO)
+    if (ct.subdiag_driver ==  SUBDIAG_AUTO)
     {
 #if CUDA_ENABLED
         ct.subdiag_driver = SUBDIAG_CUSOLVER;
@@ -478,11 +505,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if (ct.num_states < 128) 
             ct.subdiag_driver = SUBDIAG_LAPACK;
         else
-#if USE_ELPA
-            ct.subdiag_driver = SUBDIAG_ELPA;
-#else
             ct.subdiag_driver = SUBDIAG_SCALAPACK;
-#endif
 #endif
     }
 
@@ -501,15 +524,6 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if (ct.forceflag == BAND_STRUCTURE || ct.forceflag == STM || ct.forceflag == NSCF) 
     {
         ct.num_states = ct.run_states;
-
-        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            for(int st = 0; st < ct.num_states; st++)
-            {
-                Kptr[kpt]->Kstates[st].eig[0] = 0.0;
-            }
-        }
-
         return;
     }
 
@@ -534,7 +548,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if(ct.noncoll) 
         {
             printf("\n no random start for noncollinear case \n");
-            rmg::error("no random start for noncoll");
+            rmg_error_handler (__FILE__, __LINE__, "no random start for noncoll");
 
         }
         if (ct.nspin == 2)
@@ -588,13 +602,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
 
-        if(ct.xc_is_meta)
-        {
-            for(int idx=0;idx < FP0_BASIS;idx++) Functional::ke_density[idx] = Functional::tau_atomic[idx];
-        }
-
         compute_vxc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
-
         // Initial vxc and vh can be very noisy
         FftFilter(vxc.up.data(), *fine_pwaves, *coarse_pwaves, LOW_PASS);
 
@@ -676,16 +684,17 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
                 Kptr[kpt]->ldaU->calc_energy();
             }
 
-            if(ct.verbose) rmg::printlog("Restart ns_occ \n");
+            if(ct.verbose) rmg_printf("Restart ns_occ \n");
             if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 
         }
     }
 
+    vtot = new double[FP0_BASIS];
     for (int idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     /*Generate the Dnm_I */
-    get_ddd (vtot.data(), vxc.data(), true);
+    get_ddd (vtot, vxc.data(), true);
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART )
     {
@@ -695,7 +704,7 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         double *vxc_psi = NULL;
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
-        GetVtotPsi (vtot_psi, vtot.data(), Rmg_G->default_FG_RATIO);
+        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
         if(ct.noncoll)
         {
             vxc_psi = new double[4*P0_BASIS];
@@ -786,6 +795,8 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
 
     }
 
+    delete [] vtot;
+
 
     ct.num_states = ct.run_states;
     ct.dvh_skip = 8;
@@ -797,7 +808,8 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         if(ct.run_states <= 64) ct.dvh_skip = 1;
         if(ct.coalesce_states)
         {
-            int active_threads = rmg::get_active_threads();
+            int active_threads = ct.MG_THREADS_PER_NODE;
+            if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
             ct.dvh_skip = active_threads * pct.coalesce_factor;
         }
         ct.ndvh = ct.run_states / ct.dvh_skip + 1;
@@ -825,21 +837,11 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     if(ct.dipole_corr[0]+ct.dipole_corr[1]+ct.dipole_corr[2] >0)
     {
         double dipole[3]{0.0,0.0,0.0};
-        rmg::printlog("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
+        rmg_printf("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  NULL);
     }
 
-    // Kinetic energy density is generated in GetNewRho so make sure
-    // we recompute it with the LCAO orbitals
-    if(ct.runflag != RESTART && ct.xc_is_meta)
-    {
-        GetNewRho(Kptr, rho.data());
-    }
 
-    ct.sradius = spectral_radius<OrbitalType>(vtot, vxc, Kptr[0]);
-    ct.lambda_max = ct.lambda_mul*ct.sradius;
-    ct.lambda_min = 0.25*ct.lambda_max;
-    if(pct.imgpe==0) fprintf(ct.logfile, "\nSpectral radius of Hamiltonian = %f\n\n", ct.sradius); 
 }                               /* end init */
 
 

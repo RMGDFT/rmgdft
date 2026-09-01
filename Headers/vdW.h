@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -25,7 +24,7 @@
 #define RMG_vdW_H 1
 
 
-#include "rmg_grid.h"
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -50,8 +49,8 @@ class Vdw {
 
 private:
 
-    // rmg::grid class
-    rmg::grid *Grid;
+    // BaseGrid class
+    BaseGrid *Grid;
 
     // TradeImages object to use
     TradeImages *T;
@@ -149,7 +148,7 @@ private:
     void stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma);
 
 public:
-    Vdw (rmg::grid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
+    Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
     ~Vdw(void);
 
     double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc);

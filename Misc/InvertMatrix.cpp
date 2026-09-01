@@ -24,7 +24,7 @@
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"
-
+#include "ErrorFuncs.h"
 #include "Gpufuncs.h"
 #include "RmgMatrix.h"
 #include "blas.h"
@@ -46,42 +46,42 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     cublasOperation_t trans = CUBLAS_OP_N;
     DataType *Workspace;
 
-    gpuMalloc((void **)&devIpiv, sizeof(int) *n);
-    gpuMalloc((void **)&devInfo, sizeof(int));
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devIpiv, sizeof(int) *n), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     if(typeid(DataType) == typeid(double))
     {
         GpuFill((double *)B, n*n, 0.0);
         cu_status = cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, (double *)A, n, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrf_bufferSize failed.");
-        gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n));
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrf_bufferSize failed.");
+        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);
         cublasDcopy(ct.cublas_handle, n, (double *)Workspace, 1, (double *)B, n+1);
 
         cu_status = cusolverDnDgetrf(ct.cusolver_handle, n, n, (double *)A, n, (double *)Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrf failed.");
 
         cu_status = cusolverDnDgetrs(ct.cusolver_handle, trans, n, n, (double *)A, n, devIpiv, (double *)B, n, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrs failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrs failed.");
     }
     else if(typeid(DataType) == typeid(std::complex<double>))
     {
         GpuFill((double *)B, 2*n*n, 0.0);
         cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverZnDgetrf_bufferSize failed.");
-        gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n));
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverZnDgetrf_bufferSize failed.");
+        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);
         cublasDcopy(ct.cublas_handle, n, (double *)Workspace, 1, (double *)B, 2*(n+1));
 
         cu_status = cusolverDnZgetrf(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverZnDgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverZnDgetrf failed.");
 
         cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, n, n, (cuDoubleComplex *)A, n, devIpiv, (cuDoubleComplex *)B, n, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg::error(" cusolverDnDgetrs failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrs failed.");
     }
 
     gpuFree(Workspace);
@@ -110,11 +110,11 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     }
     else if(typeid(DataType) == typeid(std::complex<double>))
     {
-        zgesv (&n, &n, (std::complex<double> *)A, &n, ipiv, (std::complex<double> *)B, &n, &info);
+        zgesv (&n, &n, (double *)A, &n, ipiv, (double *)B, &n, &info);
     }
     if (info) {
-        rmg::printlog ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-        rmg::error(" p{d,z}gesv failed");
+        rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
+        rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
     }
 
     delete [] ipiv;

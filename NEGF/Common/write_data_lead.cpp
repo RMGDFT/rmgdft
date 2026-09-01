@@ -73,21 +73,21 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 		fhand_vh = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_vh < 0)
-			rmg::error(" Unable to write file for vh ");
+			rmg_error_handler(__FILE__,__LINE__, " Unable to write file for vh ");
 
 		sprintf (newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
 		amode = S_IREAD | S_IWRITE;
 
 		fhand_vxc = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_vxc < 0)
-			rmg::error(" Unable to write file for vxc ");
+			rmg_error_handler(__FILE__,__LINE__, " Unable to write file for vxc ");
 
 		sprintf (newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
 		amode = S_IREAD | S_IWRITE;
 
 		fhand_rho = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_rho < 0)
-			rmg::error(" Unable to write file for rho ");
+			rmg_error_handler(__FILE__,__LINE__, " Unable to write file for rho ");
 
 		sprintf (newname, "%s%s", name, ".EF");
 		fhand_EF = fopen (newname, "w");
@@ -99,9 +99,9 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 	}
 
 	if (lcr[1].NY_GRID != get_NY_GRID())
-		rmg::error("not a lead calculation y");
+		rmg_error_handler(__FILE__,__LINE__, "not a lead calculation y");
 	if (lcr[1].NZ_GRID != get_NZ_GRID())
-		rmg::error("not a lead calculation z");
+		rmg_error_handler(__FILE__,__LINE__, "not a lead calculation z");
 
 	write_global_data_lead (fhand_vh, vh, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
 			lcr[1].NZ_GRID * get_FG_RATIO());
@@ -209,15 +209,15 @@ int open_wave_file (char *filename)
         /*Make a copy of output filename, dirname overwrites it*/
         strcpy(tmpname, filename);
 
-        rmg::printlog( "\n write_data: Opening output file '%s' failed\n" 
+        rmg_printf( "\n write_data: Opening output file '%s' failed\n" 
                 "  Trying to create subdirectory in case it does not exist\n", 
                 filename );
 
 
         if (!mkdir(dirname(tmpname),S_IRWXU))
-            rmg::printlog ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
+            rmg_printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
         else
-            rmg::printlog ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
+            rmg_printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
 
         fflush (NULL);
 

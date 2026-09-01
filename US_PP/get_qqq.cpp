@@ -26,13 +26,12 @@
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
-#include "rmg_sum_all.h"
 #include "transition.h"
 
 void get_qqq ()
 {
     int idx, i, j, ion;
-    int nh, ncount;
+    int nh, ncount, icount;
     double *qqq, sum;
     ION *iptr;
     SPECIES *sp;
@@ -81,7 +80,7 @@ void get_qqq ()
                             sum += GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
                         }
                     }
-                    sum = rmg::sum_all<double> (sum, pct.grid_comm);
+                    sum = real_sum_all (sum, pct.grid_comm);
                     sum = sum * get_vel_f();
                     if (fabs (sum) < 1.0e-8)
                         sum = 0.0;

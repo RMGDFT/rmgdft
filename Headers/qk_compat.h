@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RMG_qk_compat_H
 #define RMG_qk_compat_H 1
 

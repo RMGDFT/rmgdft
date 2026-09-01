@@ -27,7 +27,7 @@
 #include "RmgThread.h"
 #include "LdaU_on.h"
 #include "GpuAlloc.h"
-#include "rmg_gemm.h"
+#include "RmgGemm.h"
 #include "Exx_on.h"
 
 
@@ -82,15 +82,17 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int num_prj = NlProj.num_thispe;
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     MemcpyHostDevice(H_Phi.storage_size, H_Phi.storage_cpu, H_Phi.storage_gpu);
-    rmg::gemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_gpu, pbasis,
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_gpu, pbasis,
             theta_local, num_orb, mtwo, H_Phi.storage_gpu, pbasis);
 #else
-    rmg::gemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_cpu, pbasis,
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_cpu, pbasis,
             theta_local, num_orb, mtwo, H_Phi.storage_cpu, pbasis);
 #endif
 
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    //double *kbpsi_work = (double *) GpuMallocDevice(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    //double *kbpsi_work1 = (double *) GpuMallocDevice(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work;
     double *kbpsi_work1;
     //gpuMalloc((void **)&kbpsi_work,  NlProj.num_thispe * Phi.num_thispe*sizeof(double));
@@ -108,7 +110,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
 
     //  kbpsi_work_m,i = <beta_m|phi_j> Theta_ji 
-    rmg::gemm("N", "N", num_prj, num_orb, num_orb,  one, kbpsi_local, num_prj,
+    RmgGemm("N", "N", num_prj, num_orb, num_orb,  one, kbpsi_local, num_prj,
             theta_local, num_orb, zero, kbpsi_work, num_prj);
 
 
@@ -153,20 +155,20 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     assert(proj_count_local==num_prj);
 
     //  qnm * <beta_m|phi_j> theta_ji
-    rmg::gemm("N", "N", num_prj, num_orb, num_prj,  one, qnm, num_prj, kbpsi_work, num_prj,
+    RmgGemm("N", "N", num_prj, num_orb, num_prj,  one, qnm, num_prj, kbpsi_work, num_prj,
             zero, kbpsi_work1, num_prj);
     //  dnm * <beta_m|phi_j> 
-    rmg::gemm("N", "N", num_prj, num_orb, num_prj,  mtwo, dnm, num_prj, kbpsi_local, num_prj,
+    RmgGemm("N", "N", num_prj, num_orb, num_prj,  mtwo, dnm, num_prj, kbpsi_local, num_prj,
             one, kbpsi_work1, num_prj);
 
     // |beta_n> * (qnm <beta|phi>theta + dnm <beta|phi>
 
-    rmg::gemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
+    RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
             kbpsi_work1, num_prj, one, H_Phi.storage_ptr, pbasis);
 
     double *res_work;
     MallocHostOrDevice((void **)&res_work,  Phi.storage_size);
-    rmg::gemm("N", "N", pbasis, num_orb, num_orb,  one, H_Phi.storage_ptr, pbasis,
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, H_Phi.storage_ptr, pbasis,
             CC_res_local, num_orb, zero, res_work, pbasis);
     MemcpyDeviceHost(H_Phi.storage_size, res_work, H_Phi.storage_cpu);
     delete RT1;

@@ -29,9 +29,9 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Functional.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "transition.h"
-#include "rmg_sum_all.h"
+#include "RmgSumAll.h"
 #include <boost/math/special_functions/erf.hpp>
 
 

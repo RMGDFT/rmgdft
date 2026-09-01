@@ -146,19 +146,17 @@ __global__ void prolong_hex_kernel(double * full,
 }
 
 
-#include "rmg_error.h"
+template void prolong_hex_gpu_internal<float,3>(double * , float *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_hex_gpu_internal<float,3>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_hex_gpu_internal<std::complex<float>,3>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,4>(double * , float *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_hex_gpu_internal<float,4>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_hex_gpu_internal<std::complex<float>,4>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,5>(double * , float *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
-template void prolong_hex_gpu_internal<float,5>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_hex_gpu_internal<std::complex<float>,5>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-
-template void prolong_hex_gpu_internal<float,6>(double * , float *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
-template void prolong_hex_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, int, double, int, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<float,6>(double * , float *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
+template void prolong_hex_gpu_internal<std::complex<float>,6>(double * , std::complex<float> *, int, int, int, int, double, double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER]);
 
 
 template <typename T, int images>
@@ -169,7 +167,6 @@ void prolong_hex_gpu_internal(double *full,
                    const int dimz,
                    const int type,
                    double scale,
-                   int smem_limit,
                    double a[MAX_PROLONG_RATIO][MAX_PROLONG_ORDER])
 {
     pcoeff agpu;
@@ -184,7 +181,8 @@ void prolong_hex_gpu_internal(double *full,
     dim3 Grid, Block, Grid1, Block1;
     hipStream_t stream = getGpuStream();
     std::vector<int> zstart, zlen, smem_sizes;
-    smem_limit = 65536 - 4092;
+//    int smem_limit = ct.smemSize[ct.hip_dev] - 4092;
+    int smem_limit = 65536 - 4092;
 
     auto smem_needed = [&](const int dimy, int dimz) {
         int val = 2*(dimy + 2*images) * (dimz + 2*images) +
@@ -206,6 +204,7 @@ void prolong_hex_gpu_internal(double *full,
         //printf("DDDD  %d  %d  %d  %d  %d\n",i, dimz, zstart[i], smem_sizes[i], zlen[i]);fflush(NULL);
     }
 
+    int tid = getThreadId();
     int fbasis = 8*dimx*dimy*dimz;
     int sbasis = (dimx+2*images)*(dimy+2*images)*(dimz+2*images);
 
@@ -222,13 +221,14 @@ void prolong_hex_gpu_internal(double *full,
                    smem_sizes[i],
                    stream,
                    full,
+                   //(T *)abufs[tid],
                    half,
                    zstart[i],
                    zlen[i],
                    dimx, dimy, dimz, scale, agpu);
     }
 
-    rmg::error(hipStreamSynchronize(stream));
+    hipStreamSynchronize(stream);
 
 }
 #endif

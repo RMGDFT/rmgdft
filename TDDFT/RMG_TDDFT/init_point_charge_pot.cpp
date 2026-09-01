@@ -33,7 +33,7 @@
 #include <mpi.h>       
 #include "RmgException.h"
 #include "transition.h"
-#include "rmg_reduce.h"
+#include "GlobalSums.h"
 #include "Atomic.h"
 #include <boost/math/special_functions/erf.hpp>
 

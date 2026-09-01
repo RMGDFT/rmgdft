@@ -1,4 +1,3 @@
-#pragma once
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -42,8 +41,6 @@
 #define HYBRID_GET_RHO 13
 #define HYBRID_ON_PRECOND 14
 #define GPU_GET_RHO 15
-#define SUBDIAG_HAMILTONIAN 16
-
 
 #define HYBRID_THREAD_EXIT 99
 

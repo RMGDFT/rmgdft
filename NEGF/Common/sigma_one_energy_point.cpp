@@ -34,15 +34,14 @@ double kvecy, double kvecz, std::complex<double> *work)
     int *desca, *descb, numst, numstC;
 
 
-    RmgTimer *RT = new RmgTimer("sigma");
 
     maxrow =0;
     maxcol =0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        maxrow = std::max( maxrow, pmo.mxllda_cond[idx_C]);
-        maxcol = std::max( maxcol, pmo.mxlocc_lead[iprobe-1]);
+        maxrow = rmg_max( maxrow, pmo.mxllda_cond[idx_C]);
+        maxcol = rmg_max( maxcol, pmo.mxlocc_lead[iprobe-1]);
     }
 
 
@@ -64,10 +63,7 @@ double kvecy, double kvecz, std::complex<double> *work)
     int idx, i;
 
 
-    RmgTimer *RT1 = new RmgTimer("sigma: matrix init_k");
     matrix_kpoint_lead(S00, H00, S01, H01, SCL, HCL,  kvecy, kvecz, jprobe);
-    delete RT1;
-    RT1 = new RmgTimer("sigma: matrix init");
     desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
 
     numst = lcr[jprobe].num_states;
@@ -94,22 +90,17 @@ double kvecy, double kvecz, std::complex<double> *work)
     }
 
 
-    delete RT1;
     if (std::imag(ene) <0.5 )
     {
 
         //KrylovSigma_c(numst, ch0, ch10, ch01,sigma, 0.01);
         //return;
-        RT1 = new RmgTimer("sigma: green_lead");
         green_lead(ch0, ch01, ch10, g, jprobe);
-        delete RT1;
 
     }    
     else
     {
-        RT1 = new RmgTimer("sigma: green_lead_semi");
         Sgreen_semi_infinite_p (g, ch0, ch01, ch10, jprobe);
-        delete RT1;
     }
     //    else
     //    {
@@ -142,9 +133,6 @@ double kvecy, double kvecz, std::complex<double> *work)
         ch10[i] = ene * S10[i] - Ha_eV * H10[i];
     }
 
-    RT1 = new RmgTimer("sigma: sigma_p");
     Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
-    delete RT1;
 
-    delete RT;
 }
