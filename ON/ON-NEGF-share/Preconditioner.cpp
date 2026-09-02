@@ -102,6 +102,34 @@ void Preconditioner (double *res, int num_states)
 
 }
 
+void make_masks(rmg::mgrid &MG, TradeImages *T, rmg::grid *G, int dimx, int dimy, int dimz, int maxlevels, int st)
+{
+    int dx1, dy1, dz1; 
+    int dx2, dy2, dz2; 
+    int ixoff, iyoff, izoff;
+
+    MG.boundary_masks[0].resize((dimx+2)*(dimy+2)*(dimz+2));
+    rmg::pack_ptos (MG.boundary_masks[0].data(), LocalOrbital->boundary[st].data(), dimx, dimy, dimz);
+    T->trade_images (MG.boundary_masks[0].data(), dimx, dimy, dimz, FULL_TRADE);
+
+    dx1 = dimx;
+    dy1 = dimy;
+    dz1 = dimz;
+
+    for(int i=1;i <= maxlevels;i++)
+    {
+        dx2 = MG.MG_SIZE (dx1, i-1, G->get_NX_GRID(1), G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
+        dy2 = MG.MG_SIZE (dy1, i-1, G->get_NY_GRID(1), G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
+        dz2 = MG.MG_SIZE (dz1, i-1, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
+        MG.boundary_masks[i].resize((dx2+2)*(dy2+2)*(dz2+2));
+        MG.mg_restrict (MG.boundary_masks[i-1].data(), MG.boundary_masks[i].data(), dx1, dy1, dz1, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        T->trade_images (MG.boundary_masks[i].data(), dx2, dy2, dz2, FULL_TRADE);
+        dx1 = dx2;
+        dy1 = dy2;
+        dz1 = dz2;
+    }
+}
+
 void PreconditionerOne (double *res, int st, double gamma)
 {
 
@@ -109,8 +137,10 @@ void PreconditionerOne (double *res, int st, double gamma)
     TradeImages *T =Rmg_T;
     Lattice *L = &Rmg_L;
     rmg::mgrid MG(L, T, Rmg_G, 1, 0.0);
+    MG.on_flag = true;
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
+Zfac = 0.0;
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -128,19 +158,60 @@ void PreconditionerOne (double *res, int st, double gamma)
 
     double *res_t = new double[dimx * dimy * dimz];
     double *res_t2 = new double[dimx * dimy * dimz];
-
     double beta = 0.5;
-    int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
     double one = 1.0;
     int ione = 1;
     for(int idx = 0; idx < pbasis; idx++)
         res_t[idx] = gamma * res[idx + st * pbasis];
 
-    /* Smoothing cycles */
-    for (int cycles = 0; cycles <= nits; cycles++)
-    {
+    // Make multigrid boundary masks
+    make_masks(MG, T, G, dimx, dimy, dimz, levels, st);
 
+    /* Pre smoothing cycles */
+    for (int cycles = 0; cycles <= ct.eig_parm.gl_pre; cycles++)
+    {
+        RmgTimer *RT = new RmgTimer("Precond: app_cil");
+        double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
+                hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
+        delete RT;
+        daxpy(&pbasis, &one, &res[st * pbasis], &ione, res_t2, &ione);
+        LocalOrbital->ApplyBoundary(res_t2, st);
+        // We don't update with the residual here if it's time for a multigrid iteration
+        if(cycles == ct.eig_parm.gl_pre) break;
+        double t5 = diag - Zfac;
+        t5 = -1.0 / t5;
+        double t1 = ct.eig_parm.gl_step * t5;
+        daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
+        LocalOrbital->ApplyBoundary(res_t, st);
+    }
+
+    // Multigrid V cycle
+    if (1)
+    {
+        //rmg::pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
+        rmg::pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
+        rmg::pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
+        //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
+        RmgTimer *RT= new RmgTimer("Precond: mgrid");
+        MG.mgrid_solv<double>(work2_t, work1_t, work_t,
+                dimx, dimy, dimz,
+                0, levels, 1.0, pot,
+                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+
+        delete RT;
+        //rmg::pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
+        rmg::pack_stop(work2_t, res_t2, dimx, dimy, dimz);
+
+        double t1 = -1.;
+        daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
+        LocalOrbital->ApplyBoundary(res_t, st);
+
+    }
+
+    /* Post smoothing cycles */
+    for (int cycles = 0; cycles < ct.eig_parm.gl_pst; cycles++)
+    {
         RmgTimer *RT = new RmgTimer("Precond: app_cil");
         double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
                 hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
@@ -149,43 +220,14 @@ void PreconditionerOne (double *res, int st, double gamma)
         LocalOrbital->ApplyBoundary(res_t2, st);
         //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
         //    res_t2[idx] = 0.0;
-
-        double t1; 
-        /* Now either smooth the wavefunction or do a multigrid cycle */
-        if (cycles == ct.eig_parm.gl_pre)
-        {
-            //rmg::pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
-            rmg::pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
-            rmg::pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
-            //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
-            RT= new RmgTimer("Precond: mgrid");
-            MG.mgrid_solv<double>(work2_t, work1_t, work_t,
-                    dimx, dimy, dimz,
-                    0, levels, 1.0, pot,
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
-
-            delete RT;
-            //rmg::pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
-            rmg::pack_stop(work2_t, res_t2, dimx, dimy, dimz);
-
-            t1 = -1.;
-
-        }
-        else
-        {
-            double t5 = diag - Zfac;
-            t5 = -1.0 / t5;
-            t1 = ct.eig_parm.gl_step * t5;
-
-        }                       /* end if cycles == ct.eig_parm.gl_pre */
-
+        double t5 = diag - Zfac;
+        t5 = -1.0 / t5;
+        double t1 = ct.eig_parm.gl_step * t5;
         daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
-
         LocalOrbital->ApplyBoundary(res_t, st);
-//        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
- //           res_t[idx] = 0.0;
-
     }
+
+
 
     for(int idx = 0; idx < pbasis; idx++) res[idx + st * pbasis] = beta * res_t[idx];
 

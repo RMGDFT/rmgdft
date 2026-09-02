@@ -73,6 +73,7 @@ namespace rmg
        
         // Special handling for ON case
         bool on_flag = false;
+        std::array<std::vector<double>, MAX_MG_LEVELS> boundary_masks;
 
         // Public in case the caller wants to adjust these for some reasons
         std::array<int, MAX_MG_LEVELS> pre_cyc = {3, 3, 3, 3, 3, 3, 3, 3};

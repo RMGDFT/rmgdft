@@ -96,6 +96,12 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
 // r is in an s type grid with ghost points
 template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r)
 {
+
+    if(on_flag)
+    {
+        for(int i=0;i < dimx*dimy*dimz;i++) r[i] *= boundary_masks[level][i];
+        return;
+    }
     double s1[4]{0.0,0.0,0.0,0.0};
 
     int incys = dimz + 2;
@@ -152,8 +158,7 @@ std::vector<double> mgrid::pois_chebyshev_coeffs(
 {
     const double PI = 3.14159265358979323;
     std::vector<double> coefs(nsteps, 0.0);
-
-    if(sigma < 0.1)
+    if(sigma < 0.1 || on_flag)
     {
         for(int k=0;k < nsteps;k++)coefs[k] = 0.66;
         return coefs;
