@@ -57,7 +57,6 @@
 #include "init_var.h"
 #include "prototypes_on.h"
 
-
 void Preconditioner (double *res, int num_states)
 {
 
@@ -137,11 +136,10 @@ void PreconditionerOne (double *res, int st, double gamma)
     TradeImages *T =Rmg_T;
     Lattice *L = &Rmg_L;
     rmg::mgrid MG(L, T, Rmg_G, 1, 0.0);
+    FiniteDiff FD(L);
     MG.on_flag = true;
-    int levels = ct.eig_parm.levels;
-    double Zfac = 2.0 * ct.max_zvalence;
-Zfac = 0.0;
 
+    int levels = ct.eig_parm.levels;
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
@@ -174,25 +172,22 @@ Zfac = 0.0;
         RmgTimer *RT = new RmgTimer("Precond: app_cil");
         double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
                 hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
+
         delete RT;
         daxpy(&pbasis, &one, &res[st * pbasis], &ione, res_t2, &ione);
         LocalOrbital->ApplyBoundary(res_t2, st);
         // We don't update with the residual here if it's time for a multigrid iteration
         if(cycles == ct.eig_parm.gl_pre) break;
-        double t5 = diag - Zfac;
-        t5 = -1.0 / t5;
-        double t1 = ct.eig_parm.gl_step * t5;
+        double t1 = -ct.eig_parm.gl_step / diag;
         daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
         LocalOrbital->ApplyBoundary(res_t, st);
     }
 
     // Multigrid V cycle
-    if (1)
+    if (levels)
     {
-        //rmg::pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
         rmg::pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
         rmg::pack_ptos (pot, LocalOrbital->pot_precond[st].data(), dimx, dimy, dimz);
-        //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
         RmgTimer *RT= new RmgTimer("Precond: mgrid");
         MG.mgrid_solv<double>(work2_t, work1_t, work_t,
                 dimx, dimy, dimz,
@@ -200,7 +195,6 @@ Zfac = 0.0;
                 G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
         delete RT;
-        //rmg::pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
         rmg::pack_stop(work2_t, res_t2, dimx, dimy, dimz);
 
         double t1 = -1.;
@@ -218,11 +212,7 @@ Zfac = 0.0;
         delete RT;
         daxpy(&pbasis, &one, &res[st * pbasis], &ione, res_t2, &ione);
         LocalOrbital->ApplyBoundary(res_t2, st);
-        //for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-        //    res_t2[idx] = 0.0;
-        double t5 = diag - Zfac;
-        t5 = -1.0 / t5;
-        double t1 = ct.eig_parm.gl_step * t5;
+        double t1 = -ct.eig_parm.gl_step / diag;
         daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
         LocalOrbital->ApplyBoundary(res_t, st);
     }
