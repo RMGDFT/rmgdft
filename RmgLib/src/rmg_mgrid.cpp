@@ -59,6 +59,10 @@ template void mgrid::anchor_residual<double> (int, int , int, int, double *);
 template void mgrid::anchor_residual<float> (int, int , int, int, float *);
 template void mgrid::anchor_residual<std::complex<double>> (int, int , int, int, std::complex<double> *);
 template void mgrid::anchor_residual<std::complex<float>> (int, int , int, int, std::complex<float> *);
+template double mgrid::pdot(int , int , int , double *a, double *b);
+template float mgrid::pdot(int , int , int , float *a, float *b);
+template std::complex<double> mgrid::pdot(int , int , int , std::complex<double> *a, std::complex<double> *b);
+template std::complex<float> mgrid::pdot(int , int , int , std::complex<float> *a, std::complex<float> *b);
 
 std::vector<int> mgrid::toffsets;
 
@@ -141,6 +145,37 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
     rms_residuals[level].push_back(s1[2]);
 }
 
+
+// Computes the glotbal dot product of two vectors stored in smoothing grids
+// dimensioned (dimx+2)*(dimy+2)*(dimz+2) using only the interior points
+template <typename RmgType>
+RmgType mgrid::pdot(int dimx, int dimy, int dimz, RmgType *a, RmgType *b)
+{
+    int incys = dimz + 2;
+    int incxs = (dimy + 2) * (dimz + 2);
+    std::vector<double> s1 = {0,0,0.0};
+    for(int ix=1;ix <= dimx;ix++)
+    {   
+        for(int iy=1;iy <= dimy;iy++)
+        {
+            for(int iz=1;iz <= dimz;iz++)
+            {
+                s1[0] += std::real(a[ix*incxs + iy*incys + iz])*std::real(b[ix*incxs + iy*incys + iz]) +
+                         std::imag(a[ix*incxs + iy*incys + iz])*std::imag(b[ix*incxs + iy*incys + iz]);
+                s1[1] += 2.0*(std::real(a[ix*incxs + iy*incys + iz])*std::imag(b[ix*incxs + iy*incys + iz]) -
+                              std::imag(a[ix*incxs + iy*incys + iz])*std::real(b[ix*incxs + iy*incys + iz]));
+            }
+        }
+    }
+    rmg::allreduce(s1.data(), 2, this->T->comm);
+    if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
+    {
+        RmgType s2(s1[0], s1[1]);
+        return s2;
+    }
+    return s1[0];
+}
+
 double mgrid::rel_sradius(int level)
 {
     const double PI = 3.14159265358979323;
@@ -218,6 +253,10 @@ template void mgrid::eval_residual (float *, float *, float *, int, int, int, do
 template void mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double *);
 
 template void mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double, double *);
+
+template void mgrid::solv_pois_cg (double *, double *, double *, int, int, int, double, double, double, double, double, double *);
+
+template void mgrid::solv_pois_cg (float *, float *, float *, int, int, int, double, double, double, double, double, double *);
 
 template void mgrid::mg_restrict(float*, float*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_restrict(double*, double*, int, int, int, int, int, int, int, int, int);
@@ -333,6 +372,9 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     int ny = this->T->G->get_NY_GRID(1)/fac;
     int nz = this->T->G->get_NZ_GRID(1)/fac;
 
+    // Scaling factor for finite differencing
+    double pscale = std::pow(0.5, level);
+
     // More sweeps on coarsest level for now
     if(bottom)
     {
@@ -341,6 +383,8 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         presweeps = std::max(maxpts, 12);
         if(presweeps > minpts) presweeps = minpts;
         pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
+//        solv_pois_cg (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale, k, pot);
+//        return;
     }
     else
     {
@@ -350,7 +394,6 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 /* precalc some boundaries */
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     RmgType *resid = work + 2 * size;
-    double pscale = std::pow(0.5, level);
     T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
     if(pot) T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
     for (int idx = 0; idx < size; idx++) v_mat[idx] = 0.0;
@@ -1307,6 +1350,72 @@ void mgrid::eval_residual (RmgType * __restrict__ mat,
 
 }                               /* end eval_residual */
 
+
+// Conjugate gradients type solver for use on coarse grids
+template <typename RmgType>
+void mgrid::solv_pois_cg (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat, RmgType * work,
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot)
+{
+    FiniteDiff FD(L);
+    int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
+    int max_steps = 20;
+    RmgType *r = &work[size];
+    RmgType *p = &r[size];
+    RmgType *Ap = &p[size];
+
+    // On entry vmat is zero and fmat already has images data
+    for (int i = 0; i < size; i++) vmat[i] = 0.0;
+    for(int i=0;i < size;i++)
+    {
+        r[i] = fmat[i];
+        p[i] = fmat[i];
+    }
+    RmgType rsc = pdot(dimx, dimy, dimz, r, r);
+    double rs1 = std::real(rsc);
+
+    for(int it=0;it < max_steps;it++)
+    {
+        if(this->central_trade)
+        {
+            T->trade_images (p, dimx, dimy, dimz, CENTRAL_TRADE);
+        }
+        else
+        {
+            T->trade_images (p, dimx, dimy, dimz, FULL_TRADE);
+        }
+        FD.app_combined<RmgType, 2> (p, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec.data(), false);
+        rmg::pack_ptos(Ap, work, dimx, dimy, dimz);
+        RmgType pscale(step);
+        RmgType pAp = pdot(dimx, dimy, dimz, p, Ap)/pscale;
+        RmgType alpha;
+        if constexpr(std::is_same_v<RmgType, std::complex<double>> || std::is_same_v<RmgType, std::complex<float>>)
+        {
+            RmgType trs1(rs1);
+            alpha = std::real(trs1 / pAp);
+        }
+        else
+        {
+            alpha = rs1 / pAp;
+        }
+
+        for(int i=0;i < size;i++)
+        {
+            vmat[i] += alpha * p[i];
+            r[i] -= alpha * Ap[i];
+        }
+
+        RmgType rsc = pdot(dimx, dimy, dimz, r, r);
+        double rs2 = std::real(rsc);
+        RmgType beta = rs2 / rs1;
+
+        for(int i=0;i < size;i++)
+        {
+            p[i] = r[i] + beta*p[i];
+        }
+        rs1 = rs2;
+    }
+    T->trade_images (vmat, dimx, dimy, dimz, FULL_TRADE);
+}
 
 
 template <typename RmgType>

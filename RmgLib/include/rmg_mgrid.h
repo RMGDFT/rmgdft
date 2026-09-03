@@ -112,6 +112,8 @@ namespace rmg
 
         template <typename RmgType> void anchor_residual(int id, int level, int n, RmgType *r);
         template <typename RmgType> void anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r);
+        template <typename RmgType> RmgType pdot(int dimx, int dimy, int dimz, RmgType *a, RmgType *b);
+
 
         template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
@@ -124,6 +126,8 @@ namespace rmg
         template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
                     int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot);
 
+        template <typename RmgType> void solv_pois_cg (RmgType * vmat, RmgType * fmat, RmgType * work,
+                    int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k, double *pot);
 
         int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 
