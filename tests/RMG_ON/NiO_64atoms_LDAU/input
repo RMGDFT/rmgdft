@@ -19,7 +19,9 @@ test_energy = "-5941.92575552"
 #write_pseudopotential_plots = "true"
 
 
-kohn_sham_mg_levels = "1"
+kohn_sham_mg_levels = "2"
+kohn_sham_pre_smoothing = "4"
+kohn_sham_post_smoothing = "1"
   
 #******* CONTROL OPTIONS *******  
 start_mode          ="LCAO Start"  
