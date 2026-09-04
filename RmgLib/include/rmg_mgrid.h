@@ -109,6 +109,7 @@ namespace rmg
        double dx, double dy, double dz,  // grid spacing at this level
        double sigma,                     // smoothing window (0.0 = full band, 1.0 = higher)
        int nsteps);                      // number of steps
+       double rfac = 1.0;
 
         template <typename RmgType> void anchor_residual(int id, int level, int n, RmgType *r);
         template <typename RmgType> void anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r);

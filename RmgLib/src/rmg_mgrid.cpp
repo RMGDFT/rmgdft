@@ -47,6 +47,8 @@
 #include "packfuncs.h"
 #include "boundary_conditions.h"
 #include "rmg_reduce.h"
+#include "mixed_precision.h"
+
 
 namespace rmg
 {
@@ -95,6 +97,8 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
     }
     s1[2] = sqrt(s1[2]/(double)global_n);
     rms_residuals[level].push_back(s1[2]);
+    // we stop updates here to keep the solver from becoming unstable
+    if(s1[2] < 1.0e-9) rfac = 0.0;
 }
 
 // r is in an s type grid with ghost points
@@ -383,6 +387,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         presweeps = std::max(maxpts, 12);
         if(presweeps > minpts) presweeps = minpts;
         pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
+// too slow for production use but helpful for debugging
 //        solv_pois_cg (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale, k, pot);
 //        return;
     }
@@ -485,8 +490,9 @@ void mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
     int incy, incx, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
     double scale;
-    RmgType face, corner, edge;
-    RmgType inplane, zaxis, outplane;
+
+    accumulator_t<RmgType> face, corner, edge;
+    accumulator_t<RmgType> inplane, zaxis, outplane;
 
     ibrav = L->get_ibrav_type();
 
@@ -534,7 +540,8 @@ void mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
                             full[xp * incx + y0 * incy + z0] +
                             full[x0 * incx + ym * incy + z0] +
                             full[x0 * incx + yp * incy + z0] +
-                            full[x0 * incx + y0 * incy + zm] + full[x0 * incx + y0 * incy + zp];
+                            full[x0 * incx + y0 * incy + zm] +
+                            full[x0 * incx + y0 * incy + zp];
 
                         corner =
                             full[xm * incx + ym * incy + zm] +
@@ -543,7 +550,8 @@ void mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
                             full[xm * incx + yp * incy + zp] +
                             full[xp * incx + ym * incy + zm] +
                             full[xp * incx + ym * incy + zp] +
-                            full[xp * incx + yp * incy + zm] + full[xp * incx + yp * incy + zp];
+                            full[xp * incx + yp * incy + zm] +
+                            full[xp * incx + yp * incy + zp];
 
                         edge = full[xm * incx + y0 * incy + zm] +
                             full[xm * incx + ym * incy + z0] +
@@ -555,12 +563,14 @@ void mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
                             full[x0 * incx + yp * incy + zp] +
                             full[xp * incx + y0 * incy + zm] +
                             full[xp * incx + ym * incy + z0] +
-                            full[xp * incx + yp * incy + z0] + full[xp * incx + y0 * incy + zp];
+                            full[xp * incx + yp * incy + z0] +
+                            full[xp * incx + y0 * incy + zp];
 
 
-                        half[ix * incx2 + iy * incy2 + iz] =
-                            (RmgType)scale * ((RmgType)8.0 * full[x0 * incx + y0 * incy + z0] + (RmgType)4.0 * face + (RmgType)2.0 * edge +
-                                     corner);
+                        half[ix * incx2 + iy * incy2 + iz] = (RmgType)scale *
+                             ((RmgType)8.0 * full[x0 * incx + y0 * incy + z0] +
+                             (RmgType)4.0 * face +
+                             (RmgType)2.0 * edge + corner);
 
 
                     }               /* end for */
@@ -1358,7 +1368,7 @@ void mgrid::solv_pois_cg (RmgType * __restrict__ vmat, RmgType * __restrict__ fm
 {
     FiniteDiff FD(L);
     int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    int max_steps = 20;
+    int max_steps = 100;
     RmgType *r = &work[size];
     RmgType *p = &r[size];
     RmgType *Ap = &p[size];
@@ -1400,7 +1410,7 @@ void mgrid::solv_pois_cg (RmgType * __restrict__ vmat, RmgType * __restrict__ fm
 
         for(int i=0;i < size;i++)
         {
-            vmat[i] += alpha * p[i];
+            vmat[i] += rfac*alpha * p[i];
             r[i] -= alpha * Ap[i];
         }
 
@@ -1443,7 +1453,7 @@ void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
         for (idx = 0; idx < size; idx++)
         {
 
-            vmat[idx] += (RmgType)scale * (work[idx] - (RmgType)k*vmat[idx] - fmat[idx]);
+            vmat[idx] += rfac*(RmgType)scale * (work[idx] - (RmgType)k*vmat[idx] - fmat[idx]);
 
         }                           /* end for */
 
@@ -1452,11 +1462,11 @@ void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
 
         if(pot) 
         {
-            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - vmat[idx]*(RmgType)pot[idx] - fmat[idx]);
+            for (idx = 0; idx < size; idx++) vmat[idx] += rfac*(RmgType)scale * (work[idx] - vmat[idx]*(RmgType)pot[idx] - fmat[idx]);
         }
         else 
         {
-            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - fmat[idx]);
+            for (idx = 0; idx < size; idx++) vmat[idx] += rfac*(RmgType)scale * (work[idx] - fmat[idx]);
         }
 
      }
