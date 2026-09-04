@@ -95,10 +95,11 @@ void mgrid::anchor_residual(int id, int level, int n, RmgType *r)
         scale = s1[0] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= scale;
     }
-    s1[2] = sqrt(s1[2]/(double)global_n);
+    double vel = L->omega / (double)global_n;
+    s1[2] = sqrt(vel*s1[2]);
     rms_residuals[level].push_back(s1[2]);
     // we stop updates here to keep the solver from becoming unstable
-    if(s1[2] < 1.0e-9) rfac = 0.0;
+    if(s1[2] < 1.0e-8) rfac = 0.0;
 }
 
 // r is in an s type grid with ghost points
@@ -145,8 +146,10 @@ template <typename RmgType> void mgrid::anchor_residual(int level, int dimx, int
         scale = s1[0] / (double)global_n;
         for(int i=0;i < n;i++) r[i] -= scale;
     }
-    s1[2] = sqrt(s1[2]/(double)global_n);
+    double vel = L->omega / (double)global_n;
+    s1[2] = sqrt(vel*s1[2]);
     rms_residuals[level].push_back(s1[2]);
+    if(s1[2] < 1.0e-8) rfac = 0.0;
 }
 
 
