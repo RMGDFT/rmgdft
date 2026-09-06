@@ -142,7 +142,12 @@ public:
     bool tddft_energy = 0;
     bool tddft_predictor = 0;
     int tddft_mode;
-    double tddft_frequency;
+    bool tddft_laser_pulse;
+    double tddft_laser_pulse_para[3];
+    //  tddft_laser_pulse_para[0]: omega
+    //  tddft_laser_pulse_para[1]: t0
+    //  tddft_laser_pulse_para[2]: tau
+    //  E(t) = E0 * cos(omega t) exp[-(t-t0)^2/tau^2];
     double tddft_qpos[3];
     double tddft_qgau;
     int tddft_ehpair[4];

@@ -236,6 +236,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "tddft predictor", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_tiledMM", &lc.tddft_tiledMM, false, 
                         "use TiledM distribution for TDDFT matrix", TDDFT_OPTIONS);
+    If.RegisterInputKey("tddft_laser_pulse", &lc.tddft_laser_pulse, false, 
+                        "use laser pulse in TDDFT", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_floatprecision", &lc.tddft_floatprecision, false, 
                         "use floatprecision for TDDFT matrix update", TDDFT_OPTIONS);
     If.RegisterInputKey("tddft_noscf", &lc.tddft_noscf, false, 
@@ -663,10 +665,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid solver.",
             "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("tddft_frequency", &lc.tddft_frequency, 0.0, DBL_MAX, 0.2, 
-            CHECK_AND_TERMINATE, OPTIONAL,
-            "TDDFT frequency for use in TDDFT vector potential mode ",
-            "tddft_frequency is in atomic unit ", MD_OPTIONS);
+    Ri::ReadVector<double> def_laser_pulse({{1.0,10.0,10.0}});
+    Ri::ReadVector<double> laser_pulse;
+    If.RegisterInputKey("tddft_laser_pulse_para", &laser_pulse, &def_laser_pulse, 3, OPTIONAL,
+            "Components of the vector potential for laser pulse.  ",
+            "omega in units of eV, t0, tau (atomic units), E(t) = E_0 *cos(omega*t)exp[-(t-t0)^2/tau^2], E_0: defined from tddft_electric_field", TDDFT_OPTIONS);
+
     If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
             CHECK_AND_TERMINATE, OPTIONAL,
             "TDDFT time step for use in TDDFT mode ",
@@ -716,7 +720,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "in addition to the atomic orbitals.", 
             "extra_random_lcao_states must be greater than 0. Terminating. ", DIAG_OPTIONS);
 
-   If.RegisterInputKey("subdiag_groups", &lc.subdiag_groups, 1, 16, 1,
+    If.RegisterInputKey("subdiag_groups", &lc.subdiag_groups, 1, 16, 1,
             CHECK_AND_FIX, OPTIONAL,
             "Number of scalapack or elpa groups.",
             "subdiag_groups must be in the range (1 <= subdiag_groups <= 16). ", DIAG_OPTIONS);
@@ -973,9 +977,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, -1, 40000, -1,
             CHECK_AND_FIX, OPTIONAL,
-"Block size to use when applying the non-local and S operators. "
-"A value at least as large as the number of wavefunctions produces "
-"better performance but requires more memory. ",
+            "Block size to use when applying the non-local and S operators. "
+            "A value at least as large as the number of wavefunctions produces "
+            "better performance but requires more memory. ",
             "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ", PERF_OPTIONS);
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 1, INT_MAX, 201,
@@ -1780,6 +1784,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             ct.efield_tddft_crds[i] += ct.efield_tddft_xtal[2] * Rmg_L.b2[i]/b2_length;
         }
     }
+
+    ct.tddft_laser_pulse_para[0] = laser_pulse.vals.at(0)/Ha_eV;
+    ct.tddft_laser_pulse_para[1] = laser_pulse.vals.at(1);
+    ct.tddft_laser_pulse_para[2] = laser_pulse.vals.at(2);
 
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";

@@ -28,6 +28,7 @@
 #include "blas_driver.h"
 #include "rmg_reduce.h"
 #include "blacs.h"
+#include <boost/math/special_functions/erf.hpp>
 
 
 template <typename KpointType>
@@ -195,6 +196,10 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
             Kptr[kpt]->Pxmatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
             Kptr[kpt]->Pymatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
             Kptr[kpt]->Pzmatrix_cpu   = (std::complex<double> *)RmgMallocHost((size_t)n2*sizeof(std::complex<double>));
+            if(ct.tddft_laser_pulse)
+            {
+                Kptr[kpt]->VecMatrix_cpu.resize(n2);
+            }
 
         }
         else
@@ -460,7 +465,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             VecPHmatrix(Kptr[kpt], ct.efield_tddft_crds, desca, ct.tddft_start_state, numst);
 
-            if(pre_steps == 0)
+            if(pre_steps == 0 && !ct.tddft_laser_pulse)
             {
                 // at t= 0, cos(omega t) = 1.0
                 daxpy ( &n2_C ,  &ct.efield_tddft_crds[0], (double *)Kptr[kpt]->Pxmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
@@ -535,7 +540,7 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         fflush(NULL);
     }
 
-    if(ct.tddft_mode == EH_PAIR)
+    if(ct.tddft_mode == EH_PAIR )
     {
         rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states);
         rmg::hvector<MatrixType> Hmat_mtype(ct.num_states*ct.num_states);
@@ -727,6 +732,35 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
     trho.set(0.0);
     ReadData (ct.infile, vh_old.data(), rho_ground.data(), vxc_old.data(), Kptr);
     rho_ground.get_oppo();
+
+    // for each MD step, current operator needs to be updated because psi changed.
+    if(ct.tddft_mode == VECTOR_POT)
+    {
+
+        // vector potential will be A(t) =  ct.efield_tddft * cos(tddft_frequency * t)
+        // VecP matrix is <psi| ct.efied_tddft dot gradient | psi>
+        //
+        if(ct.verbose) {
+            rmg::printlog("\n starting VecP matrix ");
+            fflush(NULL);
+        }
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            VecPHmatrix(Kptr[kpt], ct.efield_tddft_crds, desca, ct.tddft_start_state, numst);
+            if(ct.tddft_laser_pulse)
+            {
+                std::fill(Kptr[kpt]->VecMatrix_cpu.begin(), Kptr[kpt]->VecMatrix_cpu.end(), 0.0);
+                daxpy ( &n2_C ,  &ct.efield_tddft_crds[0], (double *)Kptr[kpt]->Pxmatrix_cpu, &ione , (double *)Kptr[kpt]->VecMatrix_cpu.data(),  &ione) ;
+                daxpy ( &n2_C ,  &ct.efield_tddft_crds[1], (double *)Kptr[kpt]->Pymatrix_cpu, &ione , (double *)Kptr[kpt]->VecMatrix_cpu.data(),  &ione) ;
+                daxpy ( &n2_C ,  &ct.efield_tddft_crds[2], (double *)Kptr[kpt]->Pzmatrix_cpu, &ione , (double *)Kptr[kpt]->VecMatrix_cpu.data(),  &ione) ;
+            }
+            CurrentNlpp(Kptr[kpt], desca, ct.tddft_start_state, numst);
+        }
+        if(ct.verbose) {
+            rmg::printlog("\n done VecP matrix ");
+            fflush(NULL);
+        }
+    }
+
 
 #if HIP_ENABLED || CUDA_ENABLED
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -1022,6 +1056,22 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             //    daxpy ( &n2_C ,  &coswty, (double *)Kptr[kpt]->Pymatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
             //    daxpy ( &n2_C ,  &coswtz, (double *)Kptr[kpt]->Pzmatrix_cpu, &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
             //}
+            if(ct.tddft_laser_pulse)
+            {
+               // gauss_term = (t-t0)/tao
+               double gauss_term = (total_time - ct.tddft_laser_pulse_para[1])/ct.tddft_laser_pulse_para[2];
+               double wt = ct.tddft_laser_pulse_para[0] * total_time;
+               //     ab = omega * tao
+               //double ab = ct.tddft_laser_pulse_para[0] * ct.tddft_laser_pulse_para[2];
+               //std::complex<double> tt0 (gauss_term, -ab/2.0);
+               //tt0 = (boost::math::erf(tt0) + 1.0 ) * std::complex<double>(cos(wt), sin(wt));
+               //double At = sqrt(PI) * ct.tddft_laser_pulse_para[2] /2.0 * exp(-ab*ab/4.0) * std::real(tt0);
+               // erf for complex does not work, use the approximate one.
+               double At = 1.0/ct.tddft_laser_pulse_para[0] * sin(wt) * exp(-gauss_term * gauss_term);
+               rmg::printlog("%e  %e  time, vector pot \n", total_time, At);
+               daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
+               daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
+            }
             extrapolate_Hmatrix ((double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, (double *)Kptr[kpt]->Hmatrix_1_cpu, n2_C) ;
         }   
 
@@ -1296,14 +1346,14 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             if(ct.tddft_mode == VECTOR_POT )
             {
                 fprintf(current_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                        tot_steps*time_step, current[0], current[1], current[2]);
+                        total_time, current[0], current[1], current[2]);
                 if(ct.BerryPhase) fprintf(dbp_fi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                        tot_steps*time_step, tot_bp_pol, 0.0,0.0);
+                        total_time, tot_bp_pol, 0.0,0.0);
             }
             else if(ct.tddft_mode == EFIELD || ct.tddft_mode == POINT_CHARGE)
             {
                 fprintf(dfi, "\n  %f  %18.10e  %18.10e  %18.10e ",
-                        tot_steps*time_step, dipole_tot[0], dipole_tot[1], dipole_tot[2]);
+                        total_time, dipole_tot[0], dipole_tot[1], dipole_tot[2]);
             }
         }
         if(ct.tddft_mode == EH_PAIR)
