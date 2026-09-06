@@ -411,7 +411,6 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     {
         /* solve once */
         solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale*pcoefs[cycl], k, pot);
-        if(bottom) anchor_residual(level, dimx, dimy, dimz, f_mat);
         /* trade boundary info */
         if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
             T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
@@ -420,6 +419,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
         }
     }
+    anchor_residual(level, dimx, dimy, dimz, v_mat);
 
 /*
  * on coarsest grid, we are finished
