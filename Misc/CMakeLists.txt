@@ -1,4 +1,5 @@
 add_library (Misc
+Faddeeva.cc
 rmg_threadutils.cpp
 TiledM_to_glob.cpp
 GatherScatter.cpp
