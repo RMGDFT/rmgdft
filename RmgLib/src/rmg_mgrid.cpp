@@ -389,6 +389,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         int maxpts = std::max(std::max(nx, ny), nz);
         presweeps = std::max(maxpts, 12);
         if(presweeps > minpts) presweeps = minpts;
+presweeps=24;
         pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
 // too slow for production use but helpful for debugging
 //        solv_pois_cg (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale, k, pot);

@@ -106,6 +106,13 @@ GpuEleMul_sycl.cpp
 gauss_solve.cpp
 rmg_printlog.cpp
 )
+# Need to ensure IEEE-754 compliance
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set_source_files_properties(Faddeeva.cc
+        PROPERTIES
+        COMPILE_FLAGS "-O2 -fno-fast-math -frounding-math -fsignaling-nans -fexcess-precision=standard"
+    )
+endif()
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/XC/")
 if(MAGMA_FOUND)
