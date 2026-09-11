@@ -158,6 +158,28 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     // If the user has not specifically set the number of kohn-sham multigrid levels use 2
     if(lc.eig_parm.levels == -1) lc.eig_parm.levels = 3;
 
+    // First check if the grid dimensions in each coordinate direction are an even
+    // power of 3. If they are then a multigrid coarsening factor of 3 is possible.
+    // We check for two levels. This is on the global grid only. Processor grid
+    // possibilities are checked later.
+    int levels_3 = 0;
+    lc.eig_parm.coarse_factors.resize(MAX_MG_LEVELS);
+    std::fill(lc.eig_parm.coarse_factors.begin(), lc.eig_parm.coarse_factors.end(), 2);
+    if(!(NX_GRID % 3) && !(NY_GRID % 3) && !(NZ_GRID % 3))
+    {
+        levels_3++;
+        lc.eig_parm.coarse_factors[0] = 3;
+        int nextx = NX_GRID/3;
+        int nexty = NY_GRID/3;
+        int nextz = NZ_GRID/3;
+        if(!(nextx % 3) && !(nexty % 3) && !(nextz % 3))
+        {
+            levels_3++;
+            lc.eig_parm.coarse_factors[1] = 3;
+        }
+    }
+    //if(pct.gridpe==0)printf("Levels_3 =  %d\n", levels_3);
+
     int checklevel;
 
     for(checklevel = 1;checklevel < lc.eig_parm.levels;checklevel++) {

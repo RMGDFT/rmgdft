@@ -258,6 +258,7 @@ typedef struct
     /* Number of Smoother iterations on the coarsest level */
     int coarsest_steps;
 
+    std::vector<int> coarse_factors;
 } MG_PARM;
 
 

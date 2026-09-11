@@ -202,7 +202,7 @@ std::vector<double> mgrid::pois_chebyshev_coeffs(
     std::vector<double> coefs(nsteps, 0.0);
     if(sigma < 0.1 || on_flag)
     {
-        for(int k=0;k < nsteps;k++)coefs[k] = 0.66;
+        for(int k=0;k < nsteps;k++)coefs[k] = 6.0/7.0;
         return coefs;
     }
 
@@ -270,10 +270,20 @@ template void mgrid::mg_restrict(double*, double*, int, int, int, int, int, int,
 template void mgrid::mg_restrict(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_restrict(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
 
+template void mgrid::mg_restrict3(float*, float*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict3(double*, double*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict3(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_restrict3(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
 template void mgrid::mg_prolong(float*, float*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_prolong(double*, double*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_prolong(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_prolong(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+template void mgrid::mg_prolong3(float*, float*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong3(double*, double*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong3(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void mgrid::mg_prolong3(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
 
 template void mgrid::mg_prolong_cubic(float*, float*, int, int, int, int, int, int, int, int, int);
 template void mgrid::mg_prolong_cubic(double*, double*, int, int, int, int, int, int, int, int, int);
@@ -349,7 +359,6 @@ void mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  pxdim, pydim, pzdim);
 
 }
-
 template <typename RmgType>
 void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
@@ -385,11 +394,9 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     // More sweeps on coarsest level for now
     if(bottom)
     {
-        int minpts = std::min(std::min(nx, ny), nz);
+        //int minpts = std::min(std::min(nx, ny), nz);
         int maxpts = std::max(std::max(nx, ny), nz);
-        presweeps = std::max(maxpts, 12);
-        if(presweeps > minpts) presweeps = minpts;
-presweeps=24;
+        presweeps=maxpts;
         pcoefs = pois_chebyshev_coeffs(nx, ny, nz, hx[level], hy[level], hz[level], 0.0, presweeps);
 // too slow for production use but helpful for debugging
 //        solv_pois_cg (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale, k, pot);
@@ -413,7 +420,7 @@ presweeps=24;
         /* solve once */
         solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], pscale*pcoefs[cycl], k, pot);
         /* trade boundary info */
-        if (((level >= max_levels) && (cycl == presweeps-1)) || !this->central_trade) {
+        if ((level >= max_levels) || (cycl == presweeps-1) || !this->central_trade) {
             T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
         }
         else {
@@ -430,7 +437,6 @@ presweeps=24;
         if(this->timer_mode) delete RT;
         if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) level_flag++;
         return;
-
     }                           /* end if */
 
 /* set storage pointers in the current workspace */
@@ -482,6 +488,7 @@ presweeps=24;
         T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
     }                           /* for mu_cyc */
+    anchor_residual(level, dimx, dimy, dimz, v_mat);
 
     if(this->timer_mode) delete RT;
 }
@@ -1340,6 +1347,7 @@ void mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict_
     delete [] half_c;
 }
 
+
 template <typename RmgType>
 void mgrid::eval_residual (RmgType * __restrict__ mat, 
                            RmgType * __restrict__ f_mat, 
@@ -1507,17 +1515,25 @@ int mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
     if(bctype == PERIODIC) {
 
         skip = (2 << curlevel);
+
         // First check if we have too many multigrid levels. For periodic boundary
         // conditions the next level of the global grid must be divisible by 2
         if ((global_dim % skip) != 0) {
             return -1;
         }
 
+        // Global dim at this level must be even
+        int new_global_dim = global_dim / skip;
+        //if(new_global_dim%2) {
+        //    return -1;
+        //}
+
         // Require at least one point in the level
         new_dim = global_pdim / skip;
-        if(!new_dim) {
-            return -1;
-        }
+        if(new_dim < 1)return -1;
+        //if(new_dim < 2 || new_dim%2) {
+        //    return -1;
+        //}
 
         // evenly divisible then we are done
         if(!(global_pdim % skip)) return new_dim;
@@ -1540,6 +1556,142 @@ int mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
     rmg::error("Boundary condition not programmed."); 
     return -1;
 
+}
+
+
+// On entry the fine grid includes 2 image cells per side but trade_imagesx has not been called while on exit
+// the coarse grid is packed into a smoothing grid with one but images have not yet been traded
+template <typename RmgType>
+void mgrid::mg_restrict3 (RmgType * __restrict__ full, RmgType * __restrict__ third, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+{
+
+    int size = (dimx + 4)*(dimy + 4)*(dimz + 4);
+    RmgType *rptr = full + size;   // Only for use in mgrid routines!
+    T->trade_imagesx (full, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
+
+    const double w1D[5] = {1.0/9.0, 2.0/9.0, 3.0/9.0, 2.0/9.0, 1.0/9.0};
+
+    int coarse_nx = dx2 + 2;
+    int coarse_ny = dy2 + 2;
+    int coarse_nz = dz2 + 2;
+    int incy = (dz2 + 2);
+    int incx = (dy2 + 2)*(dz2 + 2);
+    int incy2 = dimz + 4;
+    int incx2 = (dimy + 4)*(dimz + 4);
+
+    // Calculate phase shifts (0, 1, or 2) for this specific MPI rank
+    int phase_x = xoffset % 3;
+    int phase_y = yoffset % 3;
+    int phase_z = zoffset % 3;
+
+    // Adjust the starting fine index base. If phase is non-zero, the first 
+    // local coarse node must reach backward into the 3 cell zone.
+    int fine_base_x = 2 - phase_x;
+    int fine_base_y = 2 - phase_y;
+    int fine_base_z = 2 - phase_z;
+
+    // Loop over the local ACTIVE domain of the coarse grid
+    for (int i = 1; i < coarse_nx - 1; ++i) {
+        int local_i_relative = i - 1;
+        int center_i = fine_base_x + 3 * local_i_relative;
+
+        for (int j = 1; j < coarse_ny - 1; ++j) {
+            int local_j_relative = j - 1;
+            int center_j = fine_base_y + 3 * local_j_relative;
+
+            for (int k = 1; k < coarse_nz - 1; ++k) {
+                int local_k_relative = k - 1;
+                int center_k = fine_base_z + 3 * local_k_relative;
+
+                accumulator_t<RmgType> t1 = 0.0;
+
+                // Fused 5x5x5 loop: With ghost = 3, center_i + di is guaranteed inside local memory boundaries
+                for (int dk = -2; dk <= 2; ++dk) {
+                    double wk = w1D[dk + 2];
+                    for (int dj = -2; dj <= 2; ++dj) {
+                        double wj = w1D[dj + 2];
+                        for (int di = -2; di <= 2; ++di) {
+                            double wi = w1D[di + 2];
+
+                            t1 += (wi * wj * wk) *
+                                  rptr[(center_i + di)*incx2 + (center_j + dj)*incy2 + center_k + dk];
+                        }
+                    }
+                }
+                third[i*incx + j*incy + k] = t1;
+            }
+        }
+    }
+    // Caller must trade images on third
+}
+
+// On entry trade_images must have been called for the coarse grid. On exit the interpolated
+// fine grid results are stored in a smoothing grid.
+template <typename RmgType>
+void mgrid::mg_prolong3 (RmgType * __restrict__ full, RmgType * __restrict__ third, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+{
+    const double w_left[]  = {1.0, 2.0 / 3.0, 1.0 / 3.0};
+    const double w_right[] = {0.0, 1.0 / 3.0, 2.0 / 3.0};
+
+    int fine_nx = dimx + 2;
+    int fine_ny = dimy + 2;
+    int fine_nz = dimz + 2;
+    int incy = (dz2 + 2);
+    int incx = (dy2 + 2)*(dz2 + 2);
+    int incy2 = dimz + 2;
+    int incx2 = (dimy + 2)*(dimz + 2);
+    int fine_size = fine_nx*fine_ny*fine_nz;
+
+    // Zero out fine grid
+    for(int i=0;i < fine_size;i++) full[i] = 0.0;
+
+    for (int i = 1; i < fine_nx - 1; ++i) {
+        int global_fine_x = xoffset + (i - 1);
+        int global_coarse_x = global_fine_x / 3;
+        int rem_i = global_fine_x % 3;
+
+        int local_coarse_start_x = 1 - (xoffset / 3);
+        int i_base = local_coarse_start_x + global_coarse_x;
+
+        for (int j = 1; j < fine_ny - 1; ++j) {
+            int global_fine_y = yoffset + (j - 1);
+            int global_coarse_y = global_fine_y / 3;
+            int rem_j = global_fine_y % 3;
+
+            int local_coarse_start_y = 1 - (yoffset / 3);
+            int j_base = local_coarse_start_y + global_coarse_y;
+
+            for (int k = 1; k < fine_nz - 1; ++k) {
+                // Calculate global fine Z coordinate to deduce global coarse mapping
+                int global_fine_z = zoffset + (k - 1);
+                int global_coarse_z = global_fine_z / 3;
+                int rem_k = global_fine_z % 3;
+
+                // Map global coarse coordinate back to our local coarse memory index space
+                int local_coarse_start_z = 1 - (zoffset / 3);
+                int k_base = local_coarse_start_z + global_coarse_z;
+
+                accumulator_t<RmgType> t1 = 0.0;
+
+                // Gather from 2x2x2 coarse block. 
+                // With ghost = 3, I_base + di is safely mapped within the local grid array.
+                for (int dk = 0; dk <= 1; ++dk) {
+                    double wk = (dk == 0) ? w_left[rem_k] : w_right[rem_k];
+                    for (int dj = 0; dj <= 1; ++dj) {
+                        double wj = (dj == 0) ? w_left[rem_j] : w_right[rem_j];
+                        for (int di = 0; di <= 1; ++di) {
+                            double wi = (di == 0) ? w_left[rem_i] : w_right[rem_i];
+
+                            double weight = wi * wj * wk;
+                            t1 += weight * third[(i_base + di)*incx + (j_base + dj)*incy + k_base + dk];
+                        }
+                    }
+                }
+
+                full[i*incx2 + j*incy2 + k] += t1;
+            }
+        }
+    }
 }
 
 }

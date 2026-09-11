@@ -58,6 +58,8 @@ namespace rmg
         std::vector<double> kvec = {0.0, 0.0, 0.0};
         double kmag=0.0;
         int boundary_flag = PERIODIC;   // only thing supported for now
+        int istate=0;                   // for debugging
+        bool output_flag=false;         // for debugging
 
         std::array<double, MAX_MG_LEVELS> hx;
         std::array<double, MAX_MG_LEVELS> hy;
@@ -103,6 +105,15 @@ namespace rmg
         }
 
        double rel_sradius(int level);
+       void set_istate(int is)
+       {
+           this->istate = is;
+       }
+
+       void set_output_flag(bool flag)
+       {
+           this->output_flag = flag;
+       }
 
        std::vector<double> pois_chebyshev_coeffs(
        int nx, int ny, int nz,           // global grid points at this level
@@ -118,7 +129,13 @@ namespace rmg
 
         template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
+        template <typename RmgType> void mg_restrict3 (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
         template <typename RmgType> void mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
+        template <typename RmgType> void mg_prolong3 (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
+        template <typename RmgType> void mg_prolong_pc (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
         template <typename RmgType> void mg_prolong_cubic (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
