@@ -28,7 +28,7 @@
 #include "blas_driver.h"
 #include "rmg_reduce.h"
 #include "blacs.h"
-#include <boost/math/special_functions/erf.hpp>
+#include "Faddeeva.hh"
 
 
 template <typename KpointType>
@@ -1058,19 +1058,25 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
             //}
             if(ct.tddft_laser_pulse)
             {
-               // gauss_term = (t-t0)/tao
-               double gauss_term = (total_time - ct.tddft_laser_pulse_para[1])/ct.tddft_laser_pulse_para[2];
-               double wt = ct.tddft_laser_pulse_para[0] * total_time;
-               //     ab = omega * tao
-               //double ab = ct.tddft_laser_pulse_para[0] * ct.tddft_laser_pulse_para[2];
-               //std::complex<double> tt0 (gauss_term, -ab/2.0);
-               //tt0 = (boost::math::erf(tt0) + 1.0 ) * std::complex<double>(cos(wt), sin(wt));
-               //double At = sqrt(PI) * ct.tddft_laser_pulse_para[2] /2.0 * exp(-ab*ab/4.0) * std::real(tt0);
-               // erf for complex does not work, use the approximate one.
-               double At = 1.0/ct.tddft_laser_pulse_para[0] * sin(wt) * exp(-gauss_term * gauss_term);
-               rmg::printlog("%e  %e  time, vector pot \n", total_time, At);
-               daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
-               daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
+                // gauss_term = (t-t0)/tao
+                double gauss_term = (total_time - ct.tddft_laser_pulse_para[1])/ct.tddft_laser_pulse_para[2];
+                double wt = ct.tddft_laser_pulse_para[0] * total_time;
+                double At;
+                //     ab = omega * tao
+                double ab = ct.tddft_laser_pulse_para[0] * ct.tddft_laser_pulse_para[2];
+                if(ab < 10.0)
+                {
+                    std::complex<double> tt0 (gauss_term, -ab/2.0);
+                    tt0 = (Faddeeva::erf(tt0) + 1.0 ) * std::complex<double>(cos(wt), sin(wt));
+                    At = sqrt(PI) * ct.tddft_laser_pulse_para[2] /2.0 * exp(-ab*ab/4.0) * std::real(tt0);
+                }
+                else
+                {
+                    At = 1.0/ct.tddft_laser_pulse_para[0] * sin(wt) * exp(-gauss_term * gauss_term);
+                }
+                rmg::printlog("%e  %e  time, vector pot \n", total_time, At);
+                daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_0_cpu,  &ione) ;
+                daxpy ( &n2_C ,  &At, (double *)Kptr[kpt]->VecMatrix_cpu.data(), &ione , (double *)Kptr[kpt]->Hmatrix_m1_cpu,  &ione) ;
             }
             extrapolate_Hmatrix ((double *)Kptr[kpt]->Hmatrix_m1_cpu, (double *)Kptr[kpt]->Hmatrix_0_cpu, (double *)Kptr[kpt]->Hmatrix_1_cpu, n2_C) ;
         }   
