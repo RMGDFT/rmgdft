@@ -121,7 +121,7 @@ void make_masks(rmg::mgrid &MG, TradeImages *T, rmg::grid *G, int dimx, int dimy
         dy2 = MG.MG_SIZE (dy1, i-1, G->get_NY_GRID(1), G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
         dz2 = MG.MG_SIZE (dz1, i-1, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
         MG.boundary_masks[i].resize((dx2+2)*(dy2+2)*(dz2+2));
-        MG.mg_restrict (MG.boundary_masks[i-1].data(), MG.boundary_masks[i].data(), dx1, dy1, dz1, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_restrict2 (MG.boundary_masks[i-1].data(), MG.boundary_masks[i].data(), dx1, dy1, dz1, dx2, dy2, dz2, ixoff, iyoff, izoff);
         T->trade_images (MG.boundary_masks[i].data(), dx2, dy2, dz2, FULL_TRADE);
         dx1 = dx2;
         dy1 = dy2;

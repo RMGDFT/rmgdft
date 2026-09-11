@@ -190,7 +190,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
     for (i = 0; i < mu_cyc; i++)
     {
 
-        MG.mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_restrict2 (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
 
         /* call mgrid solver on new level */
@@ -203,7 +203,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
         Rmg_T->trade_images(newv, dx2, dy2, dz2, FULL_TRADE);
 
-        MG.mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_prolong2 (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         scale = ONE;
 
