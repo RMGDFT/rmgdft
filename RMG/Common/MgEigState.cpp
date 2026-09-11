@@ -206,7 +206,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *ihu_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *r0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
     CalcType *hr0_t  =  (CalcType *)p->ordered_malloc(1);pool_blocks++;
-    CalcType *twork_t  = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     double *dinv  = (double *)p->ordered_malloc(1);pool_blocks++;
     CalcType *rmmres_t = (CalcType *)p->ordered_malloc(1);pool_blocks++;
     OrbitalType *nv_t  = (OrbitalType *)p->ordered_malloc(aratio);pool_blocks+=aratio;
@@ -293,7 +292,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 mgtype_t *v_mat = (mgtype_t *)&sg_twovpsi_t[sbasis];
                 mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
-                mgtype_t *twork_tf = (mgtype_t *)twork_t;
                 mgtype_t *work2_tf = (mgtype_t *)work2_t;
 
 
@@ -309,18 +307,17 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 /* Pack the residual data into multigrid array */
                 //project_residual(pbasis, &res_t[is*pbasis], &tmp_psi_t[is*pbasis]);
-                rmg::pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
-                T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
-                MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                rmg::pack_ptos_convert (work2_tf, &res_t[is*pbasis], dimx, dimy, dimz);
+                T->trade_images (work2_tf, dimx, dimy, dimz, FULL_TRADE);
+                MG.mg_restrict (work2_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                 MG.anchor_residual(1, dx2, dy2, dz2, f_mat);
-
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
                         dx2, dy2, dz2, 1, levels, 0.0, NULL,
                         dimx, dimy, dimz);
 
-                MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                MG.anchor_residual(0, dimx, dimy, dimz, twork_tf);
-                CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);
+                MG.mg_prolong (work2_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                MG.anchor_residual(0, dimx, dimy, dimz, work2_tf);
+                CopyAndConvert(sbasis, (mgtype_t *)work2_tf, (convert_type_t *)sg_twovpsi_t);
 
             }
 
