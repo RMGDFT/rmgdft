@@ -30,6 +30,16 @@
 #include "blacs.h"
 #include "Faddeeva.hh"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <filesystem>
+#include <iostream>
+
 
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat);
@@ -540,6 +550,9 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         fflush(NULL);
     }
 
+
+    int vbm = ct.nel/2 -1;
+
     if(ct.tddft_mode == EH_PAIR )
     {
         rmg::hvector<OrbitalType> Hmat(ct.num_states*ct.num_states);
@@ -548,8 +561,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         Kpoint<double> *kptr_d;
         Kpoint<std::complex<double>> *kptr_c;
         double vtxc, etxc;
-        int kpt_eh = ct.tddft_ehpair[0] - pct.kstart;
-        int vbm = ct.nel/2 -1;
         int h_state = vbm - ct.tddft_ehpair[1];
         int e_state = vbm + 1 + ct.tddft_ehpair[2];
         if(h_state < 0 || e_state >= ct.num_states)
@@ -583,23 +594,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
 
         }
 
-        if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
-        {
-            filename = std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_occ.dat";
-
-            MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
-
-            if(pct.gridpe == 0)
-            {
-                occ_fi = fopen(filename.c_str(), "w");
-                fprintf(occ_fi, "\n  && electron-pair exitation at kpoint %d from VBM %d to CBM %d", ct.tddft_ehpair[0], ct.tddft_ehpair[1], ct.tddft_ehpair[2]);
-                fprintf(occ_fi, "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
-                fprintf(occ_fi, " \n %f", 0.0);
-                for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
-                    if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
-
-            }
-        }
 
         RT2a = new RmgTimer("rho_0");
         for(int idx = 0; idx < FP0_BASIS; idx++) rho_ksum[idx] =0.0;
@@ -713,6 +707,32 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         }
     }
 
+    occ_fi = (FILE **)malloc(ct.num_kpts_pe * sizeof(FILE*));
+
+    std::filesystem::create_directory("TDDFT_OCC");
+ 
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        occ_fi[kpt] = NULL;
+        int kpt_glob = kpt + pct.kstart;
+        filename = "TDDFT_OCC/"+std::string(ct.basename) +"_spin" +std::to_string(pct.spinpe)+ "_kpt" + std::to_string(kpt_glob) + "_occ.dat";
+        if(pct.gridpe == 0)
+        {
+            occ_fi[kpt] = fopen(filename.c_str(), "w");
+        }
+
+        MatDiagGet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, numst, *Sp);
+
+        if(pct.gridpe == 0)
+        {
+            fprintf(occ_fi[kpt], "\n  && electron-pair exitation at kpoint %d from VBM %d to CBM %d", ct.tddft_ehpair[0], ct.tddft_ehpair[1], ct.tddft_ehpair[2]);
+            fprintf(occ_fi[kpt], "\n  &&occupation at start(VBM-2,-1,0,CBM0,+1,+2:" );
+            fprintf(occ_fi[kpt], " \n %f", 0.0);
+            for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
+                if(i >= 0 && i <numst) fprintf(occ_fi[kpt], " %8.4f ",diag_elem[i]);
+
+        }
+    }
 }
 
 // TDDFT MD loop
@@ -1362,24 +1382,21 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                         total_time, dipole_tot[0], dipole_tot[1], dipole_tot[2]);
             }
         }
-        if(ct.tddft_mode == EH_PAIR)
+
+        int vbm = ct.nel/2 -1;
+
+        for(int kpt= 0; kpt < ct.num_kpts_pe; kpt++)
         {
-            int kpt_eh = ct.tddft_ehpair[0] - pct.kstart;
-            int vbm = ct.nel/2 -1;
+            std::vector<double> diag_elem(numst);
 
-            if(kpt_eh >= 0 && kpt_eh < ct.num_kpts_pe)
+            MatDiagGet((MatrixType *)Kptr[kpt]->Pn0_cpu, diag_elem, numst, *Sp);
+            if(pct.gridpe == 0)
             {
-                std::vector<double> diag_elem(numst);
-
-                MatDiagGet((MatrixType *)Kptr[kpt_eh]->Pn0_cpu, diag_elem, numst, *Sp);
-                if(pct.gridpe == 0)
-                {
-                    fprintf(occ_fi, " \n %f", total_time);
-                    for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
-                        if(i >= 0) fprintf(occ_fi, " %8.4f ",diag_elem[i]);
-                }
-
+                fprintf(occ_fi[kpt], " \n %f", total_time);
+                for(int i = vbm-ct.tddft_start_state -5; i < vbm-ct.tddft_start_state +8; i++) 
+                    if(i >= 0 && i < numst) fprintf(occ_fi[kpt], " %8.4f ",diag_elem[i]);
             }
+
         }
 
         delete RT2a;
@@ -1410,6 +1427,10 @@ void rmg::tddft<OrbitalType, MatrixType>::tddft_md(void)
                 }
                 if(ct.BerryPhase)
                     fflush(dbp_fi);
+            }
+            if(pct.gridpe == 0)
+            {
+                for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) fflush(occ_fi[kpt]);
             }
             delete RT2a;
         }
@@ -1553,7 +1574,10 @@ rmg::tddft<OrbitalType, MatrixType>::~tddft(void)
     {
         fclose(efi);
     }
-    if(occ_fi != NULL) fclose(occ_fi);
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(occ_fi[kpt] != NULL) fclose(occ_fi[kpt]);
+    }
 
     RT2a = new RmgTimer("2-TDDFT: Write");
     for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
