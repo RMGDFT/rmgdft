@@ -234,6 +234,43 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
 
+    //remove the symmetry operaion which break constrained relaxation
+    {
+        bool sym_break;
+        for(int isym = nsym_atom-1; isym > 0; isym--)
+        {
+            sym_break=false;
+
+            for (int ion1 = 0; ion1 < ct.num_ions; ion1++)
+            {
+                int ion2 = sym_atom[isym * ct.num_ions + ion1];
+                if(ion1 == ion2 ) continue;
+                int move1 = (Atoms[ion1].movable[0]<<2) + (Atoms[ion1].movable[1]<<1) + Atoms[ion1].movable[2];
+                int move2 = (Atoms[ion2].movable[0]<<2) + (Atoms[ion2].movable[1]<<1) + Atoms[ion2].movable[2];
+
+                // move = 0: atom fix in all directions
+                // move = 7: atom relax in all directions
+                if( (move1 != move2)  || (move1 > 0 && move1 < 7) )  
+                {
+                    sym_break = true;
+                    break;
+                }
+
+            }
+
+            if(sym_break)
+            {
+                ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+                ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+                sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+                sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+                sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+                inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+                time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
+                translation.erase(translation.begin() + isym *3, translation.begin() + isym * 3 + 3); 
+            }
+        }
+    }
 
     //remove the symmetry operaion which break the symmetry by spin polarization
     if(ct.nspin == 2)

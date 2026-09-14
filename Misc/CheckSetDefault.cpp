@@ -215,12 +215,6 @@ void CheckSetDefault(void)
         ct.time_reversal = false;
     }
 
-    for(auto& Atom : Atoms)
-    {
-        if((!Atom.movable[0] || !Atom.movable[1] || !Atom.movable[2]) && !ct.is_gamma)
-            rmg::error("Constrained dynamics is currently implemented for gamma only. Terminating.");
-    }
-
     if(ct.subdiag_driver == SUBDIAG_ELPA)
     {
         ct.scalapack_block_factor = 16;
