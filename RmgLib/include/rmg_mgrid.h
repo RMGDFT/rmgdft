@@ -52,19 +52,23 @@ namespace rmg
         int density;
         double zmax;
         int ibrav;
-        int level_flag;
         bool central_trade;
-        static int level_warning;
         std::vector<double> kvec = {0.0, 0.0, 0.0};
         double kmag=0.0;
         int boundary_flag = PERIODIC;   // only thing supported for now
-        int istate=0;                   // for debugging
-        bool output_flag=false;         // for debugging
+
+        // Debugging/warning stuff
+        static int level_warning;
+        int istate=0;
+        bool output_flag=false;
+        int level_flag;
 
         std::array<double, MAX_MG_LEVELS> hx;
         std::array<double, MAX_MG_LEVELS> hy;
         std::array<double, MAX_MG_LEVELS> hz;
 
+        int ldims[MAX_MG_LEVELS][3];    // per level grid dimensions on each node
+        int loffs[MAX_MG_LEVELS][3];    // per level grid offsets on each node
 
         // Timer mode 0=off (default) 1=on
         bool timer_mode;
@@ -83,11 +87,20 @@ namespace rmg
         std::array<int, MAX_MG_LEVELS> mu_cyc = {1, 1, 1, 1, 1, 1, 1, 1};
         std::array<std::vector<double>, MAX_MG_LEVELS> rms_residuals;
 
+        // Coalesce factors
+        std::array<int, 3> coalesce_factors = {1, 1, 1};
+
+        std::array<int, 3> gdims;
+        std::array<int, 3> pdims;
+        std::array<int, 3> poffsets;
 
         // Level 0 grid offsets and dimensions
-        int gxsize;
+        int gxsize;   // Global grid sizes
         int gysize;
         int gzsize;
+        int pxsize;   // Node grid sizes
+        int pysize;
+        int pzsize;
         int gxoffset;
         int gyoffset;
         int gzoffset;
@@ -126,10 +139,13 @@ namespace rmg
         template <typename RmgType> void anchor_residual(int level, int dimx, int dimy, int dimz, RmgType *r);
         template <typename RmgType> RmgType pdot(int dimx, int dimy, int dimz, RmgType *a, RmgType *b);
 
+        template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
         template <typename RmgType> void mg_restrict2 (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
         template <typename RmgType> void mg_restrict3 (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
+        template <typename RmgType> void mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
         template <typename RmgType> void mg_prolong2 (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
@@ -149,6 +165,8 @@ namespace rmg
 
         int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 
+        int mg_sizes(int curlevel, int *offsets);
+
         template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                      int dimx, int dimy, int dimz,
                      int level, int max_levels, double k, double *pot, int pxdim, int pydim, int pzdim);
@@ -156,6 +174,9 @@ namespace rmg
         template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                      int dimx, int dimy, int dimz,
                      int level, int max_levels, int pxdim, int pydim, int pzdim);
+
+        template <typename RmgType> void box_filter(RmgType * __restrict__ a, RmgType * __restrict__ w,
+                     int dimx, int dimy, int dimz);
 
     };
 
