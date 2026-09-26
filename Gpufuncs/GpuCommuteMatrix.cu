@@ -59,7 +59,7 @@ __global__ void commutematrix_simple(int M,
             cuDoubleComplex a = dP[idx];
             cuDoubleComplex c = C[idx_g];
             // conjugate + update
-            dP[idx] = cuCmul(alpha, cuCsub(a, hipConj(c)));
+            dP[idx] = cuCmul(alpha, cuCsub(a, cuConj(c)));
         }
     }
 
@@ -68,9 +68,7 @@ __global__ void commutematrix_simple(int M,
 void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alpha, std::complex<double> *dP, std::complex<double> *C)
 {
 
-    dim3 block(TILE_DIM, BLOCK_ROWS);
-    dim3 grid((M + TILE_DIM - 1) / TILE_DIM,
-          (M + TILE_DIM - 1) / TILE_DIM);
+    int nblocks = M / nTPB + 1;
     commutematrix_simple<<<nblocks, nTPB>>>(M, num_rows, my_rank * num_rows, 
              make_cuDoubleComplex(alpha.real(), alpha.imag()),
             (cuDoubleComplex *)dP, (cuDoubleComplex *)C);
