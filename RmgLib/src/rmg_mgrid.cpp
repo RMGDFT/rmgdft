@@ -373,7 +373,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
         }
     }
-    anchor_residual(level, dimx, dimy, dimz, v_mat);
+    //anchor_residual(level, dimx, dimy, dimz, v_mat);
 
 /*
  * on coarsest grid, we are finished
@@ -397,17 +397,17 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     {
 
         /* evaluate residual */
-        eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], resid, pot);
+        eval_residual (v_mat, f_mat, work, dimx, dimy, dimz, hx[level], hy[level], hz[level], resid, k, pot);
         mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         if(pot) mg_restrict (pot, newpot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-        anchor_residual(level+1, dx2, dy2, dz2, newf);
+        //anchor_residual(level+1, dx2, dy2, dz2, newf);
 
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, level + 1,
                     max_levels, k, newpot, pxdim, pydim, pzdim);
 
         mg_prolong2 (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-        anchor_residual(level, dimx, dimy, dimz, resid);
+        //anchor_residual(level, dimx, dimy, dimz, resid);
         for(int idx = 0;idx < size;idx++) v_mat[idx] += resid[idx];
 
         /* re-solve on this grid level */
@@ -433,7 +433,7 @@ void mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
     }                           /* for mu_cyc */
-    anchor_residual(level, dimx, dimy, dimz, v_mat);
+    //anchor_residual(level, dimx, dimy, dimz, v_mat);
 
     if(this->timer_mode) delete RT;
 }
@@ -1376,7 +1376,7 @@ void mgrid::eval_residual (RmgType * __restrict__ mat,
                            RmgType * __restrict__ work, 
                            int dimx, int dimy, int dimz,
                            double gridhx, double gridhy, double gridhz, 
-                           RmgType * res, double *pot)
+                           RmgType * res, double k, double *pot)
 {
     int size, idx;
     FiniteDiff FD(L);
@@ -1388,7 +1388,7 @@ void mgrid::eval_residual (RmgType * __restrict__ mat,
         for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)pot[idx]*mat[idx] - res[idx];
     }
     else {
-        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] - res[idx];
+        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] - (RmgType)(res[idx] + k*mat[idx]);
     }
 
 
@@ -1487,7 +1487,7 @@ void mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
         for (idx = 0; idx < size; idx++)
         {
 
-            vmat[idx] += rfac*(RmgType)scale * (work[idx] - (RmgType)k*vmat[idx] - fmat[idx]);
+            vmat[idx] += rfac*(RmgType)scale * (work[idx] + (RmgType)k*vmat[idx] - fmat[idx]);
 
         }                           /* end for */
 
@@ -1778,9 +1778,9 @@ template void mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double
 template void mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int);
 
 
-template void mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double *);
+template void mgrid::eval_residual (double *, double *, double *, int, int, int, double, double, double, double *, double, double *);
 
-template void mgrid::eval_residual (float *, float *, float *, int, int, int, double, double, double, float *, double *);
+template void mgrid::eval_residual (float *, float *, float *, int, int, int, double, double, double, float *,  double, double *);
 
 template void mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double *);
 

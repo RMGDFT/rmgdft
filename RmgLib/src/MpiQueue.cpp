@@ -36,6 +36,9 @@
 #include <boost/next_prior.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <unordered_map>
+#include <tuple>
+#include <boost/container_hash/hash.hpp>
 #include "BaseThread.h"
 #include "MpiQueue.h"
 
@@ -43,6 +46,9 @@
 
 std::condition_variable manager_cv;
 std::mutex manager_mutex;
+
+// Persistent request map
+std::unordered_map<size_t, MPI_Request> preqs;
 
 // Manager thread for queue mode. Works best with high thread
 // per node counts when one CPU is dedicated to the manager thread.
@@ -91,26 +97,57 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             {
                 while(Q->queue[tid]->pop(qobj))
                 {
-                    if(qobj.type == RMG_MPI_IRECV)
+                    if(qobj.is_persistent)
                     {
-                        MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        auto data = std::make_tuple(qobj.comm, qobj.mpi_tag, qobj.target,
+                                                    qobj.type, qobj.buf, qobj.buflen);
+                        size_t req_hash = boost::hash_value(data);
+                        if(preqs.contains(req_hash))
+                        {
+                            qobj.req = preqs[req_hash];
+                        }
+                        else
+                        {
+                            MPI_Request newreq;
+                            int retval;
+                            if(qobj.type == RMG_MPI_IRECV)
+                            {
+                                retval = MPI_Recv_init(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target,
+                                              qobj.mpi_tag, qobj.comm, &newreq);
+                            }
+                            else if(qobj.type == RMG_MPI_ISEND)
+                            {
+                                retval = MPI_Send_init(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target,
+                                              qobj.mpi_tag, qobj.comm, &newreq);
+                            }
+                            preqs.insert({req_hash, newreq});
+                            qobj.req = newreq;
+                        }
+                        MPI_Start(&qobj.req);
                     }
-                    else if(qobj.type == RMG_MPI_ISEND)
+                    else
                     {
-                        MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
-                    }
-                    else if(qobj.type == RMG_MPI_SUM)
-                    {
-                        if(qobj.datatype == MPI_DOUBLE)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
-                        if(qobj.datatype == MPI_FLOAT)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
-                        if(qobj.datatype == MPI_INT)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
-                    }
-                    else 
-                    {
-                        printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
+                        if(qobj.type == RMG_MPI_IRECV)
+                        {
+                            MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        }
+                        else if(qobj.type == RMG_MPI_ISEND)
+                        {
+                            MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        }
+                        else if(qobj.type == RMG_MPI_SUM)
+                        {
+                            if(qobj.datatype == MPI_DOUBLE)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
+                            if(qobj.datatype == MPI_FLOAT)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
+                            if(qobj.datatype == MPI_INT)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
+                        }
+                        else 
+                        {
+                            printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
+                        }
                     }
 
                     // Now push it into our already posted queues which are only accessed by this thread so faster

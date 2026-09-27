@@ -955,14 +955,21 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
+    int hash = T->get_threads_per_node() + 1;
     // The actual tag passed to mpi consists of the state index hashed with 2003
     // shifted left 5 bits and the passed tag parameter. 
-    qitem.mpi_tag = ((istate%2003)<<5) + tag;
+    //qitem.mpi_tag = ((istate%11)<<5) + tag;
+    qitem.mpi_tag = ((istate%hash)<<5);
     qitem.target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
     qitem.type = type;
     qitem.buf = (void *)buf;
     qitem.buflen = sizeof(RmgType)*count;
+    qitem.is_persistent = false;
 
+    if((type == RMG_MPI_IRECV || type == RMG_MPI_ISEND) && T->is_loop_over_states())
+    {
+        qitem.is_persistent = true;
+    }
     // Push it onto the queue
     this->queue->queue[tid]->push(qitem);
 
@@ -1165,6 +1172,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
 #endif
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, c3, idx, idx1, img3;
@@ -1795,6 +1803,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, idx;
@@ -2069,6 +2078,7 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * __restrict__ f,
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int ix, iy, iz, index;
     int ixs, iys, ixs2, iys2, c1, idx;
@@ -2498,6 +2508,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, index;
     int ixs2, iys2, c1, c2, c3, idx, idx1;
@@ -3025,6 +3036,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, index;
     int ixs2, iys2, c1, idx;
@@ -3267,6 +3279,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
 
     int ix, iy, iz, incx, incy, index;
@@ -3634,6 +3647,7 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
 
     int ix, iy, iz, index;
@@ -4177,6 +4191,7 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
 
     int idx;
 
@@ -4377,6 +4392,7 @@ void TradeImages::trade_imagesx_async_managed (RmgType * __restrict__ f, RmgType
     int tid = T->get_thread_tid();
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
+    grid_comm = this->comm;
     if(tid < 0) tid = 0;
 
     std::atomic_bool is_completed_r[6];

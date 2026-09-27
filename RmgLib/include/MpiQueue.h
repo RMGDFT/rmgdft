@@ -74,6 +74,8 @@ typedef struct
     // Used only by client threads
     bool is_unpacked;
 
+    bool is_persistent=false;
+
     // Initialized by clients but never change
     void *buf;
     int buflen;
