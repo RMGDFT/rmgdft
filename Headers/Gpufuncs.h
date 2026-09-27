@@ -176,6 +176,10 @@ void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<doubl
 void GpuCommuteMatrix(int M, int num_rows, int my_rank, std::complex<double> alpha, std::complex<double> *dP, std::complex<double> *C);
 
 void GpuTiledM_transpose(int M, int num_rows, int my_rank, double *C, double *C_glob);
+void gpu_copy_and_convert(const double* d_in, float* d_out, int n);
+void gpu_copy_and_convert(const float* d_in, double* d_out, int n);
+void gpu_copy_and_convert(const std::complex<float> *d_in, std::complex<double> *d_out, int n);
+void gpu_copy_and_convert(const std::complex<float> *d_in, std::complex<double> *d_out, int n);
 
 #endif
 

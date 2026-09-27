@@ -85,6 +85,7 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuVxc_x_psi_noncoll.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuRhomatrixConvert.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuCommuteMatrix.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/gpu_conversions.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuTiledM_transpose.cu)
 
 endif(RMG_CUDA_ENABLED)
