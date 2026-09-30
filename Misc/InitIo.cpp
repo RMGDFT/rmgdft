@@ -698,8 +698,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 #endif
 #if CUDA_ENABLED
-    if(ct.num_usable_gpu_devices == 1)
+    //if(ct.num_usable_gpu_devices == 1 )
     {
+        if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, pct.local_rank) ) {
+            rmg::error("CUDA: Cannot get the device\n");
+        }
+        gpuSetDevice(ct.cu_dev);
         rmg_device_pool = new rmg::dev_allocate(ct.cu_dev, 16384*4096);
     }
 #endif

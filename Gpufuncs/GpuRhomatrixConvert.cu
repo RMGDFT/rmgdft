@@ -36,8 +36,8 @@
 
 const int nTPB = 128; // Only 1 block but 128 threads per block
 
-    template <typename T1, typename T2 >
-__global__ void RhomatrixConvert(T1 *rho_matrix_dev, const T2 *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
+    template <typename T1 >
+__global__ void RhomatrixConvertReal(T1 *rho_matrix_dev, const double *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
 {
   //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
     size_t tile_size = numst * numst/nprocs;
@@ -55,6 +55,52 @@ __global__ void RhomatrixConvert(T1 *rho_matrix_dev, const T2 *rho_matrix, const
             {
                 rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j];
             }
+        }
+    }
+}
+
+__global__ void RhomatrixConvertComplex(cuDoubleComplex *rho_matrix_dev, const cuDoubleComplex *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
+{
+  //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
+    size_t tile_size = numst * numst/nprocs;
+    size_t pidx = blockIdx.x*nTPB;
+    int j = pidx + threadIdx.x;
+    if(j < numst)
+    {
+        for(int i = 0; i < numst/nprocs; i++)
+        {
+            if(myrank * numst/nprocs + i == j) 
+            {
+                rho_matrix_dev[myrank * tile_size + i * numst + j] = cuCsub(rho_matrix[i * numst + j], make_cuDoubleComplex(occ_dev[j], 0.0));
+            }
+            else
+            {
+                rho_matrix_dev[myrank * tile_size + i * numst + j] = rho_matrix[i * numst + j];
+            }
+        }
+    }
+}
+
+__global__ void RhomatrixConvertComplexFloat(cuFloatComplex *rho_matrix_dev, const cuDoubleComplex *rho_matrix, const double *occ_dev, const int numst, const int myrank, const int nprocs)
+{
+  //for(size_t pidx = 0;pidx < pbasis;pidx += nTPB)
+    size_t tile_size = numst * numst/nprocs;
+    size_t pidx = blockIdx.x*nTPB;
+    int j = pidx + threadIdx.x;
+    cuDoubleComplex tem;
+    if(j < numst)
+    {
+        for(int i = 0; i < numst/nprocs; i++)
+        {
+            if(myrank * numst/nprocs + i == j) 
+            {
+                tem = cuCsub(rho_matrix[i * numst + j], make_cuDoubleComplex(occ_dev[j], 0.0));
+            }
+            else
+            {
+                tem = rho_matrix[i * numst + j];
+            }
+            rho_matrix_dev[myrank * tile_size + i * numst + j] = make_cuFloatComplex((float)cuCreal(tem), (float)cuCimag(tem));
         }
     }
 }
@@ -86,7 +132,7 @@ void GpuRhomatrixConvert(double *rho_matrix_dev, double *rho_matrix, double *occ
 {
 
     int nblocks = numst / nTPB + 1;
-    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+    RhomatrixConvertReal<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 
 }
 
@@ -95,7 +141,7 @@ void GpuRhomatrixConvert(float *rho_matrix_dev, double *rho_matrix, double *occ_
 {
 
     int nblocks = numst / nTPB + 1;
-    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+    RhomatrixConvertReal<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 
@@ -120,14 +166,14 @@ void GpuRhomatrixConvert(std::complex<double> *rho_matrix_dev, std::complex<doub
 {
 
     int nblocks = numst / nTPB + 1;
-    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+    RhomatrixConvertComplex<<<nblocks, nTPB>>>((cuDoubleComplex*)rho_matrix_dev, (cuDoubleComplex*)rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 void GpuRhomatrixConvert(std::complex<float> *rho_matrix_dev, std::complex<double> *rho_matrix, double *occ_dev, int numst, int myrank, int nprocs)
 {
 
     int nblocks = numst / nTPB + 1;
-    RhomatrixConvert<<<nblocks, nTPB>>>(rho_matrix_dev, rho_matrix, occ_dev, numst, myrank, nprocs);
+    RhomatrixConvertComplexFloat<<<nblocks, nTPB>>>((cuFloatComplex*)rho_matrix_dev, (cuDoubleComplex*)rho_matrix, occ_dev, numst, myrank, nprocs);
 }
 
 

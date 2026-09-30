@@ -92,6 +92,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
 
     GpuRhomatrixConvert(rho_matrix_dev.data(), rho_matrix, occ_dev.data(), numst, myrank, nprocs);
 
+
     if(ct.tddft_tiledMM)
     {
 #if USE_NCCL
@@ -106,7 +107,7 @@ void GetNewRho_rmgtddft (Kpoint<KpointType> *kptr, spinobj<double> &rho_k, Matri
             rmg::error(ncclAllGather(rho_matrix_dev.data() + numst*numst/nprocs*myrank, rho_matrix_dev.data(), sendcount, ncclDouble, ct.nccl_local_comm, 0));
         }
 #else
-            rmg::error("set tddft_tiledMM=false in the input file, need use nccl for this option");
+        rmg::error("set tddft_tiledMM=false in the input file, need use nccl for this option");
 #endif
     }
 
