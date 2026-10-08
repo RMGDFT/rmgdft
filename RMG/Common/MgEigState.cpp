@@ -175,6 +175,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     bool do_mgrid = true;
 //    double mg_step = ct.eig_parm.sb_step;
     double fg_step = ct.eig_parm.mg_timestep;
+    double tpiba = 2.0 * PI / L->celldm[0];
+    double tpiba2 = tpiba * tpiba;
 
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
     double hxgrid = G->get_hxgrid(1);
@@ -309,9 +311,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 //project_residual(pbasis, &res_t[is*pbasis], &tmp_psi_t[is*pbasis]);
                 rmg::pack_ptos_convert (work2_tf, &res_t[is*pbasis], dimx, dimy, dimz);
                 MG.mg_restrict (work2_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                MG.anchor_residual(1, dx2, dy2, dz2, f_mat);
+//                MG.anchor_residual(1, dx2, dy2, dz2, f_mat);
                 MG.mgrid_solv (v_mat, f_mat, work2_tf,
-                        dx2, dy2, dz2, 1, levels, -1.0e-6, NULL,
+                        dx2, dy2, dz2, 1, levels, -0.0001*tpiba2, NULL,
                         dimx, dimy, dimz);
 
                 MG.mg_prolong (work2_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
