@@ -70,6 +70,7 @@ endif()
 set(RMG_CUDA_ENABLED OFF CACHE BOOL "Enable CUDA support.")
 set(RMG_HIP_ENABLED OFF CACHE BOOL "Enable HIP support.")
 set(RMG_SYCL_ENABLED OFF CACHE BOOL "Enable SYCL support.")
+set(RMG_GPU_AWARE_MPI OFF CACHE BOOL "Enable GPU aware MPI support.")
 set(RMG_MAGMA_ENABLED OFF CACHE BOOL "Enable MAGMA support.")
 set(RMG_VKFFT_ENABLED OFF CACHE BOOL "Enable VKFFT support.")
 set(RMG_LIBXC_ENABLED OFF CACHE BOOL "Enable LIBXC support.")
@@ -256,6 +257,10 @@ if(USE_INTERNAL_PSEUDOPOTENTIALS)
     list(APPEND RMGLIBS InternalPseudo)
 endif()
 
+
+if(RMG_GPU_AWARE_MPI)
+    add_definitions(-DGPU_AWARE_MPI=1)
+endif()
 
 if(RMG_CUDA_ENABLED)
     add_definitions(-DCUDA_ENABLED=1)

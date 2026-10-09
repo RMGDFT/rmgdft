@@ -45,6 +45,7 @@
 #include "Subdiag.h"
 #include "Functional.h"
 #include "GpuAlloc.h"
+#include "blas_driver.h"
 
 #include "RmgException.h"
 #include "Functional.h"
@@ -828,6 +829,10 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
         rmg::printlog("\n dipole %f %f %f", dipole[0], dipole[1], dipole[2]);
         DipoleCorrection(dipole,  NULL);
     }
+
+    rmg::sync_device();
+    MPI_Barrier(MPI_COMM_WORLD);
+    rmg::sync_device();
 
     // Kinetic energy density is generated in GetNewRho so make sure
     // we recompute it with the LCAO orbitals
