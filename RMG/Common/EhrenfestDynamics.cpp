@@ -58,12 +58,9 @@ template <typename KpointType>
 void EhrenfestDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<double> &vh, fgobj<double> &vnuc,
              spinobj<double> &rho, fgobj<double> &rhoc, fgobj<double> &rhocore)
 {
-    double rms[3], trms;
-    double nosekin, nosepot;
     double iontemp;
     int N;
     std::vector<double> RMSdV;
-    static double *rhodiff;
 
     // Save T=0 basis
     for(int kpt=0;kpt < ct.num_kpts_pe;kpt++) Kptr[kpt]->save_wavefunctions();
@@ -139,7 +136,6 @@ void EhrenfestDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
     /*Also reset number of scf steps */
     ct.total_scf_steps = 0;
 
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     fgobj<double> arho, trho;
 
     double_2d_array crds;
@@ -271,8 +267,8 @@ void EhrenfestDynamics (Kpoint<KpointType> **Kptr, spinobj<double> &vxc, fgobj<d
         double vx, vy, vz;
         center_of_mass_velocity(vx, vy, vz);
 
-        rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
-                ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
+        rmg::printlog ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f",
+                ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp);
         rmg::printlog("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
 
 
