@@ -42,6 +42,11 @@
 #include "BaseThread.h"
 #include "MpiQueue.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+    #include <x86intrin.h>
+#else
+    #include <immintrin.h>
+#endif
 
 
 std::condition_variable manager_cv;
@@ -190,7 +195,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
-                if(Q->spin_manager) MpiQueue::spin(10);
+//                if(Q->spin_manager) MpiQueue::spin(10);
             }
             else
             {
@@ -269,7 +274,7 @@ void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_
 void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var)
 {
     std::unique_lock<std::mutex> lk(mut);
-    cv.wait_for(lk, std::chrono::milliseconds(10), [&] {return var.load(std::memory_order_acquire)==true;});
+    cv.wait_for(lk, std::chrono::milliseconds(1), [&] {return var.load(std::memory_order_acquire)==true;});
 }
 
 void MpiQueue::waitall(std::atomic_bool *items, int n)
@@ -278,7 +283,7 @@ void MpiQueue::waitall(std::atomic_bool *items, int n)
     {
         for(int i=0;i<n;i++)
         {
-            while(!items[i].load(std::memory_order_acquire)) this->wait(10);
+            while(!items[i].load(std::memory_order_acquire)) this->wait(1);
         }
     }
     else
@@ -308,7 +313,7 @@ void MpiQueue::waitgroup(std::atomic_int &count)
     {
         if(this->spin_workers)
         {
-            MpiQueue::spin(5);
+            MpiQueue::spin(1);
         }
         else
         {
@@ -319,7 +324,6 @@ void MpiQueue::waitgroup(std::atomic_int &count)
 
 void MpiQueue::spin(int n)
 {
-#if __GNUC__
-    for (int i = 0; i < n; i++) asm volatile ("nop");
-#endif
+//    for (int i = 0; i < n; i++) asm volatile ("nop");
+    for (int i = 0; i < n; i++) _mm_pause();
 }
