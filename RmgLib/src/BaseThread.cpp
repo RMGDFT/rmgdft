@@ -116,6 +116,7 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 // Wakes jobs sleeping threads starting from tid=0 and counting up
 // jobs must be less than THREADS_PER_NODE
 void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
+    if(BaseThread::in_threaded_region) return;
     if(rjobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
         rmg::error("More jobs than available threads scheduled\n");
@@ -179,6 +180,7 @@ void BaseThread::thread_sleep(void)
         BaseThread::main_cv.notify_one();
     }
     BaseThread::thread_cv.wait(lk);
+    lk.unlock();
 }
 
 void BaseThread::thread_exit(void)
