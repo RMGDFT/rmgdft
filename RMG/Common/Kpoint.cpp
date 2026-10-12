@@ -269,11 +269,34 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if(ct.non_local_block_size <= 0)
     {
         if(ct.num_states < 128)
+        {
             ct.non_local_block_size = ct.num_states;
+        }
         else if(ct.num_states >= 128 && ct.num_states < 256)
+        {
             ct.non_local_block_size = ct.num_states/2;
+        }
         else if(ct.num_states >= 256)
+        {
             ct.non_local_block_size = ct.num_states/3;
+        }
+    }
+
+    // Now ortho block size
+    if(ct.num_states < 128)
+    {
+        ct.non_local_block_size = ct.num_states;
+        ct.ortho_block_size = ct.num_states;
+    }
+    else if(ct.num_states >= 128 && ct.num_states < 256)
+    {
+        ct.non_local_block_size = ct.num_states/2;
+        ct.ortho_block_size = ct.num_states/2;
+    }
+    else if(ct.num_states >= 256)
+    {
+        ct.non_local_block_size = ct.num_states/3;
+        ct.ortho_block_size = ct.num_states/3;
     }
 
     int block_div = (ct.non_local_block_size / (active_threads * pct.coalesce_factor)) * active_threads*pct.coalesce_factor;

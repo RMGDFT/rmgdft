@@ -966,6 +966,7 @@ public:
 
    // Non-local block size
    int non_local_block_size;
+   int ortho_block_size;
    int poisson_solver;
    int dipole_corr[3];
    double dipole_center[3];

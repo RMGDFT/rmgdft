@@ -67,7 +67,8 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
 {
-    int bs = ct.non_local_block_size;
+    RmgTimer RT0("3-MgridSubspace");
+    int bs = ct.ortho_block_size;
 
     for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
 
@@ -101,7 +102,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
 template <class KpointType>
 void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_psi, double *vxc_psi)
 {
-    RmgTimer RT0("3-MgridSubspace"), *RT1;
+    RmgTimer *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
@@ -227,7 +228,10 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 
                 // Thread tasks are set up so run them
                 if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
+if(!(st1 % (4*active_threads*cfac)) || (st1>=(block_size-active_threads*cfac)))
+{
                 if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+}
                 delete RT1;
             }
             if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
@@ -280,6 +284,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) delete Kstates[is].dptr;
 
+    rmg::sync_device();
 }
 
 

@@ -242,6 +242,11 @@ void gpu_copy_and_convert(double* d_in, float* d_out, size_t n);
 void gpu_copy_and_convert(float* d_in, double* d_out, size_t n);
 void gpu_copy_and_convert(std::complex<double> *d_in, std::complex<float> *d_out, size_t n);
 void gpu_copy_and_convert(std::complex<float> *d_in, std::complex<double> *d_out, size_t n);
+void gpu_pack_diagonal(double *matrix, double *diagonal, size_t n);
+void gpu_scatter_diagonal(double *matrix, double *diagonal, size_t n);
+void gpuPackSqToUpTr(double *matrix, float *packed, size_t N);
+void gpuUnPackTrToSq(double *matrix, float *packed, size_t N);
+
 
 #endif
 

@@ -28,6 +28,7 @@
 #include <limits.h>
 #include "transition.h"
 #include "vhartree.h"
+#include "blas_driver.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "Functional.h"
@@ -189,6 +190,7 @@ template <typename OrbitalType> bool Scf (
             if (ct.kohn_sham_solver == MULTIGRID_SOLVER || 
                     ((ct.scf_steps < ct.davidson_premg) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
                     (ct.xc_is_hybrid && Functional::is_exx_active())) {
+                rmg::sync_device();
                 RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
                 Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                 // For tddft CVE on the first step make sure we have a good starting point
@@ -197,6 +199,7 @@ template <typename OrbitalType> bool Scf (
                     Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                     Kptr[kpt]->MgridSubspaceBlocked(vtot_psi.data(), vxc_psi);
                 }
+                rmg::sync_device();
                 delete RT1;
             }
             else if(ct.kohn_sham_solver == DAVIDSON_SOLVER) {

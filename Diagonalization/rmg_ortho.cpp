@@ -216,22 +216,34 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
             rmg::gemm(trans_a, trans_n, notcon, notcon, this->pbasis, one, psi_extra,
                     this->pbasis, psi_extra, this->pbasis, zero, mat, notcon);
         }
+        rmg::sync_device();
         delete RT2;
 
         /* get the global part */
-rmg::sync_device();
         RT2 = new RmgTimer("MgridOrtho: 2nd stage allreduce");
         int length = (notcon + 2) * notcon / 2;
 
-        // Save diagonal elements
-        rmg::hvector<T> D(notcon);
         if constexpr (std::is_same_v<T, double>)
         {
 #if GPU_AWARE_MPI
-            rmg::sync_device();
-            rmg::block_allreduce(mat, notcon*notcon, pct.grid_comm);
-            rmg::sync_device();
+            rmg::dvector<T> D(notcon);
+            //rmg::sync_device();
+            gpu_pack_diagonal(mat, D.data(), notcon);
+            rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
+            //rmg::sync_device();
+//            gpu_copy_and_convert(mat, fmatrix.data(), notcon*notcon);
+gpuPackSqToUpTr(mat, fmatrix.data(), notcon);
+//            rmg::block_allreduce(fmatrix.data(), notcon*notcon, pct.grid_comm);
+            //rmg::sync_device();
+rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
+            //rmg::sync_device();
+//            gpu_copy_and_convert(fmatrix.data(), mat, notcon*notcon);
+gpuUnPackTrToSq(mat, fmatrix.data(), notcon);
+            //rmg::sync_device();
+            gpu_scatter_diagonal(mat, D.data(), notcon);
+            //rmg::sync_device();
 #else
+            rmg::hvector<T> D(notcon);
             for(int i=0;i < notcon;i++) D[i] = mat[i + i*notcon];
             rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
             PackSqToTr("U", notcon, mat, notcon, (float *)fmatrix.data());
@@ -242,6 +254,7 @@ rmg::sync_device();
         }
         if constexpr (std::is_same_v<T, std::complex<double>>)
         {
+            rmg::hvector<T> D(notcon);
             for(int i=0;i < notcon;i++) D[i] = mat[i + i*notcon];
             rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
             PackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
@@ -249,16 +262,21 @@ rmg::sync_device();
             UnPackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
             for(int i=0;i < notcon;i++) mat[i + i*notcon] = D[i];
         }
+        rmg::sync_device();
         delete RT2;
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
 #if GPU_AWARE_MPI
+        RT2 = new RmgTimer("MgridOrtho: 2nd stage memcpy");
         gpuMemcpy(mat_d, mat,
                 (size_t)notcon * (size_t)notcon * sizeof(T), gpuMemcpyDefault);
+        rmg::sync_device();
+        delete RT2;
 #endif
 #endif
 
         /* compute the cholesky factor of the overlap matrix then subtract off projections */
+        rmg::sync_device();
         RT2 = new RmgTimer("MgridOrtho: 2nd stage cholesky");
         int info, info_trtri;
         T inv_vel(1.0/sqrt(vel));
@@ -267,12 +285,15 @@ rmg::sync_device();
 #else
         rmg::potrf(uplo, notcon, mat_d, notcon, &info, pct.grid_comm);
 #endif
+        rmg::sync_device();
         delete RT2;
         RT2 = new RmgTimer("MgridOrtho: 2nd stage inverse");
         rmg::trtri(uplo, diag, notcon, mat_d, notcon, &info_trtri);
+        rmg::sync_device();
         delete RT2;
         RT2 = new RmgTimer("MgridOrtho: 2nd stage update");
         rmg::trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi_extra, this->pbasis);
+        rmg::sync_device();
         delete RT2;
         if (info != 0)
             throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating.\n";
