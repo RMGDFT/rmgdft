@@ -820,6 +820,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         rmg::mgrid::toffsets.emplace_back(std::min(std::min(minsizex, minsizey), minsizez));
         ct.mg_offset_level++;
     }
+    ct.eig_parm.levels = maxlevel;
 
     // Write a copy of the options file
     if((pct.imgpe == 0)  && (ct.rmg_branch != RMG_TO_QMC)) {
