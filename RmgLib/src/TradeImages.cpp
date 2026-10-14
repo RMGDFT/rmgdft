@@ -3426,7 +3426,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
 
     // Loop and unpack items as they become available
     int items_completed = 0;
-    while(items_completed < 1)
+    while(1)
     {
         if(!qitems_r[0].is_unpacked)
         {
@@ -3452,15 +3452,8 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[0].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[0].is_unpacked)this->queue->wait(10);
-            }
         }
-    }
 
-    while(items_completed < 2)
-    {
         if(!qitems_r[1].is_unpacked)
         {
             if(is_completed_r[1].load(std::memory_order_acquire))
@@ -3485,17 +3478,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[1].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[1].is_unpacked)this->queue->wait(10);
-            }
         }
-    }
 
     // ***********************************************************
 
-    while(items_completed < 3)
-    {
         if(!qitems_r[2].is_unpacked)
         {
             if(is_completed_r[2].load(std::memory_order_acquire))
@@ -3520,15 +3506,8 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[2].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[2].is_unpacked)this->queue->wait(10);
-            }
         }
-    }
 
-    while(items_completed < 4)
-    {
         if(!qitems_r[3].is_unpacked)
         {
             if(is_completed_r[3].load(std::memory_order_acquire))
@@ -3553,17 +3532,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[3].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[3].is_unpacked)this->queue->wait(10);
-            }
         }
-    }
 
     // ***********************************************************
 
-    while(items_completed < 5)
-    {
         if(!qitems_r[4].is_unpacked)
         {
             if(is_completed_r[4].load(std::memory_order_acquire))
@@ -3588,15 +3560,8 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[4].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[4].is_unpacked)this->queue->wait(10);
-            }
         }
-    }
 
-    while(items_completed < 6)
-    {
         if(!qitems_r[5].is_unpacked)
         {
             if(is_completed_r[5].load(std::memory_order_acquire))
@@ -3621,17 +3586,11 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[5].is_unpacked = true;
             }
-            else
-            {
-                if(!qitems_r[5].is_unpacked)this->queue->wait(10);
-            }
         }
-
+        this->queue->wait(1);
+        if(items_completed==6)break;
     } // end while
 
-   //this->queue->waitall(is_completed_r, 6);
-//   this->queue->waitall(is_completed_s, 6);
-//while(group_count.load(std::memory_order_acquire));
     this->queue->waitgroup(group_count);
 
 } // end trade_images1_central_async_managed

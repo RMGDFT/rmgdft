@@ -193,7 +193,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
             {
                 SCF_THREAD_CONTROL thread_control;
 
-                RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
                 int istart = my_pe_offset*active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
                     int sindex = bofs + st1 + ist + istart;
@@ -227,15 +226,17 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                 }
 
                 // Thread tasks are set up so run them
-                if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
-if(!(st1 % (4*active_threads*cfac)) || (st1>=(block_size-active_threads*cfac)))
-{
-                if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-}
-                delete RT1;
+                if(!ct.mpi_queue_mode && active_threads)
+                {
+                    RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
+                    T->run_thread_tasks(active_threads);
+                    delete RT1;
+                }
             }
+            RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
             if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+            delete RT1;
 
         } // end for ib
 

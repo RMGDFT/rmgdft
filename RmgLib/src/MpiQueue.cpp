@@ -195,7 +195,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
-//                if(Q->spin_manager) MpiQueue::spin(10);
+//                if(Q->spin_manager) MpiQueue::spin(1);
             }
             else
             {
