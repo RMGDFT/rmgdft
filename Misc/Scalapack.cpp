@@ -38,7 +38,7 @@
 
 #if USE_ELPA
 #include <elpa/elpa.h>
-static int once;
+static int once=0;
 #endif
 
 
@@ -200,10 +200,11 @@ again:
 #if USE_ELPA
     if(this->driver != SUBDIAG_ELPA) return;
     int error;
-    int api_version = 20260202;
     if(!once)
     {
-        elpa_init(api_version);
+        elpa_init(ELPA_API_VERSION);
+    //int api_version = 20260202;
+    //    elpa_init(api_version);
         once = 1;
     }
     this->elpa_handle = (elpa_t *)elpa_allocate(&error);
