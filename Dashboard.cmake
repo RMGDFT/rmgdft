@@ -27,7 +27,7 @@ set(CTEST_CHECKOUT_COMMAND   "git pull")
 # define how to update (optional), e.g. git checkout <git-branch>
 #set(CTEST_UPDATE_COMMAND     "...")
 # define how to configure (e.g. cmake -DCMAKE_INSTALL_PREFIX=...)
-set(CTEST_CONFIGURE_COMMAND  "cmake ..")
+set(CTEST_CONFIGURE_COMMAND  "cmake .. -DRMG_LIBXC_ENABLED=1 -DUSE_ELPA_LIBS=1")
 # the name of the build
 set(CTEST_BUILD_COMMAND      "make -j16 rmg-on-cpu rmg-cpu rmg-negf-cpu")
 set(CTEST_BUILD_NAME         "rmg")
