@@ -1,4 +1,4 @@
-set(RMGDFT_PATH /home/luw/rmgdft)
+set(RMGDFT_PATH ./)
 include(ProcessorCount)
 ProcessorCount(N)
 if(NOT N EQUAL 0)
