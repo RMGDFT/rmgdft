@@ -45,6 +45,9 @@
 #define RMG_MPI_IRECV 2
 #define RMG_MPI_SUM 3
 
+// Hash value used for state indexes
+#define RMG_STATE_HASH 2003
+
 #if __cplusplus
 
 //#include "BaseThread.h"

@@ -928,9 +928,9 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
 
     factor = sizeof(RmgType);
 
-    // The actual tag passed to mpi consists of the state index hashed with 2003
+    // The actual tag passed to mpi consists of the state index hashed with RMG_STATE_HASH
     // shifted left 5 bits and the passed tag parameter. 
-    ntag = ((istate%2003)<<5) + tag;
+    ntag = ((istate%RMG_STATE_HASH)<<5) + tag;
 
     target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
 
@@ -955,12 +955,10 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    int hash = T->get_threads_per_node() + 1;
-hash = 2003;
-    // The actual tag passed to mpi consists of the state index hashed with 2003
+    // The actual tag passed to mpi consists of the state index hashed with RMG_STATE_HASH
     // shifted left 5 bits and the passed tag parameter. 
     //qitem.mpi_tag = ((istate%11)<<5) + tag;
-    qitem.mpi_tag = ((istate%hash)<<5);
+    qitem.mpi_tag = ((istate%RMG_STATE_HASH)<<5);
     qitem.target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
     qitem.type = type;
     qitem.buf = (void *)buf;
