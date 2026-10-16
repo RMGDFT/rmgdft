@@ -68,21 +68,14 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
 {
     RmgTimer RT0("3-MgridSubspace");
-    int bs = ct.ortho_block_size;
-
     for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
 
-    int nb = this->nstates / bs;
-    int irem = this->nstates % bs;
-    for(int ib=0;ib < nb;ib++)
+    int offset = 0;
+    for(auto bs : this->ortho_block_sizes)
     {
-        MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
+        MgridSubspace (offset, bs, bs, vtot_psi, vxc_psi);
+        offset += bs;
     }
-    if(irem)
-    {
-        MgridSubspace (nb*bs, irem, bs, vtot_psi, vxc_psi);
-    }
-
 
     RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
     if(ct.use_block_diag)
