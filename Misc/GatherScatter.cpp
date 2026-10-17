@@ -314,7 +314,7 @@ void ScatterPsi(rmg::grid *G, int n, int istate, CalcType *A, OrbitalType *B, in
             qitems_r[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_r[i].is_unpacked = false;
             qitems_r[i].is_completed->store(false);
-            qitems_r[i].mpi_tag = (remote_istate<<5);
+            qitems_r[i].mpi_tag = ((remote_istate%RMG_STATE_HASH)<<5);
             qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_r[i].type = RMG_MPI_IRECV;
 //            qitems_r[i].buf = (void *)&B[remote_istate*chunksize];
@@ -344,7 +344,7 @@ void ScatterPsi(rmg::grid *G, int n, int istate, CalcType *A, OrbitalType *B, in
             qitems_s[i].comm = T->get_unique_coalesced_comm(istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
-            qitems_s[i].mpi_tag = (istate<<5);
+            qitems_s[i].mpi_tag = ((istate%RMG_STATE_HASH)<<5);
             qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_s[i].type = RMG_MPI_ISEND;
 //            qitems_s[i].buf = (void *)&A[i*chunksize];
