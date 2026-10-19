@@ -67,15 +67,21 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double *vtot_psi, double *vxc_psi)
 {
-    RmgTimer RT0("3-MgridSubspace");
+    int bs = ct.non_local_block_size;
+
     for(int is=0;is < this->nstates;is++) Kstates[is].dptr = NULL;
 
-    int offset = 0;
-    for(auto bs : this->ortho_block_sizes)
+    int nb = this->nstates / bs;
+    int irem = this->nstates % bs;
+    for(int ib=0;ib < nb;ib++)
     {
-        MgridSubspace (offset, bs, bs, vtot_psi, vxc_psi);
-        offset += bs;
+        MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
     }
+    if(irem)
+    {
+        MgridSubspace (nb*bs, irem, bs, vtot_psi, vxc_psi);
+    }
+
 
     RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
     if(ct.use_block_diag)
@@ -95,14 +101,13 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
 template <class KpointType>
 void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_psi, double *vxc_psi)
 {
-    RmgTimer *RT1;
+    RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
     int cfac = 1;
     if(ct.coalesce_states) cfac = pct.coalesce_factor;
     int my_pe_x, my_pe_y, my_pe_z;
     this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
     int my_pe_offset = my_pe_x % cfac;
-
 
     KpointType *weight = this->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
@@ -148,7 +153,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) 
             Kstates[is].dptr = new diis<KpointType>(4, cfac*pbasis_noncoll);
-
+std::barrier<> bbarier(active_threads);
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
@@ -186,6 +191,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
             {
                 SCF_THREAD_CONTROL thread_control;
 
+                RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
                 int istart = my_pe_offset*active_threads;
                 for(int ist = 0;ist < active_threads;ist++) {
                     int sindex = bofs + st1 + ist + istart;
@@ -219,17 +225,13 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
                 }
 
                 // Thread tasks are set up so run them
-                if(!ct.mpi_queue_mode && active_threads)
-                {
-                    RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
-                    T->run_thread_tasks(active_threads);
-                    delete RT1;
-                }
+                if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
+                delete RT1;
             }
-            RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
+        RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
-            delete RT1;
+        delete RT1;
 
         } // end for ib
 
@@ -278,7 +280,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) delete Kstates[is].dptr;
 
-    rmg::sync_device();
 }
 
 

@@ -171,14 +171,13 @@ void GatherPsi(rmg::grid *G, int n, int istate, OrbitalType *A, CalcType *B, int
         if(i != pe_offset)
         {
             qitems_r[i].comm = T->get_unique_coalesced_comm(istate);
-            qitems_r[i].comm = T->get_grid_comm();
             qitems_r[i].is_unpacked = false;
             qitems_r[i].is_completed->store(false);
             // The actual tag passed to mpi consists of the state index shifted left 5 bits and
             // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
             // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
             // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
-            qitems_r[i].mpi_tag = ((istate%RMG_STATE_HASH)<<5);
+            qitems_r[i].mpi_tag = (istate<<5);
             qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_r[i].type = RMG_MPI_IRECV;
             //qitems_r[i].buf = (void *)&B[i*chunksize];
@@ -207,10 +206,9 @@ void GatherPsi(rmg::grid *G, int n, int istate, OrbitalType *A, CalcType *B, int
         if(i != pe_offset)
         {
             qitems_s[i].comm = T->get_unique_coalesced_comm(remote_istate);
-            qitems_s[i].comm = T->get_grid_comm();
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
-            qitems_s[i].mpi_tag = ((remote_istate%RMG_STATE_HASH)<<5);
+            qitems_s[i].mpi_tag = (remote_istate<<5);
             qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_s[i].type = RMG_MPI_ISEND;
             CopyAndConvert(chunksize, &A[remote_istate*chunksize], &sbuf[i*chunksize]);
@@ -263,7 +261,7 @@ void GatherPsi(rmg::grid *G, int n, int istate, OrbitalType *A, CalcType *B, int
             memcpy(&B[i*chunksize], &rbuf[i*chunksize], chunksize * sizeof(CalcType));
         }
     }    
-
+//T->thread_barrier_wait(true);
 }
 
 template <typename CalcType, typename OrbitalType>
@@ -314,7 +312,7 @@ void ScatterPsi(rmg::grid *G, int n, int istate, CalcType *A, OrbitalType *B, in
             qitems_r[i].comm = T->get_unique_coalesced_comm(remote_istate);
             qitems_r[i].is_unpacked = false;
             qitems_r[i].is_completed->store(false);
-            qitems_r[i].mpi_tag = ((remote_istate%RMG_STATE_HASH)<<5);
+            qitems_r[i].mpi_tag = (remote_istate<<5);
             qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_r[i].type = RMG_MPI_IRECV;
 //            qitems_r[i].buf = (void *)&B[remote_istate*chunksize];
@@ -344,7 +342,7 @@ void ScatterPsi(rmg::grid *G, int n, int istate, CalcType *A, OrbitalType *B, in
             qitems_s[i].comm = T->get_unique_coalesced_comm(istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
-            qitems_s[i].mpi_tag = ((istate%RMG_STATE_HASH)<<5);
+            qitems_s[i].mpi_tag = (istate<<5);
             qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_s[i].type = RMG_MPI_ISEND;
 //            qitems_s[i].buf = (void *)&A[i*chunksize];
@@ -406,7 +404,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
             }
         }
     }
-
+T->thread_barrier_wait(true);
     //delete [] rbuf;
 }
 

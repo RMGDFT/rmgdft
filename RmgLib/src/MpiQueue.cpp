@@ -93,7 +93,6 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             MPI_Test(&dreq, &dflag, MPI_STATUS_IGNORE);
             if(qcount > 10)
             {
-                //usleep(1000);
                 int flag;
                 MPI_Request req = MPI_REQUEST_NULL;
                 MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
@@ -174,7 +173,8 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             {
                 qobj.is_completed->store(true, std::memory_order_release);
                 if((qobj.type == RMG_MPI_IRECV) || (qobj.type == RMG_MPI_ISEND))
-                    qobj.group_count->fetch_sub(1, std::memory_order_release);
+                    //qobj.group_count->fetch_sub(1, std::memory_order_release);
+                    qobj.group_count->fetch_sub(1, std::memory_order_seq_cst);
             }
             else
             {
@@ -250,6 +250,7 @@ bool MpiQueue::pop(int tid, mpi_queue_item_t &item)
 
 void MpiQueue::run_manager(void)
 {
+    if(this->running) return;
     this->running.store(true, std::memory_order_release);
     manager_cv.notify_one();
 }
@@ -309,7 +310,7 @@ void MpiQueue::wait(int n)
 
 void MpiQueue::waitgroup(std::atomic_int &count)
 {
-    while(count.load(std::memory_order_acquire))
+    while(count.load(std::memory_order_seq_cst))
     {
         if(this->spin_workers)
         {

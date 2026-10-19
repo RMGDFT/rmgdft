@@ -928,9 +928,9 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
 
     factor = sizeof(RmgType);
 
-    // The actual tag passed to mpi consists of the state index hashed with RMG_STATE_HASH
+    // The actual tag passed to mpi consists of the state index hashed with 2003
     // shifted left 5 bits and the passed tag parameter. 
-    ntag = ((istate%RMG_STATE_HASH)<<5) + tag;
+    ntag = ((istate%2003)<<5) + tag;
 
     target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
 
@@ -955,10 +955,11 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    // The actual tag passed to mpi consists of the state index hashed with RMG_STATE_HASH
+    int hash = T->get_threads_per_node() + 1;
+    // The actual tag passed to mpi consists of the state index hashed with 2003
     // shifted left 5 bits and the passed tag parameter. 
     //qitem.mpi_tag = ((istate%11)<<5) + tag;
-    qitem.mpi_tag = ((istate%RMG_STATE_HASH)<<5);
+    qitem.mpi_tag = ((istate%hash)<<5);
     qitem.target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
     qitem.type = type;
     qitem.buf = (void *)buf;
@@ -1171,7 +1172,7 @@ void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __res
 #endif
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, c3, idx, idx1, img3;
@@ -1802,7 +1803,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, idx;
@@ -2077,7 +2078,7 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * __restrict__ f,
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int ix, iy, iz, index;
     int ixs, iys, ixs2, iys2, c1, idx;
@@ -2507,7 +2508,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, index;
     int ixs2, iys2, c1, c2, c3, idx, idx1;
@@ -3035,7 +3036,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
 
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int ix, iy, iz, incx, incy, index;
     int ixs2, iys2, c1, idx;
@@ -3278,7 +3279,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
 
     int ix, iy, iz, incx, incy, index;
@@ -3424,7 +3425,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
 
     // Loop and unpack items as they become available
     int items_completed = 0;
-    while(1)
+    while(items_completed < 1)
     {
         if(!qitems_r[0].is_unpacked)
         {
@@ -3450,8 +3451,15 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[0].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[0].is_unpacked)this->queue->wait(10);
+            }
         }
+    }
 
+    while(items_completed < 2)
+    {
         if(!qitems_r[1].is_unpacked)
         {
             if(is_completed_r[1].load(std::memory_order_acquire))
@@ -3476,10 +3484,17 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[1].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[1].is_unpacked)this->queue->wait(10);
+            }
         }
+    }
 
     // ***********************************************************
 
+    while(items_completed < 3)
+    {
         if(!qitems_r[2].is_unpacked)
         {
             if(is_completed_r[2].load(std::memory_order_acquire))
@@ -3504,8 +3519,15 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[2].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[2].is_unpacked)this->queue->wait(10);
+            }
         }
+    }
 
+    while(items_completed < 4)
+    {
         if(!qitems_r[3].is_unpacked)
         {
             if(is_completed_r[3].load(std::memory_order_acquire))
@@ -3530,10 +3552,17 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[3].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[3].is_unpacked)this->queue->wait(10);
+            }
         }
+    }
 
     // ***********************************************************
 
+    while(items_completed < 5)
+    {
         if(!qitems_r[4].is_unpacked)
         {
             if(is_completed_r[4].load(std::memory_order_acquire))
@@ -3558,8 +3587,15 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[4].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[4].is_unpacked)this->queue->wait(10);
+            }
         }
+    }
 
+    while(items_completed < 6)
+    {
         if(!qitems_r[5].is_unpacked)
         {
             if(is_completed_r[5].load(std::memory_order_acquire))
@@ -3584,11 +3620,17 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[5].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[5].is_unpacked)this->queue->wait(10);
+            }
         }
-        this->queue->wait(1);
-        if(items_completed==6)break;
+
     } // end while
 
+   //this->queue->waitall(is_completed_r, 6);
+//   this->queue->waitall(is_completed_s, 6);
+//while(group_count.load(std::memory_order_acquire));
     this->queue->waitgroup(group_count);
 
 } // end trade_images1_central_async_managed
@@ -3605,7 +3647,7 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
 
     int ix, iy, iz, index;
@@ -4149,7 +4191,7 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
     if(tid < 0) tid = 0;
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
 
     int idx;
 
@@ -4350,7 +4392,7 @@ void TradeImages::trade_imagesx_async_managed (RmgType * __restrict__ f, RmgType
     int tid = T->get_thread_tid();
     int istate = T->get_thread_basetag();
     MPI_Comm grid_comm = T->get_unique_comm(istate);
-    grid_comm = this->comm;
+//    grid_comm = this->comm;
     if(tid < 0) tid = 0;
 
     std::atomic_bool is_completed_r[6];
