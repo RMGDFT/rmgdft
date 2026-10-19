@@ -117,8 +117,8 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s), MPI_Comm &com
 // jobs must be less than THREADS_PER_NODE
 void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
 
-// Return if already running
-if(BaseThread::in_threaded_region) return;
+    // Return if already running
+    if(BaseThread::in_threaded_region) return;
 
     if(rjobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
@@ -136,7 +136,7 @@ if(BaseThread::in_threaded_region) return;
     BaseThread::main_cv.wait(lk, [&] {return BaseThread::jobs.load() == 0;});
     BaseThread::in_threaded_region.store(false);
     delete BaseThread::barrier;
-//    if(Queue) Queue->stop_manager();
+    if(Queue) Queue->stop_manager();
     std::atomic_thread_fence(std::memory_order_seq_cst);
  
 }
