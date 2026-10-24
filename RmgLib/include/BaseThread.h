@@ -107,6 +107,9 @@ public:
     static std::mutex main_mutex;
     static std::condition_variable main_cv;
 
+    // Assigned cores
+    std::vector<int> assigned_cores;
+
     // Thread ID number assigned by us
     int tid;
 

@@ -28,6 +28,7 @@
 */
 
 #include <omp.h>
+#include <sched.h>
 #include "BaseThread.h"
 #include "rmg_error.h"
 #include "BaseThreadControl.h"
@@ -76,6 +77,18 @@ BaseThread::BaseThread(int nthreads)
 #endif
     }
 
+    cpu_set_t core_mask;
+    CPU_ZERO(&core_mask);
+
+    // Get the affinity mask assigned to the current process/thread
+    if (sched_getaffinity(0, sizeof(cpu_set_t), &core_mask) == 0) {
+        for (int i = 0; i < CPU_SETSIZE; ++i) {
+            if (CPU_ISSET(i, &core_mask)) {
+                this->assigned_cores.push_back(i);
+            }
+        }
+    }
+    //printf("Nthreads = %d  %lu\n", nthreads, this->assigned_cores.size());
 }
 
 BaseThread *BaseThread::getBaseThread(int nthreads)
@@ -353,3 +366,4 @@ void rmg_release_tsd(void)
 {
 //    my_ptr.release();
 }
+
