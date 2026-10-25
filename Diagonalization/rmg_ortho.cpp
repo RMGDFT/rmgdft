@@ -143,17 +143,11 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         if constexpr (std::is_same_v<T, double>)
         {
 #if GPU_AWARE_MPI
-#if 1
             gpu_copy_and_convert(mat, fmatrix.data(), stop);
             rmg::sync_device();
             rmg::block_allreduce(fmatrix.data(), stop, pct.grid_comm);
             rmg::sync_device();
             gpu_copy_and_convert(fmatrix.data(), mat, stop);
-#else
-            rmg::sync_device();
-            rmg::block_allreduce(mat, stop, pct.grid_comm);
-            rmg::sync_device();
-#endif
 #else
             for(size_t i=0;i < stop;i++) fmatrix[i] = mat[i];
             rmg::block_allreduce(fmatrix.data(), stop, pct.grid_comm);
@@ -230,18 +224,10 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
             //rmg::sync_device();
             gpu_pack_diagonal(mat, D.data(), notcon);
             rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
-            //rmg::sync_device();
-//            gpu_copy_and_convert(mat, fmatrix.data(), notcon*notcon);
-gpuPackSqToUpTr(mat, fmatrix.data(), notcon);
-//            rmg::block_allreduce(fmatrix.data(), notcon*notcon, pct.grid_comm);
-            //rmg::sync_device();
-rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
-            //rmg::sync_device();
-//            gpu_copy_and_convert(fmatrix.data(), mat, notcon*notcon);
-gpuUnPackTrToSq(mat, fmatrix.data(), notcon);
-            //rmg::sync_device();
+            gpuPackSqToUpTr(mat, fmatrix.data(), notcon);
+            rmg::block_allreduce(fmatrix.data(), length, pct.grid_comm);
+            gpuUnPackTrToSq(mat, fmatrix.data(), notcon);
             gpu_scatter_diagonal(mat, D.data(), notcon);
-            //rmg::sync_device();
 #else
             rmg::hvector<T> D(notcon);
             for(int i=0;i < notcon;i++) D[i] = mat[i + i*notcon];
@@ -266,13 +252,11 @@ gpuUnPackTrToSq(mat, fmatrix.data(), notcon);
         delete RT2;
 
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
-#if GPU_AWARE_MPI
         RT2 = new RmgTimer("MgridOrtho: 2nd stage memcpy");
         gpuMemcpy(mat_d, mat,
                 (size_t)notcon * (size_t)notcon * sizeof(T), gpuMemcpyDefault);
         rmg::sync_device();
         delete RT2;
-#endif
 #endif
 
         /* compute the cholesky factor of the overlap matrix then subtract off projections */
