@@ -98,6 +98,15 @@ private:
 
     std::vector<double> occ;
 
+    // Occupations indexed by [global kpoint * nstates + state]. Refreshed by SetOccupations
+    // so that smeared occupations at every k-q enter the exchange operator.
+    std::vector<double> occ_k;
+
+    // Exchange q-points. When qpoint_mesh is coarser than kpoint_mesh only the k-k' differences
+    // on the q-mesh are summed (QE nqx); otherwise every k-point is used as before.
+    int num_q = 1;
+    bool subsample_q = false;
+
     // Mmapped serial wavefunction array
     T *psi_s;
 
@@ -184,6 +193,8 @@ public:
     void Vexx(T *vexx, bool use_float_fft);
     double Exxenergy(T *vexx);
     void SetHcore(T *Hij, T *Hij_kin, int lda);
+    void SetOccupations(double *occ_all);
+    void UseBareCoulomb(void);
     void Vexx_integrals(std::string &ifile);
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);

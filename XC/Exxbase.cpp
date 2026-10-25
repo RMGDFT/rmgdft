@@ -51,13 +51,22 @@ using namespace hdfHelper;
 // decomposed. The file name is given by wavefile_in which is
 // mmapped to an array. We only access the array in read-only mode.
 
+// The oneMKL/SYCL plane-wave FFT path in Misc/Pw.cpp is compiled out (#if 0), so on
+// SYCL builds Pw runs FFTW on the host: no queues, no device buffers, and the in-place
+// R2C layout is padded to global_dimz+2. The SYCL branches below assume a device FFT and
+// must stay disabled until Pw.cpp enables one; otherwise they touch unallocated
+// pwave->queues/dev_bufs and never apply the Coulomb kernel (wrong exchange, segfaults).
+#ifndef RMG_SYCL_PW_FFT
+#define RMG_SYCL_PW_FFT 0
+#endif
+
 std::vector<double> vxrms;
 
 template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -78,7 +87,7 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, double *padd
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, double *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double *padded)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -99,7 +108,7 @@ template void Exxbase<double>::UnpadR2C(float *in, double *out);
 template void Exxbase<double>::UnpadR2C(float *in, float *out);
 template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -118,7 +127,7 @@ template void Exxbase<double>::UnpadR2C_Accumulate(double *in, double *psi_j, do
 template void Exxbase<double>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -136,7 +145,7 @@ template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j
 
 template <class T> void Exxbase<T>::UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -156,7 +165,7 @@ template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
 template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
 template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -173,7 +182,7 @@ template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 
 template <class T> void Exxbase<T>::UnpadR2C(float *in, float *out)
 {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
     int ystride = pwave->global_dimz;
 #else
     int ystride = pwave->global_dimz + 2;
@@ -211,11 +220,31 @@ template <class T> Exxbase<T>::Exxbase (
 vxrms.resize(nstates_in);
     RmgTimer RT0("5-Functional: Exx init");
     for(int st=0;st < nstates;st++) occ.push_back(init_occ[st]);
+    // Until SetOccupations is called every k-point uses the occupations passed in.
+    occ_k.resize((size_t)ct.num_kpts * (size_t)nstates);
+    for(int kpt=0;kpt < ct.num_kpts;kpt++)
+        for(int st=0;st < nstates;st++) occ_k[(size_t)kpt*nstates + st] = init_occ[st];
+
     if(ct.qpoint_mesh[0] <= 0 || ct.qpoint_mesh[1] <= 0 || ct.qpoint_mesh[2] <=0)
     {
         ct.qpoint_mesh[0] = ct.kpoint_mesh[0];
         ct.qpoint_mesh[1] = ct.kpoint_mesh[1];
         ct.qpoint_mesh[2] = ct.kpoint_mesh[2];
+    }
+    num_q = ct.klist.num_k_all;
+    if(!ct.is_gamma && (ct.qpoint_mesh[0] != ct.kpoint_mesh[0] ||
+                        ct.qpoint_mesh[1] != ct.kpoint_mesh[1] ||
+                        ct.qpoint_mesh[2] != ct.kpoint_mesh[2]))
+    {
+        for(int d=0;d < 3;d++)
+        {
+            if(ct.kpoint_mesh[d] % ct.qpoint_mesh[d])
+                throw RmgFatalException() << "exx_qpoint_mesh " << ct.qpoint_mesh[0] << " " << ct.qpoint_mesh[1] << " "
+                    << ct.qpoint_mesh[2] << " must divide kpoint_mesh " << ct.kpoint_mesh[0] << " "
+                    << ct.kpoint_mesh[1] << " " << ct.kpoint_mesh[2] << "\n";
+        }
+        subsample_q = true;
+        num_q = ct.qpoint_mesh[0] * ct.qpoint_mesh[1] * ct.qpoint_mesh[2];
     }
 
     tpiba = 2.0 * PI / L.celldm[0];
@@ -253,6 +282,12 @@ vxrms.resize(nstates_in);
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
+    // setup_exxdiv() needs the screening type, which setup_gfac() used to set only after it.
+    // With the ERFC default an unscreened hybrid (PBE0, B3LYP) took the erfc branch with
+    // erfc_scrlen=0 and, without gamma extrapolation, divided by zero.
+    scr_type = NO_SCREENING;
+    if(std::abs(erfc_scrlen) > 1.0e-5) scr_type = ERFC_SCREENING;
+    if(std::abs(gau_scrlen) > 1.0e-5) scr_type = GAU_SCREENING;
     setup_exxdiv();
     setup_gfac(kq);
 
@@ -295,6 +330,30 @@ vxrms.resize(nstates_in);
     vexx_RMS.resize(ct.max_exx_steps, 0.0);
     nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+}
+
+// occ_all holds the occupations of every k-point, indexed [global kpoint * nstates + state],
+// and must be identical on all processes that share a k-point.
+template void Exxbase<double>::SetOccupations(double *occ_all);
+template void Exxbase<std::complex<double>>::SetOccupations(double *occ_all);
+template <class T> void Exxbase<T>::SetOccupations(double *occ_all)
+{
+    for(size_t idx=0;idx < occ_k.size();idx++) occ_k[idx] = occ_all[idx];
+    for(int st=0;st < nstates;st++) occ[st] = occ_all[st];
+}
+
+// The constructor takes the screening of the current functional. The Hartree-Fock energy and the
+// integrals written for QMCPACK need the bare Coulomb kernel even after a screened hybrid (HSE) SCF.
+template void Exxbase<double>::UseBareCoulomb(void);
+template void Exxbase<std::complex<double>>::UseBareCoulomb(void);
+template <class T> void Exxbase<T>::UseBareCoulomb(void)
+{
+    erfc_scrlen = 0.0;
+    gau_scrlen = 0.0;
+    scr_type = NO_SCREENING;
+    double kq[3] = {0.0, 0.0, 0.0};
+    setup_exxdiv();
+    setup_gfac(kq);
 }
 
 
@@ -362,7 +421,7 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
-#elif SYCL_ENABLED
+#elif SYCL_ENABLED && RMG_SYCL_PW_FFT
         double *pp = (double *)pwave->host_bufs[tid];
         PadR2C(psi_i, psi_j, pp);
         pwave->FftForward(pp, (std::complex<double> *)p, true, false, true);
@@ -395,7 +454,7 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
-#elif SYCL_ENABLED
+#elif SYCL_ENABLED && RMG_SYCL_PW_FFT
         float *pp = (float *)pwave->host_bufs[tid];
         PadR2C((double *)psi_i, (double *)psi_j, pp);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
@@ -530,6 +589,15 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         else if (qq < eps)
         {
             gfac[ig] = -exxdiv;
+            // Without gamma extrapolation the q->0 limit of the screened (or Yukawa) kernel is
+            // finite and is added back, as in QE g2_convolution.
+            if(!ct.gamma_extrapolation)
+            {
+                if(scr_type == ERFC_SCREENING)
+                    gfac[ig] += PI / (erfc_scrlen*erfc_scrlen);
+                else if(std::abs(yukawa) > eps)
+                    gfac[ig] += fourPI / yukawa;
+            }
         }
         else if(scr_type == ERFC_SCREENING)
         {
@@ -567,9 +635,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
+    // occ holds spin occupations in [0,1] for a spin polarized run and [0,2] otherwise.
+    double occ_norm = (ct.nspin == 1) ? 0.5 : 1.0;
 
     int nstates_occ = 0;
-    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ = st+1;
     MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
 
     std::vector<std::complex<double> *> pvec;
@@ -681,6 +751,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
             double *p = (double *)pvec[omp_tid];
             double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
+            double wj = scale * occ_norm * occ[j];
 
             if(use_float_fft)
             {
@@ -689,7 +760,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp critical(part3)
                 {
                     for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                        vexx_global[idx] += scale * w[idx] * psi_j[idx];
+                        vexx_global[idx] += wj * w[idx] * psi_j[idx];
                 }
             }
             else
@@ -699,7 +770,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp critical(part4)
                 {
                     for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                        vexx_global[idx] += scale * p[idx] * psi_j[idx];
+                        vexx_global[idx] += wj * p[idx] * psi_j[idx];
                 }
             }
         }
@@ -763,7 +834,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
         pwave->queues[tid].wait();
 #endif
         fftw_free(wvec[tid]);
@@ -797,7 +868,7 @@ template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double>
         int ik_glob = ik + pct.kstart;
         for(int st=0;st < nstates;st++)
         {
-            double scale = 0.5 * occ[st] * ct.kp[ik_glob].kweight;
+            double scale = 0.5 * occ_k[(size_t)ik_glob*nstates + st] * ct.kp[ik_glob].kweight;
             for(int i=0;i < pbasis;i++) 
                 energy += scale*std::real(vexx[ik * ct.run_states * pbasis + st*pbasis + i]*std::conj(psi[ik * ct.max_states * pbasis + st*pbasis + i]));
         }
@@ -1952,6 +2023,8 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
     MPI_Type_free(&grid_c);
     fflush(NULL);
     MPI_Barrier(G.comm);
+    // Vexx reads the files of every k-point, so all kpoint groups must have finished writing.
+    MPI_Barrier(pct.kpsub_comm);
 }
 
 
@@ -1963,8 +2036,13 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     if(mode == EXX_DIST_FFT)
         throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
+    // Highest state occupied at any k-point. occ_k holds spin occupations in [0,1] for a
+    // spin polarized run and [0,2] otherwise; occ_norm scales them to [0,1].
+    double occ_norm = (ct.nspin == 1) ? 0.5 : 1.0;
     int nstates_occ = 0;
-    for(int st=0;st < nstates;st++) if(std::abs(occ[st]) > 1.0e-6) nstates_occ++;
+    for(int kpt=0;kpt < ct.num_kpts;kpt++)
+        for(int st=0;st < nstates;st++)
+            if(std::abs(occ_k[(size_t)kpt*nstates + st]) > 1.0e-8) nstates_occ = std::max(nstates_occ, st+1);
     MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
 
     std::vector<std::complex<double> *> pvec;
@@ -2023,8 +2101,21 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         MPI_Barrier(G.comm);
 
+        int nq_used = 0;
         for(int iq = 0; iq < ct.klist.num_k_all; iq++)
         {
+            // With a coarse q-mesh keep only the k-points k' for which k-k' lies on it.
+            if(subsample_q)
+            {
+                bool on_qmesh = true;
+                for(int d=0;d < 3;d++)
+                {
+                    double dk = (ct.kp[ik_glob].kpt[d] - ct.klist.k_all_xtal[iq][d]) * (double)ct.qpoint_mesh[d];
+                    if(std::abs(dk - std::round(dk)) > 1.0e-5) on_qmesh = false;
+                }
+                if(!on_qmesh) continue;
+            }
+            nq_used++;
 
             int ikindex = ct.klist.k_map_index[iq];
             int isym = ct.klist.k_map_symm[iq];
@@ -2118,6 +2209,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                     if(my_rank == (j % npes))
                     {
                         std::complex<double> *psi_j = &psi_q[j*pwave->pbasis];
+                        double wj = occ_norm * occ_k[(size_t)ikindex*nstates + j] / (double)num_q;
                         if(use_float_fft)
                         {
                             fftpair(psi_i, psi_j, p, w, gfac);
@@ -2125,7 +2217,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp critical(part3)
                             {
                                 for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                    vexx_global[idx] += scale * (std::complex<double>)w[idx] * psi_j[idx] / (double)ct.klist.num_k_all;
+                                    vexx_global[idx] += scale * wj * (std::complex<double>)w[idx] * psi_j[idx];
                             }
                         }
                         else
@@ -2135,7 +2227,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp critical(part3)
                             {
                                 for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                    vexx_global[idx] += scale * p[idx] * psi_j[idx] / (double)ct.klist.num_k_all;
+                                    vexx_global[idx] += scale * wj * p[idx] * psi_j[idx];
                             }
                         }
                     }
@@ -2173,6 +2265,10 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             close(serial_fd_q);
         }
 
+        if(nq_used != num_q)
+            throw RmgFatalException() << "Exx found " << nq_used << " q-points for k-point " << ik_glob
+                << " but expected " << num_q << ". Check kpoint_mesh, kpoint_is_shift and exx_qpoint_mesh.\n";
+
         MPI_Barrier(G.comm);
 
         // munmap wavefunction array
@@ -2192,6 +2288,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
     double t1 = vexx_RMS[ct.exx_steps];
     MPI_Allreduce(MPI_IN_PLACE, &t1, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    // The EXX convergence test in Quench must give the same answer on both spins,
+    // otherwise one spin leaves the EXX loop and the other deadlocks in the next Scf.
+    if(ct.nspin == 2) MPI_Allreduce(MPI_IN_PLACE, &t1, 1, MPI_DOUBLE, MPI_MAX, pct.spin_comm);
     vexx_RMS[ct.exx_steps] = t1;
     ct.vexx_rms = t1;
 
@@ -2203,7 +2302,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     RmgFreeHost(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
-#if SYCL_ENABLED
+#if SYCL_ENABLED && RMG_SYCL_PW_FFT
         pwave->queues[tid].wait();
 #endif
         fftw_free(wvec[tid]);
@@ -2221,7 +2320,8 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     double dqz = 1.0/(double)ct.qpoint_mesh[2]; 
     double xq[3];
     double eps = 1.0e-5;
-    double grid_factor = 8.0/7.0;
+    // The 8/7 weight only applies with gamma extrapolation (QE exx_grid_init).
+    double grid_factor = ct.gamma_extrapolation ? 8.0/7.0 : 1.0;
     bool on_double_grid = false;
     double alpha = 10.0/(coarse_pwaves->gcut * tpiba2);
     //    alpha = 0.833333333333;
@@ -2294,7 +2394,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
         else
             exxdiv += -alpha;
     }
-    exxdiv *= fourPI /ct.klist.num_k_all;
+    exxdiv *= fourPI /(double)num_q;
 
 
 
@@ -2320,7 +2420,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     aa += 1.0/std::sqrt(alpha * PI);
     exxdiv -= aa * L.get_omega();
 
-    exxdiv *= ct.klist.num_k_all;
+    exxdiv *= (double)num_q;
     if(ct.verbose && pct.gridpe == 0) 
     {
         printf("\n exxdiv = %f %f %f", exxdiv, aa, alpha);
