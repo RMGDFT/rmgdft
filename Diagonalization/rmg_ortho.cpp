@@ -343,10 +343,8 @@ template <class T> void ortho<T>::orthogonalize_scalapack(int notcon, T *psi)
     HS_Scalapack (notcon, this->pbasis, psi, psi, ptr_null, desca, distSij.data(), ptr_null, true);
     delete RT2;
 
-    char *transt = "t";
     char *uplo = "u";
     char *diag = "N";
-    char *side = "R";
 
     /* compute the cholesky factor of the overlap matrix then subtract off projections */
     RT2 = new RmgTimer("MgridOrtho: 2nd stage: cholesky");
@@ -418,6 +416,7 @@ template <class T> void ortho<T>::orthogonalize_scalapack(int notcon, T *psi)
             (size_t)notcon * (size_t)notcon * sizeof(T), gpuMemcpyHostToDevice);
 #endif
     RT2 = new RmgTimer("MgridOrtho: 2nd stage update");
+    char *side = "R";
     rmg::trmm(side, uplo, "N", diag, this->pbasis, notcon, inv_vel, mat_d, notcon, psi, this->pbasis);
     delete RT2;
 #if HIP_ENABLED || CUDA_ENABLED

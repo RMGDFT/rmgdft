@@ -116,6 +116,7 @@ int getThreadNum(void);
 
 #if CUDA_ENABLED
 #include <cublas_v2.h>
+#include <cuComplex.h>
 
 void init_cuda_fd(int max_threads, size_t bufsize);
 void GpuFill(double *dptr, int n, double fillval);

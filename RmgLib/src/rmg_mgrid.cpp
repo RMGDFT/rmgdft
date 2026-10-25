@@ -1545,7 +1545,7 @@ int mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
         }
 
         // Global dim at this level must be even
-        int new_global_dim = global_dim / skip;
+        //int new_global_dim = global_dim / skip;
         //if(new_global_dim%2) {
         //    return -1;
         //}

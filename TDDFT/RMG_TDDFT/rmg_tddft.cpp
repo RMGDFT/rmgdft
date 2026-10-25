@@ -108,10 +108,6 @@ rmg::tddft<OrbitalType, MatrixType>::tddft(spinobj<double> &vxc_in,
         rmg::error(ncclGetUniqueId(&ct.nccl_nd_id));
     }
     MPI_Bcast(&ct.nccl_nd_id, sizeof(ct.nccl_nd_id), MPI_BYTE, 0, pct.nccl_comm);
-#if CUDA_ENABLED 
-    rmg::error(cuDeviceGet( &ct.cu_dev, 0 ));
-    rmg::error(cudaSetDevice(ct.cu_dev));
-#endif
     rmg::error(ncclCommInitRank(&ct.nccl_local_comm, pct.nccl_comm_npes, ct.nccl_nd_id, pct.nccl_rank));
 #endif  
     iprint = ct.verbose;
