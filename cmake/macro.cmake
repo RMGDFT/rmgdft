@@ -30,6 +30,27 @@ FUNCTION(RMG_RUN_ENERGY_CHECK TESTNAME TEST_DIR RMG_EXE PROCS)
 
 ENDFUNCTION()
 
+# Runs a test directory and checks both the SCF total energy (test_energy in the input) and the post-SCF
+# Hartree-Fock energy written for QMCPACK against hf_reference.txt (tests/check_hf_energy.py).
+FUNCTION(RMG_RUN_HF_ENERGY_CHECK TESTNAME TEST_DIR RMG_EXE PROCS)
+    SET(CHECK_HF "${CMAKE_SOURCE_DIR}/tests/check_hf_energy.py")
+    SET(WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${TEST_DIR}" )
+    SET(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_DIR}" )
+    ADD_TEST(NAME ${TESTNAME}_check_hf_energy
+            COMMAND ${CMAKE_COMMAND}
+    -DSRC_DIR=${SRC_DIR}
+    -DWORKDIR=${WORKDIR}
+    -DRMG_EXE=${RMG_EXE}
+    -DPROCS=${PROCS}
+    -DSECCMD=${CHECK_HF}
+    -DMPIEXEC=${MPIEXEC}
+    -P ${CMAKE_SOURCE_DIR}/cmake/runtest.cmake)
+    SET_TESTS_PROPERTIES( ${TESTNAME}_check_hf_energy PROPERTIES
+                    PASS_REGULAR_EXPRESSION "pass"
+                    FAIL_REGULAR_EXPRESSION "fail"
+                    ENVIRONMENT "OMP_NUM_THREADS=1")
+ENDFUNCTION()
+
 FUNCTION(RMG_RUN_BOND_CHECK TESTNAME TEST_DIR RMG_EXE PROCS)
    # message("${CMAKE_CURRENT_BINARY_DIR}" )
 
