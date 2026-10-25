@@ -117,6 +117,7 @@ public:
     void save_sint(void);
     void restore_sint(void);
     std::vector<double> fd_factors;
+    std::vector<int> ortho_block_sizes;
 
     // Minimal kpoint structure
     KSTRUCT &kp;

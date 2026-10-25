@@ -109,7 +109,6 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
     int my_pe_offset = my_pe_x % cfac;
 
-
     KpointType *weight = this->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
     weight = this->nl_weight_gpu;
@@ -154,7 +153,7 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
     if(ct.use_rmm_diis)
         for(int is=first;is < N+first;is++) 
             Kstates[is].dptr = new diis<KpointType>(4, cfac*pbasis_noncoll);
-
+std::barrier<> bbarier(active_threads);
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
@@ -227,11 +226,12 @@ void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_p
 
                 // Thread tasks are set up so run them
                 if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
-                if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
                 delete RT1;
             }
             if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
+        RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+        delete RT1;
 
         } // end for ib
 

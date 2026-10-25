@@ -38,6 +38,7 @@
 #include "RmgMatrix.h"
 #include "Functional.h"
 #include "rmg_hvector.h"
+#include "rmg_dvector.h"
 
 
 #include "common_prototypes.h"
@@ -83,7 +84,12 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
     char *trans_a = trans_t;
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
+#if GPU_AWARE_MPI
+    rmg::dvector<KpointType> block_matrix(mb*nstates);
+    rmg::hvector<KpointType> block_matrix_host(mb*nstates);
+#else
     rmg::hvector<KpointType> block_matrix(mb*nstates);
+#endif
 
     KpointType *ns_dev = ns;
     if(ct.norm_conserving_pp)
@@ -120,6 +126,12 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
         //block_matrix to distHij;
         if(myrow == ib%nprow)
         {
+#if GPU_AWARE_MPI
+            KpointType *bmptr = block_matrix_host.data();
+            gpuMemcpy(bmptr, block_matrix.data(), this_block_size*length_block*sizeof(KpointType), gpuMemcpyDefault);
+#else
+            KpointType *bmptr = block_matrix.data();
+#endif
             int istart = (ib/nprow) *nb;
             for(int jb = ib; jb < num_blocks; jb++)
             {
@@ -132,7 +144,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            distHij[(jstart + j) * mxllda + i + istart] = block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i];
+                            distHij[(jstart + j) * mxllda + i + istart] = bmptr[ (j + (jb-ib) * mb ) * this_block_size + i];
                         }
                     }
                 }
@@ -141,6 +153,12 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
         if(mycol == ib%npcol)
         {
+#if GPU_AWARE_MPI
+            KpointType *bmptr = block_matrix_host.data();
+            gpuMemcpy(bmptr, block_matrix.data(), this_block_size*length_block*sizeof(KpointType), gpuMemcpyDefault);
+#else
+            KpointType *bmptr = block_matrix.data();
+#endif
             int istart = (ib/npcol) *nb;
             for(int jb = ib; jb < num_blocks; jb++)
             {
@@ -153,7 +171,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
                     {
                         for(int j = 0; j < this_block_size_col; j++)
                         {
-                            distHij[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i]);
+                            distHij[(istart + i) * mxllda + j + jstart] = MyConj(bmptr[ (j + (jb-ib) * mb ) * this_block_size + i]);
                         }
                     }
                 }
@@ -178,6 +196,12 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
             //block_matrix to distHij;
             if(myrow == ib%nprow)
             {
+#if GPU_AWARE_MPI
+            KpointType *bmptr = block_matrix_host.data();
+            gpuMemcpy(bmptr, block_matrix.data(), this_block_size*length_block*sizeof(KpointType), gpuMemcpyDefault);
+#else
+            KpointType *bmptr = block_matrix.data();
+#endif
                 int istart = (ib/nprow) *nb;
                 for(int jb = ib; jb < num_blocks; jb++)
                 {
@@ -190,7 +214,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                distSij[(jstart + j) * mxllda + i + istart] = block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i];
+                                distSij[(jstart + j) * mxllda + i + istart] = bmptr[ (j + (jb-ib) * mb ) * this_block_size + i];
                             }
                         }
                     }
@@ -199,6 +223,12 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
 
             if(mycol == ib%npcol)
             {
+#if GPU_AWARE_MPI
+            KpointType *bmptr = block_matrix_host.data();
+            gpuMemcpy(bmptr, block_matrix.data(), this_block_size*length_block*sizeof(KpointType), gpuMemcpyDefault);
+#else
+            KpointType *bmptr = block_matrix.data();
+#endif
                 int istart = (ib/npcol) *nb;
                 for(int jb = ib; jb < num_blocks; jb++)
                 {
@@ -211,7 +241,7 @@ void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi_dev, KpointT
                         {
                             for(int j = 0; j < this_block_size_col; j++)
                             {
-                                distSij[(istart + i) * mxllda + j + jstart] = MyConj(block_matrix[ (j + (jb-ib) * mb ) * this_block_size + i]);
+                                distSij[(istart + i) * mxllda + j + jstart] = MyConj(bmptr[ (j + (jb-ib) * mb ) * this_block_size + i]);
                             }
                         }
                     }

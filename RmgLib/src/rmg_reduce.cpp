@@ -44,10 +44,26 @@ static MPI_Comm *coalesced_comm_pool;
 static MPI_Comm *coalesced_local_comm_pool;
 
 size_t block_size = 67103864;
+double *sbuf, *rbuf;
 
 void rmg::init_reduce(void) {
     int retval;
     BaseThread *T = BaseThread::getBaseThread(0);
+
+#if GPU_AWARE_MPI
+    // Buffer for large all reduce operations
+    if(!sbuf)
+    {
+#if CUDA_ENABLED
+        cudaMalloc((void **)&sbuf, block_size*sizeof(double));
+        cudaMalloc((void **)&rbuf, block_size*sizeof(double));
+#endif
+#if HIP_ENABLED
+        hipMalloc((void **)&sbuf, block_size*sizeof(double));
+        hipMalloc((void **)&rbuf, block_size*sizeof(double));
+#endif
+    }
+#endif
 
     retval = MPI_Alloc_mem(2 * sizeof(double) * T->get_threads_per_node() * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector1);
     if(retval != MPI_SUCCESS) {
@@ -209,6 +225,35 @@ void rmg::block_allreduce(double *mat, size_t count, MPI_Comm comm)
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
     double *tptr = mat;
+
+#if GPU_AWARE_MPI && HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, mat);
+    bool is_dev = false;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
+    if(is_dev)
+    {
+        for(size_t ib=0;ib < blocks;ib++)
+        {
+            hipMemcpy(sbuf, tptr, block_size * sizeof(double), hipMemcpyDefault);
+hipDeviceSynchronize();
+            MPI_Allreduce(sbuf, rbuf, block_size, MPI_DOUBLE, MPI_SUM, comm);
+hipDeviceSynchronize();
+            hipMemcpy(tptr, rbuf, block_size * sizeof(double), hipMemcpyDefault);
+            tptr += block_size;
+        }
+        if(rem)
+        {
+            hipMemcpy(sbuf, tptr, rem * sizeof(double), hipMemcpyDefault);
+hipDeviceSynchronize();
+            MPI_Allreduce(sbuf, rbuf, rem, MPI_DOUBLE, MPI_SUM, comm);
+hipDeviceSynchronize();
+            hipMemcpy(tptr, rbuf, rem * sizeof(double), hipMemcpyDefault);
+        }
+        return;
+    }
+#endif
     for(size_t ib=0;ib < blocks;ib++)
     {
         MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, comm);
@@ -228,6 +273,35 @@ void rmg::block_allreduce(float *mat, size_t count, MPI_Comm comm)
     size_t blocks = count / block_size;
     size_t rem = count % block_size;
     float *tptr = mat;
+#if GPU_AWARE_MPI && HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, mat);
+    bool is_dev = false;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
+    if(is_dev)
+    {   
+        for(size_t ib=0;ib < blocks;ib++)
+        {
+            hipMemcpy(sbuf, tptr, block_size * sizeof(float), hipMemcpyDefault);
+hipDeviceSynchronize();
+            MPI_Allreduce(sbuf, rbuf, block_size, MPI_FLOAT, MPI_SUM, comm);
+hipDeviceSynchronize();
+            hipMemcpy(tptr, rbuf, block_size * sizeof(float), hipMemcpyDefault);
+            tptr += block_size;
+        }
+        if(rem)
+        {
+            hipMemcpy(sbuf, tptr, rem * sizeof(float), hipMemcpyDefault);
+hipDeviceSynchronize();
+            MPI_Allreduce(sbuf, rbuf, rem, MPI_FLOAT, MPI_SUM, comm);
+hipDeviceSynchronize();
+            hipMemcpy(tptr, rbuf, rem * sizeof(float), hipMemcpyDefault);
+        }
+        return;
+    }
+#endif
+
     for(size_t ib=0;ib < blocks;ib++)
     {
         MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, comm);
@@ -247,6 +321,31 @@ void rmg::block_allreduce(std::complex<double> *mat, size_t count, MPI_Comm comm
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
     double *tptr = (double *)mat;
+#if GPU_AWARE_MPI && HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, mat);
+    bool is_dev = false;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
+    if(is_dev)
+    {
+        for(size_t ib=0;ib < blocks;ib++)
+        {
+            hipMemcpyDtoD(sbuf, tptr, block_size * sizeof(double));
+            MPI_Allreduce(sbuf, rbuf, block_size, MPI_DOUBLE, MPI_SUM, comm);
+            hipMemcpyDtoD(tptr, rbuf, block_size * sizeof(double));
+            tptr += block_size;
+        }
+        if(rem)
+        {
+            hipMemcpyDtoD(sbuf, tptr, rem * sizeof(double));
+            MPI_Allreduce(sbuf, rbuf, rem, MPI_DOUBLE, MPI_SUM, comm);
+            hipMemcpyDtoD(tptr, rbuf, rem * sizeof(double));
+        }
+        return;
+    }
+#endif
+
     for(size_t ib=0;ib < blocks;ib++)
     {
         MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, comm);
@@ -266,6 +365,31 @@ void rmg::block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
     size_t blocks = (2 * count) / block_size;
     size_t rem = (2 * count) % block_size;
     float *tptr = (float *)mat;
+#if GPU_AWARE_MPI && HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, mat);
+    bool is_dev = false;
+    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
+    if(is_dev)
+    {
+        for(size_t ib=0;ib < blocks;ib++)
+        {
+            hipMemcpyDtoD(sbuf, tptr, block_size * sizeof(float));
+            MPI_Allreduce(sbuf, rbuf, block_size, MPI_FLOAT, MPI_SUM, comm);
+            hipMemcpyDtoD(tptr, rbuf, block_size * sizeof(float));
+            tptr += block_size;
+        }
+        if(rem)
+        {
+            hipMemcpyDtoD(sbuf, tptr, rem * sizeof(float));
+            MPI_Allreduce(sbuf, rbuf, rem, MPI_FLOAT, MPI_SUM, comm);
+            hipMemcpyDtoD(tptr, rbuf, rem * sizeof(float));
+        }
+        return;
+    }   
+#endif
+
     for(size_t ib=0;ib < blocks;ib++)
     {
         MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, comm);

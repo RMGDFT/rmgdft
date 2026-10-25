@@ -209,11 +209,14 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
                 thread_control.basetag = st1 + ist + istart;
                 QueueThreadTask(ist, thread_control);
             }
-            // Thread tasks are set up so wake them
-            if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
+            // Thread tasks are set up so run them
+            if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
+            if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         } 
+        if(!ct.mpi_queue_mode && active_threads) T->run_thread_tasks(active_threads);
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+
         Rmg_T->set_coalesce_factor(1);
 
         for(int st1=istop;st1 < nstates;st1++)
@@ -571,6 +574,7 @@ template <typename OrbitalType> void GetNewRhoGpu(Kpoint<OrbitalType> **Kpts, do
             }
             // Thread tasks are set up so wake them
             if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
+            if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         }
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);

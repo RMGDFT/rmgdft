@@ -261,7 +261,7 @@ void GatherPsi(rmg::grid *G, int n, int istate, OrbitalType *A, CalcType *B, int
             memcpy(&B[i*chunksize], &rbuf[i*chunksize], chunksize * sizeof(CalcType));
         }
     }    
-
+//T->thread_barrier_wait(true);
 }
 
 template <typename CalcType, typename OrbitalType>
@@ -404,7 +404,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
             }
         }
     }
-
+T->thread_barrier_wait(true);
     //delete [] rbuf;
 }
 

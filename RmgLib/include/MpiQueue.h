@@ -45,6 +45,9 @@
 #define RMG_MPI_IRECV 2
 #define RMG_MPI_SUM 3
 
+// Hash value used for state indexes
+#define RMG_STATE_HASH 2003
+
 #if __cplusplus
 
 //#include "BaseThread.h"
@@ -73,6 +76,8 @@ typedef struct
 
     // Used only by client threads
     bool is_unpacked;
+
+    bool is_persistent=false;
 
     // Initialized by clients but never change
     void *buf;

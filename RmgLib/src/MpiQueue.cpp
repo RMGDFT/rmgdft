@@ -36,13 +36,24 @@
 #include <boost/next_prior.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <unordered_map>
+#include <tuple>
+#include <boost/container_hash/hash.hpp>
 #include "BaseThread.h"
 #include "MpiQueue.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+    #include <x86intrin.h>
+#else
+    #include <immintrin.h>
+#endif
 
 
 std::condition_variable manager_cv;
 std::mutex manager_mutex;
+
+// Persistent request map
+std::unordered_map<size_t, MPI_Request> preqs;
 
 // Manager thread for queue mode. Works best with high thread
 // per node counts when one CPU is dedicated to the manager thread.
@@ -82,7 +93,6 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             MPI_Test(&dreq, &dflag, MPI_STATUS_IGNORE);
             if(qcount > 10)
             {
-                //usleep(1000);
                 int flag;
                 MPI_Request req = MPI_REQUEST_NULL;
                 MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
@@ -91,26 +101,57 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             {
                 while(Q->queue[tid]->pop(qobj))
                 {
-                    if(qobj.type == RMG_MPI_IRECV)
+                    if(qobj.is_persistent)
                     {
-                        MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        auto data = std::make_tuple(qobj.comm, qobj.mpi_tag, qobj.target,
+                                                    qobj.type, qobj.buf, qobj.buflen);
+                        size_t req_hash = boost::hash_value(data);
+                        if(preqs.contains(req_hash))
+                        {
+                            qobj.req = preqs[req_hash];
+                        }
+                        else
+                        {
+                            MPI_Request newreq;
+                            int retval;
+                            if(qobj.type == RMG_MPI_IRECV)
+                            {
+                                retval = MPI_Recv_init(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target,
+                                              qobj.mpi_tag, qobj.comm, &newreq);
+                            }
+                            else if(qobj.type == RMG_MPI_ISEND)
+                            {
+                                retval = MPI_Send_init(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target,
+                                              qobj.mpi_tag, qobj.comm, &newreq);
+                            }
+                            preqs.insert({req_hash, newreq});
+                            qobj.req = newreq;
+                        }
+                        MPI_Start(&qobj.req);
                     }
-                    else if(qobj.type == RMG_MPI_ISEND)
+                    else
                     {
-                        MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
-                    }
-                    else if(qobj.type == RMG_MPI_SUM)
-                    {
-                        if(qobj.datatype == MPI_DOUBLE)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
-                        if(qobj.datatype == MPI_FLOAT)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
-                        if(qobj.datatype == MPI_INT)
-                            MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
-                    }
-                    else 
-                    {
-                        printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
+                        if(qobj.type == RMG_MPI_IRECV)
+                        {
+                            MPI_Irecv(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        }
+                        else if(qobj.type == RMG_MPI_ISEND)
+                        {
+                            MPI_Isend(qobj.buf, qobj.buflen, MPI_BYTE, qobj.target, qobj.mpi_tag, qobj.comm, &qobj.req);
+                        }
+                        else if(qobj.type == RMG_MPI_SUM)
+                        {
+                            if(qobj.datatype == MPI_DOUBLE)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_DOUBLE, MPI_SUM, qobj.comm, &qobj.req);
+                            if(qobj.datatype == MPI_FLOAT)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_FLOAT, MPI_SUM, qobj.comm, &qobj.req);
+                            if(qobj.datatype == MPI_INT)
+                                MPI_Iallreduce(MPI_IN_PLACE, qobj.buf, qobj.buflen, MPI_INT, MPI_SUM, qobj.comm, &qobj.req);
+                        }
+                        else 
+                        {
+                            printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
+                        }
                     }
 
                     // Now push it into our already posted queues which are only accessed by this thread so faster
@@ -132,7 +173,8 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             {
                 qobj.is_completed->store(true, std::memory_order_release);
                 if((qobj.type == RMG_MPI_IRECV) || (qobj.type == RMG_MPI_ISEND))
-                    qobj.group_count->fetch_sub(1, std::memory_order_release);
+                    //qobj.group_count->fetch_sub(1, std::memory_order_release);
+                    qobj.group_count->fetch_sub(1, std::memory_order_seq_cst);
             }
             else
             {
@@ -153,7 +195,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
-                if(Q->spin_manager) MpiQueue::spin(10);
+//                if(Q->spin_manager) MpiQueue::spin(1);
             }
             else
             {
@@ -208,6 +250,7 @@ bool MpiQueue::pop(int tid, mpi_queue_item_t &item)
 
 void MpiQueue::run_manager(void)
 {
+    if(this->running) return;
     this->running.store(true, std::memory_order_release);
     manager_cv.notify_one();
 }
@@ -232,7 +275,7 @@ void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_
 void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var)
 {
     std::unique_lock<std::mutex> lk(mut);
-    cv.wait_for(lk, std::chrono::milliseconds(10), [&] {return var.load(std::memory_order_acquire)==true;});
+    cv.wait_for(lk, std::chrono::milliseconds(1), [&] {return var.load(std::memory_order_acquire)==true;});
 }
 
 void MpiQueue::waitall(std::atomic_bool *items, int n)
@@ -241,7 +284,7 @@ void MpiQueue::waitall(std::atomic_bool *items, int n)
     {
         for(int i=0;i<n;i++)
         {
-            while(!items[i].load(std::memory_order_acquire)) this->wait(10);
+            while(!items[i].load(std::memory_order_acquire)) this->wait(1);
         }
     }
     else
@@ -267,11 +310,11 @@ void MpiQueue::wait(int n)
 
 void MpiQueue::waitgroup(std::atomic_int &count)
 {
-    while(count.load(std::memory_order_acquire))
+    while(count.load(std::memory_order_seq_cst))
     {
         if(this->spin_workers)
         {
-            MpiQueue::spin(5);
+            MpiQueue::spin(1);
         }
         else
         {
@@ -282,7 +325,6 @@ void MpiQueue::waitgroup(std::atomic_int &count)
 
 void MpiQueue::spin(int n)
 {
-#if __GNUC__
-    for (int i = 0; i < n; i++) asm volatile ("nop");
-#endif
+//    for (int i = 0; i < n; i++) asm volatile ("nop");
+    for (int i = 0; i < n; i++) _mm_pause();
 }

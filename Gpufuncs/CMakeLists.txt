@@ -85,6 +85,7 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuVxc_x_psi_noncoll.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuRhomatrixConvert.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuCommuteMatrix.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/gpu_conversions.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuTiledM_transpose.cu)
 
 endif(RMG_CUDA_ENABLED)
@@ -112,12 +113,13 @@ set_source_files_properties(
     GpuRhomatrixConvert.hip.cpp
     GpuCommuteMatrix.hip.cpp
     GpuTiledM_transpose.hip.cpp
+    gpu_conversions.hip.cpp
     PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
 hip_add_library(Gpufuncs GpuProductBr.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp 
     gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp prolong_orthorhombic.hip.cpp 
     prolong_hex.hip.cpp gputranspose.hip.cpp GpuVxc_x_psi_noncoll.hip.cpp 
     GpuRhomatrixConvert.hip.cpp GpuCommuteMatrix.hip.cpp
-    GpuTiledM_transpose.hip.cpp
+    GpuTiledM_transpose.hip.cpp gpu_conversions.hip.cpp
     HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 endif(RMG_HIP_ENABLED)

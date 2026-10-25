@@ -28,6 +28,11 @@
 */
 
 #include "ThreadBarrier.h"
+#if defined(__GNUC__) || defined(__clang__)
+    #include <x86intrin.h>
+#else
+    #include <immintrin.h>
+#endif
 
 
 //TradeImages_barrier_t::TradeImages_barrier_t(unsigned ncount) :
@@ -37,7 +42,8 @@
 
 void Thread_barrier_t::wait_for_threads(bool spin)
 {
-    if(spin)
+//    if(spin)
+if(0)
     {
         unsigned const my_generation = generation;
         if (!--spaces) {
@@ -45,7 +51,7 @@ void Thread_barrier_t::wait_for_threads(bool spin)
             ++generation;
         } else {
             // Avoid locking the bus
-            while(generation == my_generation)for (int i = 0; i < 100; i++) asm volatile ("nop");
+            while(generation == my_generation)for (int i = 0; i < 10; i++) _mm_pause();
         }
     }
     else
