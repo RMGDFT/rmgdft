@@ -58,7 +58,9 @@
 
 
 static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
-    int num_st, double *weight, int occ_flag, int mp_order);
+    int num_st, double *weight, int occ_flag, int mp_order, int channel = -1);
+static double find_mu (double * occ, double *eigs, double width, double nel,
+    int num_st, double *weight, int occ_flag, int mp_order, int channel);
 static inline double dist_func(double t1, int occ_flag, int mp_order);
 
 
@@ -138,6 +140,46 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     }
 
 
+
+    if((ct.nspin == 2) && (ct.tot_magnetization > -9999.0))
+    {
+        // Fixed total magnetization: each spin has its own Fermi level. Index 0 is the spin
+        // handled by this process (pct.spinpe 0 = up) and index 1 the opposite spin.
+        double nel_up = 0.5*(nel + ct.tot_magnetization);
+        double nel_dn = 0.5*(nel - ct.tot_magnetization);
+        double nel_own = (pct.spinpe == 0) ? nel_up : nel_dn;
+        double nel_opp = (pct.spinpe == 0) ? nel_dn : nel_up;
+        double mu_own = find_mu(occ, eigs, width, nel_own, num_st, weight, occ_flag, mp_order, 0);
+        double mu_opp = find_mu(occ, eigs, width, nel_opp, num_st, weight, occ_flag, mp_order, 1);
+
+        double sum_own = 0.0, sum_opp = 0.0;
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+        {
+            for (st1 = 0; st1 < ct.num_states; st1++)
+            {
+                st = kpt * ct.num_states + st1;
+                sp = &Kptr[kpt]->Kstates[st1];
+                sp->occupation[0] = mix * occ[st] + (1.0 - mix) * sp->occupation[0];
+                sp->occupation[1] = mix * occ[st + nks] + (1.0 - mix) * sp->occupation[1];
+                sum_own += sp->occupation[0] * Kptr[kpt]->kp.kweight;
+                sum_opp += sp->occupation[1] * Kptr[kpt]->kp.kweight;
+            }
+        }
+        sum_own = rmg::sum_all(sum_own, pct.kpsub_comm);
+        sum_opp = rmg::sum_all(sum_opp, pct.kpsub_comm);
+        if ((fabs (sum_own - nel_own) > charge_tol * 10) || (fabs (sum_opp - nel_opp) > charge_tol * 10))
+        {
+            rmg::printlog ("\nfill: spin sums %e %e targets %e %e", sum_own, sum_opp, nel_own, nel_opp);
+            rmg::error("error in mixing occupations with fixed magnetization. Terminating.\n");
+        }
+
+        delete [] occ;
+        delete [] weight;
+        delete [] eigs;
+
+        // Report the spin up Fermi level on every process.
+        return (pct.spinpe == 0) ? mu_own : mu_opp;
+    }
 
     /* find the root by bisection: this algorithm was adapted
        from numerical recipes, 2nd edition */
@@ -247,8 +289,75 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
 
 
+// Bisection for the Fermi level of one spin channel (0 own, 1 opposite) holding nel electrons.
+static double find_mu (double * occ, double *eigs, double width, double nel,
+        int num_st, double *weight, int occ_flag, int mp_order, int channel)
+{
+    const int maxit = 100;
+    const double charge_tol = 1.0e-10;
+    int nks = ct.num_kpts_pe * ct.num_states;
+    int offset = channel * nks;
+
+    double mu1 = 1.0e30;
+    double mu2 = -mu1;
+    for(int idx = 0; idx < nks; idx++)
+    {
+        mu1 = std::min (eigs[offset + idx], mu1);
+        mu2 = std::max (eigs[offset + idx], mu2);
+    }
+    MPI_Allreduce (MPI_IN_PLACE, &mu1, 1, MPI_DOUBLE, MPI_MIN, pct.kpsub_comm);
+    MPI_Allreduce (MPI_IN_PLACE, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
+    // Widen the bracket so that a full or empty channel still changes sign.
+    mu1 -= 10.0 * width + 1.0;
+    mu2 += 10.0 * width + 1.0;
+
+    double f = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order, channel);
+    double fmid = occ_allstates (mu2, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order, channel);
+    if (f * fmid >= 0.0)
+        rmg::error("root must be bracketed");
+
+    double mu, dmu;
+    if (f < 0.0)
+    {
+        mu = mu1;
+        dmu = mu2 - mu1;
+    }
+    else
+    {
+        mu = mu2;
+        dmu = mu1 - mu2;
+    }
+
+    int iter = 0;
+    double mumid = mu;
+    do
+    {
+        iter++;
+        dmu *= 0.5;
+        mumid = mu + dmu;
+        fmid = occ_allstates (mumid, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order, channel);
+        if (fmid <= 0.0)
+        {
+            mu = mumid;
+            fmid = -fmid;
+        }
+    }
+    while ((iter < maxit) && (std::abs(fmid) > charge_tol));
+
+    if (fabs (fmid) > charge_tol)
+    {
+        printf ("\nfill: \\sum f - n_el= %e", fmid);
+        rmg::error("did not converge");
+    }
+
+    // Leave occ filled at the converged level for this channel.
+    occ_allstates (mumid, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order, channel);
+    return mumid;
+}
+
+// channel -1 fills both spins at one Fermi level, 0 or 1 only that spin index.
 static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
-        int num_st, double *weight, int occ_flag, int mp_order)
+        int num_st, double *weight, int occ_flag, int mp_order, int channel)
 {
     int st, kpt, st1, nks;
     double t1, sumf, eig, fac = 1.0;
@@ -267,12 +376,15 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
         {
             st = kpt * ct.num_states + st1;
 
-            eig = eigs[st];
-            t1 = (eig - mu) / width;
-            occ[st] = fac * dist_func(t1, occ_flag, mp_order);
-            sumf += occ[st] * weight[kpt];
+            if(channel != 1)
+            {
+                eig = eigs[st];
+                t1 = (eig - mu) / width;
+                occ[st] = fac * dist_func(t1, occ_flag, mp_order);
+                sumf += occ[st] * weight[kpt];
+            }
 
-            if(ct.nspin == 2)
+            if((ct.nspin == 2) && (channel != 0))
             {
                 eig = eigs[st + nks];
                 t1 = (eig - mu) / width;

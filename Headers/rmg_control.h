@@ -500,6 +500,15 @@ public:
     double nel_up;
     double nel_down;
 
+    /* Fixed total magnetization (up minus down electrons) with smeared occupations.
+       Values <= -9999 (the default) leave the magnetization free. */
+    double tot_magnetization;
+
+    /* Wall time in seconds after which a quench writes its restart files and stops
+       (0 means no limit), and whether that happened. */
+    double max_run_seconds;
+    bool run_time_limit_reached;
+
     int occ_flag;
     int dos_flag;
     double gaus_broad;
@@ -635,6 +644,9 @@ public:
 
     // Exit criteria from EXX loop
     double exx_convergence_criterion;
+
+    // Optional exit criterion on |exx_delta| = |f1 - (f0+f2)/2| in Ha, the quantity QE calls dexx. 0 = off.
+    double exx_energy_convergence_criterion;
 
     // Single/double precision delta fft threshold for EXX Vexx computation
     double vexx_fft_threshold;
