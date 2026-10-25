@@ -60,6 +60,23 @@
 void PlotConvergence(std::vector<double> &RMSdV);
 void ChargeAnalysis(spinobj<double> &rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &);
 
+// Hands the current occupations of every k-point to the exchange operator, which needs the
+// (possibly smeared) occupations at k-q and not only those of the local k-points.
+template <typename OrbitalType> static void SetExxOccupations(Kpoint<OrbitalType> **Kptr, Exxbase<OrbitalType> *Exx)
+{
+    int nstates = Kptr[0]->nstates;
+    std::vector<double> occ_all((size_t)ct.num_kpts * (size_t)nstates, 0.0);
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+    {
+        int kpt_glob = kpt + pct.kstart;
+        if(kpt_glob >= ct.num_kpts) continue;
+        for(int st = 0;st < nstates;st++)
+            occ_all[(size_t)kpt_glob*nstates + st] = Kptr[kpt]->Kstates[st].occupation[0];
+    }
+    MPI_Allreduce(MPI_IN_PLACE, occ_all.data(), (int)occ_all.size(), MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    Exx->SetOccupations(occ_all.data());
+}
+
 
 // Instantiate gamma and non-gamma versions
 template bool Quench<double> (Kpoint<double> **Kptr, bool);
@@ -108,6 +125,8 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     double step_time;
     double exx_step_time=0.0, exx_elapsed_time=0.0;
     double f0=0.0,f1,f2=0.0,exxen=0.0;
+    // exx_delta needs f0 from orbitals that already had their own vexx (a restart or a previous EXX step).
+    bool f0_valid = false;
 
     RmgTimer *RT = new RmgTimer("Init Voronoi");
     Voronoi *Voronoi_charge = new Voronoi();
@@ -132,9 +151,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         if(ct.runflag == RESTART)
         {
             F->start_exx_rmg();
+            SetExxOccupations(Kptr, Exx_scf);
             Exx_scf->Vexx(Kptr[0]->vexx, false);
             ct.FOCK = Exx_scf->Exxenergy(Kptr[0]->vexx);
             exxen = ct.FOCK;
+            f0 = ct.FOCK;
+            f0_valid = true;
         }
     }
 
@@ -222,8 +244,22 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             double elapsed_time = my_crtc() - start_time;
             ProgressTag(step_time, elapsed_time);
 
+            // Clocks differ between ranks, so the stop decision must be collective or
+            // ranks that stop and ranks that continue deadlock in the next reduction.
+            int time_up = (ct.max_run_seconds > 0.0) && (my_crtc() - ct.time0 > ct.max_run_seconds);
+            if(ct.max_run_seconds > 0.0)
+                MPI_Allreduce(MPI_IN_PLACE, &time_up, 1, MPI_INT, MPI_MAX, pct.img_comm);
+            if(time_up)
+            {
+                ct.run_time_limit_reached = true;
+                rmg::printlog("\n max_run_seconds %.0f reached: writing restart files and stopping.\n", ct.max_run_seconds);
+                break;
+            }
+
         }
         /* ---------- end scf loop ---------- */
+
+        if(ct.run_time_limit_reached) break;
 
         if(ct.BerryPhase)
         {
@@ -236,13 +272,16 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         if(ct.xc_is_hybrid)
         {
             F->start_exx_rmg();
+            SetExxOccupations(Kptr, Exx_scf);
             // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
             f1 = Exx_scf->Exxenergy(Kptr[0]->vexx);
             Exx_scf->Vexx(Kptr[0]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
             // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
             f2 = Exx_scf->Exxenergy(Kptr[0]->vexx);
             ct.exx_delta = f1 - 0.5*(f2 + f0);
+            bool exx_delta_valid = f0_valid;
             f0 = f2;
+            f0_valid = true;
             ct.FOCK = exxen + f2 - f1;
             exxen = f2;
 
@@ -251,17 +290,19 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
             double deltaE = 1.0;
             if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
-            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7)
-            { 
-                rmg::printlog(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
-                        ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
+            bool exx_energy_converged = (ct.exx_energy_convergence_criterion > 0.0) && exx_delta_valid &&
+                                        (std::abs(ct.exx_delta) < ct.exx_energy_convergence_criterion);
+            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7 || exx_energy_converged)
+            {
+                rmg::printlog(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, exx_delta = %8.2e, total energy = %.*f Ha\n",
+                        ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], ct.exx_delta, 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                rmg::printlog(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
-                        ct.scf_steps, exx_step_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
+                rmg::printlog(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, exx_delta = %8.2e, total energy = %.*f Ha\n",
+                        ct.scf_steps, exx_step_time, Exx_scf->vexx_RMS[ct.exx_steps], ct.exx_delta, 6, ct.TOTAL);
             }
         }
 
@@ -324,7 +365,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     rmg::hvector<OrbitalType> Hcore_localpp(ct.num_kpts_pe * nstates * nstates);
 
     bool compute_direct = (ct.write_qmcpack_restart ||
-            ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp;
+            ct.write_qmcpack_restart_localized) && ct.norm_conserving_pp && !ct.run_time_limit_reached;
 
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
@@ -374,15 +415,21 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
+        // The Hartree-Fock energy and integrals written for QMCPACK use the bare Coulomb kernel
+        // with a Madelung correction.
+        ct.exxdiv_treatment = EXX_DIV_NONE;
+        ct.gamma_extrapolation = false;
         Exxbase<OrbitalType> *Exx = NULL;
         Exx = new Exxbase<OrbitalType>(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, tempwave, Kptr[0]->nstates, occs.data(),
                 Kptr[0]->orbital_storage, ct.exx_mode);
+        Exx->UseBareCoulomb();
         if(ct.exx_mode == EXX_LOCAL_FFT)
             Exx->WriteWfsToSingleFile();
         if(ct.qmc_nband == 0) ct.qmc_nband = ct.num_states;
         if(ct.qmc_nband > ct.num_states)
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
 
+        SetExxOccupations(Kptr, Exx);
         Exx->SetHcore(Hcore.data(), Hcore_kin.data(), nstates);
         if(ct.exx_int_flag)
         {
