@@ -290,6 +290,9 @@ vxrms.resize(nstates_in);
     if(std::abs(gau_scrlen) > 1.0e-5) scr_type = GAU_SCREENING;
     setup_exxdiv();
     setup_gfac(kq);
+#if SYCL_ENABLED
+    if(mode != EXX_DIST_FFT) setup_sycl_fft();
+#endif
 
     int npes = G.get_NPES();
     int my_rank = G.get_rank();
@@ -399,6 +402,9 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     }
     else
     {
+#if SYCL_ENABLED
+        if(sycl_fftpair(psi_i, psi_j, p, coul_fac, tid)) return;
+#endif
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
         pwave->FftForward(p, p);
         for(size_t ig=0;ig < pwave->pbasis;ig++) p[ig] *= coul_fac[ig];
@@ -516,6 +522,9 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     }
     else
     {
+#if SYCL_ENABLED
+        if(sycl_fftpair(psi_i, psi_j, workbuf, coul_fac, tid)) return;
+#endif
         for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
         pwave->FftForward(workbuf, workbuf);
         for(size_t ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= coul_fac[ig];
@@ -523,6 +532,131 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     }
 #endif
 }
+
+#if SYCL_ENABLED
+// Pw's oneMKL path is compiled out (see RMG_SYCL_PW_FFT above), so SYCL builds did every exchange pair
+// FFT with host FFTW while the GPUs idled. These routines do the k-point pair FFTs on the device with
+// full-grid complex transforms (no packed R2C layout): same row-major layout and unnormalised scaling as
+// the FFTW plans in Pw, and the same Coulomb kernel (gfac_dev, refreshed by setup_gfac for every k-q).
+template void Exxbase<double>::setup_sycl_fft(void);
+template void Exxbase<std::complex<double>>::setup_sycl_fft(void);
+template <class T> void Exxbase<T>::setup_sycl_fft(void)
+{
+    if(ct.is_gamma) return;
+    if(std::getenv("RMG_EXX_HOST_FFT"))
+    {
+        rmg::printlog("Exchange pair FFTs stay on the host (RMG_EXX_HOST_FFT is set).\n");
+        return;
+    }
+    int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
+    nthreads = std::max(nthreads, omp_get_max_threads());
+    std::vector<std::int64_t> dims {(std::int64_t)pwave->global_dimx, (std::int64_t)pwave->global_dimy,
+                                    (std::int64_t)pwave->global_dimz};
+    try
+    {
+        for(int i = 0;i < nthreads;i++)
+        {
+            exx_q.emplace_back(ct.sycl_Q.get_context(), ct.sycl_Q.get_device(), sycl::property::queue::in_order());
+            exx_plan_f.push_back(new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                                                  oneapi::mkl::dft::domain::COMPLEX>(dims));
+            exx_plan_f.back()->commit(exx_q.back());
+            exx_plan_d.push_back(new oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                                                  oneapi::mkl::dft::domain::COMPLEX>(dims));
+            exx_plan_d.back()->commit(exx_q.back());
+            exx_dbuf.push_back(sycl::malloc_device<std::complex<double>>(pwave->pbasis, exx_q.back()));
+            if(!exx_dbuf.back()) throw std::runtime_error("sycl::malloc_device failed");
+        }
+        rmg::printlog("Exchange pair FFTs on the GPU (oneMKL DFT, %d queues, grid %d x %d x %d).\n",
+                      nthreads, pwave->global_dimx, pwave->global_dimy, pwave->global_dimz);
+    }
+    catch(std::exception const &e)
+    {
+        rmg::printlog("Exchange pair FFTs stay on the host: device FFT setup failed (%s).\n", e.what());
+        free_sycl_fft();
+    }
+}
+
+template void Exxbase<double>::free_sycl_fft(void);
+template void Exxbase<std::complex<double>>::free_sycl_fft(void);
+template <class T> void Exxbase<T>::free_sycl_fft(void)
+{
+    for(size_t i = 0;i < exx_q.size();i++)
+    {
+        exx_q[i].wait();
+        if(i < exx_dbuf.size() && exx_dbuf[i]) sycl::free(exx_dbuf[i], exx_q[i]);
+    }
+    for(auto p : exx_plan_f) delete p;
+    for(auto p : exx_plan_d) delete p;
+    exx_dbuf.clear();
+    exx_plan_f.clear();
+    exx_plan_d.clear();
+    exx_q.clear();
+}
+
+// Single precision: the pair product is formed on the host (as in the CUDA path), transformed on the
+// device, multiplied by the Coulomb kernel there and transformed back. Returns false, so the caller uses
+// the host path, when the device FFTs are not set up or the kernel is not gfac (only gfac is on the device).
+template bool Exxbase<double>::sycl_fftpair(double *psi_i, double *psi_j, std::complex<float> *workbuf,
+                                            double *coul_fac, int tid);
+template bool Exxbase<std::complex<double>>::sycl_fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j,
+                                                          std::complex<float> *workbuf, double *coul_fac, int tid);
+template <class T> bool Exxbase<T>::sycl_fftpair(T *psi_i, T *psi_j, std::complex<float> *workbuf, double *coul_fac, int tid)
+{
+    if(exx_q.empty() || coul_fac != gfac || tid < 0 || tid >= (int)exx_q.size()) return false;
+    size_t n = pwave->pbasis;
+    for(size_t idx=0;idx < n;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
+    sycl::queue &q = exx_q[tid];
+    std::complex<float> *d = (std::complex<float> *)exx_dbuf[tid];
+    double *g = gfac_dev;
+    try
+    {
+        sycl::event e1 = q.memcpy(d, workbuf, n*sizeof(std::complex<float>));
+        sycl::event e2 = oneapi::mkl::dft::compute_forward(*exx_plan_f[tid], d, {e1});
+        sycl::event e3 = q.submit([&](sycl::handler &h) {
+            h.depends_on(e2);
+            h.parallel_for(sycl::range<1>(n), [=](sycl::id<1> i) { d[i] = ((float)g[i]) * d[i]; });
+        });
+        sycl::event e4 = oneapi::mkl::dft::compute_backward(*exx_plan_f[tid], d, {e3});
+        q.memcpy(workbuf, d, n*sizeof(std::complex<float>), e4).wait_and_throw();
+    }
+    catch(std::exception const &e)
+    {
+        rmg::error((std::string("Exchange pair FFT on the GPU failed: ") + e.what() + "\n").c_str());
+    }
+    return true;
+}
+
+// Double precision (use_float_fft false), same steps.
+template bool Exxbase<double>::sycl_fftpair(double *psi_i, double *psi_j, std::complex<double> *p,
+                                            double *coul_fac, int tid);
+template bool Exxbase<std::complex<double>>::sycl_fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j,
+                                                          std::complex<double> *p, double *coul_fac, int tid);
+template <class T> bool Exxbase<T>::sycl_fftpair(T *psi_i, T *psi_j, std::complex<double> *p, double *coul_fac, int tid)
+{
+    if(exx_q.empty() || coul_fac != gfac || tid < 0 || tid >= (int)exx_q.size()) return false;
+    size_t n = pwave->pbasis;
+    for(size_t idx=0;idx < n;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
+    sycl::queue &q = exx_q[tid];
+    std::complex<double> *d = exx_dbuf[tid];
+    double *g = gfac_dev;
+    try
+    {
+        sycl::event e1 = q.memcpy(d, p, n*sizeof(std::complex<double>));
+        sycl::event e2 = oneapi::mkl::dft::compute_forward(*exx_plan_d[tid], d, {e1});
+        sycl::event e3 = q.submit([&](sycl::handler &h) {
+            h.depends_on(e2);
+            h.parallel_for(sycl::range<1>(n), [=](sycl::id<1> i) { d[i] = g[i] * d[i]; });
+        });
+        sycl::event e4 = oneapi::mkl::dft::compute_backward(*exx_plan_d[tid], d, {e3});
+        q.memcpy(p, d, n*sizeof(std::complex<double>), e4).wait_and_throw();
+    }
+    catch(std::exception const &e)
+    {
+        rmg::error((std::string("Exchange pair FFT on the GPU failed: ") + e.what() + "\n").c_str());
+    }
+    return true;
+}
+#endif
 
 
 
@@ -1880,6 +2014,9 @@ template <class T> Exxbase<T>::~Exxbase(void)
 
     if(mode == EXX_DIST_FFT) return;
 
+#if SYCL_ENABLED
+    free_sycl_fft();
+#endif
     RmgFreeHost(gfac);
 #if CUDA_ENABLED || HIP_ENABLED || SYCL_ENABLED
     gpuFree(gfac_dev);
@@ -2089,6 +2226,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
         // Save a copy of vexx in the upper part of the orbital storage
+        RT1 = new RmgTimer("5-Functional: Exx save vexx");
         std::complex<double> *prev_vexx = &psi[(size_t)ik * (size_t)ct.max_states * (size_t)pbasis + (size_t)nstates * (size_t)pbasis];
         size_t pstop = (size_t)nstates * (size_t)pbasis;
         std::complex<double> *cur_vexx = &vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis];
@@ -2097,9 +2235,12 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             prev_vexx[idx] = vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + idx];
             cur_vexx[idx] = 0.0;
         }
+        delete RT1;
 
 
+        RT1 = new RmgTimer("5-Functional: Exx barriers");
         MPI_Barrier(G.comm);
+        delete RT1;
 
         int nq_used = 0;
         for(int iq = 0; iq < ct.klist.num_k_all; iq++)
@@ -2136,7 +2277,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             kq[2] = v2 * twoPI;
 
 
+            RT1 = new RmgTimer("5-Functional: Exx gfac");
             setup_gfac(kq);
+            delete RT1;
 
             std::string filename_q = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
             RT1 = new RmgTimer("5-Functional: mmap");
@@ -2147,7 +2290,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
             psi_q_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd_q, 0);
 
+            RT1 = new RmgTimer("5-Functional: Exx barriers");
             MPI_Barrier(G.comm);
+            delete RT1;
 
 
             // rotate wavefunctions for q point from symmetry-related k point.
@@ -2157,32 +2302,26 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             int nz_grid = G.get_NZ_GRID(1);
 
             int nbasis = nx_grid * ny_grid * nz_grid;
-            int ixx, iyy, izz;
-            for (int ix = 0; ix < nx_grid; ix++) {
-                for (int iy = 0; iy < ny_grid; iy++) {
-                    for (int iz = 0; iz < nz_grid; iz++) {
-
-                        symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
-
-                        if(isym >= 0)
-                        {
-                            for(int st = 0; st < nstates_occ; st++)
-                            {
-                                psi_q[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
-                                    = (psi_q_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
-                            }
-                        }
-                        else
-                        {
-                            for(int st = 0; st < nstates_occ; st++)
-                            {
-                                psi_q[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
-                                    = std::conj(psi_q_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
-                            }
+            RT1 = new RmgTimer("5-Functional: Exx rotate q (reads mmap)");
+            // Only the states j with my_rank == j % npes are used below, so rotate just those,
+            // one state at a time to keep the reads from the mapped file local.
+            for(int st = my_rank; st < nstates_occ; st += npes)
+            {
+                std::complex<double> *dst = &psi_q[(size_t)st * (size_t)nbasis];
+                std::complex<double> *src = &psi_q_map[(size_t)st * (size_t)nbasis];
+#pragma omp parallel for
+                for (int ix = 0; ix < nx_grid; ix++) {
+                    int ixx, iyy, izz;
+                    for (int iy = 0; iy < ny_grid; iy++) {
+                        for (int iz = 0; iz < nz_grid; iz++) {
+                            symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                            std::complex<double> val = src[ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                            dst[ix * ny_grid * nz_grid + iy * nz_grid + iz] = (isym >= 0) ? val : std::conj(val);
                         }
                     }
                 }
             }
+            delete RT1;
 
 
             MPI_Request req=MPI_REQUEST_NULL;
@@ -2235,6 +2374,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 }
                 delete RT1;
 
+                RT1 = new RmgTimer("5-Functional: Exx remap and reduce");
                 // We wait for communication from previous row to finish and then copy it into place
                 MPI_Wait(&req, &mrstatus);
                 if(i)
@@ -2250,6 +2390,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
                 std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
                 MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm, &req);
+                delete RT1;
 
             }
 
@@ -2269,7 +2410,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             throw RmgFatalException() << "Exx found " << nq_used << " q-points for k-point " << ik_glob
                 << " but expected " << num_q << ". Check kpoint_mesh, kpoint_is_shift and exx_qpoint_mesh.\n";
 
+        RT1 = new RmgTimer("5-Functional: Exx barriers");
         MPI_Barrier(G.comm);
+        delete RT1;
 
         // munmap wavefunction array
         munmap(psi_s, length);
