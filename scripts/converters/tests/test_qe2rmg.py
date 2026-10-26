@@ -231,10 +231,10 @@ def test_zgnr_hse_fixture():
     assert p["unoccupied_states_per_kpoint"] == "7"     # nbnd 20 - (6*4 + 2*1) / 2
     assert p["potential_grid_refinement"] == "2"
     assert p["max_scf_steps"] == "300"
-    # conv_thr 1e-9 Ry: EXX stops on |exx_delta| < 5e-10 Ha; spin-polarized, so the energy test
-    # (blind to the magnetization residual) is at RMG's floor and RMS[dV] < 1e-3*sqrt(1e-9) stops the SCF
+    # conv_thr 1e-9 Ry: EXX stops on |exx_delta| < 5e-10 Ha; collinear spin, so RMG's energy test
+    # (density + magnetization residual) takes conv_thr/2 like QE, RMS[dV] < 1e-3*sqrt(1e-9) is the backstop
     assert float(p["exx_energy_convergence_criterion"]) == pytest.approx(5e-10)
-    assert float(p["energy_convergence_criterion"]) == pytest.approx(1e-20)
+    assert float(p["energy_convergence_criterion"]) == pytest.approx(5e-10)
     assert float(p["rms_convergence_criterion"]) == pytest.approx(1e-3 * math.sqrt(1e-9))
     assert float(p["charge_density_mixing"]) == 0.3
     # grid: every spacing at or below pi/sqrt(60 Ry)

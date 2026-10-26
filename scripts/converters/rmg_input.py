@@ -874,32 +874,33 @@ def nocc_rmg(nel: float, noncollinear: bool = False) -> int:
 
 
 def set_scf_thresholds(deck: RmgDeck, etol_ha: float, notes: Notes, hybrid: bool = False,
-                       source: str = "conv_thr", spin: bool = False) -> None:
+                       source: str = "conv_thr", noncollinear: bool = False) -> None:
     """Write RMG's SCF (and EXX) stopping criteria for a requested total-energy accuracy etol_ha.
 
-    RMG stops an SCF loop as soon as EITHER ct.scf_accuracy < energy_convergence_criterion OR the
+    RMG stops an SCF loop as soon as EITHER its energy test < energy_convergence_criterion OR the
     RMS potential change < rms_convergence_criterion (``RMG/Common/Quench.cpp``, ``Scf.cpp``).
-    ct.scf_accuracy is 1/2 int (V_H[rho_out] - V_H[rho_in]) (rho_out - rho_in), the Hartree energy of
-    the density residual, which is the quantity QE's conv_thr bounds ("estimated scf accuracy"), so
-    without spin the energy criterion is etol_ha itself and the potential criterion,
+    The energy test is 1/2 int (V_H[rho_out] - V_H[rho_in]) (rho_out - rho_in), the Hartree energy of
+    the density residual, plus for collinear spin the magnetization residual
+    (1/2pi) int |m_out - m_in|^2: the quantity QE's conv_thr bounds ("estimated scf accuracy",
+    rho_ddot). So the energy criterion is etol_ha itself and the potential criterion,
     1e-3 * sqrt(etol in Ry), is only a backstop.
 
-    The Hartree metric sees the total-charge residual only, not the magnetization residual. With
-    spin it can drop below any threshold while the moment is still relaxing (a 2-ZGNR PBE run
-    stopped at 4e-13 Ha with RMS[dV] 2e-4 and a moment of 1.00016 instead of 1), so for spin-
-    polarized and noncollinear decks the energy criterion is set to RMG's floor (1e-20) and the
-    potential criterion carries the convergence. For a hybrid functional the EXX loop stops on
+    For noncollinear spin RMG's energy test still sees only the total charge, so it can drop below
+    any threshold while the magnetization is still relaxing (before the collinear term was added, a
+    2-ZGNR PBE run stopped at 4e-13 Ha with RMS[dV] 2e-4 and a moment of 1.00016 instead of 1). For
+    noncollinear decks the energy criterion is therefore set to RMG's floor (1e-20) and the potential
+    criterion carries the convergence. For a hybrid functional the EXX loop stops on
     |exx_delta| < etol_ha (QE: dexx < conv_thr).
     """
     rthr = min(max(1.0e-3 * math.sqrt(2.0 * etol_ha), 1.0e-12), 1.0e-4)
-    if spin:
+    if noncollinear:
         ethr = 1.0e-20
         notes.info("%s -> rms_convergence_criterion %.3g; energy_convergence_criterion set to RMG's floor "
-                   "%.3g because RMG's energy test (Hartree energy of the density residual) does not see "
-                   "the magnetization residual" % (source, rthr, ethr))
+                   "%.3g because RMG's energy test does not see the noncollinear magnetization residual"
+                   % (source, rthr, ethr))
     else:
         ethr = min(max(etol_ha, 1.0e-20), 1.0e-7)
-        notes.info("%s -> energy_convergence_criterion %.3g Ha (the same Hartree-residual measure QE uses) "
+        notes.info("%s -> energy_convergence_criterion %.3g Ha (the same residual measure QE uses) "
                    "and rms_convergence_criterion %.3g: RMG stops on whichever is met first"
                    % (source, ethr, rthr))
     deck.set("energy_convergence_criterion", ethr)

@@ -161,23 +161,25 @@ default applies.
 ### SCF and EXX stopping criteria
 
 RMG stops an SCF loop as soon as either its energy test or its potential test is met
-(`RMG/Common/Quench.cpp`, `Scf.cpp`). The energy test is ct.scf_accuracy =
-1/2 ∫ (V_H[ρ_out] − V_H[ρ_in]) (ρ_out − ρ_in), the Hartree energy of the density residual: the same
-measure QE's `conv_thr` bounds ("estimated scf accuracy"). It sees only the total-charge residual,
-not the magnetization residual, so with spin it can report convergence while the moment is still
-relaxing. Seen in testing on a spin-polarized 2-ZGNR: stop at 4e-13 Ha with RMS[dV] = 2e-4 and a total
-moment of 1.00016 where 1 was imposed. For a requested accuracy E (QE `conv_thr`/2 or VASP `EDIFF`, in
-Ha) the converters therefore write
+(`RMG/Common/Quench.cpp`, `Scf.cpp`). The energy test is the Hartree energy of the density residual,
+1/2 ∫ (V_H[ρ_out] − V_H[ρ_in]) (ρ_out − ρ_in), plus for collinear spin the magnetization residual
+(1/2π) ∫ |m_out − m_in|², the same measure QE's `conv_thr` bounds ("estimated scf accuracy",
+`rho_ddot`). For noncollinear spin the energy test still sees only the total charge, so it can
+report convergence while the magnetization is still relaxing. For a requested accuracy E (QE
+`conv_thr`/2 or VASP `EDIFF`, in Ha) the converters therefore write
 
-- without spin: `energy_convergence_criterion` = E (between 1e-20 and RMG's maximum 1e-7), with
-  `rms_convergence_criterion` = 1e-3 * sqrt(E in Ry) (between 1e-12 and 1e-4) as a backstop;
-- with spin (collinear or noncollinear): `energy_convergence_criterion` = 1e-20, RMG's floor, so the
-  RMS criterion above decides;
+- without spin or with collinear spin: `energy_convergence_criterion` = E (between 1e-20 and RMG's
+  maximum 1e-7), with `rms_convergence_criterion` = 1e-3 * sqrt(E in Ry) (between 1e-12 and 1e-4) as
+  a backstop;
+- with noncollinear spin: `energy_convergence_criterion` = 1e-20, RMG's floor, so the RMS criterion
+  above decides;
 - for hybrids, `exx_energy_convergence_criterion` = E: the EXX loop stops when
-  |f1 - (f0+f2)/2| < E, the quantity QE calls dexx and compares with conv_thr. RMG's inner SCF loops
-  of a hybrid run use their own energy threshold, min(1e-8, vexx_rms/1000), which has the same spin
-  blindness, so a spin-polarized hybrid run can stall at |exx_delta| ~ 1e-5 Ha and stop at
-  `max_exx_steps` instead.
+  |f1 - (f0+f2)/2| < E, the quantity QE calls dexx and compares with conv_thr.
+
+RMG builds without the magnetization term (before this pull request) stop collinear spin-polarized
+runs too early: a 2-ZGNR PBE run stopped at 4e-13 Ha with RMS[dV] = 2e-4 and a total moment of 1.00016
+where 1 was imposed, and spin-polarized hybrid runs stalled at |exx_delta| ~ 1e-5 Ha. With such a
+build, set `energy_convergence_criterion` to 1e-20 by hand for spin-polarized decks.
 
 ## VASP to RMG
 
