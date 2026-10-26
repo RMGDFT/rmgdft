@@ -1,0 +1,20 @@
+<UPF version="2.0.1">
+  <PP_INFO>
+    Test fixture for the RMG input converters: header only, NOT a usable pseudopotential.
+  </PP_INFO>
+  <PP_HEADER
+     generated="converter test fixture"
+     author="rmgdft scripts/converters tests"
+     element="C"
+     pseudo_type="NC"
+     relativistic="scalar"
+     is_ultrasoft="F"
+     is_paw="F"
+     has_so="F"
+     functional="PBE"
+     z_valence="4.000000000000E+00"
+     l_max="1"
+     mesh_size="0"
+     number_of_wfc="0"
+     number_of_proj="0"/>
+</UPF>

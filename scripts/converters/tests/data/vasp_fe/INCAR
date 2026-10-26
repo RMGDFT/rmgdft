@@ -1,0 +1,10 @@
+SYSTEM = bcc Fe FM
+ENCUT = 400
+ISPIN = 2
+MAGMOM = 2*2.5     ! initial moments in Bohr magneton
+ISMEAR = 1
+SIGMA = 0.1
+EDIFF = 1E-7
+GGA = PE
+NELM = 100
+AMIX = 0.2

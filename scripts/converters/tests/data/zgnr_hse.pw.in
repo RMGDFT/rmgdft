@@ -1,0 +1,52 @@
+! Graphene-nanoribbon-like test: 3-ZGNR, screened hybrid (HSE06), spin polarised,
+! fixed total magnetization, ribbon periodic along z.
+&control
+   calculation = 'scf'
+   title = '3-ZGNR HSE06 FM test'
+   pseudo_dir = 'pseudo'
+   tprnfor = .true.
+/
+&system
+   ibrav = 0
+   nat = 8
+   ntyp = 2
+   ecutwfc = 60.0
+   ecutrho = 240.0
+   nspin = 2
+   starting_magnetization(1) = 0.5
+   starting_magnetization(2) = 0.0
+   tot_magnetization = 0.5
+   occupations = 'smearing'
+   smearing = 'cold'
+   degauss = 0.002
+   nbnd = 20
+   input_dft = 'hse'
+   exx_fraction = 0.25
+   screening_parameter = 0.106
+   exxdiv_treatment = 'gygi-baldereschi'
+   x_gamma_extrapolation = .true.
+   nqx1 = 1, nqx2 = 1, nqx3 = 4
+/
+&electrons
+   conv_thr = 1.0e-9
+   mixing_beta = 0.3
+   electron_maxstep = 300
+/
+ATOMIC_SPECIES
+C   12.011  C.header-only.UPF
+H    1.008  H.header-only.UPF
+CELL_PARAMETERS angstrom
+  20.0   0.0   0.0
+   0.0  15.0   0.0
+   0.0   0.0   2.4663
+ATOMIC_POSITIONS angstrom
+  C    5.00000000    7.50000000    0.00000000
+  C    5.71195948    7.50000000    1.23315000
+  C    7.13587845    7.50000000    1.23315000
+  C    7.84783794    7.50000000    0.00000000
+  C    9.27175691    7.50000000    0.00000000
+  C    9.98371639    7.50000000    1.23315000
+  H    3.91000000    7.50000000    0.00000000
+  H   11.07371639    7.50000000    1.23315000
+K_POINTS automatic
+  1 1 8 0 0 1
