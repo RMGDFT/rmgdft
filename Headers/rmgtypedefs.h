@@ -175,6 +175,7 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     #define gpuError_t int
     #define gpuMemcpyHostToDevice 0
     #define gpuMemcpyDeviceToHost 1
+    #define gpuMemcpyDefault 2
 #endif
 
 #endif
