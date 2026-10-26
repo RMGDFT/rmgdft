@@ -580,6 +580,15 @@ template void Exxbase<double>::free_sycl_fft(void);
 template void Exxbase<std::complex<double>>::free_sycl_fft(void);
 template <class T> void Exxbase<T>::free_sycl_fft(void)
 {
+    if(!exx_q.empty())
+    {
+        exx_q[0].wait();
+        if(exx_dpsi) sycl::free(exx_dpsi, exx_q[0]);
+        if(exx_dpi) sycl::free(exx_dpi, exx_q[0]);
+        if(exx_dv) sycl::free(exx_dv, exx_q[0]);
+    }
+    exx_dpsi = exx_dpi = exx_dv = nullptr;
+    exx_dpsi_cap = 0;
     for(size_t i = 0;i < exx_q.size();i++)
     {
         exx_q[i].wait();
@@ -653,6 +662,128 @@ template <class T> bool Exxbase<T>::sycl_fftpair(T *psi_i, T *psi_j, std::comple
     catch(std::exception const &e)
     {
         rmg::error((std::string("Exchange pair FFT on the GPU failed: ") + e.what() + "\n").c_str());
+    }
+    return true;
+}
+
+// Upload the states j of psi_q that this rank handles for the current q (myj) to exx_dpsi, contiguous in
+// myj order. Returns false, and the caller uses the host path, if the device FFTs are not set up, the
+// kernel is not gfac or the device buffers cannot be allocated.
+template bool Exxbase<double>::sycl_vexx_upload(std::complex<double> *psi_q, std::vector<int> &myj);
+template bool Exxbase<std::complex<double>>::sycl_vexx_upload(std::complex<double> *psi_q, std::vector<int> &myj);
+template <class T> bool Exxbase<T>::sycl_vexx_upload(std::complex<double> *psi_q, std::vector<int> &myj)
+{
+    if(exx_q.empty()) return false;
+    size_t n = pwave->pbasis;
+    sycl::queue &q = exx_q[0];
+    try
+    {
+        if(!exx_dpi) exx_dpi = sycl::malloc_device<std::complex<double>>(n, q);
+        if(!exx_dv) exx_dv = sycl::malloc_device<std::complex<double>>(n, q);
+        if(myj.size() > exx_dpsi_cap)
+        {
+            if(exx_dpsi) sycl::free(exx_dpsi, q);
+            exx_dpsi_cap = 0;
+            exx_dpsi = sycl::malloc_device<std::complex<double>>(n * myj.size(), q);
+            if(exx_dpsi) exx_dpsi_cap = myj.size();
+        }
+        if(!exx_dpi || !exx_dv || (myj.size() && !exx_dpsi))
+        {
+            rmg::printlog("Exchange rows stay on the host: device buffers for %zu states could not be allocated.\n", myj.size());
+            return false;
+        }
+        for(size_t t = 0;t < myj.size();t++)
+            q.memcpy(exx_dpsi + t*n, psi_q + (size_t)myj[t]*n, n*sizeof(std::complex<double>));
+        q.wait_and_throw();
+    }
+    catch(std::exception const &e)
+    {
+        rmg::error((std::string("Exchange state upload to the GPU failed: ") + e.what() + "\n").c_str());
+    }
+    return true;
+}
+
+// vrow = sum_t cj[t] * psi_j * IFFT(gfac * FFT(psi_i * conj(psi_j))), j = myj[t], the same sum as the
+// host loop in Vexx (unnormalised transforms, single precision transforms when use_float_fft). The
+// pending MPI_Ireduce_scatter of the previous row is progressed while the device works.
+template bool Exxbase<double>::sycl_vexx_row(std::complex<double> *psi_i, std::vector<int> &myj, std::vector<double> &cj,
+                                             bool use_float_fft, std::complex<double> *vrow, MPI_Request *req);
+template bool Exxbase<std::complex<double>>::sycl_vexx_row(std::complex<double> *psi_i, std::vector<int> &myj, std::vector<double> &cj,
+                                                           bool use_float_fft, std::complex<double> *vrow, MPI_Request *req);
+template <class T> bool Exxbase<T>::sycl_vexx_row(std::complex<double> *psi_i, std::vector<int> &myj, std::vector<double> &cj,
+                                                  bool use_float_fft, std::complex<double> *vrow, MPI_Request *req)
+{
+    size_t n = pwave->pbasis;
+    sycl::queue &q = exx_q[0];
+    double *pi = (double *)exx_dpi;
+    double *v = (double *)exx_dv;
+    double *g = gfac_dev;
+    try
+    {
+        sycl::event ev = q.memcpy(exx_dpi, psi_i, n*sizeof(std::complex<double>));
+        ev = q.memset(exx_dv, 0, n*sizeof(std::complex<double>));
+        for(size_t t = 0;t < myj.size();t++)
+        {
+            double *pj = (double *)(exx_dpsi + t*n);
+            double c = cj[t];
+            if(use_float_fft)
+            {
+                float *d = (float *)exx_dbuf[0];
+                q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    double a = pi[2*i], b = pi[2*i+1], x = pj[2*i], y = pj[2*i+1];
+                    d[2*i] = (float)(a*x + b*y);
+                    d[2*i+1] = (float)(b*x - a*y);
+                });
+                oneapi::mkl::dft::compute_forward(*exx_plan_f[0], (std::complex<float> *)d);
+                q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    float f = (float)g[i];
+                    d[2*i] *= f;
+                    d[2*i+1] *= f;
+                });
+                oneapi::mkl::dft::compute_backward(*exx_plan_f[0], (std::complex<float> *)d);
+                ev = q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    double xr = (double)d[2*i], xi = (double)d[2*i+1], yr = pj[2*i], yi = pj[2*i+1];
+                    v[2*i] += c * (xr*yr - xi*yi);
+                    v[2*i+1] += c * (xr*yi + xi*yr);
+                });
+            }
+            else
+            {
+                double *d = (double *)exx_dbuf[0];
+                q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    double a = pi[2*i], b = pi[2*i+1], x = pj[2*i], y = pj[2*i+1];
+                    d[2*i] = a*x + b*y;
+                    d[2*i+1] = b*x - a*y;
+                });
+                oneapi::mkl::dft::compute_forward(*exx_plan_d[0], (std::complex<double> *)d);
+                q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    d[2*i] *= g[i];
+                    d[2*i+1] *= g[i];
+                });
+                oneapi::mkl::dft::compute_backward(*exx_plan_d[0], (std::complex<double> *)d);
+                ev = q.parallel_for(sycl::range<1>(n), [=](sycl::id<1> id) {
+                    size_t i = id[0];
+                    double xr = d[2*i], xi = d[2*i+1], yr = pj[2*i], yi = pj[2*i+1];
+                    v[2*i] += c * (xr*yr - xi*yi);
+                    v[2*i+1] += c * (xr*yi + xi*yr);
+                });
+            }
+        }
+        ev = q.memcpy(vrow, exx_dv, n*sizeof(std::complex<double>));
+        int flag = 0;
+        MPI_Status mrstatus;
+        while(ev.get_info<sycl::info::event::command_execution_status>() != sycl::info::event_command_status::complete)
+            MPI_Test(req, &flag, &mrstatus);
+        q.wait_and_throw();
+    }
+    catch(std::exception const &e)
+    {
+        rmg::error((std::string("Exchange row on the GPU failed: ") + e.what() + "\n").c_str());
     }
     return true;
 }
@@ -2328,49 +2459,62 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             MPI_Status mrstatus;
             int flag=0;
 
+            // The states j this rank handles for this q and their weights.
+            std::vector<int> myj;
+            std::vector<double> cj;
+            for(int j = my_rank;j < nstates_occ;j += npes)
+            {
+                myj.push_back(j);
+                cj.push_back(scale * occ_norm * occ_k[(size_t)ikindex*nstates + j] / (double)num_q);
+            }
+            bool dev_rows = false;
+#if SYCL_ENABLED
+            RT1 = new RmgTimer("5-Functional: Exx gpu upload q states");
+            dev_rows = sycl_vexx_upload(psi_q, myj);
+            delete RT1;
+#endif
+
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
             for(int i=0;i < nstates;i++)
             {
                 std::complex<double> *psi_i = &psi_s[i*pwave->pbasis];
                 RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
-#pragma omp parallel for schedule(dynamic)
-                for(int j=0;j < nstates_occ;j++)
+#if SYCL_ENABLED
+                if(dev_rows) sycl_vexx_row(psi_i, myj, cj, use_float_fft, vexx_global, &req);
+#endif
+                // Host path: the pair FFTs of up to pvec.size() states at a time, then the accumulation in
+                // parallel over the grid in a fixed order (no critical section, reproducible sums).
+                size_t nslot = pvec.size();
+                for(size_t c0 = 0;!dev_rows && c0 < myj.size();c0 += nslot)
                 {
+                    size_t nc = std::min(nslot, myj.size() - c0);
+#pragma omp parallel for schedule(dynamic)
+                    for(size_t c = 0;c < nc;c++)
+                    {
 #if CUDA_ENABLED
-                    gpuSetDevice(ct.cu_dev);
+                        gpuSetDevice(ct.cu_dev);
 #endif
 #if HIP_ENABLED
-                    gpuSetDevice(ct.hip_dev);
+                        gpuSetDevice(ct.hip_dev);
 #endif
-                    int omp_tid = omp_get_thread_num();
-                    std::complex<double> *p = pvec[omp_tid];
-                    std::complex<float> *w = wvec[omp_tid];
-                    if(my_rank == (j % npes))
-                    {
-                        std::complex<double> *psi_j = &psi_q[j*pwave->pbasis];
-                        double wj = occ_norm * occ_k[(size_t)ikindex*nstates + j] / (double)num_q;
+                        std::complex<double> *psi_j = &psi_q[(size_t)myj[c0+c]*pwave->pbasis];
                         if(use_float_fft)
-                        {
-                            fftpair(psi_i, psi_j, p, w, gfac);
-                            // We can speed this up by adding more critical sections if it proves to be a bottleneck
-#pragma omp critical(part3)
-                            {
-                                for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                    vexx_global[idx] += scale * wj * (std::complex<double>)w[idx] * psi_j[idx];
-                            }
-                        }
+                            fftpair(psi_i, psi_j, pvec[c], wvec[c], gfac);
                         else
-                        {
-                            fftpair(psi_i, psi_j, p, gfac);
-                            // We can speed this up by adding more critical sections if it proves to be a bottleneck
-#pragma omp critical(part3)
-                            {
-                                for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                    vexx_global[idx] += scale * wj * p[idx] * psi_j[idx];
-                            }
-                        }
+                            fftpair(psi_i, psi_j, pvec[c], gfac);
                     }
-                    if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
+                    MPI_Test(&req, &flag, &mrstatus);
+#pragma omp parallel for
+                    for(size_t idx = 0;idx < pwave->pbasis;idx++)
+                    {
+                        std::complex<double> sum = 0.0;
+                        for(size_t c = 0;c < nc;c++)
+                        {
+                            std::complex<double> x = use_float_fft ? (std::complex<double>)wvec[c][idx] : pvec[c][idx];
+                            sum += cj[c0+c] * x * psi_q[(size_t)myj[c0+c]*pwave->pbasis + idx];
+                        }
+                        vexx_global[idx] += sum;
+                    }
                 }
                 delete RT1;
 
