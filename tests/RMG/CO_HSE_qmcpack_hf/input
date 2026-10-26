@@ -1,0 +1,36 @@
+description = "CO HSE06 at Gamma with write_qmcpack_restart: SCF energy and the bare-Coulomb Hartree-Fock energy"
+# After a screened-hybrid SCF the Hartree-Fock energy and integrals written for QMCPACK must use the
+# bare Coulomb kernel. hf_reference.txt holds the expected "total energy Hartree Fock(+Madelung)".
+test_energy = "-21.69434708"
+test_energy_tolerance = "1.0e-6"
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+exchange_correlation_type = "hse"
+exx_mode = "Local fft"
+write_qmcpack_restart = "true"
+occupations_type = "Fixed"
+unoccupied_states_per_kpoint = "4"
+wavefunction_grid = "80 80 80"
+potential_grid_refinement = "2"
+start_mode = "LCAO Start"
+calculation_mode = "Quench Electrons"
+kohn_sham_solver = "davidson"
+charge_mixing_type = "Broyden"
+max_scf_steps = "40"
+max_exx_steps = "30"
+rms_convergence_criterion = "1.0e-9"
+write_data_period = "1000"
+pseudopotential = "
+C C.ccECP.xml
+O O.ccECP.xml
+"
+lattice_vector = "
+16.0   0.0   0.0
+ 0.0  16.0   0.0
+ 0.0   0.0  16.0
+"
+atomic_coordinate_type = "Absolute"
+atoms = "
+C   6.9316601  8.0  8.0      1
+O   9.0683399  8.0  8.0      1
+"

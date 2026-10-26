@@ -1,0 +1,10 @@
+Fe bcc conventional cell, ferromagnetic
+   2.86
+     1.0   0.0   0.0
+     0.0   1.0   0.0
+     0.0   0.0   1.0
+   Fe
+   2
+Cartesian
+  0.0  0.0  0.0
+  0.5  0.5  0.5

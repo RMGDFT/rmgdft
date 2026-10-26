@@ -369,12 +369,33 @@ template <typename OrbitalType> bool Scf (
     ct.scf_accuracy = sum[0];
     ct.dr2 = sum[1];
 
+    // The Hartree term above only sees the total density, so a spin-polarized run can pass the
+    // energy test while the moment is still relaxing. As in QE's rho_ddot, add the magnetization
+    // residual e2*fpi/tpi**2 * omega/2 * sum_G |dm(G)|^2 = (1/2pi) * int |dm(r)|^2 dr (Hartree).
+    // up/dw are this rank's spin and the opposite one, so both spin ranks get the same value and
+    // it is not summed over spin_comm (the MAX only guarantees the same stop decision).
+    ct.scf_accuracy_mag = 0.0;
+    if(ct.nspin == 2)
+    {
+        double msum = 0.0;
+        for(int i = 0;i < rho.pbasis;i++)
+        {
+            double dm = (new_rho.up[i] - rho.up[i]) - (new_rho.dw[i] - rho.dw[i]);
+            msum += dm * dm;
+        }
+        msum = rho.vel() * msum / (2.0 * PI);
+        MPI_Allreduce(MPI_IN_PLACE, &msum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &msum, 1, MPI_DOUBLE, MPI_MAX, pct.spin_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &msum, 1, MPI_DOUBLE, MPI_MAX, pct.img_comm);
+        ct.scf_accuracy_mag = msum;
+    }
+
     // Compute variational energy correction term if any
     ct.scf_correction = EnergyCorrection(Kptr, rho.data(), new_rho.data(), vh.data(), vh_out.data());
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-        if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
+        if (ct.scf_steps && fabs(ct.scf_accuracy) + ct.scf_accuracy_mag < ct.adaptive_thr_energy) CONVERGED = true;
     }
 
     if( (CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) )

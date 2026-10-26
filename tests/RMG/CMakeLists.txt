@@ -14,6 +14,9 @@ list(APPEND energy_tests "NiO8")
 list(APPEND energy_tests "graphite_stress")
 list(APPEND energy_tests "Ni_Semilocal")
 list(APPEND energy_tests "graphene")
+list(APPEND energy_tests "ZGNR2_HSE_spin_qmesh")
+
+set (hf_tests "CO_HSE_qmcpack_hf")
 
 set (bond_tests "CO")
 
@@ -28,6 +31,17 @@ foreach(test ${energy_tests})
 
     RMG_RUN_ENERGY_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
 endforeach(test ${tests})
+
+
+foreach(test ${hf_tests})
+    SET(testname RMG_${test})
+    SET(TEST_DIR ${test})
+    SET(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_DIR}")
+
+    COPY_DIRECTORY( "${SRC_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_DIR}" )
+
+    RMG_RUN_HF_ENERGY_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
+endforeach(test ${hf_tests})
 
 
 foreach(test ${bond_tests})

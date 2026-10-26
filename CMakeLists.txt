@@ -286,6 +286,9 @@ endif()
 
 if(RMG_SYCL_ENABLED)
     add_definitions(-DSYCL_ENABLED=1)
+    # Boost >= 1.86 marks Boost.Math as SYCL device code whenever SYCL_LANGUAGE_VERSION is
+    # defined; RMG only calls it on the host and icpx rejects its recursion/function pointers.
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include ${PROJECT_SOURCE_DIR}/Headers/rmg_boost_math_host.h>")
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")

@@ -178,13 +178,19 @@ template <typename DataType> void rmg::trtri(char *uplo, char *diag, int n, Data
     
     // TRTRI: Triangular matrix inversion
     // Computes the inverse of a triangular matrix
-    info = 0;
+    // Write the LAPACK status through the pointer; "info = 0" nulled the pointer and left
+    // the caller's status uninitialized (rmg_ortho then aborted on a garbage trtri info).
+    *info = 0;
     try {
         // Use USM pointer-based API; returns a sycl::event
         sycl::event trtri_event = oneapi::mkl::lapack::trtri(
             ct.sycl_Q, fill_mode, diag_mode, n, A, lda, scratchpad, scratchpad_size);
         // Wait for completion
         trtri_event.wait();
+    }
+    catch (oneapi::mkl::lapack::computation_error const& e) {
+        // Numerical failure (not positive definite / singular): report it like LAPACK does.
+        *info = (int)e.info();
     }
     catch (sycl::exception const& e) {
         std::cout << "\t\tCaught synchronous SYCL exception during TRTRI:\n"

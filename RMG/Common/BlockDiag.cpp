@@ -49,6 +49,7 @@
 #include "transition.h"
 #include "blas.h"
 #include "rmg_ortho.h"
+#include "Functional.h"
 
 
 
@@ -223,6 +224,17 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiagInternal(double *v
     RT1 = new RmgTimer("6-BlockDiag: rotate orbitals");
     rmg::gemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, psi, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
     for(int idx=0;idx < N*pbasis_noncoll;idx++)psi[idx] = h_psi[idx];
+
+    // AppNls applies the stored vexx[i] = Vx|psi_i> to orbital slot i, so the exchange
+    // vectors must follow the orbitals through the rotation (Subdiag and Subdiag_Scalapack
+    // already do this). Without it the hybrid Hamiltonian pairs each rotated orbital with
+    // another orbital's exchange vector and the inner SCF runs away by several Ha.
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
+    {
+        KpointType *vexx_blk = &this->vexx[(size_t)first*(size_t)pbasis_noncoll];
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, N, N, alpha, vexx_blk, pbasis_noncoll, vr, N, beta, h_psi, pbasis_noncoll);
+        for(int idx=0;idx < N*pbasis_noncoll;idx++) vexx_blk[idx] = h_psi[idx];
+    }
 
     delete RT1;
 

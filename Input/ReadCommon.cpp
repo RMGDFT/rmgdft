@@ -154,6 +154,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
+    Ri::ReadVector<int> exx_qpoint_mesh;
+    Ri::ReadVector<int> def_exx_qpoint_mesh({{0,0,0}});
     Ri::ReadVector<int> ldos_start_grid;
     Ri::ReadVector<int> ldos_end_grid;
     Ri::ReadVector<int> sts_start_grid;
@@ -507,6 +509,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("x_gamma_extrapolation", &lc.gamma_extrapolation, true, 
             "if set true, use exx extrapolation to gamma ", XC_OPTIONS);
 
+    If.RegisterInputKey("exx_qpoint_mesh", &exx_qpoint_mesh, &def_exx_qpoint_mesh, 3, OPTIONAL,
+            "q-point mesh for the exact exchange sum (QE nqx1 nqx2 nqx3). Each entry must divide "
+            "the corresponding kpoint_mesh entry. 0 0 0 uses the full kpoint mesh. ",
+            "You must specify a triplet of dimensions for exx_qpoint_mesh. ", XC_OPTIONS);
+
     If.RegisterInputKey("ExxCholMax", &lc.exxchol_max, 1, 64, 8, 
             CHECK_AND_FIX, OPTIONAL, 
             "maximum number of Exx integral cholesky vectors ", 
@@ -729,6 +736,20 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons ",
             "system_charge must be a real number. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("max_run_seconds", &lc.max_run_seconds, 0.0, DBL_MAX, 0.0,
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "Wall time in seconds after which an electronic quench stops at the end of the current "
+            "scf step, writes its restart files and exits, so that it can be continued with "
+            "start_mode=\"Restart From File\" (QE max_seconds). 0 means no limit. ",
+            "max_run_seconds must be non-negative. Terminating. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("tot_magnetization", &lc.tot_magnetization, -10000.0, 10000.0, -10000.0,
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "Fixed total magnetization (number of up minus down electrons) for a spin polarized "
+            "calculation with smeared occupations; each spin gets its own Fermi level. "
+            "The default -10000 leaves the magnetization free. ",
+            "tot_magnetization must lie in the range (-10000.0,10000.0). Terminating. ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
             CHECK_AND_FIX, OPTIONAL,
@@ -1334,6 +1355,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "consistency has been achieved. ",
             "exx_convergence_criterion must lie in the range (1.0e-12,1.0e-6). Resetting to default value of 1.0e-9. ", XC_OPTIONS);
 
+    If.RegisterInputKey("exx_energy_convergence_criterion", &lc.exx_energy_convergence_criterion, 0.0, 1.0e-2, 0.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Optional EXX exit criterion in Ha on |f1 - (f0+f2)/2|, where f0, f1 and f2 are the Fock energies of the "
+            "previous and current orbitals (the quantity Quantum ESPRESSO calls dexx). 0 disables it. ",
+            "exx_energy_convergence_criterion must lie in the range (0,1.0e-2). Resetting to default value of 0. ", XC_OPTIONS);
+
     If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-14, 1.0e-1, 1.0e-14,
             CHECK_AND_FIX, OPTIONAL,
             "The value for the EXX delta where we switch from single to double precision ffts. "
@@ -1563,6 +1590,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         for(int ix = 0;ix < 3;ix++) {
             lc.kpoint_mesh[ix] = kpoint_mesh.vals.at(ix);
             lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
+            lc.qpoint_mesh[ix] = exx_qpoint_mesh.vals.at(ix);
             lc.ldos_start_grid[ix] = ldos_start_grid.vals.at(ix);
             lc.ldos_end_grid[ix] = ldos_end_grid.vals.at(ix);
             lc.sts_start_grid[ix] = sts_start_grid.vals.at(ix);

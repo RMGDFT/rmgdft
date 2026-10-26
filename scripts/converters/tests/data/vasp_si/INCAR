@@ -1,0 +1,9 @@
+SYSTEM = Si diamond
+PREC = Accurate
+ENCUT = 300
+ISMEAR = 0 ; SIGMA = 0.05
+EDIFF = 1E-6
+NELM = 80
+NBANDS = 8
+LWAVE = .FALSE.
+LCHARG = .FALSE.

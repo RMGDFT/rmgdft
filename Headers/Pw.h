@@ -58,7 +58,12 @@
 #if SYCL_ENABLED
     #include <CL/sycl.hpp>
     #include <sycl/queue.hpp>
-    #include <oneapi/mkl/dfti.hpp>
+    // oneMKL 2026 dropped dfti.hpp; dft.hpp declares the same oneapi::mkl::dft API.
+    #if __has_include(<oneapi/mkl/dft.hpp>)
+        #include <oneapi/mkl/dft.hpp>
+    #else
+        #include <oneapi/mkl/dfti.hpp>
+    #endif
 #endif
 
 #include "rmg_grid.h"

@@ -1,0 +1,54 @@
+description = "2-ZGNR spin polarized HSE06: k-points with a coarser exx_qpoint_mesh, tot_magnetization, block Davidson, dexx exit"
+# Regression test for the spin-polarized hybrid path: exchange occupations at k-q, q-mesh subsampling,
+# vexx rotation in BlockDiag, vexx_RMS reduced over spins and the exx_energy_convergence_criterion exit.
+# -23.97581829 since the energy test includes the magnetization residual (was -23.97581698)
+test_energy = "-23.97581829"
+test_energy_tolerance = "1.0e-6"
+omp_threads_per_node = "1"
+rmg_threads_per_node = "1"
+spin_polarization = "true"
+exchange_correlation_type = "hse"
+exx_mode = "Local fft"
+x_gamma_extrapolation = "false"
+exx_qpoint_mesh = "1 1 2"
+exx_energy_convergence_criterion = "1.0e-7"
+max_exx_steps = "30"
+occupations_type = "Cold Smearing"
+occupation_electron_temperature_eV = "0.1"
+tot_magnetization = "1.0"
+unoccupied_states_per_kpoint = "6"
+kpoint_mesh = "1 1 4"
+kpoint_is_shift = "0 0 0"
+time_reversal = "false"
+use_symmetry = "0"
+wavefunction_grid = "48 32 12"
+potential_grid_refinement = "2"
+start_mode = "LCAO Start"
+calculation_mode = "Quench Electrons"
+kohn_sham_solver = "davidson"
+use_block_diag = "true"
+charge_mixing_type = "Broyden"
+charge_density_mixing = "0.3"
+max_scf_steps = "60"
+rms_convergence_criterion = "1.0e-8"
+write_data_period = "1000"
+lattice_units = "Angstrom"
+crds_units = "Angstrom"
+atomic_coordinate_type = "Absolute"
+lattice_vector = "
+10.000000  0.0  0.0
+0.0  6.000000  0.0
+0.0  0.0  2.466267144897
+"
+pseudopotential = "
+C  C.ccECP.v2.upf
+H  H.ccECP.v2.upf
+"
+atoms = "
+C    3.584570    3.0000    0.616570  1   0.5
+C    4.266510    3.0000    1.849700  1   0.0
+C    5.708270    3.0000    1.849700  1   0.0
+C    6.415430    3.0000    0.616570  1   0.5
+H    2.492510    3.0000    0.616570  1   0.0
+H    7.507490    3.0000    0.616570  1   0.0
+"

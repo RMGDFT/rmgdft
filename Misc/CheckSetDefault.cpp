@@ -181,11 +181,24 @@ void CheckSetDefault(void)
         }
     }
 
+    if(ct.tot_magnetization > -9999.0)
+    {
+        if(!ct.spin_flag)
+            rmg::error("tot_magnetization requires spin_polarization = \"true\".\n");
+        if(ct.occ_flag == OCC_NONE)
+            rmg::error("tot_magnetization requires smeared occupations; with occupations_type = \"Fixed\" set the spin up and down occupations instead.\n");
+    }
+
     if(ct.write_qmcpack_restart)
     {
         ct.localize_localpp = false;
-        ct.exxdiv_treatment= EXX_DIV_NONE;
-        ct.gamma_extrapolation = false;
+        // RMG_BASE sets EXX_DIV_NONE in Quench only for the post-SCF Hartree-Fock energy, so that
+        // a hybrid SCF keeps the requested divergence treatment.
+        if(ct.rmg_branch != RMG_BASE)
+        {
+            ct.exxdiv_treatment= EXX_DIV_NONE;
+            ct.gamma_extrapolation = false;
+        }
         ct.exx_mode = EXX_LOCAL_FFT;
 
         if(!ct.norm_conserving_pp)

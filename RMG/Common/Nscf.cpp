@@ -230,6 +230,7 @@ template <typename OrbitalType> bool Nscf (double * vxc, double *vxc_in, double 
     eigsum = rmg::sum_all(eigsum, pct.kpsub_comm);
 
     ct.scf_accuracy = eigsum - eigsum_old;
+    ct.scf_accuracy_mag = 0.0;
     eigsum_old = eigsum;
 
     ct.rms = ct.scf_accuracy;
