@@ -318,11 +318,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             if (pct.imgpe == 0 && pct.images == 1)
                 fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
         }
-        else if(fabs(ct.scf_accuracy) < ct.thr_energy)
+        else if(fabs(ct.scf_accuracy) + ct.scf_accuracy_mag < ct.thr_energy)
         {
-            rmg::printlog("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);
+            double ev = fabs(ct.scf_accuracy) + ct.scf_accuracy_mag;
+            rmg::printlog("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", ev, ct.thr_energy);
             if (pct.imgpe == 0 && pct.images ==1)
-                fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);
+                fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", ev, ct.thr_energy);
         }
 
         rmg::printlog ("\n");

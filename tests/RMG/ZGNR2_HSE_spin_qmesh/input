@@ -1,7 +1,8 @@
 description = "2-ZGNR spin polarized HSE06: k-points with a coarser exx_qpoint_mesh, tot_magnetization, block Davidson, dexx exit"
 # Regression test for the spin-polarized hybrid path: exchange occupations at k-q, q-mesh subsampling,
 # vexx rotation in BlockDiag, vexx_RMS reduced over spins and the exx_energy_convergence_criterion exit.
-test_energy = "-23.97581698"
+# -23.97581829 since the energy test includes the magnetization residual (was -23.97581698)
+test_energy = "-23.97581829"
 test_energy_tolerance = "1.0e-6"
 omp_threads_per_node = "1"
 rmg_threads_per_node = "1"

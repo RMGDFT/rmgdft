@@ -734,6 +734,9 @@ public:
 
     /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
     double scf_accuracy;
+
+    /* Magnetization residual (1/2pi) * int |m_out - m_in|^2, added to scf_accuracy in the energy stop test */
+    double scf_accuracy_mag;
     double ns_occ_rms;
 
     /* (rho_new - rho)^2 */
