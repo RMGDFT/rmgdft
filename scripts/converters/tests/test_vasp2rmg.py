@@ -180,8 +180,8 @@ def test_fe_fixture():
     assert d["kpoint_mesh"] == "8 8 8" and d["kpoint_is_shift"] == "0 0 0"
     assert float(d["charge_density_mixing"]) == 0.2
     assert d["max_scf_steps"] == "100"
-    # ISPIN 2: RMG's energy test includes the magnetization residual, so EDIFF maps onto it directly
-    assert float(d["energy_convergence_criterion"]) == pytest.approx(1e-7 / HA_EV)
+    # ISPIN 2: the energy test cannot see the magnetization residual, so RMS[dV] (EDIFF 1e-7 eV) stops the SCF
+    assert float(d["energy_convergence_criterion"]) == pytest.approx(1e-20)
     assert float(d["rms_convergence_criterion"]) == pytest.approx(1e-3 * (2e-7 / HA_EV) ** 0.5)
     # without valence charges the seed falls back to MAGMOM / 10
     d2, notes2 = run(FE_POSCAR, FE_INCAR, FE_KPOINTS)

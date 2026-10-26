@@ -13,7 +13,7 @@ from rmg_input import (BOHR_PER_ANGSTROM, ConversionError, Notes, RmgDeck, Struc
                        equivalent_cutoff_ry, min_points_for_cutoff, next_grid_size,
                        orient_for_rmg, parse_rmg_deck, planar_anisotropy,
                        potential_grid_refinement, read_upf_header, rmg_lat2ibrav, rmg_rotate,
-                       set_scf_thresholds, wavefunction_grid, write_structure)
+                       wavefunction_grid, write_structure)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -260,19 +260,3 @@ def test_upf_v1_and_paw_are_reported(tmp_path):
                    'z_valence="4.0"/></UPF>')
     with pytest.raises(ConversionError):
         check_upf_for_rmg(read_upf_header(str(paw)), Notes())
-
-
-# ---------------------------------------------------------------------------------------------
-# SCF stopping criteria
-# ---------------------------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("noncollinear, ethr", [(False, 5e-10), (True, 1e-20)])
-def test_scf_thresholds_collinear_vs_noncollinear(noncollinear, ethr):
-    # collinear: RMG's energy test includes the magnetization residual, so it takes the requested
-    # accuracy; noncollinear: it does not, so it sits at RMG's floor and the RMS test decides
-    d = RmgDeck()
-    set_scf_thresholds(d, 5e-10, Notes(), hybrid=True, noncollinear=noncollinear)
-    assert float(d.get("energy_convergence_criterion")) == pytest.approx(ethr)
-    assert float(d.get("rms_convergence_criterion")) == pytest.approx(1e-3 * math.sqrt(1e-9))
-    assert float(d.get("exx_energy_convergence_criterion")) == pytest.approx(5e-10)

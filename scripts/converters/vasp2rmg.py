@@ -731,7 +731,7 @@ def convert(poscar: str, incar: Optional[str] = None, kpoints: Optional[str] = N
 
     # -- SCF control -----------------------------------------------------------------------
     set_scf_thresholds(deck, fval("EDIFF", 1e-4) / HA_EV, notes, hybrid=hybrid, source="EDIFF",
-                       noncollinear=noncoll)
+                       spin=(ispin == 2 or noncoll))
     deck.set("max_scf_steps", ival("NELM", 60))
     if has("AMIX"):
         deck.set("charge_density_mixing", fval("AMIX"))
