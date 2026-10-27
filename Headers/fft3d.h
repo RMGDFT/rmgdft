@@ -55,6 +55,11 @@ struct fft_plan_3d {
   fftw_plan plan_mid_backward;
   fftw_plan plan_slow_forward;
   fftw_plan plan_slow_backward;
+  // The same 1d FFTs split into nchunk batches of chunk transforms (the last batch takes the rest), so that
+  // a call from outside the threaded state loops can run the batches on OpenMP threads.
+  int nchunk[3];
+  int chunk[3];
+  fftw_plan chunk_plans[3][2][2];  // [fast/mid/slow][forward/backward][full batch/last batch]
 };
 
 template<> struct fft_plan_3d<fftwf_complex,float>;
@@ -82,6 +87,11 @@ struct fft_plan_3d<fftwf_complex,float> {
   fftwf_plan plan_mid_backward;
   fftwf_plan plan_slow_forward;
   fftwf_plan plan_slow_backward;
+  // The same 1d FFTs split into nchunk batches of chunk transforms (the last batch takes the rest), so that
+  // a call from outside the threaded state loops can run the batches on OpenMP threads.
+  int nchunk[3];
+  int chunk[3];
+  fftwf_plan chunk_plans[3][2][2];  // [fast/mid/slow][forward/backward][full batch/last batch]
 };
 
 
