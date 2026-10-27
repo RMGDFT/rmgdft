@@ -21,6 +21,7 @@
 #include "MpiQueue.h"
 #include "BaseThread.h"
 #include "transition.h"
+#include "RmgTimer.h"
 
 
 
@@ -41,6 +42,32 @@ template void remap_3d<float>(float *, float *, float *, struct remap_plan_3d<fl
 #define PACK_DATA FFT_SCALAR
 
 #include "pack.h"
+
+// Data stride between successive slow indices for the unpack function of a remap plan.
+template <typename FFT_SCALAR> static size_t unpack_slow_stride(struct remap_plan_3d<FFT_SCALAR> *plan, struct pack_plan_3d *pp)
+{
+  if (plan->unpack == unpack_3d<FFT_SCALAR>) return pp->nstride_plane;
+  if (plan->unpack == unpack_3d_permute1_1<FFT_SCALAR> || plan->unpack == unpack_3d_permute1_2<FFT_SCALAR> ||
+      plan->unpack == unpack_3d_permute1_n<FFT_SCALAR>) return pp->nstride_line;
+  if (plan->unpack == unpack_3d_permute2_1<FFT_SCALAR>) return 1;
+  if (plan->unpack == unpack_3d_permute2_2<FFT_SCALAR>) return 2;
+  return pp->nqty;
+}
+
+// One piece of a pack or unpack: message msg, slow indices k0 to k1-1.
+struct remap_piece { int msg; int k0; int k1; };
+
+// Splits a message of size values along its nslow slow indices into at most nparts pieces.
+static void remap_split(std::vector<remap_piece> &v, int msg, int nslow, int size, int nparts)
+{
+  int np = std::max(1, std::min(nslow, nparts));
+  if (nslow <= 0 || size % nslow) np = 1;
+  for (int p = 0; p < np; p++) {
+    int k0 = (int)((long)nslow*p/np), k1 = (int)((long)nslow*(p+1)/np);
+    if (np == 1) { k0 = 0; k1 = nslow; }
+    if (k1 > k0 || np == 1) v.push_back({msg, k0, k1});
+  }
+}
 
 #define MIN(A,B) ((A) < (B) ? (A) : (B))
 #define MAX(A,B) ((A) > (B) ? (A) : (B))
@@ -133,34 +160,54 @@ template <typename FFT_SCALAR> void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FF
         plan->send_request = (MPI_Request *) malloc(std::max(plan->nsend, 1)*sizeof(MPI_Request));
       }
 
+      // Every message and the self copy split along the slow index, so that
+      // the copies use all the OpenMP threads. Index nsend (nrecv) is the self copy.
+      int nparts = omp_get_max_threads();
+      std::vector<remap_piece> pk, upk;
+      for (int is = 0; is < plan->nsend + plan->self; is++)
+        remap_split(pk, is, plan->packplan[is].nslow, plan->send_size[is], nparts);
+      for (int ir = 0; ir < plan->nrecv + plan->self; ir++)
+        remap_split(upk, ir, plan->unpackplan[ir].nslow, plan->recv_size[ir], nparts);
+
       for (irecv = 0; irecv < plan->nrecv; irecv++)
         MPI_Irecv(&scratch[plan->recv_bufloc[irecv]],plan->recv_size[irecv],
                   MPI_FFT_SCALAR,plan->recv_proc[irecv],0,
                   plan->comm,&plan->request[irecv]);
 
+      RmgTimer *RT = new RmgTimer("fft3d: remap: pack");
 #pragma omp parallel for schedule(dynamic, 1)
-      for (int is = 0; is < plan->nsend; is++)
-        plan->pack(&in[plan->send_offset[is]], &plan->sendbuf_all[soff[is]], &plan->packplan[is]);
+      for (size_t t = 0; t < pk.size(); t++) {
+        int is = pk[t].msg;
+        struct pack_plan_3d pp = plan->packplan[is];
+        size_t per = (pp.nslow > 0) ? (size_t)plan->send_size[is] / pp.nslow : 0;
+        FFT_SCALAR *dst = (is < plan->nsend) ? &plan->sendbuf_all[soff[is]] : &scratch[plan->recv_bufloc[plan->nrecv]];
+        pp.nslow = pk[t].k1 - pk[t].k0;
+        plan->pack(&in[plan->send_offset[is] + (size_t)pk[t].k0*pp.nstride_plane], dst + (size_t)pk[t].k0*per, &pp);
+      }
+      delete RT;
 
       for (isend = 0; isend < plan->nsend; isend++)
         MPI_Isend(&plan->sendbuf_all[soff[isend]],plan->send_size[isend],MPI_FFT_SCALAR,
                   plan->send_proc[isend],0,plan->comm,&plan->send_request[isend]);
 
-      if (plan->self) {
-        isend = plan->nsend;
-        irecv = plan->nrecv;
-        plan->pack(&in[plan->send_offset[isend]],
-                   &scratch[plan->recv_bufloc[irecv]],
-                   &plan->packplan[isend]);
-        plan->unpack(&scratch[plan->recv_bufloc[irecv]],
-                     &out[plan->recv_offset[irecv]],&plan->unpackplan[irecv]);
-      }
-
+      RT = new RmgTimer("fft3d: remap: wait");
       MPI_Waitall(plan->nrecv, plan->request, MPI_STATUSES_IGNORE);
+      delete RT;
+      RT = new RmgTimer("fft3d: remap: unpack");
 #pragma omp parallel for schedule(dynamic, 1)
-      for (int ir = 0; ir < plan->nrecv; ir++)
-        plan->unpack(&scratch[plan->recv_bufloc[ir]], &out[plan->recv_offset[ir]], &plan->unpackplan[ir]);
+      for (size_t t = 0; t < upk.size(); t++) {
+        int ir = upk[t].msg;
+        struct pack_plan_3d pp = plan->unpackplan[ir];
+        size_t per = (pp.nslow > 0) ? (size_t)plan->recv_size[ir] / pp.nslow : 0;
+        size_t ds = unpack_slow_stride(plan, &pp);
+        pp.nslow = upk[t].k1 - upk[t].k0;
+        plan->unpack(&scratch[plan->recv_bufloc[ir] + (size_t)upk[t].k0*per],
+                     &out[plan->recv_offset[ir] + (size_t)upk[t].k0*ds], &pp);
+      }
+      delete RT;
+      RT = new RmgTimer("fft3d: remap: wait");
       MPI_Waitall(plan->nsend, plan->send_request, MPI_STATUSES_IGNORE);
+      delete RT;
       return;
     }
 
