@@ -174,7 +174,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
     // Begin rotation
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
     KpointType *matrix_diag = new KpointType[num_states];
-    PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
+    PsiUpdate(num_states, pbasis_noncoll, distAij,  dist_length, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
 
     // And finally copy them back
     size_t istart = (size_t)first_state * (size_t)pbasis_noncoll;
@@ -192,7 +192,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *hpsi, int first_
 #else
         psi_dev = &kptr->vexx[first_state * pbasis_noncoll];
 #endif
-        PsiUpdate(num_states, pbasis_noncoll, distAij, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
+        PsiUpdate(num_states, pbasis_noncoll, distAij, dist_length, desca, psi_dev, &hpsi[first_state * pbasis_noncoll],  matrix_diag);
         memcpy(&kptr->vexx[first_state * pbasis_noncoll], &hpsi[first_state * pbasis_noncoll], tlen);
     }
 

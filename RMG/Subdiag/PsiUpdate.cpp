@@ -30,6 +30,7 @@
 #include "RmgTimer.h"
 #include "rmg_reduce.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "rmg_gemm.h"
@@ -38,6 +39,7 @@
 #include "RmgMatrix.h"
 #include "Functional.h"
 #include "rmg_hvector.h"
+#include "rmg_dvector.h"
 
 
 #include "common_prototypes.h"
@@ -46,15 +48,15 @@
 
 
 template <typename KpointType>
-void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);
+void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int dist_length, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);
 
-template void PsiUpdate<double> (int nstates, int pbasis_noncoll, double *distAij, int *desca, 
+template void PsiUpdate<double> (int nstates, int pbasis_noncoll, double *distAij, int dist_length, int *desca, 
         double *psi, double *hpsi, double *matrix_diag);
-template void PsiUpdate<std::complex<double>> (int nstates, int pbasis_noncoll, std::complex<double> *distAij, int *desca, 
+template void PsiUpdate<std::complex<double>> (int nstates, int pbasis_noncoll, std::complex<double> *distAij, int dist_length, int *desca, 
         std::complex<double> *psi, std::complex<double> *hpsi, std::complex<double> *matrix_diag);
 
 template <typename KpointType>
-void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca, KpointType *psi_dev, KpointType *hpsi, KpointType *matrix_diag)
+void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int dist_length, int *desca, KpointType *psi_dev, KpointType *hpsi, KpointType *matrix_diag)
 {
     RmgTimer *RT1;
 
@@ -68,6 +70,39 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
     // Begin rotation
     //
     char *trans_n = "n";
+#if HIP_ENABLED && GPU_AWARE_MPI
+
+    rmg::dvector<KpointType> block_matrix(nb*nstates);
+    rmg::dvector<KpointType> d_distAij(dist_length);
+
+    gpuMemcpy(d_distAij.data(), distAij, (size_t)dist_length * sizeof(KpointType), gpuMemcpyHostToDevice);
+
+    int num_blocks = (nstates + nb -1)/nb;
+    for(int ib = 0; ib < num_blocks; ib++)
+    {
+        int this_block_size_row;
+        this_block_size_row = std::min(mb, nstates - mb * ib);
+
+        RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gather");
+        size_t size_mat = this_block_size_row * nstates;
+
+        gpu_psi_gather<KpointType>(block_matrix.data(), d_distAij.data(), this_block_size_row, nstates, num_blocks,
+                       nb, mb, mxllda, ib, myrow, mycol, nprow, npcol);
+
+        rmg::block_allreduce(block_matrix.data(), size_mat, pct.grid_comm);
+//        KpointType *bptr = block_matrix.data();
+//        for(int i = 0; i < this_block_size_row; i++) matrix_diag[i] = bptr[i * nstates + ib*mb + i];
+        delete RT1;
+
+        RT1 = new RmgTimer("4-Diagonalization: Update orbitals: gemm");
+        rmg::gemm(trans_n, trans_n, pbasis_noncoll, this_block_size_row, nstates, alpha,
+                psi_dev, pbasis_noncoll, block_matrix.data(), nstates,
+                beta, &hpsi[ib*nb*pbasis_noncoll], pbasis_noncoll);
+        delete RT1;
+
+    }
+
+#else
 
     rmg::hvector<KpointType> block_matrix(nb*nstates);
 
@@ -104,7 +139,8 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
 //            for(int i = 0; i < this_block_size_row; i++)
 //                for(int j = 0; j < nstates; j++) printf("\n %d %d %f eee", i+ib*nb, j,block_matrix[i*nstates + j]); 
 
-        for(int i = 0; i < this_block_size_row; i++) matrix_diag[i] = block_matrix[i * nstates + ib*mb + i];
+        KpointType *bptr = block_matrix.data();
+        for(int i = 0; i < this_block_size_row; i++) matrix_diag[i] = bptr[i * nstates + ib*mb + i];
         delete RT1;
 
 
@@ -116,5 +152,5 @@ void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca
         delete RT1;
 
     }
-
+#endif
 }

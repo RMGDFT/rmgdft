@@ -105,7 +105,7 @@ template <typename KpointType>
 void HS_Scalapack (int nstates, int pbasis_noncoll, KpointType *psi, KpointType *hpsi, KpointType *ns, int *desca, KpointType *distHij, KpointType *distSij, bool use_symmetric);
 
 template <typename KpointType>
-void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);
+void PsiUpdate (int nstates, int pbasis_noncoll, KpointType *distAij, int dist_length, int *desca, KpointType *psi, KpointType *hpsi, KpointType *matrix_diag);
 
 
 #endif

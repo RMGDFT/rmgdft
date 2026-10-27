@@ -247,7 +247,9 @@ void gpu_pack_diagonal(double *matrix, double *diagonal, size_t n);
 void gpu_scatter_diagonal(double *matrix, double *diagonal, size_t n);
 void gpuPackSqToUpTr(double *matrix, float *packed, size_t N);
 void gpuUnPackTrToSq(double *matrix, float *packed, size_t N);
-
+template <typename T>
+void gpu_psi_gather(T *block_matrix, T *distAij, int this_block_size_row, int nstates, int num_blocks, 
+                    int nb, int mb, int mxllda, int ib, int myrow, int mycol, int nprow, int npcol);
 
 #endif
 

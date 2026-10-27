@@ -419,7 +419,9 @@ template <class T> void ortho<T>::orthogonalize_scalapack(int notcon, T *psi)
 #else
     new_psi = new T[(size_t)notcon * (size_t)this->pbasis];
 #endif
-    PsiUpdate(notcon, pbasis, distSij.data(), desca, psi, new_psi,  matrix_diag);
+    int dist_length = ScaL.GetDistMdim() * ScaL.GetDistNdim();
+
+    PsiUpdate(notcon, pbasis, distSij.data(), dist_length, desca, psi, new_psi,  matrix_diag);
 
     size_t psi_size = notcon * this->pbasis * sizeof(T);
     RmgMemcpy(psi, new_psi, psi_size);
