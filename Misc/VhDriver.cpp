@@ -81,8 +81,10 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
 #endif
     }
     delete [] rho_tot;
+    RmgTimer *RT3 = new RmgTimer("VhDriver: filter");
     if(Rmg_G->default_FG_RATIO > 1) 
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
+    delete RT3;
     return residual;
 }
 
@@ -96,8 +98,10 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     std::complex<double> *crho = new std::complex<double>[size];
 
 
+    RmgTimer *RT1 = new RmgTimer("VhPfft: fft");
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i], 0.0);
     fine_pwaves->FftForward(crho, crho);
+    delete RT1;
 
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
@@ -108,7 +112,9 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
             crho[ig] = ZERO_t;
     }
 
+    RT1 = new RmgTimer("VhPfft: fft");
     fine_pwaves->FftInverse(crho, crho);
+    delete RT1;
     for(int i = 0;i < pbasis;i++) vh[i] = std::real(crho[i])/(double)fine_pwaves->global_basis * 4.0 * PI;
 
     delete [] crho;

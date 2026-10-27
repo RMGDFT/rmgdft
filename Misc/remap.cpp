@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <vector>
 #include <type_traits>
+#include <algorithm>
+#include <omp.h>
 #include "remap.h"
 #include "MpiQueue.h"
 #include "BaseThread.h"
@@ -120,6 +122,47 @@ template <typename FFT_SCALAR> void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FF
       scratch = buf;
     else
       scratch = plan->scratch;
+
+    // Calls from the main thread: pack all messages on the OpenMP threads, send them
+    // without blocking, then unpack all received messages on the OpenMP threads.
+    if (tid < 0 && !omp_in_parallel()) {
+      std::vector<size_t> soff(plan->nsend + 1, 0);
+      for (isend = 0; isend < plan->nsend; isend++) soff[isend+1] = soff[isend] + plan->send_size[isend];
+      if (!plan->sendbuf_all) {
+        plan->sendbuf_all = (FFT_SCALAR *) malloc(std::max(soff[plan->nsend], (size_t)1)*sizeof(FFT_SCALAR));
+        plan->send_request = (MPI_Request *) malloc(std::max(plan->nsend, 1)*sizeof(MPI_Request));
+      }
+
+      for (irecv = 0; irecv < plan->nrecv; irecv++)
+        MPI_Irecv(&scratch[plan->recv_bufloc[irecv]],plan->recv_size[irecv],
+                  MPI_FFT_SCALAR,plan->recv_proc[irecv],0,
+                  plan->comm,&plan->request[irecv]);
+
+#pragma omp parallel for schedule(dynamic, 1)
+      for (int is = 0; is < plan->nsend; is++)
+        plan->pack(&in[plan->send_offset[is]], &plan->sendbuf_all[soff[is]], &plan->packplan[is]);
+
+      for (isend = 0; isend < plan->nsend; isend++)
+        MPI_Isend(&plan->sendbuf_all[soff[isend]],plan->send_size[isend],MPI_FFT_SCALAR,
+                  plan->send_proc[isend],0,plan->comm,&plan->send_request[isend]);
+
+      if (plan->self) {
+        isend = plan->nsend;
+        irecv = plan->nrecv;
+        plan->pack(&in[plan->send_offset[isend]],
+                   &scratch[plan->recv_bufloc[irecv]],
+                   &plan->packplan[isend]);
+        plan->unpack(&scratch[plan->recv_bufloc[irecv]],
+                     &out[plan->recv_offset[irecv]],&plan->unpackplan[irecv]);
+      }
+
+      MPI_Waitall(plan->nrecv, plan->request, MPI_STATUSES_IGNORE);
+#pragma omp parallel for schedule(dynamic, 1)
+      for (int ir = 0; ir < plan->nrecv; ir++)
+        plan->unpack(&scratch[plan->recv_bufloc[ir]], &out[plan->recv_offset[ir]], &plan->unpackplan[ir]);
+      MPI_Waitall(plan->nsend, plan->send_request, MPI_STATUSES_IGNORE);
+      return;
+    }
 
     // post all recvs into scratch space
 
@@ -688,6 +731,8 @@ template<typename FFT_SCALAR> struct remap_plan_3d<FFT_SCALAR> *remap_3d_create_
   // find biggest send message (not including self) and malloc space for it
 
   plan->sendbuf = NULL;
+  plan->sendbuf_all = NULL;
+  plan->send_request = NULL;
 
   size = 0;
   for (nsend = 0; nsend < plan->nsend; nsend++)
@@ -764,6 +809,8 @@ template<typename FFT_SCALAR> void remap_3d_destroy_plan(struct remap_plan_3d<FF
     free(plan->send_proc);
     free(plan->packplan);
     if (plan->sendbuf) free(plan->sendbuf);
+    if (plan->sendbuf_all) free(plan->sendbuf_all);
+    if (plan->send_request) free(plan->send_request);
   }
 
   if (plan->nrecv || plan->self) {

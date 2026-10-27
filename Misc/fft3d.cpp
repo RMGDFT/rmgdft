@@ -28,6 +28,7 @@
 #include "fft3d.h"
 #include "remap.h"
 #include "BaseThread.h"
+#include "RmgTimer.h"
 #include <omp.h>
 #include <algorithm>
 
@@ -110,6 +111,9 @@ template <typename FFT_DATA, typename FFT_SCALAR> static void fft_1d_axis(FFT_DA
 template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_DATA *out, int flag, struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *plan)
 {
   FFT_DATA *data,*copy;
+  // Timers only for calls from outside the threaded state loops.
+  bool timed = !omp_in_parallel() && !BaseThread::getBaseThread(0)->is_loop_over_states();
+  RmgTimer *RT = NULL;
 
   // pre-remap to prepare for 1st FFTs if needed
   // copy = loc for remap result
@@ -117,46 +121,61 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
   if (plan->pre_plan) {
     if (plan->pre_target == 0) copy = out;
     else copy = plan->copy;
+    if (timed) RT = new RmgTimer("fft3d: remap");
     remap_3d<FFT_SCALAR>((FFT_SCALAR *) in, (FFT_SCALAR *) copy, 
              (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->pre_plan);
+    if (timed) delete RT;
     data = copy;
   }
   else
     data = in;
 
   // 1d FFTs along fast axis
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
   fft_1d_axis(data, 0, flag, plan->length1, plan);
+  if (timed) delete RT;
 
   // 1st mid-remap to prepare for 2nd FFTs
   // copy = loc for remap result
 
   if (plan->mid1_target == 0) copy = out;
   else copy = plan->copy;
+  if (timed) RT = new RmgTimer("fft3d: remap");
   remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) copy, 
            (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->mid1_plan);
+  if (timed) delete RT;
   data = copy;
 
   // 1d FFTs along mid axis
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
   fft_1d_axis(data, 1, flag, plan->length2, plan);
+  if (timed) delete RT;
 
   // 2nd mid-remap to prepare for 3rd FFTs
   // copy = loc for remap result
 
   if (plan->mid2_target == 0) copy = out;
   else copy = plan->copy;
+  if (timed) RT = new RmgTimer("fft3d: remap");
   remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) copy, 
            (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->mid2_plan);
+  if (timed) delete RT;
   data = copy;
 
   // 1d FFTs along slow axis
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
   fft_1d_axis(data, 2, flag, plan->length3, plan);
+  if (timed) delete RT;
 
   // post-remap to put data in output format if needed
   // destination is always out
 
-  if (plan->post_plan)
+  if (plan->post_plan) {
+    if (timed) RT = new RmgTimer("fft3d: remap");
     remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) out, 
              (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->post_plan);
+    if (timed) delete RT;
+  }
 
   // scaling if required
   if (flag == 1 && plan->scaled) {
