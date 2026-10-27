@@ -1361,6 +1361,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "previous and current orbitals (the quantity Quantum ESPRESSO calls dexx). 0 disables it. ",
             "exx_energy_convergence_criterion must lie in the range (0,1.0e-2). Resetting to default value of 0. ", XC_OPTIONS);
 
+    If.RegisterInputKey("exx_vexx_mixing", &lc.exx_vexx_mixing, 0.01, 1.0, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Fraction of the new exchange potential used at each EXX outer step with k-points: vexx = a*vexx_new "
+            "+ (1-a)*vexx_old. 1 replaces it (no damping). Smaller values damp the outer loop, which can otherwise "
+            "cycle for spin-polarized systems with states at the Fermi level (e.g. 0.5). ",
+            "exx_vexx_mixing must lie in the range (0.01,1.0). Resetting to default value of 1.0. ", XC_OPTIONS);
+
     If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-14, 1.0e-1, 1.0e-14,
             CHECK_AND_FIX, OPTIONAL,
             "The value for the EXX delta where we switch from single to double precision ffts. "

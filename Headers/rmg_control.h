@@ -651,6 +651,9 @@ public:
     // Single/double precision delta fft threshold for EXX Vexx computation
     double vexx_fft_threshold;
 
+    // Fraction of the new exchange potential kept at each EXX step (k-points): 1 replaces it, less damps the outer loop.
+    double exx_vexx_mixing;
+
     /* fermi energy */
     double efermi;
     double E_lowbound;

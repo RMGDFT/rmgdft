@@ -206,8 +206,9 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
                     MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, reset);
                     RMSdV.clear();
                     dStress.clear();
+                    // Only the scf counter restarts; resetting ct.exx_steps here would restart the EXX step count
+                    // (no bound from max_exx_steps) and mix up vexx_RMS and etot, which are indexed by it.
                     ct.scf_steps = 0;
-                    ct.exx_steps = 0;
                 }
                 if(ct.mix < 0.02)
                 {

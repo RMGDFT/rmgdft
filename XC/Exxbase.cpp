@@ -2617,6 +2617,16 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / vscale) * ct.kp[ik_glob].kweight;
 
+        // Damp the outer EXX loop: keep only a fraction of the change of the exchange potential. Not at the
+        // first EXX step, where prev_vexx does not hold an exchange potential yet.
+        if(ct.exx_steps > 0 && ct.exx_vexx_mixing < 1.0)
+        {
+            double a = ct.exx_vexx_mixing;
+            size_t pall = (size_t)nstates * (size_t)pbasis;
+#pragma omp parallel for
+            for(size_t idx=0;idx < pall;idx++) cur_vexx[idx] = a * cur_vexx[idx] + (1.0 - a) * prev_vexx[idx];
+        }
+
     } // end loop over k-points
 
     double t1 = vexx_RMS[ct.exx_steps];
