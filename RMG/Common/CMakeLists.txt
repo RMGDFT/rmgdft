@@ -16,6 +16,7 @@ Neb.cpp
 EnergyCorrection.cpp
 BroydenPotential.cpp
 DavPreconditioner.cpp
+DavPreconditionerBatch.cpp
 ApplyHamiltonian.cpp
 ApplyHamiltonianBlock.cpp 
 Davidson.cpp
