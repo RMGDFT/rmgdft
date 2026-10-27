@@ -2334,12 +2334,21 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
     size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(std::complex<double>);
     std::complex<double> *psi_q = (std::complex<double> *)RmgMallocHost(length);
-    std::complex<double> *psi_q_map;
+    // One state of the q-point file, read with pread and then rotated into psi_q.
+    std::complex<double> *qraw = new std::complex<double>[pwave->pbasis];
     double kq[3];
 
-    std::complex<double> *arbuf, *atbuf;
-    MPI_Alloc_mem(2*pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
-    MPI_Alloc_mem(2*pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+    // Send and receive buffers of the row exchange, two of each so a round's MPI_Ialltoallv overlaps the
+    // next round's rows. A send buffer holds one full row remapped into per-rank blocks; a receive buffer
+    // holds this rank's block of each of the npes rows of a round.
+    std::complex<double> *sbuf[2], *rbuf[2];
+    for(int b = 0;b < 2;b++)
+    {
+        MPI_Alloc_mem(2*pwave->pbasis*sizeof(double), MPI_INFO_NULL, &sbuf[b]);
+        MPI_Alloc_mem(2*(size_t)npes*(size_t)pbasis*sizeof(double), MPI_INFO_NULL, &rbuf[b]);
+    }
+    std::vector<int> rcounts(npes, pbasis), rdispls(npes);
+    for(int s = 0;s < npes;s++) rdispls[s] = s * pbasis;
 
     std::complex<double> *vexx_global = new std::complex<double>[pwave->pbasis]();
 
@@ -2419,8 +2428,6 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
             delete RT1;
 
-            psi_q_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd_q, 0);
-
             RT1 = new RmgTimer("5-Functional: Exx barriers");
             MPI_Barrier(G.comm);
             delete RT1;
@@ -2433,20 +2440,40 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             int nz_grid = G.get_NZ_GRID(1);
 
             int nbasis = nx_grid * ny_grid * nz_grid;
-            RT1 = new RmgTimer("5-Functional: Exx rotate q (reads mmap)");
-            // Only the states j with my_rank == j % npes are used below, so rotate just those,
-            // one state at a time to keep the reads from the mapped file local.
-            for(int st = my_rank; st < nstates_occ; st += npes)
+            RT1 = new RmgTimer("5-Functional: Exx read and rotate q");
+            // Every rank needs all occupied states of q. Each rank reads a contiguous block of them, one pread
+            // per state (much faster than faulting the pages of a mmap in from the file system), rotates them
+            // into psi_q, and one MPI_Allgatherv gives every rank all of them, so each k-point group reads the
+            // file only once.
+            int sblk = (nstates_occ + npes - 1) / npes;
+            std::vector<int> scnt(npes), sdsp(npes);
+            for(int r = 0;r < npes;r++)
             {
+                sdsp[r] = std::min(r * sblk, nstates_occ);
+                scnt[r] = std::min((r + 1) * sblk, nstates_occ) - sdsp[r];
+            }
+            for(int st = sdsp[my_rank]; st < sdsp[my_rank] + scnt[my_rank]; st++)
+            {
+                size_t want = (size_t)nbasis * sizeof(std::complex<double>);
+                off_t fofs = (off_t)st * (off_t)want;
+                char *rp = (char *)qraw;
+                while(want > 0)
+                {
+                    ssize_t got = pread(serial_fd_q, rp, want, fofs);
+                    if(got <= 0)
+                        throw RmgFatalException() << "Error! Could not read " << filename_q << " . Terminating.\n";
+                    rp += got;
+                    fofs += got;
+                    want -= (size_t)got;
+                }
                 std::complex<double> *dst = &psi_q[(size_t)st * (size_t)nbasis];
-                std::complex<double> *src = &psi_q_map[(size_t)st * (size_t)nbasis];
 #pragma omp parallel for
                 for (int ix = 0; ix < nx_grid; ix++) {
                     int ixx, iyy, izz;
                     for (int iy = 0; iy < ny_grid; iy++) {
                         for (int iz = 0; iz < nz_grid; iz++) {
                             symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
-                            std::complex<double> val = src[ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                            std::complex<double> val = qraw[ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                             dst[ix * ny_grid * nz_grid + iy * nz_grid + iz] = (isym >= 0) ? val : std::conj(val);
                         }
                     }
@@ -2454,99 +2481,118 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             }
             delete RT1;
 
+            RT1 = new RmgTimer("5-Functional: Exx share q states");
+            MPI_Datatype statetype;
+            MPI_Type_contiguous(nbasis, MPI_DOUBLE_COMPLEX, &statetype);
+            MPI_Type_commit(&statetype);
+            MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, psi_q, scnt.data(), sdsp.data(), statetype, G.comm);
+            MPI_Type_free(&statetype);
+            delete RT1;
 
             MPI_Request req=MPI_REQUEST_NULL;
             MPI_Status mrstatus;
             int flag=0;
 
-            // The states j this rank handles for this q and their weights.
-            std::vector<int> myj;
+            // The occupied states j and their weights.
+            std::vector<int> allj;
             std::vector<double> cj;
-            for(int j = my_rank;j < nstates_occ;j += npes)
+            for(int j = 0;j < nstates_occ;j++)
             {
-                myj.push_back(j);
+                allj.push_back(j);
                 cj.push_back(scale * occ_norm * occ_k[(size_t)ikindex*nstates + j] / (double)num_q);
             }
             bool dev_rows = false;
 #if SYCL_ENABLED
             RT1 = new RmgTimer("5-Functional: Exx gpu upload q states");
-            dev_rows = sycl_vexx_upload(psi_q, myj);
+            dev_rows = sycl_vexx_upload(psi_q, allj);
             delete RT1;
 #endif
 
-            std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-            for(int i=0;i < nstates;i++)
-            {
-                std::complex<double> *psi_i = &psi_s[i*pwave->pbasis];
-                RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
-#if SYCL_ENABLED
-                if(dev_rows) sycl_vexx_row(psi_i, myj, cj, use_float_fft, vexx_global, &req);
-#endif
-                // Host path: the pair FFTs of up to pvec.size() states at a time, then the accumulation in
-                // parallel over the grid in a fixed order (no critical section, reproducible sums).
-                size_t nslot = pvec.size();
-                for(size_t c0 = 0;!dev_rows && c0 < myj.size();c0 += nslot)
+            // The rows are distributed over the ranks: in round r rank s builds the whole row i = r*npes + s
+            // (sum over all occupied j), and one MPI_Ialltoallv gives every rank its block of the npes rows.
+            // Each row is built once, instead of every rank adding its share of the j to every row and the
+            // full rows being summed with a reduce-scatter.
+            size_t kofs = (size_t)ik * (size_t)ct.run_states * (size_t)pbasis;
+            int nrounds = (nstates + npes - 1) / npes;
+            auto add_round = [&](int rr) {
+                std::complex<double> *rb = rbuf[rr % 2];
+                for(int s = 0;s < npes;s++)
                 {
-                    size_t nc = std::min(nslot, myj.size() - c0);
-#pragma omp parallel for schedule(dynamic)
-                    for(size_t c = 0;c < nc;c++)
-                    {
-#if CUDA_ENABLED
-                        gpuSetDevice(ct.cu_dev);
-#endif
-#if HIP_ENABLED
-                        gpuSetDevice(ct.hip_dev);
-#endif
-                        std::complex<double> *psi_j = &psi_q[(size_t)myj[c0+c]*pwave->pbasis];
-                        if(use_float_fft)
-                            fftpair(psi_i, psi_j, pvec[c], wvec[c], gfac);
-                        else
-                            fftpair(psi_i, psi_j, pvec[c], gfac);
-                    }
-                    MPI_Test(&req, &flag, &mrstatus);
+                    int ir = rr * npes + s;
+                    if(ir >= nstates) break;
+                    std::complex<double> *vr = &vexx[kofs + (size_t)ir * (size_t)pbasis];
+                    std::complex<double> *src = &rb[(size_t)s * (size_t)pbasis];
 #pragma omp parallel for
-                    for(size_t idx = 0;idx < pwave->pbasis;idx++)
+                    for(size_t idx = 0;idx < (size_t)pbasis;idx++) vr[idx] += src[idx];
+                }
+            };
+            for(int r = 0;r < nrounds;r++)
+            {
+                int i = r * npes + my_rank;
+                RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
+                if(i < nstates)
+                {
+                    std::complex<double> *psi_i = &psi_s[(size_t)i*pwave->pbasis];
+#if SYCL_ENABLED
+                    if(dev_rows) sycl_vexx_row(psi_i, allj, cj, use_float_fft, vexx_global, &req);
+#endif
+                    // Host path: the pair FFTs of up to pvec.size() states at a time, then the accumulation in
+                    // parallel over the grid in a fixed order (no critical section, reproducible sums).
+                    if(!dev_rows) std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
+                    size_t nslot = pvec.size();
+                    for(size_t c0 = 0;!dev_rows && c0 < allj.size();c0 += nslot)
                     {
-                        std::complex<double> sum = 0.0;
+                        size_t nc = std::min(nslot, allj.size() - c0);
+#pragma omp parallel for schedule(dynamic)
                         for(size_t c = 0;c < nc;c++)
                         {
-                            std::complex<double> x = use_float_fft ? (std::complex<double>)wvec[c][idx] : pvec[c][idx];
-                            sum += cj[c0+c] * x * psi_q[(size_t)myj[c0+c]*pwave->pbasis + idx];
+#if CUDA_ENABLED
+                            gpuSetDevice(ct.cu_dev);
+#endif
+#if HIP_ENABLED
+                            gpuSetDevice(ct.hip_dev);
+#endif
+                            std::complex<double> *psi_j = &psi_q[(size_t)allj[c0+c]*pwave->pbasis];
+                            if(use_float_fft)
+                                fftpair(psi_i, psi_j, pvec[c], wvec[c], gfac);
+                            else
+                                fftpair(psi_i, psi_j, pvec[c], gfac);
                         }
-                        vexx_global[idx] += sum;
+                        MPI_Test(&req, &flag, &mrstatus);
+#pragma omp parallel for
+                        for(size_t idx = 0;idx < pwave->pbasis;idx++)
+                        {
+                            std::complex<double> sum = 0.0;
+                            for(size_t c = 0;c < nc;c++)
+                            {
+                                std::complex<double> x = use_float_fft ? (std::complex<double>)wvec[c][idx] : pvec[c][idx];
+                                sum += cj[c0+c] * x * psi_q[(size_t)allj[c0+c]*pwave->pbasis + idx];
+                            }
+                            vexx_global[idx] += sum;
+                        }
                     }
+                }
+                else
+                {
+                    std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
                 }
                 delete RT1;
 
                 RT1 = new RmgTimer("5-Functional: Exx remap and reduce");
-                // We wait for communication from previous row to finish and then copy it into place
+                Remap(vexx_global, sbuf[r % 2]);
+                // The previous round has to be in place before its buffers are reused.
                 MPI_Wait(&req, &mrstatus);
-                if(i)
-                {
-                    for(size_t idx=0;idx < (size_t)pbasis;idx++) 
-                    {
-                        vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + (size_t)(i-1) * (size_t)pbasis + idx] += atbuf[idx];
-                    } 
-                }
-                // Remap so we can use MPI_Reduce_scatter
-                Remap(vexx_global, arbuf);
-
-                // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
-                std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-                MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm, &req);
+                if(r) add_round(r - 1);
+                MPI_Ialltoallv(sbuf[r % 2], recvcounts.data(), irecvoffsets.data(), MPI_DOUBLE_COMPLEX,
+                               rbuf[r % 2], rcounts.data(), rdispls.data(), MPI_DOUBLE_COMPLEX, G.comm, &req);
                 delete RT1;
-
             }
 
-            // Wait for last transfer to finish and then copy data to correct location
+            // Wait for the last round and copy it into place
             MPI_Wait(&req, &mrstatus);
-            for(size_t idx=0;idx < (size_t)pbasis;idx++) 
-            {
-                vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + (size_t)(nstates-1) * (size_t)pbasis + idx] += atbuf[idx];
-            } 
+            add_round(nrounds - 1);
 
 
-            munmap(psi_q_map, length);
             close(serial_fd_q);
         }
 
@@ -2582,9 +2628,13 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     ct.vexx_rms = t1;
 
     delete [] vexx_global;
+    delete [] qraw;
 
-    MPI_Free_mem(atbuf);
-    MPI_Free_mem(arbuf);
+    for(int b = 0;b < 2;b++)
+    {
+        MPI_Free_mem(rbuf[b]);
+        MPI_Free_mem(sbuf[b]);
+    }
 
     RmgFreeHost(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
