@@ -291,6 +291,9 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
 
             double deltaE = 1.0;
             if(ct.exx_steps > 0) deltaE = std::abs(etot[ct.exx_steps] - etot[ct.exx_steps-1]);
+            // With an explicit exx_energy_convergence_criterion that test decides: a small change of the total
+            // energy between two EXX steps also happens where an oscillating outer loop crosses itself.
+            if(ct.exx_energy_convergence_criterion > 0.0) deltaE = 1.0;
             bool exx_energy_converged = (ct.exx_energy_convergence_criterion > 0.0) && exx_delta_valid &&
                                         (std::abs(ct.exx_delta) < ct.exx_energy_convergence_criterion);
             if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7 || exx_energy_converged)
