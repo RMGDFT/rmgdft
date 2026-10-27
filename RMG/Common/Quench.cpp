@@ -127,6 +127,7 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
     double f0=0.0,f1,f2=0.0,exxen=0.0;
     // exx_delta needs f0 from orbitals that already had their own vexx (a restart or a previous EXX step).
     bool f0_valid = false;
+    bool dexx_below_prev = false;
 
     RmgTimer *RT = new RmgTimer("Init Voronoi");
     Voronoi *Voronoi_charge = new Voronoi();
@@ -294,8 +295,12 @@ template <typename OrbitalType> bool Quench (Kpoint<OrbitalType> **Kptr, bool co
             // With an explicit exx_energy_convergence_criterion that test decides: a small change of the total
             // energy between two EXX steps also happens where an oscillating outer loop crosses itself.
             if(ct.exx_energy_convergence_criterion > 0.0) deltaE = 1.0;
-            bool exx_energy_converged = (ct.exx_energy_convergence_criterion > 0.0) && exx_delta_valid &&
-                                        (std::abs(ct.exx_delta) < ct.exx_energy_convergence_criterion);
+            // dexx has to stay below the criterion on two consecutive EXX steps: a loop that is still oscillating
+            // can pass through a single small dexx.
+            bool dexx_below = (ct.exx_energy_convergence_criterion > 0.0) && exx_delta_valid &&
+                              (std::abs(ct.exx_delta) < ct.exx_energy_convergence_criterion);
+            bool exx_energy_converged = dexx_below && dexx_below_prev;
+            dexx_below_prev = dexx_below;
             if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion || deltaE < 1.0e-7 || exx_energy_converged)
             {
                 rmg::printlog(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, exx_delta = %8.2e, total energy = %.*f Ha\n",
