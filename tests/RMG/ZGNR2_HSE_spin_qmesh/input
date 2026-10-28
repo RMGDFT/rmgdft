@@ -1,9 +1,12 @@
-description = "2-ZGNR spin polarized HSE06: k-points with a coarser exx_qpoint_mesh, tot_magnetization, block Davidson, dexx exit"
+description = "2-ZGNR antiferromagnetic HSE06: k-points with a coarser exx_qpoint_mesh, tot_magnetization, block Davidson, dexx exit"
 # Regression test for the spin-polarized hybrid path: exchange occupations at k-q, q-mesh subsampling,
 # vexx rotation in BlockDiag, vexx_RMS reduced over spins and the exx_energy_convergence_criterion exit.
-# -23.97581829 since the energy test includes the magnetization residual (was -23.97581698)
-test_energy = "-23.97581829"
-test_energy_tolerance = "1.0e-6"
+# Antiferromagnetic edges with a fixed total moment of 0 (two Fermi levels, as for any fixed moment): this is the
+# gapped ground state and SCF and EXX converge to it from any path. The fixed moment of 1 used before has several
+# self-consistent states within a few mHa, and roundoff (eigensolver, thread count) picked one.
+# The tolerance covers the energy noise at the dexx < 1e-7 exit (9e-7 over runs that differ by roundoff).
+test_energy = "-24.02319811"
+test_energy_tolerance = "5.0e-6"
 omp_threads_per_node = "1"
 rmg_threads_per_node = "1"
 spin_polarization = "true"
@@ -15,7 +18,7 @@ exx_energy_convergence_criterion = "1.0e-7"
 max_exx_steps = "30"
 occupations_type = "Cold Smearing"
 occupation_electron_temperature_eV = "0.1"
-tot_magnetization = "1.0"
+tot_magnetization = "0.0"
 unoccupied_states_per_kpoint = "6"
 kpoint_mesh = "1 1 4"
 kpoint_is_shift = "0 0 0"
@@ -48,7 +51,7 @@ atoms = "
 C    3.584570    3.0000    0.616570  1   0.5
 C    4.266510    3.0000    1.849700  1   0.0
 C    5.708270    3.0000    1.849700  1   0.0
-C    6.415430    3.0000    0.616570  1   0.5
+C    6.415430    3.0000    0.616570  1   -0.5
 H    2.492510    3.0000    0.616570  1   0.0
 H    7.507490    3.0000    0.616570  1   0.0
 "
