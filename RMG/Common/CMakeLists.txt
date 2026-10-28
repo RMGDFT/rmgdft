@@ -17,6 +17,7 @@ EnergyCorrection.cpp
 BroydenPotential.cpp
 DavPreconditioner.cpp
 DavPreconditionerBatch.cpp
+GetNewRhoBatch.cpp
 ApplyHamiltonian.cpp
 ApplyHamiltonianBlock.cpp 
 Davidson.cpp

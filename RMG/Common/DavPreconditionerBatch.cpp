@@ -203,9 +203,8 @@ BatchMg::BatchMg(Kpoint<std::complex<double>> *kptr_in, int levels, double k_in,
     nb[5] = G->xyz2pe(ii, jj, (kk + 1) % PZ);
 
 #if SYCL_ENABLED
-    const char *e = getenv("RMG_EXP_BATCH_PRECOND");
-    dev = !(e && atoi(e) == 3);    // 3 = batched on the host threads (testing)
-    if(dev) q = new sycl::queue(ct.sycl_Q.get_context(), ct.sycl_Q.get_device(), sycl::property::queue::in_order());
+    dev = true;
+    q = new sycl::queue(ct.sycl_Q.get_context(), ct.sycl_Q.get_device(), sycl::property::queue::in_order());
 #endif
 
     for(size_t l = 0;l < L.size();l++)
@@ -520,12 +519,11 @@ void BatchMg::run(std::complex<double> *res, double *eigs, int nstates)
 }  // namespace
 
 // Returns false when the batched preconditioner does not apply; the caller then uses the original one.
-// RMG_EXP_BATCH_PRECOND: 0/unset off, 1 on, 2 on and compare with DavPreconditionerOne, 3 on the host threads.
+// Input key batch_preconditioner.
 bool DavPreconditionerBatch(Kpoint<std::complex<double>> *kptr, std::complex<double> *res, double *eigs,
                             int notconv, double avg_potential)
 {
-    static int mode = getenv("RMG_EXP_BATCH_PRECOND") ? atoi(getenv("RMG_EXP_BATCH_PRECOND")) : 0;
-    if(mode <= 0) return false;
+    if(!ct.batch_preconditioner) return false;
     if(ct.noncoll_factor != 1 || pct.coalesce_factor != 1 || notconv < 1) return false;
 
     // One instance per k-point object (the operator coefficients depend on the k-vector)
@@ -535,26 +533,6 @@ bool DavPreconditionerBatch(Kpoint<std::complex<double>> *kptr, std::complex<dou
     if(!B->ok) return false;
     B->set_k(-avg_potential);
 
-    if(mode == 2)
-    {
-        size_t pbasis = kptr->pbasis;
-        std::vector<std::complex<double>> ref(res, res + (size_t)notconv * pbasis);
-        B->run(res, eigs, notconv);
-        // reference on the original path, state by state on this thread
-        double *vtot = NULL;
-        for(int st = 0;st < notconv;st++)
-            DavPreconditionerOne(kptr, st, ref.data(), 0.0, eigs[st], vtot, avg_potential);
-        double dmax = 0.0, rmax = 0.0;
-        for(size_t i = 0;i < ref.size();i++)
-        {
-            dmax = std::max(dmax, std::abs(ref[i] - res[i]));
-            rmax = std::max(rmax, std::abs(ref[i]));
-        }
-        double g[2] = {dmax, rmax};
-        MPI_Allreduce(MPI_IN_PLACE, g, 2, MPI_DOUBLE, MPI_MAX, pct.grid_comm);
-        if(pct.gridpe == 0) printf("BATCH PRECOND CHECK notconv %d max|diff| %.3e max|ref| %.3e\n", notconv, g[0], g[1]);
-        return true;
-    }
     B->run(res, eigs, notconv);
     return true;
 }

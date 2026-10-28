@@ -654,6 +654,10 @@ public:
     // Fraction of the new exchange potential kept at each EXX step (k-points): 1 replaces it, less damps the outer loop.
     double exx_vexx_mixing;
 
+    // Davidson multigrid preconditioner and density accumulation for all states at once
+    bool batch_preconditioner;
+    bool batch_density;
+
     /* fermi energy */
     double efermi;
     double E_lowbound;

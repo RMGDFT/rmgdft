@@ -54,6 +54,8 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res,
                         double fd_diag, double *eigs, double *vtot, int notconv, double avg_potential);
 bool DavPreconditionerBatch(Kpoint<std::complex<double>> *kptr, std::complex<double> *res, double *eigs,
                             int notconv, double avg_potential);
+class Prolong;
+template <typename KpointType> bool GetNewRhoBatch(Kpoint<KpointType> **Kpts, Prolong &P, double *work);
 template <typename OrbitalType>
 void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                         double fd_diag, double eig, double *vtot, double avg_potential);

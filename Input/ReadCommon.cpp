@@ -1185,6 +1185,23 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_rmm_diis", &lc.use_rmm_diis, true,
             "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
 
+#if SYCL_ENABLED
+    const bool batch_default = true;
+#else
+    const bool batch_default = false;
+#endif
+    If.RegisterInputKey("batch_preconditioner", &lc.batch_preconditioner, batch_default,
+            "Apply the Davidson multigrid preconditioner to all unconverged states at once (complex orbitals, "
+            "collinear). On the GPU in SYCL builds (single precision, as the per-state preconditioner), on the "
+            "host threads otherwise. In SYCL builds the halo exchange passes device buffers to MPI, which needs a "
+            "GPU-aware MPI (the default on Aurora). Default true for SYCL builds and false otherwise. ", PERF_OPTIONS);
+
+    If.RegisterInputKey("batch_density", &lc.batch_density, batch_default,
+            "Interpolate the orbitals to the density grid and accumulate the density for all occupied states at "
+            "once (complex orbitals, collinear, density grid ratio 2, orthogonal cells). On the GPU in SYCL builds, "
+            "on the host threads otherwise. In SYCL builds the halo exchange passes device buffers to MPI, which "
+            "needs a GPU-aware MPI (the default on Aurora). Default true for SYCL builds and false otherwise. ", PERF_OPTIONS);
+
     If.RegisterInputKey("use_block_diag", &lc.use_block_diag, true,
             "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS|EXPERIMENTAL_OPTION);
 
