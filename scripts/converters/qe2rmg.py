@@ -905,7 +905,7 @@ def convert(text: str, input_dir: str = ".", pseudo_dir: Optional[str] = None,
 
     # -- SCF control -----------------------------------------------------------------------
     set_scf_thresholds(deck, float(electrons.get("conv_thr", 1.0e-6)) / 2.0, notes,
-                       hybrid=hybrid, source="conv_thr", noncollinear=noncolin)
+                       hybrid=hybrid, source="conv_thr", spin=(nspin == 2 or noncolin))
     deck.set("max_scf_steps", int(electrons.get("electron_maxstep", 100)))
     mix_mode = str(electrons.get("mixing_mode", "plain")).lower()
     deck.set("charge_mixing_type", "Broyden")

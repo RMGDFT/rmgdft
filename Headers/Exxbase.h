@@ -173,6 +173,32 @@ private:
     void UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale);
     void UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
 
+#if SYCL_ENABLED
+    // Device FFTs for the k-point pair products of the local-FFT exchange: one in-order queue per
+    // OpenMP thread on the context of ct.sycl_Q, full-grid complex oneMKL transforms. Empty when the
+    // setup failed or does not apply; fftpair then keeps the host FFTW path.
+    std::vector<sycl::queue> exx_q;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::SINGLE,
+                                             oneapi::mkl::dft::domain::COMPLEX> *> exx_plan_f;
+    std::vector<oneapi::mkl::dft::descriptor<oneapi::mkl::dft::precision::DOUBLE,
+                                             oneapi::mkl::dft::domain::COMPLEX> *> exx_plan_d;
+    std::vector<std::complex<double> *> exx_dbuf;
+    void setup_sycl_fft(void);
+    void free_sycl_fft(void);
+    bool sycl_fftpair(T *psi_i, T *psi_j, std::complex<float> *workbuf, double *coul_fac, int tid);
+    bool sycl_fftpair(T *psi_i, T *psi_j, std::complex<double> *p, double *coul_fac, int tid);
+    // Whole rows of the k-point exchange potential on the device: the states j this rank handles for one
+    // q are uploaded once (exx_dpsi), then for each psi_i every pair product, both FFTs, the Coulomb kernel
+    // and the accumulation stay on the device, and only the row comes back.
+    std::complex<double> *exx_dpsi = nullptr;
+    size_t exx_dpsi_cap = 0;
+    std::complex<double> *exx_dpi = nullptr;
+    std::complex<double> *exx_dv = nullptr;
+    bool sycl_vexx_upload(std::complex<double> *psi_q, std::vector<int> &myj);
+    bool sycl_vexx_row(std::complex<double> *psi_i, std::vector<int> &myj, std::vector<double> &cj,
+                       bool use_float_fft, std::complex<double> *vrow, MPI_Request *req);
+#endif
+
 
 public:
     // rmg::grid class (distributed) and half grid

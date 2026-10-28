@@ -21,6 +21,7 @@
 */
 
 #include <complex>
+#include <type_traits>
 #include <omp.h>
 #include <cmath>
 #include <float.h>
@@ -74,6 +75,11 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     if(ct.verbose) {
         printf("PE: %d  start DavPreconditioner \n", pct.gridpe);
         fflush(NULL);
+    }
+
+    if constexpr(std::is_same_v<OrbitalType, std::complex<double>>)
+    {
+        if(DavPreconditionerBatch(kptr, res, eigs, notconv, avg_potential)) return;
     }
 
     BaseThread *T = BaseThread::getBaseThread(0);

@@ -35,6 +35,8 @@ template <typename FFT_SCALAR>
 struct remap_plan_3d {
   FFT_SCALAR *sendbuf;                  // buffer for MPI sends
   FFT_SCALAR *scratch;                  // scratch buffer for MPI recvs
+  FFT_SCALAR *sendbuf_all;              // all send messages packed at once (calls from the main thread)
+  MPI_Request *send_request;        // MPI request for each send of sendbuf_all
   void (*pack)(FFT_SCALAR *, FFT_SCALAR *, struct pack_plan_3d *);
                                     // which pack function to use
   void (*unpack)(FFT_SCALAR *, FFT_SCALAR *, struct pack_plan_3d *);

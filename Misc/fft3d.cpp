@@ -27,6 +27,10 @@
 #include <typeinfo>
 #include "fft3d.h"
 #include "remap.h"
+#include "BaseThread.h"
+#include "RmgTimer.h"
+#include <omp.h>
+#include <algorithm>
 
 template struct fft_plan_3d<fftw_complex, double> *fft_3d_create_plan(MPI_Comm, int, int, int,
                                        int, int, int, int, int,
@@ -75,13 +79,41 @@ template void fft_3d(fftwf_complex *, fftwf_complex *, int, struct fft_plan_3d<f
    plan         plan returned by previous call to fft_3d_create_plan
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+   1d FFTs along one axis (0 fast, 1 mid, 2 slow). Outside the threaded state
+   loops the batches of the chunked plans run on the OpenMP threads.
+------------------------------------------------------------------------- */
+
+template <typename FFT_DATA, typename FFT_SCALAR> static void fft_1d_axis(FFT_DATA *data, int axis, int flag, int length,
+              struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *plan)
+{
+  int dir = (flag == -1) ? 0 : 1;
+  int nchunk = plan->nchunk[axis];
+  if (nchunk > 1 && !omp_in_parallel() && !BaseThread::getBaseThread(0)->is_loop_over_states()) {
+#pragma omp parallel for schedule(static, 1)
+    for (int c = 0; c < nchunk; c++) {
+      FFT_DATA *d = data + (size_t)c * (size_t)plan->chunk[axis] * (size_t)length;
+      fftw_execute_plan_wrapper(plan->chunk_plans[axis][dir][c == nchunk-1], d, d);
+    }
+    return;
+  }
+
+  typename std::conditional<std::is_same<FFT_SCALAR, double>::value, fftw_plan, fftwf_plan>::type theplan;
+  if (axis == 0)
+    theplan = dir ? plan->plan_fast_backward : plan->plan_fast_forward;
+  else if (axis == 1)
+    theplan = dir ? plan->plan_mid_backward : plan->plan_mid_forward;
+  else
+    theplan = dir ? plan->plan_slow_backward : plan->plan_slow_forward;
+  fftw_execute_plan_wrapper(theplan,data,data);
+}
+
 template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_DATA *out, int flag, struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *plan)
 {
   FFT_DATA *data,*copy;
-
-  // system specific constants
-  //FFTW_API(plan) theplan;
-  typename std::conditional<std::is_same<FFT_SCALAR, double>::value, fftw_plan, fftwf_plan>::type theplan;
+  // Timers only for calls from outside the threaded state loops.
+  bool timed = !omp_in_parallel() && !BaseThread::getBaseThread(0)->is_loop_over_states();
+  RmgTimer *RT = NULL;
 
   // pre-remap to prepare for 1st FFTs if needed
   // copy = loc for remap result
@@ -89,61 +121,61 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
   if (plan->pre_plan) {
     if (plan->pre_target == 0) copy = out;
     else copy = plan->copy;
+    if (timed) RT = new RmgTimer("fft3d: remap");
     remap_3d<FFT_SCALAR>((FFT_SCALAR *) in, (FFT_SCALAR *) copy, 
              (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->pre_plan);
+    if (timed) delete RT;
     data = copy;
   }
   else
     data = in;
 
   // 1d FFTs along fast axis
-  if (flag == -1)
-    theplan=plan->plan_fast_forward;
-  else
-    theplan=plan->plan_fast_backward;
-
-  fftw_execute_plan_wrapper(theplan,data,data);
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
+  fft_1d_axis(data, 0, flag, plan->length1, plan);
+  if (timed) delete RT;
 
   // 1st mid-remap to prepare for 2nd FFTs
   // copy = loc for remap result
 
   if (plan->mid1_target == 0) copy = out;
   else copy = plan->copy;
+  if (timed) RT = new RmgTimer("fft3d: remap");
   remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) copy, 
            (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->mid1_plan);
+  if (timed) delete RT;
   data = copy;
 
   // 1d FFTs along mid axis
-  if (flag == -1)
-    theplan=plan->plan_mid_forward;
-  else
-    theplan=plan->plan_mid_backward;
-
-  fftw_execute_plan_wrapper(theplan,data,data);
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
+  fft_1d_axis(data, 1, flag, plan->length2, plan);
+  if (timed) delete RT;
 
   // 2nd mid-remap to prepare for 3rd FFTs
   // copy = loc for remap result
 
   if (plan->mid2_target == 0) copy = out;
   else copy = plan->copy;
+  if (timed) RT = new RmgTimer("fft3d: remap");
   remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) copy, 
            (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->mid2_plan);
+  if (timed) delete RT;
   data = copy;
 
   // 1d FFTs along slow axis
-  if (flag == -1)
-    theplan=plan->plan_slow_forward;
-  else
-    theplan=plan->plan_slow_backward;
-
-  fftw_execute_plan_wrapper(theplan,data,data);
+  if (timed) RT = new RmgTimer("fft3d: 1d ffts");
+  fft_1d_axis(data, 2, flag, plan->length3, plan);
+  if (timed) delete RT;
 
   // post-remap to put data in output format if needed
   // destination is always out
 
-  if (plan->post_plan)
+  if (plan->post_plan) {
+    if (timed) RT = new RmgTimer("fft3d: remap");
     remap_3d((FFT_SCALAR *) data, (FFT_SCALAR *) out, 
              (FFT_SCALAR *) plan->scratch, (struct remap_plan_3d<FFT_SCALAR> *)plan->post_plan);
+    if (timed) delete RT;
+  }
 
   // scaling if required
   if (flag == 1 && plan->scaled) {
@@ -446,6 +478,30 @@ template <typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, F
                             fft_nullptr,&nslow,1,plan->length3,
                             FFTW_BACKWARD,FFTW_ESTIMATE);
 
+  int lens[3] = {nfast, nmid, nslow};
+  int dists[3] = {plan->length1, plan->length2, plan->length3};
+  int howmany[3] = {plan->total1/plan->length1, plan->total2/plan->length2, plan->total3/plan->length3};
+  int nthreads = omp_get_max_threads();
+  for (int a = 0; a < 3; a++) {
+    int nc = std::max(1, std::min(nthreads, howmany[a]));
+    int ch = (howmany[a] + nc - 1) / nc;
+    if (ch > 0) nc = (howmany[a] + ch - 1) / ch;
+    plan->nchunk[a] = nc;
+    plan->chunk[a] = ch;
+    for (int dir = 0; dir < 2; dir++) {
+      for (int last = 0; last < 2; last++) {
+        plan->chunk_plans[a][dir][last] = NULL;
+        if (nc < 2) continue;
+        int n = last ? howmany[a] - (nc-1)*ch : ch;
+        plan->chunk_plans[a][dir][last] =
+          fft_plan_many_dft_wrapper(1, &lens[a], n,
+                                  fft_nullptr,&lens[a],1,dists[a],
+                                  fft_nullptr,&lens[a],1,dists[a],
+                                  dir ? FFTW_BACKWARD : FFTW_FORWARD,FFTW_ESTIMATE);
+      }
+    }
+  }
+
   if (scaled == 0)
     plan->scaled = 0;
   else {
@@ -477,6 +533,10 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d_destroy_plan(struc
   fft_destroy_plan_wrapper(plan->plan_mid_forward);
   fft_destroy_plan_wrapper(plan->plan_mid_backward);
   fft_destroy_plan_wrapper(plan->plan_fast_forward);
+  for (int a = 0; a < 3; a++)
+    if (plan->nchunk[a] > 1)
+      for (int dir = 0; dir < 2; dir++)
+        for (int last = 0; last < 2; last++) fft_destroy_plan_wrapper(plan->chunk_plans[a][dir][last]);
   fft_destroy_plan_wrapper(plan->plan_fast_backward);
 
   free(plan);

@@ -1185,6 +1185,23 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("use_rmm_diis", &lc.use_rmm_diis, true,
             "Flag indicating whether or not to use the RMM-DIIS algorithm in the mulgrid solver.", KS_SOLVER_OPTIONS);
 
+#if SYCL_ENABLED
+    const bool batch_default = true;
+#else
+    const bool batch_default = false;
+#endif
+    If.RegisterInputKey("batch_preconditioner", &lc.batch_preconditioner, batch_default,
+            "Apply the Davidson multigrid preconditioner to all unconverged states at once (complex orbitals, "
+            "collinear). On the GPU in SYCL builds (single precision, as the per-state preconditioner), on the "
+            "host threads otherwise. In SYCL builds the halo exchange passes device buffers to MPI, which needs a "
+            "GPU-aware MPI (the default on Aurora). Default true for SYCL builds and false otherwise. ", PERF_OPTIONS);
+
+    If.RegisterInputKey("batch_density", &lc.batch_density, batch_default,
+            "Interpolate the orbitals to the density grid and accumulate the density for all occupied states at "
+            "once (complex orbitals, collinear, density grid ratio 2, orthogonal cells). On the GPU in SYCL builds, "
+            "on the host threads otherwise. In SYCL builds the halo exchange passes device buffers to MPI, which "
+            "needs a GPU-aware MPI (the default on Aurora). Default true for SYCL builds and false otherwise. ", PERF_OPTIONS);
+
     If.RegisterInputKey("use_block_diag", &lc.use_block_diag, true,
             "Flag indicating whether or not to use block diagonalization.", KS_SOLVER_OPTIONS|EXPERIMENTAL_OPTION);
 
@@ -1360,6 +1377,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Optional EXX exit criterion in Ha on |f1 - (f0+f2)/2|, where f0, f1 and f2 are the Fock energies of the "
             "previous and current orbitals (the quantity Quantum ESPRESSO calls dexx). 0 disables it. ",
             "exx_energy_convergence_criterion must lie in the range (0,1.0e-2). Resetting to default value of 0. ", XC_OPTIONS);
+
+    If.RegisterInputKey("exx_vexx_mixing", &lc.exx_vexx_mixing, 0.01, 1.0, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Fraction of the new exchange potential used at each EXX outer step with k-points: vexx = a*vexx_new "
+            "+ (1-a)*vexx_old. 1 replaces it (no damping). Smaller values damp the outer loop, which can otherwise "
+            "cycle for spin-polarized systems with states at the Fermi level (e.g. 0.5). ",
+            "exx_vexx_mixing must lie in the range (0.01,1.0). Resetting to default value of 1.0. ", XC_OPTIONS);
 
     If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-14, 1.0e-1, 1.0e-14,
             CHECK_AND_FIX, OPTIONAL,

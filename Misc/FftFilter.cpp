@@ -122,3 +122,36 @@ void FftFilter(fgobj<double> &x,
     FftFilter(x.data(), pwaves, c_pwaves, factor);
 }
 
+
+// LOW_PASS filter of two real arrays with one complex transform pair: the mask depends only on
+// |G|^2, so filtering x + i y gives filter(x) + i filter(y).
+void FftFilterPair(double *x,   // IN:OUT  First array in real space. Distributed across all nodes.
+                   double *y,   // IN:OUT  Second array in real space.
+                   Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x and y
+                   Pw &c_pwaves) // IN: Plane wave structure for the coarse grid.
+{
+
+  double g2cut = c_pwaves.gcut;
+  size_t global_basis = pwaves.global_basis;
+  size_t pbasis = pwaves.pbasis;
+  std::complex<double> *crho = new std::complex<double>[pbasis];
+
+  for(size_t i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], y[i]);
+  pwaves.FftForward(crho, crho);
+
+  for(size_t ig=0;ig < pbasis;ig++) {
+      if(pwaves.gmags[ig] >= g2cut) {
+          crho[ig] = std::complex<double>(0.0, 0.0);
+      }
+  }
+
+  pwaves.FftInverse(crho, crho);
+  for(size_t i = 0;i < pbasis;i++)
+  {
+      x[i] = std::real(crho[i])/(double)global_basis;
+      y[i] = std::imag(crho[i])/(double)global_basis;
+  }
+
+  delete [] crho;
+
+}

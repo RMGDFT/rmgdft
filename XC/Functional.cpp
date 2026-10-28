@@ -535,8 +535,12 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 
     if(Rmg_G->default_FG_RATIO > 1)
     {
-        for(int is = 0; is < nspin; is++)
-            FftFilter(&v_out[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
+        // Two spin components go through one complex transform pair
+        if(nspin == 2)
+            FftFilterPair(v_out, &v_out[pbasis], *fine_pwaves, *coarse_pwaves);
+        else
+            for(int is = 0; is < nspin; is++)
+                FftFilter(&v_out[is*pbasis], *fine_pwaves, *coarse_pwaves, LOW_PASS);
     }
     delete RT5;
 

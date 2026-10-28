@@ -40,6 +40,7 @@
 #include "RmgParallelFft.h"
 #include "rmg_reduce.h"
 #include "Prolong.h"
+#include "Solvers.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
 #include "Symmetry.h"
@@ -183,7 +184,10 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
     int istop = nstates / active_threads;
     istop = istop * active_threads;
 
-    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    // The batched path (input key batch_density) replaces the loop below when it applies
+    bool batched = GetNewRhoBatch(Kpts, P, work);
+
+    for (int kpt = 0; kpt < ct.num_kpts_pe && !batched; kpt++)
     {
         Rmg_T->set_coalesce_factor(cfac);
 
