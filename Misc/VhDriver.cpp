@@ -24,6 +24,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
 
     double *rho_tot = new double[FP0_BASIS];
     double residual;
+    bool filtered = false;
 
     for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] = rho[i];
     if(ct.spin_flag) {
@@ -46,8 +47,18 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
 
     if(ct.poisson_solver == POISSON_PFFT_SOLVER)
     {
+        // The low pass filter applied at the end only zeroes |G|^2 >= the coarse grid cutoff, so it is
+        // done here in VhPfft's reciprocal space, which saves the filter's forward and inverse FFT.
         RmgTimer *RT2 = new RmgTimer("VhPfft");
-        VhPfft(rho_tot, NULL, vh);
+        if(Rmg_G->default_FG_RATIO > 1)
+        {
+            VhPfft(rho_tot, NULL, vh, coarse_pwaves->gcut);
+            filtered = true;
+        }
+        else
+        {
+            VhPfft(rho_tot, NULL, vh);
+        }
         delete(RT2);
         residual = 0.0;  // FFT solver is exact
     }
@@ -82,14 +93,15 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     }
     delete [] rho_tot;
     RmgTimer *RT3 = new RmgTimer("VhDriver: filter");
-    if(Rmg_G->default_FG_RATIO > 1) 
+    if(Rmg_G->default_FG_RATIO > 1 && !filtered)
         FftFilter(vh, *fine_pwaves, *coarse_pwaves, LOW_PASS);
     delete RT3;
     return residual;
 }
 
 
-void VhPfft(double *rho_tot, double *rhoc, double *vh)
+// g2cut > 0 also zeroes |G|^2 >= g2cut, which is FftFilter's LOW_PASS on the result.
+void VhPfft(double *rho_tot, double *rhoc, double *vh, double g2cut)
 {
 
     int pbasis = fine_pwaves->pbasis;
@@ -106,7 +118,8 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     for(int ig=0;ig < pbasis;ig++) {
-        if((fine_pwaves->gmags[ig] > 1.0e-6) && fine_pwaves->gmask[ig]) 
+        if((fine_pwaves->gmags[ig] > 1.0e-6) && fine_pwaves->gmask[ig] &&
+           ((g2cut <= 0.0) || (fine_pwaves->gmags[ig] < g2cut)))
             crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
         else
             crho[ig] = ZERO_t;

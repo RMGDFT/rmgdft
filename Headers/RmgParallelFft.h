@@ -86,6 +86,7 @@ void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, int type);
 void FftFilter(double *x, Pw &pwaves, Pw &c_pwaves, double factor);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, int type);
 void FftFilter(fgobj<double> &x, Pw &pwaves, Pw &c_pwaves, double factor);
+void FftFilterPair(double *x, double *y, Pw &pwaves, Pw &c_pwaves);
 
 void LocalFftForward(double *, std::complex<double> *, Pw &pwaves);
 

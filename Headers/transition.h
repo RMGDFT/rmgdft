@@ -176,7 +176,7 @@ void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double *
 void FindNlcrds (double *xtal, double *nlcrds,
                  int nlxdim, int nlydim, int nlzdim,
                  int nlxcstart, int nlycstart, int nlzcstart);
-void VhPfft(double *rho, double *rhoc, double *vh);
+void VhPfft(double *rho, double *rhoc, double *vh, double g2cut = 0.0);
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
 void output_force(double *force, char *desc);
