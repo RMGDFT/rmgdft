@@ -76,9 +76,12 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    std::vector<double> rhout(pbasis_noncoll);
    std::vector<double> rhoin(pbasis_noncoll);
 
-   for(int i = 0;i < pbasis_noncoll;i++) rhoin[i] = rho[i];
-   for(int i = 0;i < pbasis_noncoll;i++) rhout[i] = new_rho[i];
-   for(int i = 0;i < pbasis_noncoll;i++) rhout[i] -= rhoin[i]; 
+#pragma omp parallel for schedule(static)
+   for(int i = 0;i < pbasis_noncoll;i++)
+   {
+       rhoin[i] = rho[i];
+       rhout[i] = new_rho[i] - rhoin[i];
+   }
 
    // Check if it's time to remove old entries
    if(dr_out.size() == (size_t)max_iter) {
@@ -89,9 +92,12 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
 
 
    if(dr_out.size() > 0) {
-       for(int i = 0;i < pbasis_noncoll;i++) dr_out[dr_out.size() - 1][i] -= rhout[i];
-       for(int i = 0;i < pbasis_noncoll;i++) dr_in[dr_out.size() - 1][i] -= rhoin[i];
-       for(int i = 0;i < pbasis;i++) dvh[dr_out.size() - 1][i] -= (vh_out[i] - vh_in[i]);
+       double *a = dr_out[dr_out.size() - 1].data(), *b = dr_in[dr_out.size() - 1].data();
+       double *c = dvh[dr_out.size() - 1].data();
+#pragma omp parallel for schedule(static)
+       for(int i = 0;i < pbasis_noncoll;i++) { a[i] -= rhout[i]; b[i] -= rhoin[i]; }
+#pragma omp parallel for schedule(static)
+       for(int i = 0;i < pbasis;i++) c[i] -= (vh_out[i] - vh_in[i]);
    }
 
    int iter_used = dr_out.size();
@@ -106,22 +112,28 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    dr_in.push_back(dr1);
 
    std::vector<double> dvh1(pbasis);
+#pragma omp parallel for schedule(static)
    for(int i = 0;i < pbasis;i++) dvh1[i] = vh_out[i] - vh_in[i];
    dvh.push_back(dvh1);
 
 BroydenRestart:
    if(iter_used > 0) {
 
-       for(int i = 0;i < iter_used;i++) {
-           for(int j = 0;j < iter_used;j++) {
-               betamix[j][i] = 0.0;
-               for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
-               {
-                   for(int k = 0;k < pbasis;k++)
-                   {
-                       betamix[j][i] += dr_out[i][k + is * pbasis] * dvh[j][k];
-                   }
-               }
+       // betamix[j][i] = <dr_out[i], dvh[j]>. The (i, j) pairs are spread over the OpenMP threads and
+       // each dot product keeps the serial order over the grid, so the result does not depend on the
+       // thread count and is identical to the serial loop.
+       {
+           const int nf = ct.noncoll_factor * ct.noncoll_factor;
+           const int npair = iter_used * iter_used;
+#pragma omp parallel for schedule(dynamic)
+           for(int ij = 0;ij < npair;ij++)
+           {
+               const int i = ij / iter_used, j = ij % iter_used;
+               const double *x = dr_out[i].data(), *y = dvh[j].data();
+               double t = 0.0;
+               for(int is = 0;is < nf;is++)
+                   for(int k = 0;k < pbasis;k++) t += x[k + is * pbasis] * y[k];
+               betamix[j][i] = t;
            }
        }
 
@@ -175,10 +187,16 @@ BroydenRestart:
            throw RmgFatalException() << "dgetri failed " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
 
+       // work[i] = <dvh[i], rhout>, one serial dot product per thread as in the serial loop.
+#pragma omp parallel for schedule(dynamic)
        for(int i = 0;i < iter_used;i++) {
-           work[i] = 0.0;
+           const double *v = dvh[i].data();
+           double t = 0.0;
            for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
-               for(int k = 0;k < pbasis;k++) work[i] += dvh[i][k] * rhout[k + is * pbasis];
+               for(int k = 0;k < pbasis;k++) t += v[k] * rhout[k + is * pbasis];
+           work[i] = t;
+       }
+       for(int i = 0;i < iter_used;i++) {
            MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
            MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
        }
@@ -188,8 +206,13 @@ BroydenRestart:
            double gamma = 0.0;
            for(int j=0;j < iter_used;j++) gamma += work[j] * betamix[i][j];
 
-           for(int k=0;k < pbasis_noncoll;k++) rhout[k] -= gamma * dr_out[i][k];
-           for(int k=0;k < pbasis_noncoll;k++) rhoin[k] -= gamma * dr_in[i][k];
+           const double *a = dr_out[i].data(), *b = dr_in[i].data();
+#pragma omp parallel for schedule(static)
+           for(int k=0;k < pbasis_noncoll;k++)
+           {
+               rhout[k] -= gamma * a[k];
+               rhoin[k] -= gamma * b[k];
+           }
 
        }
 
@@ -197,8 +220,12 @@ BroydenRestart:
 
    // New density. This is the place to do things with screening and frequency based mixing
    if(ct.drho_precond) Precond_drho(rhout.data());
-   for(int k=0;k < pbasis_noncoll;k++)  rhoin[k] =  rhoin[k] + ct.mix*rhout[k];
-   for(int k=0;k < pbasis_noncoll;k++)  rho[k] = rhoin[k];
+#pragma omp parallel for schedule(static)
+   for(int k=0;k < pbasis_noncoll;k++)
+   {
+       rhoin[k] =  rhoin[k] + ct.mix*rhout[k];
+       rho[k] = rhoin[k];
+   }
 
 
 }
