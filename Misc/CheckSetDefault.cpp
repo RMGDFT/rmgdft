@@ -228,10 +228,10 @@ void CheckSetDefault(void)
         ct.time_reversal = false;
     }
 
-    if(ct.subdiag_driver == SUBDIAG_ELPA)
+    // 0 means autoset
+    if(ct.scalapack_block_factor == 0)
     {
-        ct.scalapack_block_factor = 16;
-        if(my_rank==0) printf("Elpa subdiag driver selected. Setting block factor to 16.\n");
+        ct.scalapack_block_factor = 32;
     }
 
     if((ct.subdiag_driver != SUBDIAG_SCALAPACK) && (ct.subdiag_driver != SUBDIAG_ELPA))

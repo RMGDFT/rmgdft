@@ -991,10 +991,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ",
             POISSON_OPTIONS);
 
-    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, INT_MAX,64,
+    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 0, 256, 0,
             CHECK_AND_FIX, OPTIONAL,
             "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware. ",
-            "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32. ", DIAG_OPTIONS);
+            "scalapack_block_factor must lie in the range (0,256). The default value of 0 means autoset. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, -1, 40000, -1,
             CHECK_AND_FIX, OPTIONAL,
