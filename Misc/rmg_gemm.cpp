@@ -55,6 +55,133 @@
 #if SYCL_ENABLED
     #include <sycl/sycl.hpp>
     #include "oneapi/mkl/blas.hpp"
+	template <typename T>
+	class DeviceTemp
+	{
+	public:
+	    DeviceTemp(sycl::queue& q, size_t count)
+		: queue(q)
+	    {
+		if (count > 0)
+		    ptr = sycl::malloc_device<T>(count, queue);
+	    }
+
+	    ~DeviceTemp()
+	    {
+		if (ptr)
+		    sycl::free(ptr, queue);
+	    }
+	    
+	    T* get() const { return ptr; }
+	    
+	    DeviceTemp(const DeviceTemp&) = delete;
+	    DeviceTemp& operator=(const DeviceTemp&) = delete;
+
+	private:
+	    sycl::queue& queue;
+	    T* ptr = nullptr;
+	};
+	// Determine whether a pointer is accessible to the SYCL device.
+	template <typename T>
+	bool is_device_accessible(T* ptr, sycl::queue& q)
+	{
+	    auto type = sycl::get_pointer_type(ptr, q.get_context());
+
+	    return type == sycl::usm::alloc::device ||
+		   type == sycl::usm::alloc::shared;
+	}
+// Generic GEMM implementation.
+template <typename DataType>
+void sycl_gemm(
+    sycl::queue& q,
+    const char* transa,
+    const char* transb,
+    int m, int n, int k,
+    DataType alpha,
+    DataType* A, int lda,
+    DataType* B, int ldb,
+    DataType beta,
+    DataType* C, int ldc)
+{
+    // Determine transpose operations.
+    auto get_transpose = [](const char* trans)
+    {
+        char c = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(trans[0])));
+
+        switch (c)
+        {
+            case 't':
+                return oneapi::mkl::transpose::trans;
+
+            case 'c':
+                return oneapi::mkl::transpose::conjtrans;
+
+            default:
+                return oneapi::mkl::transpose::nontrans;
+        }
+    };
+
+    auto transA = get_transpose(transa);
+    auto transB = get_transpose(transb);
+
+    // Determine matrix storage sizes (column-major).
+    size_t ka = (transA == oneapi::mkl::transpose::nontrans) ? k : m;
+    size_t kb = (transB == oneapi::mkl::transpose::nontrans) ? n : k;
+
+    size_t a_size = static_cast<size_t>(lda) * ka;
+    size_t b_size = static_cast<size_t>(ldb) * kb;
+    size_t c_size = static_cast<size_t>(ldc) * n;
+
+    // Determine whether pointers are already device-accessible.
+    bool a_dev = is_device_accessible(A, q);
+    bool b_dev = is_device_accessible(B, q);
+    bool c_dev = is_device_accessible(C, q);
+
+    // Allocate temporary device storage where necessary.
+    DeviceTemp<DataType> tempA(q, a_dev ? 0 : a_size);
+    DeviceTemp<DataType> tempB(q, b_dev ? 0 : b_size);
+    DeviceTemp<DataType> tempC(q, c_dev ? 0 : c_size);
+
+    DataType* dA = a_dev ? A : tempA.get();
+    DataType* dB = b_dev ? B : tempB.get();
+    DataType* dC = c_dev ? C : tempC.get();
+
+    // Copy input matrices to device.
+    if (!a_dev)
+        q.memcpy(dA, A, a_size * sizeof(DataType));
+
+    if (!b_dev)
+        q.memcpy(dB, B, b_size * sizeof(DataType));
+
+    // C only needs initialization when beta is nonzero.
+    if (!c_dev && beta != DataType{})
+        q.memcpy(dC, C, c_size * sizeof(DataType));
+
+    // Ensure input transfers are complete before GEMM.
+    q.wait_and_throw();
+
+    // Execute oneMKL GEMM.
+    oneapi::mkl::blas::column_major::gemm(
+        q,
+        transA,
+        transB,
+        m, n, k,
+        alpha,
+        dA, lda,
+        dB, ldb,
+        beta,
+        dC, ldc
+    );
+
+    // Ensure GEMM is complete before copying results or freeing memory.
+    q.wait_and_throw();
+
+    // Copy result back to host if C was not device-accessible.
+    if (!c_dev)
+        q.memcpy(C, dC, c_size * sizeof(DataType)).wait_and_throw();
+}
+
 #else
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
@@ -413,46 +540,17 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
     //hipDeviceSynchronize();
 #elif SYCL_ENABLED
 
-    oneapi::mkl::transpose sycl_transA = oneapi::mkl::transpose::nontrans;
-    oneapi::mkl::transpose sycl_transB = oneapi::mkl::transpose::nontrans;
-
-    if(!strcmp(transa, "t")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(transa, "T")) sycl_transA = oneapi::mkl::transpose::trans;
-    if(!strcmp(transa, "c")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(transa, "C")) sycl_transA = oneapi::mkl::transpose::conjtrans;
-
-    if(!strcmp(transb, "t")) sycl_transB = oneapi::mkl::transpose::trans;
-    if(!strcmp(transb, "T")) sycl_transB = oneapi::mkl::transpose::trans;
-    if(!strcmp(transb, "c")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-    if(!strcmp(transb, "C")) sycl_transB = oneapi::mkl::transpose::conjtrans;
-
-    int ka = m;
-    if(!strcmp("n", transa)) ka = k;
-    if(!strcmp("N", transa)) ka = k;
-
-    int kb = k;
-    if(!strcmp("n", transb)) kb = n;
-    if(!strcmp("N", transb)) kb = n;
-
-    size_t a_size = (size_t)lda * (size_t)ka;
-    size_t b_size = (size_t)ldb * (size_t)kb;
-    size_t c_size = (size_t)ldc * (size_t)n;
-
-    cl::sycl::buffer<DataType, 1> bufA((DataType *)A, a_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufA.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufB((DataType *)B, b_size, {cl::sycl::property::buffer::use_host_ptr()});
-    bufB.set_final_data(nullptr);
-    cl::sycl::buffer<DataType, 1> bufC((DataType *)C, c_size, {cl::sycl::property::buffer::use_host_ptr()});
-    try {
-        oneapi::mkl::blas::gemm(ct.sycl_Q, sycl_transA, sycl_transB, m, n, k, alpha,
-                                bufA, lda, bufB, ldb, beta, bufC, ldc);
-    }
-    catch(cl::sycl::exception const& e) {
-        std::cout << "\t\tCaught synchronous SYCL exception during GEMM:\n"
-        << e.what() << std::endl << std::endl;
-        rmg::error("Terminating");
-    }
-
+sycl_gemm(
+    ct.sycl_Q,
+    transa,
+    transb,
+    m, n, k,
+    alpha,
+    A, lda,
+    B, ldb,
+    beta,
+    C, ldc
+);
 #else
 
     
