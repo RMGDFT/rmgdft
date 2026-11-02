@@ -54,5 +54,5 @@ RMG_BINARY=/lustre/orion/mat739/proj-shared/elbriggs/usr/bin/rmg-gpu-rocm7.2a
 NNODES=30
 GPUS_PER_NODE=8
 
-srun -A MAT739 --ntasks=$(($GPUS_PER_NODE * $NNODES)) -u -c7 --cpu-bind=sockets --threads-per-core=1 --gpus-per-node=$GPUS_PER_NODE  --ntasks-per-gpu=1 --gpu-bind=closest $RMG_BINARY input
+srun -A MAT739 --ntasks=$(($GPUS_PER_NODE * $NNODES)) -u -c7 -m cyclic --cpu-bind=sockets --threads-per-core=1 --gpus-per-node=$GPUS_PER_NODE  --ntasks-per-gpu=1 --gpu-bind=closest $RMG_BINARY input
 
