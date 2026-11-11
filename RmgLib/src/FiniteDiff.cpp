@@ -399,22 +399,47 @@ double FiniteDiff::app_combined(RmgType * __restrict__ a, RmgType * __restrict__
     double th2 = fd_coeff0(order, gridhx);
     if(b == NULL) return (double)std::real(th2);
 
-#if 0
-#if HIP_ENABLED || CUDA_ENABLED
-    // Broken for now. Need to set up c
-    if(use_gpu && (ibrav == CUBIC_PRIMITIVE || ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE))
-    {
-        /* Return the diagonal component of the operator */
-        app8_del2_gpu(a, b, dimx, dimy, dimz, c);
-        return (double)std::real(th2);
-    }
-#endif
-#endif
-
     // Get coeffs for x,y,z axes which are used by all lattice types
     fd_combined_coeffs(order, gridhx, 0, cmx, cpx, kvec);
     fd_combined_coeffs(order, gridhx, 1, cmy, cpy, kvec);
     fd_combined_coeffs(order, gridhx, 2, cmz, cpz, kvec);
+
+#if HIP_ENABLED || CUDA_ENABLED
+    // Broken for now. Need to set up c
+    if(use_gpu && (ibrav == CUBIC_PRIMITIVE || ibrav == ORTHORHOMBIC_PRIMITIVE || ibrav == TETRAGONAL_PRIMITIVE))
+    {
+        fdparms_o8<RmgType> gc;
+        gc.a0 = th2;
+        gc.gmt1x = cmx[0];
+        gc.gmt2x = cmx[1];
+        gc.gmt3x = cmx[2];
+        gc.gmt4x = cmx[3];
+        gc.gmt1y = cmy[0];
+        gc.gmt2y = cmy[1];
+        gc.gmt3y = cmy[2];
+        gc.gmt4y = cmy[3];
+        gc.gmt1z = cmz[0];
+        gc.gmt2z = cmz[1];
+        gc.gmt3z = cmz[2];
+        gc.gmt4z = cmz[3];
+
+        gc.gpt1x = cpx[0];
+        gc.gpt2x = cpx[1];
+        gc.gpt3x = cpx[2];
+        gc.gpt4x = cpx[3];
+        gc.gpt1y = cpy[0];
+        gc.gpt2y = cpy[1];
+        gc.gpt3y = cpy[2];
+        gc.gpt4y = cpy[3];
+        gc.gpt1z = cpz[0];
+        gc.gpt2z = cpz[1];
+        gc.gpt3z = cpz[2];
+        gc.gpt4z = cpz[3];
+        /* Return the diagonal component of the operator */
+        app8_del2_gpu(a, b, dimx, dimy, dimz, gc);
+        return (double)std::real(th2);
+    }
+#endif
 
     for (int ix = order/2; ix < dimx + order/2; ix++)
     {
