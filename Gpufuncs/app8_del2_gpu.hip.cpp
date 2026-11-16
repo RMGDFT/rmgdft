@@ -172,7 +172,7 @@ void app8_del2_gpu(T *a,
     int tid = getThreadId();
     std::vector<int> yf, zf;
     GetPrimeFactors(yf, dimy, 19);
-    GetPrimeFactors(zf, dimy, 19);
+    GetPrimeFactors(zf, dimz, 19);
 
     // Block and grid layout can definitely use some optimization
     int xchunk = yf.back();

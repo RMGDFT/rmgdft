@@ -218,6 +218,29 @@ namespace rmg
     template void dev_allocate::malloc(std::complex<float> **, size_t);
     template void dev_allocate::malloc(int **, size_t);
     template void dev_allocate::malloc(size_t **, size_t);
+
+    bool is_dev_buf(void *ptr)
+    {
+#if CUDA_ENABLED
+    cudaPointerAttributes attr;
+    cudaError_t cudaerr;
+    cudaerr = cudaPointerGetAttributes(&attr, ptr);
+    return (cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice);
+    return false;
+#elif HIP_ENABLED
+    hipPointerAttribute_t attr;
+    hipError_t hiperr;
+    hiperr = hipPointerGetAttributes(&attr, ptr);
+    return (hiperr == hipSuccess && attr.type == hipMemoryTypeDevice);
+    return false;
+#elif SYCL_ENABLED
+    auto type = sycl::get_pointer_type(ptr, q.get_context());
+    return type == sycl::usm::alloc::device ||
+           type == sycl::usm::alloc::shared;
+#else
+        return false;
+#endif
+    }
 }
 
 rmg::dev_allocate *rmg_device_pool;

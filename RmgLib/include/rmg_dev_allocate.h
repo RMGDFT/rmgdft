@@ -58,6 +58,9 @@ namespace rmg
         void free(void *ptr);
 
     };
+
+    bool is_dev_buf(void *ptr);
+
 }
 
 extern rmg::dev_allocate *rmg_device_pool;

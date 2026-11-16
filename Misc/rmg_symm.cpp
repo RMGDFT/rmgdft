@@ -194,18 +194,9 @@ template <typename DataType> void rmg::symm(char *side, char *uplo, int m, int n
     if(!strcmp("R", side)) ka = n;
 
     rmg::sync_device();
-    hipPointerAttribute_t attr;
-    hipError_t cudaerr;
-    cudaerr = hipPointerGetAttributes(&attr, A);
-    bool a_dev = false;
-
-    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
-    cudaerr = hipPointerGetAttributes(&attr, B);
-    bool b_dev = false;
-    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
-    cudaerr = hipPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(cudaerr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
+    bool a_dev = rmg::is_dev_buf(A);
+    bool b_dev = rmg::is_dev_buf(B);
+    bool c_dev = rmg::is_dev_buf(C);
 
     size_t a_size = (size_t)lda * (size_t)ka;
     size_t b_size = (size_t)ldb * (size_t)n;

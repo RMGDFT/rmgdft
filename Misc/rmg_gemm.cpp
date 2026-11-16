@@ -425,19 +425,9 @@ template <typename DataType> void rmg::gemm(char *transa, char *transb, int m, i
     }
 
     //hipDeviceSynchronize();
-    hipPointerAttribute_t attr;
-    hipError_t hiperr;
-    hiperr = hipPointerGetAttributes(&attr, A);
-    bool a_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
-
-    hiperr = hipPointerGetAttributes(&attr, B);
-    bool b_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) b_dev = true;
-
-    hiperr = hipPointerGetAttributes(&attr, C);
-    bool c_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) c_dev = true;
+    bool a_dev = rmg::is_dev_buf(A);
+    bool b_dev = rmg::is_dev_buf(B);
+    bool c_dev = rmg::is_dev_buf(C);
 
     hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transB = HIPBLAS_OP_N;
 

@@ -6,6 +6,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "rmg_gemm.h"
+#include "rmg_dev_allocate.h"
 #include "GpuAlloc.h"
 
 #include "transition.h"
@@ -108,13 +109,9 @@ template <typename DataType> void rmg::potrf(char *uplo, int n, DataType *A, int
 
     size_t a_size = (size_t)lda * (size_t)n;
 
-    hipPointerAttribute_t attr;
-    hipError_t hiperr;
-    hiperr = hipPointerGetAttributes(&attr, A);
-    bool a_dev = false;
+    bool a_dev = rmg::is_dev_buf(A);
     int *dev_info;
     gpuMalloc((void **)&dev_info, sizeof(int));
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) a_dev = true;
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
         std::complex<double> *dA=(std::complex<double> *)A;
