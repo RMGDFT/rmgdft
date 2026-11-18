@@ -233,10 +233,10 @@ namespace rmg
     hiperr = hipPointerGetAttributes(&attr, ptr);
     return (hiperr == hipSuccess && attr.type == hipMemoryTypeDevice);
     return false;
-#elif SYCL_ENABLED
-    auto type = sycl::get_pointer_type(ptr, q.get_context());
-    return type == sycl::usm::alloc::device ||
-           type == sycl::usm::alloc::shared;
+//#elif SYCL_ENABLED
+//    auto type = sycl::get_pointer_type(ptr, q.get_context());
+//    return type == sycl::usm::alloc::device ||
+//           type == sycl::usm::alloc::shared;
 #else
         return false;
 #endif
