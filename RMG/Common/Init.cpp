@@ -511,6 +511,16 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
             }
         }
 
+        // These runs return before the end of Init, so set the spectral radius
+        // here: the multigrid eigensolver needs lambda_max and lambda_min.
+        for (int idx = 0; idx < FP0_BASIS; idx++)
+            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        get_ddd (vtot.data(), vxc.data(), true);
+        ct.sradius = spectral_radius<OrbitalType>(vtot, vxc, Kptr[0]);
+        ct.lambda_max = ct.lambda_mul*ct.sradius;
+        ct.lambda_min = 0.25*ct.lambda_max;
+        if(pct.imgpe==0) fprintf(ct.logfile, "\nSpectral radius of Hamiltonian = %f\n\n", ct.sradius);
+
         return;
     }
 
