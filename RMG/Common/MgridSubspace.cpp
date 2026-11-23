@@ -75,11 +75,11 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
     int irem = this->nstates % bs;
     for(int ib=0;ib < nb;ib++)
     {
-        MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
+            MgridSubspaceBlockedGpu (ib*bs, bs, bs, vtot_psi, vxc_psi);
     }
     if(irem)
     {
-        MgridSubspace (nb*bs, irem, bs, vtot_psi, vxc_psi);
+            MgridSubspaceBlockedGpu(nb*bs, irem, bs, vtot_psi, vxc_psi);
     }
 
 
@@ -96,7 +96,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
     delete(RT1);
 
 }
-
 
 template <class KpointType>
 void Kpoint<KpointType>::MgridSubspace (int first, int N, int bs, double *vtot_psi, double *vxc_psi)
@@ -283,3 +282,164 @@ std::barrier<> bbarier(active_threads);
 }
 
 
+#include "gpu_solver_bridge.hpp"
+#include "rmg_gpu_taps.hpp"
+#include "vloc_gather.hpp"
+
+
+// Blocked gpu version.
+template <class KpointType>
+void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, double *vtot_psi, double *vxc_psi)
+{
+    RmgTimer RT0("3-MgridSubspace"), *RT1;
+    FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+//    int my_pe_x, my_pe_y, my_pe_z;
+//    this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+//    int my_pe_offset = my_pe_x;
+    static GpuSolverBridge< KpointType > *mg_bridge;
+    int NX = Rmg_G->get_NX_GRID(1);
+    int NY = Rmg_G->get_NY_GRID(1);
+    int NZ = Rmg_G->get_NZ_GRID(1);
+    double key = Rmg_G->get_hxgrid(1);
+    double hx = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
+    double hy = Rmg_L.get_yside() * Rmg_G->get_hygrid(1);
+    double hz = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
+    double tpiba = 2.0 * PI / L->celldm[0];
+    double tpiba2 = tpiba * tpiba;
+
+
+    GpuSubBox3D my_box = { Rmg_G->get_PX_OFFSET(1), Rmg_G->get_PY_OFFSET(1), Rmg_G->get_PZ_OFFSET(1), Rmg_G->get_PX0_GRID(1), Rmg_G->get_PY0_GRID(1), Rmg_G->get_PZ0_GRID(1) };
+
+//    std::vector< GpuStencilTap > fine_taps_8th;
+//    std::vector< std::vector< GpuStencilTap > > coarse_taps_2nd;
+// Level 0: 8th-order fine grid
+auto fine_taps_8th = build_rmg_taps_from_fd(FD, 8, hx, hy, hz, this->kp.kvec, key);
+
+// Levels 1 .. mg_num_levels - 1: 2nd-order coarse grids (2x coarsening per level)
+std::vector< std::vector< GpuStencilTap > > coarse_taps_2nd;
+for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
+    double scale = static_cast< double >(1 << l); // 2.0, 4.0, ...
+    coarse_taps_2nd.push_back(build_rmg_taps_from_fd(FD, 2, scale * hx, scale * hy, scale * hz, this->kp.kvec, key*2.0));
+}
+
+    int desired_mpi_batch = 1024;
+    int pre_smooth_deg = 3;
+    int post_smooth_deg = 3;
+    int coarsest_solve_deg = 6;
+    KpointType* h_psi_block = this->Kstates[first].psi;
+    KpointType* h_vnl_block = this->nv;
+
+    std::vector< double > global_eigvals;
+    global_eigvals.resize(ct.num_states);
+    for(int is=0;is < ct.num_states;is++) global_eigvals[is] = Kstates[is].eig[0];
+
+    if(!mg_bridge)
+    {
+        mg_bridge = new GpuSolverBridge<KpointType>(pct.grid_comm,
+                      N,
+                      NX,
+                      NY, 
+                      NZ,
+                      my_box,
+                      ct.eig_parm.levels+1,
+                      fine_taps_8th,
+                      coarse_taps_2nd,
+                      ct.lambda_min,
+                      ct.lambda_max,
+                      -0.0001*tpiba2,
+                      get_vel(),
+                      true,
+                      desired_mpi_batch,
+                      pre_smooth_deg,
+                      post_smooth_deg,
+                      coarsest_solve_deg);
+    }
+    mg_bridge->update_stencil_taps(fine_taps_8th, coarse_taps_2nd);
+
+    KpointType *weight = this->nl_weight;
+#if HIP_ENABLED || CUDA_ENABLED
+    weight = this->nl_weight_gpu;
+#endif
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
+    double *nvtot_psi = vtot_psi;;
+
+    rmg::ortho<KpointType> MGOrtho(this->nstates, pbasis_noncoll);
+
+    int block_size = bs;
+
+    std::vector<double> deig(20);
+    std::fill(deig.begin(), deig.end(), 0.0);
+
+    std::vector< double > h_vloc_padded;
+    gather_vloc_padded(pct.grid_comm, vtot_psi, my_box, NX, NY, NZ, h_vloc_padded, /*periodic=*/true);
+    if constexpr (std::is_same_v<KpointType, double> || std::is_same_v<KpointType, std::complex<double>>)
+    {
+         mg_bridge->upload_local_potential_64(h_vloc_padded.data());
+    }
+    else
+    {
+         mg_bridge->upload_local_potential_32(h_vloc_padded.data());
+    }
+
+    for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
+    {
+
+        // Update betaxpsi        
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
+        KpointType *newsint = this->newsint_local + first * this->BetaProjector->get_num_nonloc_ions() *
+                    ct.max_nl * ct.noncoll_factor;
+        this->BetaProjector->project(this, newsint,
+              first*ct.noncoll_factor, N * ct.noncoll_factor, weight);
+        delete(RT1);
+
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            RmgTimer RTL("3-MgridSubspace: ldaUop x psi");
+            LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
+        }
+
+        {
+            RT1 = new RmgTimer("3-MgridSubspace: AppNls");
+            AppNls(this, newsint, this->Kstates[first].psi, this->nv, 
+                   &this->ns[first * pbasis_noncoll],
+                   0, std::min(block_size, N));
+            delete(RT1);
+
+        }
+
+        // Here insert preconditioner
+        rmg::sync_device();
+        RmgTimer *RT2 = new RmgTimer("3-MgridSubspace: Mg_eig");
+        mg_bridge->solve_block(
+            h_psi_block, h_vnl_block, global_eigvals,
+            first, N, ct.eig_parm.mg_timestep);
+        delete RT2;
+        rmg::sync_device();
+if(pct.gridpe==0 && pct.spinpe==0)
+{
+//    for(int i=0;i<ct.num_states;i++)printf("EEEEEE  %14.6f  %14.6f\n",Kstates[i].eig[0], global_eigvals[i]);
+}
+        for (int is = 0; is < N; is++) Kstates[first + is].eig[0] = global_eigvals[first + is];
+
+        RmgTimer RTO("3-MgridSubspace: ortho");
+        int stop = std::min(first+block_size, this->nstates-first);
+        MGOrtho.orthogonalize(first, stop, this->orbital_storage, true);
+
+    }
+
+    /* wavefunctions have changed, projectors have to be recalculated */
+    {
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
+        KpointType *newsint = this->newsint_local + first * this->BetaProjector->get_num_nonloc_ions() *
+                    ct.max_nl * ct.noncoll_factor;
+        this->BetaProjector->project(this, newsint,
+              first * ct.noncoll_factor, N * ct.noncoll_factor, weight);
+        delete(RT1);
+    }
+
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {   
+        RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+        LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
+    }
+}
