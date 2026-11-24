@@ -415,10 +415,6 @@ for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
             first, N, ct.eig_parm.mg_timestep);
         delete RT2;
         rmg::sync_device();
-if(pct.gridpe==0 && pct.spinpe==0)
-{
-//    for(int i=0;i<ct.num_states;i++)printf("EEEEEE  %14.6f  %14.6f\n",Kstates[i].eig[0], global_eigvals[i]);
-}
         for (int is = 0; is < N; is++) Kstates[first + is].eig[0] = global_eigvals[first + is];
 
         RmgTimer RTO("3-MgridSubspace: ortho");
