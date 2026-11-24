@@ -296,7 +296,6 @@ void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, doubl
 //    int my_pe_x, my_pe_y, my_pe_z;
 //    this->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
 //    int my_pe_offset = my_pe_x;
-    static GpuSolverBridge< KpointType > *mg_bridge;
     int NX = Rmg_G->get_NX_GRID(1);
     int NY = Rmg_G->get_NY_GRID(1);
     int NZ = Rmg_G->get_NZ_GRID(1);
@@ -333,9 +332,9 @@ for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
     global_eigvals.resize(ct.num_states);
     for(int is=0;is < ct.num_states;is++) global_eigvals[is] = Kstates[is].eig[0];
 
-    if(!mg_bridge)
+    if(!this->mg_bridge)
     {
-        mg_bridge = new GpuSolverBridge<KpointType>(pct.grid_comm,
+        this->mg_bridge = new GpuSolverBridge<KpointType>(pct.grid_comm,
                       N,
                       NX,
                       NY, 
@@ -354,7 +353,7 @@ for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
                       post_smooth_deg,
                       coarsest_solve_deg);
     }
-    mg_bridge->update_stencil_taps(fine_taps_8th, coarse_taps_2nd);
+    this->mg_bridge->update_stencil_taps(fine_taps_8th, coarse_taps_2nd);
 
     KpointType *weight = this->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
@@ -374,11 +373,11 @@ for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
     gather_vloc_padded(pct.grid_comm, vtot_psi, my_box, NX, NY, NZ, h_vloc_padded, /*periodic=*/true);
     if constexpr (std::is_same_v<KpointType, double> || std::is_same_v<KpointType, std::complex<double>>)
     {
-         mg_bridge->upload_local_potential_64(h_vloc_padded.data());
+         this->mg_bridge->upload_local_potential_64(h_vloc_padded.data());
     }
     else
     {
-         mg_bridge->upload_local_potential_32(h_vloc_padded.data());
+         this->mg_bridge->upload_local_potential_32(h_vloc_padded.data());
     }
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
@@ -410,7 +409,7 @@ for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
         // Here insert preconditioner
         rmg::sync_device();
         RmgTimer *RT2 = new RmgTimer("3-MgridSubspace: Mg_eig");
-        mg_bridge->solve_block(
+        this->mg_bridge->solve_block(
             h_psi_block, h_vnl_block, global_eigvals,
             first, N, ct.eig_parm.mg_timestep);
         delete RT2;

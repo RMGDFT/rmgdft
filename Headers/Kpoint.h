@@ -42,6 +42,9 @@
 #include <mpi.h>
 #include <boost/pool/pool.hpp>
 #include "GridObject.h"
+#if HIP_ENABLED
+    #include "gpu_solver_bridge.hpp"
+#endif
 
 //char *rmg_pool_malloc(const size_t bytes);
 // Used for kalloc
@@ -189,6 +192,9 @@ public:
     KpointType *nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     KpointType *nl_weight_gpu;
+#if HIP_ENABLED
+    GpuSolverBridge< KpointType > *mg_bridge = nullptr;
+#endif
 #endif
     size_t nl_weight_size;
     int stress_factor;
