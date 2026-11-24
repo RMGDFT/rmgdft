@@ -955,7 +955,7 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    int hash = T->get_threads_per_node() + 1;
+    int hash = 2003;
     // The actual tag passed to mpi consists of the state index hashed with 2003
     // shifted left 5 bits and the passed tag parameter. 
     //qitem.mpi_tag = ((istate%11)<<5) + tag;
