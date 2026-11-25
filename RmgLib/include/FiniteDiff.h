@@ -106,6 +106,11 @@ public:
 
     ~FiniteDiff(void);
 
+    int get_num_axes(void);
+    bool include_axis(int axis);
+
+    std::array<int, 3> get_axis_step(int axis);
+
     bool check_anisotropy(double hx, double hy, double hz, double limit);
 
     template <typename RmgType>

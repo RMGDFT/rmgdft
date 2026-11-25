@@ -5,6 +5,8 @@ inline std::vector<GpuStencilTap>
 build_rmg_taps_from_fd(FiniteDiff &fd, int order, double hxgrid, double hygrid,
                        double hzgrid, const double *kvec, double key) {
     int radius = order / 2;
+    int num_axes = fd.get_num_axes();
+
     // Allocate extra padding (+ 4) in case fd_combined_coeffs writes up to
     // order elements
     std::vector<std::complex<double>> cm(static_cast<size_t>(order + 4),
@@ -12,7 +14,7 @@ build_rmg_taps_from_fd(FiniteDiff &fd, int order, double hxgrid, double hygrid,
     std::vector<std::complex<double>> cp(static_cast<size_t>(order + 4),
                                          std::complex<double>(0.0, 0.0));
     std::vector<GpuStencilTap> taps;
-    taps.reserve(static_cast<size_t>(1 + 6 * radius));
+    taps.reserve(static_cast<size_t>(1 + 2 * num_axes * radius));
 
     // Safe k-vector copy (handles kvec == nullptr for Gamma-only runs)
     double k_safe[3] = {0.0, 0.0, 0.0};
@@ -23,27 +25,27 @@ build_rmg_taps_from_fd(FiniteDiff &fd, int order, double hxgrid, double hygrid,
     }
 
     std::complex<double> neighbor_sum{0.0, 0.0};
-    const double h_axes[3] = {hxgrid, hygrid, hzgrid};
 
-    for (int axis = 0; axis < 3; ++axis) {
-        std::fill(cm.begin(), cm.end(), std::complex<double>(0.0, 0.0));
-        std::fill(cp.begin(), cp.end(), std::complex<double>(0.0, 0.0));
+    for (int axis = 0; axis < 13; ++axis) {
+        if(fd.include_axis(axis))
+        {
+            std::fill(cm.begin(), cm.end(), std::complex<double>(0.0, 0.0));
+            std::fill(cp.begin(), cp.end(), std::complex<double>(0.0, 0.0));
 
-        fd.fd_combined_coeffs<std::complex<double>>(order, key, axis, cm.data(),
-                                                    cp.data(), k_safe);
+            fd.fd_combined_coeffs<std::complex<double>>(order, key, axis, cm.data(),
+                                                        cp.data(), k_safe);
 
-        for (int idx = 0; idx < radius; ++idx) {
-            int m = idx + 1;
-            std::complex<double> wm = cm.at(static_cast<size_t>(idx));
-            std::complex<double> wp = cp.at(static_cast<size_t>(idx));
-            neighbor_sum += wm + wp;
+            auto [sx, sy, sz] = fd.get_axis_step(axis); // each in {-1, 0, 1}
 
-            taps.push_back(GpuStencilTap{(axis == 0 ? -m : 0),
-                                         (axis == 1 ? -m : 0),
-                                         (axis == 2 ? -m : 0), wm});
-            taps.push_back(GpuStencilTap{(axis == 0 ? m : 0),
-                                         (axis == 1 ? m : 0),
-                                         (axis == 2 ? m : 0), wp});
+            for (int idx = 0; idx < radius; ++idx) {
+                int m = idx + 1;
+                std::complex<double> wm = cm.at(static_cast<size_t>(idx));
+                std::complex<double> wp = cp.at(static_cast<size_t>(idx));
+                neighbor_sum += wm + wp;
+
+                taps.push_back(GpuStencilTap{-m * sx, -m * sy, -m * sz, wm});
+                taps.push_back(GpuStencilTap{ m * sx,  m * sy,  m * sz, wp});
+            }
         }
     }
 
