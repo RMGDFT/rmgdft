@@ -23,6 +23,7 @@
 #if HIP_ENABLED
 #include "Gpufuncs.h"
 #include <complex>
+#include <hip/hip_complex.h>
 
 __global__ void double_to_float(double* d_in, float* d_out, size_t n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -52,6 +53,21 @@ __global__ void scatter_diagonal(double *matrix, double *diagonal, size_t N) {
     }
 }
 
+__global__ void pack_diagonal(hipDoubleComplex *matrix, hipDoubleComplex *diagonal, size_t N) {
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < N) {
+        diagonal[i] = matrix[i * (N + 1)];
+    }
+}
+
+__global__ void scatter_diagonal(hipDoubleComplex *matrix, hipDoubleComplex *diagonal, size_t N) {
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < N) {
+        matrix[i * (N + 1)] = diagonal[i];
+    }
+}
+
+
 // HIP kernel using 1D mapping for 100% thread utilization
 __global__ void packUpperTriangular(double *matrix, float *packed, size_t N) {
     size_t total_dense_elements = N * N;
@@ -67,6 +83,25 @@ __global__ void packUpperTriangular(double *matrix, float *packed, size_t N) {
             // Exact BLAS column-packed index calculation
             size_t packed_idx = (j * (j + 1)) / 2 + i;
             packed[packed_idx] = (double)matrix[idx];
+        }
+    }
+}
+
+// HIP kernel using 1D mapping for 100% thread utilization
+__global__ void packUpperTriangular(hipDoubleComplex *matrix, hipComplex *packed, size_t N) {
+    size_t total_dense_elements = N * N;
+
+    for (size_t idx = (size_t)blockIdx.x * blockDim.x + threadIdx.x; 
+         idx < total_dense_elements; 
+         idx += (size_t)gridDim.x * blockDim.x) {
+        
+        size_t i = idx % N; // Row index (swapped for column-major)
+        size_t j = idx / N; // Column index
+
+        if (i <= j) { // Upper triangular condition
+            // Exact BLAS column-packed index calculation
+            size_t packed_idx = (j * (j + 1)) / 2 + i;
+            packed[packed_idx] = hipComplexDoubleToFloat(matrix[idx]);
         }
     }
 }
@@ -91,6 +126,25 @@ __global__ void unpackUpperTriangular(double *matrix, float *packed, size_t N) {
     }
 }
 
+__global__ void unpackUpperTriangular(hipDoubleComplex *matrix, hipComplex *packed, size_t N) {
+    size_t total_dense_elements = N * N;
+
+    for (size_t idx = (size_t)blockIdx.x * blockDim.x + threadIdx.x; 
+         idx < total_dense_elements; 
+         idx += (size_t)gridDim.x * blockDim.x) {
+        
+        size_t i = idx % N;
+        size_t j = idx / N;
+
+        if (i <= j) {
+            size_t packed_idx = (j * (j + 1)) / 2 + i;
+            matrix[idx] = hipComplexFloatToDouble(packed[packed_idx]);
+        } else {
+            //A[idx] = 0.0f;
+        }
+    }
+}
+
 void gpuPackSqToUpTr(double *matrix, float *packed, size_t N)
 {
     int blockSize = 256;
@@ -100,6 +154,20 @@ void gpuPackSqToUpTr(double *matrix, float *packed, size_t N)
 
     hipLaunchKernelGGL(packUpperTriangular, dim3(gridSize), dim3(blockSize), 0, 0, matrix, packed, N);
     //hipDeviceSynchronize();
+}
+
+void gpuPackSqToUpTr(std::complex<double> *matrix, std::complex<float> *packed, size_t N)
+{
+    int blockSize = 256;
+    
+    // Bounded grid size safely handles any value of N up to hardware limits
+    int gridSize = 4096; 
+
+    hipLaunchKernelGGL(packUpperTriangular, dim3(gridSize), dim3(blockSize), 0, 0, (hipDoubleComplex *)matrix, (hipComplex *)packed, N);
+}
+
+void gpuUnPackTrToSq(std::complex<double> *matrix, std::complex<float> *packed, size_t N)
+{
 }
 
 void gpuUnPackTrToSq(double *matrix, float *packed, size_t N)
@@ -125,6 +193,20 @@ void gpu_scatter_diagonal(double *matrix, double *diagonal, size_t n)
     int block_size = 256;
     int grid_size = (n + block_size - 1) / block_size;
     scatter_diagonal<<<grid_size, block_size>>>(matrix, diagonal, n);
+}
+
+void gpu_pack_diagonal(std::complex<double> *matrix, std::complex<double> *diagonal, size_t n)
+{
+    int block_size = 256;
+    int grid_size = (n + block_size - 1) / block_size;
+    pack_diagonal<<<grid_size, block_size>>>((hipDoubleComplex *)matrix, (hipDoubleComplex *)diagonal, n);
+}
+
+void gpu_scatter_diagonal(std::complex<double> *matrix, std::complex<double> *diagonal, size_t n)
+{
+    int block_size = 256;
+    int grid_size = (n + block_size - 1) / block_size;
+    scatter_diagonal<<<grid_size, block_size>>>((hipDoubleComplex *)matrix, (hipDoubleComplex *)diagonal, n);
 }
 
 void gpu_copy_and_convert(double* d_in, float* d_out, size_t n) {

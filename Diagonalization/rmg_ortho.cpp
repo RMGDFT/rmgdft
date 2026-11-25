@@ -156,10 +156,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         }
         if constexpr (std::is_same_v<T, std::complex<double>>)
         {
-            std::complex<float> *fptr = (std::complex<float> *)fmatrix.data();
-            for(size_t i=0;i < stop;i++) fptr[i] = mat[i];
-            rmg::block_allreduce(fptr, stop, pct.grid_comm);
-            for(size_t i=0;i < stop;i++) mat[i] = fptr[i];
+            rmg::block_allreduce(mat, stop, pct.grid_comm);
         }
         delete RT1;
         rmg::sync_device();
@@ -175,9 +172,6 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
         gpuMemcpy(&psi[nbase * this->pbasis], psi_extra,
                 (size_t)notcon * (size_t)this->pbasis * sizeof(T), gpuMemcpyDeviceToHost);
-#endif
-#if GPU_AWARE_MPI
-    //gpuFree(mat);
 #endif
         return;
     }
@@ -240,13 +234,7 @@ template <class T> void ortho<T>::orthogonalize(int nbase, int notcon, T *psi, b
         }
         if constexpr (std::is_same_v<T, std::complex<double>>)
         {
-            rmg::hvector<T> D(notcon);
-            for(int i=0;i < notcon;i++) D[i] = mat[i + i*notcon];
-            rmg::block_allreduce(D.data(), notcon, pct.grid_comm);
-            PackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
-            rmg::block_allreduce((std::complex<float> *)fmatrix.data(), length, pct.grid_comm);
-            UnPackSqToTr("U", notcon, mat, notcon, (std::complex<float> *)fmatrix.data());
-            for(int i=0;i < notcon;i++) mat[i + i*notcon] = D[i];
+            rmg::block_allreduce(mat, notcon*notcon, pct.grid_comm);
         }
         rmg::sync_device();
         delete RT2;

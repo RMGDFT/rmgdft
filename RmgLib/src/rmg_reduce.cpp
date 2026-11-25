@@ -313,92 +313,13 @@ hipDeviceSynchronize();
 
 void rmg::block_allreduce(std::complex<double> *mat, size_t count, MPI_Comm comm)
 {
-    BaseThread *T = BaseThread::getBaseThread(0);
-
-    if(T->is_loop_over_states())
-        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
-
-    size_t blocks = (2 * count) / block_size;
-    size_t rem = (2 * count) % block_size;
-    double *tptr = (double *)mat;
-#if GPU_AWARE_MPI && HIP_ENABLED
-    hipPointerAttribute_t attr;
-    hipError_t hiperr;
-    hiperr = hipPointerGetAttributes(&attr, mat);
-    bool is_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
-    if(is_dev)
-    {
-        for(size_t ib=0;ib < blocks;ib++)
-        {
-            hipMemcpyDtoD(sbuf, tptr, block_size * sizeof(double));
-            MPI_Allreduce(sbuf, rbuf, block_size, MPI_DOUBLE, MPI_SUM, comm);
-            hipMemcpyDtoD(tptr, rbuf, block_size * sizeof(double));
-            tptr += block_size;
-        }
-        if(rem)
-        {
-            hipMemcpyDtoD(sbuf, tptr, rem * sizeof(double));
-            MPI_Allreduce(sbuf, rbuf, rem, MPI_DOUBLE, MPI_SUM, comm);
-            hipMemcpyDtoD(tptr, rbuf, rem * sizeof(double));
-        }
-        return;
-    }
-#endif
-
-    for(size_t ib=0;ib < blocks;ib++)
-    {
-        MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_DOUBLE, MPI_SUM, comm);
-        tptr += block_size;
-    }
-    if(rem)
-        MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_DOUBLE, MPI_SUM, comm);
+    rmg::block_allreduce((double *)mat, 2*count, comm);
 }
 
 void rmg::block_allreduce(std::complex<float> *mat, size_t count, MPI_Comm comm)
 {
-    BaseThread *T = BaseThread::getBaseThread(0);
-
-    if(T->is_loop_over_states())
-        rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
-
-    size_t blocks = (2 * count) / block_size;
-    size_t rem = (2 * count) % block_size;
-    float *tptr = (float *)mat;
-#if GPU_AWARE_MPI && HIP_ENABLED
-    hipPointerAttribute_t attr;
-    hipError_t hiperr;
-    hiperr = hipPointerGetAttributes(&attr, mat);
-    bool is_dev = false;
-    if(hiperr == hipSuccess && attr.type == hipMemoryTypeDevice) is_dev = true;
-    if(is_dev)
-    {
-        for(size_t ib=0;ib < blocks;ib++)
-        {
-            hipMemcpyDtoD(sbuf, tptr, block_size * sizeof(float));
-            MPI_Allreduce(sbuf, rbuf, block_size, MPI_FLOAT, MPI_SUM, comm);
-            hipMemcpyDtoD(tptr, rbuf, block_size * sizeof(float));
-            tptr += block_size;
-        }
-        if(rem)
-        {
-            hipMemcpyDtoD(sbuf, tptr, rem * sizeof(float));
-            MPI_Allreduce(sbuf, rbuf, rem, MPI_FLOAT, MPI_SUM, comm);
-            hipMemcpyDtoD(tptr, rbuf, rem * sizeof(float));
-        }
-        return;
-    }   
-#endif
-
-    for(size_t ib=0;ib < blocks;ib++)
-    {
-        MPI_Allreduce(MPI_IN_PLACE, tptr, block_size, MPI_FLOAT, MPI_SUM, comm);
-        tptr += block_size;
-    }
-    if(rem)
-        MPI_Allreduce(MPI_IN_PLACE, tptr, rem, MPI_FLOAT, MPI_SUM, comm);
+    rmg::block_allreduce((float *)mat, 2*count, comm);
 }
-
 
 void rmg::block_reduce(double *mat, size_t count, int root, MPI_Comm comm)
 {
@@ -467,8 +388,9 @@ void rmg::block_reduce(std::complex<double> *mat, size_t count, int root, MPI_Co
     if(T->is_loop_over_states())
         rmg::error("rmg::block_allreduce cannot be called from a threaded region.\n");
 
-    size_t blocks = (2 * count) / block_size;
-    size_t rem = (2 * count) % block_size;
+    size_t ncount = 2*count;
+    size_t blocks = count / block_size;
+    size_t rem = count % block_size;
     double *tptr = (double *)mat;
     for(size_t ib=0;ib < blocks;ib++)
     {
