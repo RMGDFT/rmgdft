@@ -245,8 +245,12 @@ void gpu_copy_and_convert(std::complex<double> *d_in, std::complex<float> *d_out
 void gpu_copy_and_convert(std::complex<float> *d_in, std::complex<double> *d_out, size_t n);
 void gpu_pack_diagonal(double *matrix, double *diagonal, size_t n);
 void gpu_scatter_diagonal(double *matrix, double *diagonal, size_t n);
+void gpu_pack_diagonal(std::complex<double> *matrix, std::complex<double> *diagonal, size_t n);
+void gpu_scatter_diagonal(std::complex<double> *matrix, std::complex<double> *diagonal, size_t n);
 void gpuPackSqToUpTr(double *matrix, float *packed, size_t N);
 void gpuUnPackTrToSq(double *matrix, float *packed, size_t N);
+void gpuPackSqToUpTr(std::complex<double> *matrix, std::complex<float> *packed, size_t N);
+void gpuUnPackTrToSq(std::complex<double> *matrix, std::complex<float> *packed, size_t N);
 template <typename T>
 void gpu_psi_gather(T *block_matrix, T *distAij, int this_block_size_row, int nstates, int num_blocks, 
                     int nb, int mb, int mxllda, int ib, int myrow, int mycol, int nprow, int npcol);
