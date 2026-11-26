@@ -186,7 +186,7 @@ template <typename LowT> class MultigridPreconditioner {
                     ? std::max(1e-6, helmholtz_shift_)
                     : std::max(helmholtz_shift_, 0.25 * gershgorin_max);
 #endif
-            double gershgorin_min = 0.1*gershgorin_max;
+            double gershgorin_min = 0.08*gershgorin_max;
 
             levels_.at(ul).lambda_min = static_cast<float>(gershgorin_min);
             levels_.at(ul).lambda_max = static_cast<float>(gershgorin_max);

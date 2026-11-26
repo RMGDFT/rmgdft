@@ -329,7 +329,7 @@ void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, doubl
         double scale = static_cast< double >(1 << l); // 2.0, 4.0, ...
         coarse_taps_2nd.push_back(build_rmg_taps_from_fd(FD, 2,
                                   scale * hx, scale * hy, scale * hz,
-                                  this->kp.kvec, key*2.0));
+                                  this->kp.kvec, scale * key));
     }
 
     int desired_mpi_batch = 1024;
