@@ -75,11 +75,17 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
     int irem = this->nstates % bs;
     for(int ib=0;ib < nb;ib++)
     {
-            MgridSubspaceBlockedGpu (ib*bs, bs, bs, vtot_psi, vxc_psi);
+         if(ct.coalesce_type == FULL_COALESCE)
+             MgridSubspaceBlockedGpu (ib*bs, bs, bs, vtot_psi, vxc_psi);
+         else
+             MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
     }
     if(irem)
     {
+         if(ct.coalesce_type == FULL_COALESCE)
             MgridSubspaceBlockedGpu(nb*bs, irem, bs, vtot_psi, vxc_psi);
+         else
+             MgridSubspace (nb*bs, bs, irem, vtot_psi, vxc_psi);
     }
 
 
@@ -307,19 +313,19 @@ void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, doubl
     double tpiba2 = tpiba * tpiba;
 
 
-    GpuSubBox3D my_box = { Rmg_G->get_PX_OFFSET(1), Rmg_G->get_PY_OFFSET(1), Rmg_G->get_PZ_OFFSET(1), Rmg_G->get_PX0_GRID(1), Rmg_G->get_PY0_GRID(1), Rmg_G->get_PZ0_GRID(1) };
+    GpuSubBox3D my_box = { Rmg_G->get_PX_OFFSET(1), Rmg_G->get_PY_OFFSET(1), Rmg_G->get_PZ_OFFSET(1),
+                           Rmg_G->get_PX0_GRID(1), Rmg_G->get_PY0_GRID(1), Rmg_G->get_PZ0_GRID(1) };
 
-//    std::vector< GpuStencilTap > fine_taps_8th;
-//    std::vector< std::vector< GpuStencilTap > > coarse_taps_2nd;
-// Level 0: 8th-order fine grid
-auto fine_taps_8th = build_rmg_taps_from_fd(FD, 8, hx, hy, hz, this->kp.kvec, key);
+    auto fine_taps_8th = build_rmg_taps_from_fd(FD, 8, hx, hy, hz, this->kp.kvec, key);
 
-// Levels 1 .. mg_num_levels - 1: 2nd-order coarse grids (2x coarsening per level)
-std::vector< std::vector< GpuStencilTap > > coarse_taps_2nd;
-for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
-    double scale = static_cast< double >(1 << l); // 2.0, 4.0, ...
-    coarse_taps_2nd.push_back(build_rmg_taps_from_fd(FD, 2, scale * hx, scale * hy, scale * hz, this->kp.kvec, key*2.0));
-}
+    // Levels 1 .. mg_num_levels - 1: 2nd-order coarse grids (2x coarsening per level)
+    std::vector< std::vector< GpuStencilTap > > coarse_taps_2nd;
+    for (int l = 1; l < ct.eig_parm.levels+1; ++l) {
+        double scale = static_cast< double >(1 << l); // 2.0, 4.0, ...
+        coarse_taps_2nd.push_back(build_rmg_taps_from_fd(FD, 2,
+                                  scale * hx, scale * hy, scale * hz,
+                                  this->kp.kvec, key*2.0));
+    }
 
     int desired_mpi_batch = 1024;
     int pre_smooth_deg = 3;

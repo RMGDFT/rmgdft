@@ -13,6 +13,7 @@ extern std::unordered_map<std::string, int> energy_output_units;
 extern std::unordered_map<std::string, int> drho_precond_type;
 extern std::unordered_map<std::string, int> crds_units;
 extern std::unordered_map<std::string, int> vdw_corr;
+extern std::unordered_map<std::string, int> coalesce_type;
 extern std::unordered_map<std::string, int> lattice_units;
 extern std::unordered_map<std::string, int> charge_mixing_type;
 extern std::unordered_map<std::string, int> charge_analysis;
