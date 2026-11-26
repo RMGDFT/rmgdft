@@ -42,7 +42,7 @@
 #include <mpi.h>
 #include <boost/pool/pool.hpp>
 #include "GridObject.h"
-#if HIP_ENABLED
+#if HIP_ENABLED && GPU_AWARE_MPI
     #include "gpu_solver_bridge.hpp"
 #endif
 

@@ -75,16 +75,20 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspaceBlocked(double
     int irem = this->nstates % bs;
     for(int ib=0;ib < nb;ib++)
     {
+#if HIP_ENABLED && GPU_AWARE_MPI
          if(ct.coalesce_type == FULL_COALESCE)
              MgridSubspaceBlockedGpu (ib*bs, bs, bs, vtot_psi, vxc_psi);
          else
+#endif
              MgridSubspace (ib*bs, bs, bs, vtot_psi, vxc_psi);
     }
     if(irem)
     {
+#if HIP_ENABLED && GPU_AWARE_MPI
          if(ct.coalesce_type == FULL_COALESCE)
             MgridSubspaceBlockedGpu(nb*bs, irem, bs, vtot_psi, vxc_psi);
          else
+#endif
              MgridSubspace (nb*bs, bs, irem, vtot_psi, vxc_psi);
     }
 
@@ -288,6 +292,7 @@ std::barrier<> bbarier(active_threads);
 }
 
 
+#if HIP_ENABLED && GPU_AWARE_MPI
 #include "gpu_solver_bridge.hpp"
 #include "rmg_gpu_taps.hpp"
 #include "vloc_gather.hpp"
@@ -444,3 +449,5 @@ void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, doubl
         LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
     }
 }
+
+#endif
