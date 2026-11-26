@@ -42,6 +42,9 @@
 #include <mpi.h>
 #include <boost/pool/pool.hpp>
 #include "GridObject.h"
+#if HIP_ENABLED && GPU_AWARE_MPI
+    #include "gpu_solver_bridge.hpp"
+#endif
 
 //char *rmg_pool_malloc(const size_t bytes);
 // Used for kalloc
@@ -103,6 +106,7 @@ public:
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
     void MgridSubspaceBlocked (double *vtot_psi, double *vxc_psi);
     void MgridSubspace (int istart, int N, int bs, double *vtot_psi, double *vxc_psi);
+    void MgridSubspaceBlockedGpu (int istart, int N, int bs, double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, double *vxc_psi, int &notconv);
     void BlockDiag(double *vtot, double *vxc_psi);
     void BlockDiagInternal(double *vtot, double *vxc_psi, int first, int N, KpointType *hr, KpointType *sr, KpointType *vr);
@@ -188,6 +192,9 @@ public:
     KpointType *nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED || SYCL_ENABLED
     KpointType *nl_weight_gpu;
+#if HIP_ENABLED
+    GpuSolverBridge< KpointType > *mg_bridge = nullptr;
+#endif
 #endif
     size_t nl_weight_size;
     int stress_factor;

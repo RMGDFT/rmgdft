@@ -241,4 +241,20 @@ void CheckSetDefault(void)
             if(my_rank==0) printf("Disabling use_block_diag as it's only available for scalapack or elpa drivers.\n");
         }
     }
+
+    // Some coalescing checks. Still needs work.
+    if(ct.coalesce_type == NO_COALESCE)
+    {
+        ct.coalesce_states = false;
+    }
+    else if(ct.coalesce_type == PARTIAL_COALESCE)
+    {
+        ct.coalesce_states = true;
+    }
+    else if(ct.coalesce_type == FULL_COALESCE)
+    {
+        // Full coalesce is controlled by coalesce_type so turn partials off
+        pct.coalesce_factor = 1;
+        ct.coalesce_states = false;
+    }
 }

@@ -292,3 +292,9 @@
 
 #define KPOINT_LATT_UNIT 0
 #define KPOINT_2pi_alat 1
+
+// Grid coalescing types
+#define NO_COALESCE  0
+#define FULL_COALESCE  1
+#define PARTIAL_COALESCE  2
+

@@ -77,7 +77,7 @@ template <class KpointType> void Kpoint<KpointType>::BlockDiag(double *vtot, dou
     int count = 0, Nmax = 0, start = 0;
     for(int st=0;st < this->nstates;st++)
     {
-        double eig = Ha_eV * this->Kstates[st].eig[0];
+        double eig = Ha_eV * this->Kstates[st].oldeig[0];
         if(((eig - last_eig) > gap_thr) && (count > count_thr))
         {
             gaps.push_back(std::make_pair(start, count));

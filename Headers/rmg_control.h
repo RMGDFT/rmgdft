@@ -342,6 +342,7 @@ public:
     
     /* Coalesce states */
     bool coalesce_states;
+    int coalesce_type;
 
     /* Renormalize forcecs */
     bool renormalize_forces;

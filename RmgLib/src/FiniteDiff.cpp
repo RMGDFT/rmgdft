@@ -353,6 +353,38 @@ template void FiniteDiff::fd_combined_coeffs<std::complex<float>>(int, double, i
 template void FiniteDiff::fd_combined_coeffs<std::complex<double>>(int, double, int, std::complex<double> *, std::complex<double> *, double *);
 
 
+bool FiniteDiff::include_axis(int axis)
+{
+    return LC->include_axis[axis];
+}
+
+int FiniteDiff::get_num_axes(void)
+{
+    int num_axes = 0;
+    for(int axis=0;axis < 13;axis++)
+        if(LC->include_axis[axis]) num_axes++;
+    return num_axes;
+}
+
+std::array<int, 3> FiniteDiff::get_axis_step(int axis)
+{
+    std::array<std::array<int, 3>, 13> steps = {{
+    {1,0,0},
+    {0,1,0},
+    {0,0,1},
+    {1,1,0},
+    {1,0,1},
+    {0,1,1},
+    {1,-1,0},
+    {1,0,-1},
+    {0,1,-1},
+    {1,1,1},
+    {1,1,-1},
+    {1,-1,1},
+    {-1,1,1}}};
+    return steps[axis];
+}
+
 template <typename RmgType>
 double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz)

@@ -60,6 +60,12 @@
         {"DFT-D3", 2},
         };
 
+ std::unordered_map<std::string, int> coalesce_type = {
+        {"none", 0},
+        {"full", 1},
+        {"partial", 2},
+        };
+
  std::unordered_map<std::string, int> lattice_units = {
         {"Bohr", 0},
         {"Angstrom", 1},

@@ -1048,6 +1048,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Grid coalescing factor.",
             "coalesce_factor must lie in the range (1,24). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
+    If.RegisterInputKey("coalesce_type", NULL, &lc.coalesce_type, "none",
+                     CHECK_AND_TERMINATE, OPTIONAL, coalesce_type,
+"RMG supports two types of grid coalescence, full is only "
+"available on systems with GPU aware MPI and is preferred "
+"when such hardware is available, partial can be used on "
+"systems with or without GPUs. ",
+                     "coalesce_type must be either \"none\", \"full\" or \"partial\". Terminating. ", CONTROL_OPTIONS|EXPERT_OPTION);
+    
     If.RegisterInputKey("charge_density_mixing", &lc.init_mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
