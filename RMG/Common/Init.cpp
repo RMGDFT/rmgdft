@@ -852,9 +852,11 @@ template <typename OrbitalType> void Init (fgobj<double> &vh, spinobj<double> &r
     }
 
     ct.sradius = spectral_radius<OrbitalType>(vtot, vxc, Kptr[0]);
+    ct.cradius = spectral_radius_coarse<OrbitalType>(Kptr[0]);
     ct.lambda_max = ct.lambda_mul*ct.sradius;
     ct.lambda_min = 0.25*ct.lambda_max;
     if(pct.imgpe==0) fprintf(ct.logfile, "\nSpectral radius of Hamiltonian = %f\n\n", ct.sradius); 
+    if(pct.imgpe==0) fprintf(ct.logfile, "\nSpectral radius of coarse op.  = %f\n\n", ct.cradius);
 }                               /* end init */
 
 

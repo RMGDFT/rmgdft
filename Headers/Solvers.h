@@ -82,5 +82,7 @@ void MgridOrtho(int nbase, int notcon, int pbasis_noncoll, KpointType *psi);
 
 template <typename OrbitalType>
 double spectral_radius (fgobj<double> &vtot, spinobj<double> &vxc, Kpoint<OrbitalType> *kptr);
+template <typename OrbitalType> double spectral_radius_coarse (Kpoint<OrbitalType> *kptr);
+
 
 #endif

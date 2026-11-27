@@ -1111,6 +1111,7 @@ public:
 
    // Parameters for Chebyshev smoothing.
    double sradius;         // approximate spectral radius of fine grid hamiltonian
+   double cradius;         // approximate spectral radius of coarse grid smoother
    double lambda_mul;      // Fudge factor for the spectral radius
    double lambda_max;      // values used to compute chebyshev coeffs based on sradius and lambda_mul
    double lambda_min;

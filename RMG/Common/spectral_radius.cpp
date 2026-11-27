@@ -27,11 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#ifdef USE_NUMA
-    #include <numa.h>
-#endif
-#include <sys/mman.h>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -43,15 +38,13 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Solvers.h"
-#include "Subdiag.h"
-#include "Functional.h"
-#include "GpuAlloc.h"
+#include "TradeImages.h"
 #include "rmg_sum_all.h"
 
 #include "RmgException.h"
-#include "Functional.h"
 #include "FiniteDiff.h"
-#include "rmgthreads.h"
+#include "rmg_hvector.h"
+#include "packfuncs.h"
 
 
 /* this function is used to approximate the spectral radius of the preconditioned
@@ -61,6 +54,8 @@
 
 template double spectral_radius<double>(fgobj<double> &, spinobj<double> &, Kpoint<double>*);
 template double spectral_radius<std::complex<double> >(fgobj<double> &, spinobj<double> &, Kpoint<std::complex <double> >*);
+template double spectral_radius_coarse<double>(Kpoint<double>*);
+template double spectral_radius_coarse<std::complex<double> >(Kpoint<std::complex <double> >*);
 
 template <typename OrbitalType> double spectral_radius (fgobj<double> &vtot, spinobj<double> &vxc, Kpoint<OrbitalType> *kptr)
 {
@@ -112,3 +107,56 @@ template <typename OrbitalType> double spectral_radius (fgobj<double> &vtot, spi
 
 
 
+template <typename OrbitalType> double spectral_radius_coarse (Kpoint<OrbitalType> *kptr)
+{
+    wfobj<double> vtot_psi;
+    double hxgrid = Rmg_G->get_hxgrid(1);
+    FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+    double diag = FD.fd_coeff0(2, hxgrid);
+    int density = 1;
+    int dimx = kptr->G->get_PX0_GRID(density);
+    int dimy = kptr->G->get_PY0_GRID(density);
+    int dimz = kptr->G->get_PZ0_GRID(density);
+    int pbasis = dimx*dimy*dimz;
+    double gridhx = kptr->G->get_hxgrid(density);
+    double gridhy = kptr->G->get_hygrid(density);
+    double gridhz = kptr->G->get_hzgrid(density);
+
+    wfobj<OrbitalType> psi0, u, Hu;
+    rmg::hvector<OrbitalType> work((dimx+2)*(dimy+2)*(dimz+2));
+    rmg::hvector<OrbitalType> work1((dimx+2)*(dimy+2)*(dimz+2));
+    long int idum = (long int)pct.gridpe;
+    rand0 (&idum);
+    for (int i=0;i < u.pbasis;i++) psi0[i] = rand0 (&idum) - 0.5;
+
+    double eig;
+    for(int its=0;its < 100;its++)
+    {
+        rmg::pack_ptos (work.data(), psi0.data(), dimx, dimy, dimz);
+        Rmg_T->trade_images (work.data(), dimx, dimy, dimz, FULL_TRADE);
+        FD.app_combined<OrbitalType, 2> (work.data(), Hu.data(), dimx, dimy, dimz,
+                                     gridhx, gridhy, gridhz, kptr->kp.kvec, false);
+//        rmg::pack_stop(work.data(), Hu.data(), dimx, dimy, dimz);
+
+        for(int i=0;i < u.pbasis;i++) Hu[i] /= diag;
+        eig = ComputeEig(u.pbasis, psi0.data(), Hu.data(), psi0.data());
+        for(int i=0;i < u.pbasis;i++) psi0[i] = Hu[i];
+        double sum = 0.0;
+        for(int i=0;i < u.pbasis;i++) sum += std::norm(psi0[i])*get_vel();
+        sum = rmg::sum_all(sum, pct.grid_comm);
+        sum = 1.0 / sqrt(sum);
+        for(int i=0;i < u.pbasis;i++) psi0[i] *= sum;
+    }
+    //printf("EEEE  %14.8f\n",eig);
+    return eig;
+}
+
+
+double coarse_lambda_max(int level)
+{
+    return 1.08*ct.cradius * std::pow(4.0, level);
+}
+double coarse_lambda_min(int level)
+{
+    return 0.08*1.08*ct.cradius * std::pow(4.0, level);
+}

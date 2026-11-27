@@ -12,6 +12,9 @@
 #include <hip/hip_runtime.h>
 #include <vector>
 
+double coarse_lambda_max(int level);
+double coarse_lambda_min(int level);
+
 struct MultigridLevelConfig {
     int Nx = 0, Ny = 0, Nz = 0;
     int Gx = 0, Gy = 0, Gz = 0;
@@ -177,8 +180,10 @@ template <typename LowT> class MultigridPreconditioner {
             coarse_stencils_.at(idx) =
                 make_custom_stencil<WeightT, 1, 20>(helm_taps);
 
-            double gershgorin_max =
-                1.05 * std::max(1e-6, diag_real + off_diag_abs_sum);
+            //double gershgorin_max =
+            //    1.05 * std::max(1e-6, diag_real + off_diag_abs_sum);
+            //printf("DDDD  %d  %f  %f\n",l,coarse_lambda_max(l+1), gershgorin_max);
+            double gershgorin_max = coarse_lambda_max(l+1);
 #if 0
      // This doesn't work as well as the simple update below
             double gershgorin_min =
@@ -186,7 +191,8 @@ template <typename LowT> class MultigridPreconditioner {
                     ? std::max(1e-6, helmholtz_shift_)
                     : std::max(helmholtz_shift_, 0.25 * gershgorin_max);
 #endif
-            double gershgorin_min = 0.08*gershgorin_max;
+            //double gershgorin_min = 0.08*gershgorin_max;
+            double gershgorin_min = coarse_lambda_min(l+1);
 
             levels_.at(ul).lambda_min = static_cast<float>(gershgorin_min);
             levels_.at(ul).lambda_max = static_cast<float>(gershgorin_max);
@@ -259,6 +265,7 @@ template <typename LowT> class MultigridPreconditioner {
             size_t ulast = static_cast<size_t>(num_levels_ - 1);
             const auto &clvl = levels_.at(ulast);
             const auto &st_last = coarse_stencils_.at(ulast - 1);
+printf("LAMBDA  %f  %f\n", clvl.lambda_min, clvl.lambda_max);
             chebyshev_smooth_batched<LowT, 1, 20>(
                 d_e_.at(ulast), d_cheb_d_, d_cheb_Au_, d_rhs_.at(ulast),
                 d_zero_vloc_, d_zero_eig_, my_band_states_, clvl.Nx, clvl.Ny,

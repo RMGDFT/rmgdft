@@ -335,7 +335,7 @@ void Kpoint<KpointType>::MgridSubspaceBlockedGpu(int first, int N, int bs, doubl
     int desired_mpi_batch = 1024;
     int pre_smooth_deg = 3;
     int post_smooth_deg = 3;
-    int coarsest_solve_deg = 6;
+    int coarsest_solve_deg = 12;
     KpointType* h_psi_block = this->Kstates[first].psi;
     KpointType* h_vnl_block = this->nv;
 
