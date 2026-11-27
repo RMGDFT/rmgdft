@@ -265,7 +265,7 @@ template <typename LowT> class MultigridPreconditioner {
             size_t ulast = static_cast<size_t>(num_levels_ - 1);
             const auto &clvl = levels_.at(ulast);
             const auto &st_last = coarse_stencils_.at(ulast - 1);
-printf("LAMBDA  %f  %f\n", clvl.lambda_min, clvl.lambda_max);
+            //printf("LAMBDA  %f  %f\n", clvl.lambda_min, clvl.lambda_max);
             chebyshev_smooth_batched<LowT, 1, 20>(
                 d_e_.at(ulast), d_cheb_d_, d_cheb_Au_, d_rhs_.at(ulast),
                 d_zero_vloc_, d_zero_eig_, my_band_states_, clvl.Nx, clvl.Ny,
